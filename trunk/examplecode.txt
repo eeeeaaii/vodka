@@ -1,0 +1,33 @@
+
+/*
+class test1 {
+	public void dosomething();
+
+	
+
+	class test2 : public test1 {
+		public void dosomething();
+	}
+}
+*/
+
+/*
+Here's how you do it -- the inner class
+derives from the outer class.
+*/
+
+
+/*
+class Outer {
+	int b;
+	class Inner;
+	void test(int a);
+};
+
+class Outer::Inner : public Outer {
+	int a;
+	void test2(int c);
+	Inner();
+};
+*/
+

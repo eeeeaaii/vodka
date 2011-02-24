@@ -1,0 +1,184 @@
+Changes are:
+
+for each type except function, pair, and image:
+
+getType should just return the type.  The logic should be:
+if XT_UNKNOWN,
+	determine type.
+
+INTEGER
+X-- write constructor that takes value as argument
+X-- write newType function in GSM that takes char* arg, and copyfrom arg.
+X-- add logic to eval in Expression that returns GSM.newType for that type
+X-- remove logic in getType that assigned the type_rep member
+X-- remove the type_rep member
+X-- add logic in pExp::getTypeRep that gets the value correctly
+x-- override dupe
+REAL
+X-- write constructor that takes value as argument
+X-- write newType function in GSM that takes char* arg, and copyfrom arg.
+X-- add logic to eval in Expression that returns GSM.newType for that type
+X-- remove logic in getType that assigned the type_rep member
+X-- remove the type_rep member
+X- add logic in pExp::getTypeRep that gets the value correctly
+X override dupe
+STRING
+X-- write constructor that takes value as argument
+X-- write newType function in GSM that takes char* arg, and copyfrom arg.
+X-- add logic to eval in Expression that returns GSM.newType for that type
+X-- remove logic in getType that assigned the type_rep member
+X-- remove the type_rep member
+X-- add logic in pExp::getTypeRep that gets the value correctly
+X-- override dupe
+BOOLEAN
+X- write constructor that takes value as argument
+X- write newType function in GSM that takes char* arg, and copyfrom arg.
+X-- add logic to eval in Expression that returns GSM.newType for that type
+X-- remove logic in getType that assigned the type_rep member
+X-- remove the type_rep member
+X- add logic in pExp::getTypeRep that gets the value correctly
+X-- override dupe
+IMAGE
+X- write newType function in GSM that takes copyfrom arg, make sure it copies
+   the bitmap as well (deep copy)
+X- for parallelism, change rect function so that it retrieves a bitmap from the graphics context,
+   draws into it, then initializes the image thing passing it the pointer to this
+   bitmap.  Do NOT make it so that the drawRect function in GC returns a new bitmap
+   based on w and h (remember we have to implement collapse)
+X- constructor that takes bitmap* as arg
+X-- remove logic in getType that assigned the type_rep member
+X-- remove the type_rep member
+X- getType currently checks to see if there's an image_rep
+   so you have to override it
+X- override dupe
+X- override draw
+X-- override getWidth and getHeight
+PAIR
+X- override eval
+X-- try putting car/cdr methods only in pair and see what happens,
+   including putting assert in pExp
+-- override draw
+X-- write constructor that takes car/cdr as argument
+X- write newType function in GSM that takes copyfrom arg.
+X- override dupe
+NULL
+X- change newType in GSM
+X- override dupe
+FUNCTION
+X-- have to figure out a way to get constructor into all builtins
+    base class constructor is always called
+X-- make this existing class subclass Expression
+X-- change name of "evaluator" to "apply" - it does NOT override eval
+X-- eval should do nothing (I think).
+X- write constructor that takes value as argument (i.e. code)
+X- write newType function in GSM that takes code pointer arg, and copyfrom arg.
+X- add logic to eval in Expression that returns GSM.newType for that type
+X-- remove logic in getType that assigned the type_rep member
+X-- remove the type_rep member
+X- ?add logic in pExp::getTypeRep that gets the value correctly
+X- override dupe
+X- getType currently checks to see if there's an function_rep
+   so you have to override it
+
+
+
+change all GSM.newWhatever functions so that they return the correct things
+
+EventHandler.handle probably stays the same.
+
+It is NOT true that the "evaluator" function of the Function class just overrides eval in the superclass.
+
+
+do car and cdr become members of Pair but NOT of Expression?  All things
+are Expressions until they are evaluated and type
+is determined -- in the IDE, can unidentified expressions be pairs?
+
+does the "eval" function of a pair simply become
+car = car.eval
+cdr = cdr.eval
+?
+
+getType/isType remain in Expression
+
+I guess the eval function in Expression would have to examine mytext,
+make a determination, and return the correct type of object.
+
+The pExp class would still have all functions
+for all classes in it, but it would examine the type of p first then
+determine whether the operation was legal, if not it would throw exception.
+Huge pain to go back and type every pointer in the code and also
+increases work tremendously because have to define every pointer class.
+
+definition of RCM_BIND changes and possibly invocation
+
+functions of Expression/Rho/Thing:
+- save stays the same
+- isLegalSymbol stays the same
+- change destructor
+- dynamic determination of type no longer happens in getType
+- eval should:
+	1. determine type
+	2. if symbol -- there is no symbol type, you look up the binding,
+	   if no binding found, throw error.
+	3. if pair, eval car.  Don't eval cdr because depending on what it is,
+	   you may or may not eval cdr.  If car is a function, invoke it, passing
+	   the arguments, and return whatever its invocation returns.
+	   
+- draw should probably be overridden in various subclasses.
+
+	
+- does the copyFrom function in pExp have to change?
+- yes and you DO need to override dupe in all subclasses, and here's why:
+  although in most cases code that is saved under a binding as a function
+  will be unevaluated, the user may have evaluated some code as an intermediate
+  step, then put the result inside the function -- so it will already have been
+  converted into an Integer or whatever.
+  
+
+
+-----------------------------------------
+---------------- DONE -------------------
+-----------------------------------------
+--> make sure stuff that you want to override is declared as virtual
+
+countArgs becomes countSiblings or something and is a member of Pair
+
+x rename class Rho to Expression
+x rename class RhoP to pExp
+x rename file PartP.h/cpp to pExp.h/cpp
+x rename file Thing.h/cpp to Expression.h/cpp
+x change all include statements to reflect file name changes
+x change all class names
+
+THE FOLLOWING PROB IS FIXED
+Problem with doing this:
+let's say I have this in the IDE:
+(((+ 4 (+ 9 3))))
+and I navigate here:
+((_(+ 4 (+ 9 3))_))
+and eval.  I get:
+((16))
+Well, the + function has to return a number object.  However, I can then navigate here:
+((_16_))
+and then start typing:
+((_16abcd_))
+which changes my nice "16" into some other kind of object.
+Of course the way to handle this is to change the event handler so that it returns a
+new object of type unknown if you start adding stuff to a number.
+
+THIS IS FIXED:
+problem: when you do this
+(+ 3 (+ 4 5) )
+select this
+(+ 3 _(+ 4 5)_ )
+hit eval
+(+ 3 _9_ )
+then do this
+_(+ 3 9)_
+you get this!
+_3_
+instead of this
+_12_
+
+also: backspace in IDEEventHandler is NOT fixed, will not change type back to unknown.
+

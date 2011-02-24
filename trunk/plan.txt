@@ -1,0 +1,26 @@
+hours	task
+40		implement char/vector/string data types
+30		create image data type and make it display in IDE
+60		create functions that display images - 4 functions in "notes" file
+20		collapse/expand in IDE -- also "rooting"
+5		change to configurable keypad navigation in IDE (up/down/left/right/in/out)
+80		expandable symbols in IDE (i.e. when you expand a symbol
+		it expands to its definition in code, so collapsed code
+		and function definitions are pretty much the same
+80		access library with star menu:
+		4x4=16 -> main builtins
+		4x4x4=64 -> all builtins
+		4x4x4x4=245 -> main library functions
+		4x4x4x4x4=1028 -> extended library functions
+50		implement event handler stuff
+80		write code for recompile as a VM
+3		finish changing reference counting method
+120		write example program and address issues that come up
+30		quote/quasiquote graphical syntactical sugar.
+30		implement different numeric types (float/complex/etc)
+50		learn scheme macros and implement
+---------------
+678 hours total
+at 2 hours per day, weekdays only, that's 68 weeks, or a year and four months
+at 2 hours per day weekdays and 3 hours per weekend night, that's only 43 weeks (about 10 months).
+

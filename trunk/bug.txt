@@ -1,0 +1,44 @@
+what is causing this bug?
+- memory is being trashed?
+most likely to happen when trying to gquote a list with bitmaps in it --
+but can happen anytime.
+
+tried:
+- looking for strcpy and strdup
+	the places where these are invoked are not
+	being called before the crash.  Sometimes the
+	crash happened the FIRST time I pressed a movement
+	key or the ctrl key to create a node (after startup)
+  	I changed one instance of strlen to strlen+1
+	(turns out I NEEDED to do this, see
+http://www.eecs.umich.edu/~kieras/eecs280w00website/generalFAQ/Misaddressing_Memory.html
+
+- putting in kludgy exclusion thing around "handleevent" with
+  the thought that maybe it's drawing while it's trying to eval
+  but that would not explain the problems where it crashes in
+  ATLTrace or whatever.
+- taking out "delete" statement in GSM.release or whatever --
+  the same thing I did before when I had memory alloc problems.
+  this is not that.
+- taking out include of the ATL library.  This seems to have worked,
+  sort of, except sometimes it still crashes when the app is exited.
+  I also had to remove the bitmap drawing code though, to do this, so it is
+  now hard to repro the problem.
+
+Doesn't the debug allocator put garbage in unused memory so that if you try to access out of bounds it will crash so you will see immediately?
+
+enabling buffer security check in build options.
+
+http://www.eecs.umich.edu/~kieras/eecs280w00website/generalFAQ/Array_and_Pointer_Bugs.html
+
+
+1.
+First of all, the crash at startup is reproducable -- when it starts up, if you hold down ctrl and press the right arrow, it will always crash.  So, that has to do with the fact that this action is actually NOT legal and should not be allowed.
+2.
+Second of all, another crash that occurs is at the entrance to "enter critical section" in CImage.  This was reproducable when I had one bitmap on the screen, but no other stuff going on.  After creating the bitmap, after some time, I got this crash.  This is probably due to overwriting memory, or multithreading problems.
+3.
+Third of all, it ALWAYS crashes when I gquote A LIST (not when I gquote a single item), in StorageManager.addRef(), from the copy constructor, from n = rho.eval(); in the event handler for ENTER.
+
+
+
+
