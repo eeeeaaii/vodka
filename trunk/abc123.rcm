@@ -1,1 +1,0 @@
-( abc . ( def . ( [ abc . ( ( def . ( abc . ( ghi . () ) ) ) . ( ghi . () ) ) ] . () ) ) )
