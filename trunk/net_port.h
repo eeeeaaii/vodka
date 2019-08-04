@@ -1,6 +1,6 @@
 #pragma once
-#include "Expression.h"
-#include "Port.h"
+#include "expression.h"
+#include "port.h"
 #include <vcclr.h>
 #include <string>
 

@@ -1,6 +1,6 @@
 #pragma once
-#include "EventObserver.h"
-#include "pExp.h"
+#include "event_observer.h"
+#include "p_exp.h"
 
 namespace carin {
 	class Event;

@@ -1,7 +1,7 @@
 #pragma once
-#include "SimpleDefines.h"
-#include "Expression.h"
-#include "pExp.h"
+#include "simple_defines.h"
+#include "expression.h"
+#include "p_exp.h"
 #include <sstream>
 
 namespace carin {

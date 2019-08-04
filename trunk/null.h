@@ -1,5 +1,5 @@
 #pragma once
-#include "Carin.h"
+#include "carin.h"
 #include "expression.h"
 
 namespace carin {

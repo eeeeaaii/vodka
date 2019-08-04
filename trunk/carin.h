@@ -19,7 +19,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "Constants.h"
+#include "constants.h"
 
 namespace carin {
 	const int CARINVERSION = 1;

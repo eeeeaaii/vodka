@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Number.h"
+#include "number.h"
 
 namespace carin {
 	class Real :

@@ -1,7 +1,7 @@
 #pragma once
-#include "pExp.h"
-#include "StorageManager.h"
-#include "GraphicsContext.h"
+#include "p_exp.h"
+#include "storage_manager.h"
+#include "graphics_context.h"
 
 namespace carin {
 	class Procedure;

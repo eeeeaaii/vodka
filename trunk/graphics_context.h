@@ -1,6 +1,6 @@
 #pragma once
 #include <vcclr.h>
-#include "SimpleDefines.h"
+#include "simple_defines.h"
 
 namespace carin {
 	class Bitmap;

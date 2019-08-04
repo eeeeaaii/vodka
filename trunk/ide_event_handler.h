@@ -1,6 +1,6 @@
 #pragma once
-#include "EventHandler.h"
-#include "pExp.h"
+#include "event_handler.h"
+#include "p_exp.h"
 
 
 #define IDE_HANDLER_DECLARATION(X)\

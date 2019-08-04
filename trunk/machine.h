@@ -1,6 +1,6 @@
 #pragma once
-#include "pExp.h"
-#include "Instruction.h"
+#include "p_exp.h"
+#include "instruction.h"
 
 namespace carin {
 	/*

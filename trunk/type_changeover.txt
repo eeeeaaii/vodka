@@ -109,7 +109,7 @@ determine whether the operation was legal, if not it would throw exception.
 Huge pain to go back and type every pointer in the code and also
 increases work tremendously because have to define every pointer class.
 
-definition of RCM_BIND changes and possibly invocation
+definition of WHELK_BIND changes and possibly invocation
 
 functions of Expression/Rho/Thing:
 - save stays the same

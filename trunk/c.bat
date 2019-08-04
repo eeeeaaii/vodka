@@ -1,2 +1,2 @@
-cls  && devenv carin.vcproj /build Debug
+cls  && devenv whelk.vcproj /build Debug
 

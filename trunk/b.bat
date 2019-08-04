@@ -1,2 +1,2 @@
-devenv carin.vcproj /build debug > outf 2> outfe
+devenv whelk.vcproj /build debug > outf 2> outfe
 
