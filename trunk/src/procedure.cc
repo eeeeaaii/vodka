@@ -85,7 +85,7 @@ void Procedure::addBindings(Environment *e, list<sPtr> args)
 		for (
 				lsPiter = args.begin(),
 				formiter = formals.begin();
-				lsPiter != args.end(),
+				lsPiter != args.end() &&
 				formiter != formals.end();
 				lsPiter++,
 				formiter++
@@ -770,7 +770,7 @@ void Let::validateArguments()
 			throw new EvalException("arguments not right -- let");
 		}
 		// and are there exactly two things in that list?
-		sPointer<Pair> defcdr = ((Pair*)definition)->getCdr();
+		sPointer<Pair> defcdr = (sPointer<Pair>)((Pair*)definition)->getCdr();
 		if (!(
 			defcdr->isType(XT_PAIR)
 			&&
@@ -1034,6 +1034,7 @@ sPtr Number_String::apply()
 			return GSM.newString(s.str(), false);
 		}
 	}
+	return 0;
 }
 
 //=============================================
@@ -1416,7 +1417,9 @@ void Close_Input_Port::getPrototype(vector<int>& prototype)
 
 sPtr Close_Input_Port::apply()
 {
+	// TODO: broken!
 	((Port*)arg(0))->close();
+	return 0;
 }
 
 
@@ -1431,7 +1434,9 @@ void Close_Output_Port::getPrototype(vector<int>& prototype)
 
 sPtr Close_Output_Port::apply()
 {
+	// TODO: broken!
 	((Port*)arg(0))->close();
+	return 0;
 }
 
 

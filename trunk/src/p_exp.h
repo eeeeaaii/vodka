@@ -4,6 +4,8 @@
 
 namespace whelk {
 	class Expression;
+//	class Boolean;
+//	class Char;
 
 	template<class T>
 	class sPointer {
@@ -21,8 +23,24 @@ namespace whelk {
 		bool operator!();
 		bool operator==(const sPointer<T>& rhs);
 		bool operator!=(const sPointer<T>& rhs);
-		template <class U> operator U*();
-		operator Expression*();
+
+
+		operator Expression*() { return (Expression*)p; }
+
+		template <class U> operator U*() {
+			U* r;
+			r = dynamic_cast<U*>(p);
+			if (!r) {
+				assert(false);
+			}
+			return r;
+		}
+
+
+//		operator Boolean*() { return (Boolean*)p; }
+//		operator Boolean*() { return (Boolean*)p; }
+
+
 	};
 
 	typedef sPointer<Expression> sPtr;

@@ -15,6 +15,7 @@ namespace whelk {
 	public:
 		Port(void);
 		virtual ~Port(void);
+
 		virtual void close();
 	};
 
@@ -24,11 +25,12 @@ namespace whelk {
 		public Port
 	{
 	public:
+		InputPort(void);
+		virtual ~InputPort(void);
+
 		virtual char readChar() = 0;
 		virtual char peekChar() = 0;
 		virtual bool isEof() = 0;
-		InputPort(void);
-		virtual ~InputPort(void);
 	};
 
 	///--------------------------------------
@@ -37,9 +39,31 @@ namespace whelk {
 		public Port
 	{
 	public:
-		virtual void writeChar(char) = 0;
 		OutputPort(void);
 		virtual ~OutputPort(void);
+
+		virtual void writeChar(char) = 0;
+	};
+
+	///--------------------------------------
+
+	class FileInputPort:
+		public InputPort
+	{
+	protected:
+		ifstream *in;
+	public:
+		FileInputPort(void);
+		FileInputPort(string filename);
+		virtual ~FileInputPort(void);
+
+		char readChar();
+		char peekChar();
+		bool isEof();
+		virtual sPtr newobj() { return GSM.createExp(new FileInputPort()); }
+		virtual sPtr copystate(sPtr n) {
+			assert(false);
+		}
 	};
 
 	///--------------------------------------
@@ -52,33 +76,13 @@ namespace whelk {
 	public:
 		FileOutputPort(void);
 		FileOutputPort(string filename);
-		void writeChar(char);
 		virtual ~FileOutputPort(void);
+
+		void writeChar(char);
 		virtual sPtr newobj() { return GSM.createExp(new FileOutputPort()); }
 		virtual sPtr copystate(sPtr n) {
 			assert(false);
 		}
 	};
-
-	///--------------------------------------
-
-	class FileInputPort:
-		public InputPort
-	{
-	protected:
-		ifstream *in;
-	public:
-		char readChar();
-		char peekChar();
-		bool isEof();
-		FileInputPort(void);
-		FileInputPort(string filename);
-		virtual ~FileInputPort(void);
-		virtual sPtr newobj() { return GSM.createExp(new FileInputPort()); }
-		virtual sPtr copystate(sPtr n) {
-			assert(false);
-		}
-	};
-
 };
 

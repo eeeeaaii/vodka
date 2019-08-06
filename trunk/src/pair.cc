@@ -8,7 +8,7 @@
 #include "procedure.h"
 #include "environment.h"
 
-VIRTUAL_CONSTRUCTOR(Pair);
+//VIRTUAL_CONSTRUCTOR(Pair);
 
 int Pair::cdrmarg = 8;
 int Pair::boxmarg = 3;

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "p_exp.h"
+#include "for_debugging.h"
+
 
 const int HEAPSIZE = 20000;
 
@@ -43,7 +45,15 @@ namespace whelk {
 		int allreferences[HEAPSIZE];
 		Environment *getGlobalEnvironment();
 
-		template <class T> sPtr createExp(T *newp);
+		template <class T> sPtr createExp(T *newp) {
+			sPtr r(newp);
+			assert(newp->getID() < HEAPSIZE);
+			allreferences[newp->getID()] = 0;
+			dbg.trace("T %d has come into being\n");
+			dbg.trace(newp->getID());
+			dbg.trace("\n");
+			return r;
+		}
 
 
 

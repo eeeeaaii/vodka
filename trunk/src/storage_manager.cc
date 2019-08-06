@@ -58,20 +58,6 @@ void StorageManager::releaseRef(Expression *t)
 	delete t;
 }
 
-template <class T>
-sPtr StorageManager::createExp(T *newp)
-{
-	sPtr r(newp);
-	assert(newp->getID() < HEAPSIZE);
-	allreferences[newp->getID()] = 0;
-	dbg.trace("T %d has come into being\n");
-	dbg.trace(newp->getID());
-	dbg.trace("\n");
-	return r;
-}
-
-
-
 sPtr StorageManager::newExpression()
 {
 	return createExp(new Expression());
@@ -138,6 +124,7 @@ sPtr StorageManager::newByType(int type, void *copyfrom)
 	case XT_PROCEDURE:
 		COPY_BYTYPE(Procedure);
 	}
+	return 0;
 }
 
 
@@ -205,11 +192,17 @@ sPtr StorageManager::newFileOutputPort(string s)
 
 sPtr StorageManager::newClientPort(string h, int port)
 {
-	return createExp(new ClientPort(h, port));	
+#ifdef WINDOWS
+	return createExp(new WindowsClientPort(h, port));	
+#endif
+	return 0;
 }
 sPtr StorageManager::newServerPort(int port)
 {
+#ifdef WINDOWS
 	return createExp(new ServerPort(port));	
+#endif
+	return 0;
 }
 
 

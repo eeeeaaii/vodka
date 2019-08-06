@@ -186,7 +186,10 @@ string Instruction::getText()
 
 Instruction Instruction::evaluateProcedure(Environment *e, list<Instruction> args)
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpotentially-evaluated-expression"
 	if (typeid(*p) == typeid(Procedure)) { // if user-defined function
+#pragma GCC diagnostic pop
 		list<Instruction>::iterator lIiter;
 		list<sPtr> lsPargs;
 		for (lIiter = args.begin() ; lIiter != args.end() ; lIiter++) {
@@ -210,7 +213,6 @@ Instruction Instruction::evaluateProcedure(Environment *e, list<Instruction> arg
 		return Instruction(OPCODE_EVALUATED, newp);
 	}
 }
-
 
 
 

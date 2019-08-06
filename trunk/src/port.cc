@@ -1,10 +1,10 @@
 #include "whelk.h"
-#include ".\port.h"
+#include "port.h"
 #include <iostream>
 #include <fstream>
-#include "fordebugging.h"
+#include "for_debugging.h"
 
-#using <mscorlib.dll>
+//#using <mscorlib.dll>
 
 using namespace std;
 
@@ -41,12 +41,12 @@ OutputPort::~OutputPort(void)
 }
 //---------------------------------------------//
 
-FileInputPort::FileInputPort(void)
+FileInputPort::FileInputPort(void) : InputPort()
 {
 	assert(false);
 }
 
-FileInputPort::FileInputPort(string filename)
+FileInputPort::FileInputPort(string filename) : InputPort()
 {
 	open = true;
 	type = XT_INPUT_PORT;
@@ -82,14 +82,23 @@ bool FileInputPort::isEof()
 	return in->eof();
 }
 
-VIRTUAL_CONSTRUCTOR(FileInputPort);
-
 
 //---------------------------------------------//
 
-FileOutputPort::FileOutputPort(void)
+FileOutputPort::FileOutputPort(void) : OutputPort()
 {
 }
+
+FileOutputPort::FileOutputPort(string filename) : OutputPort()
+{
+	open = true;
+	type = XT_OUTPUT_PORT;
+	mytext = "{file-output-port}";
+	ofstream *oft = new ofstream;
+	oft->open(filename.c_str());
+	out = oft;
+}
+
 
 void FileOutputPort::writeChar(char o)
 {
@@ -122,19 +131,9 @@ void FileOutputPort::writeChar(char o)
 	(*out).flush();
 }
 
-FileOutputPort::FileOutputPort(string filename)
-{
-	open = true;
-	type = XT_OUTPUT_PORT;
-	mytext = "{file-output-port}";
-	ofstream *oft = new ofstream;
-	oft->open(filename.c_str());
-	out = oft;
-}
-
 FileOutputPort::~FileOutputPort(void)
 {
 	delete out;
 }
 
-VIRTUAL_CONSTRUCTOR(FileOutputPort);
+//VIRTUAL_CONSTRUCTOR(FileOutputPort);

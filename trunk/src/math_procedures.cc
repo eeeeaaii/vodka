@@ -52,6 +52,7 @@ sPtr Add::apply()
 			return GSM.newReal(sum);
 		}
 	}
+	return 0;
 }
 
 //=============================================
@@ -90,6 +91,7 @@ sPtr Subtract::apply()
 			return GSM.newReal(r);
 		}
 	}
+	return 0;
 }
 
 //=============================================
@@ -119,6 +121,7 @@ sPtr Multiply::apply()
 			return GSM.newReal(r);
 		}
 	}
+	return 0;
 }
 
 //=============================================
@@ -194,6 +197,7 @@ sPtr Divide::apply()
 			return GSM.newReal(d);
 		}
 	}
+	return 0;
 }
 
 //=============================================
@@ -220,6 +224,7 @@ sPtr E::apply()
 			((Real*)arg(1))->getRealRep()
 			);
 	}
+	return 0;
 }
 //=============================================
 
@@ -246,6 +251,7 @@ sPtr GT::apply()
 			((Real*)arg(1))->getRealRep()
 			);
 	}
+	return 0;
 }
 
 //=============================================
@@ -273,6 +279,7 @@ sPtr GTE::apply()
 			((Real*)arg(1))->getRealRep()
 			);
 	}
+	return 0;
 }
 
 
@@ -301,6 +308,7 @@ sPtr LT::apply()
 			((Real*)arg(1))->getRealRep()
 			);
 	}
+	return 0;
 }
 
 
@@ -328,6 +336,7 @@ sPtr LTE::apply()
 			((Real*)arg(1))->getRealRep()
 			);
 	}
+	return 0;
 }
 
 

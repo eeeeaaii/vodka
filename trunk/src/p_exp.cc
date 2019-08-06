@@ -96,24 +96,24 @@ bool sPointer<T>::operator!()
 	return !p;
 }
 
-template<class T>
-sPointer<T>::operator Expression*()
-{
-	//whatever
-	return (Expression*)p;
-}
+// template<class T>
+// sPointer<T>::operator Expression*()
+// {
+// 	//whatever
+// 	return (Expression*)p;
+// }
 
-template<class T>
-template<class U>
-sPointer<T>::operator U*()
-{
-	U* r;
-	r = dynamic_cast<U*>(p);
-	if (!r) {
-		assert(false);
-	}
-	return r;
-}
+// template<class T>
+// template<class U>
+// sPointer<T>::operator U*()
+// {
+// 	U* r;
+// 	r = dynamic_cast<U*>(p);
+// 	if (!r) {
+// 		assert(false);
+// 	}
+// 	return r;
+// }
 
 template<class T>
 bool sPointer<T>::operator==(const sPointer<T>& rhs)
