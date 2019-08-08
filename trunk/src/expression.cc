@@ -1,7 +1,6 @@
-#include "whelk.h"
 #include "expression.h"
 #include "eval_exception.h"
-#include "storage_manager.h"
+#include "storage_allocator.h"
 #include "procedure.h"
 #include "environment.h"
 #include "graphics_context.h"
@@ -13,14 +12,18 @@
 #include "pair.h"
 #include "environment.h"
 #include "for_debugging.h"
+#include <string>
 
+using namespace whelk;
+using namespace std;
 
-Expression::Expression(string mt)
+Expression::Expression(string mt) : Code()
 {
 	mytext = mt;
 	initialize();
 }
-Expression::Expression()
+
+Expression::Expression() : Code()
 {
 	mytext = "";
 	initialize();
@@ -29,14 +32,13 @@ Expression::Expression()
 void Expression::initialize()
 {
 	type = XT_UNKNOWN;
-	id = nextID++;
 	isTop = false;
 	cached_width = 0;
 	cached_height = 0;
 	selected = 0;
 	dirtyness = (HDIR | VDIR | ZDIR);
 	env = 0;
-	setEnvironment(GSM.getGlobalEnvironment());
+	setEnvironment(GSA.getGlobalEnvironment());
 }
 
 
@@ -149,7 +151,7 @@ void Expression::dumpTree(int level)
 	}
 }
 
-sPtr Expression::copystate(sPtr n)
+sPointer<Expression> Expression::copystate(sPointer<Expression> n)
 {
 	n->setType(getType());
 	n->setMytext(getMytext());
@@ -160,20 +162,20 @@ sPtr Expression::copystate(sPtr n)
 //	n->setCachedHeight(getCachedHeight());
 }
 
-sPtr Expression::dupe()
+sPointer<Expression> Expression::dupe()
 // overridden in class Pair
 // overridden in class Image
 {
 	// this function clones this Expression
 	// newobj is a form of "Virtual Constructor"
 	// see Stroustrop, "The C++ Programming Language", pg. 424
-	sPtr newme = newobj();
+	sPointer<Expression> newme = newobj();
 	return copystate(newme);
 }
 
-sPtr Expression::newobj() 
+sPointer<Expression> Expression::newobj() 
 {
-   	return GSM.createExp(new Expression()); 
+   	return GSA.createExp(new Expression()); 
 }
 
 Delta Expression::draw(GraphicsContext *grcon)
@@ -225,7 +227,7 @@ int Expression::countSiblings()
 {
 	assert(isType(XT_PAIR) || isType(XT_NULL));
 	int i = 0;
-	sPtr p(this);
+	sPointer<Expression> p(this);
 	while (!p->isType(XT_NULL)) {
 		assert(p->isType(XT_PAIR));
 		i++;
@@ -234,10 +236,10 @@ int Expression::countSiblings()
 	return i; // for now, we assume it's a proper list
 }
 
-sPtr Expression::lastSibling()
+sPointer<Expression> Expression::lastSibling()
 {
 	assert(isType(XT_PAIR));
-	sPtr p(this);
+	sPointer<Expression> p(this);
 	if (((Pair*)p)->getCdr()->isType(XT_NULL)) {
 		return p;
 	} else {
@@ -280,20 +282,20 @@ string Expression::toString(bool isFirst)
 	}
 }
 
-sPtr Expression::getList(istream& s, Direction dir, bool& end_of_file)
+sPointer<Expression> Expression::getList(istream& s, Direction dir, bool& end_of_file)
 {
 	char c;
-	sPtr r;
+	sPointer<Expression> r;
 	dbg.trace("getting list\n");
 	while((s >> c) && c == ' ');
 	if (!isRightParen(c)) {
 		s.putback(c);
-		sPtr p1 = parseFromStream(s, end_of_file);
-		sPtr p2 = getList(s, dir, end_of_file);
-		r = GSM.newPair(p1, p2);
+		sPointer<Expression> p1 = parseFromStream(s, end_of_file);
+		sPointer<Expression> p2 = getList(s, dir, end_of_file);
+		r = GSA.newPair(p1, p2);
 		((Pair*)r)->setDirection(dir);
 	} else {
-		r = GSM.newNull();
+		r = GSA.newNull();
 	}
 	return r;
 }
@@ -313,10 +315,10 @@ bool Expression::isRightParen(char c)
 	return (c == ')' || c == '}' || c == ']');
 }
 
-sPtr Expression::parseFromStream(istream& s, bool& end_of_file)
+sPointer<Expression> Expression::parseFromStream(istream& s, bool& end_of_file)
 {
 	char c;
-	sPtr r;
+	sPointer<Expression> r;
 
 	dbg.trace("getting string\n");
 	s.unsetf(ios_base::skipws);
@@ -345,26 +347,18 @@ sPtr Expression::parseFromStream(istream& s, bool& end_of_file)
 			dbg.trace((string("tick") + os.str() + string("\n")).c_str());
 		}
 		s.putback(c);
-		r = GSM.newExpression(os.str().c_str());
+		r = GSA.newExpression(os.str().c_str());
 	}
 	return r;
 }
 
 
 
-int Expression::getID()
-{
-	return id;
-}
 
-int Expression::nextID = 1;
-
-
-
-sPtr Expression::getParent()
+sPointer<Expression> Expression::getParent()
 {
 	assert(false);
-	sPtr dummy;
+	sPointer<Expression> dummy;
 	return dummy;
 }
 

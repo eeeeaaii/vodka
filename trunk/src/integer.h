@@ -13,10 +13,10 @@ namespace whelk {
 		Integer(int n);
 		Integer(string numstr);
 		virtual ~Integer();
-		virtual sPtr promote();
+		virtual sPointer<Expression> promote();
 		virtual int getIntRep();
-		virtual sPtr newobj();
-		virtual sPtr copystate(sPtr n);
+		virtual sPointer<Expression> newobj();
+		virtual sPointer<Expression> copystate(sPointer<Expression> n);
 	};
 }
 

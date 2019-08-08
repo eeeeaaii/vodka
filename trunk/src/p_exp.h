@@ -1,31 +1,82 @@
 #pragma once
+#include "storage_manager.h"
+#include <assert.h>
 
-#include "simple_defines.h"
+using namespace std;
+
+/*
+Problem:
+by forward-declaring Expression I break the template when it comes to Expressions.
+but if I explicitly declare an operator for converting to Expression,
+it doesn't link.
+But I have to forward-declare because of the typedef sPointer<Expression> sPointer<Expression>
+
+Fix:
+get rid of all the forward declarations, they aren't allowed anyway.
+*/
 
 namespace whelk {
-	class Expression;
-//	class Boolean;
-//	class Char;
 
 	template<class T>
 	class sPointer {
 	private:
 		T *p;
-		void performAssignment(T * const p);
+		void performAssignment(T * const p2) {
+			if (p != p2) {
+				if (p != 0) {
+					GSM.removeRef(p);
+				}
+				if (p2 != 0) {
+					GSM.addRef(p2);
+				}
+				p = p2;
+			}
+		}
+
 	public:
-		sPointer(T *p_in = 0);
-		sPointer(const sPointer<T>& p);
-		~sPointer(void);
-		sPointer& operator=(const sPointer<T>& a);
-		T& operator*();
-		T* operator->();
-		T *getP() const;
-		bool operator!();
-		bool operator==(const sPointer<T>& rhs);
-		bool operator!=(const sPointer<T>& rhs);
+		sPointer(T *p_in = 0) : p(p_in) {}
 
+		sPointer(const sPointer<T>& newp) {
+			if (newp.getP()) {
+				GSM.addRef(newp.getP());
+			}
+			p = newp.getP();
+		}
 
-		operator Expression*() { return (Expression*)p; }
+		~sPointer(void) {
+			if (p) {
+				GSM.removeRef(p);
+			}
+		}
+
+		sPointer& operator=(const sPointer<T>& a) {
+			performAssignment(a.getP());
+			return *this;
+		}
+
+		T& operator*() {
+			return *p;
+		}
+
+		T* operator->() {
+			return p;
+		}
+
+		T *getP() const {
+			return p;
+		}
+
+		bool operator!() {
+			return !p;
+		}
+
+		bool operator==(const sPointer<T>& rhs) {
+			return (p->getID() == rhs.p->getID());
+		}
+
+		bool operator!=(const sPointer<T>& rhs) {
+			return (p->getID() != rhs.p->getID());
+		}
 
 		template <class U> operator U*() {
 			U* r;
@@ -35,15 +86,5 @@ namespace whelk {
 			}
 			return r;
 		}
-
-
-//		operator Boolean*() { return (Boolean*)p; }
-//		operator Boolean*() { return (Boolean*)p; }
-
-
 	};
-
-	typedef sPointer<Expression> sPtr;
 };
-
-

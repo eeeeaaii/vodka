@@ -1,27 +1,30 @@
 #pragma once
-
 #include "p_exp.h"
 #include "expression.h"
+#include "storage_allocator.h"
 #include <vector>
 #include <string>
+#include <list>
+
+using namespace std;
 
 #define SPECIAL_FORM_DECLARATION(X) \
 \
 class X : public Procedure \
 { \
 public: \
-	sPtr apply(); \
+	sPointer<Expression> apply(); \
 	void getPrototype(vector<int>& prototype); \
-	virtual sPtr newobj() { return GSM.createExp(new X()); } \
+	virtual sPointer<Expression> newobj() { return GSA.createExp(new X()); } \
 };
 
 #define BUILTIN_PROCEDURE_DECLARATION(X) \
 class X : public Procedure \
 { \
 	public: \
-	sPtr apply(); \
+	sPointer<Expression> apply(); \
 	void getPrototype(vector<int>& prototype); \
-	virtual sPtr newobj() { return GSM.createExp(new X()); } \
+	virtual sPointer<Expression> newobj() { return GSA.createExp(new X()); } \
 };
 
 namespace whelk {
@@ -33,35 +36,35 @@ namespace whelk {
 		vector<string> formals;
 		string listformal;
 	protected:
-		sPtr code;
-		vector<sPtr> argvector;
+		sPointer<Expression> code;
+		vector<sPointer<Expression> > argvector;
 	public:
 		Procedure();
-		Procedure(sPtr code);
+		Procedure(sPointer<Expression> code);
 		virtual ~Procedure();
 
-		void			addBindings(Environment *e, list<sPtr> args);
+		void			addBindings(Environment *e, list<sPointer<Expression> > args);
 		void			addFormal(string f);
 		void			addListFormal(string f);
 		vector<string>	getFormals();
-		void			setArgs(sPtr args);
-		virtual sPtr	apply();
+		void			setArgs(sPointer<Expression> args);
+		virtual sPointer<Expression>	apply();
 		virtual void	checkNumArgs();
 		virtual void	checkArgTypes();
-		void			setCode(sPtr code);
+		void			setCode(sPointer<Expression> code);
 		virtual void	getPrototype(vector<int>& prototype);
 		virtual void	getSkipList(vector<bool>& skiplist);
-		sPtr			getTailExpression(sPtr fromcode);
+		sPointer<Expression>			getTailExpression(sPointer<Expression> fromcode);
 		int				argPromote();
-		sPtr			promoteToLevel(sPtr n, int level);
-		virtual sPtr newobj() { return GSM.createExp(new Procedure()); }
-		virtual sPtr copystate(sPtr n);
-		sPtr			evalPrimitive(vector<sPtr> argv);
-		sPtr			getCodeRoot();
+		sPointer<Expression>			promoteToLevel(sPointer<Expression> n, int level);
+		virtual sPointer<Expression> newobj() { return GSA.createExp(new Procedure()); }
+		virtual sPointer<Expression> copystate(sPointer<Expression> n);
+		sPointer<Expression>			evalPrimitive(vector<sPointer<Expression> > argv);
+		sPointer<Expression>			getCodeRoot();
 
 		int				numArgs();
-		sPtr			arg(int);
-		void			setArg(int, sPtr);
+		sPointer<Expression>			arg(int);
+		void			setArg(int, sPointer<Expression>);
 
 
 	};
@@ -81,17 +84,17 @@ namespace whelk {
 		class Gquote : public Procedure
 		{
 			public:
-			sPtr apply();
+			sPointer<Expression> apply();
 			//void evalArgs();
 			void getPrototype(vector<int>& prototype);
 			// special for this procedure
-			sPtr gquote_rec(sPtr arg);
+			sPointer<Expression> gquote_rec(sPointer<Expression> arg);
 		};
 
 		class Let : public Procedure
 		{
 		public:
-			sPtr apply();
+			sPointer<Expression> apply();
 			//void evalArgs();
 			void getPrototype(vector<int>& prototype);
 			// special for this procedure
@@ -182,8 +185,8 @@ namespace whelk {
 		} // namespace math
 	} // namespace builtins
 
-	template class sPointer<Expression>;
-	template class sPointer<Pair>;
+//	template class sPointer<Expression>;
+//	template class sPointer<Pair>;
 } // namespace whelk
 
 

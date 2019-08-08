@@ -1,6 +1,9 @@
-#include "whelk.h"
 #include "symbol.h"
 #include "storage_manager.h"
+#include <string>
+
+using namespace whelk;
+using namespace std;
 
 Symbol::Symbol()
 {

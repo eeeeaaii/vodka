@@ -1,9 +1,7 @@
-#include "whelk.h"
 #include "thing_holder.h"
-
 #include "expression.h"
 #include "environment.h"
-#include "storage_manager.h"
+#include "storage_allocator.h"
 #include "event.h"
 #include "graphics_context.h"
 #include "pair.h"
@@ -12,12 +10,17 @@
 #include "machine.h"
 #include "event_handler.h"
 #include "event_subject.h"
+#include "ide_event_handler.h"
+#include <sstream>
+#include <fstream>
+#include <string>
 
+using namespace whelk;
 
 ThingHolder::ThingHolder()
 {
-	GSM.initTopLevelEnvironment();
-	sPtr newtop = GSM.newPair(GSM.newExpression(), GSM.newNull());
+	GSA.initTopLevelEnvironment();
+	sPointer<Expression> newtop = GSA.newPair(GSA.newExpression(), GSA.newNull());
 	setTop(newtop);
 	topError = 0;
 	dispatcher = new EventSubject();
@@ -81,14 +84,14 @@ void ThingHolder::load(string filename)
 {
 	fstream f(filename.c_str());
 	bool end_of_file = false;
-	sPtr file = Expression::parseFromStream(f, end_of_file);
-	top = GSM.newPair(file, GSM.newNull());
+	sPointer<Expression> file = Expression::parseFromStream(f, end_of_file);
+	top = GSA.newPair(file, GSA.newNull());
 	file->setSelected(true);
 	top->setIsTop(true);
 }
 
 
-void ThingHolder::setTop(sPtr newtop)
+void ThingHolder::setTop(sPointer<Expression> newtop)
 {
 	top = newtop;
 	top->setIsTop(true);
@@ -97,7 +100,7 @@ void ThingHolder::setTop(sPtr newtop)
 	}
 }
 
-sPtr ThingHolder::getTop()
+sPointer<Expression> ThingHolder::getTop()
 {
 	return top;
 }
@@ -127,6 +130,27 @@ void ThingHolder::setupHandler(EventHandler *eh)
 	idehandlers.push_back(eh);
 	dispatcher->subscribe(ET_KEYDOWN, eh);
 }
+
+void ThingHolder::setupHandlers()
+{
+	sPointer<Expression> sel;
+	sel = ((Pair*)top)->getCar();
+	setupHandler(new IDEHandler::IDECreateNextSiblingHandler(sel));
+	setupHandler(new IDEHandler::IDECreateNextSiblingHandler(sel));
+	setupHandler(new IDEHandler::IDECreatePreviousSiblingHandler(sel));
+	setupHandler(new IDEHandler::IDEMoveNextSiblingHandler(sel));
+	setupHandler(new IDEHandler::IDEMovePreviousSiblingHandler(sel));
+	setupHandler(new IDEHandler::IDEDisbandHandler(sel));
+	setupHandler(new IDEHandler::IDEMoveOutHandler(sel));
+	setupHandler(new IDEHandler::IDEEnlistHandler(sel));
+	setupHandler(new IDEHandler::IDEMoveInHandler(sel));
+	setupHandler(new IDEHandler::IDEEvalHandler(sel));
+	setupHandler(new IDEHandler::IDEPivotHandler(sel));
+	setupHandler(new IDEHandler::IDEDeleteNodeHandler(sel));
+	setupHandler(new IDEHandler::IDEKeyTypedHandler(sel));
+	setupHandler(new IDEHandler::IDERuboutHandler(sel));
+}
+
 
 
 

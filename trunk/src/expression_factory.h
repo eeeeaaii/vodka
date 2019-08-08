@@ -1,10 +1,10 @@
 #pragma once
 #include "p_exp.h"
+#include "environment.h"
+#include "expression.h"
 
 namespace whelk 
 {
-	class Environment;
-
 	class ExpressionFactory
 	{
 	private:
@@ -15,9 +15,9 @@ namespace whelk
 		ExpressionFactory();
 		virtual ~ExpressionFactory();
 
-		sPtr create(string mytext, Environment *newenv);
+		sPointer<Expression> create(string mytext, Environment *newenv);
 		int determineType(string);
-		int determineType(sPtr p);
+		int determineType(sPointer<Expression> p);
 	};
 }
 

@@ -1,11 +1,9 @@
-#include "whelk.h"
 #include "image.h"
-
 #include "bitmap.h"
-#include "storage_manager.h"
+#include "storage_allocator.h"
 #include "graphics_context.h"
 
-
+using namespace whelk;
 
 Image::Image()
 {
@@ -76,12 +74,12 @@ int Image::getColorAt(int x, int y)
 	return value->getColorAt(x, y);
 }
 
-sPtr Image::newobj()
+sPointer<Expression> Image::newobj()
 {
-   return GSM.createExp(new Image()); 
+   return GSA.createExp(new Image()); 
 }
 
-sPtr Image::copystate(sPtr n) {
+sPointer<Expression> Image::copystate(sPointer<Expression> n) {
 	((Image*)n)->setBitmap(getBitmapCopy());
 	return Expression::copystate(n);
 }

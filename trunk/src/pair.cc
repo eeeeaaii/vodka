@@ -1,4 +1,3 @@
-#include "whelk.h"
 #include "pair.h"
 #include "storage_manager.h"
 #include "eval_exception.h"
@@ -8,12 +7,12 @@
 #include "procedure.h"
 #include "environment.h"
 
-//VIRTUAL_CONSTRUCTOR(Pair);
+using namespace whelk;
 
 int Pair::cdrmarg = 8;
 int Pair::boxmarg = 3;
 
-Pair::Pair(sPtr ncar, sPtr ncdr)
+Pair::Pair(sPointer<Expression> ncar, sPointer<Expression> ncdr)
 {
 	assert(!!ncar || !!ncdr);
 	car = ncar;
@@ -40,6 +39,10 @@ Pair::~Pair(void)
 {
 }
 
+sPointer<Expression> Pair::newobj() {
+	return GSA.createExp(new Pair());
+}
+
 
 Direction Pair::getDirection()
 {
@@ -51,23 +54,23 @@ void Pair::setDirection(Direction d)
 }
 
 
-void Pair::setCar(sPtr nc)
+void Pair::setCar(sPointer<Expression> nc)
 {
 	car = nc;
 }
-void Pair::setCdr(sPtr nc) {
+void Pair::setCdr(sPointer<Expression> nc) {
 	cdr = nc;
 }
-sPtr Pair::getCar()
+sPointer<Expression> Pair::getCar()
 {
 	return car;
 }
-sPtr Pair::getCdr()
+sPointer<Expression> Pair::getCdr()
 {
 	return cdr;
 }
 
-sPtr Pair::copystate(sPtr n)
+sPointer<Expression> Pair::copystate(sPointer<Expression> n)
 {
 	((Pair*)n)->setCar(getCar()->dupe());
 	((Pair*)n)->setCdr(getCdr()->dupe());
@@ -279,13 +282,13 @@ int Pair::getHeight(GraphicsContext *grcon)
 
 
 
-sPtr Pair::getCachedChild()
+sPointer<Expression> Pair::getCachedChild()
 {
 	if (!cachedchild) {
 		return getCar();
 	} else return cachedchild;
 }
-void Pair::setCachedChild(sPtr n)
+void Pair::setCachedChild(sPointer<Expression> n)
 {
 	cachedchild = n;
 }
@@ -307,7 +310,7 @@ string Pair::toString(bool isFirst)
 			s += "{"; break;
 		}
 	}
-	sPtr mycar;
+	sPointer<Expression> mycar;
 	mycar = getCar();
 	s += mycar->toString(mycar->isType(XT_PAIR));
 	if (getCdr()->isType(XT_NULL)) {

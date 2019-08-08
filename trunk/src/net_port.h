@@ -1,4 +1,5 @@
 #pragma once
+#include "p_exp.h"
 #include "expression.h"
 #include "port.h"
 #include <string>
@@ -20,8 +21,8 @@ namespace whelk {
 
 		virtual void writeChar(char c) = 0;
 		virtual char readChar() = 0;
-		virtual sPtr newobj() = 0;
-		virtual sPtr copystate(sPtr n) = 0;
+		virtual sPointer<Expression> newobj() = 0;
+		virtual sPointer<Expression> copystate(sPointer<Expression> n) = 0;
 		void close();
 	};
 
@@ -38,8 +39,8 @@ namespace whelk {
 
 		virtual void writeChar(char c) = 0;
 		virtual char readChar() = 0;
-		virtual sPtr newobj() = 0;
-		virtual sPtr copystate(sPtr n) = 0;
+		virtual sPointer<Expression> newobj() = 0;
+		virtual sPointer<Expression> copystate(sPointer<Expression> n) = 0;
 		void close();
 	};
 

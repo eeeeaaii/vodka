@@ -1,5 +1,9 @@
-#include "whelk.h"
 #include "boolean.h"
+#include "p_exp.h"
+#include "expression.h"
+#include "storage_allocator.h"
+
+using namespace whelk;
 
 Boolean::Boolean(void)
 {
@@ -43,14 +47,14 @@ void Boolean::setBoolRep(bool b)
 	value = b;
 }
 
-sPtr Boolean::newobj()
+sPointer<Expression> Boolean::newobj()
 {
-   return GSM.createExp(new Boolean()); 
+   return GSA.createExp(new Boolean()); 
 }
 
-sPtr Boolean::copystate(sPtr n)
+sPointer<Expression> Boolean::copystate(sPointer<Expression> n)
 {
-   ((Boolean*)n)->value = value;
+   ((Boolean*)n.getP())->value = value;
 	return Expression::copystate(n);
 }
 

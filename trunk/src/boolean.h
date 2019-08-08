@@ -17,7 +17,7 @@ namespace whelk {
 
 		virtual bool getBoolRep();
 		virtual void setBoolRep(bool b);
-		virtual sPtr newobj();
-		virtual sPtr copystate(sPtr n);
+		virtual sPointer<Expression> newobj();
+		virtual sPointer<Expression> copystate(sPointer<Expression> n);
 	};
 }

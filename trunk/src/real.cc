@@ -1,5 +1,8 @@
-#include "whelk.h"
 #include "real.h"
+#include "storage_allocator.h"
+#include <sstream>
+
+using namespace whelk;
 
 Real::Real()
 {
@@ -36,17 +39,17 @@ double Real::getRealRep()
 	return value;
 }
 
-sPtr Real::promote()
+sPointer<Expression> Real::promote()
 {
-	return GSM.newReal(value);
+	return GSA.newReal(value);
 }
 
-sPtr Real::newobj() 
+sPointer<Expression> Real::newobj() 
 {
-   return GSM.createExp(new Real()); 
+   return GSA.createExp(new Real()); 
 }
 
-sPtr Real::copystate(sPtr n) 
+sPointer<Expression> Real::copystate(sPointer<Expression> n) 
 {
 	((Real*)n)->value = value;
 	return Number::copystate(n);

@@ -1,18 +1,18 @@
-#include "whelk.h"
+
 #include "ide_event_handler.h"
 
 #include "p_exp.h"
 #include "event.h"
 #include "expression.h"
-#include "storage_manager.h"
+#include "storage_allocator.h"
 #include "pair.h"
 #include "machine.h"
 #include "thing_holder.h"
+#include "constants.h"
 
-using namespace IDEHandler;
+using namespace whelk::IDEHandler;
 
-
-void IDEEventHandler::swapSelected(sPtr a, sPtr b)
+void IDEEventHandler::swapSelected(sPointer<Expression> a, sPointer<Expression> b)
 {
 	if (a->getSelected() == 1) {
 		if (b->getIsTop() == false) {
@@ -46,11 +46,11 @@ void IDEEventHandler::swapSelected(sPtr a, sPtr b)
 
 void IDECreateNextSiblingHandler::notify(Event *e)
 {
-	sPtr parent = exp->getParent();
+	sPointer<Expression> parent = exp->getParent();
 	if (!parent) return;
-	sPtr nextone = PAIR(parent)->getCdr();
-	sPtr newexp = GSM.newExpression();
-	sPtr newpair = GSM.newPair(newexp, nextone);
+	sPointer<Expression> nextone = PAIR(parent)->getCdr();
+	sPointer<Expression> newexp = GSA.newExpression();
+	sPointer<Expression> newpair = GSA.newPair(newexp, nextone);
 	PAIR(parent)->setCdr(newpair);
 
 	PAIR(newpair)->setDirection(PAIR(parent)->getDirection());
@@ -69,11 +69,11 @@ except there's the extra step where you SWITCH exp and newexp.
 
 void IDECreatePreviousSiblingHandler::notify(Event *e)
 {
-	sPtr parent = exp->getParent();
+	sPointer<Expression> parent = exp->getParent();
 	if (!parent) return;
-	sPtr nextone = PAIR(parent)->getCdr();
-	sPtr newexp = GSM.newExpression();
-	sPtr newpair = GSM.newPair(newexp, nextone);
+	sPointer<Expression> nextone = PAIR(parent)->getCdr();
+	sPointer<Expression> newexp = GSA.newExpression();
+	sPointer<Expression> newpair = GSA.newPair(newexp, nextone);
 	PAIR(parent)->setCdr(newpair);
 
 	//extra step
@@ -103,11 +103,11 @@ if next is null, we don't do anything, else
 */
 void IDEMoveNextSiblingHandler::notify(Event *e)
 {
-	sPtr parent = exp->getParent();
+	sPointer<Expression> parent = exp->getParent();
 	if (!parent) return;
-	sPtr next = PAIR(parent)->getCdr();
+	sPointer<Expression> next = PAIR(parent)->getCdr();
 	if (!next) return;
-	sPtr newexp = PAIR(next)->getCar();
+	sPointer<Expression> newexp = PAIR(next)->getCar();
 	swapSelected(exp, newexp);
 	exp = newexp;
 }
@@ -134,12 +134,12 @@ case 2:
 
 void IDEMovePreviousSiblingHandler::notify(Event *e)
 {
-	sPtr parent = exp->getParent();
+	sPointer<Expression> parent = exp->getParent();
 	if (!parent) return;
-	sPtr gparent = parent->getParent();
+	sPointer<Expression> gparent = parent->getParent();
 	if (!gparent) return;
 	if (PAIR(gparent)->getCar() == parent) return; // return if case 1
-	sPtr newexp = PAIR(gparent)->getCar();
+	sPointer<Expression> newexp = PAIR(gparent)->getCar();
 	swapSelected(exp, newexp);
 	exp = newexp;
 }
@@ -181,12 +181,12 @@ first I stick firstchild into parent where exp was.
 void IDEDisbandHandler::notify(Event *e)
 {
 	if (!exp->isType(XT_PAIR)) return;
-	sPtr parent = exp->getParent();
+	sPointer<Expression> parent = exp->getParent();
 	if (!parent) return;
-	sPtr next = PAIR(parent)->getCdr();
-	sPtr firstchild = PAIR(exp)->getCar();
-	sPtr listfirst = PAIR(exp)->getCdr();
-	sPtr listlast;
+	sPointer<Expression> next = PAIR(parent)->getCdr();
+	sPointer<Expression> firstchild = PAIR(exp)->getCar();
+	sPointer<Expression> listfirst = PAIR(exp)->getCdr();
+	sPointer<Expression> listlast;
 	for (
 			listlast = listfirst ;
 		   	!PAIR(listlast)->getCdr()->isType(XT_NULL) ;
@@ -201,7 +201,7 @@ void IDEDisbandHandler::notify(Event *e)
 	// set the direction
 	Direction parentdirection = PAIR(parent)->getDirection();
 	for (
-			sPtr dirptr = listfirst;
+			sPointer<Expression> dirptr = listfirst;
 			dirptr != next;
 			dirptr = PAIR(dirptr)->getCdr()
 		) {
@@ -237,9 +237,9 @@ when it gets like this, we stop:
 */
 void IDEMoveOutHandler::notify(Event *e)
 {
-	sPtr newexp = exp->getParent();
+	sPointer<Expression> newexp = exp->getParent();
 	if (!newexp) return;
-	sPtr newexpparent;
+	sPointer<Expression> newexpparent;
 	for (
 			newexpparent = newexp->getParent();
 			!!newexpparent && PAIR(newexpparent)->getCdr() == newexp;
@@ -270,10 +270,10 @@ void IDEMoveOutHandler::notify(Event *e)
 */
 void IDEEnlistHandler::notify(Event *e)
 {
-	sPtr parent = exp->getParent();
+	sPointer<Expression> parent = exp->getParent();
 	if (!parent) return;
 
-	sPtr newlist = GSM.newPair(exp, GSM.newNull());
+	sPointer<Expression> newlist = GSA.newPair(exp, GSA.newNull());
 	PAIR(parent)->setCar(newlist);
 
 	parent->setDirtyness(HDIR|VDIR|ZDIR);
@@ -292,7 +292,7 @@ void IDEEnlistHandler::notify(Event *e)
 
 void IDEMoveInHandler::notify(Event *e)
 {
-	sPtr cachedchild = PAIR(exp)->getCachedChild();
+	sPointer<Expression> cachedchild = PAIR(exp)->getCachedChild();
 	swapSelected(exp, cachedchild);
 	exp = cachedchild;
 }
@@ -309,9 +309,9 @@ void IDEMoveInHandler::notify(Event *e)
 
 void IDEEvalHandler::notify(Event *e)
 {
-	sPtr parent = exp->getParent();
+	sPointer<Expression> parent = exp->getParent();
 	if (!parent) return;
-	sPtr result;
+	sPointer<Expression> result;
 
 	Machine m;
 	m.setup(exp);
@@ -337,7 +337,7 @@ void IDEEvalHandler::notify(Event *e)
 void IDEPivotHandler::notify(Event *e)
 {
 	if (!exp->isType(XT_PAIR)) return; 
-	sPtr expi;
+	sPointer<Expression> expi;
 	for (expi = exp ; !expi->isType(XT_NULL) ; exp = PAIR(expi)->getCdr()) {
 		Direction currentdirection, newdirection;
 		currentdirection = PAIR(expi)->getDirection();
@@ -382,12 +382,12 @@ case 2:
 
 */ void IDEDeleteNodeHandler::notify(Event *e)
 {
-	sPtr parent = exp->getParent();
+	sPointer<Expression> parent = exp->getParent();
 	if (!parent) return;
-	sPtr gparent = parent->getParent();
+	sPointer<Expression> gparent = parent->getParent();
 	if (!gparent) return;
-	sPtr next = PAIR(parent)->getCdr();
-	sPtr newexp = PAIR(gparent)->getCar(); // could == parent
+	sPointer<Expression> next = PAIR(parent)->getCdr();
+	sPointer<Expression> newexp = PAIR(gparent)->getCar(); // could == parent
 
 	if (PAIR(gparent)->getCar() == parent) {
 		PAIR(gparent)->setCar(next);
@@ -423,24 +423,4 @@ void IDERuboutHandler::notify(Event *e)
 	exp->setDirtyness(exp->getDirtyness() | HDIR);
 }
 
-
-void ThingHolder::setupHandlers()
-{
-	sPtr sel;
-	sel = ((Pair*)top)->getCar();
-	setupHandler(new IDECreateNextSiblingHandler(sel));
-	setupHandler(new IDECreateNextSiblingHandler(sel));
-	setupHandler(new IDECreatePreviousSiblingHandler(sel));
-	setupHandler(new IDEMoveNextSiblingHandler(sel));
-	setupHandler(new IDEMovePreviousSiblingHandler(sel));
-	setupHandler(new IDEDisbandHandler(sel));
-	setupHandler(new IDEMoveOutHandler(sel));
-	setupHandler(new IDEEnlistHandler(sel));
-	setupHandler(new IDEMoveInHandler(sel));
-	setupHandler(new IDEEvalHandler(sel));
-	setupHandler(new IDEPivotHandler(sel));
-	setupHandler(new IDEDeleteNodeHandler(sel));
-	setupHandler(new IDEKeyTypedHandler(sel));
-	setupHandler(new IDERuboutHandler(sel));
-}
 

@@ -1,9 +1,9 @@
 #pragma once
-#include "whelk.h"
+#include "p_exp.h"
 #include "expression.h"
+#include "graphics_context.h"
 
 namespace whelk {
-	class GraphicsContext;
 	class Null :
 		public Expression
 	{
@@ -15,6 +15,6 @@ namespace whelk {
 		virtual Delta draw(GraphicsContext *gc);
 		int getHeight(GraphicsContext *grcon);
 		int getWidth(GraphicsContext *grcon);
-		virtual sPtr newobj() { return GSM.createExp(new Null()); }
+		virtual sPointer<Expression> newobj();
 	};
 };

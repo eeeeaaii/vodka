@@ -1,9 +1,14 @@
-#include "whelk.h"
+
 #include "for_debugging.h"
 #ifdef WINDOWS
 // following #using directive necessary to use .Net classes
 #using <mscorlib.dll>
 #endif
+#include <string>
+#include <sstream>
+
+using namespace whelk;
+using namespace std;
 
 ForDebugging::ForDebugging(void)
 {

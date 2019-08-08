@@ -86,3 +86,5 @@ enum Direction {
 	ZDIR = 4
 };
 
+#define PAIR(X) ((Pair*)X)
+

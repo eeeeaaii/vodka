@@ -4,6 +4,8 @@
 #endif
 #include <string>
 
+using namespace std;
+
 namespace whelk {
 	class ForDebugging
 	{
@@ -16,4 +18,4 @@ namespace whelk {
 	};
 };
 
-const ForDebugging dbg;
+const whelk::ForDebugging dbg;

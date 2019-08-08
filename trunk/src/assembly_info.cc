@@ -1,4 +1,4 @@
-#include "whelk.h"
+
 
 #ifdef WINDOWS
 

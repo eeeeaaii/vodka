@@ -1,11 +1,10 @@
-#include "whelk.h"
 #include "port.h"
+#include "for_debugging.h"
+#include "storage_allocator.h"
 #include <iostream>
 #include <fstream>
-#include "for_debugging.h"
 
-//#using <mscorlib.dll>
-
+using namespace whelk;
 using namespace std;
 
 Port::Port(void)
@@ -82,6 +81,11 @@ bool FileInputPort::isEof()
 	return in->eof();
 }
 
+sPointer<Expression> FileInputPort::newobj() {
+	return GSA.createExp(new FileInputPort());
+}
+
+
 
 //---------------------------------------------//
 
@@ -135,5 +139,10 @@ FileOutputPort::~FileOutputPort(void)
 {
 	delete out;
 }
+
+sPointer<Expression> FileOutputPort::newobj() {
+	return GSA.createExp(new FileOutputPort());
+}
+
 
 //VIRTUAL_CONSTRUCTOR(FileOutputPort);

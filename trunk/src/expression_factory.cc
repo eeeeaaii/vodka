@@ -1,12 +1,16 @@
-#include "whelk.h"
+
 #include "expression_factory.h"
 #include "p_exp.h"
 #include "expression.h"
-#include "storage_manager.h"
+#include "storage_allocator.h"
 #include "environment.h"
 #include "for_debugging.h"
 #include "char.h"
+#include <string>
+#include <sstream>
 
+using namespace whelk;
+using namespace std;
 
 ExpressionFactory::ExpressionFactory()
 {
@@ -15,7 +19,7 @@ ExpressionFactory::~ExpressionFactory()
 {
 }
 
-sPtr ExpressionFactory::create(string mytext, Environment *newenv)
+sPointer<Expression> ExpressionFactory::create(string mytext, Environment *newenv)
 {
 	dbg.trace("-------------------------------------\n");
 	dbg.trace("factory: create\n");
@@ -24,45 +28,45 @@ sPtr ExpressionFactory::create(string mytext, Environment *newenv)
 	int newtype = determineType(mytext);
 	assert(!Expression::isType(newtype, XT_UNKNOWN));
 	if (Expression::isType(newtype, XT_SYMBOL)) {
-		sPtr n;
-		n = GSM.newSymbol(mytext);
+		sPointer<Expression> n;
+		n = GSA.newSymbol(mytext);
 		n->setEnvironment(newenv);
 		return n;
 	} else if (Expression::isType(newtype, XT_INTEGER)) {
-		sPtr n;
-		n = GSM.newInteger(mytext);
+		sPointer<Expression> n;
+		n = GSA.newInteger(mytext);
 		n->setEnvironment(newenv);
 		return n;
 	} else if (Expression::isType(newtype, XT_REAL)) {
-		sPtr n;
-		n = GSM.newReal(mytext);
+		sPointer<Expression> n;
+		n = GSA.newReal(mytext);
 		n->setEnvironment(newenv);
 		return n;
 	} else if (Expression::isType(newtype, XT_STRING)) {
-		sPtr n;
-		n = GSM.newString(string(mytext), true);
+		sPointer<Expression> n;
+		n = GSA.newString(string(mytext), true);
 		n->setEnvironment(newenv);
 		return n;
 	} else if (Expression::isType(newtype, XT_CHAR)) {
-		sPtr n;
-		n = GSM.newChar(mytext);
+		sPointer<Expression> n;
+		n = GSA.newChar(mytext);
 		n->setEnvironment(newenv);
 		return n;
 	} else if (Expression::isType(newtype, XT_BOOLEAN)) {
-		sPtr n;
-		n = GSM.newBoolean(mytext);
+		sPointer<Expression> n;
+		n = GSA.newBoolean(mytext);
 		n->setEnvironment(newenv);
 		return n;
 	} else if (Expression::isType(newtype, XT_NULL)) {
-		sPtr n;
-		n = GSM.newNull();
+		sPointer<Expression> n;
+		n = GSA.newNull();
 		n->setEnvironment(newenv);
 		return n;
 	}
 	return 0;// should never happen...
 }
 
-int ExpressionFactory::determineType(sPtr p)
+int ExpressionFactory::determineType(sPointer<Expression> p)
 {
 	return determineType(p->getMytext());
 }

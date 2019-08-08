@@ -1,5 +1,7 @@
-#include "whelk.h"
 #include "bitmap.h"
+#include "storage_allocator.h"
+
+using namespace whelk;
 
 Bitmap::Bitmap()
 {

@@ -1,4 +1,5 @@
 #pragma once
+#include "p_exp.h"
 #include "expression.h"
 
 namespace whelk {
@@ -9,7 +10,7 @@ namespace whelk {
 	public:
 		Number(void);
 		virtual ~Number(void);
-		virtual sPtr promote() = 0;
+		virtual sPointer<Expression> promote() = 0;
 	};
 };
 

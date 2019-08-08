@@ -1,9 +1,12 @@
-#include "whelk.h"
 #include "environment.h"
-
 #include "storage_manager.h"
 #include "procedure.h"
 #include "for_debugging.h"
+#include "expression.h"
+#include <sstream>
+
+using namespace whelk;
+using namespace std;
 
 
 Environment::Environment()
@@ -46,19 +49,24 @@ void Environment::removeRef()
 	}
 }
 
-sPtr Environment::lookupBinding(string _name)
+sPointer<Code> Environment::lookupBinding(string _name)
 {
-	sPtr r = findBindingRecursive(_name);
+	sPointer<Code> r = findBindingRecursive(_name);
 	if (!r) {
 		return r;
 	} else {
-		return r->dupe();
+		Code* c = r.getP();
+		Expression* e = (Expression*)c;
+		sPointer<Expression> duped = e->dupe();
+		return duped.getP();
+		//return c2;
+//		return sPointer<Code>(c2);
 	}
 }
 
-sPtr Environment::findBindingRecursive(string _name)
+sPointer<Code> Environment::findBindingRecursive(string _name)
 {
-	sPtr r;
+	sPointer<Code> r;
 	vector<Environment::Binding>::iterator i;
 	for (i = bindings.begin() ; i != bindings.end() ; i++) {
 		if (i->name == _name) {
@@ -72,13 +80,13 @@ sPtr Environment::findBindingRecursive(string _name)
 	return r;
 }
 
-bool Environment::changeBinding(string _name, sPtr _value)
+bool Environment::changeBinding(string _name, sPointer<Code> _value)
 {
-	sPtr r;
+	sPointer<Code> r;
 	vector<Environment::Binding>::iterator i;
 	for (i = bindings.begin() ; i != bindings.end() ; i++) {
 		if (i->name == _name) {
-			sPtr oldvalue;
+			sPointer<Code> oldvalue;
 			oldvalue = i->value;
 			i->value = _value;
 			return !!oldvalue;
@@ -90,7 +98,7 @@ bool Environment::changeBinding(string _name, sPtr _value)
 }
 
 
-void Environment::addBinding(string _name, sPtr _value)
+void Environment::addBinding(string _name, sPointer<Code> _value)
 {
 	bindings.push_back(Binding(_name, _value));
 }
@@ -127,7 +135,7 @@ Environment *Environment::getParent()
 
 // Environment::Binding
 
-Environment::Binding::Binding(string _name, sPtr _value)
+Environment::Binding::Binding(string _name, sPointer<Code> _value)
 {
 	name = _name;
 	value = _value;

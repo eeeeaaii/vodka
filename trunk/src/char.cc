@@ -1,6 +1,10 @@
-#include "whelk.h"
 #include "char.h"
-#include "storage_manager.h"
+#include "storage_allocator.h"
+#include <string>
+#include <sstream>
+
+using namespace whelk;
+using namespace std;
 
 Char::Char()
 {
@@ -53,12 +57,12 @@ char Char::getCharCode()
 	return value;
 }
 
-sPtr Char::newobj()
+sPointer<Expression> Char::newobj()
 {
-	return GSM.createExp(new Char());
+	return GSA.createExp(new Char());
 }
 
-sPtr Char::copystate(sPtr n)
+sPointer<Expression> Char::copystate(sPointer<Expression> n)
 {
 	((Char*)n)->value = value;
 	return Expression::copystate(n);

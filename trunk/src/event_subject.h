@@ -1,10 +1,12 @@
 #pragma once
-#include "whelk.h"
+#include "event_observer.h"
+#include "event.h"
+#include <list>
+
+using namespace std;
 
 namespace whelk 
 {
-	class EventObserver;
-	class Event;
 	class EventSubject
 	{
 	private:
@@ -19,4 +21,4 @@ namespace whelk
 	};
 }
 
-extern EventSubject GES;
+extern whelk::EventSubject GES;

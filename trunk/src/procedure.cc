@@ -2,10 +2,10 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "whelk.h"
+
 #include "procedure.h"
 #include "eval_exception.h"
-#include "storage_manager.h"
+#include "storage_allocator.h"
 #include "environment.h"
 #include "expression.h"
 #include "event_handler.h"
@@ -34,7 +34,7 @@ Procedure::Procedure()
 	mytext = "{procedure}";
 }
 
-Procedure::Procedure(sPtr code)
+Procedure::Procedure(sPointer<Expression> code)
 {
 	type = XT_PROCEDURE;
 	mytext = "{procedure}";
@@ -45,13 +45,13 @@ Procedure::~Procedure()
 {
 }
 
-sPtr Procedure::getCodeRoot()
+sPointer<Expression> Procedure::getCodeRoot()
 {
 	return code;
 }
 
 
-sPtr Procedure::evalPrimitive(vector<sPtr> argv)
+sPointer<Expression> Procedure::evalPrimitive(vector<sPointer<Expression> > argv)
 {
 	argvector = argv;
 	return apply();
@@ -74,13 +74,13 @@ vector<string> Procedure::getFormals()
 	return formals;
 }
 
-void Procedure::addBindings(Environment *e, list<sPtr> args)
+void Procedure::addBindings(Environment *e, list<sPointer<Expression> > args)
 {
 	if (varargs) {
-		sPtr listarg = *(args.begin());
-		e->addBinding(listformal, listarg);
+		sPointer<Expression> listarg = *(args.begin());
+		e->addBinding(listformal, (Code*)listarg.getP());
 	} else {
-		list<sPtr>::iterator lsPiter;
+		list<sPointer<Expression> >::iterator lsPiter;
 		vector<string>::iterator formiter;
 		for (
 				lsPiter = args.begin(),
@@ -90,7 +90,7 @@ void Procedure::addBindings(Environment *e, list<sPtr> args)
 				lsPiter++,
 				formiter++
 			) {
-			e->addBinding(*formiter, *lsPiter);
+			e->addBinding(*formiter, (Code*)(*lsPiter).getP());
 		}
 	}
 }
@@ -103,13 +103,13 @@ void Procedure::getPrototype(vector<int>& prototype)
 	}
 }
 
-sPtr Procedure::apply()
+sPointer<Expression> Procedure::apply()
 {
 	assert(false);
 	return 0;
 }
 
-void Procedure::setArgs(sPtr a)
+void Procedure::setArgs(sPointer<Expression> a)
 {
 assert(false);
 }
@@ -130,14 +130,14 @@ void Procedure::getSkipList(vector<bool>& skiplist)
 	// call by reference, so no need to return anything
 }
 
-void Procedure::setCode(sPtr c)
+void Procedure::setCode(sPointer<Expression> c)
 {
 	code = c;	
 }
 
-void Procedure::setArg(int i, sPtr p)
+void Procedure::setArg(int i, sPointer<Expression> p)
 {
-	vector<sPtr>::iterator it;
+	vector<sPointer<Expression> >::iterator it;
 	int j;
 	for (it = argvector.begin(), j = 0 ; it != argvector.end() ; it++, j++) {
 		if (i == j) {
@@ -152,9 +152,9 @@ int Procedure::numArgs()
 	return argvector.size();
 }
 
-sPtr Procedure::arg(int n)
+sPointer<Expression> Procedure::arg(int n)
 {
-	vector<sPtr>::iterator argp;
+	vector<sPointer<Expression> >::iterator argp;
 	int c;
 	for (argp = argvector.begin(), c = 0 ; argp != argvector.end() ; argp++, c++) {
 		if (c == n) return *argp;
@@ -234,7 +234,7 @@ void Procedure::checkArgTypes()
 	}
 }
 
-sPtr Procedure::promoteToLevel(sPtr n, int level)
+sPointer<Expression> Procedure::promoteToLevel(sPointer<Expression> n, int level)
 {
 	// promote this item up the tower of types,
 	// one type at a time, until it is up to 
@@ -253,7 +253,7 @@ int Procedure::argPromote()
 	int maxt = 0;
 	int t;
 	// loop thru all the args and find out the highest type in the type tower
-	vector<sPtr>::iterator p;
+	vector<sPointer<Expression> >::iterator p;
 	for (p = argvector.begin() ; p != argvector.end() ; p++) {
 		t = (*p)->getType();
 		maxt = (t > maxt) ? t : maxt;
@@ -265,7 +265,7 @@ int Procedure::argPromote()
 	return maxt;
 }
 
-sPtr Procedure::copystate(sPtr n) {
+sPointer<Expression> Procedure::copystate(sPointer<Expression> n) {
 	Procedure *pn = (Procedure*)n;
 	vector<string>::iterator vi;
 	for (vi = formals.begin() ; vi != formals.end() ; vi++) {
@@ -275,7 +275,7 @@ sPtr Procedure::copystate(sPtr n) {
 		pn->code = code->dupe();
 	}
 	pn->argvector.clear();
-	vector<sPtr>::iterator iter;
+	vector<sPointer<Expression> >::iterator iter;
 	for (iter = argvector.begin() ; iter != argvector.end() ; iter++) {
 		pn->argvector.push_back((*iter)->dupe());
 	}
@@ -295,7 +295,7 @@ void Car::getPrototype(vector<int>& prototype)
 }
 
 
-sPtr Car::apply()
+sPointer<Expression> Car::apply()
 {
 	return ((Pair*)arg(0))->getCar();
 }
@@ -307,7 +307,7 @@ void Cdr::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_PAIR);
 }
 
-sPtr Cdr::apply()
+sPointer<Expression> Cdr::apply()
 {
 	return ((Pair*)arg(0))->getCdr();
 }
@@ -320,9 +320,9 @@ void Cons::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_PAIR|XT_NULL);
 }
 
-sPtr Cons::apply()
+sPointer<Expression> Cons::apply()
 {
-	return GSM.newPair(arg(0), arg(1));
+	return GSA.newPair(arg(0), arg(1));
 }
 
 //=============================================
@@ -333,13 +333,13 @@ void Define::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_ANYTHING);
 }
 
-sPtr Define::apply()
+sPointer<Expression> Define::apply()
 {
-	if (!env->changeBinding(arg(0)->getMytext(), arg(1))) {
-		env->addBinding(arg(0)->getMytext(), arg(1));
+	if (!env->changeBinding(arg(0)->getMytext(), (Code*)arg(1).getP())) {
+		env->addBinding(arg(0)->getMytext(), (Code*)arg(1).getP());
 	}
 	// to do: this is wrong, should return the thing defined.
-	sPtr t = GSM.newExpression();
+	sPointer<Expression> t = GSA.newExpression();
 	t->setMytext("#n");
 	return t;
 }
@@ -351,44 +351,44 @@ void EqvQ::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_ANYTHING);
 }
 
-sPtr EqvQ::apply()
+sPointer<Expression> EqvQ::apply()
 {
-	sPtr obj1, obj2;
+	sPointer<Expression> obj1, obj2;
 	obj1 = arg(0);
 	obj2 = arg(1);
 
 	if (obj1->isType(XT_BOOLEAN) && obj2->isType(XT_BOOLEAN)) {
-		return GSM.newBoolean(((Boolean*)obj1)->getBoolRep() == ((Boolean*)obj2)->getBoolRep());
+		return GSA.newBoolean(((Boolean*)obj1)->getBoolRep() == ((Boolean*)obj2)->getBoolRep());
 	}
 	if (obj1->isType(XT_SYMBOL) && obj2->isType(XT_SYMBOL)) {
-		return GSM.newBoolean(obj1->getMytext() == obj2->getMytext());
+		return GSA.newBoolean(obj1->getMytext() == obj2->getMytext());
 	}
 	if (obj1->isType(XT_INTEGER) && obj2->isType(XT_INTEGER)) {
 		// need to do other types of numbers
 		// and deal with exact/inexact
-		return GSM.newBoolean(((Integer*)obj1)->getIntRep() == ((Integer*)obj2)->getIntRep());
+		return GSA.newBoolean(((Integer*)obj1)->getIntRep() == ((Integer*)obj2)->getIntRep());
 	}
 	if (obj1->isType(XT_CHAR) && obj2->isType(XT_CHAR)) {
-		return GSM.newBoolean(obj1->getMytext() == obj2->getMytext());
+		return GSA.newBoolean(obj1->getMytext() == obj2->getMytext());
 	}
 	if (obj1->isType(XT_NULL) && obj2->isType(XT_NULL)) {
-		return GSM.newBoolean(true);
+		return GSA.newBoolean(true);
 	}
 	if (obj1->isType(XT_PAIR) && obj2->isType(XT_PAIR)) {
-		return GSM.newBoolean(obj1.getP() == obj2.getP());
+		return GSA.newBoolean(obj1.getP() == obj2.getP());
 	}
 	if (obj1->isType(XT_STRING) && obj2->isType(XT_STRING)) {
 		// do pointer comparison
 		// this is not even right because they are stored in an array in each object!
 		assert(false);
 		return false;
-//		return GSM.newBoolean(((String*)obj1)->getStringRep() == ((String*)obj2)->getStringRep());
+//		return GSA.newBoolean(((String*)obj1)->getStringRep() == ((String*)obj2)->getStringRep());
 	}
 	assert(!obj1->isType(XT_PROCEDURE));
 //	if (obj1->isType(XT_PROCEDURE) && obj2->isType(XT_PROCEDURE)) {
-//		return GSM.newBoolean(obj1.getProcedureRep() == obj2.getProcedureRep());
+//		return GSA.newBoolean(obj1.getProcedureRep() == obj2.getProcedureRep());
 //	}
-	return GSM.newBoolean(false);
+	return GSA.newBoolean(false);
 }
 
 //=============================================
@@ -399,9 +399,9 @@ void EqQ::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_ANYTHING);
 }
 
-sPtr EqQ::apply()
+sPointer<Expression> EqQ::apply()
 {
-	return GSM.newBoolean(arg(0)->getID() == arg(1)->getID());
+	return GSA.newBoolean(arg(0)->getID() == arg(1)->getID());
 }
 
 
@@ -415,9 +415,9 @@ void If::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_ANYTHING|XT_SKIPEVAL);
 }
 
-sPtr If::apply()
+sPointer<Expression> If::apply()
 {
-	sPtr firstalt, secondalt;
+	sPointer<Expression> firstalt, secondalt;
 	// if has three arguments
 	// 1. must evaluate to a boolean
 	// 2. if 1. is true, eval this one and return it
@@ -425,7 +425,7 @@ sPtr If::apply()
 	firstalt = arg(1);
 	secondalt = arg(2);
 	Machine m;
-	assert(false); // WE HAVE TO KEEP ENV OF SPTR IN STEP W/ ENV OF INSTRUCTION
+	assert(false); // WE HAVE TO KEEP ENV OF sPointer<Expression> IN STEP W/ ENV OF INSTRUCTION
 	if (((Boolean*)arg(0))->getBoolRep()) {
 		m.setup(firstalt, getEnvironment());
 	} else {
@@ -446,7 +446,7 @@ void Lambda::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_ANYTHING|XT_MULTIPLE|XT_SKIPEVAL);
 }
 
-/* sPtr apply()
+/* sPointer<Expression> apply()
  * There are two forms of this primitive
  * (lambda (arg1 arg2 arg3 ...) expr1 expr2 expr3 ...)
  * and
@@ -461,14 +461,14 @@ void Lambda::getPrototype(vector<int>& prototype)
  * To make evaluation easier, we wrap the expressions (expr1, expr2, etc)
  * in a (begin ...). 
  */
-sPtr Lambda::apply()
+sPointer<Expression> Lambda::apply()
 {
 	//......................................... set up the (begin ...)
-	sPtr code = GSM.newNull();
+	sPointer<Expression> code = GSA.newNull();
 	for (int i = numArgs() - 1; i > 0 ; i--) {
-		code = GSM.newPair(arg(i), code);
+		code = GSA.newPair(arg(i), code);
 	}
-	code = GSM.newPair(GSM.newExpression("begin"), code);
+	code = GSA.newPair(GSA.newExpression("begin"), code);
 
 	//.......................................... determine which form
 	int firstargtype;
@@ -476,11 +476,11 @@ sPtr Lambda::apply()
 	firstargtype = factory.determineType(arg(0));
 
 	// .......................................... do other stuff
-	sPtr p, newfunc;
-	newfunc = GSM.newProcedure(code);
+	sPointer<Expression> p, newfunc;
+	newfunc = GSA.newProcedure(code);
 	if (firstargtype == XT_PAIR) {
 		for (p = arg(0) ; !p->isType(XT_NULL) ; p = ((Pair*)p)->getCdr()) {
-			sPtr parameter = ((Pair*)p)->getCar();
+			sPointer<Expression> parameter = ((Pair*)p)->getCar();
 			if (factory.determineType(parameter) != XT_SYMBOL) {
 				EvalException *e = new EvalException("");
 				e->addToMessage(parameter->getMytext());
@@ -514,7 +514,7 @@ void Quote::evalArgs()
 }
 */
 
-sPtr Quote::apply()
+sPointer<Expression> Quote::apply()
 {
 	// don't evalArgs!
 	return arg(0);
@@ -534,16 +534,16 @@ void React::getPrototype(vector<int>& prototype)
  *
  * This function needs a complete rewrite.
  */
-sPtr React::apply()
+sPointer<Expression> React::apply()
 {
 	assert(false);
-	sPtr dummy;
+	sPointer<Expression> dummy;
 	return dummy;
 	/*
 
 	EventHandler *eh = 0;
-	sPtr r;
-	sPtr h;
+	sPointer<Expression> r;
+	sPointer<Expression> h;
 	for ( int i = 1 ; i < numArgs() ; i++) {
 		// each handler is a 2-element list
 		if (((Pair*)arg(i))->countSiblings() != 2) {
@@ -579,18 +579,18 @@ void Rect::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_PAIR|XT_SKIPEVAL);
 }
 
-sPtr Rect::apply()
+sPointer<Expression> Rect::apply()
 {
 	// rect works like this
 	// (rect 10 20 (0 255 128 0))
 	// which creates a rect with w=10 and h=20
 	// of color 00FF7F00
 	// evaluate second and third arguments
-	sPtr rgbvalue = arg(2);
+	sPointer<Expression> rgbvalue = arg(2);
 	if (rgbvalue->countSiblings() != 4) {
 		throw new EvalException("- third arg to rect must be an RGBA color value.");
 	}
-	for (sPtr p = rgbvalue ; !p->isType(XT_NULL) ; p = ((Pair*)p)->getCdr()) {
+	for (sPointer<Expression> p = rgbvalue ; !p->isType(XT_NULL) ; p = ((Pair*)p)->getCdr()) {
 		Pair* pp;
 		pp = (Pair*)p;
 		Machine m;
@@ -612,7 +612,7 @@ sPtr Rect::apply()
 	Bitmap *b = new Bitmap();
 	b->init(w, h);
 	b->fill(Bitmap::c_RGBA(cr, cg, cb, ca));
-	sPtr r = GSM.newImage(b);
+	sPointer<Expression> r = GSA.newImage(b);
 	return r;
 
 }
@@ -623,17 +623,17 @@ void Gquote::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_ANYTHING|XT_SKIPEVAL);
 }
 
-sPtr Gquote::apply()
+sPointer<Expression> Gquote::apply()
 {
 	// don't evalArgs!
-	sPtr r;
+	sPointer<Expression> r;
 	r = gquote_rec(arg(0));
 	return r;
 }
 
-sPtr Gquote::gquote_rec(sPtr arg)
+sPointer<Expression> Gquote::gquote_rec(sPointer<Expression> arg)
 {
-	sPtr r;
+	sPointer<Expression> r;
 	if (arg->isType(XT_PAIR)) {
 		// if it's a list, we do one of two things.
 		// 1. if it's a "react" statement we have to evaluate it first,
@@ -645,7 +645,7 @@ sPtr Gquote::gquote_rec(sPtr arg)
 			Machine m;
 			r = gquote_rec(m.eval(arg, arg->getEnvironment()));
 		} else {
-			sPtr p;
+			sPointer<Expression> p;
 			for (p = arg ; !p->isType(XT_NULL) ; p = ((Pair*)p)->getCdr()) {
 				((Pair*)p)->setImagepair(true);
 				((Pair*)p)->setCar(gquote_rec(((Pair*)p)->getCar()));
@@ -666,11 +666,11 @@ void Import::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_STRING);
 }
 
-sPtr Import::apply()
+sPointer<Expression> Import::apply()
 {
 	// don't evalArgs!
 	// first get the file
-	sPtr top;
+	sPointer<Expression> top;
 	assert(false);
 	const char* x = "Testit";
 	fstream f(x);
@@ -691,9 +691,9 @@ void Begin::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_ANYTHING|XT_MULTIPLE);
 }
 
-sPtr Begin::apply()
+sPointer<Expression> Begin::apply()
 {
-	sPtr last;
+	sPointer<Expression> last;
 	assert(numArgs() > 0);
 //	assert(!args->isType(XT_NULL));
 	return arg(numArgs() - 1);
@@ -708,19 +708,19 @@ void String_Length::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_STRING);
 }
 
-sPtr String_Length::apply()
+sPointer<Expression> String_Length::apply()
 {
 	/*
 	What do I have to do to make it so that I can write code like this?
 	- String is an interface - abstract base class
 	- Integer is an interface - abstract
-	- sPtr inherits from both String and Integer interfaces,
+	- sPointer<Expression> inherits from both String and Integer interfaces,
 	  as well as Pair, etc, etc, implementing function calls
 	  as calling the function on the underlying object.
 	- String class also inherits from String interface, implementing
 	  the function call in the real way.
 
-	or to make it easier, have sPtr just subclass all the other stuff.
+	or to make it easier, have sPointer<Expression> just subclass all the other stuff.
 	have to watch out for ambiguity.
 	*/
 
@@ -730,12 +730,12 @@ sPtr String_Length::apply()
 	int len;
 	s = (String)arg(0);
 	len = s.getLength();
-	Integer i = GSM.newInteger(len);
+	Integer i = GSA.newInteger(len);
 	return i;
 	*/
-	sPtr s = arg(0);
+	sPointer<Expression> s = arg(0);
 	int len = ((String*)s)->getLength();
-	sPtr i = GSM.newInteger(len);
+	sPointer<Expression> i = GSA.newInteger(len);
 	return i;
 }
 
@@ -759,12 +759,12 @@ void Let::validateArguments()
 	// 
 	// we know this is a pair because of checkArgTypes
 	// but is it the case that each child is a pair?
-	for (sPtr deflist = arg(0) ; !deflist->isType(XT_NULL) ; deflist = ((Pair*)deflist)->getCdr()) {
-		sPtr definition = ((Pair*)deflist)->getCar();
+	for (sPointer<Expression> deflist = arg(0) ; !deflist->isType(XT_NULL) ; deflist = ((Pair*)deflist)->getCdr()) {
+		sPointer<Expression> definition = ((Pair*)deflist)->getCar();
 		if (!definition->isType(XT_PAIR)) {
 			throw new EvalException("arguments not right -- let");
 		}
-		sPtr name = ((Pair*)definition)->getCar();
+		sPointer<Expression> name = ((Pair*)definition)->getCar();
 		ExpressionFactory ef;
 		if (!(ef.determineType(name) == XT_SYMBOL)) {
 			throw new EvalException("arguments not right -- let");
@@ -781,23 +781,23 @@ void Let::validateArguments()
 	}
 }
 
-sPtr Let::apply()
+sPointer<Expression> Let::apply()
 {
 	// bind variables in binding list
 	pushEnvironment();
-	for (sPtr deflist = arg(0) ; !deflist->isType(XT_NULL) ; deflist = ((Pair*)deflist)->getCdr()) {
+	for (sPointer<Expression> deflist = arg(0) ; !deflist->isType(XT_NULL) ; deflist = ((Pair*)deflist)->getCdr()) {
 		sPointer<Pair> definition;
-		sPtr n, v;
+		sPointer<Expression> n, v;
 		definition = (sPointer<Pair>)((Pair*)deflist)->getCar();
 		n = definition->getCar();
 		Machine m;
 		Pair* defcdr;
 		defcdr = ((Pair*)definition)->getCdr();
 		v = m.eval(defcdr->getCar(), getEnvironment()->getParent());
-		env->addBinding(n->getMytext(), v);
+		env->addBinding(n->getMytext(), (Code*)v.getP());
 	}
 	// next, evaluate everything in the list of expressions.
-	sPtr r;
+	sPointer<Expression> r;
 	for (int k = 1 ; k < numArgs() ; k++) {
 		Machine m;
 		r = m.eval(arg(k), getEnvironment());
@@ -813,13 +813,13 @@ void And::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_BOOLEAN);
 }
 
-sPtr And::apply()
+sPointer<Expression> And::apply()
 {
-	sPtr a = arg(0);
-	sPtr b = arg(1);
+	sPointer<Expression> a = arg(0);
+	sPointer<Expression> b = arg(1);
 	bool a_ = ((Boolean*)a)->getBoolRep();
 	bool b_ = ((Boolean*)b)->getBoolRep();
-	return GSM.newBoolean(a_ && b_);
+	return GSA.newBoolean(a_ && b_);
 }
 
 //=============================================
@@ -830,13 +830,13 @@ void Or::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_BOOLEAN);
 }
 
-sPtr Or::apply()
+sPointer<Expression> Or::apply()
 {
-	sPtr a = arg(0);
-	sPtr b = arg(1);
+	sPointer<Expression> a = arg(0);
+	sPointer<Expression> b = arg(1);
 	bool a_ = ((Boolean*)a)->getBoolRep();
 	bool b_ = ((Boolean*)b)->getBoolRep();
-	return GSM.newBoolean(a_ || b_);
+	return GSA.newBoolean(a_ || b_);
 }
 
 
@@ -847,11 +847,11 @@ void NumberQ::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_ANYTHING);
 }
 
-sPtr NumberQ::apply()
+sPointer<Expression> NumberQ::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	bool b = n->isType(XT_NUMBER);
-	return GSM.newBoolean(b);
+	return GSA.newBoolean(b);
 }
 
 //=============================================
@@ -861,11 +861,11 @@ void IntegerQ::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_ANYTHING);
 }
 
-sPtr IntegerQ::apply()
+sPointer<Expression> IntegerQ::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	bool b = n->isType(XT_INTEGER);
-	return GSM.newBoolean(b);
+	return GSA.newBoolean(b);
 }
 //=============================================
 
@@ -874,11 +874,11 @@ void PairQ::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_ANYTHING);
 }
 
-sPtr PairQ::apply()
+sPointer<Expression> PairQ::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	bool b = n->isType(XT_PAIR);
-	return GSM.newBoolean(b);
+	return GSA.newBoolean(b);
 }
 //=============================================
 
@@ -887,11 +887,11 @@ void SymbolQ::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_ANYTHING);
 }
 
-sPtr SymbolQ::apply()
+sPointer<Expression> SymbolQ::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	bool b = n->isType(XT_SYMBOL);
-	return GSM.newBoolean(b);
+	return GSA.newBoolean(b);
 }
 //=============================================
 
@@ -900,11 +900,11 @@ void CharQ::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_ANYTHING);
 }
 
-sPtr CharQ::apply()
+sPointer<Expression> CharQ::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	bool b = n->isType(XT_CHAR);
-	return GSM.newBoolean(b);
+	return GSA.newBoolean(b);
 }
 //=============================================
 
@@ -913,11 +913,11 @@ void StringQ::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_ANYTHING);
 }
 
-sPtr StringQ::apply()
+sPointer<Expression> StringQ::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	bool b = n->isType(XT_STRING);
-	return GSM.newBoolean(b);
+	return GSA.newBoolean(b);
 }
 //=============================================
 
@@ -926,11 +926,11 @@ void ProcedureQ::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_ANYTHING);
 }
 
-sPtr ProcedureQ::apply()
+sPointer<Expression> ProcedureQ::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	bool b = n->isType(XT_PROCEDURE);
-	return GSM.newBoolean(b);
+	return GSA.newBoolean(b);
 }
 
 //=============================================
@@ -942,16 +942,16 @@ void SetE::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_ANYTHING);
 }
 
-sPtr SetE::apply()
+sPointer<Expression> SetE::apply()
 {
 	// (set a ...something...) is supposed to return the OLD value of a.
 	Environment *e = getEnvironment();
 	string symbol = arg(0)->getMytext();
-	sPtr old = e->lookupBinding(symbol);
+	sPointer<Expression> old = (Expression*)e->lookupBinding(symbol).getP();
 	if (!old) {
 		throw new EvalException("set! -- this variable was never defined.");
 	} else {
-		e->changeBinding(symbol, arg(1));
+		e->changeBinding(symbol, (Code*)arg(1).getP());
 	}
 	return old;
 }
@@ -965,10 +965,10 @@ void Set_CarE::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_ANYTHING);
 }
 
-sPtr Set_CarE::apply()
+sPointer<Expression> Set_CarE::apply()
 {
 	// return value is unspecified -- I will follow same rule as we do for set!
-	sPtr old = ((Pair*)arg(0))->getCar();
+	sPointer<Expression> old = ((Pair*)arg(0))->getCar();
 	((Pair*)arg(0))->setCar(arg(1));
 	return old;
 }
@@ -981,10 +981,10 @@ void Set_CdrE::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_PAIR|XT_NULL);
 }
 
-sPtr Set_CdrE::apply()
+sPointer<Expression> Set_CdrE::apply()
 {
 	// return value is unspecified -- I will follow same rule as we do for set!
-	sPtr old = ((Pair*)arg(0))->getCdr();
+	sPointer<Expression> old = ((Pair*)arg(0))->getCdr();
 	((Pair*)arg(0))->setCdr(arg(1));
 	return old;
 }
@@ -996,18 +996,18 @@ void String_Number::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_STRING);
 }
 
-sPtr String_Number::apply()
+sPointer<Expression> String_Number::apply()
 {
 	string s = ((String*)arg(0))->getStringRep();
 	istringstream is(s);
 	double d;
 	int i;
 	if (is >> d) {
-		return GSM.newReal(d);
+		return GSA.newReal(d);
 	} else if (is >> i) {
-		return GSM.newInteger(i);
+		return GSA.newInteger(i);
 	} else {
-		return GSM.newNull();
+		return GSA.newNull();
 	}
 }
 
@@ -1018,7 +1018,7 @@ void Number_String::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 }
 
-sPtr Number_String::apply()
+sPointer<Expression> Number_String::apply()
 {
 	int type = arg(0)->getType();
 	ostringstream s;
@@ -1026,12 +1026,12 @@ sPtr Number_String::apply()
 	case XT_INTEGER:
 		{
 			s << ((Integer*)arg(0))->getIntRep();
-			return GSM.newString(s.str(), false);
+			return GSA.newString(s.str(), false);
 		}
 	case XT_REAL:
 		{
 			s << ((Real*)arg(0))->getRealRep();
-			return GSM.newString(s.str(), false);
+			return GSA.newString(s.str(), false);
 		}
 	}
 	return 0;
@@ -1044,10 +1044,10 @@ void String_Symbol::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_STRING);
 }
 
-sPtr String_Symbol::apply()
+sPointer<Expression> String_Symbol::apply()
 {
 	string str = ((String*)arg(0))->getStringRep();
-	return GSM.newSymbol(str.c_str());
+	return GSA.newSymbol(str.c_str());
 }
 
 //=============================================
@@ -1057,10 +1057,10 @@ void Symbol_String::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_SYMBOL);
 }
 
-sPtr Symbol_String::apply()
+sPointer<Expression> Symbol_String::apply()
 {
 	string str = arg(0)->getMytext();
-	return GSM.newString(str, true);
+	return GSA.newString(str, true);
 }
 //=============================================
 
@@ -1070,11 +1070,11 @@ void CharE::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_CHAR);
 }
 
-sPtr CharE::apply()
+sPointer<Expression> CharE::apply()
 {
 	char c0 = ((Char*)arg(0))->getCharCode();
 	char c1 = ((Char*)arg(1))->getCharCode();
-	return GSM.newBoolean(c0 == c1);
+	return GSA.newBoolean(c0 == c1);
 }
 
 //=============================================
@@ -1085,11 +1085,11 @@ void CharLT::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_CHAR);
 }
 
-sPtr CharLT::apply()
+sPointer<Expression> CharLT::apply()
 {
 	char c0 = ((Char*)arg(0))->getCharCode();
 	char c1 = ((Char*)arg(1))->getCharCode();
-	return GSM.newBoolean(c0 < c1);
+	return GSA.newBoolean(c0 < c1);
 }
 
 //=============================================
@@ -1100,11 +1100,11 @@ void CharGT::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_CHAR);
 }
 
-sPtr CharGT::apply()
+sPointer<Expression> CharGT::apply()
 {
 	char c0 = ((Char*)arg(0))->getCharCode();
 	char c1 = ((Char*)arg(1))->getCharCode();
-	return GSM.newBoolean(c0 > c1);
+	return GSA.newBoolean(c0 > c1);
 }
 
 //=============================================
@@ -1115,11 +1115,11 @@ void CharLTE::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_CHAR);
 }
 
-sPtr CharLTE::apply()
+sPointer<Expression> CharLTE::apply()
 {
 	char c0 = ((Char*)arg(0))->getCharCode();
 	char c1 = ((Char*)arg(1))->getCharCode();
-	return GSM.newBoolean(c0 <= c1);
+	return GSA.newBoolean(c0 <= c1);
 }
 
 //=============================================
@@ -1130,11 +1130,11 @@ void CharGTE::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_CHAR);
 }
 
-sPtr CharGTE::apply()
+sPointer<Expression> CharGTE::apply()
 {
 	char c0 = ((Char*)arg(0))->getCharCode();
 	char c1 = ((Char*)arg(1))->getCharCode();
-	return GSM.newBoolean(c0 >= c1);
+	return GSA.newBoolean(c0 >= c1);
 }
 
 //=============================================
@@ -1144,9 +1144,9 @@ void Char_Integer::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_CHAR);
 }
 
-sPtr Char_Integer::apply()
+sPointer<Expression> Char_Integer::apply()
 {
-	return GSM.newInteger(((Char*)arg(0))->getCharCode());
+	return GSA.newInteger(((Char*)arg(0))->getCharCode());
 }
 //=============================================
 
@@ -1155,9 +1155,9 @@ void Integer_Char::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_INTEGER);
 }
 
-sPtr Integer_Char::apply()
+sPointer<Expression> Integer_Char::apply()
 {
-	return GSM.newChar(char(((Integer*)arg(0))->getIntRep()));
+	return GSA.newChar(char(((Integer*)arg(0))->getIntRep()));
 }
 
 //=============================================
@@ -1168,7 +1168,7 @@ void Make_String::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_CHAR);
 }
 
-sPtr Make_String::apply()
+sPointer<Expression> Make_String::apply()
 {
 	char x = ((Char*)arg(1))->getCharCode();
 	int n = ((Integer*)arg(0))->getIntRep();
@@ -1176,7 +1176,7 @@ sPtr Make_String::apply()
 	for (int i = 0 ; i < n ; i++) {
 		os << x;
 	}
-	return GSM.newString(os.str(), false);
+	return GSA.newString(os.str(), false);
 }
 //=============================================
 
@@ -1186,7 +1186,7 @@ void String_Ref::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_INTEGER);
 }
 
-sPtr String_Ref::apply()
+sPointer<Expression> String_Ref::apply()
 {
 	int i = ((Integer*)arg(1))->getIntRep();
 	string s = ((String*)arg(0))->getStringRep();
@@ -1197,7 +1197,7 @@ sPtr String_Ref::apply()
 	dbg.trace("\n");
 	dbg.trace((string("test") + s).c_str());
 	char c = s[i];
-	return GSM.newChar(c);
+	return GSA.newChar(c);
 }
 
 
@@ -1210,7 +1210,7 @@ void String_SetE::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_CHAR);
 }
 
-sPtr String_SetE::apply()
+sPointer<Expression> String_SetE::apply()
 {
 	string s = ((String*)arg(0))->getStringRep();
 	int i = ((Integer*)arg(1))->getIntRep();
@@ -1222,7 +1222,7 @@ sPtr String_SetE::apply()
 	oldc = s[i];
 	s[i] = c;
 	((String*)arg(0))->setStringRep(s, false);
-	return GSM.newChar(c);
+	return GSA.newChar(c);
 }
 
 
@@ -1237,18 +1237,18 @@ void Apply::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_PAIR);
 }
 
-sPtr Apply::apply()
+sPointer<Expression> Apply::apply()
 {
 	// apply the procedure in arg(0)
 	// to the set of arguments given by
 	// appending all args to the final pair
 	assert(false);	
-	sPtr p;
+	sPointer<Expression> p;
 	return p;
 //	int n = args->countSiblings();
-//	sPtr a = arg(n - 1);
+//	sPointer<Expression> a = arg(n - 1);
 //	for (int i = n - 2 ; i > 0 ; i--) {
-//		a = GSM.newPair(arg(i), a);
+//		a = GSA.newPair(arg(i), a);
 //	}
 //	return ((Procedure*)arg(0))->execute(a, getEnvironment());
 }
@@ -1263,7 +1263,7 @@ void Eval::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_ANYTHING);
 }
 
-sPtr Eval::apply()
+sPointer<Expression> Eval::apply()
 {
 	Machine m;
 	return m.eval(arg(0), getEnvironment());
@@ -1280,12 +1280,12 @@ void Cond::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_PAIR|XT_MULTIPLE|XT_SKIPEVAL);
 }
 
-sPtr Cond::apply()
+sPointer<Expression> Cond::apply()
 {
-	sPtr r;
+	sPointer<Expression> r;
 	// loop through all conditional clauses
 	for (int i = 0 ; i < numArgs() ; i++) {
-		sPtr testclause = ((Pair*)arg(i))->getCar();
+		sPointer<Expression> testclause = ((Pair*)arg(i))->getCar();
 		// if it just says "else"
 		if (testclause->getMytext() == "else") {
 			// else must be the LAST expression in the cond
@@ -1297,7 +1297,7 @@ sPtr Cond::apply()
 				// one thing in the list.
 				bool gotone = false;
 				for (
-						sPtr p = ((Pair*)arg(i))->getCdr() ;
+						sPointer<Expression> p = ((Pair*)arg(i))->getCdr() ;
 						!p->isType(XT_NULL);
 						p = ((Pair*)p)->getCdr()
 					 ) {
@@ -1323,7 +1323,7 @@ sPtr Cond::apply()
 			bool b = ((Boolean*)r)->getBoolRep();
 			if (b) {
 				for (
-						sPtr p = ((Pair*)arg(i))->getCdr() ;
+						sPointer<Expression> p = ((Pair*)arg(i))->getCdr() ;
 						!p->isType(XT_NULL);
 						p = ((Pair*)p)->getCdr()
 					 ) {
@@ -1349,10 +1349,10 @@ void Input_PortQ::getPrototype(vector<int>& prototype)
 }
 
 
-sPtr Input_PortQ::apply()
+sPointer<Expression> Input_PortQ::apply()
 {
 	bool b = arg(0)->isType(XT_INPUT_PORT);
-	return GSM.newBoolean(b);
+	return GSA.newBoolean(b);
 }
 
 
@@ -1364,10 +1364,10 @@ void Output_PortQ::getPrototype(vector<int>& prototype)
 }
 
 
-sPtr Output_PortQ::apply()
+sPointer<Expression> Output_PortQ::apply()
 {
 	bool b = arg(0)->isType(XT_OUTPUT_PORT);
-	return GSM.newBoolean(b);
+	return GSA.newBoolean(b);
 }
 
 
@@ -1380,11 +1380,11 @@ void Open_Input_File::getPrototype(vector<int>& prototype)
 }
 
 
-sPtr Open_Input_File::apply()
+sPointer<Expression> Open_Input_File::apply()
 {
 
 	string s = ((String*)arg(0))->getStringRep();
-	sPtr p = GSM.newFileInputPort(s);
+	sPointer<Expression> p = GSA.newFileInputPort(s);
 	return p;
 }
 
@@ -1398,10 +1398,10 @@ void Open_Output_File::getPrototype(vector<int>& prototype)
 }
 
 
-sPtr Open_Output_File::apply()
+sPointer<Expression> Open_Output_File::apply()
 {
 	string s = ((String*)arg(0))->getStringRep();
-	sPtr p = GSM.newFileOutputPort(s);
+	sPointer<Expression> p = GSA.newFileOutputPort(s);
 	return p;
 }
 
@@ -1415,7 +1415,7 @@ void Close_Input_Port::getPrototype(vector<int>& prototype)
 }
 
 
-sPtr Close_Input_Port::apply()
+sPointer<Expression> Close_Input_Port::apply()
 {
 	// TODO: broken!
 	((Port*)arg(0))->close();
@@ -1432,7 +1432,7 @@ void Close_Output_Port::getPrototype(vector<int>& prototype)
 }
 
 
-sPtr Close_Output_Port::apply()
+sPointer<Expression> Close_Output_Port::apply()
 {
 	// TODO: broken!
 	((Port*)arg(0))->close();
@@ -1448,7 +1448,7 @@ void Read_Char::getPrototype(vector<int>& prototype)
 }
 
 
-sPtr Read_Char::apply()
+sPointer<Expression> Read_Char::apply()
 {
 	int t = arg(0)->getType();
 	char c;
@@ -1463,7 +1463,7 @@ sPtr Read_Char::apply()
 		assert(false);
 		break;
 	}
-	return GSM.newChar(c);
+	return GSA.newChar(c);
 }
 
 //=============================================
@@ -1474,10 +1474,10 @@ void Peek_Char::getPrototype(vector<int>& prototype)
 }
 
 
-sPtr Peek_Char::apply()
+sPointer<Expression> Peek_Char::apply()
 {
 	char c = ((InputPort*)arg(0))->peekChar();
-	return GSM.newChar(c);
+	return GSA.newChar(c);
 }
 
 
@@ -1492,7 +1492,7 @@ void Write_Char::getPrototype(vector<int>& prototype)
 }
 
 
-sPtr Write_Char::apply()
+sPointer<Expression> Write_Char::apply()
 {
 	char c = ((Char*)arg(0))->getCharCode();
 	int t = arg(1)->getType();
@@ -1523,10 +1523,10 @@ void Eof_ObjectQ::getPrototype(vector<int>& prototype)
 }
 
 
-sPtr Eof_ObjectQ::apply()
+sPointer<Expression> Eof_ObjectQ::apply()
 {
 	bool b = ((InputPort*)arg(0))->isEof();
-	return GSM.newBoolean(b);
+	return GSA.newBoolean(b);
 }
 
 //=============================================
@@ -1538,11 +1538,11 @@ void Open_Client_Port::getPrototype(vector<int>& prototype)
 }
 
 
-sPtr Open_Client_Port::apply()
+sPointer<Expression> Open_Client_Port::apply()
 {
 	string s = ((String*)arg(0))->getStringRep();
 	int i = ((Integer*)arg(1))->getIntRep();
-	sPtr p = GSM.newClientPort(s, i);
+	sPointer<Expression> p = GSA.newClientPort(s, i);
 	return p;
 }
 
@@ -1556,10 +1556,10 @@ void Open_Server_Port::getPrototype(vector<int>& prototype)
 }
 
 
-sPtr Open_Server_Port::apply()
+sPointer<Expression> Open_Server_Port::apply()
 {
 	int i = ((Integer*)arg(0))->getIntRep();
-	sPtr p = GSM.newServerPort(i);
+	sPointer<Expression> p = GSA.newServerPort(i);
 	return p;
 }
 
@@ -1571,11 +1571,11 @@ void WidthQ::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_IMAGE);
 }
 
-sPtr WidthQ::apply()
+sPointer<Expression> WidthQ::apply()
 {
 	Image* i = ((Image*)arg(0));
 	int w = i->getWidth();
-	return GSM.newInteger(w);
+	return GSA.newInteger(w);
 }
 
 //=============================================
@@ -1585,11 +1585,11 @@ void HeightQ::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_IMAGE);
 }
 
-sPtr HeightQ::apply()
+sPointer<Expression> HeightQ::apply()
 {
 	Image* i = ((Image*)arg(0));
 	int h = i->getHeight();
-	return GSM.newInteger(h);
+	return GSA.newInteger(h);
 }
 
 //=============================================
@@ -1602,7 +1602,7 @@ void Color_AtQ::getPrototype(vector<int>& prototype)
 }
 
 
-sPtr Color_AtQ::apply()
+sPointer<Expression> Color_AtQ::apply()
 {
 	Image *i = ((Image*)arg(0));
 	int x = ((Integer*)arg(1))->getIntRep();
@@ -1616,15 +1616,15 @@ sPtr Color_AtQ::apply()
 	int g = Bitmap::getc_G(color);
 	int b = Bitmap::getc_B(color);
 	int a = Bitmap::getc_A(color);
-	return GSM.newPair(
-				GSM.newInteger(r),
-				GSM.newPair(
-					GSM.newInteger(g),
-					GSM.newPair(
-						GSM.newInteger(b),
-						GSM.newPair(
-							GSM.newInteger(a),
-							GSM.newNull()
+	return GSA.newPair(
+				GSA.newInteger(r),
+				GSA.newPair(
+					GSA.newInteger(g),
+					GSA.newPair(
+						GSA.newInteger(b),
+						GSA.newPair(
+							GSA.newInteger(a),
+							GSA.newNull()
 						)
 					)
 				)

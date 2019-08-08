@@ -1,5 +1,4 @@
 #pragma once
-#include "whelk.h"
 #include "expression.h"
 
 namespace whelk {

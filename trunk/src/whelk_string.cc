@@ -1,9 +1,10 @@
-#include "whelk.h"
 #include "whelk_string.h"
-#include "storage_manager.h"
+#include "storage_allocator.h"
 #include "for_debugging.h"
 #include <sstream>
+#include <string>
 
+using namespace whelk;
 using namespace std;
 
 //extern StorageManager GSM;
@@ -40,6 +41,11 @@ String::String(string s, bool dec)
 String::~String(void)
 {
 }
+
+sPointer<Expression> String::newobj() {
+	return GSA.createExp(new String());
+}
+
 
 string String::decode(string instr)
 {

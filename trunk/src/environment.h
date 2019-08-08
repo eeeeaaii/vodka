@@ -1,9 +1,12 @@
 #pragma once
 #include "p_exp.h"
+#include "code.h"
+#include <vector>
+#include <string>
+
+using namespace std;
 
 namespace whelk {
-	class Expression;
-
 	class Environment  
 	{
 	private:
@@ -11,16 +14,16 @@ namespace whelk {
 		int references;
 		Environment *parentEnv;
 		vector<Environment::Binding> bindings;
-		sPtr findBindingRecursive(string name);
+		sPointer<Code> findBindingRecursive(string name);
 
 	public:
 		Environment();
 		Environment(Environment *next);
 		virtual ~Environment();
 
-		sPtr lookupBinding(string name);
-		void addBinding(string name, sPtr value);
-		bool changeBinding(string name, sPtr value);
+		sPointer<Code> lookupBinding(string name);
+		void addBinding(string name, sPointer<Code> value);
+		bool changeBinding(string name, sPointer<Code> value);
 		void addRef();
 		void removeRef();
 		void debugBindings(int level = 0);
@@ -30,10 +33,10 @@ namespace whelk {
 
 	class Environment::Binding {
 	public:
-		Binding(string _name, sPtr _value);
+		Binding(string _name, sPointer<Code> _value);
 		Binding(const Binding& rhs);
 		Binding& operator=(const Binding& rhs);
 		string name;
-		sPtr value;
+		sPointer<Code> value;
 	};
 }

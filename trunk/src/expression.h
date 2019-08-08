@@ -1,20 +1,19 @@
 #pragma once
 #include "p_exp.h"
-#include "storage_manager.h"
 #include "graphics_context.h"
 
-namespace whelk {
-	class Procedure;
-	class Event;
-	class EventHandler;
-	class Bitmap;
-	class Environment;
+//#include "event_handler.h"
+#include "bitmap.h"
+#include "environment.h"
+#include "code.h"
 
-	class Expression
+namespace whelk {
+
+	class Expression : public Code
 	{
 	private:
 				void 	initialize();
-		static 	sPtr 	getList(istream& s, Direction dir, bool& end_of_file);
+		static 	sPointer<Expression> 	getList(istream& s, Direction dir, bool& end_of_file);
 		static 	bool 	isWhitespace(char c);
 		static 	bool 	isLeftParen(char c);
 		static 	bool 	isRightParen(char c);
@@ -24,44 +23,41 @@ namespace whelk {
 		bool selected;
 		bool isTop;
 		int type;
-		int id;
 		int dirtyness;
 		int cached_width;
 		int cached_height;
 		string mytext;
 		Environment *env;
-		EventHandler *handlers;
 
-		static int nextID;			
 
 
 	public:
 
 		int	getType();  // why can't I make this protected?
 
-		sPtr getParent();
+		sPointer<Expression> getParent();
 
-		Expression(); Expression(string mt);
+		Expression();
+		Expression(string mt);
 		virtual ~Expression();
 
 				int 	countSiblings();
 		virtual Delta 	draw(GraphicsContext *gc);
 				void 	dumpTree(int level);
-		virtual sPtr 	dupe();
-				sPtr 	findSelectedChild();
-				sPtr 	lastSibling();
+		virtual sPointer<Expression> 	dupe();
+				sPointer<Expression> 	findSelectedChild();
+				sPointer<Expression> 	lastSibling();
 				void 	pushEnvironment();
 		virtual string 	toString(bool isFirst = false);
 
-		virtual sPtr 	copystate(sPtr n);
-		virtual sPtr 	newobj();
+		virtual sPointer<Expression> 	copystate(sPointer<Expression> n);
+		virtual sPointer<Expression> 	newobj();
 
 				bool 	isType(int);
 
 				int 	getDirtyness();
 				Environment *getEnvironment();
 		virtual int 	getHeight(GraphicsContext *grcon);
-				int 	getID();
 				bool 	getIsTop();
 				string 	getMytext();
 				string  getDisplayMytext();
@@ -77,7 +73,7 @@ namespace whelk {
 
 				void 	resetType();
 
-		static 	sPtr 	parseFromStream(istream& s, bool& end_of_file);
+		static 	sPointer<Expression> 	parseFromStream(istream& s, bool& end_of_file);
 		static	bool	isType(int testtype, int desiredtype);
 	};
 }

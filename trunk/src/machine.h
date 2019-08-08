@@ -1,6 +1,8 @@
 #pragma once
 #include "p_exp.h"
 #include "instruction.h"
+#include "expression.h"
+#include "environment.h"
 
 namespace whelk {
 	/*
@@ -24,7 +26,7 @@ namespace whelk {
 	public:
 		Machine();
 		~Machine();
-		void setup(sPtr top, Environment* e = 0);
+		void setup(sPointer<Expression> top, Environment* e = 0);
 		void step();
 		void process();
 		void collapse();
@@ -35,7 +37,7 @@ namespace whelk {
 		void applySkipVector();
 		void debugList();
 		bool finished();
-		sPtr result();
-		sPtr eval(sPtr top, Environment* e = 0);
+		sPointer<Expression> result();
+		sPointer<Expression> eval(sPointer<Expression> top, Environment* e = 0);
 	};
 };

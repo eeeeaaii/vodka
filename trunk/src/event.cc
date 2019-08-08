@@ -1,8 +1,9 @@
-#include "whelk.h"
 #include "event.h"
-#include "storage_manager.h"
+#include "storage_allocator.h"
 #include "whelk_string.h"
+#include "expression.h"
 
+using namespace whelk;
 
 Event::Event()
 {
@@ -28,17 +29,19 @@ Event::~Event()
 
 void Event::initEventInfo()
 {
+	sPointer<Expression> tmpEventInfo;
+
 	switch(type) {
 	case ET_KEYDOWN:
 		{
-			eventinfo = 
-			GSM.newPair(
-				GSM.newString(string("key-down"), false),
-				GSM.newPair(
-					GSM.newInteger(keyvalue),
-					GSM.newPair(
-						GSM.newChar(char(keyvalue)),
-						GSM.newNull()
+			tmpEventInfo = 
+			GSA.newPair(
+				GSA.newString(string("key-down"), false),
+				GSA.newPair(
+					GSA.newInteger(keyvalue),
+					GSA.newPair(
+						GSA.newChar(char(keyvalue)),
+						GSA.newNull()
 					)
 				)
 			);
@@ -46,14 +49,14 @@ void Event::initEventInfo()
 		}
 	case ET_KEYUP:
 		{
-			eventinfo = 
-			GSM.newPair(
-				GSM.newString(string("key-up"), false),
-				GSM.newPair(
-					GSM.newInteger(keyvalue),
-					GSM.newPair(
-						GSM.newChar(char(keyvalue)),
-						GSM.newNull()
+			tmpEventInfo = 
+			GSA.newPair(
+				GSA.newString(string("key-up"), false),
+				GSA.newPair(
+					GSA.newInteger(keyvalue),
+					GSA.newPair(
+						GSA.newChar(char(keyvalue)),
+						GSA.newNull()
 					)
 				)
 			);
@@ -61,34 +64,35 @@ void Event::initEventInfo()
 		}
 	case ET_MOUSEDOWN:
 		{
-			sPtr b;
+			sPointer<Expression> b;
 			switch(button) {
 				case MOUSE_UNASSIGNED:
 					assert(false);
 					break;
 				case MOUSE_LEFTBUTTON:
-					b = GSM.newString(string("left"), false);
+					b = GSA.newString(string("left"), false);
 					break;
 				case MOUSE_RIGHTBUTTON:
-					b = GSM.newString(string("right"), false);
+					b = GSA.newString(string("right"), false);
 					break;
 				case MOUSE_MIDDLEBUTTON:
-					b = GSM.newString(string("middle"), false);
+					b = GSA.newString(string("middle"), false);
 					break;
 			}
-			GSM.newPair(
-				GSM.newString(string("mousedown"), false),
-				GSM.newPair(
+			tmpEventInfo = 
+			GSA.newPair(
+				GSA.newString(string("mousedown"), false),
+				GSA.newPair(
 					b,
-					GSM.newPair(
-						GSM.newPair(
-							GSM.newInteger(x),
-							GSM.newPair(
-								GSM.newInteger(y),
-								GSM.newNull()
+					GSA.newPair(
+						GSA.newPair(
+							GSA.newInteger(x),
+							GSA.newPair(
+								GSA.newInteger(y),
+								GSA.newNull()
 							)
 						),
-						GSM.newNull()
+						GSA.newNull()
 					)
 				)
 			);
@@ -97,10 +101,15 @@ void Event::initEventInfo()
 	default:
 		assert(false);
 	}
+	Expression* e = tmpEventInfo.getP();
+	Code* c = (Code*)e;
+	eventinfo = c;
+//	return c;
+//	return sPointer<Code>(c);
 
 }
 
-sPtr Event::getEventInfo()
+sPointer<Code> Event::getEventInfo()
 {
 	return eventinfo;
 }

@@ -1,13 +1,16 @@
 #pragma once
-#include "event_handler.h"
 #include "p_exp.h"
+#include "code.h"
+#include "expression.h"
+#include "event_handler.h"
+#include "event.h"
 
 
 #define IDE_HANDLER_DECLARATION(X)\
 class X : public IDEEventHandler\
 {\
 public:\
-	X(sPtr p) { exp = p; };\
+	X(sPointer<Expression> p) { exp = p; };\
 	virtual void notify(Event *e);\
 };\
 
@@ -18,7 +21,7 @@ namespace whelk {
 			: public EventHandler
 		{
 		public:
-			void swapSelected(sPtr a, sPtr b);
+			void swapSelected(sPointer<Expression> a, sPointer<Expression> b);
 		};
 		IDE_HANDLER_DECLARATION(IDECreateNextSiblingHandler);
 		IDE_HANDLER_DECLARATION(IDECreatePreviousSiblingHandler);
@@ -44,7 +47,7 @@ class X : public IDEEventHandler \
 {\
 public:\
 	virtual bool test(Event *e);\
-	virtual sPtr handle(Event *e);\
+	virtual sPointer<Expression> handle(Event *e);\
 	X(EventHandler *e) { next = e; }; \
 };
 
@@ -58,10 +61,10 @@ namespace whelk {
 			IDEEventHandler(void);
 			~IDEEventHandler(void);
 			virtual bool test(Event *e) = 0;
-			virtual sPtr handle(Event *e) = 0;
-			sPtr findSelectedChild(sPtr p);
-			void swapSelected(sPtr a, sPtr b);
-			static IDEEventHandler* initializeHandlerList(sPtr exp);
+			virtual sPointer<Expression> handle(Event *e) = 0;
+			sPointer<Expression> findSelectedChild(sPointer<Expression> p);
+			void swapSelected(sPointer<Expression> a, sPointer<Expression> b);
+			static IDEEventHandler* initializeHandlerList(sPointer<Expression> exp);
 		};
 
 		IDE_HANDLER_DECLARATION(IDECreateNextSiblingHandler);

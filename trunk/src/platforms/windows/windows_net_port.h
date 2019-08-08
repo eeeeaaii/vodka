@@ -1,5 +1,6 @@
 #pragma once
 #include "expression.h"
+#include "storage_allocator.h"
 #include "port.h"
 #include <vcclr.h>
 #include <string>
@@ -20,8 +21,8 @@ namespace whelk {
 
 		void writeChar(char c);
 		char readChar();
-		virtual sPtr newobj() { return GSM.createExp(new WindowsClientPort()); }
-		virtual sPtr copystate(sPtr n) { assert(false); }
+		virtual sPointer<Expression> newobj() { return GSA.createExp(new WindowsClientPort()); }
+		virtual sPointer<Expression> copystate(sPointer<Expression> n) { assert(false); }
 		void close();
 	};
 
@@ -39,8 +40,8 @@ namespace whelk {
 
 		void writeChar(char c);
 		char readChar();
-		virtual sPtr newobj() { return GSM.createExp(new WindowsServerPort()); }
-		virtual sPtr copystate(sPtr n) { ((ServerPort*)n)->port = port; }
+		virtual sPointer<Expression> newobj() { return GSA.createExp(new WindowsServerPort()); }
+		virtual sPointer<Expression> copystate(sPointer<Expression> n) { ((ServerPort*)n)->port = port; }
 		void close();
 	};
 

@@ -1,24 +1,26 @@
 #pragma once
 #include "event_observer.h"
 #include "p_exp.h"
+#include "event.h"
+#include "code.h"
+#include "expression.h"
 
 namespace whelk {
-	class Event;
 
 	class EventHandler
 		: public EventObserver
 	{
 	private:
-		sPtr code;
+		sPointer<Expression> code;
 	protected:
-		sPtr exp;
+		sPointer<Expression> exp;
 	public:
 		EventHandler();
 		virtual ~EventHandler();
 
 		virtual void notify(Event *e);
-		void setCode(sPtr ncode);
-		void setExpression(sPtr r);
+		void setCode(sPointer<Expression> ncode);
+		void setExpression(sPointer<Expression> r);
 		static int stringToTypeID(string s);
 	};
 }

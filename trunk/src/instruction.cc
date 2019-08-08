@@ -1,4 +1,4 @@
-#include "whelk.h"
+
 #include "instruction.h"
 
 #include "expression.h"
@@ -10,7 +10,9 @@
 #using <mscorlib.dll>
 #endif
 
-Instruction::Instruction(int _opcode, sPtr _p)
+using namespace whelk;
+
+Instruction::Instruction(int _opcode, sPointer<Expression> _p)
 {
 	opcode = _opcode;
 	p = _p;
@@ -28,7 +30,7 @@ Instruction::Instruction(int _opcode)
 	opcode = _opcode;
 	env = 0;
 }
-Instruction::Instruction(sPtr _p)
+Instruction::Instruction(sPointer<Expression> _p)
 {
 	p = _p;
 	switch(p->getType()) {
@@ -64,7 +66,7 @@ Instruction& Instruction::operator=(const Instruction& rhs)
 	return *this;
 }
 
-sPtr Instruction::getSptr()
+sPointer<Expression> Instruction::getsPtr()
 {
 	return p;
 }
@@ -88,14 +90,14 @@ list<Instruction> Instruction::getChildren()
 {
 	assert(opcode == OPCODE_PAIR);
 	list<Instruction> tl;
-	for (		sPtr li = p
+	for (		sPointer<Expression> li = p
 				;
 				li->getType() != XT_NULL
 				;
 				li = ((Pair*)li)->getCdr()
 		)
 	{
-		sPtr ptmp = ((Pair*)li)->getCar();
+		sPointer<Expression> ptmp = ((Pair*)li)->getCar();
 		int opcode;
 		if (ptmp->getType() == XT_PAIR) {
 			opcode = OPCODE_PAIR;
@@ -127,10 +129,10 @@ void Instruction::lexCurrent()
 
 void Instruction::replaceSymbol()
 {
-	sPtr boundto;
 	string txt;
 	txt = p->getMytext();
-	boundto = env->lookupBinding(txt);
+	sPointer<Code> boundCode = env->lookupBinding(txt);
+	sPointer<Expression> boundto = (Expression*)boundCode.getP();
 	if (!boundto) {
 		assert(false);
 	}
@@ -191,25 +193,25 @@ Instruction Instruction::evaluateProcedure(Environment *e, list<Instruction> arg
 	if (typeid(*p) == typeid(Procedure)) { // if user-defined function
 #pragma GCC diagnostic pop
 		list<Instruction>::iterator lIiter;
-		list<sPtr> lsPargs;
+		list<sPointer<Expression> > lsPargs;
 		for (lIiter = args.begin() ; lIiter != args.end() ; lIiter++) {
 			lsPargs.push_front(lIiter->p);
 		}
 		Procedure *procp;
 		procp = ((Procedure*)p);
 		procp->addBindings(e, lsPargs);
-		sPtr newp = procp->getCodeRoot();
+		sPointer<Expression> newp = procp->getCodeRoot();
 		Instruction inst(newp);
 		inst.setEnvironment(e);
 		return inst;
 
 	} else {
-		vector<sPtr> argv;
+		vector<sPointer<Expression> > argv;
 		list<Instruction>::iterator i;
 		for (i = args.begin() ; i != args.end() ; i++) {
 			argv.push_back(i->p);
 		}
-		sPtr newp = ((Procedure*)p)->evalPrimitive(argv);
+		sPointer<Expression> newp = ((Procedure*)p)->evalPrimitive(argv);
 		return Instruction(OPCODE_EVALUATED, newp);
 	}
 }

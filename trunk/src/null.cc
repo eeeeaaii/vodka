@@ -1,9 +1,8 @@
-#include "whelk.h"
 #include "null.h"
-
-#include "storage_manager.h"
+#include "storage_allocator.h"
 #include "graphics_context.h"
 
+using namespace whelk;
 
 Null::Null(void)
 {
@@ -28,6 +27,12 @@ Delta Null::draw(GraphicsContext *grcon)
 	return d;
 
 }
+
+sPointer<Expression> Null::newobj() {
+	return GSA.createExp(new Null());
+}
+
+
 int Null::getHeight(GraphicsContext *grcon)
 {
 	return grcon->getTextHeight("?");

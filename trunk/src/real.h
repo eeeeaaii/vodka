@@ -17,9 +17,9 @@ namespace whelk {
 		void setValue(double d);
 		bool checkValid(string s);
 		virtual double getRealRep();
-		virtual sPtr promote();
-		virtual sPtr newobj();
-		virtual sPtr copystate(sPtr n);
+		virtual sPointer<Expression> promote();
+		virtual sPointer<Expression> newobj();
+		virtual sPointer<Expression> copystate(sPointer<Expression> n);
 	};
 }
 

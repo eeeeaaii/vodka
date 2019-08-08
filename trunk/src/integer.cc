@@ -1,8 +1,10 @@
-#include "whelk.h"
 #include "integer.h"
-
-#include "storage_manager.h"
+#include "storage_allocator.h"
 #include "expression.h"
+#include <sstream>
+
+using namespace whelk;
+using namespace std;
 
 Integer::Integer()
 {
@@ -45,18 +47,18 @@ int Integer::getIntRep()
 	return value;
 }
 
-sPtr Integer::promote()
+sPointer<Expression> Integer::promote()
 {
-	sPtr p = GSM.newReal(value);
+	sPointer<Expression> p = GSA.newReal(value);
 	return p;
 }
 
-sPtr Integer::newobj()
+sPointer<Expression> Integer::newobj()
 {
-	return GSM.createExp(new Integer()); 
+	return GSA.createExp(new Integer()); 
 }
 
-sPtr Integer::copystate(sPtr n) {
+sPointer<Expression> Integer::copystate(sPointer<Expression> n) {
 	((Integer*)n)->value = value;
 	return Number::copystate(n);
 }

@@ -1,4 +1,4 @@
-#include "whelk.h"
+
 #include "machine.h"
 
 #include "expression.h"
@@ -11,6 +11,8 @@
 #using <mscorlib.dll>
 #endif
 
+using namespace whelk;
+
 Machine::Machine()
 {
 }
@@ -19,17 +21,17 @@ Machine::~Machine()
 {
 }
 
-sPtr Machine::eval(sPtr top, Environment *e)
+sPointer<Expression> Machine::eval(sPointer<Expression> top, Environment *e)
 {
 	setup(top, e);
 	process();
 	return result();
 }
 
-void Machine::setup(sPtr top, Environment *e)
+void Machine::setup(sPointer<Expression> top, Environment *e)
 {
 	if (e == 0) {
-		e = GSM.getGlobalEnvironment();
+		e = GSA.getGlobalEnvironment();
 	}
 	Instruction i(top);
 	i.setEnvironment(e);
@@ -49,9 +51,9 @@ bool Machine::finished()
 	return (instructions.size() == 1 && IP->getOpcode() == OPCODE_EVALUATED);
 }
 
-sPtr Machine::result()
+sPointer<Expression> Machine::result()
 {
-	return (*(instructions.begin())).getSptr();
+	return (*(instructions.begin())).getsPtr();
 }
 
 void Machine::step()

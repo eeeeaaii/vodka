@@ -1,5 +1,5 @@
 #include "form1.h"
-#include "whelk.h"
+
 #include <windows.h>
 #include <string>
 

@@ -17,8 +17,8 @@ namespace whelk {
 		int getLength();
 		string getStringRep();
 		void setStringRep(string x, bool dec);
-		virtual sPtr newobj() { return GSM.createExp(new String()); }
-		virtual sPtr copystate(sPtr n) {
+		virtual sPointer<Expression> newobj();
+		virtual sPointer<Expression> copystate(sPointer<Expression> n) {
 			((String*)n)->value = value;
 			return Expression::copystate(n);
 		}

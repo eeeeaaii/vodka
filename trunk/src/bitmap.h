@@ -1,5 +1,4 @@
 #pragma once
-#include "whelk.h"
 
 namespace whelk 
 {

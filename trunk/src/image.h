@@ -1,9 +1,9 @@
 #pragma once
 #include "expression.h"
+#include "bitmap.h"
+#include "graphics_context.h"
 
 namespace whelk {
-	class Bitmap;
-
 	class Image 
 		: public Expression
 	{
@@ -22,8 +22,8 @@ namespace whelk {
 		int getWidth(GraphicsContext *grcon = 0);
 		int getHeight(GraphicsContext *grcon = 0);
 		int getColorAt(int x, int y);
-		virtual sPtr newobj();
-		virtual sPtr copystate(sPtr n);
+		virtual sPointer<Expression> newobj();
+		virtual sPointer<Expression> copystate(sPointer<Expression> n);
 	};
 }
 

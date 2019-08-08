@@ -60,8 +60,8 @@ namespace whelk {
 		char readChar();
 		char peekChar();
 		bool isEof();
-		virtual sPtr newobj() { return GSM.createExp(new FileInputPort()); }
-		virtual sPtr copystate(sPtr n) {
+		virtual sPointer<Expression> newobj();
+		virtual sPointer<Expression> copystate(sPointer<Expression> n) {
 			assert(false);
 		}
 	};
@@ -79,8 +79,8 @@ namespace whelk {
 		virtual ~FileOutputPort(void);
 
 		void writeChar(char);
-		virtual sPtr newobj() { return GSM.createExp(new FileOutputPort()); }
-		virtual sPtr copystate(sPtr n) {
+		virtual sPointer<Expression> newobj();
+		virtual sPointer<Expression> copystate(sPointer<Expression> n) {
 			assert(false);
 		}
 	};

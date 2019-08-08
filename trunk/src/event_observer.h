@@ -1,9 +1,8 @@
 #pragma once
-#include "whelk.h"
+#include "event.h"
 
 namespace whelk 
 {
-	class Event;
 	class EventObserver
 	{
 	public:

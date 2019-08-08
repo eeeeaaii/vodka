@@ -1,4 +1,4 @@
-#include "whelk.h"
+
 #include "windows_graphics_context.h"
 
 #include "simple_defines.h"

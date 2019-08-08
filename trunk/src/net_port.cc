@@ -1,10 +1,13 @@
-#include "whelk.h"
 #include "port.h"
 #include "net_port.h"
-#include <iostream>
-#include <fstream>
 #include "for_debugging.h"
 
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace whelk;
+using namespace std;
 
 ClientPort::ClientPort(void) : Port()
 {

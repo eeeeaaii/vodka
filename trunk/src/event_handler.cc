@@ -1,4 +1,3 @@
-#include "whelk.h"
 #include "event_handler.h"
 
 #include "event.h"
@@ -7,6 +6,9 @@
 #include "storage_manager.h"
 #include "machine.h"
 #include "pair.h"
+
+using namespace whelk;
+
 
 EventHandler::EventHandler()
 {
@@ -20,17 +22,17 @@ void EventHandler::notify(Event *e)
 {
 	Environment *s = exp->getEnvironment();
 	s->addBinding("*event-info*", e->getEventInfo());
-	sPtr p = exp->getParent();
+	sPointer<Expression> p = exp->getParent();
 	Machine m;
 	((Pair*)p)->setCar(m.eval(code, s));
 }
 
-void EventHandler::setExpression(sPtr r)
+void EventHandler::setExpression(sPointer<Expression> r)
 {
 	exp = r;
 }
 
-void EventHandler::setCode(sPtr ncode)
+void EventHandler::setCode(sPointer<Expression> ncode)
 {
 	code = ncode;
 }

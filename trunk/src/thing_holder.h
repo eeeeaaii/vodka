@@ -1,20 +1,20 @@
 #pragma once
 #include "p_exp.h"
+#include "expression.h"
+#include "eval_exception.h"
+#include "event.h"
+#include "event_handler.h"
+#include "event_subject.h"
+#include "graphics_context.h"
 
 unsigned int eventThreadStartup(void *args);
 
 namespace whelk {
-	class Expression;
-	class GraphicsContext;
-	class Event;
-	class EventHandler;
-	class EvalException;
-	class EventSubject;
 	class ThingHolder  
 	{
 	private:
-		sPtr top;
-		sPtr selected;
+		sPointer<Expression> top;
+		sPointer<Expression> selected;
 		EvalException *topError;
 		vector<EventHandler*> idehandlers;
 		EventSubject *dispatcher;
@@ -30,8 +30,8 @@ namespace whelk {
 		void load(string filename);
 		void draw(GraphicsContext *gracon);
 		void init();
-		void setTop(sPtr newtop);
-		sPtr getTop();
+		void setTop(sPointer<Expression> newtop);
+		sPointer<Expression> getTop();
 		void evaltop();
 		EvalException *getError();
 		void setupHandler(EventHandler *eh);

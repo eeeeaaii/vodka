@@ -1,6 +1,8 @@
 #pragma once
-#include "whelk.h"
 #include "expression.h"
+#include <map>
+
+using namespace std;
 
 namespace whelk {
 	/*
@@ -35,8 +37,8 @@ namespace whelk {
 
 		string 			getCharRep();
 		char 			getCharCode();
-		virtual sPtr 	newobj();
-		virtual sPtr 	copystate(sPtr n);
+		virtual sPointer<Expression> 	newobj();
+		virtual sPointer<Expression> 	copystate(sPointer<Expression> n);
 
 		static bool isValidCharCode(string code);
 	};

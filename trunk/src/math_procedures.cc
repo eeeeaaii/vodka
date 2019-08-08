@@ -1,7 +1,3 @@
-
-
-#include "whelk.h"
-//#include "rrccmm.h"
 #include "eval_exception.h"
 #include "storage_manager.h"
 #include "environment.h"
@@ -15,12 +11,13 @@
 #include "boolean.h"
 #include "number.h"
 #include "for_debugging.h"
+#include "procedure.h"
 
 #include <math.h>
-#include "procedure.h"
 #include <iostream>
 #include <fstream>
 
+using namespace whelk;
 using namespace std;
 using namespace builtins;
 using namespace builtins::math;
@@ -33,7 +30,7 @@ void Add::getPrototype(vector<int>& prototype)
 //	prototype.push_back(XT_NUMBER);
 }
 
-sPtr Add::apply()
+sPointer<Expression> Add::apply()
 {
 	int t = argPromote();
 	switch(t) {
@@ -42,14 +39,14 @@ sPtr Add::apply()
 			for (int i = 0 ; i < numArgs() ; i++) {
 				sum += ((Integer*)arg(i))->getIntRep();
 			}
-			return GSM.newInteger(sum);
+			return GSA.newInteger(sum);
 		}
 		case XT_REAL: {
 			double sum = 0;
 			for (int i = 0 ; i < numArgs() ; i++) {
 				sum += ((Real*)arg(i))->getRealRep();
 			}
-			return GSM.newReal(sum);
+			return GSA.newReal(sum);
 		}
 	}
 	return 0;
@@ -62,7 +59,7 @@ void Subtract::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER|XT_MULTIPLE);
 }
 
-sPtr Subtract::apply()
+sPointer<Expression> Subtract::apply()
 {
 	int t = argPromote();
 	switch(t) {
@@ -76,7 +73,7 @@ sPtr Subtract::apply()
 					r -= ((Integer*)arg(i))->getIntRep();
 				}
 			}
-			return GSM.newInteger(r);
+			return GSA.newInteger(r);
 		}
 		case XT_REAL: {
 			double r;
@@ -88,7 +85,7 @@ sPtr Subtract::apply()
 					r -= ((Real*)arg(i))->getRealRep();
 				}
 			}
-			return GSM.newReal(r);
+			return GSA.newReal(r);
 		}
 	}
 	return 0;
@@ -102,7 +99,7 @@ void Multiply::getPrototype(vector<int>& prototype)
 //	prototype.push_back(XT_NUMBER);
 }
 
-sPtr Multiply::apply()
+sPointer<Expression> Multiply::apply()
 {
 	int t = argPromote();
 	switch(t) {
@@ -111,14 +108,14 @@ sPtr Multiply::apply()
 			for (int i = 0 ; i < numArgs() ; i++) {
 				r *= ((Integer*)arg(i))->getIntRep();
 			}
-			return GSM.newInteger(r);
+			return GSA.newInteger(r);
 		}
 		case XT_REAL: {
 			double r = 1;
 			for (int i = 0 ; i < numArgs() ; i++) {
 				r *= ((Real*)arg(i))->getRealRep();
 			}
-			return GSM.newReal(r);
+			return GSA.newReal(r);
 		}
 	}
 	return 0;
@@ -132,7 +129,7 @@ void Divide::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER|XT_MULTIPLE);
 }
 
-sPtr Divide::apply()
+sPointer<Expression> Divide::apply()
 {
 	int t = argPromote();
 	switch(t) {
@@ -147,7 +144,7 @@ sPtr Divide::apply()
 				if (tmp == 0) {
 					throw new EvalException("divide by zero error.");
 				} else if (abs(tmp) == 1) {
-					return GSM.newInteger(tmp);
+					return GSA.newInteger(tmp);
 				} else {
 					d = 1.0 / (double)((Integer*)arg(0))->getIntRep();
 					usedouble = true;
@@ -169,9 +166,9 @@ sPtr Divide::apply()
 				}
 			}
 			if (usedouble) {
-				return GSM.newReal(d);
+				return GSA.newReal(d);
 			} else {
-				return GSM.newInteger(r);
+				return GSA.newInteger(r);
 			}
 		}
 		case XT_REAL:
@@ -194,7 +191,7 @@ sPtr Divide::apply()
 					d = d / tmp;
 				}
 			}
-			return GSM.newReal(d);
+			return GSA.newReal(d);
 		}
 	}
 	return 0;
@@ -207,18 +204,18 @@ void E::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 	prototype.push_back(XT_NUMBER);
 }
-sPtr E::apply()
+sPointer<Expression> E::apply()
 {
 	int t = argPromote();
 	switch(t) {
 		case XT_INTEGER:
-		return GSM.newBoolean(
+		return GSA.newBoolean(
 			((Integer*)arg(0))->getIntRep()
 			==
 			((Integer*)arg(1))->getIntRep()
 			);
 		case XT_REAL:
-		return GSM.newBoolean(
+		return GSA.newBoolean(
 			((Real*)arg(0))->getRealRep()
 			==
 			((Real*)arg(1))->getRealRep()
@@ -234,18 +231,18 @@ void GT::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 }
 
-sPtr GT::apply()
+sPointer<Expression> GT::apply()
 {
 	int t = argPromote();
 	switch(t) {
 		case XT_INTEGER:
-		return GSM.newBoolean(
+		return GSA.newBoolean(
 			((Integer*)arg(0))->getIntRep()
 			>
 			((Integer*)arg(1))->getIntRep()
 			);
 		case XT_REAL:
-		return GSM.newBoolean(
+		return GSA.newBoolean(
 			((Real*)arg(0))->getRealRep()
 			>
 			((Real*)arg(1))->getRealRep()
@@ -262,18 +259,18 @@ void GTE::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 }
 
-sPtr GTE::apply()
+sPointer<Expression> GTE::apply()
 {
 	int t = argPromote();
 	switch(t) {
 		case XT_INTEGER:
-		return GSM.newBoolean(
+		return GSA.newBoolean(
 			((Integer*)arg(0))->getIntRep()
 			>=
 			((Integer*)arg(1))->getIntRep()
 			);
 		case XT_REAL:
-		return GSM.newBoolean(
+		return GSA.newBoolean(
 			((Real*)arg(0))->getRealRep()
 			>=
 			((Real*)arg(1))->getRealRep()
@@ -291,18 +288,18 @@ void LT::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 }
 
-sPtr LT::apply()
+sPointer<Expression> LT::apply()
 {
 	int t = argPromote();
 	switch(t) {
 		case XT_INTEGER:
-		return GSM.newBoolean(
+		return GSA.newBoolean(
 			((Integer*)arg(0))->getIntRep()
 			<
 			((Integer*)arg(1))->getIntRep()
 			);
 		case XT_REAL:
-		return GSM.newBoolean(
+		return GSA.newBoolean(
 			((Real*)arg(0))->getRealRep()
 			<
 			((Real*)arg(1))->getRealRep()
@@ -319,18 +316,18 @@ void LTE::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 	prototype.push_back(XT_NUMBER);
 }
-sPtr LTE::apply()
+sPointer<Expression> LTE::apply()
 {
 	int t = argPromote();
 	switch(t) {
 		case XT_INTEGER:
-		return GSM.newBoolean(
+		return GSA.newBoolean(
 			((Integer*)arg(0))->getIntRep()
 			<=
 			((Integer*)arg(1))->getIntRep()
 			);
 		case XT_REAL:
-		return GSM.newBoolean(
+		return GSA.newBoolean(
 			((Real*)arg(0))->getRealRep()
 			<=
 			((Real*)arg(1))->getRealRep()
@@ -350,13 +347,13 @@ void Sin::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 }
 
-sPtr Sin::apply()
+sPointer<Expression> Sin::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	n = promoteToLevel(n, XT_REAL);
 	double d = ((Real*)n)->getRealRep();
 	d = sin(d);
-	return GSM.newReal(d);
+	return GSA.newReal(d);
 }
 
 //=============================================
@@ -366,13 +363,13 @@ void Cos::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 }
 
-sPtr Cos::apply()
+sPointer<Expression> Cos::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	n = promoteToLevel(n, XT_REAL);
 	double d = ((Real*)n)->getRealRep();
 	d = cos(d);
-	return GSM.newReal(d);
+	return GSA.newReal(d);
 }
 
 //=============================================
@@ -382,13 +379,13 @@ void Tan::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 }
 
-sPtr Tan::apply()
+sPointer<Expression> Tan::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	n = promoteToLevel(n, XT_REAL);
 	double d = ((Real*)n)->getRealRep();
 	d = tan(d);
-	return GSM.newReal(d);
+	return GSA.newReal(d);
 }
 
 
@@ -399,13 +396,13 @@ void Asin::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 }
 
-sPtr Asin::apply()
+sPointer<Expression> Asin::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	n = promoteToLevel(n, XT_REAL);
 	double d = ((Real*)n)->getRealRep();
 	d = asin(d);
-	return GSM.newReal(d);
+	return GSA.newReal(d);
 }
 
 //=============================================
@@ -415,13 +412,13 @@ void Acos::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 }
 
-sPtr Acos::apply()
+sPointer<Expression> Acos::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	n = promoteToLevel(n, XT_REAL);
 	double d = ((Real*)n)->getRealRep();
 	d = acos(d);
-	return GSM.newReal(d);
+	return GSA.newReal(d);
 }
 
 //=============================================
@@ -431,13 +428,13 @@ void Atan::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 }
 
-sPtr Atan::apply()
+sPointer<Expression> Atan::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	n = promoteToLevel(n, XT_REAL);
 	double d = ((Real*)n)->getRealRep();
 	d = atan(d);
-	return GSM.newReal(d);
+	return GSA.newReal(d);
 }
 
 //=============================================
@@ -447,16 +444,16 @@ void Sqrt::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 }
 
-sPtr Sqrt::apply()
+sPointer<Expression> Sqrt::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	n = promoteToLevel(n, XT_REAL);
 	double d = ((Real*)n)->getRealRep();
 	if (d < 0) {
 		throw new EvalException("imaginary numbers not yet implemented: sqrt of negative number illegal.");
 	}
 	d = sqrt(d);
-	return GSM.newReal(d);
+	return GSA.newReal(d);
 }
 
 //=============================================
@@ -468,10 +465,10 @@ void Expt::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_INTEGER);
 }
 
-sPtr Expt::apply()
+sPointer<Expression> Expt::apply()
 {
-	sPtr n0 = arg(0);
-	sPtr n1 = arg(1);
+	sPointer<Expression> n0 = arg(0);
+	sPointer<Expression> n1 = arg(1);
 	n0 = promoteToLevel(n0, XT_REAL);
 	n1 = promoteToLevel(n1, XT_REAL);
 	double d0 = ((Real*)n0)->getRealRep();
@@ -480,7 +477,7 @@ sPtr Expt::apply()
 		throw new EvalException("cannot take 0 to a negative power (divide by zero error)");
 	}
 	double r = pow(d0, d1);
-	return GSM.newReal(r);
+	return GSA.newReal(r);
 }
 //=============================================
 
@@ -489,13 +486,13 @@ void Log::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 }
 
-sPtr Log::apply()
+sPointer<Expression> Log::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	n = promoteToLevel(n, XT_REAL);
 	double d = ((Real*)n)->getRealRep();
 	d = log(d);
-	return GSM.newReal(d);
+	return GSA.newReal(d);
 }
 //=============================================
 
@@ -504,13 +501,13 @@ void Exp::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 }
 
-sPtr Exp::apply()
+sPointer<Expression> Exp::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	n = promoteToLevel(n, XT_REAL);
 	double d = ((Real*)n)->getRealRep();
 	d = exp(d);
-	return GSM.newReal(d);
+	return GSA.newReal(d);
 }
 
 //=============================================
@@ -521,7 +518,7 @@ void Modulo::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_INTEGER);
 }
 
-sPtr Modulo::apply()
+sPointer<Expression> Modulo::apply()
 {
 	// note the if a = b mod c, then
 	// that means that a - b is divisible by c.
@@ -532,7 +529,7 @@ sPtr Modulo::apply()
 		throw new EvalException("divide by zero error.");
 	}
 	// do not promote
-	return GSM.newInteger(
+	return GSA.newInteger(
 			((Integer*)arg(0))->getIntRep()
 			%
 			((Integer*)arg(1))->getIntRep()
@@ -546,7 +543,7 @@ void Quotient::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_INTEGER);
 }
 
-sPtr Quotient::apply()
+sPointer<Expression> Quotient::apply()
 {
 	if (((Integer*)arg(1))->getIntRep() == 0) {
 		throw new EvalException("divide by zero error.");
@@ -556,7 +553,7 @@ sPtr Quotient::apply()
 			/
 			((Integer*)arg(1))->getIntRep()
 			;
-	return GSM.newInteger(r);
+	return GSA.newInteger(r);
 }
 //=============================================
 
@@ -566,7 +563,7 @@ void Remainder::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_INTEGER);
 }
 
-sPtr Remainder::apply()
+sPointer<Expression> Remainder::apply()
 {
 	if (((Integer*)arg(1))->getIntRep() == 0) {
 		throw new EvalException("divide by zero error.");
@@ -578,7 +575,7 @@ sPtr Remainder::apply()
 	dividend = abs(dividend);
 	int result;
 	for ( result = dividend ; abs(result) > divisor ; result -= divisor );
-	return GSM.newInteger(result * sign);
+	return GSA.newInteger(result * sign);
 }
 
 //=============================================
@@ -588,13 +585,13 @@ void Floor::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 }
 
-sPtr Floor::apply()
+sPointer<Expression> Floor::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	n = promoteToLevel(n, XT_REAL);
 	double d = ((Real*)n)->getRealRep();
 	d = floor(d);
-	return GSM.newReal(d);
+	return GSA.newReal(d);
 }
 
 //=============================================
@@ -604,13 +601,13 @@ void Ceiling::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 }
 
-sPtr Ceiling::apply()
+sPointer<Expression> Ceiling::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	n = promoteToLevel(n, XT_REAL);
 	double d = ((Real*)n)->getRealRep();
 	d = ceil(d);
-	return GSM.newReal(d);
+	return GSA.newReal(d);
 }
 //=============================================
 
@@ -619,9 +616,9 @@ void Truncate::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 }
 
-sPtr Truncate::apply()
+sPointer<Expression> Truncate::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	n = promoteToLevel(n, XT_REAL);
 	double d = ((Real*)n)->getRealRep();
 	if (d < 0) {
@@ -629,7 +626,7 @@ sPtr Truncate::apply()
 	} else {
 		d = floor(d);
 	}
-	return GSM.newReal(d);
+	return GSA.newReal(d);
 }
 //=============================================
 
@@ -638,9 +635,9 @@ void Round::getPrototype(vector<int>& prototype)
 	prototype.push_back(XT_NUMBER);
 }
 
-sPtr Round::apply()
+sPointer<Expression> Round::apply()
 {
-	sPtr n = arg(0);
+	sPointer<Expression> n = arg(0);
 	n = promoteToLevel(n, XT_REAL);
 	double d = ((Real*)n)->getRealRep();
 	double r;
@@ -655,5 +652,5 @@ sPtr Round::apply()
 		if (d3 > -.5) r = d2;
 		else r = d2 - 1;
 	}
-	return GSM.newReal(r);
+	return GSA.newReal(r);
 }

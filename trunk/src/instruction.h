@@ -115,6 +115,7 @@
 
 #include "p_exp.h"
 #include "environment.h"
+#include "expression.h"
 #include <list>
 #include <vector>
 
@@ -141,15 +142,15 @@ namespace whelk {
 	class Instruction
 	{
 	private:
-		sPtr p;
+		sPointer<Expression> p;
 		int opcode;
 		void setOpcode(int nopcode);
 		Environment *env;
 	public:
 		Instruction();
 		Instruction(int opcode);
-		Instruction(int opcode, sPtr p);
-		Instruction(sPtr p);
+		Instruction(int opcode, sPointer<Expression> p);
+		Instruction(sPointer<Expression> p);
 		~Instruction(void);
 		Instruction(const Instruction& rhs);
 		Instruction& operator=(const Instruction& rhs);
@@ -160,7 +161,7 @@ namespace whelk {
 		void replaceSymbol();
 		string getText();
 		Instruction evaluateProcedure(Environment *e, list<Instruction> args);
-		sPtr getSptr();
+		sPointer<Expression> getsPtr();
 		void setSkip(bool in);
 		void skipCompleted();
 		Environment *getEnvironment();

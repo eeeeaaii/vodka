@@ -1,9 +1,13 @@
 #pragma once
 #include "simple_defines.h"
+#include "bitmap.h"
+#include "constants.h"
+#include <stack>
+
+
+using namespace std;
 
 namespace whelk {
-  class Bitmap;
-
   class GraphicsContext  
   {
   private:

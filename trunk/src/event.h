@@ -1,5 +1,10 @@
 #pragma once
 #include "p_exp.h"
+#include "code.h"
+#include <string>
+#include <vector>
+
+using namespace std;
 
 namespace whelk {
 	/* class Event
@@ -48,14 +53,14 @@ namespace whelk {
 		string 			message;
 		string 			user;
 		vector<string> 	args;
-		sPtr 			eventinfo;
+		sPointer<Code> 			eventinfo;
 		static int 		firstid;
 
 	public:
 		Event();
 		virtual ~Event();
 		void 	initEventInfo();
-		sPtr 	getEventInfo();
+		sPointer<Code> 	getEventInfo();
 		int     getKeyvalue();
 		int 	getType();
 		int 	getID();

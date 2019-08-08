@@ -1,8 +1,10 @@
-#include "whelk.h"
 #include "event_subject.h"
 #include "event_observer.h"
 #include "event.h"
+#include <list>
 
+using namespace whelk;
+using namespace std;
 
 EventSubject::EventSubject()
 {
