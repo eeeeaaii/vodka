@@ -1,4 +1,5 @@
-// Copyright 2003-2005, 2008, 2019 Jason Scherer
+// Copyright 2003-2005, 2008, Jason Scherer
+// Copyright 2019 Google, Inc.
 /*
 This file is part of Vodka.
 
