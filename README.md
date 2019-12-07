@@ -87,7 +87,7 @@ Okay.
 
 #### Who are you?
 
-My name is Jason Scherer (@eeeeaaii on Twitter, [eeeeaaii@gmail.com](mailto:eeeeaaii@gmail.com)). I work on this in my spare time. I also work at a large tech company, but my work there is not related to my work on this project.
+My name is Jason Scherer (@eeeeaaii on Twitter, [eeeeaaii@gmail.com](mailto:eeeeaaii@gmail.com)). I work on this in my spare time.
 
 ### License
 
