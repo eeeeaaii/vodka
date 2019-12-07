@@ -1,0 +1,161 @@
+/*
+This file is part of Vodka.
+
+Vodka is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Vodka is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+body {
+	padding: 0;
+	margin: 0;
+}
+
+.summary {
+	margin-bottom:20px;	
+}
+
+.summaryheader {
+	font-family: Courier;
+	font-size: 28px;
+	margin-left: 10px;
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+
+.summaryname {
+	font-family: Courier;
+	font-size: 18px;
+	padding-left: 10px;	
+	padding-top: 4px;
+	padding-bottom: 4px;
+	margin-bottom: 6px;
+}
+
+.summarylist {
+	padding-bottom:15px;
+}
+
+.summarylistitem {
+	font-family: Courier;
+	font-size: 10px;
+	margin-left: 10px;
+}
+
+.testout {
+	border: 3px solid black;
+	margin-bottom: 10px;
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.testname {
+	background-color: #aaaaaa;
+	font-family: Courier;
+	font-size: 28px;
+	margin-left: 0px;
+	padding-left: 30px;
+	padding-top:15px;
+	padding-bottom:15px;
+}
+
+.testvariant {
+	padding:0;
+}
+
+.testvariantname {
+	font-family: Courier;
+	font-size: 18px;
+	padding-left: 30px;
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+
+.failed {
+	background-color:red;
+	color: white;
+}
+
+.passed {
+	background-color: green;
+	color: white;
+}
+
+.newgolden {
+	background-color: yellow;
+	color: black;
+}
+
+.testoutputs {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	padding-left:30px;
+}
+
+.outimg {
+	display: inline-block;
+	width:100px;
+	height:100px;
+	overflow:hidden;
+	border: 1px solid black;
+	margin-left:5px;
+	margin-top:15px;
+	margin-bottom:15px;
+}
+
+.outimgname {
+	background-color: #aaaaaa;
+	text-align:center;
+	padding-left:12px;
+	padding-right:12px;
+	padding-top:4px;
+	padding-bottom:4px;
+	font-family: courier;
+	font-size:12px;
+	font-style: italic;
+}
+
+.outimg img {
+	display: inline-block;
+}
+
+.ifr {
+	margin-left: 0px;
+	width:99.8%;
+}
+
+.outimgexpanded {
+	width:auto;
+	height:auto;	
+}
+
+.codeframe {
+	width:100px;
+	height:100px;
+	overflow:hidden;
+	border: 1px solid black;
+	margin-left:5px;
+	margin-top:15px;
+	margin-bottom:15px;
+	display:inline-block;
+}
+
+.codeframe iframe {
+	background-color: white;
+}
+
+.codeframeexpanded {
+	width:auto;
+	height:auto;
+}
+

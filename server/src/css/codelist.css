@@ -1,0 +1,93 @@
+/*
+This file is part of Vodka.
+
+Vodka is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Vodka is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+
+.codelist.exploded {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	/*border: 3px solid #aaaaaa;*/
+	border-width: 1.5px 3.5px 1.5px 3.5px;
+	border-style: solid;
+	border-color: #aaaaaa;
+	border-radius: 6px;	
+	padding: 5px 2px 5px 0px;
+}
+
+.codelist.exploded.selected {
+	border-color: #ff7777;
+}
+
+
+.codelist.exploded.vdir {
+	flex-direction: column;
+	border-width: 3.5px 1.5px 3.5px 1.5px;
+	padding: 0px 5px 2px 5px;
+}
+
+.codelist.exploded > .nex.exploded {
+	/*
+	ok so it's hard to read when there are a lot of commands inside commands,
+	but this isn't the solution because it breaks actions_funnel_command_typingletters,
+	plus a bunch of other tests.
+	Maybe just this?
+	.codelist.exploded > .codelist.exploded
+
+	margin: 0px 2px 0px 2px;
+	*/
+}
+
+.codelist.exploded.vdir > .nex.exploded {
+	margin: 2px 21px 2px 21px;
+}
+
+
+
+.codespan {
+	display: none;
+}
+
+.codespan.exploded {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	font-family: Courier;
+	color: #444444;
+	font-style: italic;
+	font-size: 15px;
+	background-color: #aaaaaa;
+	border: 0px;
+	padding: 3px 7px 4px 5px;
+	border-radius: 0px 6px 6px 0px;
+	margin: 0px 2px 0px 0px;
+}
+
+.codelist.exploded.vdir > .codespan {
+	border-radius: 0px 0px 6px 6px;	
+	margin: 0px 0px 2px 0px;
+}
+
+
+.codespan.exploded + .data.exploded {
+	margin-left: 5px;
+}
+
+.selected > .codespan {
+	background-color: #ff7777;
+}
+
+

@@ -1,0 +1,120 @@
+<html>
+<head>
+	<title>test output</title>
+<link rel="stylesheet" href="testoutput.css">
+<script>
+  function resizeIframe(obj) {
+  }
+
+  function togglestyle(e) {
+  	if (e.classList.contains('outimgexpanded')) {
+  		e.classList.remove('outimgexpanded');
+  	} else {
+  		e.classList.add('outimgexpanded');
+  	}
+  }
+
+  function togglestyleCodeframe(e) {
+  	if (e.classList.contains('codeframeexpanded')) {
+  		e.classList.remove('codeframeexpanded');
+  	} else {
+  		e.classList.add('codeframeexpanded');
+  	}
+  }
+
+  function iframeOnload(obj) {
+    obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+	obj.contentWindow.document.onclick = function() {
+	  	togglestyleCodeframe(obj.parentElement);
+	}
+  }
+
+  function showhide(id) {
+  	var e = document.getElementById(id);
+  	if (e.style.display == 'none') {
+  		e.style.display = 'block';
+  	} else {
+  		e.style.display = 'none';
+  	}
+  }
+
+</script>
+</head>
+<body>
+	<div class="summary">
+		<div class="summaryheader">Test Summary</div>
+		<div class="summarylist">
+			<div class="summaryname failed">Failing Tests: {{summary.num_failing}}</div>
+			{{#each summary.failing}}
+			<div class="summarylistitem"><a href="#a_{{this}}">{{this}}</a></div>
+			{{/each}}
+		</div>
+		<div class="summarylist">
+			<div class="summaryname passed">Passing Tests: {{summary.num_passing}}</div>
+				{{#each summary.passing}}
+			<div class="summarylistitem"><a href="#a_{{this}}">{{this}}</a></div>
+			{{/each}}
+		</div>
+	</div>
+{{#each testresults}}
+	<div class="testout">
+		<div class="testname" onclick="showhide('testvariants{{test}}')"><a name="a_{{test}}">{{test}}</a></div>
+		<div id="testvariants{{test}}">
+			{{#if node_success}}
+				{{#each diffs}}
+
+				<div class="testvariant">
+					{{#if regenerated_golden}}
+						<div class="testvariantname newgolden">{{diff_type}} (recreated golden)</div>
+					{{else}}
+						{{#if diff_succeeded}}
+							<div class="testvariantname passed">{{diff_type}} (passing)</div>
+						{{else}}
+							<div class="testvariantname failed">{{diff_type}} (FAILING)</div>
+						{{/if}}
+					{{/if}}
+					<div class="testoutputs">
+						<div class="outimg" onclick="togglestyle(this);">
+							<div class="outimgname">screenshot</div>
+							<img src="alltests/{{../test}}/{{../test}}_OUT_{{diff_type}}.png">
+						</div>
+						<div class="outimg" onclick="togglestyle(this);">
+							<div class="outimgname">golden</div>
+							<img src="alltests/{{../test}}/{{../test}}_GOLDEN_{{diff_type}}.png">
+						</div>
+						<div class="outimg" onclick="togglestyle(this);">
+							<div class="outimgname">diff</div>
+							<img src="alltests/{{../test}}/{{../test}}_DIFF_{{diff_type}}.png">
+						</div>
+						<div class="codeframe" onclick="togglestyleCodeframe(this);">
+							<div class="outimgname">code</div>
+							<iframe class="ifr" id="{{../test}}_ifr0" src="./alltests/{{../test}}/{{../test}}_code.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+							</iframe>
+						</div>
+					</div>
+				</div>
+				{{/each}}
+			{{else}}
+				<div class="testvariant">
+					<div class="testvariantname failed">TEST CRASHED</div>
+					<div class="testoutputs">
+						<div class="codeframe" onclick="togglestyleCodeframe(this);">
+							<div class="outimgname">output</div>
+							<iframe class="ifr" id="{{test}}_ifr1" src="./alltests/{{test}}/output.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+							</iframe>
+						</div>
+						<div class="codeframe" onclick="togglestyleCodeframe(this);">
+							<div class="outimgname">code</div>
+							<iframe class="ifr" id="{{test}}_ifr2" src="./alltests/{{test}}/{{test}}_code.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+							</iframe>
+						</div>
+					</div>
+				</div>
+			</div>
+			{{/if}}
+		</div>
+	</div>
+{{/each}}
+
+</body>
+</html>

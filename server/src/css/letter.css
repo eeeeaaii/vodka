@@ -1,0 +1,70 @@
+/*
+This file is part of Vodka.
+
+Vodka is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Vodka is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+
+.letter {
+	display: inline-block;
+}
+
+.letter.exploded {
+	padding: 0px;
+	border: 0;
+}
+
+
+@keyframes letterblink {
+	from {
+		border-top: 1px solid black;
+		border-right: 1px solid black;
+		border-bottom: 1px solid black;
+		margin-top: -1px;
+		margin-right: -1px;
+		margin-bottom: -1px;
+	}
+	99% {
+		border-top: 1px solid black;
+		border-right: 1px solid black;
+		border-bottom: 1px solid black;
+		margin-top: -1px;
+		margin-right: -1px;
+		margin-bottom: -1px;
+	}
+	to {
+		border-top: 0px;
+		border-right: 0px;
+		border-bottom: 0px;
+		margin-top: 0px;
+		margin-right: 0px;
+		margin-bottom: 0px;
+	}
+}
+
+.letter.selected {
+	animation-duration: 1s;
+	animation-name: letterblink;
+	animation-iteration-count: 1;
+}
+
+.letter.selected.exploded {
+	animation-name: none;
+	border-top: 1px solid black;
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	margin-top: -1px;
+	margin-right: -1px;
+	margin-bottom: -1px;
+}
