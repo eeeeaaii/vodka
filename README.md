@@ -71,6 +71,10 @@ Regardless of what key funnel is currently in operation, there are certain keys 
 
 Once an object of that type is created, its own keyfunnel will dictate what keystrokes do while it is selected (for example, strings allow you to edit the contents of the string by typing "shift-enter", while a commands will execute if you type that).
 
+### Implementation
+
+Vodka is implemented in very plain vanilla JavaScript. It is essentially a prototype and I'm developing it rapidly, so it's not production-ready or secure. There is a facility for recording keystrokes and user actions, and then saving them out to a file to be played back in a test. The test framework uses headless chrome to automate the tests, and the "handlebars" markup framework to generate the test output file, so you'll have to npm those in if you want to run tests or create them. To actually run the server, you just need Node itself, nothing else.
+
 ### RTTYMBT (Responses To Things You Might Be Thinking)
 
 #### It's broken! It's weird! It didn't do what you said it would!
