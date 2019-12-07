@@ -71,28 +71,28 @@ Regardless of what key funnel is currently in operation, there are certain keys 
 
 Once an object of that type is created, its own keyfunnel will dictate what keystrokes do while it is selected (for example, strings allow you to edit the contents of the string by typing "shift-enter", while a commands will execute if you type that).
 
-### Implementation
+## Implementation
 
 Vodka is implemented in very plain vanilla JavaScript. It is essentially a prototype and I'm developing it rapidly, so it's not production-ready or secure. There is a facility for recording keystrokes and user actions, and then saving them out to a file to be played back in a test. The test framework uses headless chrome to automate the tests, and the "handlebars" markup framework to generate the test output file, so you'll have to npm those in if you want to run tests or create them. To actually run the server, you just need Node itself, nothing else.
 
-### RTTYMBT (Responses To Things You Might Be Thinking)
+## RTTYMBT (Responses To Things You Might Be Thinking)
 
-#### It's broken! It's weird! It didn't do what you said it would!
+### It's broken! It's weird! It didn't do what you said it would!
 
 I am very actively working on this software. It is not finished. It is pre-alpha, preverbal, and prehistoric. It is broken. Do not expect it to work well. Do, however, let me know if you find bugs or if you have questions, and especially get in touch with me if you are interested in helping. I have a long list of features to add to this.
 
-#### This is great, I really want to use this.
+### This is great, I really want to use this.
 
 Sure, but one word of warning: do not get used to things working they way they do now. See above -- this software is extremely unfinished.
 
-#### I don't like this.
+### I don't like this.
 
 Okay.
 
-#### Who are you?
+### Who are you?
 
 My name is Jason Scherer (@eeeeaaii on Twitter, [eeeeaaii@gmail.com](mailto:eeeeaaii@gmail.com)). I work on this in my spare time.
 
-### License
+## License
 
 All code is licensed under the Greater GPLv3.
