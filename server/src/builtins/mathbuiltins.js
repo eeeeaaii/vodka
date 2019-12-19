@@ -25,8 +25,8 @@ function createMathBuiltins() {
 			var total = 0;
 			var foundFloat = false;
 			var ar = env.lb('a0');
-			for (var i = 0; i < ar.length; i++) {
-				var arg = ar[i];
+			for (var i = 0; i < ar.numChildren(); i++) {
+				var arg = ar.getChildAt(i);
 				if (arg instanceof Float) {
 					foundFloat = true;
 				}
@@ -67,8 +67,8 @@ function createMathBuiltins() {
 			var result = 1;
 			var foundFloat = false;
 			var ar = env.lb('a0');
-			for (var i = 0; i < ar.length; i++) {
-				var arg = ar[i];
+			for (var i = 0; i < ar.numChildren(); i++) {
+				var arg = ar.getChildAt(i);
 				if (arg instanceof Float) {
 					foundFloat = true;
 				}

@@ -15,44 +15,33 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-
-class ESymbol extends ValueNex {
-	constructor(val) {
-		super((val) ? val : '', '@', 'esymbol')
-		this.render();
+class NexChildArgContainer {
+	constructor(nex) {
+		this.nex = nex;
+		this.needsEval = [];
 	}
 
-	needsEvaluation() {
-		return true;
+	setNeedsEvalForArgAt(needsEval, i) {
+		this.needsEval[i] = needsEval;
 	}
 
-
-	getAsString() {
-		return '' + this.value;
+	getNeedsEvalForArgAt(i) {
+		return this.needsEval[i];
 	}
 
-	makeCopy() {
-		return new ESymbol(this.getTypedValue());
+	numArgs() {
+		return this.nex.numChildren();
 	}
 
-	getKeyFunnel() {
-		return new SymbolKeyFunnel(this);
+	getArgAt(i) {
+		return this.nex.getChildAt(i);
 	}
 
-	evaluate(env) {
-		ILVL++;
-		var b = env.lookupBinding(this.getTypedValue());
-		console.log(`${INDENT()}symbol ${this.value} bound to ${b.toString()}`);
-		ILVL--;
-		return b;
+	setArgAt(newarg, i) {
+		this.nex.replaceChildAt(newarg, i);
 	}
 
-	stepEvaluate(env, exp) {
-		exp.hackfunction = function() {
-			return this.evaluate(env);
-		}.bind(this);
-		STEP_STACK.push(exp);
+	removeArgAt(i) {
+		this.nex.removeChildAt(i);
 	}
 }
-

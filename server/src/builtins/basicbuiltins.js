@@ -59,8 +59,8 @@ function createBasicBuiltins() {
 		function(env, argEnv) {
 			var r = new Nil();
 			var lst = env.lb('a0');
-			for (var i = 0; i < lst.length; i++) {
-				r = lst[i].evaluate(argEnv);
+			for (var i = 0; i < lst.numChildren(); i++) {
+				r = lst.getChildAt(i).evaluate(argEnv);
 			}
 			return r;
 		}

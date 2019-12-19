@@ -87,8 +87,8 @@ function createStringBuiltins() {
 		function(env, argEnv) {
 			var r = '';
 			var ar = env.lb('a0');
-			for (var i = 0; i < ar.length; i++) {
-				var s = ar[i].getFullTypedValue();
+			for (var i = 0; i < ar.numChildren(); i++) {
+				var s = ar.getChildAt(i).getFullTypedValue();
 				r += s;
 			}
 			return new EString(r);

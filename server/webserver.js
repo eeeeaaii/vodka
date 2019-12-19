@@ -26,13 +26,13 @@ const server = http.createServer((message, res) => {
 	// parse url - what file is being looked for?
 	const parsedUrl = url.parse(message.url, true);
 	var path = parsedUrl.path;
-	if (path == "/") {
-		path = "/host.html"
-	}
-	path = "./src" + path;
-	if (path == './api') {
+	if (path == '/api') {
 		doApiRequest(message, res);
 	} else {
+		if (path == "/") {
+			path = "/host.html"
+		}
+		path = "./src" + path;
 		doFileRequest(path, res);
 	}
 });

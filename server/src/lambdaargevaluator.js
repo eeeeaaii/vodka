@@ -16,39 +16,94 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 class LambdaArgEvaluator {
-	constructor(params, args, bindEnv, argEnv) {
+	constructor(params, argContainer, bindEnv, argEnv) {
 		this.params = params;
-		this.args = args;
+		this.argContainer = argContainer;
 		this.bindEnv = bindEnv;
 		this.argEnv = argEnv;
 		this.numRequiredParams = params.length;
 	}
 
 	checkNumParams() {
-		if (this.args.length < this.numRequiredParams) {
+		if (this.argContainer.numArgs() < this.numRequiredParams) {
 			throw new EError("lambda: not enough args passed to function.");
 		}
 	}	
 
 	processArgument(arg) {
-		return arg.evaluate(this.env);
+		return arg.evaluate(this.argEnv);
 	}
 
 	processAllArgs() {
-		for (var i = 0; i < this.args.length; i++) {
-			this.args[i] = this.processArgument(this.args[i]);
+		for (var i = 0; i < this.argContainer.numArgs(); i++) {
+			this.argContainer.setArgAt(
+				this.processArgument(this.argContainer.getArgAt(i)),
+				i);
 		}
 	}
 
 	bindArgs() {
 		for (var i = 0; i < this.params.length; i++) {
-			this.bindEnv.bind(this.params[i], this.args[i]);
+			this.bindEnv.bind(this.params[i], this.argContainer.getArgAt(i));
 		}
 	}
 
 	evaluateAndBindArgs() {
 		this.checkNumParams();
 		this.processAllArgs();
+		this.bindArgs();
+	}	
+
+	startEvaluating() {
+		this.checkNumParams();
+		for (var i = 0; i < this.argContainer.numArgs(); i++) {
+			var arg = this.argContainer.getArgAt(i);
+			this.argContainer.setNeedsEvalForArgAt(arg.needsEvaluation(), i);
+		}
+	}
+
+	doForEachArg(f) {
+		for (var i = 0; i < this.argContainer.numArgs(); i++) {
+			var arg = this.argContainer.getArgAt(i);
+			f(arg, i);
+		}
+	}
+
+	indexOfNextUnevaluatedExpression() {
+		var ind = -1;
+		this.doForEachArg(function(arg, i) {
+			if (ind == -1 && this.argContainer.getNeedsEvalForArgAt(i)) {
+				ind = i;
+			}
+		}.bind(this));
+		return ind;
+	}
+
+	evaluateNext(exp) {
+		var stop = false;
+		this.doForEachArg(function(arg, i) {
+			if (stop) return;
+			if (this.argContainer.getNeedsEvalForArgAt(i)) {
+				this.argContainer.setNeedsEvalForArgAt(false, i);
+				arg.stepEvaluate(this.argEnv, exp);
+				this.argContainer.setArgAt(exp, i);
+				exp.appendChild(arg);
+				stop = true;
+			}
+		}.bind(this));
+	}
+
+	allExpressionsEvaluated() {
+		var r = true;
+		this.doForEachArg(function(arg, i) {
+			if (this.argContainer.getNeedsEvalForArgAt(i)) {
+				r = false;
+			}
+		}.bind(this));
+		return r;
+	}
+
+	finishEvaluating() {
 		this.bindArgs();
 	}
 }

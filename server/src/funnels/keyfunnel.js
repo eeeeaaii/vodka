@@ -227,13 +227,16 @@ class KeyFunnel {
 	}
 
 	doAltEnter() {
-		// if (STEP_STACK.inProgress()) {
-		// 	STEP_STACK.pop().fulfill();
-		// 	return;
-		// }
+		 if (STEP_STACK.inProgress()) {
+		 	STEP_STACK.pop().fulfill();
+		 	return;
+		 }
 		var n;
 		try {
-			n = this.s.stepEvaluate(BUILTINS);
+			var exp = new Expectation();
+			this.s.stepEvaluate(BUILTINS, exp);
+			manipulator.replaceSelectedWith(exp);
+			exp.appendChild(this.s);
 		} catch (e) {
 			if (e instanceof EError) {
 				n = e;
@@ -241,9 +244,6 @@ class KeyFunnel {
 				throw e;
 			}
 		}
-		if (n) {
-			manipulator.replaceSelectedWith(n);
-		}		
 	}
 
 	doSpace() {

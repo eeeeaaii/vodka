@@ -34,6 +34,7 @@ class Lambda extends NexContainer {
 		r.amptext = this.amptext;
 		r.closure = this.closure;
 		r.cmdname = this.cmdname;
+		r.needsEval = this.needsEval;
 		return r;
 	}
 
@@ -65,44 +66,10 @@ class Lambda extends NexContainer {
 		return true;
 	}
 
-	// startEvaluatingArgs(args, argEnv) {
-	// 	this.args = args;
-	// 	this.argEnv = argEnv;
-	// 	for (var i = 0; i < this.args.length; i++) {
-	// 		this.args[i].__unevaluated = true;
-	// 	}
-	// }
-
-	// nextArgToEval() {
-	// 	for (var i = 0; i < this.args.length; i++) {
-	// 		if (this.args[i].__unevaluated) {
-	// 			return i;
-	// 		}
-	// 	}
-	// 	return -1;
-	// }
-
-	// evaluateArg(i) {
-	// 	this.args[i] = this.args[i].evaluate(this.argEnv);
-	// 	return this.args[i];
-	// }
-
-	// isFinishedEvaluatingArgs() {
-	// 	return (this.nextArgToEval() == -1);
-	// }
-
 	evaluate(env) {
 		this.closure = env.pushEnv();
 		return this;
 	}
-
-	// evaluateArgs(args, argEnv) {
-	// 	var evaluatedArgs = [];
-	// 	for (var i = 0; i < args.length; i++) {
-	// 		evaluatedArgs[i] = args[i].evaluate(argEnv);
-	// 	}
-	// 	return evaluatedArgs;
-	// }
 
 	getParamNames() {
 		var s = this.amptext.split(' ');
@@ -115,52 +82,8 @@ class Lambda extends NexContainer {
 		return p;
 	}
 
-	startStepExecute(args, env) {
-		//idfk
-		this.closure = env.pushEnv();
-		var paramNames = this.getParamNames();
-		for (var i = 0; i < paramNames.length; i++) {
-			this.closure.bind(paramNames[i], args[i]);
-		}		
-		for (var i = 0; i < this.children.length; i++) {
-			this.children[i].__unevaluated = true;
-		}
-	}
-
-	doStepExecute() {
-		var env = this.closure;
-		for (var i = 0; i < this.children.length; i++) {
-			if (this.children[i].__unevaluated) {
-				if (!this.children[i].needsEvaluation()) {
-					this.children[i].__unevaluated = false;
-					continue;
-				}
-				// we are not done evaluating so we push something right back
-				// on the stack. We have to do this BEFORE evaluating
-				// the child, but we can't make the hack function
-				// until later
-				var r = new Expectation(function() {
-				});
-				STEP_STACK.push(r);
-				var thecopy = this.makeCopy();
-				var newChild = thecopy.children[i].stepEvaluate(env);
-				thecopy.replaceChildAt(newChild, i);
-				for (var j = i + 1; j < thecopy.children.length; j++) {
-					thecopy.children[j].__unevaluated = true;
-				}
-				// who even cares now
-				r.hackfunction = function() {
-					return thecopy.doStepExecute(env);
-				}
-				r.appendChild(thecopy);
-				return r;
-			}
-		}
-		return this.children[this.children.length - 1];
-
-	}
-
-	executor() {
+	/* argEnv param is deprecated, used only by builtin */
+	executor(argEnv) {
 		var r = new Nil();
 		for (var i = 0; i < this.children.length; i++) {
 			var c = this.children[i];
@@ -169,14 +92,14 @@ class Lambda extends NexContainer {
 		return r;
 	}
 
-	execute(args, argEnv) {
-		var argEvaluator = this.getArgEvaluator(args, argEnv);
-		argEvaluator.evaluateAndBindArgs();
-		return this.executor();
+	getArgEvaluator(argContainer, argEnv) {
+		return new LambdaArgEvaluator(
+			this.getParamNames(),
+			argContainer, this.closure, argEnv);
 	}
 
-	getArgEvaluator(args, argEnv) {
-		return new LambdaArgEvaluator(this.getParamNames(), args, this.closure, argEnv);
+	getStepEvaluator(stepContainer, env) {
+		return new StepEvaluator(stepContainer, env);
 	}
 
 	getAmpText() {
@@ -193,4 +116,6 @@ class Lambda extends NexContainer {
 		this.render();
 	}
 }
+
+
 

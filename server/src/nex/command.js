@@ -83,19 +83,12 @@ class Command extends NexContainer {
 			ILVL++;
 			stackCheck();
 			var lambda = this.getLambda(env);
-			var argarray = [];
-			// copy the array for reasons
-			for (var i = 0; i < this.children.length; i++) {
-				argarray[i] = this.children[i];
-			}
 			console.log(`${INDENT()}evaluating command: ${this.toString()}`);
 			console.log(`${INDENT()}lambda is: ${lambda.toString()}`);
-			// TODO: rather than passing the env here, I should be evaluating the arguments
-			// here in this environment, then handing off the evaluated args to the lambda
-			// which has its own lexical environment. However because of treating builtins
-			// and special forms the same as lambdas, and me being a generally confused
-			// person, this is not what I am doing
-			var r = lambda.execute(argarray, env);
+			var argContainer = new NexChildArgContainer(this);
+			var argEvaluator = lambda.getArgEvaluator(argContainer, env);
+			argEvaluator.evaluateAndBindArgs();
+			var r = lambda.executor(env);
 			console.log(`${INDENT()}command returned: ${r.toString()}`);
 			ILVL--;
 			return r;
@@ -110,69 +103,48 @@ class Command extends NexContainer {
 		}
 	}
 
-	someShit(env) {
-		for (var i = 0; i < this.children.length; i++) {
-			if (this.children[i].__unevaluated) {
-				if (!this.children[i].needsEvaluation()) {
-					this.children[i].__unevaluated = false;
-					continue;
-				}
-				// we are not done evaluating so we push something right back
-				// on the stack. We have to do this BEFORE evaluating
-				// the child, but we can't make the hack function
-				// until later
-				var r = new Expectation(function() {
-				});
-				STEP_STACK.push(r);
-				var thecopy = this.makeCopy();
-				var newChild = thecopy.children[i].stepEvaluate(env);
-				thecopy.replaceChildAt(newChild, i);
-				for (var j = i + 1; j < thecopy.children.length; j++) {
-					thecopy.children[j].__unevaluated = true;
-				}
-				// who even cares now
-				r.hackfunction = function() {
-					return thecopy.someShit(env);
-				}
-				r.appendChild(thecopy);
-				return r;
-			}
-		}
-		var lm = this.getLambda(env);
-		var argarray = [];
-		// copy the array for reasons
-		for (var i = 0; i < this.children.length; i++) {
-			argarray[i] = this.children[i];
-		}
-		if (lm instanceof Builtin) {
-			var bresult = lm.execute(argarray, env);
-			return bresult;			
-		} else {
-			// no idea
-			lm.startStepExecute(argarray, env);
-			var lresult = new Expectation(function() {
-				return lm.doStepExecute(env);
-			});
-			STEP_STACK.push(lresult);
-			lresult.appendChild(lm);
-			return lresult;
-		}
-	}
+	stepEvaluate(env, exp) {
+		var lambda = this.getLambda(env);
+		var argContainer = new NexChildArgContainer(this);
+		var argEvaluator = lambda.getArgEvaluator(argContainer, env);
+		argEvaluator.startEvaluating();
+		exp.hackfunction = function() {
+			if (!argEvaluator.allExpressionsEvaluated()) {
+				var ind = argEvaluator.indexOfNextUnevaluatedExpression();
+				var innerexp = new Expectation();
+				STEP_STACK.push(exp);
+				argEvaluator.evaluateNext(innerexp);
+				this.replaceChildAt(innerexp, ind);
+				return exp;
+			} else {
+				argEvaluator.finishEvaluating();
+				if (lambda instanceof Builtin) {
+					return lambda.executor(env);
+				} else {
+					var stepContainer = new NexChildArgContainer(lambda);
+					var stepEvaluator = lambda.getStepEvaluator(stepContainer, lambda.closure);
+					stepEvaluator.startEvaluating();
+					var lambdaExp = new Expectation();
+					lambdaExp.hackfunction = function() {
+						if (!stepEvaluator.allExpressionsEvaluated()) {
+							var ind = stepEvaluator.indexOfNextUnevaluatedExpression();
+							var innerinnerexp = new Expectation();
+							STEP_STACK.push(lambdaExp);
+							stepEvaluator.evaluateNext(innerinnerexp);
+							lambda.replaceChildAt(innerinnerexp, ind);
+							return lambdaExp;
+						} else {
+							return lambda.getLastChild(); // or something
+						}
 
-	stepEvaluate(env) {
-		// i don't even know at this point
-		var t = this;
-		var tcopy = this.makeCopy();
-		var r = new Expectation(function() {
-			return tcopy.someShit(env);
-		});
-		// this sucks
-		for (var i = 0; i < tcopy.children.length; i++) {
-			tcopy.children[i].__unevaluated = true;
-		}
-		r.appendChild(tcopy);
-		STEP_STACK.push(r);
-		return r;
+					}.bind(this); // not really needed
+					STEP_STACK.push(lambdaExp);
+					lambdaExp.appendChild(lambda);
+					return lambdaExp;
+				}
+			}
+		}.bind(this);
+		STEP_STACK.push(exp);
 	}
 
 	render() {
@@ -199,5 +171,19 @@ class Command extends NexContainer {
 	appendCommandText(txt) {
 		this.commandtext = this.commandtext + txt;
 		this.render();
+	}
+
+	// expression list interface
+
+	getExpressionAt(i) {
+		return this.getChildAt(i);
+	}
+
+	getNumExpressions() {
+		return this.getNumChildren();
+	}
+
+	replaceExpressionAt(newarg, i) {
+		this.replaceChildAt(newarg, i);
 	}
 }

@@ -15,113 +15,173 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+/*
+
+ways you can do args:
+1. A A A V
+a set of required args then a variadic (could be zero A's)
+1. A A A O O
+a set of required args then some optional ones (could be zero A's)
+
+variadics are packaged up inside a list of some type (maybe a word)
+*/
 
 
 class BuiltinArgEvaluator {
-	constructor(name, params, args, env, bindEnv) {
+	constructor(name, params, argContainer, env, bindEnv) {
 		this.name = name;
 		this.params = params;
-		this.args = args;
+		this.argContainer = argContainer;
 		this.env = env;
 		this.bindEnv = bindEnv;
+		this.verifyParameterCorrectness();
+	}
+
+	verifyParameterCorrectness() {
+		this.hasoptionals = false;
+		this.hasvariadics = false;
 		this.numRequiredParams = 0;
-		for (var i = 0; i < params.length; i++) {
-			if (!params[i].optional && !params[i].variadic) {
-				this.numRequiredParams++;
+		for (var i = 0; i < this.params.length; i++) {
+			var param = this.params[i];
+			if (param.optional) {
+				if (this.hasvariadics) {
+					throw new Error("can't have variadics and also optionals.");
+				}
+				this.hasoptionals = true;
+				continue;
 			}
+			if (param.variadic) {
+				if (this.hasoptionals) {
+					throw new Error("can't have variadics and also optionals.");
+				}
+				if (this.hasvariadics) {
+					throw new Error("can't have multiple variadics");
+				}
+				this.hasvariadics = true;
+				continue;
+			}
+			this.numRequiredParams++;
 		}
 	}
 
-
-	checkNumParams() {
-		if (this.args.length < this.numRequiredParams) {
+	checkNumArgs() {
+		if (this.argContainer.numArgs() < this.numRequiredParams) {
 			throw new EError(this.name + ": not enough args passed to function.");
 		}
-	}	
+	}
 
-	collectVariadics() {
-		var endi = this.params.length - 1;
-		if (endi < 0) {
-			// no params, hence no variadics.
-			return;
+	padEffectiveParams() {
+		this.effectiveParams = [];
+		for (var i = 0; i < this.params.length; i++) {
+			this.effectiveParams[i] = this.params[i];
 		}
-		if (this.params[endi].variadic) {
-			var variadicArray = [];
-			for (var i = endi; i < this.args.length; i++) {
-				variadicArray.push(this.args[i]);
-			}
-			//          endi
-			// p: 0, 1, 2v
-			// a: 0, 1, 2, 3, 4
-			// a: 0, 1, [2, 3, 4]
-			// 
-			this.args[endi] = variadicArray;
-			var toRemove = this.args.length - (endi + 1);
-			if (toRemove > 0) {
-				this.args.splice(endi + 1, toRemove)
+		if (this.hasvariadics) {
+			for(var lasti = i - 1; i < this.argContainer.numArgs(); i++) {
+				this.effectiveParams[i] = this.params[lasti];
 			}
 		}
 	}
 
-	padOptionals() {
-		var endi = this.args.length;
-		for (var i = endi; i < this.params.length; i++) {
-			if (this.params[i].optional) {
-				this.args[i] = null;
-			} else {
-				throw new EError(this.name + ": non-optional param omitted");
+	processArgs() {
+		for (var i = 0; i < this.argContainer.numArgs(); i++) {
+			var param = this.effectiveParams[i];
+			var arg = this.argContainer.getArgAt(i);
+			if (!param.skipeval) {
+				arg = arg.evaluate(this.env);
 			}
+			var typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[param.type](arg);
+
+			if (!typeChecksOut) {
+				throw new EError(this.name + ": expects a " + param.type + " for argument ");
+			}
+			this.argContainer.setArgAt(arg, i);
 		}
 	}
 
-	processArgument(param, arg) {
-		if (param.optional && arg == null) {
-			return arg;
-		}
-
-		if (!param.skipeval) {
-			arg = arg.evaluate(this.env);
-		}
-
-		var typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[param.type](arg);
-
-		if (!typeChecksOut) {
-			throw new EError(this.name + ": expects a " + param.type + " for argument ");
-		}
-		return arg;
-	}
-
-	processVariadicArgument(param, arg) {
-		for (var i = 0; i < arg.length; i++) {
-			var realarg = arg[i];
-			arg[i] = this.processArgument(param, realarg, arg[i]);
-		}
-	}
-
-	processAllArgs() {
-		var resultArgs = [];
-		for (var i = 0; i < this.args.length; i++) {
+	bindArgs() {
+		for (var i = 0; i < this.params.length; i++) {
 			var param = this.params[i];
-			var arg = this.args[i];
 			if (param.variadic) {
-				this.processVariadicArgument(param, arg);
+				var w = new Word();
+				for (var j = i; j < this.argContainer.numArgs(); j++) {
+					w.appendChild(this.argContainer.getArgAt(j).makeCopy());
+				}
+				this.bindEnv.bind(param.name, w);
+			} else if (param.optional) {
+				if (i >= this.argContainer.numArgs()) {
+					this.bindEnv.bind(param.name, new Nil());
+				} else {
+					this.bindEnv.bind(param.name, this.argContainer.getArgAt(i));
+				}
 			} else {
-				arg = this.processArgument(param, arg);
+				this.bindEnv.bind(param.name, this.argContainer.getArgAt(i));
 			}
-			resultArgs[i] = arg;
 		}
-		return resultArgs;
 	}
 
 	evaluateAndBindArgs() {
-		this.checkNumParams();
-		this.collectVariadics();
-		this.padOptionals();
-		var resultArgs = this.processAllArgs();
-		for (var i = 0; i < this.params.length; i++) {
-			this.bindEnv.bind(this.params[i], resultArgs[i]);
-		}
+		this.checkNumArgs();
+		this.padEffectiveParams();
+		this.processArgs();
+		this.bindArgs();
+	}
 
+	startArg(arg, param, i) {
+		var neval = arg.needsEvaluation() && !param.skipeval;
+		this.argContainer.setNeedsEvalForArgAt(neval, i);
+	}
+
+	doForEachArg(f) {
+		for (var i = 0; i < this.argContainer.numArgs(); i++) {
+			var arg = this.argContainer.getArgAt(i);
+			f(arg, i);
+		}
+	}
+
+	startEvaluating() {
+		this.checkNumArgs();
+		this.padEffectiveParams();
+		this.doForEachArg(function(arg, i) {
+			this.startArg(arg, this.effectiveParams[i], i);
+		}.bind(this));
+	}
+
+	indexOfNextUnevaluatedExpression() {
+		var ind = -1;
+		this.doForEachArg(function(arg, i) {
+			if (ind == -1 && this.argContainer.getNeedsEvalForArgAt(i)) {
+				ind = i;
+			}
+		}.bind(this));
+		return ind;
+	}
+
+	evaluateNext(exp) {
+		var stop = false;
+		this.doForEachArg(function(arg, i) {
+			if (stop) return;
+			if (this.argContainer.getNeedsEvalForArgAt(i)) {
+				this.argContainer.setNeedsEvalForArgAt(false, i);
+				arg.stepEvaluate(this.env, exp);
+				this.argContainer.setArgAt(exp, i);
+				exp.appendChild(arg);
+				stop = true;
+			}
+		}.bind(this));
+	}
+
+	allExpressionsEvaluated() {
+		var r = true;
+		this.doForEachArg(function(arg, i) {
+			if (this.argContainer.getNeedsEvalForArgAt(i)) {
+				r = false;
+			}
+		}.bind(this));
+		return r;
+	}
+
+	finishEvaluating() {
+		this.bindArgs();
 	}
 }
 

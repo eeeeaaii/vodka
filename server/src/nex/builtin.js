@@ -33,63 +33,28 @@ class Builtin extends Lambda {
 		this.f = f.bind(this);
 	}
 
-/*
-	startEvaluatingArgs(args, argEnv) {
-		this.args = args;
-		this.argEnv = argEnv;
-		for (var i = 0; i < this.args.length; i++) {
-			this.args[i].__unevaluated = true;
-		}
-	}
-
-	nextArgToEval() {
-		for (var i = 0; i < this.args.length; i++) {
-			if (this.args[i].__unevaluated) {
-				return i;
-			}
-		}
-		return -1;
-	}
-
-	evaluateArg(i) {
-		this.args[i] = this.args[i].evaluate(this.argEnv);
-		return this.args[i];
-	}
-
-	isFinishedEvaluatingArgs() {
-		return (this.nextArgToEval() == -1);
-	}	*/
-
 	static createBuiltin(name, params, f) {
 		for (var i = 0; i < params.length; i++) {
 			params[i].name = BUILTIN_ARG_PREFIX + params[i].name;
 		}
 		var nex = new Builtin(name, params);
 		nex.setF(f);
+		Builtin.bindBuiltinObject(name, nex);
+	}
+
+	static bindBuiltinObject(name, nex) {
 		BUILTINS.bindUnique(name, nex);
 		nex.evaluate(BUILTINS);
 	}
 
-	executor() {
-		return this.f(this.closure, this.argEnv);
+	/* argEnv param is deprecated, trying to eliminate */
+	executor(argEnv) {
+		return this.f(this.closure, argEnv);
 	}
-
-	// getParamNames() {
-	// 	var p = [];
-	// 	for (var i = 0; i < this.params.length; i++) {
-	// 		p.push(this.params[i].name);
-	// 	}
-	// 	return p;
-	// }
 
 	getArgEvaluator(args, argEnv) {
 		return new BuiltinArgEvaluator(this.name, this.params, args, argEnv, this.closure);
 	}
-
-	// evaluateArgs(args, argEnv) {
-	// 	var evaluator = new BuiltinArgEvaluator(this.name, this.params, args, argEnv);
-	// 	return evaluator.evaluateArgs();
-	// }
 
 }
 
