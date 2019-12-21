@@ -15,71 +15,35 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-class LambdaKeyFunnel extends ContainerKeyFunnel {
+class LambdaKeyFunnel extends CodelistKeyFunnel {
 	constructor(sel) {
 		super(sel)
 	}
-
-	doArrowUp() {
-		manipulator.selectPreviousSibling()
-			||  manipulator.insertBeforeSelectedAndSelect(new InsertionPoint());
-	}
-
-	doArrowDown() {
-		manipulator.selectNextSibling()
-			||  manipulator.insertAfterSelectedAndSelect(new InsertionPoint());
-	}
-	doArrowLeft() {
-		manipulator.selectPreviousSibling()
-			||  manipulator.insertBeforeSelectedAndSelect(new InsertionPoint());
-	}
-	doArrowRight() {
-		manipulator.selectNextSibling()
-			||  manipulator.insertAfterSelectedAndSelect(new InsertionPoint());
-	}	
-
 
 	appendText(txt) {
 		var okChar = /^[a-zA-Z0-9]$/
 		if (okChar.test(txt)) {
 			this.s.appendAmpText(txt);
 		} else {
-			manipulator.insertAfterSelectedAndSelect(new Word())
-				&& selectedNex.getKeyFunnel().appendText(txt);			
+			// if (KEYFUNNEL_VERSION == 1) {
+			// 	// what the hell is this?
+			// 	manipulator.insertAfterSelectedAndSelect(new Word())
+			// 		&& selectedNex.getKeyFunnel().appendText(txt);			
+			// } else {
+				this.handleAppend(new Letter(txt));
+			// }
 		}
 	};
+
+	// doSpace intentionally calls appendSeparator
 
 	appendSeparator(txt) {
 		var okChar = /^[ _-]$/
 		if (okChar.test(txt)) {
 			this.s.appendAmpText(txt);
 		} else {
-			manipulator.insertAfterSelectedAndSelect(new Separator(txt));
+			this.handleAppend(new Separator(txt));
 		}
-	}
-
-	insertNewCodeObject(obj) {
-		manipulator.insertAfterSelectedAndSelect(obj);
-	}
-
-	doEnter() {
-		manipulator.selectParent() && 
-			manipulator.insertAfterSelectedAndSelect(new Line());		
-	}
-
-	doShiftSpace() {
-		this.s.toggleDir();
-	}
-
-	
-	doTab() {
-		if (!manipulator.selectFirstChild()) {
-			manipulator.appendAndSelect(new InsertionPoint());
-		}
-	}
-
-	doShiftBackspace() {
-		manipulator.removeSelectedAndSelectPreviousSibling();
 	}
 
 	doBackspace() {

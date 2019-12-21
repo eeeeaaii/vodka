@@ -16,7 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-class CommandKeyFunnel extends ContainerKeyFunnel {
+class CommandKeyFunnel extends CodelistKeyFunnel {
 	constructor(sel) {
 		super(sel);
 	}
@@ -42,27 +42,6 @@ class CommandKeyFunnel extends ContainerKeyFunnel {
 			 )
 	}
 
-	doArrowUp() {
-		manipulator.selectPreviousSibling()
-			||  manipulator.insertBeforeSelectedAndSelect(new InsertionPoint());
-	}
-
-	doArrowDown() {
-		manipulator.selectNextSibling()
-			||  manipulator.insertAfterSelectedAndSelect(new InsertionPoint());
-	}
-	doArrowLeft() {
-		manipulator.selectPreviousSibling()
-			||  manipulator.insertBeforeSelectedAndSelect(new InsertionPoint());
-	}
-	doArrowRight() {
-		manipulator.selectNextSibling()
-			||  manipulator.insertAfterSelectedAndSelect(new InsertionPoint());
-	}	
-
-
-
-
 	appendSeparator(letter, escaped) {
 		if (escaped) {
 			manipulator.appendAndSelect(new Separator(letter));
@@ -70,49 +49,13 @@ class CommandKeyFunnel extends ContainerKeyFunnel {
 			if (this.isAllowedSymbol(letter)) {
 				this.s.appendCommandText(letter);
 			} else {
-				manipulator.insertAfterSelectedAndSelect(new Separator(letter))
+				this.handleAppend(new Separator(letter));
 			}
 		}
 	}
 
-	insertNewCodeObject(obj) {
-		manipulator.insertAfterSelectedAndSelect(obj);
-	}
-
-	doEnter() {
-		manipulator.selectParent() && 
-			manipulator.insertAfterSelectedAndSelect(new Line());		
-	}
-
-
-	doTilde() {
-		manipulator.insertAfterSelectedAndSelect(new Command());
-	}
-
 	doSpace() {
-		manipulator.insertAfterSelectedAndSelect(new Separator(' '));
-	}
-
-	doShiftSpace() {
-		this.s.toggleDir();
-	}
-
-	doTab() {
-		if (!manipulator.selectFirstChild()) {
-			manipulator.appendAndSelect(new InsertionPoint());
-		}
-	}
-
-	insertNewListType(lst) {
-		if (this.tabEscaped) {
-			manipulator.appendAndSelect(lst);
-		} else {
-			manipulator.insertAfterSelectedAndSelect(lst);
-		}
-	}
-
-	doShiftBackspace() {
-		manipulator.removeSelectedAndSelectPreviousSibling();		
+		this.handleAppend(new Separator(' '));
 	}
 
 	doBackspace() {
@@ -122,5 +65,4 @@ class CommandKeyFunnel extends ContainerKeyFunnel {
 			this.doShiftBackspace();
 		}
 	}
-
 }

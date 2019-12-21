@@ -18,11 +18,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 class Builtin extends Lambda {
-	constructor(name, params) {
+	constructor(name, params, argEvalFactory) {
 		super();
 		this.name = name;
 		this.params = params;
 		this.f = null;
+		this.argEvalFactory = argEvalFactory;
 	}
 
 	toString() {
@@ -53,7 +54,11 @@ class Builtin extends Lambda {
 	}
 
 	getArgEvaluator(args, argEnv) {
-		return new BuiltinArgEvaluator(this.name, this.params, args, argEnv, this.closure);
+		if (this.argEvalFactory) {
+			return this.argEvalFactory(this.name, this.params, args, argEnv, this.closure);
+		} else {
+			return new BuiltinArgEvaluator(this.name, this.params, args, argEnv, this.closure);
+		}
 	}
 
 }

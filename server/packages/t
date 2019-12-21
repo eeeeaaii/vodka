@@ -1,1 +1,1 @@
-~"bind"h(@increment &" x"h(~"+"h(@x #1~)&)~)
+~"abc"v(~"def"h(#0 #0~) ~"ghi"h(~)~)

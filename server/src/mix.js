@@ -50,6 +50,8 @@ var current_render_type = NEX_RENDER_TYPE_NORMAL;
 
 var BUILTINS;
 
+//var KEYFUNNEL_VERSION = 2;
+
 // DO NOT RENAME THIS METHOD OR YOU WILL BREAK ALL THE OLD TESTS
 function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 	return selectedNex.getInputFunnel().processEvent(keycode, whichkey, hasShift, hasCtrl, hasAlt);

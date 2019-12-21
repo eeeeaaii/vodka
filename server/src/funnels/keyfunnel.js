@@ -249,6 +249,7 @@ class KeyFunnel {
 	doSpace() {
 		this.appendSeparator(' ');
 	}
+
 	doShiftSpace() {
 		this.doSpace();
 	}
