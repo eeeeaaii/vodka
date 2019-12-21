@@ -67,5 +67,6 @@ class Expectation extends NexContainer {
 		}
 		this.getParent().replaceChildWith(this, newnex);
 		newnex.setSelected();
+		return newnex;
 	}
 }

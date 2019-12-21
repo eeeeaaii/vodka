@@ -227,21 +227,37 @@ class KeyFunnel {
 	}
 
 	doAltEnter() {
-		 if (STEP_STACK.inProgress()) {
-		 	STEP_STACK.pop().fulfill();
-		 	return;
-		 }
-		var n;
-		try {
-			var exp = new Expectation();
-			this.s.stepEvaluate(BUILTINS, exp);
-			manipulator.replaceSelectedWith(exp);
-			exp.appendChild(this.s);
-		} catch (e) {
-			if (e instanceof EError) {
-				n = e;
-			} else {
-				throw e;
+		if (this.s.__STEP_STACK) {
+			STEP_STACK = this.s.__STEP_STACK;
+			 if (STEP_STACK.inProgress()) {
+			 	var nx = STEP_STACK.pop().fulfill();
+			 	if (!STEP_STACK.inProgress()) {
+			 		// we are finished, just select the return val;
+			 		nx.setSelected();
+			 	} else {
+			 		// not finished, select the expect
+				 	this.s.setSelected();
+			 	}
+			 } else {
+			 	STEP_STACK = null;
+			 	this.s.__STEP_STACK = null;
+			 }
+		} else {
+			var n;
+			try {
+				STEP_STACK = new StepStack();
+				var exp = new Expectation();
+				this.s.stepEvaluate(BUILTINS, exp);
+				manipulator.replaceSelectedWith(exp);
+				exp.appendChild(this.s);
+				exp.__STEP_STACK = STEP_STACK;
+				exp.setSelected();
+			} catch (e) {
+				if (e instanceof EError) {
+					n = e;
+				} else {
+					throw e;
+				}			
 			}
 		}
 	}

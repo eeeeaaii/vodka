@@ -26,7 +26,7 @@ echo ""
 echo "Is this the test you want to save? (y/n)"
 read CONFIRM
 if [ "$CONFIRM" == "y" ]; then
-	pbpaste > "SOMEKINDATEMPFILE.txt"
+	pbpaste > "____tmpfile.txt"
 	echo "Type human-readable description of test (make it good):"
 	read READABLE
 	FILENAME="alltests/${NAME}.js"
@@ -52,12 +52,13 @@ HERE
 	echo "/*" >> ${FILENAME}
 	echo "${READABLE}" >> ${FILENAME}
 	echo "*/" >> ${FILENAME}
-	cat "SOMEKINDATEMPFILE.txt" >> ${FILENAME}
+	cat "____tmpfile.txt" >> ${FILENAME}
 	# run once to get golden
 	runtests.sh ${NAME}
 	# run again to get a green result
 	runtests.sh ${NAME}
 	# parse outputs to refresh html page
 	node parsetestoutput.js
+	rm "____tmpfile.txt"
 fi
 

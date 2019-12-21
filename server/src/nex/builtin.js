@@ -34,11 +34,11 @@ class Builtin extends Lambda {
 		this.f = f.bind(this);
 	}
 
-	static createBuiltin(name, params, f) {
+	static createBuiltin(name, params, f, argEvalFactory) {
 		for (var i = 0; i < params.length; i++) {
 			params[i].name = BUILTIN_ARG_PREFIX + params[i].name;
 		}
-		var nex = new Builtin(name, params);
+		var nex = new Builtin(name, params, argEvalFactory ? argEvalFactory : null);
 		nex.setF(f);
 		Builtin.bindBuiltinObject(name, nex);
 	}
