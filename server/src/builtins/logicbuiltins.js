@@ -56,8 +56,10 @@ class IfArgEvaluator extends BuiltinArgEvaluator {
 			var oldhack = exp.hackfunction;
 			exp.hackfunction = function() {
 				var r = oldhack();
-				this.conditionalEvaluated = true;
-				this.conditionalResult = r.getTypedValue();
+				if (r instanceof Bool) {
+					this.conditionalEvaluated = true;
+					this.conditionalResult = r.getTypedValue();
+				}
 				return r;
 			}.bind(this);
 			this.argContainer.setArgAt(exp, ind);
