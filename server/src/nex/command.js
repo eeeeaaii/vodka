@@ -125,6 +125,7 @@ class Command extends NexContainer {
 					var stepEvaluator = lambda.getStepEvaluator(stepContainer, lambda.closure);
 					stepEvaluator.startEvaluating();
 					var lambdaExp = new Expectation();
+					var result;
 					lambdaExp.hackfunction = function() {
 						if (!stepEvaluator.allExpressionsEvaluated()) {
 							var ind = stepEvaluator.indexOfNextUnevaluatedExpression();
@@ -134,14 +135,21 @@ class Command extends NexContainer {
 							lambda.replaceChildAt(innerinnerexp, ind);
 							return lambdaExp;
 						} else {
-							return lambda.getLastChild(); // or something
+							result = lambda.getLastChild();
+							return result;
+//							return lambda.getLastChild(); // or something
 						}
 
 					}.bind(this); // not really needed
-					STEP_STACK.push(lambdaExp);
 					lambdaExp.appendChild(lambda);
-					lambdaExp.hack2 = 'yes';
-					return lambdaExp;
+//					return lambdaExp;
+					exp.replaceChildAt(lambdaExp, 0);
+					exp.hackfunction = function() {
+						return result;
+					}.bind(this);
+					STEP_STACK.push(exp);
+					STEP_STACK.push(lambdaExp);
+					return exp;
 				}
 			}
 		}.bind(this);
