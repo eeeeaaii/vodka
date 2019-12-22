@@ -54,15 +54,15 @@ function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'begin',
 		[
-			{name:'a0', type:'*', variadic:true, skipeval:true}
+			{name:'a0', type:'*', variadic:true}
 		],
 		function(env, argEnv) {
-			var r = new Nil();
 			var lst = env.lb('a0');
-			for (var i = 0; i < lst.numChildren(); i++) {
-				r = lst.getChildAt(i).evaluate(argEnv);
+			if (lst.numChildren() == 0) {
+				return new Nil();
+			} else {
+				return lst.getChildAt(lst.numChildren() - 1);
 			}
-			return r;
 		}
 	);
 
