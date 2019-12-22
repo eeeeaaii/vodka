@@ -127,6 +127,19 @@ function createMathBuiltins() {
 			return new Bool(r);
 		}
 	);
+	Builtin.createBuiltin(
+		'<=',
+		[
+			{name:'a0', type:'Number'},
+			{name:'a1', type:'Number'},
+		],
+		function(env, argEnv) {
+			var a = env.lb('a0').getTypedValue();
+			var b = env.lb('a1').getTypedValue();
+			var r = (a <= b);
+			return new Bool(r);
+		}
+	);
 
 	Builtin.createBuiltin(
 		'>',
@@ -138,6 +151,34 @@ function createMathBuiltins() {
 			var a = env.lb('a0').getTypedValue();
 			var b = env.lb('a1').getTypedValue();
 			var r = (a > b);
+			return new Bool(r);
+		}
+	);
+
+	Builtin.createBuiltin(
+		'>=',
+		[
+			{name:'a0', type:'Number'},
+			{name:'a1', type:'Number'},
+		],
+		function(env, argEnv) {
+			var a = env.lb('a0').getTypedValue();
+			var b = env.lb('a1').getTypedValue();
+			var r = (a >= b);
+			return new Bool(r);
+		}
+	);
+
+	Builtin.createBuiltin(
+		'<>',
+		[
+			{name:'a0', type:'Number'},
+			{name:'a1', type:'Number'},
+		],
+		function(env, argEnv) {
+			var a = env.lb('a0').getTypedValue();
+			var b = env.lb('a1').getTypedValue();
+			var r = (a != b);
 			return new Bool(r);
 		}
 	);
