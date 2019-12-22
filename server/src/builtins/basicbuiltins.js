@@ -87,8 +87,9 @@ function createBasicBuiltins() {
 		],
 		function(env, argEnv) {
 			var val = env.lb('a1');
-			BUILTINS.bindInPackage(env.lb('a0').getTypedValue(), val);
-			return val;
+			var name = env.lb('a0');
+			BUILTINS.bindInPackage(name.getTypedValue(), val);
+			return name;
 		}
 	);
 
