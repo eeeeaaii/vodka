@@ -50,6 +50,16 @@ class ESymbol extends ValueNex {
 
 	stepEvaluate(env, exp) {
 		exp.hackfunction = function() {
+			try {
+				var r = this.evaluate(env);
+				return r;
+			} catch (err) {
+				if (err instanceof EError) {
+					return err;
+				} else {
+					throw err;
+				}
+			}
 			return this.evaluate(env);
 		}.bind(this);
 		STEP_STACK.push(exp);
