@@ -140,6 +140,7 @@ class Command extends NexContainer {
 					}.bind(this); // not really needed
 					STEP_STACK.push(lambdaExp);
 					lambdaExp.appendChild(lambda);
+					lambdaExp.hack2 = 'yes';
 					return lambdaExp;
 				}
 			}

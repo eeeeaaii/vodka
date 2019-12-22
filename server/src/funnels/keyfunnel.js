@@ -235,8 +235,14 @@ class KeyFunnel {
 			 		// we are finished, just select the return val;
 			 		nx.setSelected();
 			 	} else {
+			 		// ugly hack for when a lambda is the root thing
+			 		// you are doing step evaluation on
+			 		if (nx.hack2 == 'yes') {
+			 			nx.__STEP_STACK = this.s.__STEP_STACK;
+			 		} else {
+					 	this.s.setSelected();
+			 		}
 			 		// not finished, select the expect
-				 	this.s.setSelected();
 			 	}
 			 } else {
 			 	STEP_STACK = null;
