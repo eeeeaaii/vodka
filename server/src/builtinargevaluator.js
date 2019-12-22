@@ -162,9 +162,17 @@ class BuiltinArgEvaluator {
 			if (stop) return;
 			if (this.argContainer.getNeedsEvalForArgAt(i)) {
 				this.argContainer.setNeedsEvalForArgAt(false, i);
+				// do something here where you give arg the
+				// right lexical binding
 				arg.stepEvaluate(this.env, exp);
 				this.argContainer.setArgAt(exp, i);
-				exp.appendChild(arg);
+				// hack
+				if (arg.__haserror) {
+					exp.appendChild(arg.__haserror);
+
+				} else {
+					exp.appendChild(arg);
+				}
 				stop = true;
 			}
 		}.bind(this));

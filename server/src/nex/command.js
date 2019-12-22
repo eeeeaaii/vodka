@@ -103,57 +103,76 @@ class Command extends NexContainer {
 		}
 	}
 
-	stepEvaluate(env, exp) {
-		var lambda = this.getLambda(env);
-		var argContainer = new NexChildArgContainer(this);
-		var argEvaluator = lambda.getArgEvaluator(argContainer, env);
-		argEvaluator.startEvaluating();
-		exp.hackfunction = function() {
-			if (!argEvaluator.allExpressionsEvaluated()) {
-				var ind = argEvaluator.indexOfNextUnevaluatedExpression();
-				var innerexp = new Expectation();
-				STEP_STACK.push(exp);
-				argEvaluator.evaluateNext(innerexp);
-				this.replaceChildAt(innerexp, ind);
-				return exp;
+	resolveCommandExpectation(env, lambda, argEvaluator, exp) {
+		if (!argEvaluator.allExpressionsEvaluated()) {
+			var ind = argEvaluator.indexOfNextUnevaluatedExpression();
+			var innerexp = new Expectation();
+			STEP_STACK.push(exp);
+			argEvaluator.evaluateNext(innerexp);
+			this.replaceChildAt(innerexp, ind);
+			return exp;
+		} else {
+			argEvaluator.finishEvaluating();
+			if (lambda instanceof Builtin) {
+				return lambda.executor(env);
 			} else {
-				argEvaluator.finishEvaluating();
-				if (lambda instanceof Builtin) {
-					return lambda.executor(env);
-				} else {
-					var stepContainer = new NexChildArgContainer(lambda);
-					var stepEvaluator = lambda.getStepEvaluator(stepContainer, lambda.closure);
-					stepEvaluator.startEvaluating();
-					var lambdaExp = new Expectation();
-					var result;
-					lambdaExp.hackfunction = function() {
-						if (!stepEvaluator.allExpressionsEvaluated()) {
-							var ind = stepEvaluator.indexOfNextUnevaluatedExpression();
-							var innerinnerexp = new Expectation();
-							STEP_STACK.push(lambdaExp);
-							stepEvaluator.evaluateNext(innerinnerexp);
-							lambda.replaceChildAt(innerinnerexp, ind);
-							return lambdaExp;
-						} else {
-							result = lambda.getLastChild();
-							return result;
-//							return lambda.getLastChild(); // or something
-						}
-
-					}.bind(this); // not really needed
-					lambdaExp.appendChild(lambda);
-//					return lambdaExp;
-					exp.replaceChildAt(lambdaExp, 0);
-					exp.hackfunction = function() {
+				var stepContainer = new NexChildArgContainer(lambda);
+				var stepEvaluator = lambda.getStepEvaluator(stepContainer, lambda.closure);
+				stepEvaluator.startEvaluating();
+				var lambdaExp = new Expectation();
+				var result;
+				lambdaExp.hackfunction = function() {
+					if (!stepEvaluator.allExpressionsEvaluated()) {
+						var ind = stepEvaluator.indexOfNextUnevaluatedExpression();
+						var innerinnerexp = new Expectation();
+						STEP_STACK.push(lambdaExp);
+						stepEvaluator.evaluateNext(innerinnerexp);
+						lambda.replaceChildAt(innerinnerexp, ind);
+						return lambdaExp;
+					} else {
+						result = lambda.getLastChild();
 						return result;
-					}.bind(this);
-					STEP_STACK.push(exp);
-					STEP_STACK.push(lambdaExp);
-					return exp;
-				}
+//							return lambda.getLastChild(); // or something
+					}
+
+				}.bind(this); // not really needed
+				lambdaExp.appendChild(lambda);
+//					return lambdaExp;
+				exp.replaceChildAt(lambdaExp, 0);
+				exp.hackfunction = function() {
+					return result;
+				}.bind(this);
+				STEP_STACK.push(exp);
+				STEP_STACK.push(lambdaExp);
+				return exp;
 			}
-		}.bind(this);
-		STEP_STACK.push(exp);
+		}
+	}
+
+	stepEvaluate(env, exp) {
+		try {
+			var lambda = this.getLambda(env);
+			var argContainer = new NexChildArgContainer(this);
+			var argEvaluator = lambda.getArgEvaluator(argContainer, env);
+			argEvaluator.startEvaluating();
+			exp.hackfunction = function() {
+				return this.resolveCommandExpectation(env, lambda, argEvaluator, exp);
+			}.bind(this);
+			STEP_STACK.push(exp);
+		} catch (e) {
+			// could happen if lambda can't be found, for example.
+			if (e instanceof EError) {
+				exp.hackfunction = function() {
+					return e;
+				}
+				// hack
+				this.__haserror = e;
+				STEP_STACK.push(exp);
+			} else {
+				throw e;
+			}
+
+		}
 	}
 
 	render() {

@@ -87,7 +87,13 @@ class LambdaArgEvaluator {
 				this.argContainer.setNeedsEvalForArgAt(false, i);
 				arg.stepEvaluate(this.argEnv, exp);
 				this.argContainer.setArgAt(exp, i);
-				exp.appendChild(arg);
+				// hack
+				if (arg.__haserror) {
+					exp.appendChild(arg.__haserror);
+
+				} else {
+					exp.appendChild(arg);
+				}
 				stop = true;
 			}
 		}.bind(this));

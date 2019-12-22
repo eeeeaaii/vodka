@@ -99,7 +99,11 @@ if [ "$1" == "" ]; then
 	done
 else
 	while [ "$1" != "" ]; do
-		do_test $1
+		TESTFILE=$1
+		BASENAME=${TESTFILE#./alltests/}
+		BASENAME=${BASENAME#alltests/}
+		BASENAME=${BASENAME%.js}
+		do_test $BASENAME
 		shift
 	done
 fi

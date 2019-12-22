@@ -149,6 +149,7 @@ class NexContainer extends Nex {
 	}
 
 	replaceChildAt(c, i) {
+		if (c == this.children[i]) return;
 		this.removeChildAt(i);
 		this.insertChildAt(c, i);
 	}
