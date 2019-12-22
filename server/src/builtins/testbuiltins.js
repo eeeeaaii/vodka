@@ -22,8 +22,7 @@ function createTestBuiltins() {
 			{name:'a0', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof EError
-				&& !(env.lb('a0') instanceof EString));
+			return new Bool(env.lb('a0') instanceof EError);
 		}
 	);
 

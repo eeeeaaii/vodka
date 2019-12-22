@@ -28,6 +28,12 @@ class EError extends EString {
 		return '?"' + this.escapeContents() + '"';
 	}
 
+	makeCopy() {
+		var r = new EError(this.getFullTypedValue());
+		return r;
+	}
+
+
 	getKeyFunnel() {
 		return new EErrorKeyFunnel(this);
 	}
