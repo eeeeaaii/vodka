@@ -16,6 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
+
 class Lambda extends NexContainer {
 	constructor(val) {
 		super();
@@ -42,6 +43,10 @@ class Lambda extends NexContainer {
 		return `&"${this.amptext}"${this.vdir ? 'v' : 'h'}(${super.childrenToString()}&)`;
 	}
 
+	debugString() {
+		return `&${this.amptext}(${super.childrenDebugString()})`;
+	}
+
 	getKeyFunnel() {
 		return new LambdaKeyFunnel(this);
 	}
@@ -55,7 +60,7 @@ class Lambda extends NexContainer {
 		} else {
 			this.codespan.classList.remove('exploded');
 		}
-		this.codespan.innerHTML = '&amp;' + this.amptext.replace(/ /g, '&nbsp;');
+		this.codespan.innerHTML = '<span class="lambdasign">&#8907;</span>' + this.amptext.replace(/ /g, '&nbsp;');
 	}
 
 	setCmdName(nm) {

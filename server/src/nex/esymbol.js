@@ -43,7 +43,7 @@ class ESymbol extends ValueNex {
 	evaluate(env) {
 		ILVL++;
 		var b = env.lookupBinding(this.getTypedValue());
-		console.log(`${INDENT()}symbol ${this.value} bound to ${b.toString()}`);
+		console.log(`${INDENT()}symbol ${this.value} bound to ${b.debugString()}`);
 		ILVL--;
 		return b;
 	}

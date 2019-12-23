@@ -21,6 +21,17 @@ class IfArgEvaluator extends BuiltinArgEvaluator {
 		this.conditionalEvaluated = false;
 	}
 
+	processArgs() {
+		this.processSingleArg(0);
+		var bval = this.argContainer.getArgAt(0).getTypedValue();
+		if (bval) {
+			this.processSingleArg(1);
+		} else {
+			this.processSingleArg(2);
+		}
+	}
+
+
 	startEvaluating() {
 		super.startEvaluating();
 		if (!this.argContainer.getNeedsEvalForArgAt(0)) {
@@ -124,9 +135,9 @@ function createLogicBuiltins() {
 		function(env, argEnv) {
 			var b = env.lb('a0').getTypedValue();
 			if (b) {
-				return env.lb('a1').evaluate(argEnv);
+				return env.lb('a1');
 			} else {
-				return env.lb('a2').evaluate(argEnv);
+				return env.lb('a2');
 			}
 		},
 		function(name, params, args, argEnv, closure) {

@@ -61,6 +61,10 @@ class Nex {
 
 	toString() {}
 
+	debugString() {
+		return this.toString();
+	}
+
 	setRenderType(newType) {
 		this.renderType = newType;
 	}

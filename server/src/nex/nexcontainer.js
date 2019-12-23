@@ -42,6 +42,17 @@ class NexContainer extends Nex {
 		return r;		
 	}
 
+	childrenDebugString() {
+		var r = "";
+		for (var i = 0; i < this.children.length; i++) {
+			if (i > 0) {
+				r += ' ';
+			}
+			r += this.children[i].debugString();
+		}
+		return r;				
+	}
+
 	setRenderType(newType) {
 		super.setRenderType(newType);
 		for (var i = 0; i < this.children.length; i++) {

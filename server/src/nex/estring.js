@@ -50,6 +50,10 @@ class EString extends ValueNex {
 		return '$"' + this.escapeContents() + '"';
 	}
 
+	debugString() {
+		return '$"' + this.getFullTypedValue() + '"';
+	}
+
 	makeCopy() {
 		var r = new EString(this.getFullTypedValue(), '$', 'string');
 		return r;

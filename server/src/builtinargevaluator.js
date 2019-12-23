@@ -82,19 +82,23 @@ class BuiltinArgEvaluator {
 		}
 	}
 
+	processSingleArg(i) {
+		var param = this.effectiveParams[i];
+		var arg = this.argContainer.getArgAt(i);
+		if (!param.skipeval) {
+			arg = arg.evaluate(this.env);
+		}
+		var typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[param.type](arg);
+
+		if (!typeChecksOut) {
+			throw new EError(this.name + ": expects a " + param.type + " for argument ");
+		}
+		this.argContainer.setArgAt(arg, i);
+	}
+
 	processArgs() {
 		for (var i = 0; i < this.argContainer.numArgs(); i++) {
-			var param = this.effectiveParams[i];
-			var arg = this.argContainer.getArgAt(i);
-			if (!param.skipeval) {
-				arg = arg.evaluate(this.env);
-			}
-			var typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[param.type](arg);
-
-			if (!typeChecksOut) {
-				throw new EError(this.name + ": expects a " + param.type + " for argument ");
-			}
-			this.argContainer.setArgAt(arg, i);
+			this.processSingleArg(i);
 		}
 	}
 
@@ -125,6 +129,8 @@ class BuiltinArgEvaluator {
 		this.processArgs();
 		this.bindArgs();
 	}
+
+	// ugh. step stuff below, non-step above.
 
 	startArg(arg, param, i) {
 		var neval = arg.needsEvaluation() && !param.skipeval;

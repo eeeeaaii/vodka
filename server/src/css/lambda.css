@@ -20,3 +20,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	display: contents;
 }
 
+.lambdasign {
+	font-weight: bold;
+}
+

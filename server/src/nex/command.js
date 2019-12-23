@@ -38,6 +38,10 @@ class Command extends NexContainer {
 		return `~"${this.commandtext}"${this.vdir ? 'v' : 'h'}(${super.childrenToString()}~)`;
 	}
 
+	debugString() {
+		return `~${this.commandtext}(${super.childrenDebugString()})`;
+	}
+
 	getKeyFunnel() {
 		return new CommandKeyFunnel(this);
 	}
@@ -65,7 +69,7 @@ class Command extends NexContainer {
 				this.removeChildAt(0);
 				cmdname = 'LAMBDA';
 			} else {
-				throw new EError(`first argument ${c.toString()} to command is not a lambda.`);
+				throw new EError(`first argument ${c.debugString()} to command is not a lambda.`);
 			}
 		} else {
 			throw new EError("no-name command must provide a lambda in first argument.");		
@@ -83,13 +87,13 @@ class Command extends NexContainer {
 			ILVL++;
 			stackCheck();
 			var lambda = this.getLambda(env);
-			console.log(`${INDENT()}evaluating command: ${this.toString()}`);
-			console.log(`${INDENT()}lambda is: ${lambda.toString()}`);
+			console.log(`${INDENT()}evaluating command: ${this.debugString()}`);
+			console.log(`${INDENT()}lambda is: ${lambda.debugString()}`);
 			var argContainer = new NexChildArgContainer(this);
 			var argEvaluator = lambda.getArgEvaluator(argContainer, env);
 			argEvaluator.evaluateAndBindArgs();
 			var r = lambda.executor(env);
-			console.log(`${INDENT()}command returned: ${r.toString()}`);
+			console.log(`${INDENT()}command returned: ${r.debugString()}`);
 			ILVL--;
 			return r;
 
@@ -184,7 +188,7 @@ class Command extends NexContainer {
 		} else {
 			this.codespan.classList.remove('exploded');
 		}
-		this.codespan.innerHTML = '~' + this.commandtext;
+		this.codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
 	}
 
 	getCommandText() {

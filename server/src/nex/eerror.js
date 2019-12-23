@@ -28,6 +28,10 @@ class EError extends EString {
 		return '?"' + this.escapeContents() + '"';
 	}
 
+	debugString() {
+		return '?"' + this.getFullTypedValue() + '"';
+	}
+
 	makeCopy() {
 		var r = new EError(this.getFullTypedValue());
 		return r;
