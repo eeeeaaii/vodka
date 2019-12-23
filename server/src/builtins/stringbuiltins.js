@@ -94,4 +94,17 @@ function createStringBuiltins() {
 			return new EString(r);
 		}
 	);
+
+	Builtin.createBuiltin(
+		'string-eq',
+		[
+			{name:'a0', type: 'EString'},
+			{name:'a1', type: 'EString'}
+		],
+		function(env, argEnv) {
+			var s1 = env.lb('a0').getFullTypedValue();
+			var s2 = env.lb('a1').getFullTypedValue();
+			return new Bool(s1 === s2);
+		}
+	);
 }
