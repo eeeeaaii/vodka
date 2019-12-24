@@ -24,7 +24,9 @@ class Float extends ValueNex {
 	}
 
 	makeCopy() {
-		return new Float(this.value);
+		var r = new Float(this.value);
+		this.copyFieldsTo(r);
+		return r;
 	}
 
 	isValid() {

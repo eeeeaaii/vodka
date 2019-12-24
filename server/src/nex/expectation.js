@@ -27,6 +27,21 @@ class Expectation extends NexContainer {
 		this.render();
 	}
 
+	makeCopy() {
+		var r = new Expectation();
+		this.copyFieldsTo(r);
+		return r;
+	}
+
+	toString() {
+		return '...';
+	}
+
+	copyFieldsTo(nex) {
+		super.copyFieldsTo(nex);
+		nex.hackfunction = this.hackfunction;
+	}
+
 	render() {
 		super.render();
 		this.domNode.classList.add('expectation');
@@ -36,17 +51,6 @@ class Expectation extends NexContainer {
 			this.dotspan.classList.remove('exploded');
 		}
 		this.dotspan.innerHTML = '...';
-	}
-
-	makeCopy() {
-		var r = new Expectation();
-		this.makeCopyChildren(r);
-		r.hackfunction = this.hackfunction;
-		return r;
-	}
-
-	toString() {
-		return '...';
 	}
 
 	isEmpty() {

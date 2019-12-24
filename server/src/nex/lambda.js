@@ -31,12 +31,16 @@ class Lambda extends NexContainer {
 
 	makeCopy() {
 		var r = new Lambda();
-		this.makeCopyChildren(r);
+		this.copyFieldsTo(r);
+		return r;
+	}
+
+	copyFieldsTo(r) {
+		super.copyFieldsTo(r);
 		r.amptext = this.amptext;
 		r.closure = this.closure;
 		r.cmdname = this.cmdname;
 		r.needsEval = this.needsEval;
-		return r;
 	}
 
 	toString() {

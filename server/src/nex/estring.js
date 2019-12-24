@@ -36,6 +36,16 @@ class EString extends ValueNex {
 		this.setFullValue(val);// will call render
 	}
 
+	makeCopy() {
+		var r = new EString(this.getFullTypedValue(), '$', 'string');
+		this.copyFieldsTo(r);
+		return r;
+	}
+
+	toString() {
+		return '$"' + this.escapeContents() + '"';
+	}
+
 	unScrewUp() {
 		this.setFullValue(this.getFullTypedValue().replace(new RegExp(QUOTE_ESCAPE, "g"), '"'));
 	}
@@ -46,17 +56,8 @@ class EString extends ValueNex {
 		return fv;
 	}
 
-	toString() {
-		return '$"' + this.escapeContents() + '"';
-	}
-
 	debugString() {
 		return '$"' + this.getFullTypedValue() + '"';
-	}
-
-	makeCopy() {
-		var r = new EString(this.getFullTypedValue(), '$', 'string');
-		return r;
 	}
 
 	setMode(m) {

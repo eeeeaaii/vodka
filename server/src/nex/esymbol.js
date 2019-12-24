@@ -23,17 +23,18 @@ class ESymbol extends ValueNex {
 		this.render();
 	}
 
+	makeCopy() {
+		var r = new ESymbol(this.getTypedValue());
+		this.copyFieldsTo(r);
+		return r;
+	}
+
 	needsEvaluation() {
 		return true;
 	}
 
-
 	getAsString() {
 		return '' + this.value;
-	}
-
-	makeCopy() {
-		return new ESymbol(this.getTypedValue());
 	}
 
 	getKeyFunnel() {

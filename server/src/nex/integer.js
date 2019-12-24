@@ -27,7 +27,9 @@ class Integer extends ValueNex {
 	}
 
 	makeCopy() {
-		return new Integer(this.value);
+		var r = new Integer(this.value);
+		this.copyFieldsTo(r);
+		return r;
 	}
 
 	isValid() {

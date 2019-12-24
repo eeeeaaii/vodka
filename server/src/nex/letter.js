@@ -27,12 +27,14 @@ class Letter extends Nex {
 		this.render();
 	}
 
-	toString() {
-		return '|(' + this.value + ')|';
+	makeCopy() {
+		var r = new Letter(this.value);
+		this.copyFieldsTo(r);
+		return r;
 	}
 
-	makeCopy() {
-		return new Letter(this.value);
+	toString() {
+		return '|(' + this.value + ')|';
 	}
 
 	isLeaf() {

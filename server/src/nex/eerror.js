@@ -24,6 +24,12 @@ class EError extends EString {
 		this.setFullValue(val); // will call render
 	}
 
+	makeCopy() {
+		var r = new EError(this.getFullTypedValue());
+		this.copyFieldsTo(r);
+		return r;
+	}
+
 	toString() {
 		return '?"' + this.escapeContents() + '"';
 	}
@@ -32,16 +38,10 @@ class EError extends EString {
 		return '?"' + this.getFullTypedValue() + '"';
 	}
 
-	makeCopy() {
-		var r = new EError(this.getFullTypedValue());
-		return r;
-	}
-
 
 	getKeyFunnel() {
 		return new EErrorKeyFunnel(this);
 	}
-
 
 	drawButton() {
 	}

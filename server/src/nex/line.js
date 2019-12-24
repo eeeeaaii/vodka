@@ -25,7 +25,7 @@ class Line extends NexContainer {
 
 	makeCopy() {
 		var r = new Line();
-		this.makeCopyChildren(r);
+		this.copyFieldsTo(r);
 		return r;
 	}
 

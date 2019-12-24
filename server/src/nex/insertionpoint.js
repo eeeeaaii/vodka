@@ -23,6 +23,12 @@ class InsertionPoint extends ValueNex {
 		this.render();
 	}
 
+	makeCopy() {
+		var r = new InsertionPoint();
+		this.copyFieldsTo(r);
+		return r;
+	}
+
 	toString() {
 		return '';
 	}

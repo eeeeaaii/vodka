@@ -29,6 +29,11 @@ class Nex {
 		this.selected = false;
 		this.renderType = current_render_type;
 		this.keyfunnel = null;
+		this.currentStyle = "";
+	}
+
+	copyFieldsTo(nex) {
+		nex.currentStyle = this.currentStyle;
 	}
 
 	needsEvaluation() {
@@ -57,6 +62,14 @@ class Nex {
 
 	getRightX() {
 		return this.domNode.getBoundingClientRect().right;
+	}
+
+	setCurrentStyle(s) {
+		this.currentStyle = s;
+	}
+
+	getCurrentStyle() {
+		return this.currentStyle;
 	}
 
 	toString() {}
@@ -99,6 +112,7 @@ class Nex {
 		} else {
 			this.domNode.classList.remove('exploded');
 		}
+		this.domNode.setAttribute("style", this.currentStyle);
 	}
 
 	setParent(p) {

@@ -29,13 +29,17 @@ class Command extends NexContainer {
 
 	makeCopy() {
 		var r = new Command();
-		this.makeCopyChildren(r);
-		r.commandtext = this.commandtext;
+		this.copyFieldsTo(r);
 		return r;
 	}
 
 	toString() {
 		return `~"${this.commandtext}"${this.vdir ? 'v' : 'h'}(${super.childrenToString()}~)`;
+	}
+
+	copyFieldsTo(nex) {
+		super.copyFieldsTo(nex);
+		nex.commandtext = this.commandtext;
 	}
 
 	debugString() {

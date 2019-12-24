@@ -20,13 +20,26 @@ function createSyscalls() {
 		'apply-style-to',
 		[
 			{name:'a0', type:'EString'},
-			{name:'a1', type:'*'},
+			{name:'a1', type:'*'}
 		],
 		function(env, argEnv) {
 			var s = env.lb('a0').getFullTypedValue();
 			var n = env.lb('a1');
-			n.domNode.setAttribute('style', s);
+			n.setCurrentStyle(s);
+			n.render();
 			return n;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'get-style-from',
+		[
+			{name:'a0', type:'*'}
+		],
+		function(env, argEnv) {
+			var n = env.lb('a0');
+			var s = n.getCurrentStyle();
+			return new EString(s);
 		}
 	);
 }

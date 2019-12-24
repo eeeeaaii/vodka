@@ -32,16 +32,18 @@ class Bool extends ValueNex {
 		this.render();
 	}
 
-	getTypedValue() {
-		return this.value === 'yes';
+	makeCopy() {
+		var r = new Bool(this.getTypedValue());
+		this.copyFieldsTo(r);
+		return r;
 	}
 
 	toString() {
 		return '!' + this.renderValue();
 	}
 
-	makeCopy() {
-		return new Bool(this.getTypedValue());
+	getTypedValue() {
+		return this.value === 'yes';
 	}
 
 	isEmpty() {

@@ -26,6 +26,12 @@ class Builtin extends Lambda {
 		this.argEvalFactory = argEvalFactory;
 	}
 
+	makeCopy() {
+		var r = new Builtin(this.name, this.params, this.argEvalFactory);
+		this.copyFieldsTo(r);
+		return r;
+	}
+
 	toString() {
 		return `[BUILTIN:${this.name}]`;
 	}

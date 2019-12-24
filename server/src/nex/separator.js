@@ -21,6 +21,8 @@ class Separator extends Letter {
 		this.render();
 	}
 
+	// makeCopy is same as superclass
+
 	toString() {
 		return '|[' + this.value + ']|';
 	}

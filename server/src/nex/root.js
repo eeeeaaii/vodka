@@ -26,6 +26,8 @@ class Root extends NexContainer {
 		this.render();
 	}
 
+	// makeCopy intentionally unimplemented
+
 	debug() {
 		for (var i = 0; i < this.children.length; i++) {
 			this.children[i].debug();

@@ -22,6 +22,12 @@ class Newline extends Separator {
 		this.render();
 	}
 
+	makeCopy() {
+		var r = new Newline();
+		this.copyFieldsTo(r);
+		return r;
+	}
+
 	getKeyFunnel() {
 		return new NewlineKeyFunnel(this);
 	}

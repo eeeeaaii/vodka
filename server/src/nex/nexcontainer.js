@@ -24,7 +24,8 @@ class NexContainer extends Nex {
 		this.children = [];
 	}
 
-	makeCopyChildren(n) {
+	copyFieldsTo(n) {
+		super.copyFieldsTo(n);
 		for (var i = 0; i < this.children.length; i++) {
 			n.appendChild(this.children[i].makeCopy());
 		}
