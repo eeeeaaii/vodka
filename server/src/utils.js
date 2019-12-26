@@ -16,7 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 function isInDocContext(n) {
-	var p = n.getParent();
+	let p = n.getParent();
 	return isDocElement(p);
 }
 

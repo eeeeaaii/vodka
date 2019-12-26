@@ -28,7 +28,7 @@ class Command extends NexContainer {
 	}
 
 	makeCopy() {
-		var r = new Command();
+		let r = new Command();
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -51,11 +51,12 @@ class Command extends NexContainer {
 	}
 
 	getLambda(env) {
-		var cmdname = this.getCommandText();		
+		let cmdname = this.getCommandText();
+		let lambda = null;
 		if (cmdname) {
-			var lambda = env.lookupBinding(cmdname);
+			lambda = env.lookupBinding(cmdname);
 		} else if (this.numChildren() > 0) {
-			var c = this.getChildAt(0);
+			let c = this.getChildAt(0);
 			if (c instanceof ESymbol) {
 				lambda = env.lookupBinding(c.getTypedValue());			
 				cmdname = c.getTypedValue();
@@ -67,7 +68,7 @@ class Command extends NexContainer {
 					// this is the weird thing where you could evaluate it
 					// in one place then execute it somewhere else via
 					// copy and paste - should I allow this?
-					return new EError('lambda already evaluated!');
+					throw new EError('lambda already evaluated!');
 
 				}
 				this.removeChildAt(0);
@@ -77,6 +78,9 @@ class Command extends NexContainer {
 			}
 		} else {
 			throw new EError("no-name command must provide a lambda in first argument.");		
+		}
+		if (lambda == null) {
+			throw new Error("this shouldn't happen");
 		}
 		lambda.setCmdName(cmdname);
 		return lambda;
@@ -90,13 +94,13 @@ class Command extends NexContainer {
 		try {
 			ILVL++;
 			stackCheck();
-			var lambda = this.getLambda(env);
+			let lambda = this.getLambda(env);
 			console.log(`${INDENT()}evaluating command: ${this.debugString()}`);
 			console.log(`${INDENT()}lambda is: ${lambda.debugString()}`);
-			var argContainer = new NexChildArgContainer(this);
-			var argEvaluator = lambda.getArgEvaluator(argContainer, env);
+			let argContainer = new NexChildArgContainer(this);
+			let argEvaluator = lambda.getArgEvaluator(argContainer, env);
 			argEvaluator.evaluateAndBindArgs();
-			var r = lambda.executor(env);
+			let r = lambda.executor(env);
 			console.log(`${INDENT()}command returned: ${r.debugString()}`);
 			ILVL--;
 			return r;
@@ -113,8 +117,8 @@ class Command extends NexContainer {
 
 	resolveCommandExpectation(env, lambda, argEvaluator, exp) {
 		if (!argEvaluator.allExpressionsEvaluated()) {
-			var ind = argEvaluator.indexOfNextUnevaluatedExpression();
-			var innerexp = new Expectation();
+			let ind = argEvaluator.indexOfNextUnevaluatedExpression();
+			let innerexp = new Expectation();
 			STEP_STACK.push(exp);
 			argEvaluator.evaluateNext(innerexp);
 			this.replaceChildAt(innerexp, ind);
@@ -124,15 +128,15 @@ class Command extends NexContainer {
 			if (lambda instanceof Builtin) {
 				return lambda.executor(env);
 			} else {
-				var stepContainer = new NexChildArgContainer(lambda);
-				var stepEvaluator = lambda.getStepEvaluator(stepContainer, lambda.closure);
+				let stepContainer = new NexChildArgContainer(lambda);
+				let stepEvaluator = lambda.getStepEvaluator(stepContainer, lambda.closure);
 				stepEvaluator.startEvaluating();
-				var lambdaExp = new Expectation();
-				var result;
+				let lambdaExp = new Expectation();
+				let result;
 				lambdaExp.hackfunction = function() {
 					if (!stepEvaluator.allExpressionsEvaluated()) {
-						var ind = stepEvaluator.indexOfNextUnevaluatedExpression();
-						var innerinnerexp = new Expectation();
+						let ind = stepEvaluator.indexOfNextUnevaluatedExpression();
+						let innerinnerexp = new Expectation();
 						STEP_STACK.push(lambdaExp);
 						stepEvaluator.evaluateNext(innerinnerexp);
 						lambda.replaceChildAt(innerinnerexp, ind);
@@ -159,9 +163,9 @@ class Command extends NexContainer {
 
 	stepEvaluate(env, exp) {
 		try {
-			var lambda = this.getLambda(env);
-			var argContainer = new NexChildArgContainer(this);
-			var argEvaluator = lambda.getArgEvaluator(argContainer, env);
+			let lambda = this.getLambda(env);
+			let argContainer = new NexChildArgContainer(this);
+			let argEvaluator = lambda.getArgEvaluator(argContainer, env);
 			argEvaluator.startEvaluating();
 			exp.hackfunction = function() {
 				return this.resolveCommandExpectation(env, lambda, argEvaluator, exp);

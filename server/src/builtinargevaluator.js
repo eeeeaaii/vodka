@@ -41,8 +41,8 @@ class BuiltinArgEvaluator {
 		this.hasoptionals = false;
 		this.hasvariadics = false;
 		this.numRequiredParams = 0;
-		for (var i = 0; i < this.params.length; i++) {
-			var param = this.params[i];
+		for (let i = 0; i < this.params.length; i++) {
+			let param = this.params[i];
 			if (param.optional) {
 				if (this.hasvariadics) {
 					throw new Error("can't have variadics and also optionals.");
@@ -72,23 +72,24 @@ class BuiltinArgEvaluator {
 
 	padEffectiveParams() {
 		this.effectiveParams = [];
-		for (var i = 0; i < this.params.length; i++) {
+		let i = 0;
+		for (; i < this.params.length; i++) {
 			this.effectiveParams[i] = this.params[i];
 		}
 		if (this.hasvariadics) {
-			for(var lasti = i - 1; i < this.argContainer.numArgs(); i++) {
+			for(let lasti = i - 1; i < this.argContainer.numArgs(); i++) {
 				this.effectiveParams[i] = this.params[lasti];
 			}
 		}
 	}
 
 	processSingleArg(i) {
-		var param = this.effectiveParams[i];
-		var arg = this.argContainer.getArgAt(i);
+		let param = this.effectiveParams[i];
+		let arg = this.argContainer.getArgAt(i);
 		if (!param.skipeval) {
 			arg = arg.evaluate(this.env);
 		}
-		var typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[param.type](arg);
+		let typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[param.type](arg);
 
 		if (!typeChecksOut) {
 			throw new EError(this.name + ": expects a " + param.type + " for argument ");
@@ -97,17 +98,17 @@ class BuiltinArgEvaluator {
 	}
 
 	processArgs() {
-		for (var i = 0; i < this.argContainer.numArgs(); i++) {
+		for (let i = 0; i < this.argContainer.numArgs(); i++) {
 			this.processSingleArg(i);
 		}
 	}
 
 	bindArgs() {
-		for (var i = 0; i < this.params.length; i++) {
-			var param = this.params[i];
+		for (let i = 0; i < this.params.length; i++) {
+			let param = this.params[i];
 			if (param.variadic) {
-				var w = new Word();
-				for (var j = i; j < this.argContainer.numArgs(); j++) {
+				let w = new Word();
+				for (let j = i; j < this.argContainer.numArgs(); j++) {
 					w.appendChild(this.argContainer.getArgAt(j).makeCopy());
 				}
 				this.bindEnv.bind(param.name, w);
@@ -133,13 +134,13 @@ class BuiltinArgEvaluator {
 	// ugh. step stuff below, non-step above.
 
 	startArg(arg, param, i) {
-		var neval = arg.needsEvaluation() && !param.skipeval;
+		let neval = arg.needsEvaluation() && !param.skipeval;
 		this.argContainer.setNeedsEvalForArgAt(neval, i);
 	}
 
 	doForEachArg(f) {
-		for (var i = 0; i < this.argContainer.numArgs(); i++) {
-			var arg = this.argContainer.getArgAt(i);
+		for (let i = 0; i < this.argContainer.numArgs(); i++) {
+			let arg = this.argContainer.getArgAt(i);
 			f(arg, i);
 		}
 	}
@@ -153,7 +154,7 @@ class BuiltinArgEvaluator {
 	}
 
 	indexOfNextUnevaluatedExpression() {
-		var ind = -1;
+		let ind = -1;
 		this.doForEachArg(function(arg, i) {
 			if (ind == -1 && this.argContainer.getNeedsEvalForArgAt(i)) {
 				ind = i;
@@ -163,7 +164,7 @@ class BuiltinArgEvaluator {
 	}
 
 	evaluateNext(exp) {
-		var stop = false;
+		let stop = false;
 		this.doForEachArg(function(arg, i) {
 			if (stop) return;
 			if (this.argContainer.getNeedsEvalForArgAt(i)) {
@@ -185,7 +186,7 @@ class BuiltinArgEvaluator {
 	}
 
 	allExpressionsEvaluated() {
-		var r = true;
+		let r = true;
 		this.doForEachArg(function(arg, i) {
 			if (this.argContainer.getNeedsEvalForArgAt(i)) {
 				r = false;

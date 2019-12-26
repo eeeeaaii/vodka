@@ -21,7 +21,7 @@ class LambdaKeyFunnel extends CodelistKeyFunnel {
 	}
 
 	appendText(txt) {
-		var okChar = /^[a-zA-Z0-9]$/
+		let okChar = /^[a-zA-Z0-9]$/
 		if (okChar.test(txt)) {
 			this.s.appendAmpText(txt);
 		} else {
@@ -38,7 +38,7 @@ class LambdaKeyFunnel extends CodelistKeyFunnel {
 	// doSpace intentionally calls appendSeparator
 
 	appendSeparator(txt) {
-		var okChar = /^[ _-]$/
+		let okChar = /^[ _-]$/
 		if (okChar.test(txt)) {
 			this.s.appendAmpText(txt);
 		} else {

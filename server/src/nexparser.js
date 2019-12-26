@@ -51,9 +51,9 @@ class NexParser {
 
 	testToken(regexp, token) {
 		if (regexp.test(this.s)) {
-			var m = regexp.exec(this.s);
+			let m = regexp.exec(this.s);
 			this.data = [];
-			for (var i = 1; i < m.length; i++) {
+			for (let i = 1; i < m.length; i++) {
 				this.data[i - 1] = m[i];
 			}
 			this.s = this.s.replace(regexp, '');
@@ -86,7 +86,7 @@ class NexParser {
 	}
 
 	parse() {
-		var token;
+		let token;
 		while (token = this.getNextToken()) {
 			console.log(`token: ${st['-' + token]} data: ${this.data[0]} remaining: ${this.s}`);
 			this.doParse(token);
@@ -109,71 +109,84 @@ class NexParser {
 
 	doParse(token) {
 		switch(token) {
-		case st['STARTDOC']:
+		case st['STARTDOC']: {
 			this.push(new Doc());
 			break;
-		case st['STARTLINE']:
+		}
+		case st['STARTLINE']: {
 			this.push(new Line());
 			break;
-		case st['STARTWORD']:
+		}
+		case st['STARTWORD']: {
 			this.push(new Word());
 			break;
-		case st['STARTCOMMAND']:
-			var c = new Command(this.data[0]);
+		}
+		case st['STARTCOMMAND']: {
+			let c = new Command(this.data[0]);
 			if (this.data[1] == 'v') {
 				c.toggleDir();
 			}
 			this.push(c);
 			break;
-		case st['STARTLAMBDA']:
-			var lm = new Lambda(this.data[0]);
+		}
+		case st['STARTLAMBDA']: {
+			let lm = new Lambda(this.data[0]);
 			if (this.data[1] == 'v') {
 				lm.toggleDir();
 			}
 			this.push(lm);
 			break;
+		}
 		case st['ENDDOC']:
 		case st['ENDLINE']:
 		case st['ENDWORD']:
 		case st['ENDCOMMAND']:
-		case st['ENDLAMBDA']:
+		case st['ENDLAMBDA']: {
 			this.pop();
 			break;
-		case st['STRING']:
-			var n = new EString(this.data[0]);
+		}
+		case st['STRING']: {
+			let n = new EString(this.data[0]);
 			n.unScrewUp();
 			this.r.appendChild(n);
 			break;
-		case st['ERROR']:
-			var n = new EError(this.data[0]);
+		}
+		case st['ERROR']: {
+			let n = new EError(this.data[0]);
 			n.unScrewUp();
 			this.r.appendChild(n);
 			break;
-		case st['INTEGER']:
-			var n = new Integer(this.data[0]);
+		}
+		case st['INTEGER']: {
+			let n = new Integer(this.data[0]);
 			this.r.appendChild(n);
 			break;
-		case st['FLOAT']:
-			var n = new Float(this.data[0]);
+		}
+		case st['FLOAT']: {
+			let n = new Float(this.data[0]);
 			this.r.appendChild(n);
 			break;
-		case st['BOOL']:
-			var n = new Bool(this.data[0]);
+		}
+		case st['BOOL']: {
+			let n = new Bool(this.data[0]);
 			this.r.appendChild(n);
 			break;
-		case st['LETTER']:
-			var n = new Letter(this.data[0]);
+		}
+		case st['LETTER']: {
+			let n = new Letter(this.data[0]);
 			this.r.appendChild(n);
 			break;
-		case st['SEPARATOR']:
-			var n = new Separator(this.data[0]);
+		}
+		case st['SEPARATOR']: {
+			let n = new Separator(this.data[0]);
 			this.r.appendChild(n);
 			break;
-		case st['SYMBOL']:
-			var n = new ESymbol(this.data[0]);
+		}
+		case st['SYMBOL']: {
+			let n = new ESymbol(this.data[0]);
 			this.r.appendChild(n);
 			break;
-		
+		}
 		}
 	}
 }

@@ -22,21 +22,21 @@ class StepEvaluator {
 	}
 
 	startEvaluating() {
-		for (var i = 0; i < this.stepContainer.numArgs(); i++) {
+		for (let i = 0; i < this.stepContainer.numArgs(); i++) {
 			this.stepContainer.setNeedsEvalForArgAt(true, i);
 		}
 	}
 
 	doForEachArg(f) {
-		for (var i = 0; i < this.stepContainer.numArgs(); i++) {
-			var arg = this.stepContainer.getArgAt(i);
+		for (let i = 0; i < this.stepContainer.numArgs(); i++) {
+			let arg = this.stepContainer.getArgAt(i);
 			f(arg, i);
 		}
 	}
 
 
 	indexOfNextUnevaluatedExpression() {
-		var ind = -1;
+		let ind = -1;
 		this.doForEachArg(function(arg, i) {
 			if (ind == -1 && this.stepContainer.getNeedsEvalForArgAt(i)) {
 				ind = i;
@@ -46,7 +46,7 @@ class StepEvaluator {
 	}
 
 	evaluateNext(exp) {
-		var stop = false;
+		let stop = false;
 		this.doForEachArg(function(arg, i) {
 			if (stop) return;
 			if (this.stepContainer.getNeedsEvalForArgAt(i)) {
@@ -60,7 +60,7 @@ class StepEvaluator {
 	}
 
 	allExpressionsEvaluated() {
-		var r = true;
+		let r = true;
 		this.doForEachArg(function(arg, i) {
 			if (this.stepContainer.getNeedsEvalForArgAt(i)) {
 				r = false;

@@ -24,7 +24,7 @@ class Nil extends ValueNex {
 	}
 
 	makeCopy() {
-		var r = new Nil();
+		let r = new Nil();
 		this.copyFieldsTo(r);
 		return r;
 	}

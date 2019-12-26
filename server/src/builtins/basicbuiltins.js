@@ -32,7 +32,7 @@ function createBasicBuiltins() {
 			{name:'a0', type:'NexContainer'}
 		],
 		function(env, argEnv) {
-			var c = env.lb('a0');
+			let c = env.lb('a0');
 			c.removeChild(c.getChildAt(0));
 			return c;
 		}
@@ -45,7 +45,7 @@ function createBasicBuiltins() {
 			{name:'a1', type:'NexContainer'},
 		],
 		function(env, argEnv) {
-			var lst = env.lb('a1');
+			let lst = env.lb('a1');
 			lst.prependChild(env.lb('a0'));
 			return lst;
 		}
@@ -57,7 +57,7 @@ function createBasicBuiltins() {
 			{name:'a0', type:'*', variadic:true}
 		],
 		function(env, argEnv) {
-			var lst = env.lb('a0');
+			let lst = env.lb('a0');
 			if (lst.numChildren() == 0) {
 				return new Nil();
 			} else {
@@ -73,7 +73,7 @@ function createBasicBuiltins() {
 			{name:'a1', type:'*'}
 		],
 		function(env, argEnv) {
-			var rhs = env.lb('a1');
+			let rhs = env.lb('a1');
 			argEnv.bind(env.lb('a0').getTypedValue(), rhs);
 			return rhs;
 		}
@@ -86,8 +86,8 @@ function createBasicBuiltins() {
 			{name:'a1', type:'*'}
 		],
 		function(env, argEnv) {
-			var val = env.lb('a1');
-			var name = env.lb('a0');
+			let val = env.lb('a1');
+			let name = env.lb('a0');
 			BUILTINS.bindInPackage(name.getTypedValue(), val);
 			return name;
 		}
@@ -100,7 +100,7 @@ function createBasicBuiltins() {
 			{name:'a1', type:'*'}
 		],
 		function(env, argEnv) {
-			var val = env.lb('a1');
+			let val = env.lb('a1');
 			BUILTINS.bindUniqueInPackage(env.lb('a0').getTypedValue(), val);
 			return val;
 		}
@@ -113,9 +113,9 @@ function createBasicBuiltins() {
 			{name:'a1', type:'*', skipeval:true}
 		],
 		function(env, argEnv) {
-			var nm = env.lb('a0').getTypedValue();
-			var val = env.lb('a1');			
-			var exp = new Expectation();
+			let nm = env.lb('a0').getTypedValue();
+			let val = env.lb('a1');			
+			let exp = new Expectation();
 			saveNex(nm, val, exp);
 			return exp;
 		}
@@ -128,9 +128,9 @@ function createBasicBuiltins() {
 			{name:'a1', type:'*'}
 		],
 		function(env, argEnv) {
-			var nm = env.lb('a0').getTypedValue();
-			var val = env.lb('a1');			
-			var exp = new Expectation();
+			let nm = env.lb('a0').getTypedValue();
+			let val = env.lb('a1');			
+			let exp = new Expectation();
 			saveNex(nm, val, exp);
 			return exp;
 		}
@@ -142,8 +142,8 @@ function createBasicBuiltins() {
 			{name:'a0', type:'ESymbol', skipeval:true},
 		],
 		function(env, argEnv) {
-			var nm = env.lb('a0').getTypedValue();
-			var exp = new Expectation();
+			let nm = env.lb('a0').getTypedValue();
+			let exp = new Expectation();
 			loadNex(nm, exp);
 			return exp;
 		}
@@ -159,15 +159,15 @@ function createBasicBuiltins() {
 			{name:'evaluated', type:'*', skipeval:true, optional:true}
 		],
 		function(env, argEnv) {
-			var sym = env.lb('sym').makeCopy();
-			var nm = sym.getTypedValue();
-			var val = env.lb('val');
+			let sym = env.lb('sym').makeCopy();
+			let nm = sym.getTypedValue();
+			let val = env.lb('val');
 			if (val) {
 				val = val.makeCopy();
 				toEval = val.makeCopy();
-				var evaluated = toEval.evaluate(argEnv);
-				var exp = new Expectation(function(result) {
-					var c = new Command('edit');
+				let evaluated = toEval.evaluate(argEnv);
+				let exp = new Expectation(function(result) {
+					let c = new Command('edit');
 					c.appendChild(sym)
 					c.appendChild(val);
 					c.appendChild(result);
@@ -177,8 +177,8 @@ function createBasicBuiltins() {
 				saveNex(nm, val, exp);
 				return exp;
 			} else {
-				var exp = new Expectation(function(newval) {
-					var c = new Command('edit');
+				let exp = new Expectation(function(newval) {
+					let c = new Command('edit');
 					c.appendChild(sym);
 					c.appendChild(newval);
 					return c;
@@ -198,9 +198,9 @@ function createBasicBuiltins() {
 			{name: 'a1', type:'Integer'}
 		],
 		function(env, argEnv) {
-			var time = env.lb('a1').getTypedValue();
-			var toEval = env.lb('a0');
-			var exp = new Expectation();
+			let time = env.lb('a1').getTypedValue();
+			let toEval = env.lb('a0');
+			let exp = new Expectation();
 			setTimeout(function() {
 				exp.fulfill(toEval.evaluate(argEnv));
 			}, time);
@@ -214,7 +214,7 @@ function createBasicBuiltins() {
 		[
 		],
 		function(env, argEnv) {
-			var e = new Expectation();
+			let e = new Expectation();
 			e.appendChild(new Integer(4));
 			return e;
 		}

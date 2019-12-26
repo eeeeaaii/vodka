@@ -23,7 +23,7 @@ class IntegerKeyFunnel extends ValueKeyFunnel {
 	}
 
 	appendWithChecks(txt) {
-		var t = this.s.getRawValue();
+		let t = this.s.getRawValue();
 		if (t == '0') {
 			if (txt == '0') {
 				return;
@@ -46,13 +46,13 @@ class IntegerKeyFunnel extends ValueKeyFunnel {
 	}
 
 	doBackspace() {
-		var t = this.s.getRawValue();
+		let t = this.s.getRawValue();
 		if (t == '0') {
 			this.doShiftBackspace();
 			return;
 		}
 		this.s.deleteLastLetter();
-		var t = this.s.getRawValue();
+		t = this.s.getRawValue();
 		if (t == '') {
 			this.s.setValue('0');
 		}
@@ -60,7 +60,7 @@ class IntegerKeyFunnel extends ValueKeyFunnel {
 
 
 	appendText(txt) {
-		var allowed = /^[0-9]$/;
+		let allowed = /^[0-9]$/;
 		if (allowed.test(txt)) {
 			this.appendWithChecks(txt);
 		} else {
@@ -70,7 +70,7 @@ class IntegerKeyFunnel extends ValueKeyFunnel {
 	}
 
 	appendSeparator(txt) {
-		var allowedIntegerNumberChar = /^[-]$/;
+		let allowedIntegerNumberChar = /^[-]$/;
 		if (allowedIntegerNumberChar.test(txt)) {
 			this.appendWithChecks(txt);
 		} else {

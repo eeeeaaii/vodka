@@ -16,7 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-var BUILTIN_ARG_PREFIX = '****arg****';
+const BUILTIN_ARG_PREFIX = '****arg****';
 
 class Environment {
 	constructor(parentEnv) {
@@ -29,10 +29,10 @@ class Environment {
 		if (!lvl) {
 			lvl = '';
 		}
-		for (var x in this.symbols) {
+		for (let x in this.symbols) {
 			console.log(`${lvl}${x}=${this.symbols[x]}`)
 		}
-		for (var x in this.uniques) {
+		for (let x in this.uniques) {
 			console.log(`${lvl}${x}:${this.uniques[x]}`)
 		}
 		if (this.parentEnv) {
@@ -45,7 +45,7 @@ class Environment {
 	}
 
 	pushEnv() {
-		var env = new Environment(this);
+		let env = new Environment(this);
 		return env;
 	}
 
@@ -66,7 +66,7 @@ class Environment {
 	}
 
 	lb(name) {
-		var nm = BUILTIN_ARG_PREFIX + name;
+		let nm = BUILTIN_ARG_PREFIX + name;
 		if (!this.symbols[nm]) {
 			return null;
 		}
@@ -74,9 +74,9 @@ class Environment {
 		// because we do a garbage thing where for variadics
 		// we map a symbol to a js thing instead of a vodka thing.
 		if (this.symbols[nm].push) {
-			var tocopy = this.symbols[nm];
-			var z = [];
-			for (var i = 0; i < tocopy.length; i++) {
+			let tocopy = this.symbols[nm];
+			let z = [];
+			for (let i = 0; i < tocopy.length; i++) {
 				z.push(tocopy[i].makeCopy());
 			}
 			return z;

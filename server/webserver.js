@@ -25,7 +25,7 @@ const port = 3000;
 const server = http.createServer((message, res) => {
 	// parse url - what file is being looked for?
 	const parsedUrl = url.parse(message.url, true);
-	var path = parsedUrl.path;
+	let path = parsedUrl.path;
 	if (path == '/api') {
 		doApiRequest(message, res);
 	} else {
@@ -39,7 +39,7 @@ const server = http.createServer((message, res) => {
 
 function doApiRequest(message, res) {
 	let body = [];
-	var bstr;
+	let bstr;
 	message.on('data', (chunk) => {
 		body.push(chunk);
 	}).on('end', () => {
@@ -53,8 +53,8 @@ function doApiRequest(message, res) {
 }
 
 function serviceApiRequest(data, cb) {
-	var i = data.indexOf('\t');
-	var func = data.substr(0, i);
+	let i = data.indexOf('\t');
+	let func = data.substr(0, i);
 	if (func == 'save') {
 		doSave(data.substr(i+1), cb);
 	} else if (func == 'load') {
@@ -63,23 +63,23 @@ function serviceApiRequest(data, cb) {
 }
 
 function doSave(data, cb) {
-	var i = data.indexOf('\t');
-	var nm = data.substr(0, i);
-	var savedata = data.substr(i+1);
+	let i = data.indexOf('\t');
+	let nm = data.substr(0, i);
+	let savedata = data.substr(i+1);
 	fs.writeFile('./packages/' + nm, savedata, function(err) {
 		cb("^");
 	})
 }
 
 function doLoad(data, cb) {
-	var nm = data;
+	let nm = data;
 	fs.readFile('./packages/' + nm, function(err, data) {
 		cb(data);
 	})	
 }
 
 function doFileRequest(path, res) {
-	var mimetype = getMimeTypeFromExt(path);
+	let mimetype = getMimeTypeFromExt(path);
 	fs.readFile(path, function(err, data) {
 		if (err) {
 			console.log('404: ' + path);
@@ -96,7 +96,7 @@ function doFileRequest(path, res) {
 }
 
 function getMimeTypeFromExt(fname) {
-	var ext = fname.substr(fname.lastIndexOf('.'));
+	let ext = fname.substr(fname.lastIndexOf('.'));
 	switch(ext) {
 		case '.js':
 			return 'text/javascript';

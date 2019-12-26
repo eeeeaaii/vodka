@@ -23,7 +23,7 @@ class FloatKeyFunnel extends ValueKeyFunnel {
 	}
 
 	appendText(txt) {
-		var okChar = /^[e0-9]$/
+		let okChar = /^[e0-9]$/
 		if (okChar.test(txt)) {
 			super.appendText(txt);
 		} else {
@@ -33,7 +33,7 @@ class FloatKeyFunnel extends ValueKeyFunnel {
 	}
 
 	appendSeparator(txt) {
-		var okChar = /^[.-]$/
+		let okChar = /^[.-]$/
 		if (okChar.test(txt)) {
 			super.appendSeparator(txt);
 		} else {

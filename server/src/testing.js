@@ -30,7 +30,7 @@ harness.runTest(testactions, 'direct');
 var shorthand = '';
 
 function captureRecording() {
-	var session_output = `
+	let session_output = `
 	// ${shorthand}
 	` + recorded_session + session_end;
 	navigator.clipboard.writeText(session_output);
@@ -46,21 +46,21 @@ function activateKeyFunnel() {
 	key_funnel_active = true;
 }
 
-var EXPECTING_FIRST_DOWN  = 0;
-var EXPECTING_FIRST_UP    = 1;
-var EXPECTING_SECOND_DOWN = 2;
-var EXPECTING_SECOND_UP   = 3;
-var EXPECTING_THIRD_DOWN  = 4;
-var EXPECTING_THIRD_UP    = 5;
-var WILL_NOT_RECORD       = 6;
-var RECORDING             = 7;
-var RECORDING_DONE_EXPECTING_UP    = 8;
-var RECORDING_DONE    = 9;
+const EXPECTING_FIRST_DOWN  = 0;
+const EXPECTING_FIRST_UP    = 1;
+const EXPECTING_SECOND_DOWN = 2;
+const EXPECTING_SECOND_UP   = 3;
+const EXPECTING_THIRD_DOWN  = 4;
+const EXPECTING_THIRD_UP    = 5;
+const WILL_NOT_RECORD       = 6;
+const RECORDING             = 7;
+const RECORDING_DONE_EXPECTING_UP    = 8;
+const RECORDING_DONE    = 9;
 
 var state = EXPECTING_FIRST_DOWN;
 
 function checkRecordState(event, type) {
-	var kc = event.code;
+	let kc = event.code;
 	switch(state) {
 		case EXPECTING_FIRST_DOWN:
 			if (kc == 'Escape' && type == 'down') {

@@ -24,8 +24,8 @@ var jsonfiles = glob.sync("./alltests/*/*.json")
 var failing_tests = [];
 var passing_tests = [];
 jsonfiles.forEach((jsonfile) => {
-	var rawjson = fs.readFileSync(jsonfile);
-	var json = JSON.parse(rawjson);
+	let rawjson = fs.readFileSync(jsonfile);
+	let json = JSON.parse(rawjson);
 	if (json.node_success
 			&& json.diffs[0].diff_succeeded
 			&& json.diffs[1].diff_succeeded) {

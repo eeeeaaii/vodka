@@ -28,7 +28,7 @@ class Letter extends Nex {
 	}
 
 	makeCopy() {
-		var r = new Letter(this.value);
+		let r = new Letter(this.value);
 		this.copyFieldsTo(r);
 		return r;
 	}

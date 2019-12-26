@@ -27,9 +27,3 @@ var html = tmpl(context);
 fs.writeFileSync('./testoutput.html', html);
 
 
-// fs.readFile("./testoutput.tmpl", function(err, data) {
-// 	var tmpl = Handlebars.compile(data);
-// 	var context = {};
-// 	var html = tmpl(context);
-// 	fs.writeFile()
-// });

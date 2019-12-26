@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-ILVL = 0;
+var ILVL = 0;
 
 function resetStack() {
 	ILVL = 0;
@@ -28,7 +28,7 @@ function stackCheck() {
 }
 
 function INDENT() {
-	var s = '';
+	let s = '';
 	for (var i = 0; i < ILVL; i++) {
 		s = s + '  ';
 	}
@@ -44,8 +44,8 @@ var root = null;
 var selectedNex = null;
 var environment = null;
 
-var NEX_RENDER_TYPE_NORMAL = 1;
-var NEX_RENDER_TYPE_EXPLODED = 2;
+const NEX_RENDER_TYPE_NORMAL = 1;
+const NEX_RENDER_TYPE_EXPLODED = 2;
 var current_render_type = NEX_RENDER_TYPE_NORMAL;
 
 var BUILTINS;
@@ -74,7 +74,7 @@ function setup() {
 	createBuiltins();
 	BUILTINS = BUILTINS.pushEnv();
 	root = new Root(true /* attached */);
-	var topdoc = new Doc();
+	let topdoc = new Doc();
 	root.appendChild(topdoc);
 	topdoc.setSelected();
 	document.onclick = function(e) {

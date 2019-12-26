@@ -46,9 +46,9 @@ class KeyFunnel {
 	}
 
 	processEvent(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
-		var spaceRegex = /^ $/;
-		var regularKeyRegex = /^[a-zA-Z0-9']$/;
-		var separatorKeyRegex = /^[~!@#$%^&*()_+={}|[\]\\:";<>?,./-]$/;
+		let spaceRegex = /^ $/;
+		let regularKeyRegex = /^[a-zA-Z0-9']$/;
+		let separatorKeyRegex = /^[~!@#$%^&*()_+={}|[\]\\:";<>?,./-]$/;
 		if (keycode == '|') {
 			// vertical bar is unusable - 'internal use only'
 		} else if (keycode == 'x' && hasAlt) {
@@ -211,7 +211,7 @@ class KeyFunnel {
 
 	doEnter() {}
 	doShiftEnter() {
-		var n;
+		let n;
 		try {
 			n = this.s.evaluate(BUILTINS);
 		} catch (e) {
@@ -230,7 +230,7 @@ class KeyFunnel {
 		if (this.s.__STEP_STACK) {
 			STEP_STACK = this.s.__STEP_STACK;
 			 if (STEP_STACK.inProgress()) {
-			 	var nx = STEP_STACK.pop().fulfill();
+			 	let nx = STEP_STACK.pop().fulfill();
 			 	if (!STEP_STACK.inProgress()) {
 			 		// we are finished, just select the return val;
 			 		nx.setSelected();
@@ -243,10 +243,10 @@ class KeyFunnel {
 			 	this.s.__STEP_STACK = null;
 			 }
 		} else {
-			var n;
+			let n;
 			try {
 				STEP_STACK = new StepStack();
-				var exp = new Expectation();
+				let exp = new Expectation();
 				this.s.stepEvaluate(BUILTINS, exp);
 				manipulator.replaceSelectedWith(exp);
 				exp.appendChild(this.s);

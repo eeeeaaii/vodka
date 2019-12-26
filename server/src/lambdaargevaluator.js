@@ -35,7 +35,7 @@ class LambdaArgEvaluator {
 	}
 
 	processAllArgs() {
-		for (var i = 0; i < this.argContainer.numArgs(); i++) {
+		for (let i = 0; i < this.argContainer.numArgs(); i++) {
 			this.argContainer.setArgAt(
 				this.processArgument(this.argContainer.getArgAt(i)),
 				i);
@@ -43,7 +43,7 @@ class LambdaArgEvaluator {
 	}
 
 	bindArgs() {
-		for (var i = 0; i < this.params.length; i++) {
+		for (let i = 0; i < this.params.length; i++) {
 			this.bindEnv.bind(this.params[i], this.argContainer.getArgAt(i));
 		}
 	}
@@ -56,21 +56,21 @@ class LambdaArgEvaluator {
 
 	startEvaluating() {
 		this.checkNumParams();
-		for (var i = 0; i < this.argContainer.numArgs(); i++) {
-			var arg = this.argContainer.getArgAt(i);
+		for (let i = 0; i < this.argContainer.numArgs(); i++) {
+			let arg = this.argContainer.getArgAt(i);
 			this.argContainer.setNeedsEvalForArgAt(arg.needsEvaluation(), i);
 		}
 	}
 
 	doForEachArg(f) {
-		for (var i = 0; i < this.argContainer.numArgs(); i++) {
-			var arg = this.argContainer.getArgAt(i);
+		for (let i = 0; i < this.argContainer.numArgs(); i++) {
+			let arg = this.argContainer.getArgAt(i);
 			f(arg, i);
 		}
 	}
 
 	indexOfNextUnevaluatedExpression() {
-		var ind = -1;
+		let ind = -1;
 		this.doForEachArg(function(arg, i) {
 			if (ind == -1 && this.argContainer.getNeedsEvalForArgAt(i)) {
 				ind = i;
@@ -80,7 +80,7 @@ class LambdaArgEvaluator {
 	}
 
 	evaluateNext(exp) {
-		var stop = false;
+		let stop = false;
 		this.doForEachArg(function(arg, i) {
 			if (stop) return;
 			if (this.argContainer.getNeedsEvalForArgAt(i)) {
@@ -100,7 +100,7 @@ class LambdaArgEvaluator {
 	}
 
 	allExpressionsEvaluated() {
-		var r = true;
+		let r = true;
 		this.doForEachArg(function(arg, i) {
 			if (this.argContainer.getNeedsEvalForArgAt(i)) {
 				r = false;

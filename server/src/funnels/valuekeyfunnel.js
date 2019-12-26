@@ -77,7 +77,7 @@ class ValueKeyFunnel extends KeyFunnel {
 	}
 
 	doEnter() {
-		var newline = new Newline();
+		let newline = new Newline();
 		manipulator.insertAfterSelected(newline)
 			&& manipulator.putAllNextSiblingsInNewLine()
 			&& newline.setSelected();

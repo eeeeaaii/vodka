@@ -22,8 +22,8 @@ class SeparatorKeyFunnel extends LetterKeyFunnel {
 
 	appendText(letter) {
 		if (isInDocContext(this.s)) {
-			var newword = new Word();
-			var newletter = new Letter(letter);
+			let newword = new Word();
+			let newletter = new Letter(letter);
 			newword.appendChild(newletter);
 			manipulator.insertAfterSelectedAndSelect(newword);
 			manipulator.joinToSiblingIfSame(newword);
@@ -35,7 +35,7 @@ class SeparatorKeyFunnel extends LetterKeyFunnel {
 
 	doShiftBackspace() {
 		manipulator.removeSelectedAndSelectPreviousLeaf();
-		var p = selectedNex.getParent();
+		let p = selectedNex.getParent();
 		manipulator.joinToSiblingIfSame(p);
 	}
 
@@ -44,12 +44,12 @@ class SeparatorKeyFunnel extends LetterKeyFunnel {
 	}
 
 	doEnter() {
-		var newline = new Newline();
+		let newline = new Newline();
 		manipulator.insertAfterSelected(newline)
 			&& manipulator.putAllNextSiblingsInNewLine()
 			&& newline.setSelected();
 		/* or this way?
-		var hack = manipulator.gatherRemainingSiblingsIntoNewLine();
+		let hack = manipulator.gatherRemainingSiblingsIntoNewLine();
 		manipulator.selectTopmostEnclosingLine();
 		manipulator.insertAfterSelected(hack);
 		hack.getChildAt(0).setSelected();

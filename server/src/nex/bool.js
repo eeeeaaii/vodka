@@ -33,7 +33,7 @@ class Bool extends ValueNex {
 	}
 
 	makeCopy() {
-		var r = new Bool(this.getTypedValue());
+		let r = new Bool(this.getTypedValue());
 		this.copyFieldsTo(r);
 		return r;
 	}

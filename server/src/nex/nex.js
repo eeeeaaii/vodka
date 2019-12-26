@@ -92,9 +92,9 @@ class Nex {
 	getKeyFunnel() {}
 
 	getPositionInParent() {
-		var p = this.getParent();
+		let p = this.getParent();
 		if (!p) return -1;
-		for (var i = 0; i < p.children.length; i++) {
+		for (let i = 0; i < p.children.length; i++) {
 			if (p.children[i] == this) {
 				return i;
 			}
@@ -120,7 +120,7 @@ class Nex {
 	}
 
 	getParent(evenIfRoot) {
-		var p = this.parent;
+		let p = this.parent;
 		if (p instanceof Root && !evenIfRoot) {
 			return null;
 		}

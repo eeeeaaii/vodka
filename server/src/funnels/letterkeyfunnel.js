@@ -63,7 +63,7 @@ class LetterKeyFunnel extends KeyFunnel {
 	}
 
 	doShiftBackspace() {
-		var parent = this.s.getParent();
+		let parent = this.s.getParent();
 		manipulator.removeSelectedAndSelectPreviousLeaf();
 		if (isDocElement(parent) && !parent.hasChildren()) {
 			manipulator.removeNex(parent);
@@ -79,7 +79,7 @@ class LetterKeyFunnel extends KeyFunnel {
 	}
 
 	doEnter() {
-		var newline = new Newline();
+		let newline = new Newline();
 		if (isWord(this.s.getParent())) {
 			manipulator.splitCurrentWordIntoTwo()
 				&& manipulator.selectParent()
@@ -88,7 +88,7 @@ class LetterKeyFunnel extends KeyFunnel {
 				&& newline.setSelected();			
 		} else {
 			// treat as separator.
-			var newline = new Newline();
+			let newline = new Newline();
 			manipulator.insertAfterSelected(newline)
 				&& manipulator.putAllNextSiblingsInNewLine()
 				&& newline.setSelected();

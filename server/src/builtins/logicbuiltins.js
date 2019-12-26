@@ -23,7 +23,7 @@ class IfArgEvaluator extends BuiltinArgEvaluator {
 
 	processArgs() {
 		this.processSingleArg(0);
-		var bval = this.argContainer.getArgAt(0).getTypedValue();
+		let bval = this.argContainer.getArgAt(0).getTypedValue();
 		if (bval) {
 			this.processSingleArg(1);
 		} else {
@@ -45,28 +45,28 @@ class IfArgEvaluator extends BuiltinArgEvaluator {
 			return 0;
 		} else {
 			if (this.conditionalResult) {
-				var needs = this.argContainer.getNeedsEvalForArgAt(1);
+				let needs = this.argContainer.getNeedsEvalForArgAt(1);
 				return needs ? 1 : -1;
 			} else {
-				var needs = this.argContainer.getNeedsEvalForArgAt(2);
+				let needs = this.argContainer.getNeedsEvalForArgAt(2);
 				return needs ? 2 : -1;
 			}
 		}
 	}
 
 	evaluateNext(exp) {
-		var ind = this.indexOfNextUnevaluatedExpression();
+		let ind = this.indexOfNextUnevaluatedExpression();
 		// shouldn't be -1!
 		if (ind < 0) {
 			throw new Error('wut');
 		}
 		if (ind == 0) {
 			this.argContainer.setNeedsEvalForArgAt(false, ind);
-			var arg = this.argContainer.getArgAt(ind);
+			let arg = this.argContainer.getArgAt(ind);
 			arg.stepEvaluate(this.env, exp);
-			var oldhack = exp.hackfunction;
+			let oldhack = exp.hackfunction;
 			exp.hackfunction = function() {
-				var r = oldhack();
+				let r = oldhack();
 				if (r instanceof Bool) {
 					this.conditionalEvaluated = true;
 					this.conditionalResult = r.getTypedValue();
@@ -77,7 +77,7 @@ class IfArgEvaluator extends BuiltinArgEvaluator {
 			exp.appendChild(arg);
 		} else {
 			this.argContainer.setNeedsEvalForArgAt(false, ind);
-			var arg = this.argContainer.getArgAt(ind);
+			let arg = this.argContainer.getArgAt(ind);
 			arg.stepEvaluate(this.env, exp);
 			this.argContainer.setArgAt(exp, ind);
 			exp.appendChild(arg);
@@ -133,7 +133,7 @@ function createLogicBuiltins() {
 			{name:'a2', type:'*'}, // skipeval sort of, see custom evaluator
 		],
 		function(env, argEnv) {
-			var b = env.lb('a0').getTypedValue();
+			let b = env.lb('a0').getTypedValue();
 			if (b) {
 				return env.lb('a1');
 			} else {

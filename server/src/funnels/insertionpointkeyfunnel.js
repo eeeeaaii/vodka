@@ -55,16 +55,16 @@ class InsertionPointKeyFunnel extends ValueKeyFunnel {
 
 	appendText(letter) {
 		if (isDoc(this.s.getParent())) {
-			var ln = new Line();
-			var w = new Word();
-			var lt = new Letter(letter);
+			let ln = new Line();
+			let w = new Word();
+			let lt = new Letter(letter);
 			ln.appendChild(w);
 			w.appendChild(lt);
 			manipulator.replaceSelectedWith(ln);
 			lt.setSelected();
 		} else if (isLine(this.s.getParent())) {
-			var w = new Word();
-			var lt = new Letter(letter);
+			let w = new Word();
+			let lt = new Letter(letter);
 			w.appendChild(lt);
 			manipulator.replaceSelectedWith(w);
 			lt.setSelected();
@@ -76,7 +76,7 @@ class InsertionPointKeyFunnel extends ValueKeyFunnel {
 
 	insertNewListType(obj) {
 		if (isWord(obj) && isDoc(this.s.getParent())) {
-			var ln = new Line();
+			let ln = new Line();
 			ln.appendChild(obj);
 			super.insertNewListType(ln);
 			obj.setSelected();

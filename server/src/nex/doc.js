@@ -24,7 +24,7 @@ class Doc extends NexContainer {
 	}
 
 	makeCopy() {
-		var r = new Doc();
+		let r = new Doc();
 		this.copyFieldsTo(r);
 		return r;
 	}

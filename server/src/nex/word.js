@@ -22,7 +22,7 @@ class Word extends NexContainer {
 	}
 
 	makeCopy() {
-		var r = new Word();
+		let r = new Word();
 		this.copyFieldsTo(r);
 		return r;
 	}

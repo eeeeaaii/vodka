@@ -25,7 +25,7 @@ class EError extends EString {
 	}
 
 	makeCopy() {
-		var r = new EError(this.getFullTypedValue());
+		let r = new EError(this.getFullTypedValue());
 		this.copyFieldsTo(r);
 		return r;
 	}

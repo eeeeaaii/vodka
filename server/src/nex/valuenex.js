@@ -58,7 +58,7 @@ class ValueNex extends Nex {
 	}
 
 	deleteLastLetter() {
-		var v = this.value;
+		let v = this.value;
 		if (v == '') return;
 		v = v.substr(0, v.length - 1);
 		this.value = v;
@@ -66,7 +66,7 @@ class ValueNex extends Nex {
 	}
 
 	appendText(txt) {
-		var v = this.value;
+		let v = this.value;
 		v = v + txt;
 		this.value = v;
 		this.render();

@@ -23,8 +23,8 @@ function createSyscalls() {
 			{name:'a1', type:'*'}
 		],
 		function(env, argEnv) {
-			var s = env.lb('a0').getFullTypedValue();
-			var n = env.lb('a1');
+			let s = env.lb('a0').getFullTypedValue();
+			let n = env.lb('a1');
 			n.setCurrentStyle(s);
 			n.render();
 			return n;
@@ -37,8 +37,8 @@ function createSyscalls() {
 			{name:'a0', type:'*'}
 		],
 		function(env, argEnv) {
-			var n = env.lb('a0');
-			var s = n.getCurrentStyle();
+			let n = env.lb('a0');
+			let s = n.getCurrentStyle();
 			return new EString(s);
 		}
 	);

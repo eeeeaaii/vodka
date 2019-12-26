@@ -23,7 +23,7 @@ class WordKeyFunnel extends ContainerKeyFunnel {
 	}
 
 	doArrowRight() {
-		var old = this.s;
+		let old = this.s;
 		while(manipulator.selectNextSibling()) {
 			if (isWord(selectedNex)) {
 				return;
@@ -33,7 +33,7 @@ class WordKeyFunnel extends ContainerKeyFunnel {
 	}
 
 	doArrowLeft() {
-		var old = this.s;
+		let old = this.s;
 		while(manipulator.selectPreviousSibling()) {
 			if (isWord(selectedNex)) {
 				return;
@@ -81,7 +81,7 @@ class WordKeyFunnel extends ContainerKeyFunnel {
 	}
 
 	doEnter() {
-		var newline = new Newline();
+		let newline = new Newline();
 		manipulator.insertAfterSelected(newline)
 			&& manipulator.putAllNextSiblingsInNewLine()
 			&& newline.setSelected();

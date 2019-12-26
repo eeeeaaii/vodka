@@ -21,7 +21,7 @@ class Manipulator {
 
 	doCut() {
 		CLIPBOARD = selectedNex.makeCopy();
-		var x = selectedNex;
+		let x = selectedNex;
 		this.selectPreviousSibling() || this.selectParent();		
 		this.removeNex(x);
 	}
@@ -51,20 +51,20 @@ class Manipulator {
 
 	selectCorrespondingLetterInPreviousLine() {
 		// get the current line and the previous line.
-		var enclosingLine = this.getEnclosingLine(selectedNex);
+		let enclosingLine = this.getEnclosingLine(selectedNex);
 		if (!enclosingLine) return false;
-		var doc = enclosingLine.getParent();
+		let doc = enclosingLine.getParent();
 		if (!doc) return false;
-		var previousLine = doc.getChildBefore(enclosingLine);
+		let previousLine = doc.getChildBefore(enclosingLine);
 		if (!previousLine) return false;
 
-		var original = selectedNex;
-		var targetX = original.getLeftX();
-		var c;
+		let original = selectedNex;
+		let targetX = original.getLeftX();
+		let c;
 
 		previousLine.setSelected();
 		this.selectFirstLeaf();
-		var lastX = selectedNex.getLeftX();
+		let lastX = selectedNex.getLeftX();
 		if (targetX <= lastX) {
 			return true;
 		}
@@ -74,7 +74,7 @@ class Manipulator {
 				this.selectPreviousLeaf();
 				break;
 			}
-			var x = selectedNex.getLeftX();
+			let x = selectedNex.getLeftX();
 			if (x > targetX) {
 				// this is the one
 				break;
@@ -86,20 +86,20 @@ class Manipulator {
 
 	selectCorrespondingLetterInNextLine() {
 		// get the current line and the previous line.
-		var enclosingLine = this.getEnclosingLine(selectedNex);
+		let enclosingLine = this.getEnclosingLine(selectedNex);
 		if (!enclosingLine) return false;
-		var doc = enclosingLine.getParent();
+		let doc = enclosingLine.getParent();
 		if (!doc) return false;
-		var nextLine = doc.getChildAfter(enclosingLine);
+		let nextLine = doc.getChildAfter(enclosingLine);
 		if (!nextLine) return false;
 
-		var original = selectedNex;
-		var targetX = original.getLeftX();
-		var c;
+		let original = selectedNex;
+		let targetX = original.getLeftX();
+		let c;
 
 		nextLine.setSelected();
 		this.selectFirstLeaf();
-		var lastX = selectedNex.getLeftX();
+		let lastX = selectedNex.getLeftX();
 		if (targetX <= lastX) {
 			return true;
 		}
@@ -109,7 +109,7 @@ class Manipulator {
 				this.selectPreviousLeaf();
 				break;
 			}
-			var x = selectedNex.getLeftX();
+			let x = selectedNex.getLeftX();
 			if (x > targetX) {
 				// this is the one
 				break;
@@ -131,9 +131,9 @@ class Manipulator {
 	// traversal
 
 	selectPreviousLeaf() {
-		var first = selectedNex;
+		let first = selectedNex;
 		while(!this.selectPreviousSibling()) {
-			var p = this.selectParent();
+			let p = this.selectParent();
 			if (!p || isCommand(selectedNex)) {
 				first.setSelected();
 				return false;
@@ -144,9 +144,9 @@ class Manipulator {
 	}
 
 	selectNextLeaf() {
-		var first = selectedNex;
+		let first = selectedNex;
 		while(!this.selectNextSibling()) {
-			var p = this.selectParent();
+			let p = this.selectParent();
 			if (!p || isCommand(selectedNex)) {
 				first.setSelected();
 				return false;
@@ -157,7 +157,7 @@ class Manipulator {
 	}
 
 	selectFirstLeaf() {
-		var c = selectedNex;
+		let c = selectedNex;
 		while(c instanceof NexContainer && c.hasChildren()) {
 			c = c.getFirstChild();
 		}
@@ -168,9 +168,9 @@ class Manipulator {
 	// generic selection stuff
 
 	selectLastChild() {
-		var s = selectedNex;
+		let s = selectedNex;
 		if (!(s instanceof NexContainer)) return false;
-		var c = s.getLastChild();
+		let c = s.getLastChild();
 		if (c) {
 			c.setSelected();
 			return true;
@@ -179,9 +179,9 @@ class Manipulator {
 	}
 
 	selectFirstChild() {
-		var s = selectedNex;
+		let s = selectedNex;
 		if (!(s instanceof NexContainer)) return false;
-		var c = s.getFirstChild();
+		let c = s.getFirstChild();
 		if (c) {
 			c.setSelected();
 			return true;
@@ -190,20 +190,20 @@ class Manipulator {
 	}
 
 	selectNthChild(n) {
-		var s = selectedNex;
+		let s = selectedNex;
 		if (n >= s.children.length) return false;
 		if (n < 0) return false;
-		var c = s.children[n];
+		let c = s.children[n];
 		if (!c) return false;
 		c.setSelected();
 		return true;
 	}
 
 	selectNextSibling() {
-		var s = selectedNex;
-		var p = s.getParent();
+		let s = selectedNex;
+		let p = s.getParent();
 		if (!p) return false;
-		var nextSib = p.getNextSibling(s);
+		let nextSib = p.getNextSibling(s);
 		if (nextSib) {
 			nextSib.setSelected();
 			return true;
@@ -212,10 +212,10 @@ class Manipulator {
 	}
 
 	selectPreviousSibling() {
-		var s = selectedNex;
-		var p = s.getParent();
+		let s = selectedNex;
+		let p = s.getParent();
 		if (!p) return false;
-		var sib = p.getPreviousSibling(s);
+		let sib = p.getPreviousSibling(s);
 		if (sib) {
 			sib.setSelected();
 			return true;
@@ -224,8 +224,8 @@ class Manipulator {
 	}
 
 	selectParent() {
-		var s = selectedNex;
-		var p = s.getParent();
+		let s = selectedNex;
+		let p = s.getParent();
 		if (!p) return false;
 		p.setSelected();
 		return true;
@@ -234,28 +234,28 @@ class Manipulator {
 	// CRUD operations
 
 	appendNewEString() {
-		var s = selectedNex;
-		var i = 0;
+		let s = selectedNex;
+		let i = 0;
 		for(i = 0;
 			s.getChildAt(i) && s.getChildAt(i) instanceof EString;
 			i++);
 		// i is the insertion point
-		var n = new EString();
+		let n = new EString();
 		s.insertChildAt(n, i);
 		n.setSelected();
 	}
 
 	appendAndSelect(data) {
-		var s = selectedNex;
-		var newdata = data;
+		let s = selectedNex;
+		let newdata = data;
 		s.appendChild(newdata);
 		newdata.setSelected();
 		return true;		
 	}
 
 	insertAfterSelected(data) {
-		var s = selectedNex;
-		var p = s.getParent();
+		let s = selectedNex;
+		let p = s.getParent();
 		if (!p) return false;
 		p.insertChildAfter(data, s);
 		return true;
@@ -267,8 +267,8 @@ class Manipulator {
 	}
 
 	insertBeforeSelected(data) {
-		var s = selectedNex;
-		var p = s.getParent();
+		let s = selectedNex;
+		let p = s.getParent();
 		if (!p) return false;
 		p.insertChildBefore(data, s);
 		return true;
@@ -280,7 +280,7 @@ class Manipulator {
 	}
 
 	attemptToRemoveLastItemInCommand() {
-		var p = selectedNex.getParent();
+		let p = selectedNex.getParent();
 		if (!p) return false;
 		if (p.numChildren() == 1 && (isCommand(p) || isLambda(p))) {
 			if (!this.removeNex(selectedNex)) return false;
@@ -292,7 +292,7 @@ class Manipulator {
 	}
 
 	removeSelectedAndSelectPreviousSibling() {
-		var toDel = selectedNex;
+		let toDel = selectedNex;
 		return (
 			this.attemptToRemoveLastItemInCommand()
 			||
@@ -303,7 +303,7 @@ class Manipulator {
 	}
 
 	removeSelectedAndSelectPreviousLeaf() {
-		var toDel = selectedNex;
+		let toDel = selectedNex;
 		return (
 			this.attemptToRemoveLastItemInCommand()
 			||
@@ -314,7 +314,7 @@ class Manipulator {
 	}
 
 	removeNex(toDel) {
-		var p = toDel.getParent();
+		let p = toDel.getParent();
 		if (!p) return false;
 		if (toDel.isSelected()) {
 			p.setSelected();
@@ -324,9 +324,9 @@ class Manipulator {
 	}
 
 	replaceSelectedWith(nex) {
-		var s = selectedNex;
+		let s = selectedNex;
 		if (s === nex) return true; // trivially true
-		var p = s.getParent(true);
+		let p = s.getParent(true);
 		if (!p) return false;
 		p.replaceChildWith(s, nex);
 		nex.setSelected();
@@ -334,10 +334,10 @@ class Manipulator {
 	}
 
 	replaceSelectedWithNewCommand() {
-		var s = selectedNex;
-		var p = s.getParent(true);
+		let s = selectedNex;
+		let p = s.getParent(true);
 		if (!p) return false;
-		var nex = new Command();
+		let nex = new Command();
 		p.replaceChildWith(s, nex);
 		nex.setSelected();
 		return true;
@@ -346,14 +346,14 @@ class Manipulator {
 	// split/join
 
 	selectTopmostEnclosingLine() {
-		var p = selectedNex.getParent();
+		let p = selectedNex.getParent();
 		if (!p) return false;
 		while(!isLine(p)) {
 			p = p.getParent();
 			if (!p) return false;
 		}
 		while(isLine(p)) {
-			var p2 = p.getParent();
+			let p2 = p.getParent();
 			if (p2 && isLine(p2)) {
 				p = p2;
 			} else {
@@ -365,42 +365,42 @@ class Manipulator {
 	}
 
 	gatherRemainingSiblingsIntoNewLine() {
-		var ln = new Line();
+		let ln = new Line();
 		ln.appendChild(new Newline());
 		this.moveRemainingSiblingsInto(ln);
 		return ln;
 	}
 
 	moveRemainingSiblingsInto(nex) {
-		var s = selectedNex;
-		var p = s.getParent();
+		let s = selectedNex;
+		let p = s.getParent();
 		if (!p) return false;
 		if (p.getLastChild() == s) {
 			return true; // nothing to do
 		}
-		var c;
+		let c;
 		while (c = p.getChildAfter(s)) {
 			p.removeChild(c);
 			nex.appendChild(c);
 		}
-//		var p2 = p.getParent();
+//		let p2 = p.getParent();
 //		p2.insertChildAfter(on, p);
 //		return true;		
 	}
 
 	split(nex) {
-		var s = selectedNex;
-		var p = s.getParent();
+		let s = selectedNex;
+		let p = s.getParent();
 		if (!p) return false;
 		if (p.getLastChild() == s) {
 			return true; // nothing to do
 		}
-		var c;
+		let c;
 		while (c = p.getChildAfter(s)) {
 			p.removeChild(c);
 			nex.appendChild(c);
 		}
-		var p2 = p.getParent();
+		let p2 = p.getParent();
 		p2.insertChildAfter(nex, p);
 		return true;		
 	}
@@ -418,16 +418,16 @@ class Manipulator {
 		// to select is the last thing in
 		// the first of the two
 		// things being joined.
-		var s = selectedNex;
-		var toSelect = s.getLastChild();
+		let s = selectedNex;
+		let toSelect = s.getLastChild();
 		if (!toSelect) {
 			return false;
 		}
-		var p = s.getParent();
+		let p = s.getParent();
 		if (!p) return false;
-		var c = p.getChildAfter(s);
+		let c = p.getChildAfter(s);
 		if (!c) return false;		
-		var c2;
+		let c2;
 		while (c2 = c.removeFirstChild()) {
 			s.appendChild(c2);
 		}
@@ -438,7 +438,7 @@ class Manipulator {
 	}
 
 	join(p, a, b) {
-		var c;
+		let c;
 		while (c = b.removeFirstChild()) {
 			a.appendChild(c);
 		}
@@ -448,10 +448,10 @@ class Manipulator {
 	}
 
 	joinSelectedToNextSiblingIfSameType() {
-		var s = selectedNex;
-		var p = s.getParent();
+		let s = selectedNex;
+		let p = s.getParent();
 		if (!p) return false;
-		var c = p.getChildAfter(s);
+		let c = p.getChildAfter(s);
 		if ((s instanceof Line && c instanceof Line)
 				|| (s instanceof Word && c instanceof Word)
 				|| (s instanceof Doc && c instanceof Doc)) {
@@ -460,17 +460,17 @@ class Manipulator {
 	}
 
 	joinParentOfSelectedToNextSiblingIfSameType() {
-		var s = selectedNex;
-		var p = s.getParent();
+		let s = selectedNex;
+		let p = s.getParent();
 		if (!p) return false;
 		p.setSelected();
 		this.joinSelectedToNextSiblingIfSameType();
 	}
 
 	joinToSiblingIfSame(s) {
-		var p = s.getParent();
+		let p = s.getParent();
 		if (!p) return false;
-		var c = p.getChildAfter(s);
+		let c = p.getChildAfter(s);
 		if ((s instanceof Line && c instanceof Line)
 				|| (s instanceof Word && c instanceof Word)
 				|| (s instanceof Doc && c instanceof Doc)) {
@@ -481,10 +481,10 @@ class Manipulator {
 	// wrapping
 
 	wrapSelectedInCommand() {
-		var s = selectedNex;
-		var p = s.getParent(true);
+		let s = selectedNex;
+		let p = s.getParent(true);
 		if (!p) return false;
-		var c = new Command();
+		let c = new Command();
 		p.replaceChildWith(s, c);
 		c.appendChild(s);
 		c.setSelected();

@@ -22,17 +22,17 @@ function createMathBuiltins() {
 			{name:'a0', type:'Number',variadic:true},
 		],
 		function(env, argEnv) {
-			var total = 0;
-			var foundFloat = false;
-			var ar = env.lb('a0');
-			for (var i = 0; i < ar.numChildren(); i++) {
-				var arg = ar.getChildAt(i);
+			let total = 0;
+			let foundFloat = false;
+			let ar = env.lb('a0');
+			for (let i = 0; i < ar.numChildren(); i++) {
+				let arg = ar.getChildAt(i);
 				if (arg instanceof Float) {
 					foundFloat = true;
 				}
 				total += arg.getTypedValue();
 			}
-			var r = foundFloat ? new Float(total) : new Integer(total);
+			let r = foundFloat ? new Float(total) : new Integer(total);
 			return r;
 		}
 	);
@@ -44,9 +44,9 @@ function createMathBuiltins() {
 			{name:'a1', type:'Number'},
 		],
 		function(env, argEnv) {
-			var a = env.lb('a0');
-			var b = env.lb('a1');
-			var result = a.getTypedValue() - b.getTypedValue();
+			let a = env.lb('a0');
+			let b = env.lb('a1');
+			let result = a.getTypedValue() - b.getTypedValue();
 			if (a instanceof Float
 					|| b instanceof Float) {
 				return new Float(result);
@@ -64,17 +64,17 @@ function createMathBuiltins() {
 			{name:'a0', type:'Number',variadic:true}
 		],
 		function(env, argEnv) {
-			var result = 1;
-			var foundFloat = false;
-			var ar = env.lb('a0');
-			for (var i = 0; i < ar.numChildren(); i++) {
-				var arg = ar.getChildAt(i);
+			let result = 1;
+			let foundFloat = false;
+			let ar = env.lb('a0');
+			for (let i = 0; i < ar.numChildren(); i++) {
+				let arg = ar.getChildAt(i);
 				if (arg instanceof Float) {
 					foundFloat = true;
 				}
 				result *= arg.getTypedValue();
 			}
-			var r = foundFloat ? new Float(result) : new Integer(result);
+			let r = foundFloat ? new Float(result) : new Integer(result);
 			return r;
 		}
 	);
@@ -87,9 +87,9 @@ function createMathBuiltins() {
 			{name:'a1', type:'Number'},
 		],
 		function(env, argEnv) {
-			var a = env.lb('a0');
-			var b = env.lb('a1');
-			var result = a.getTypedValue() / b.getTypedValue();
+			let a = env.lb('a0');
+			let b = env.lb('a1');
+			let result = a.getTypedValue() / b.getTypedValue();
 			if (a instanceof Float
 					|| b instanceof Float) {
 				return new Float(result);
@@ -107,9 +107,9 @@ function createMathBuiltins() {
 			{name:'a1', type:'Number'},
 		],
 		function(env, argEnv) {
-			var a = env.lb('a0').getTypedValue();
-			var b = env.lb('a1').getTypedValue();
-			var r = (a == b);
+			let a = env.lb('a0').getTypedValue();
+			let b = env.lb('a1').getTypedValue();
+			let r = (a == b);
 			return new Bool(r);
 		}
 	);
@@ -121,9 +121,9 @@ function createMathBuiltins() {
 			{name:'a1', type:'Number'},
 		],
 		function(env, argEnv) {
-			var a = env.lb('a0').getTypedValue();
-			var b = env.lb('a1').getTypedValue();
-			var r = (a < b);
+			let a = env.lb('a0').getTypedValue();
+			let b = env.lb('a1').getTypedValue();
+			let r = (a < b);
 			return new Bool(r);
 		}
 	);
@@ -134,9 +134,9 @@ function createMathBuiltins() {
 			{name:'a1', type:'Number'},
 		],
 		function(env, argEnv) {
-			var a = env.lb('a0').getTypedValue();
-			var b = env.lb('a1').getTypedValue();
-			var r = (a <= b);
+			let a = env.lb('a0').getTypedValue();
+			let b = env.lb('a1').getTypedValue();
+			let r = (a <= b);
 			return new Bool(r);
 		}
 	);
@@ -148,9 +148,9 @@ function createMathBuiltins() {
 			{name:'a1', type:'Number'},
 		],
 		function(env, argEnv) {
-			var a = env.lb('a0').getTypedValue();
-			var b = env.lb('a1').getTypedValue();
-			var r = (a > b);
+			let a = env.lb('a0').getTypedValue();
+			let b = env.lb('a1').getTypedValue();
+			let r = (a > b);
 			return new Bool(r);
 		}
 	);
@@ -162,9 +162,9 @@ function createMathBuiltins() {
 			{name:'a1', type:'Number'},
 		],
 		function(env, argEnv) {
-			var a = env.lb('a0').getTypedValue();
-			var b = env.lb('a1').getTypedValue();
-			var r = (a >= b);
+			let a = env.lb('a0').getTypedValue();
+			let b = env.lb('a1').getTypedValue();
+			let r = (a >= b);
 			return new Bool(r);
 		}
 	);
@@ -176,9 +176,9 @@ function createMathBuiltins() {
 			{name:'a1', type:'Number'},
 		],
 		function(env, argEnv) {
-			var a = env.lb('a0').getTypedValue();
-			var b = env.lb('a1').getTypedValue();
-			var r = (a != b);
+			let a = env.lb('a0').getTypedValue();
+			let b = env.lb('a1').getTypedValue();
+			let r = (a != b);
 			return new Bool(r);
 		}
 	);

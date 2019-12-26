@@ -26,15 +26,15 @@ class NexContainer extends Nex {
 
 	copyFieldsTo(n) {
 		super.copyFieldsTo(n);
-		for (var i = 0; i < this.children.length; i++) {
+		for (let i = 0; i < this.children.length; i++) {
 			n.appendChild(this.children[i].makeCopy());
 		}
 		n.vdir = this.vdir;
 	}
 
 	childrenToString() {
-		var r = "";
-		for (var i = 0; i < this.children.length; i++) {
+		let r = "";
+		for (let i = 0; i < this.children.length; i++) {
 			if (i > 0) {
 				r += ' ';
 			}
@@ -44,8 +44,8 @@ class NexContainer extends Nex {
 	}
 
 	childrenDebugString() {
-		var r = "";
-		for (var i = 0; i < this.children.length; i++) {
+		let r = "";
+		for (let i = 0; i < this.children.length; i++) {
 			if (i > 0) {
 				r += ' ';
 			}
@@ -56,7 +56,7 @@ class NexContainer extends Nex {
 
 	setRenderType(newType) {
 		super.setRenderType(newType);
-		for (var i = 0; i < this.children.length; i++) {
+		for (let i = 0; i < this.children.length; i++) {
 			this.children[i].setRenderType(newType);
 		}
 	}
@@ -73,7 +73,7 @@ class NexContainer extends Nex {
 		} else {
 			this.domNode.classList.remove('vdir');
 		}
-		for (var i = 0; i < this.children.length; i++) {
+		for (let i = 0; i < this.children.length; i++) {
 			this.children[i].render();
 		}
 	}
@@ -91,7 +91,7 @@ class NexContainer extends Nex {
 	}
 
 	getIndexOfChild(c) {
-		for (var i = 0; i < this.children.length; i++) {
+		for (let i = 0; i < this.children.length; i++) {
 			if (this.children[i] == c) {
 				return i;
 			}
@@ -108,7 +108,7 @@ class NexContainer extends Nex {
 
 	removeChildAt(i) {
 		if (i < 0 || i >= this.children.length) return null;
-		var r = this.children[i];
+		let r = this.children[i];
 		this.children.splice(i, 1);
 		this.domNode.removeChild(r.domNode);
 		r.setParent(null);
@@ -119,11 +119,11 @@ class NexContainer extends Nex {
 		if (i < 0 || i > this.children.length) {
 			return;
 		}
-		var oldparent = c.getParent();
+		let oldparent = c.getParent();
 		if (oldparent) {
 			if (oldparent == this) {
 				// ugh
-				var oldi = oldparent.getIndexOfChild(c);
+				let oldi = oldparent.getIndexOfChild(c);
 				if (oldi == i) {
 					// no-op
 					return;
@@ -168,17 +168,17 @@ class NexContainer extends Nex {
 
 	replaceChildWith(c, c2) {
 		if (c == c2) return;
-		var ind = this.getIndexOfChild(c);
+		let ind = this.getIndexOfChild(c);
 		this.replaceChildAt(c2, ind);
 	}
 
 	getChildAfter(c) {
-		var index = this.getIndexOfChild(c);
+		let index = this.getIndexOfChild(c);
 		return this.getChildAt(index + 1);
 	}
 	
 	getChildBefore(c) {
-		var index = this.getIndexOfChild(c);
+		let index = this.getIndexOfChild(c);
 		return this.getChildAt(index - 1);
 	}
 
@@ -217,7 +217,7 @@ class NexContainer extends Nex {
 	}
 
 	doForEachChild(f) {
-		for (var i = 0; i < this.children.length; i++) {
+		for (let i = 0; i < this.children.length; i++) {
 			f(this.children[i]);
 		}
 	}

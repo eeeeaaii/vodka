@@ -27,7 +27,7 @@ class StepStack {
 	}
 
 	pop() {
-		var r = this.stack.pop();
+		let r = this.stack.pop();
 		return r;
 	}
 

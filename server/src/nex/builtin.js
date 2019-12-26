@@ -27,7 +27,7 @@ class Builtin extends Lambda {
 	}
 
 	makeCopy() {
-		var r = new Builtin(this.name, this.params, this.argEvalFactory);
+		let r = new Builtin(this.name, this.params, this.argEvalFactory);
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -41,10 +41,10 @@ class Builtin extends Lambda {
 	}
 
 	static createBuiltin(name, params, f, argEvalFactory) {
-		for (var i = 0; i < params.length; i++) {
+		for (let i = 0; i < params.length; i++) {
 			params[i].name = BUILTIN_ARG_PREFIX + params[i].name;
 		}
-		var nex = new Builtin(name, params, argEvalFactory ? argEvalFactory : null);
+		let nex = new Builtin(name, params, argEvalFactory ? argEvalFactory : null);
 		nex.setF(f);
 		Builtin.bindBuiltinObject(name, nex);
 	}

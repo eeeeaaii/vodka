@@ -20,9 +20,9 @@ class NewlineKeyFunnel extends SeparatorKeyFunnel {
 	doShiftBackspace() {
 		if (manipulator.selectPreviousLeaf()) {
 			manipulator.removeNex(this.s);
-			var s = selectedNex;
-			var line;
-			var word;
+			let s = selectedNex;
+			let line;
+			let word;
 			if (s instanceof Letter) {
 				word = s.getParent();
 				line = word.getParent();

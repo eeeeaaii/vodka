@@ -19,8 +19,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 const ESTRING_LIMIT = 20;
 const MODE_NORMAL = 1;
 const MODE_EXPANDED = 2;
-
-var QUOTE_ESCAPE = 'QQQQ'
+const QUOTE_ESCAPE = 'QQQQ'
 
 class EString extends ValueNex {
 	constructor(val, ch, t) {
@@ -37,7 +36,7 @@ class EString extends ValueNex {
 	}
 
 	makeCopy() {
-		var r = new EString(this.getFullTypedValue(), '$', 'string');
+		let r = new EString(this.getFullTypedValue(), '$', 'string');
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -51,7 +50,7 @@ class EString extends ValueNex {
 	}
 
 	escapeContents() {
-		var fv = this.getFullTypedValue();
+		let fv = this.getFullTypedValue();
 		fv = fv.replace(new RegExp('"', 'g'), QUOTE_ESCAPE);
 		return fv;
 	}
@@ -134,7 +133,7 @@ class EString extends ValueNex {
 	drawButton() {
 		this.submitbutton = document.createElement("button")
 		this.submitbutton.classList.add('stringinputsubmit');			
-		var t = this;
+		let t = this;
 		this.submitbutton.onclick = function() {
 			t.finishInput();
 		}
@@ -149,7 +148,7 @@ class EString extends ValueNex {
 	}
 
 	finishInput() {
-		var val = this.inputfield.value;
+		let val = this.inputfield.value;
 		activateKeyFunnel();
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val); // calls render

@@ -24,7 +24,7 @@ class ESymbol extends ValueNex {
 	}
 
 	makeCopy() {
-		var r = new ESymbol(this.getTypedValue());
+		let r = new ESymbol(this.getTypedValue());
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -43,7 +43,7 @@ class ESymbol extends ValueNex {
 
 	evaluate(env) {
 		ILVL++;
-		var b = env.lookupBinding(this.getTypedValue());
+		let b = env.lookupBinding(this.getTypedValue());
 		console.log(`${INDENT()}symbol ${this.value} bound to ${b.debugString()}`);
 		ILVL--;
 		return b;
@@ -52,7 +52,7 @@ class ESymbol extends ValueNex {
 	stepEvaluate(env, exp) {
 		exp.hackfunction = function() {
 			try {
-				var r = this.evaluate(env);
+				let r = this.evaluate(env);
 				return r;
 			} catch (err) {
 				if (err instanceof EError) {

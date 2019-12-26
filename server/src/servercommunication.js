@@ -17,7 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 function sendToServer(payload, cb) {
-	var xhr = new XMLHttpRequest();
+	let xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function() {};
 	xhr.open('POST', 'api')
 	xhr.send(payload);
@@ -29,19 +29,19 @@ function sendToServer(payload, cb) {
 }
 
 function saveNex(name, nex, expectation) {
-	var payload = `save\t${name}\t${nex.toString()}`;
+	let payload = `save\t${name}\t${nex.toString()}`;
 
 	sendToServer(payload, function(data) {
-		var e = new EError("success");
+		let e = new EError("success");
 		expectation.fulfill(e);
 	});
 }
 
 function loadNex(name, expectation) {
-	var payload = `load\t${name}`;
+	let payload = `load\t${name}`;
 
 	sendToServer(payload, function(data) {
-		var nex = new NexParser(data).parse();
+		let nex = new NexParser(data).parse();
 		expectation.fulfill(nex);
 	});
 }

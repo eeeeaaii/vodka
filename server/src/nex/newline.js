@@ -23,7 +23,7 @@ class Newline extends Separator {
 	}
 
 	makeCopy() {
-		var r = new Newline();
+		let r = new Newline();
 		this.copyFieldsTo(r);
 		return r;
 	}

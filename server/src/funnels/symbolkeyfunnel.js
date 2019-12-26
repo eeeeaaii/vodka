@@ -31,7 +31,7 @@ class SymbolKeyFunnel extends ValueKeyFunnel {
 	};
 
 	doShiftEnter() {
-		var result = this.s.evaluate(BUILTINS);
+		let result = this.s.evaluate(BUILTINS);
 		if (result) {
 			manipulator.replaceSelectedWith(result);
 		}

@@ -24,7 +24,7 @@ class InsertionPoint extends ValueNex {
 	}
 
 	makeCopy() {
-		var r = new InsertionPoint();
+		let r = new InsertionPoint();
 		this.copyFieldsTo(r);
 		return r;
 	}

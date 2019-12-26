@@ -23,8 +23,8 @@ const puppeteer = require('puppeteer');
 module.exports = {
 	runTest: function(testinput, method) {
 		(async() => {
-			var normal_out = process.argv[2];
-			var exploded_out = process.argv[3];
+			let normal_out = process.argv[2];
+			let exploded_out = process.argv[3];
 //			const browser = await puppeteer.launch({headless:false, slowMo:250});
 			const browser = await puppeteer.launch();
 			const page = await browser.newPage();
@@ -34,8 +34,8 @@ module.exports = {
 					doKeyInput('Escape', 'Escape', false, false, false);
 				})
 				// we have logged all browser interactions directly, the new way.
-				for (var i = 0; i < testinput.length; i++) {
-					var t = testinput[i];
+				for (let i = 0; i < testinput.length; i++) {
+					let t = testinput[i];
 					switch(t.type) {
 						case 'click':
 							await page.mouse.click(Number(t.x), Number(t.y));

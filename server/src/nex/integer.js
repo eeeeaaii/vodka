@@ -27,13 +27,13 @@ class Integer extends ValueNex {
 	}
 
 	makeCopy() {
-		var r = new Integer(this.value);
+		let r = new Integer(this.value);
 		this.copyFieldsTo(r);
 		return r;
 	}
 
 	isValid() {
-		var v = Number(this.value);
+		let v = Number(this.value);
 		return !isNaN(v);
 	}
 
@@ -41,7 +41,7 @@ class Integer extends ValueNex {
 		if (!this.isValid()) {
 			throw new EError(`Integer format invalid: ${this.value}`);
 		}
-		var n = Number(this.value);
+		let n = Number(this.value);
 		this.value = '' + n;
 		this.render()
 		return this;
@@ -56,7 +56,7 @@ class Integer extends ValueNex {
 	}
 
 	getTypedValue() {
-		var v = this.value;
+		let v = this.value;
 		if (v == "") {
 			v = "0";
 		}

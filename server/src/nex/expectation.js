@@ -28,7 +28,7 @@ class Expectation extends NexContainer {
 	}
 
 	makeCopy() {
-		var r = new Expectation();
+		let r = new Expectation();
 		this.copyFieldsTo(r);
 		return r;
 	}

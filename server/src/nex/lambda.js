@@ -30,7 +30,7 @@ class Lambda extends NexContainer {
 	}
 
 	makeCopy() {
-		var r = new Lambda();
+		let r = new Lambda();
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -81,9 +81,9 @@ class Lambda extends NexContainer {
 	}
 
 	getParamNames() {
-		var s = this.amptext.split(' ');
-		var p = [];
-		for (var i = 0; i < s.length; i++) {
+		let s = this.amptext.split(' ');
+		let p = [];
+		for (let i = 0; i < s.length; i++) {
 			if (s[i] !== '') {
 				p.push(s[i]);
 			}
@@ -93,9 +93,9 @@ class Lambda extends NexContainer {
 
 	/* argEnv param is deprecated, used only by builtin */
 	executor(argEnv) {
-		var r = new Nil();
-		for (var i = 0; i < this.children.length; i++) {
-			var c = this.children[i];
+		let r = new Nil();
+		for (let i = 0; i < this.children.length; i++) {
+			let c = this.children[i];
 			r = c.evaluate(this.closure);
 		}
 		return r;
