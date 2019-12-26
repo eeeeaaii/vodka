@@ -52,6 +52,18 @@ function createBasicBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'is-empty',
+		[
+			{name:'a0', type:'NexContainer'},
+		],
+		function(env, argEnv) {
+			let lst = env.lb('a0');
+			let rb = !lst.hasChildren();
+			return new Bool(rb);
+		}
+	);
+
+	Builtin.createBuiltin(
 		'begin',
 		[
 			{name:'a0', type:'*', variadic:true}
