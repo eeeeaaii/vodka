@@ -101,28 +101,19 @@ class Command extends NexContainer {
 	}
 
 	evaluate(env) {
-		try {
-			ILVL++;
-			stackCheck();
-			let lambda = this.getLambda(env);
-			console.log(`${INDENT()}evaluating command: ${this.debugString()}`);
-			console.log(`${INDENT()}lambda is: ${lambda.debugString()}`);
-			let argContainer = new NexChildArgContainer(this);
-			let argEvaluator = lambda.getArgEvaluator(argContainer, env);
-			argEvaluator.evaluateAndBindArgs();
-			let r = lambda.executor(env);
-			console.log(`${INDENT()}command returned: ${r.debugString()}`);
-			ILVL--;
-			return r;
-
-		} catch (e) {
-			if (e instanceof EError) {
-				return e;
-			} else {
-				// real error.
-				throw e;
-			}
-		}
+		ILVL++;
+		stackCheck();
+		let lambda = this.getLambda(env);
+		console.log(`${INDENT()}evaluating command: ${this.debugString()}`);
+		console.log(`${INDENT()}lambda is: ${lambda.debugString()}`);
+		let argContainer = new NexChildArgContainer(this);
+//		lambda.close(env);
+		let argEvaluator = lambda.getArgEvaluator(argContainer, env);
+		argEvaluator.evaluateAndBindArgs();
+		let r = lambda.executor(env);
+		console.log(`${INDENT()}command returned: ${r.debugString()}`);
+		ILVL--;
+		return r;
 	}
 
 	render() {
