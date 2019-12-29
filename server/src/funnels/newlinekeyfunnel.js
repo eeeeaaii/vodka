@@ -33,10 +33,6 @@ class NewlineKeyFunnel extends SeparatorKeyFunnel {
 			if (word) {
 				manipulator.joinToSiblingIfSame(word);
 			}
-		} else {
-			
 		}
 	}
-
-	
 }

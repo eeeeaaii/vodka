@@ -26,6 +26,69 @@ a set of required args then some optional ones (could be zero A's)
 variadics are packaged up inside a list of some type (maybe a word)
 */
 
+// TODO: get rid of the arg container class and use BuiltinParamManager inside the arg evaluator
+
+class BuiltinParamManager {
+	constructor(params, args) {
+		this.params = params;
+		this.args = args;
+		this.effectiveParams = [];
+	}
+
+	reconcile() {
+		this.verifyParameterCorrectness();
+		this.checkNumArgs();
+		this.padEffectiveParams();
+	}
+
+	verifyParameterCorrectness() {
+		this.hasoptionals = false;
+		this.hasvariadics = false;
+		this.numRequiredParams = 0;
+		for (let i = 0; i < this.params.length; i++) {
+			let param = this.params[i];
+			if (param.optional) {
+				if (this.hasvariadics) {
+					throw new Error("can't have variadics and also optionals.");
+				}
+				this.hasoptionals = true;
+				continue;
+			}
+			if (param.variadic) {
+				if (this.hasoptionals) {
+					throw new Error("can't have variadics and also optionals.");
+				}
+				if (this.hasvariadics) {
+					throw new Error("can't have multiple variadics");
+				}
+				this.hasvariadics = true;
+				continue;
+			}
+			this.numRequiredParams++;
+		}
+	}
+
+	checkNumArgs() {
+		if (this.args.length < this.numRequiredParams) {
+			throw new EError(this.name + ": not enough args passed to function.");
+		}
+	}
+
+	padEffectiveParams() {
+		let i = 0;
+		for (; i < this.params.length; i++) {
+			this.effectiveParams[i] = this.params[i];
+		}
+		if (this.hasvariadics) {
+			for(let lasti = i - 1; i < this.args.length; i++) {
+				this.effectiveParams[i] = this.params[lasti];
+			}
+		}
+	}
+}
+
+// erm, deprecate arg container I guess
+
 
 class BuiltinArgEvaluator {
 	constructor(name, params, argContainer, env, bindEnv) {
@@ -34,6 +97,7 @@ class BuiltinArgEvaluator {
 		this.argContainer = argContainer;
 		this.env = env;
 		this.bindEnv = bindEnv;
+//		this.paramManager = new BuiltinParamManager(params, argContainer);
 		this.verifyParameterCorrectness();
 	}
 
@@ -128,74 +192,6 @@ class BuiltinArgEvaluator {
 		this.checkNumArgs();
 		this.padEffectiveParams();
 		this.processArgs();
-		this.bindArgs();
-	}
-
-	// ugh. step stuff below, non-step above.
-
-	startArg(arg, param, i) {
-		let neval = arg.needsEvaluation() && !param.skipeval;
-		this.argContainer.setNeedsEvalForArgAt(neval, i);
-	}
-
-	doForEachArg(f) {
-		for (let i = 0; i < this.argContainer.numArgs(); i++) {
-			let arg = this.argContainer.getArgAt(i);
-			f(arg, i);
-		}
-	}
-
-	startEvaluating() {
-		this.checkNumArgs();
-		this.padEffectiveParams();
-		this.doForEachArg(function(arg, i) {
-			this.startArg(arg, this.effectiveParams[i], i);
-		}.bind(this));
-	}
-
-	indexOfNextUnevaluatedExpression() {
-		let ind = -1;
-		this.doForEachArg(function(arg, i) {
-			if (ind == -1 && this.argContainer.getNeedsEvalForArgAt(i)) {
-				ind = i;
-			}
-		}.bind(this));
-		return ind;
-	}
-
-	evaluateNext(exp) {
-		let stop = false;
-		this.doForEachArg(function(arg, i) {
-			if (stop) return;
-			if (this.argContainer.getNeedsEvalForArgAt(i)) {
-				this.argContainer.setNeedsEvalForArgAt(false, i);
-				// do something here where you give arg the
-				// right lexical binding
-				arg.stepEvaluate(this.env, exp);
-				this.argContainer.setArgAt(exp, i);
-				// hack
-				if (arg.__haserror) {
-					exp.appendChild(arg.__haserror);
-
-				} else {
-					exp.appendChild(arg);
-				}
-				stop = true;
-			}
-		}.bind(this));
-	}
-
-	allExpressionsEvaluated() {
-		let r = true;
-		this.doForEachArg(function(arg, i) {
-			if (this.argContainer.getNeedsEvalForArgAt(i)) {
-				r = false;
-			}
-		}.bind(this));
-		return r;
-	}
-
-	finishEvaluating() {
 		this.bindArgs();
 	}
 }

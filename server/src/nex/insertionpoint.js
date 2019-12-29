@@ -45,15 +45,4 @@ class InsertionPoint extends ValueNex {
 
 	appendText(txt) {}
 
-	/*
-
-	isSelected() {
-		return false;
-	}
-
-	setSelected() {
-		this.getParent().setSelected();
-	}
-	*/
-
 }

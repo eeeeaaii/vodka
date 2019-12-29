@@ -15,23 +15,23 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-
-class StepStack {
+class Phase {
 	constructor() {
-		this.stack = [];
+		this.started = false;
 	}
 
-	push(e) {
-		this.stack.push(e);
+	start() {
+		this.started = true;
 	}
 
-	pop() {
-		let r = this.stack.pop();
-		return r;
+	isStarted() {
+		return this.started;
 	}
 
-	inProgress() {
-		return this.stack.length > 0;
+	isFinished() {
+		return this.isStarted();
+	}
+
+	finish() {
 	}
 }

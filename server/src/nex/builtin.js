@@ -18,16 +18,22 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 class Builtin extends Lambda {
-	constructor(name, params, argEvalFactory) {
+	constructor(name, params, phaseFactory) {
 		super();
 		this.name = name;
 		this.params = params;
 		this.f = null;
-		this.argEvalFactory = argEvalFactory;
+
+		this.phaseFactory =
+			phaseFactory 
+				? phaseFactory
+				: function(phaseExecutor, nex, env) {
+					return new BuiltinCommandPhase(phaseExecutor, nex, env);
+				  };
 	}
 
 	makeCopy() {
-		let r = new Builtin(this.name, this.params, this.argEvalFactory);
+		let r = new Builtin(this.name, this.params, this.subPhaseFactory);
 		this.copyFieldsTo(r);
 		return r;
 	}

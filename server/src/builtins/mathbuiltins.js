@@ -56,8 +56,6 @@ function createMathBuiltins() {
 		}
 	);
 
-
-
 	Builtin.createBuiltin(
 		'*',
 		[
@@ -79,7 +77,6 @@ function createMathBuiltins() {
 		}
 	);
 
-
 	Builtin.createBuiltin(
 		'/',
 		[
@@ -98,7 +95,6 @@ function createMathBuiltins() {
 			}
 		}
 	);
-
 
 	Builtin.createBuiltin(
 		'=',
@@ -127,6 +123,7 @@ function createMathBuiltins() {
 			return new Bool(r);
 		}
 	);
+
 	Builtin.createBuiltin(
 		'<=',
 		[

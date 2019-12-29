@@ -25,13 +25,7 @@ class LambdaKeyFunnel extends CodelistKeyFunnel {
 		if (okChar.test(txt)) {
 			this.s.appendAmpText(txt);
 		} else {
-			// if (KEYFUNNEL_VERSION == 1) {
-			// 	// what the hell is this?
-			// 	manipulator.insertAfterSelectedAndSelect(new Word())
-			// 		&& selectedNex.getKeyFunnel().appendText(txt);			
-			// } else {
-				this.handleAppend(new Letter(txt));
-			// }
+			this.handleAppend(new Letter(txt));
 		}
 	};
 

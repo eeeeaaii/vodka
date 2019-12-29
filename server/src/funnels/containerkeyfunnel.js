@@ -15,7 +15,6 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 class ContainerKeyFunnel extends KeyFunnel {
 	constructor(sel) {
 		super(sel);
@@ -24,5 +23,4 @@ class ContainerKeyFunnel extends KeyFunnel {
 	doTab() {
 		manipulator.selectFirstChild();
 	}
-
 }

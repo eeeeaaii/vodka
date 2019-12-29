@@ -227,38 +227,29 @@ class KeyFunnel {
 	}
 
 	doAltEnter() {
-		if (this.s.__STEP_STACK) {
-			STEP_STACK = this.s.__STEP_STACK;
-			 if (STEP_STACK.inProgress()) {
-			 	let nx = STEP_STACK.pop().fulfill();
-			 	if (!STEP_STACK.inProgress()) {
-			 		// we are finished, just select the return val;
-			 		nx.setSelected();
-			 	} else {
-			 		// not finished, select the expect
-				 	this.s.setSelected();
-			 	}
-			 } else {
-			 	STEP_STACK = null;
-			 	this.s.__STEP_STACK = null;
-			 }
-		} else {
-			let n;
-			try {
-				STEP_STACK = new StepStack();
-				let exp = new Expectation();
-				this.s.stepEvaluate(BUILTINS, exp);
-				manipulator.replaceSelectedWith(exp);
-				exp.appendChild(this.s);
-				exp.__STEP_STACK = STEP_STACK;
-				exp.setSelected();
-			} catch (e) {
-				if (e instanceof EError) {
-					n = e;
-				} else {
-					throw e;
-				}			
+		let phaseExecutor = this.s.phaseExecutor;
+		let firstStep = false;
+		if (!phaseExecutor) {
+			firstStep = true;
+			phaseExecutor = new PhaseExecutor();
+			this.s.pushNexPhase(phaseExecutor, BUILTINS);
+		}
+		phaseExecutor.doNextStep();
+		if (!phaseExecutor.finished()) {
+			// the resolution of an expectation will change the selected nex,
+			// so need to set it back
+			if (firstStep) {
+				// the first step is PROBABLY an expectation phase
+				let operativeNex = this.s.getParent();
+				operativeNex.setSelected();
+				operativeNex.phaseExecutor = phaseExecutor;
+			} else {
+				this.s.setSelected();
 			}
+		} else {
+			// if I don't explicitly set the selected nex, it'll be the
+			// result of the last resolved expectation, probably
+			this.s.phaseExecutor = null;
 		}
 	}
 

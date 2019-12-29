@@ -35,10 +35,6 @@ function INDENT() {
 	return s;
 }
 
-// different stack - used for step execution.
-var STEP_STACK = new StepStack();
-
-
 var manipulator = null;
 var root = null;
 var selectedNex = null;
@@ -49,8 +45,6 @@ const NEX_RENDER_TYPE_EXPLODED = 2;
 var current_render_type = NEX_RENDER_TYPE_NORMAL;
 
 var BUILTINS;
-
-//var KEYFUNNEL_VERSION = 2;
 
 // DO NOT RENAME THIS METHOD OR YOU WILL BREAK ALL THE OLD TESTS
 function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {

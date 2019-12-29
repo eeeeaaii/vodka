@@ -15,23 +15,25 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-
-class StepStack {
-	constructor() {
-		this.stack = [];
+class ExpectationPhase extends Phase {
+	constructor(nex) {
+		super();
+		this.nex = nex;
+		this.exp = new Expectation();
 	}
 
-	push(e) {
-		this.stack.push(e);
+	start() {
+		this.parent = this.nex.getParent();
+		this.parent.replaceChildWith(this.nex, this.exp);
+		this.exp.appendChild(this.nex);
+		super.start();
 	}
 
-	pop() {
-		let r = this.stack.pop();
-		return r;
+	getExpectationResult() {
+		throw new Error('must implement this');
 	}
 
-	inProgress() {
-		return this.stack.length > 0;
+	finish() {
+		this.exp.fulfill(this.getExpectationResult());
 	}
 }

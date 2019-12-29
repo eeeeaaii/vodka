@@ -15,31 +15,21 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-
-class Line extends NexContainer {
-	constructor() {
-		super();
-		this.render();
+class SymbolLookupPhase extends ExpectationPhase {
+	constructor(nex, env) {
+		super(nex);
+		this.env = env;
 	}
 
-	makeCopy() {
-		let r = new Line();
-		this.copyFieldsTo(r);
-		return r;
-	}
-
-	toString() {
-		return '[' + super.childrenToString() + ']';
-	}
-
-	getKeyFunnel() {
-		return new LineKeyFunnel(this);
-	}
-
-	render() {
-		super.render();
-		this.domNode.classList.add('line');
-		this.domNode.classList.add('data');
+	getExpectationResult() {
+		try {
+			return this.nex.evaluate(this.env);
+		} catch (e) {
+			if (e instanceof EError) {
+				return e;
+			} else {
+				throw e;
+			}
+		}
 	}
 }

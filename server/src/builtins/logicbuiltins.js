@@ -15,82 +15,6 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-class IfArgEvaluator extends BuiltinArgEvaluator {
-	constructor(name, params, argContainer, env, bindEnv) {
-		super(name, params, argContainer, env, bindEnv);
-		this.conditionalEvaluated = false;
-	}
-
-	processArgs() {
-		this.processSingleArg(0);
-		let bval = this.argContainer.getArgAt(0).getTypedValue();
-		if (bval) {
-			this.processSingleArg(1);
-		} else {
-			this.processSingleArg(2);
-		}
-	}
-
-
-	startEvaluating() {
-		super.startEvaluating();
-		if (!this.argContainer.getNeedsEvalForArgAt(0)) {
-			this.conditionalEvaluated = true;
-			this.conditionalResult = this.argContainer.getArgAt(0).getTypedValue();
-		}
-	}
-
-	indexOfNextUnevaluatedExpression() {
-		if (!this.conditionalEvaluated) {
-			return 0;
-		} else {
-			if (this.conditionalResult) {
-				let needs = this.argContainer.getNeedsEvalForArgAt(1);
-				return needs ? 1 : -1;
-			} else {
-				let needs = this.argContainer.getNeedsEvalForArgAt(2);
-				return needs ? 2 : -1;
-			}
-		}
-	}
-
-	evaluateNext(exp) {
-		let ind = this.indexOfNextUnevaluatedExpression();
-		// shouldn't be -1!
-		if (ind < 0) {
-			throw new Error('wut');
-		}
-		if (ind == 0) {
-			this.argContainer.setNeedsEvalForArgAt(false, ind);
-			let arg = this.argContainer.getArgAt(ind);
-			arg.stepEvaluate(this.env, exp);
-			let oldhack = exp.hackfunction;
-			exp.hackfunction = function() {
-				let r = oldhack();
-				if (r instanceof Bool) {
-					this.conditionalEvaluated = true;
-					this.conditionalResult = r.getTypedValue();
-				}
-				return r;
-			}.bind(this);
-			this.argContainer.setArgAt(exp, ind);
-			exp.appendChild(arg);
-		} else {
-			this.argContainer.setNeedsEvalForArgAt(false, ind);
-			let arg = this.argContainer.getArgAt(ind);
-			arg.stepEvaluate(this.env, exp);
-			this.argContainer.setArgAt(exp, ind);
-			exp.appendChild(arg);
-		}
-		
-	}
-
-	allExpressionsEvaluated() {
-		return this.indexOfNextUnevaluatedExpression() == -1;
-	}
-
-}
-
 function createLogicBuiltins() {
 	Builtin.createBuiltin(
 		'not',
@@ -140,10 +64,8 @@ function createLogicBuiltins() {
 				return env.lb('a2');
 			}
 		},
-		function(name, params, args, argEnv, closure) {
-			return new IfArgEvaluator(name, params, args, argEnv, closure);
+		function(phaseExecutor, nex, env) {
+			return new IfCommandPhase(phaseExecutor, nex, env);
 		}
 	)
-
-	
 }

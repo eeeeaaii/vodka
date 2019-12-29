@@ -50,6 +50,16 @@ class Command extends NexContainer {
 		return new CommandKeyFunnel(this);
 	}
 
+	pushNexPhase(phaseExecutor, env) {
+		let lambda = this.getLambda(env);
+		phaseExecutor.pushPhase(lambda.phaseFactory(phaseExecutor, this, env))
+	}
+
+	isLambdaCommand(env) {
+		let lambda = this.getLambda(env);
+		return !(lambda instanceof Builtin);	
+	}
+
 	getLambda(env) {
 		let cmdname = this.getCommandText();
 		let lambda = null;
@@ -115,78 +125,6 @@ class Command extends NexContainer {
 		}
 	}
 
-	resolveCommandExpectation(env, lambda, argEvaluator, exp) {
-		if (!argEvaluator.allExpressionsEvaluated()) {
-			let ind = argEvaluator.indexOfNextUnevaluatedExpression();
-			let innerexp = new Expectation();
-			STEP_STACK.push(exp);
-			argEvaluator.evaluateNext(innerexp);
-			this.replaceChildAt(innerexp, ind);
-			return exp;
-		} else {
-			argEvaluator.finishEvaluating();
-			if (lambda instanceof Builtin) {
-				return lambda.executor(env);
-			} else {
-				let stepContainer = new NexChildArgContainer(lambda);
-				let stepEvaluator = lambda.getStepEvaluator(stepContainer, lambda.closure);
-				stepEvaluator.startEvaluating();
-				let lambdaExp = new Expectation();
-				let result;
-				lambdaExp.hackfunction = function() {
-					if (!stepEvaluator.allExpressionsEvaluated()) {
-						let ind = stepEvaluator.indexOfNextUnevaluatedExpression();
-						let innerinnerexp = new Expectation();
-						STEP_STACK.push(lambdaExp);
-						stepEvaluator.evaluateNext(innerinnerexp);
-						lambda.replaceChildAt(innerinnerexp, ind);
-						return lambdaExp;
-					} else {
-						result = lambda.getLastChild();
-						return result;
-//							return lambda.getLastChild(); // or something
-					}
-
-				}.bind(this); // not really needed
-				lambdaExp.appendChild(lambda);
-//					return lambdaExp;
-				exp.replaceChildAt(lambdaExp, 0);
-				exp.hackfunction = function() {
-					return result;
-				}.bind(this);
-				STEP_STACK.push(exp);
-				STEP_STACK.push(lambdaExp);
-				return exp;
-			}
-		}
-	}
-
-	stepEvaluate(env, exp) {
-		try {
-			let lambda = this.getLambda(env);
-			let argContainer = new NexChildArgContainer(this);
-			let argEvaluator = lambda.getArgEvaluator(argContainer, env);
-			argEvaluator.startEvaluating();
-			exp.hackfunction = function() {
-				return this.resolveCommandExpectation(env, lambda, argEvaluator, exp);
-			}.bind(this);
-			STEP_STACK.push(exp);
-		} catch (e) {
-			// could happen if lambda can't be found, for example.
-			if (e instanceof EError) {
-				exp.hackfunction = function() {
-					return e;
-				}
-				// hack
-				this.__haserror = e;
-				STEP_STACK.push(exp);
-			} else {
-				throw e;
-			}
-
-		}
-	}
-
 	render() {
 		super.render();
 		this.domNode.classList.add('command');
@@ -201,6 +139,11 @@ class Command extends NexContainer {
 
 	getCommandText() {
 		return this.commandtext;
+	}
+
+	setCommandText(t) {
+		this.commandtext = t;
+		this.render();
 	}
 
 	deleteLastCommandLetter() {

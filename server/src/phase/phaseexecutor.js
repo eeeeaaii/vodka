@@ -15,42 +15,31 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-
-class ESymbol extends ValueNex {
-	constructor(val) {
-		super((val) ? val : '', '@', 'esymbol')
-		this.render();
+class PhaseExecutor {
+	constructor() {
+		this.phaseStack = [];
 	}
 
-	makeCopy() {
-		let r = new ESymbol(this.getTypedValue());
-		this.copyFieldsTo(r);
-		return r;
+	pushPhase(newPhase) {
+		this.phaseStack.push(newPhase);
 	}
 
-	needsEvaluation() {
-		return true;
+	finished() {
+		return this.phaseStack.length == 0;
 	}
 
-	pushNexPhase(phaseExecutor, env) {
-	 	phaseExecutor.pushPhase(new SymbolLookupPhase(this, env));
-	}
-
-	getAsString() {
-		return '' + this.value;
-	}
-
-	getKeyFunnel() {
-		return new SymbolKeyFunnel(this);
-	}
-
-	evaluate(env) {
-		ILVL++;
-		let b = env.lookupBinding(this.getTypedValue());
-		console.log(`${INDENT()}symbol ${this.value} bound to ${b.debugString()}`);
-		ILVL--;
-		return b;
+	doNextStep() {
+		if (this.finished()) {
+			throw new Error('tried to do step on finished phase executor');
+		}
+		let top = this.phaseStack[this.phaseStack.length - 1];
+		if (!top.isStarted()) {
+			top.start();
+		} else if (top.isFinished()) {
+			this.phaseStack.pop();
+			top.finish();
+		} else {
+			top.continue();
+		}
 	}
 }
-

@@ -30,7 +30,8 @@ function createStringBuiltins() {
 				r.appendChild(cc);
 			}
 			return r;
-		})
+		}
+	);
 
 	Builtin.createBuiltin(
 		'string-char-at',

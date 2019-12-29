@@ -15,42 +15,24 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-
-class ESymbol extends ValueNex {
-	constructor(val) {
-		super((val) ? val : '', '@', 'esymbol')
-		this.render();
+class LambdaCommandPhase extends ExpectationPhase {
+	constructor(phaseExecutor, nex, env) {
+		super(nex);
+		this.env = env;
+		this.phaseExecutor = phaseExecutor;
 	}
 
-	makeCopy() {
-		let r = new ESymbol(this.getTypedValue());
-		this.copyFieldsTo(r);
-		return r;
+	start() {
+		this.phaseExecutor.pushPhase(new LambdaBindingPhase(this.phaseExecutor, this.nex, this.env));
+		for (let i = this.nex.children.length - 1; i >= 0; i--) {
+			this.nex.children[i].pushNexPhase(this.phaseExecutor, this.env);
+		}
+		super.start();
 	}
 
-	needsEvaluation() {
-		return true;
-	}
-
-	pushNexPhase(phaseExecutor, env) {
-	 	phaseExecutor.pushPhase(new SymbolLookupPhase(this, env));
-	}
-
-	getAsString() {
-		return '' + this.value;
-	}
-
-	getKeyFunnel() {
-		return new SymbolKeyFunnel(this);
-	}
-
-	evaluate(env) {
-		ILVL++;
-		let b = env.lookupBinding(this.getTypedValue());
-		console.log(`${INDENT()}symbol ${this.value} bound to ${b.debugString()}`);
-		ILVL--;
-		return b;
+	getExpectationResult() {
+		let lambda = this.exp.children[0];
+		let result = lambda.children[lambda.children.length - 1];
+		return result;
 	}
 }
-

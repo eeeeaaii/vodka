@@ -15,7 +15,6 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 class DocKeyFunnel extends ContainerKeyFunnel {
 	constructor(sel) {
 		super(sel)
@@ -39,9 +38,6 @@ class DocKeyFunnel extends ContainerKeyFunnel {
 
 	insertNewCodeObject(obj) {
 		manipulator.appendAndSelect(obj);
-//		manipulator.selectLastChild()
-//			|| manipulator.appendAndSelect(new Line());
-//		selectedNex.getKeyFunnel().insertNewCodeObject(obj);
 	}	
 	
 	insertNewListType(lst) {

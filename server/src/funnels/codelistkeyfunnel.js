@@ -69,6 +69,4 @@ class CodelistKeyFunnel extends ContainerKeyFunnel {
 			manipulator.appendAndSelect(item);
 		}
 	}
-
-
 }

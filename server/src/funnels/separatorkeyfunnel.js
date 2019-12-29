@@ -48,11 +48,5 @@ class SeparatorKeyFunnel extends LetterKeyFunnel {
 		manipulator.insertAfterSelected(newline)
 			&& manipulator.putAllNextSiblingsInNewLine()
 			&& newline.setSelected();
-		/* or this way?
-		let hack = manipulator.gatherRemainingSiblingsIntoNewLine();
-		manipulator.selectTopmostEnclosingLine();
-		manipulator.insertAfterSelected(hack);
-		hack.getChildAt(0).setSelected();
-		*/
 	}
 }

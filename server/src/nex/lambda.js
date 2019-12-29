@@ -20,6 +20,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 class Lambda extends NexContainer {
 	constructor(val) {
 		super();
+		this.phaseFactory = function(phaseExecutor, nex, env) {
+			return new LambdaCommandPhase(phaseExecutor, nex, env);
+		}
 		this.amptext = val ? val : '';
 		this.codespan = document.createElement("span");
 		this.codespan.classList.add('codespan');
@@ -55,6 +58,17 @@ class Lambda extends NexContainer {
 		return new LambdaKeyFunnel(this);
 	}
 
+	getSubPhaseFactory() {
+		return new LambdaSubPhaseFactory(this);
+	}
+
+	// pushSubPhases(phaseExecutor, env) {
+	// 	for (let i = this.children.length - 1; i >= 0; i--) {
+	// 		let c = this.children[i];
+	// 		c.pushPhases(phaseExecutor, env);
+	// 	}
+	// }
+
 	render() {
 		super.render();
 		this.domNode.classList.add('lambda');
@@ -75,9 +89,15 @@ class Lambda extends NexContainer {
 		return true;
 	}
 
+	/// deprecated?
 	evaluate(env) {
 		this.closure = env.pushEnv();
 		return this;
+	}
+
+	close(env) {
+		this.closure = env.pushEnv();
+		return this.closure;
 	}
 
 	getParamNames() {
@@ -99,6 +119,13 @@ class Lambda extends NexContainer {
 			r = c.evaluate(this.closure);
 		}
 		return r;
+	}
+
+	bind(args) {
+		let paramNames = this.getParamNames();
+		for (let i = 0; i < args.length; i++) {
+			this.closure.bind(paramNames[i], args[i]);
+		}
 	}
 
 	getArgEvaluator(argContainer, argEnv) {

@@ -44,6 +44,10 @@ class Nex {
 		return this;
 	}
 
+	pushNexPhase(phaseExecutor, env) {
+		// no op
+	}
+
 	stepEvaluate(env) {
 		return this;
 	}

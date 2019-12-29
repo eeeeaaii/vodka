@@ -15,8 +15,6 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-
 class BoolKeyFunnel extends ValueKeyFunnel {
 	constructor(sel) {
 		super(sel)
@@ -40,5 +38,4 @@ class BoolKeyFunnel extends ValueKeyFunnel {
 	appendSeparator(txt) {
 		manipulator.insertAfterSelectedAndSelect(new Separator(txt))
 	}
-
 }

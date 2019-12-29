@@ -15,3 +15,27 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+
+// for future use - right now things probably break if you try the
+// first-arg-is-a-lambda version of command execution.
+class LambdaMigrationPhase extends Phase {
+	constructor(phaseExecutor, command, env) {
+		super();
+		this.phaseExecutor = phaseExecutor;
+		this.command = command;
+		this.env = env;
+	}
+
+	isStarted() {
+		// one-step operations are pre-started
+		return true;
+	}
+
+	finish() {
+		let cmdtxt = this.command.getCommandText();
+		let sym = new ESymbol(cmdtxt);
+		this.command.setCommandText('');
+		this.command.insertChildAt(sym, 0);
+	 	phaseExecutor.pushPhase(new SymbolLookupPhase(sym, env));
+	}
+}
