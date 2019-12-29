@@ -45,6 +45,10 @@ class EString extends ValueNex {
 		return '$"' + this.escapeContents() + '"';
 	}
 
+	debugString() {
+		return '$"' + this.getFullTypedValue() + '"';
+	}
+
 	unScrewUp() {
 		this.setFullValue(this.getFullTypedValue().replace(new RegExp(QUOTE_ESCAPE, "g"), '"'));
 	}

@@ -53,15 +53,15 @@ function createLogicBuiltins() {
 		'if',
 		[
 			{name:'a0', type:'Bool'},
-			{name:'a1', type:'*'}, // skipeval sort of, see custom evaluator
-			{name:'a2', type:'*'}, // skipeval sort of, see custom evaluator
+			{name:'a1', type:'*', skipeval:true},
+			{name:'a2', type:'*', skipeval:true},
 		],
 		function(env, argEnv) {
 			let b = env.lb('a0').getTypedValue();
 			if (b) {
-				return env.lb('a1');
+				return env.lb('a1').evaluate(env);
 			} else {
-				return env.lb('a2');
+				return env.lb('a2').evaluate(env);
 			}
 		},
 		function(phaseExecutor, nex, env) {

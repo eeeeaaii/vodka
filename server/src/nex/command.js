@@ -43,7 +43,7 @@ class Command extends NexContainer {
 	}
 
 	debugString() {
-		return `~${this.commandtext}(${super.childrenDebugString()})`;
+		return `(~${this.commandtext} ${super.childrenDebugString()})`;
 	}
 
 	getKeyFunnel() {

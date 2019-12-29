@@ -51,7 +51,7 @@ class Lambda extends NexContainer {
 	}
 
 	debugString() {
-		return `&${this.amptext}(${super.childrenDebugString()})`;
+		return `(&${this.amptext} ${super.childrenDebugString()})`;
 	}
 
 	getKeyFunnel() {
