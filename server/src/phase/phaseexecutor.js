@@ -39,7 +39,11 @@ class PhaseExecutor {
 			this.phaseStack.pop();
 			top.finish();
 		} else {
-			top.continue();
+			var callback = top.continue();
+			if (callback) {
+				callback();
+				this.doNextStep(); // watch out!
+			}
 		}
 	}
 }

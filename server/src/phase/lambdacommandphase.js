@@ -20,6 +20,27 @@ class LambdaCommandPhase extends ExpectationPhase {
 		super(nex);
 		this.env = env;
 		this.phaseExecutor = phaseExecutor;
+		this.initialized = false;
+	}
+
+	init() {
+		if (!this.initialized) {
+			this.lambda = this.exp.children[0];
+			this.needsEval = [];
+			for (let i = 0; i < this.lambda.children.length; i++) {
+				this.needsEval[i] = this.lambda.children[i].needsEvaluation();
+			}
+			this.initialized = true;
+		}
+	}
+
+	anyNeedEvaluation() {
+		for (let i = 0; i < this.needsEval.length; i++) {
+			if (this.needsEval[i]) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	start() {
@@ -30,9 +51,27 @@ class LambdaCommandPhase extends ExpectationPhase {
 		super.start();
 	}
 
+	continue() {
+		this.init();
+		// there should be at least one that needs evaluation
+		for (let i = 0; i < this.needsEval.length; i++) {
+			if (this.needsEval[i]) {
+				let f = function() {
+					this.lambda.children[i].pushNexPhase(this.phaseExecutor, this.lambda.getClosure());
+				}.bind(this);
+				this.needsEval[i] = false;
+				return f;
+			}
+		}
+	}
+
+	isFinished() {
+		this.init();
+		return !this.anyNeedEvaluation();
+	}
+
 	getExpectationResult() {
-		let lambda = this.exp.children[0];
-		let result = lambda.children[lambda.children.length - 1];
+		let result = this.lambda.children[this.lambda.children.length - 1];
 		return result;
 	}
 }

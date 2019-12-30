@@ -37,8 +37,8 @@ class LambdaBindingPhase extends Phase {
 		lambda.bind(args);
 		let parent = this.command.getParent();
 		parent.replaceChildWith(this.command, lambda);
-		for (let i = lambda.children.length - 1; i >= 0; i--) {
-			lambda.children[i].pushNexPhase(this.phaseExecutor, closure);
-		}
+//		for (let i = lambda.children.length - 1; i >= 0; i--) {
+//			lambda.children[i].pushNexPhase(this.phaseExecutor, closure);
+//		}
 	}
 }

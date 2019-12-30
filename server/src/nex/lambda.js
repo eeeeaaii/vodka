@@ -100,6 +100,10 @@ class Lambda extends NexContainer {
 		return this.closure;
 	}
 
+	getClosure() {
+		return this.closure;
+	}
+
 	getParamNames() {
 		let s = this.amptext.split(' ');
 		let p = [];
