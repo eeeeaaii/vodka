@@ -18,8 +18,15 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 class ExpectationKeyFunnel extends ValueKeyFunnel {
+
+	// TODO: this should extend ContainerKeyFunnel
+
 	constructor(sel) {
 		super(sel)
+	}
+
+	doTab() {
+		manipulator.selectFirstChild();
 	}
 
 	appendText(letter) {

@@ -23,15 +23,56 @@ class BuiltinCommandPhase extends ExpectationPhase {
 		this.builtin = nex.getLambda(env);
 		this.params = this.builtin.params;
 		this.builtinParamManager = new BuiltinParamManager(this.params, nex.children);
+
+		this.initialized = false;
+	}
+
+	init() {
+		if (!this.initialized) {
+			this.processed = [];
+			for (let i = 0; i < this.nex.children.length; i++) {
+				this.processed[i] = false;
+			}
+			this.initialized = true;
+		}
+	}
+
+	continue() {
+		this.init();
+		for (var i = 0; i < this.nex.children.length; i++) {
+			if (!this.processed[i]) {
+				this.processed[i] = true;
+				let c = this.nex.children[i];
+				let needsEval = c.needsEvaluation();
+				if (needsEval) {
+					let f = function() {
+						this.nex.children[i].pushNexPhase(this.phaseExecutor, this.env);
+					}.bind(this);
+					return f;
+				}
+			}
+		}
+	}
+
+	isFinished() {
+		this.init();
+		for (var i = 0; i < this.nex.children.length; i++) {
+			let c = this.nex.children[i];
+			let needsEval = c.needsEvaluation();
+			if (!this.processed[i] && needsEval) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	start() {
 		this.builtinParamManager.reconcile();
-		for (let i = this.nex.children.length - 1; i >= 0; i--) {
-			if (!this.builtinParamManager.effectiveParams[i].skipeval) {
-				this.nex.children[i].pushNexPhase(this.phaseExecutor, this.env);
-			}
-		}
+		// for (let i = this.nex.children.length - 1; i >= 0; i--) {
+		// 	if (!this.builtinParamManager.effectiveParams[i].skipeval) {
+		// 		this.nex.children[i].pushNexPhase(this.phaseExecutor, this.env);
+		// 	}
+		// }
 		super.start();
 	}
 
