@@ -21,6 +21,9 @@ class Nex {
 	constructor() {
 		this.domNode = document.createElement("div");
 		this.domNode.onclick = (e) => {
+			if (selectedNex instanceof EString) {
+				selectedNex.finishInput();
+			}
 			this.setSelected();
 			e.stopPropagation();
 		}
@@ -30,6 +33,16 @@ class Nex {
 		this.renderType = current_render_type;
 		this.keyfunnel = null;
 		this.currentStyle = "";
+		this.enclosingClosure = null; // DO NOT COPY
+	}
+
+	// Used in step execution to set the environment/closure of an expression
+	// this is done when the enclosing statement is evaluated but before
+	// the child statement is evaluated. The reason is that if we want to jump
+	// in and normal-execute this rather than step-execute it, we need to have
+	// a reference to the correct environment.
+	setEnclosingClosure(closure) {
+		this.enclosingClosure = closure;
 	}
 
 	copyFieldsTo(nex) {

@@ -40,9 +40,11 @@ class PhaseExecutor {
 			top.finish();
 		} else {
 			var callback = top.continue();
-			if (callback) {
-				callback();
-				this.doNextStep(); // watch out!
+			if (callback != 'skip') { // hack until I get rid of the thing where if turns the clause to nil
+				if (callback) {
+					callback();
+				}
+				this.doNextStep();
 			}
 		}
 	}

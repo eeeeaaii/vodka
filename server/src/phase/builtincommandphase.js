@@ -33,6 +33,7 @@ class BuiltinCommandPhase extends ExpectationPhase {
 			for (let i = 0; i < this.nex.children.length; i++) {
 				this.processed[i] = false;
 			}
+			this.builtinParamManager.reconcile();
 			this.initialized = true;
 		}
 	}
@@ -44,7 +45,7 @@ class BuiltinCommandPhase extends ExpectationPhase {
 				this.processed[i] = true;
 				let c = this.nex.children[i];
 				let needsEval = c.needsEvaluation();
-				if (needsEval) {
+				if (needsEval && !this.builtinParamManager.effectiveParams[i].skipeval) {
 					let f = function() {
 						this.nex.children[i].pushNexPhase(this.phaseExecutor, this.env);
 					}.bind(this);
@@ -68,11 +69,9 @@ class BuiltinCommandPhase extends ExpectationPhase {
 
 	start() {
 		this.builtinParamManager.reconcile();
-		// for (let i = this.nex.children.length - 1; i >= 0; i--) {
-		// 	if (!this.builtinParamManager.effectiveParams[i].skipeval) {
-		// 		this.nex.children[i].pushNexPhase(this.phaseExecutor, this.env);
-		// 	}
-		// }
+		for (let i = this.nex.children.length - 1; i >= 0; i--) {
+			this.nex.children[i].setEnclosingClosure(this.env);
+		}
 		super.start();
 	}
 

@@ -102,7 +102,10 @@ class Command extends NexContainer {
 
 	evaluate(env) {
 		ILVL++;
-		stackCheck();
+		stackCheck(); // not for step eval, this is to prevent call stack overflow.
+		if (this.enclosingClosure) {
+			env = this.enclosingClosure;
+		}
 		let lambda = this.getLambda(env);
 		console.log(`${INDENT()}evaluating command: ${this.debugString()}`);
 		console.log(`${INDENT()}lambda is: ${lambda.debugString()}`);

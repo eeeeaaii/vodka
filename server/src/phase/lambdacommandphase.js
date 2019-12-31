@@ -30,6 +30,7 @@ class LambdaCommandPhase extends ExpectationPhase {
 			for (let i = 0; i < this.lambda.children.length; i++) {
 				this.needsEval[i] = this.lambda.children[i].needsEvaluation();
 			}
+			this.lambdaClosure = this.lambda.getClosure();
 			this.initialized = true;
 		}
 	}
@@ -57,7 +58,7 @@ class LambdaCommandPhase extends ExpectationPhase {
 		for (let i = 0; i < this.needsEval.length; i++) {
 			if (this.needsEval[i]) {
 				let f = function() {
-					this.lambda.children[i].pushNexPhase(this.phaseExecutor, this.lambda.getClosure());
+					this.lambda.children[i].pushNexPhase(this.phaseExecutor, this.lambdaClosure);
 				}.bind(this);
 				this.needsEval[i] = false;
 				return f;

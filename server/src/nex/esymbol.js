@@ -47,6 +47,9 @@ class ESymbol extends ValueNex {
 
 	evaluate(env) {
 		ILVL++;
+		if (this.enclosingClosure) {
+			env = this.enclosingClosure;
+		}
 		let b = env.lookupBinding(this.getTypedValue());
 		console.log(`${INDENT()}symbol ${this.value} bound to ${b.debugString()}`);
 		ILVL--;
