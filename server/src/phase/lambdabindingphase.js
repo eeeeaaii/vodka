@@ -21,14 +21,20 @@ class LambdaBindingPhase extends Phase {
 		this.phaseExecutor = phaseExecutor;
 		this.command = command;
 		this.env = env;
+		this.commandCallback = null;
 	}
 
 	isStarted() {
 		return true;
 	}
 
+	setCommandCallback(commandCallback) {
+		this.commandCallback = commandCallback;
+	}
+
 	finish() {
 		let lambda = this.command.getLambda(this.env);
+		this.commandCallback.setLambda(lambda);
 		let closure = lambda.close(this.env);
 		let args = [];
 		for (let i = 0; i < this.command.children.length; i++) {
@@ -37,8 +43,6 @@ class LambdaBindingPhase extends Phase {
 		lambda.bind(args);
 		let parent = this.command.getParent();
 		parent.replaceChildWith(this.command, lambda);
-		for (let i = lambda.children.length - 1; i >= 0; i--) {
-			lambda.children[i].setEnclosingClosure(closure);
-		}
+		this.phaseExecutor.pushPhase(new LambdaExecutePhase(this.phaseExecutor, lambda, closure));
 	}
 }

@@ -134,12 +134,12 @@ class Manipulator {
 		let first = selectedNex;
 		while(!this.selectPreviousSibling()) {
 			let p = this.selectParent();
-			if (!p || isCommand(selectedNex)) {
+			if (!p || isCodeContainer(selectedNex)) {
 				first.setSelected();
 				return false;
 			}
 		}
-		while(!isCommand(selectedNex) && this.selectLastChild());
+		while(!isCodeContainer(selectedNex) && this.selectLastChild());
 		return true;
 	}
 
@@ -147,12 +147,12 @@ class Manipulator {
 		let first = selectedNex;
 		while(!this.selectNextSibling()) {
 			let p = this.selectParent();
-			if (!p || isCommand(selectedNex)) {
+			if (!p || isCodeContainer(selectedNex)) {
 				first.setSelected();
 				return false;
 			}
 		}
-		while(!isCommand(selectedNex) && this.selectFirstChild());
+		while(!isCodeContainer(selectedNex) && this.selectFirstChild());
 		return true;
 	}
 
@@ -282,7 +282,7 @@ class Manipulator {
 	attemptToRemoveLastItemInCommand() {
 		let p = selectedNex.getParent();
 		if (!p) return false;
-		if (p.numChildren() == 1 && (isCommand(p) || isLambda(p))) {
+		if (p.numChildren() == 1 && isCodeContainer(p)) {
 			if (!this.removeNex(selectedNex)) return false;
 			p.setSelected();
 			this.appendAndSelect(new InsertionPoint());

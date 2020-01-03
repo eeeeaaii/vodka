@@ -34,16 +34,16 @@ class PhaseExecutor {
 		}
 		let top = this.phaseStack[this.phaseStack.length - 1];
 		if (!top.isStarted()) {
-			top.start();
+			let keepGoing = top.start();
+			if (keepGoing) {
+				this.doNextStep();
+			}
 		} else if (top.isFinished()) {
 			this.phaseStack.pop();
 			top.finish();
 		} else {
-			var callback = top.continue();
-			if (callback != 'skip') { // hack until I get rid of the thing where if turns the clause to nil
-				if (callback) {
-					callback();
-				}
+			let keepGoing = top.continue();
+			if (keepGoing) {
 				this.doNextStep();
 			}
 		}

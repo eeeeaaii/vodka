@@ -127,6 +127,11 @@ class Lambda extends NexContainer {
 
 	bind(args) {
 		let paramNames = this.getParamNames();
+		// omfg please fix this fix binding
+		if (args.length != paramNames.length) {
+			// also thrown in lambdargevaluator but this is called directly by step eval :(
+			throw new EError("lambda: not enough args passed to function.");
+		}
 		for (let i = 0; i < args.length; i++) {
 			this.closure.bind(paramNames[i], args[i]);
 		}

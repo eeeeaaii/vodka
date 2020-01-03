@@ -21,58 +21,57 @@ class LambdaCommandPhase extends ExpectationPhase {
 		this.env = env;
 		this.phaseExecutor = phaseExecutor;
 		this.initialized = false;
+		this.bindingpushed = false;
 	}
 
 	init() {
 		if (!this.initialized) {
-			this.lambda = this.exp.children[0];
-			this.needsEval = [];
-			for (let i = 0; i < this.lambda.children.length; i++) {
-				this.needsEval[i] = this.lambda.children[i].needsEvaluation();
+			this.processed = [];
+			for (let i = 0; i < this.nex.children.length; i++) {
+				this.processed[i] = false;
 			}
-			this.lambdaClosure = this.lambda.getClosure();
 			this.initialized = true;
 		}
 	}
 
-	anyNeedEvaluation() {
-		for (let i = 0; i < this.needsEval.length; i++) {
-			if (this.needsEval[i]) {
-				return true;
+	continue() {
+		this.init();
+		for (var i = 0; i < this.nex.children.length; i++) {
+			if (!this.processed[i]) {
+				this.processed[i] = true;
+				let c = this.nex.children[i];
+				let needsEval = c.needsEvaluation();
+				if (needsEval) {
+					this.nex.children[i].pushNexPhase(this.phaseExecutor, this.env);
+					return true;
+				}
 			}
 		}
-		return false;
+		// didn't find any more args to eval, now let's convert to a lambda
+		this.bindingpushed = true;
+		let lambdaBindingPhase = new LambdaBindingPhase(this.phaseExecutor, this.nex, this.env);
+		lambdaBindingPhase.setCommandCallback(this);
+		this.phaseExecutor.pushPhase(lambdaBindingPhase);
+		return true;
+	}
+
+	setLambda(lambda) {
+		this.lambda = lambda;
 	}
 
 	start() {
-		this.phaseExecutor.pushPhase(new LambdaBindingPhase(this.phaseExecutor, this.nex, this.env));
-		for (let i = this.nex.children.length - 1; i >= 0; i--) {
-			this.nex.children[i].pushNexPhase(this.phaseExecutor, this.env);
+		for (let i = 0; i < this.nex.children.length; i++) {
+			this.nex.children[i].setEnclosingClosure(this.env);
 		}
 		super.start();
 	}
 
-	continue() {
-		this.init();
-		// there should be at least one that needs evaluation
-		for (let i = 0; i < this.needsEval.length; i++) {
-			if (this.needsEval[i]) {
-				let f = function() {
-					this.lambda.children[i].pushNexPhase(this.phaseExecutor, this.lambdaClosure);
-				}.bind(this);
-				this.needsEval[i] = false;
-				return f;
-			}
-		}
-	}
-
 	isFinished() {
 		this.init();
-		return !this.anyNeedEvaluation();
+		return (this.bindingpushed);
 	}
 
 	getExpectationResult() {
-		let result = this.lambda.children[this.lambda.children.length - 1];
-		return result;
+		return this.exp.children[0]; // erm
 	}
 }

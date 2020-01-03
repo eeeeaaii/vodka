@@ -38,7 +38,7 @@ class IfCommandPhase extends ExpectationPhase {
 			this.nex.replaceChildAt(new Nil(), 1);
 		}
 		this.continued = true;
-		return 'skip'; //hack
+		return false;
 	}
 
 	isFinished() {

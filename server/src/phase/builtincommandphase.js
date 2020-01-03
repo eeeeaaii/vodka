@@ -46,13 +46,13 @@ class BuiltinCommandPhase extends ExpectationPhase {
 				let c = this.nex.children[i];
 				let needsEval = c.needsEvaluation();
 				if (needsEval && !this.builtinParamManager.effectiveParams[i].skipeval) {
-					let f = function() {
-						this.nex.children[i].pushNexPhase(this.phaseExecutor, this.env);
-					}.bind(this);
-					return f;
+					this.nex.children[i].pushNexPhase(this.phaseExecutor, this.env);
+					return true;
 				}
 			}
 		}
+		// always keep going because if we don't find one, we finish this phase.
+		return true;
 	}
 
 	isFinished() {
@@ -73,6 +73,7 @@ class BuiltinCommandPhase extends ExpectationPhase {
 			this.nex.children[i].setEnclosingClosure(this.env);
 		}
 		super.start();
+		return false;
 	}
 
 	getExpectationResult() {

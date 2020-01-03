@@ -24,6 +24,10 @@ function isDocElement(n) {
 	return isDoc(n) || isLine(n) || isWord(n);
 }
 
+function isExpectation(n) {
+	return (n instanceof Expectation);
+}
+
 function isDoc(n) {
 	return (n instanceof Doc);
 }
@@ -42,6 +46,10 @@ function isSeparator(n) {
 
 function isLetter(n) {
 	return (n instanceof Letter && !(n instanceof Separator));
+}
+
+function isCodeContainer(n) {
+	return isCommand(n) || isExpectation(n) || isLambda(n);
 }
 
 function isCommand(n) {
