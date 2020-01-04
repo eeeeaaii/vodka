@@ -19,7 +19,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 This integration test loads the string-functions file, runs the "begin" in it to bind all the function names, then starts step-executing a call to "italic" on a word, stepping all the way to the end.
 */
 
-	// |Shift|~|l|o|a|d|Shift|@|s|t|r|i|n|g|-|f|u|n|c|t|i|o|n|s|Shift|Tab|Shift|Enter|Shift|Enter|Shift|Backspace|Shift|~|i|t|a|l|i|c|Shift|(|w|o|r|d|Shift|Tab|Shift|Tab|Meta|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter
+	// |Shift|~|l|o|a|d|Shift|@|s|t|r|i|n|g|-|f|u|n|c|t|i|o|n|s|Shift|Tab|Shift|Enter|Shift|Enter|Shift|Backspace|Shift|~|i|t|a|l|i|c|Shift|(|w|o|r|d|Shift|Tab|Tab|Meta|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter|Enter
 	
 var harness = require('../testharness');
 
@@ -58,12 +58,12 @@ testactions.push({
 		code:'KeyA'
 	});
 testactions.push({
-		type:'keyup',
-		code:'KeyO'
-	});
-testactions.push({
 		type:'keydown',
 		code:'KeyD'
+	});
+testactions.push({
+		type:'keyup',
+		code:'KeyO'
 	});
 testactions.push({
 		type:'keyup',
@@ -94,14 +94,14 @@ testactions.push({
 		code:'KeyS'
 	});
 testactions.push({
+		type:'keydown',
+		code:'KeyT'
+	});
+testactions.push({
 		type:'keyup',
 		code:'KeyS'
 	});
 testactions.push({
-		type:'keydown',
-		code:'KeyT'
-	});
-testactions.push({
 		type:'keyup',
 		code:'KeyT'
 	});
@@ -126,12 +126,12 @@ testactions.push({
 		code:'KeyN'
 	});
 testactions.push({
-		type:'keydown',
-		code:'KeyG'
-	});
-testactions.push({
 		type:'keyup',
 		code:'KeyN'
+	});
+testactions.push({
+		type:'keydown',
+		code:'KeyG'
 	});
 testactions.push({
 		type:'keyup',
@@ -150,28 +150,28 @@ testactions.push({
 		code:'KeyF'
 	});
 testactions.push({
+		type:'keydown',
+		code:'KeyU'
+	});
+testactions.push({
 		type:'keyup',
 		code:'KeyF'
 	});
 testactions.push({
-		type:'keydown',
-		code:'KeyU'
-	});
-testactions.push({
 		type:'keyup',
 		code:'KeyU'
 	});
 testactions.push({
 		type:'keydown',
-		code:'KeyN'
-	});
-testactions.push({
-		type:'keyup',
 		code:'KeyN'
 	});
 testactions.push({
 		type:'keydown',
 		code:'KeyC'
+	});
+testactions.push({
+		type:'keyup',
+		code:'KeyN'
 	});
 testactions.push({
 		type:'keyup',
@@ -202,12 +202,12 @@ testactions.push({
 		code:'KeyI'
 	});
 testactions.push({
-		type:'keydown',
-		code:'KeyS'
-	});
-testactions.push({
 		type:'keyup',
 		code:'KeyO'
+	});
+testactions.push({
+		type:'keydown',
+		code:'KeyS'
 	});
 testactions.push({
 		type:'keyup',
@@ -330,10 +330,6 @@ testactions.push({
 		code:'KeyI'
 	});
 testactions.push({
-		type:'keyup',
-		code:'KeyL'
-	});
-testactions.push({
 		type:'keydown',
 		code:'KeyC'
 	});
@@ -343,6 +339,10 @@ testactions.push({
 	});
 testactions.push({
 		type:'keyup',
+		code:'KeyL'
+	});
+testactions.push({
+		type:'keyup',
 		code:'KeyC'
 	});
 testactions.push({
@@ -404,14 +404,6 @@ testactions.push({
 testactions.push({
 		type:'keyup',
 		code:'Tab'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ShiftRight'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ShiftRight'
 	});
 testactions.push({
 		type:'keydown',
@@ -428,6 +420,22 @@ testactions.push({
 testactions.push({
 		type:'keydown',
 		code:'MetaLeft'
+	});
+testactions.push({
+		type:'keydown',
+		code:'Enter'
+	});
+testactions.push({
+		type:'keydown',
+		code:'Enter'
+	});
+testactions.push({
+		type:'keydown',
+		code:'Enter'
+	});
+testactions.push({
+		type:'keydown',
+		code:'Enter'
 	});
 testactions.push({
 		type:'keydown',

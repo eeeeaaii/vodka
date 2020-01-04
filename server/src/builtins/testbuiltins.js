@@ -164,4 +164,13 @@ function createTestBuiltins() {
 			return new Bool(env.lb('a0') instanceof Word);
 		}
 	);
+	Builtin.createBuiltin(
+		'is-list',
+		[
+			{name:'a0', type:'*'}
+		],
+		function(env, argEnv) {
+			return new Bool(env.lb('a0') instanceof NexContainer);
+		}
+	);
 }
