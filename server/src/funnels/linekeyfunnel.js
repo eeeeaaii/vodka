@@ -21,6 +21,26 @@ class LineKeyFunnel extends ContainerKeyFunnel {
 		super(sel)
 	}
 
+	doArrowUp() {
+		manipulator.selectPreviousSibling()
+			||  manipulator.insertBeforeSelectedAndSelect(new InsertionPoint());
+	}
+
+	doArrowDown() {
+		manipulator.selectNextSibling()
+			|| manipulator.insertAfterSelectedAndSelect(new InsertionPoint());
+	}
+
+	doArrowLeft() {
+		manipulator.selectPreviousSibling()
+			||  manipulator.insertBeforeSelectedAndSelect(new InsertionPoint());
+	}
+
+	doArrowRight() {
+		manipulator.selectNextSibling()
+			|| manipulator.insertAfterSelectedAndSelect(new InsertionPoint());
+	}
+
 	appendText(letter) {
 		manipulator.selectLastChild()
 			|| manipulator.appendAndSelect(new Word());

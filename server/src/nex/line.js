@@ -33,6 +33,29 @@ class Line extends NexContainer {
 		return '[' + super.childrenToString() + ']';
 	}
 
+	getValueAsString() {
+		let s = '';
+		for (let i = 0; i < this.children.length; i++) {
+			let c = this.children[i];
+			if (c instanceof Letter) { // erm the space character is a letter ugh
+				s += c.getText();
+			} else if (c instanceof Word) {
+				s += c.getValueAsString();
+			} else {
+				throw new EError('cannot convert line to string, invalid format');
+			}
+		}
+		return s;
+	}
+
+	getKeyFunnelForContext(context) {
+		if (context == KeyContext.DOC) {
+			return new LineKeyFunnel(this);
+		}
+		return null;
+	}
+
+	// deprecated
 	getKeyFunnel() {
 		return new LineKeyFunnel(this);
 	}

@@ -16,30 +16,25 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-class Newline extends Separator {
-	constructor() {
-		super("&nbsp;");
-		this.render();
-	}
+var KeyContext = {};
+KeyContext.UNSPECIFIED = 0;
+KeyContext.CODE = 1;
+KeyContext.DOC = 2;
 
-	makeCopy() {
-		let r = new Newline();
-		this.copyFieldsTo(r);
-		return r;
+class KeyDispatcher {
+	dispatch(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
+		let p = selectedNex.getParent();
+		let context = p.getKeyContext();
+		while(p && !context) {
+			p = p.getParent();
+			context = p.getKeyContext();
+		}
+		if (context) {
+			let funnel = selectedNex.getKeyFunnelForContext(context);
+			if (funnel) {
+				return funnel.processEvent(keycode, whichkey, hasShift, hasCtrl, hasAlt);
+			}
+		}
+		throw "Unimplemented";
 	}
-
-	getText() {
-		return '\n';
-	}
-
-	getKeyFunnel() {
-		return new NewlineKeyFunnel(this);
-	}
-
-	render() {
-		super.render();
-		this.domNode.classList.add('newline');
-		this.domNode.classList.add('data');
-	}
-
 }

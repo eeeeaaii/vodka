@@ -36,6 +36,14 @@ class Nex {
 		this.enclosingClosure = null; // DO NOT COPY
 	}
 
+	getKeyContext() {
+		return KeyContext.UNSPECIFIED;
+	}
+
+	getKeyFunnelForContext(context) {
+		return null;
+	}
+
 	// Used in step execution to set the environment/closure of an expression
 	// this is done when the enclosing statement is evaluated but before
 	// the child statement is evaluated. The reason is that if we want to jump

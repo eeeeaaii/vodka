@@ -65,29 +65,30 @@ class KeyFunnel {
 				this.startEscape();
 			}
 		} else if (keycode == '~' && !this.isEscaped()) {
-			this.doTilde();
+			if (this.doTilde) this.doTilde(); else this.doKey(keycode);
 		} else if (keycode == '!' && !this.isEscaped()) {
-			this.doBang();
+			if (this.doBang) this.doBang(); else this.doKey(keycode);
 		} else if (keycode == '@' && !this.isEscaped()) {
-			this.doAtSign();
+			if (this.doAtSign) this.doAtSign(); else this.doKey(keycode);
 		} else if (keycode == '#' && !this.isEscaped()) {
-			this.doPoundSign();
+			if (this.doPoundSign) this.doPoundSign(); else this.doKey(keycode);
 		} else if (keycode == '$' && !this.isEscaped()) {
-			this.doDollarSign();
+			if (this.doDollarSign) this.doDollarSign(); else this.doKey(keycode);
 		} else if (keycode == '%' && !this.isEscaped()) {
-			this.doPercentSign();
+			if (this.doPercentSign) this.doPercentSign(); else this.doKey(keycode);
 		} else if (keycode == '^' && !this.isEscaped()) {
-			this.doCarat();
+			if (this.doCarat) this.doCarat(); else this.doKey(keycode);
 		} else if (keycode == '&' && !this.isEscaped()) {
-			this.doAmpersand();
+			if (this.doAmpersand) this.doAmpersand(); else this.doKey(keycode);
 		} else if (keycode == '?' && this.isEscaped()) {
-			this.doQuestionMark(); // NOTE: question marks work the other way
+			// note: escaping works the other way for question marks.
+			if (this.doQuestionMark) this.doQuestionMark(); else this.doKey(keycode);
 		} else if (keycode == '(' && !this.isEscaped()) {
-			this.doOpenParen();
+			if (this.doOpenParen) this.doOpenParen(); else this.doKey(keycode);
 		} else if (keycode == '[' && !this.isEscaped()) {
-			this.doOpenBracket();
+			if (this.doOpenBracket) this.doOpenBracket(); else this.doKey(keycode);
 		} else if (keycode == '{' && !this.isEscaped()) {
-			this.doOpenBrace();
+			if (this.doOpenBrace) this.doOpenBrace(); else this.doKey(keycode);
 		} else {
 			if (regularKeyRegex.test(keycode)) {
 				this.appendText(keycode, this.isEscaped());
@@ -134,6 +135,11 @@ class KeyFunnel {
 			this.cancelEscape();
 		}
 		return false;
+	}
+
+	doKey(keycode) {
+		// new version of this
+		throw "unimplemented";
 	}
 
 	insertNewCodeObject(obj) {}

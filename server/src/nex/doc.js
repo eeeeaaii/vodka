@@ -29,8 +29,25 @@ class Doc extends NexContainer {
 		return r;
 	}
 
+	getValueAsString() {
+		let s = '';
+		for (let i = 0; i < this.children.length; i++) {
+			let c = this.children[i];
+			if (c instanceof Line) {
+				s += c.getValueAsString();
+			} else {
+				throw new EError('cannot convert doc to string, invalid format');
+			}
+		}
+		return s;
+	}
+
 	toString() {
 		return '{' + super.childrenToString() + '}';
+	}
+
+	getKeyContext() {
+		return KeyContext.DOC;
 	}
 
 	getKeyFunnel() {

@@ -31,6 +31,18 @@ class Word extends NexContainer {
 		return '(' + super.childrenToString() + ')';
 	}
 
+	getValueAsString() {
+		let s = '';
+		for (let i = 0; i < this.children.length; i++) {
+			let c = this.children[i];
+			if (!(c instanceof Letter)) {
+				throw new EError('cannot convert word to string, invalid format');
+			}
+			s += c.getText();
+		}
+		return s;
+	}
+
 	getKeyFunnel() {
 		return new WordKeyFunnel(this);
 	}

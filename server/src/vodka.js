@@ -45,10 +45,15 @@ const NEX_RENDER_TYPE_EXPLODED = 2;
 var current_render_type = NEX_RENDER_TYPE_NORMAL;
 
 var BUILTINS;
+var KEY_DISPATCHER = new KeyDispatcher();
 
 // DO NOT RENAME THIS METHOD OR YOU WILL BREAK ALL THE OLD TESTS
 function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
-	return selectedNex.getInputFunnel().processEvent(keycode, whichkey, hasShift, hasCtrl, hasAlt);
+	try {
+		return KEY_DISPATCHER.dispatch(keycode, whichkey, hasShift, hasCtrl, hasAlt);
+	} catch (unimplemented) {
+		return selectedNex.getInputFunnel().processEvent(keycode, whichkey, hasShift, hasCtrl, hasAlt);
+	}
 }
 
 function createBuiltins() {
@@ -58,6 +63,7 @@ function createBuiltins() {
 	createLogicBuiltins();
 	createSyscalls();
 	createTestBuiltins();
+	createTypeConversionBuiltins();
 }
 
 function setup() {
