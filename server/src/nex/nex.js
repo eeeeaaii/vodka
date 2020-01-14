@@ -40,7 +40,7 @@ class Nex {
 		return KeyContext.UNSPECIFIED;
 	}
 
-	getKeyFunnelForContext(context) {
+	getEventTable(context) {
 		return null;
 	}
 
@@ -173,6 +173,10 @@ class Nex {
 		this.selected = false;
 		this.render();
 	}
+	getEventTable(context) {
+		return null;
+	}
+	// TODO: move tables from these unused functions into getEventTable
 }
 
 

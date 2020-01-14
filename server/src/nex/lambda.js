@@ -160,6 +160,41 @@ class Lambda extends NexContainer {
 		this.amptext = this.amptext + txt;
 		this.render();
 	}
+	getEventTable(context) {
+		return null;
+	}
+	// TODO: move tables from these unused functions into getEventTable
+	getKeyFunnelVector(context) {
+		let defaultHandle = function(letter) {
+			let allowedKeyRegex = /^[a-zA-Z0-9- ]$/;
+			if (allowedKeyRegex.test(letter)) {
+				this.appendText(letter);
+			}
+		}.bind(this);
+
+		return {
+			'ShiftEnter': 'execute',
+			'ShiftTab': 'select-parent',
+			'Tab': 'select-first-child-or-create-insertion-point',
+			'ArrowUp': 'move-left-up',
+			'ArrowLeft': 'move-left-up',
+			'ArrowDown': 'move-right-down',
+			'ArrowRight': 'move-right-down',
+			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
+			'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-sibling',
+			'~': 'insert-or-append-command',
+			'!': 'insert-or-append-bool',
+			'@': 'insert-or-append-symbol',
+			'#': 'insert-or-append-integer',
+			'$': 'insert-or-append-string',
+			'%': 'insert-or-append-float',
+			'^': 'insert-or-append-nil',
+			'(': 'insert-or-append-word',
+			'[': 'insert-or-append-line',
+			'{': 'insert-or-append-doc',
+			'defaultHandle': defaultHandle
+		};
+	}
 }
 
 

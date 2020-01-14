@@ -62,4 +62,87 @@ class Bool extends ValueNex {
 		this.setValue(this.value === 'yes' ? 'no' : 'yes');
 		this.render();
 	}
+
+	getEventTable(context) {
+		let defaultHandle = function(letter) {
+			if (letter == 'y' || letter == 'Y') {
+				this.setValue('yes');
+			} else if (letter == 'n' || letter == 'N') {
+				this.setValue('no');
+			}
+		}.bind(this);
+		return {
+			'ShiftTab': 'select-parent'
+
+			// sample event table
+
+			// 'Tab': 'select-next-sibling',
+			// 'ArrowUp': 'move-left-up',
+			// 'ArrowDown': 'move-right-down',
+			// 'ArrowLeft': 'move-left-up',
+			// 'ArrowRight': 'move-right-down',
+			// 'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
+			// 'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-sibling',
+			// '~': 'insert-command-as-next-sibling',
+			// '!': 'insert-bool-as-next-sibling',
+			// '@': 'insert-symbol-as-next-sibling',
+			// '#': 'insert-integer-as-next-sibling',
+			// '$': 'insert-string-as-next-sibling',
+			// '%': 'insert-float-as-next-sibling',
+			// '^': 'insert-nil-as-next-sibling',
+			// '(': 'insert-word-as-next-sibling',
+			// '[': 'insert-line-as-next-sibling',
+			// '{': 'insert-doc-as-next-sibling',
+			// 'defaultHandle': defaultHandle
+
+		}
+	}
+
+	// TODO: move tables from these unused functions into getEventTable
+	getKeyFunnelVector(context) {
+		if (context == ContextType.COMMAND) {
+			let defaultHandle = function(letter) {
+				if (letter == 'y' || letter == 'Y') {
+					this.setValue('yes');
+				} else if (letter == 'n' || letter == 'N') {
+					this.setValue('no');
+				}
+			}.bind(this);
+
+			return {
+				'ShiftTab': 'select-parent',
+				'Tab': 'select-next-sibling',
+				'ArrowUp': 'move-left-up',
+				'ArrowDown': 'move-right-down',
+				'ArrowLeft': 'move-left-up',
+				'ArrowRight': 'move-right-down',
+				'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
+				'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-sibling',
+				'~': 'insert-command-as-next-sibling',
+				'!': 'insert-bool-as-next-sibling',
+				'@': 'insert-symbol-as-next-sibling',
+				'#': 'insert-integer-as-next-sibling',
+				'$': 'insert-string-as-next-sibling',
+				'%': 'insert-float-as-next-sibling',
+				'^': 'insert-nil-as-next-sibling',
+				'(': 'insert-word-as-next-sibling',
+				'[': 'insert-line-as-next-sibling',
+				'{': 'insert-doc-as-next-sibling',
+				'defaultHandle': defaultHandle
+			};
+		} else {
+			return {
+				'ShiftTab': 'select-parent',
+				'Tab': 'select-next-sibling',
+				'ArrowUp': 'move-left-up',
+				'ArrowDown': 'move-right-down',
+				'ArrowLeft': 'move-left-up',
+				'ArrowRight': 'move-right-down',
+				'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
+				'Backspace': 'remove-selected-and-select-previous-sibling',
+				'~': 'insert-command-as-next-sibling',
+				'defaultHandle': null
+			};
+		}
+	}
 }
