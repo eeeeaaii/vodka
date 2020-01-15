@@ -332,7 +332,7 @@ class KeyDispatcher {
 	dispatch(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 		let p = selectedNex.getParent();
 		let keyContext = p ? p.getContextType() : ContextType.DEFAULT;
-		let eventName = this.getEventName(keycode, whichkey, hasShift, hasCtrl, hasAlt);
+		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasAlt);
 		// there are a few special cases
 		if (eventName == '|') {
 			// vertical bar is unusable - 'internal use only'
