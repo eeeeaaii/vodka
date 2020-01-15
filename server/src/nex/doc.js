@@ -46,8 +46,8 @@ class Doc extends NexContainer {
 		return '{' + super.childrenToString() + '}';
 	}
 
-	getKeyContext() {
-		return KeyContext.DOC;
+	getContextType() {
+		return ContextType.DOC;
 	}
 
 	getKeyFunnel() {
@@ -61,8 +61,17 @@ class Doc extends NexContainer {
 
 	}
 	getEventTable(context) {
-		return null;
+		//if (context == ContextType.COMMAND) {
+			return {
+				'ShiftTab': 'select-parent',				
+				'Tab': 'select-first-child-or-create-insertion-point',
+				'ArrowLeft': 'move-left-up',
+				'ArrowRight': 'move-right-down',
+			}
+		//}
 	}
+
+
 	// TODO: move tables from these unused functions into getEventTable
 	getKeyFunnelVector(context) {
 		if (context == ContextType.COMMAND) {

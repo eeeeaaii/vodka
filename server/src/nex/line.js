@@ -54,6 +54,9 @@ class Line extends NexContainer {
 		}
 		return null;
 	}
+	getContextType() {
+		return ContextType.LINE;
+	}
 
 	// deprecated
 	getKeyFunnel() {

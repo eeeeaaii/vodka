@@ -46,6 +46,9 @@ class Word extends NexContainer {
 	getKeyFunnel() {
 		return new WordKeyFunnel(this);
 	}
+	getContextType() {
+		return ContextType.WORD;
+	}
 
 	render() {
 		super.render();

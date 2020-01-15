@@ -41,6 +41,9 @@ class Expectation extends NexContainer {
 		super.copyFieldsTo(nex);
 		nex.hackfunction = this.hackfunction;
 	}
+	getContextType() {
+		return ContextType.COMMAND;
+	}
 
 	render() {
 		super.render();

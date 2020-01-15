@@ -36,8 +36,8 @@ class Nex {
 		this.enclosingClosure = null; // DO NOT COPY
 	}
 
-	getKeyContext() {
-		return KeyContext.UNSPECIFIED;
+	getContextType() {
+		return ContextType.UNSPECIFIED;
 	}
 
 	getEventTable(context) {

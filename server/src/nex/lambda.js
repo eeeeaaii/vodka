@@ -61,6 +61,9 @@ class Lambda extends NexContainer {
 	getSubPhaseFactory() {
 		return new LambdaSubPhaseFactory(this);
 	}
+	getContextType() {
+		return ContextType.COMMAND;
+	}
 
 	// pushSubPhases(phaseExecutor, env) {
 	// 	for (let i = this.children.length - 1; i >= 0; i--) {

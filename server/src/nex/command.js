@@ -164,6 +164,11 @@ class Command extends NexContainer {
 		this.replaceChildAt(newarg, i);
 	}
 
+	getContextType() {
+		return ContextType.COMMAND;
+	}
+
+
 	getEventTable(context) {
 		return null;
 	}

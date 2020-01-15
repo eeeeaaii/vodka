@@ -56,6 +56,17 @@ var KeyResponseFunctions = {
 	// Currently the nexes recreate their key funnel vector every time a key is pressed,
 	// but that's obviously inefficient and user created nexes might not do that.
 
+	// movement
+	'move-left-up': function(s) {
+		manipulator.selectPreviousSibling()
+			||  manipulator.insertBeforeSelectedAndSelect(new InsertionPoint());
+	},
+	'move-right-down': function(s) {
+		manipulator.selectNextSibling()
+			|| manipulator.insertAfterSelectedAndSelect(new InsertionPoint());
+	},
+
+
 	'legacy-integer-backspace': function(s) {
 		let t = this.s.getRawValue();
 		if (t == '0') {
@@ -124,9 +135,6 @@ var KeyResponseFunctions = {
 		manipulator.joinToSiblingIfSame(newword);
 		newletter.setSelected();
 	},
-
-	'move-left-up': function(s) { manipulator.selectPreviousSibling() ||  manipulator.insertBeforeSelectedAndSelect(new InsertionPoint()); },
-	'move-right-down': function(s) { manipulator.selectNextSibling() ||  manipulator.insertAfterSelectedAndSelect(new InsertionPoint()); },
 
 	'move-left-up-and-remove-self': function(s) {
 		(manipulator.selectPreviousSibling()
@@ -287,7 +295,7 @@ var KeyResponseFunctions = {
 	'legacy-unchecked-remove-selected-and-select-previous-leaf': function(s) {
 		manipulator.selectPreviousLeaf() || manipulator.selectParent();
 		manipulator.removeNex(this.s);
-	}
+	},
 
 
 
@@ -328,33 +336,40 @@ class KeyDispatcher {
 		// there are a few special cases
 		if (eventName == '|') {
 			// vertical bar is unusable - 'internal use only'
+			return false; // to cancel browser event
 		} else if (eventName == 'Alt-x') {
 			manipulator.doCut();
+			return false; // to cancel browser event
 		} else if (eventName == 'Alt-c') {
 			manipulator.doCopy();
+			return false; // to cancel browser event
 		} else if (eventName == 'Alt-v') {
 			manipulator.doPaste();
+			return false; // to cancel browser event
 		} else if (eventName == 'Escape') {
 			this.doEscape();
+			return false; // to cancel browser event
 		} else if (eventName == 'AltEnter') {
 			this.doAltEnter();
+			return false; // to cancel browser event
 		} else if (eventName == '`') {
 			// reserved for future use
+			return false; // to cancel browser event
 		} else {
 			// otherwise try the table first, then the keyfunnel
 			let table = selectedNex.getEventTable(keyContext);
 			if (table) {
 				if (table[eventName]) {
 					KeyResponseFunctions[table[eventName]](selectedNex);
-					return;
+					return false; // to cancel browser event
 				}
 				if (table.defaultHandle) {
 					table.defaultHandle(eventName);
-					return;
+					return false; // to cancel browser event
 				}
 			}
 			// fall back to legacy code
-			selectedNex.getKeyFunnel().processEvent(keycode, whichkey, hasShift, hasCtrl, hasAlt);
+			return selectedNex.getInputFunnel().processEvent(keycode, whichkey, hasShift, hasCtrl, hasAlt);
 		}
 	}
 
