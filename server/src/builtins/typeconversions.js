@@ -25,7 +25,10 @@ function createTypeConversionBuiltins() {
 		function(env, argEnv) {
 			let v = env.lb('a0');
 			let s = "";
-			if (v instanceof Bool) {
+			if (v instanceof EString) {
+				// nothing to do but should we copy the object?
+				return v;
+			} else if (v instanceof Bool) {
 				s = v.getTypedValue() ? 'yes' : 'no';
 			} else if (v instanceof Float) {
 				s = '' + v.getTypedValue();

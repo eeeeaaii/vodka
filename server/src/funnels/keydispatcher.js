@@ -409,12 +409,13 @@ class KeyDispatcher {
 
 
 	doAltEnter() {
-		let phaseExecutor = this.s.phaseExecutor;
+		let s = selectedNex;
+		let phaseExecutor = s.phaseExecutor;
 		let firstStep = false;
 		if (!phaseExecutor) {
 			firstStep = true;
 			phaseExecutor = new PhaseExecutor();
-			this.s.pushNexPhase(phaseExecutor, BUILTINS);
+			s.pushNexPhase(phaseExecutor, BUILTINS);
 		}
 		phaseExecutor.doNextStep();
 		if (!phaseExecutor.finished()) {
@@ -422,16 +423,16 @@ class KeyDispatcher {
 			// so need to set it back
 			if (firstStep) {
 				// the first step is PROBABLY an expectation phase
-				let operativeNex = this.s.getParent();
+				let operativeNex = s.getParent();
 				operativeNex.setSelected();
 				operativeNex.phaseExecutor = phaseExecutor;
 			} else {
-				this.s.setSelected();
+				s.setSelected();
 			}
 		} else {
 			// if I don't explicitly set the selected nex, it'll be the
 			// result of the last resolved expectation, probably
-			this.s.phaseExecutor = null;
+			s.phaseExecutor = null;
 		}
 	}
 }

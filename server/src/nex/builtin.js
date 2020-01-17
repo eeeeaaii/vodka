@@ -23,6 +23,7 @@ class Builtin extends Lambda {
 		this.name = name;
 		this.params = params;
 		this.f = null;
+		this.lexicalEnv = BUILTINS;
 
 		this.phaseFactory =
 			phaseFactory 
@@ -57,19 +58,18 @@ class Builtin extends Lambda {
 
 	static bindBuiltinObject(name, nex) {
 		BUILTINS.bindUnique(name, nex);
-		nex.evaluate(BUILTINS);
+//		nex.evaluate(BUILTINS);
 	}
 
-	/* argEnv param is deprecated, trying to eliminate */
-	executor(argEnv) {
-		return this.f(this.closure, argEnv);
+	executor(closure, executionEnv) {
+		return this.f(closure, executionEnv);
 	}
 
-	getArgEvaluator(args, argEnv) {
+	getArgEvaluator(args, argEnv, closure) {
 		if (this.argEvalFactory) {
-			return this.argEvalFactory(this.name, this.params, args, argEnv, this.closure);
+			return this.argEvalFactory(this.name, this.params, args, argEnv, closure);
 		} else {
-			return new BuiltinArgEvaluator(this.name, this.params, args, argEnv, this.closure);
+			return new BuiltinArgEvaluator(this.name, this.params, args, argEnv, closure);
 		}
 	}
 

@@ -21,6 +21,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	min-height: 1.0em;
 	display: flex;
 	flex-direction: row;
+	flex-wrap:wrap;
 	align-items: flex-start;
 }
 

@@ -60,31 +60,17 @@ class Command extends NexContainer {
 		return !(lambda instanceof Builtin);	
 	}
 
-	getLambda(env) {
+	getLambda(executionEnv) {
 		let cmdname = this.getCommandText();
 		let lambda = null;
 		if (cmdname) {
-			lambda = env.lookupBinding(cmdname);
+			lambda = executionEnv.lookupBinding(cmdname);
 		} else if (this.numChildren() > 0) {
 			let c = this.getChildAt(0);
-			if (c instanceof ESymbol) {
-				lambda = env.lookupBinding(c.getTypedValue());			
-				cmdname = c.getTypedValue();
-				this.removeChildAt(0);
-			} else if (c instanceof Lambda) {
-				if (!c.evaluated) {
-					lambda = c.evaluate(env);
-				} else {
-					// this is the weird thing where you could evaluate it
-					// in one place then execute it somewhere else via
-					// copy and paste - should I allow this?
-					throw new EError('lambda already evaluated!');
-
-				}
-				this.removeChildAt(0);
-				cmdname = 'LAMBDA';
-			} else {
-				throw new EError(`first argument ${c.debugString()} to command is not a lambda.`);
+			this.removeChildAt(0);
+			lambda = c.evaluate(executionEnv);
+			if (!lambda instanceof Lambda) {
+				throw new EError(`first argument ${lambda.debugString()} to command is not a lambda.`);
 			}
 		} else {
 			throw new EError("no-name command must provide a lambda in first argument.");		
@@ -100,20 +86,21 @@ class Command extends NexContainer {
 		return true;
 	}
 
-	evaluate(env) {
+	evaluate(executionEnv) {
 		ILVL++;
 		stackCheck(); // not for step eval, this is to prevent call stack overflow.
 		if (this.enclosingClosure) {
-			env = this.enclosingClosure;
+			executionEnv = this.enclosingClosure;
 		}
-		let lambda = this.getLambda(env);
+		let lambda = this.getLambda(executionEnv);
 		console.log(`${INDENT()}evaluating command: ${this.debugString()}`);
 		console.log(`${INDENT()}lambda is: ${lambda.debugString()}`);
 		let argContainer = new NexChildArgContainer(this);
-//		lambda.close(env);
-		let argEvaluator = lambda.getArgEvaluator(argContainer, env);
+//		lambda.close(executionEnv);
+		let closure = lambda.lexicalEnv.pushEnv();
+		let argEvaluator = lambda.getArgEvaluator(argContainer, executionEnv, closure);
 		argEvaluator.evaluateAndBindArgs();
-		let r = lambda.executor(env);
+		let r = lambda.executor(closure, executionEnv);
 		console.log(`${INDENT()}command returned: ${r.debugString()}`);
 		ILVL--;
 		return r;

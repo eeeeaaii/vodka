@@ -27,7 +27,7 @@ class Lambda extends NexContainer {
 		this.codespan = document.createElement("span");
 		this.codespan.classList.add('codespan');
 		this.domNode.appendChild(this.codespan);
-		this.closure = null;
+		this.lexicalEnv = null;
 		this.cmdname = null;
 		this.render();
 	}
@@ -41,7 +41,7 @@ class Lambda extends NexContainer {
 	copyFieldsTo(r) {
 		super.copyFieldsTo(r);
 		r.amptext = this.amptext;
-		r.closure = this.closure;
+		r.lexicalEnv = this.lexicalEnv;
 		r.cmdname = this.cmdname;
 		r.needsEval = this.needsEval;
 	}
@@ -94,18 +94,18 @@ class Lambda extends NexContainer {
 
 	/// deprecated?
 	evaluate(env) {
-		this.closure = env.pushEnv();
+		this.lexicalEnv = env;
 		return this;
 	}
 
-	close(env) {
-		this.closure = env.pushEnv();
-		return this.closure;
-	}
+//	close(env) {
+//		this.closure = env.pushEnv();
+//		return this.closure;
+//	}
 
-	getClosure() {
-		return this.closure;
-	}
+//	getClosure() {
+//		return this.closure;
+//	}
 
 	getParamNames() {
 		let s = this.amptext.split(' ');
@@ -118,17 +118,16 @@ class Lambda extends NexContainer {
 		return p;
 	}
 
-	/* argEnv param is deprecated, used only by builtin */
-	executor(argEnv) {
+	executor(closure) {
 		let r = new Nil();
 		for (let i = 0; i < this.children.length; i++) {
 			let c = this.children[i];
-			r = c.evaluate(this.closure);
+			r = c.evaluate(closure);
 		}
 		return r;
 	}
 
-	bind(args) {
+	bind(args, closure) {
 		let paramNames = this.getParamNames();
 		// omfg please fix this fix binding
 		if (args.length != paramNames.length) {
@@ -136,14 +135,14 @@ class Lambda extends NexContainer {
 			throw new EError("lambda: not enough args passed to function.");
 		}
 		for (let i = 0; i < args.length; i++) {
-			this.closure.bind(paramNames[i], args[i]);
+			closure.bind(paramNames[i], args[i]);
 		}
 	}
 
-	getArgEvaluator(argContainer, argEnv) {
+	getArgEvaluator(argContainer, argEnv, closure) {
 		return new LambdaArgEvaluator(
 			this.getParamNames(),
-			argContainer, this.closure, argEnv);
+			argContainer, closure, argEnv);
 	}
 
 	getStepEvaluator(stepContainer, env) {

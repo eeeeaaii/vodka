@@ -66,7 +66,9 @@ class Doc extends NexContainer {
 				'ShiftTab': 'select-parent',				
 				'Tab': 'select-first-child-or-create-insertion-point',
 				'ArrowLeft': 'move-left-up',
+				'ArrowUp': 'move-left-up',
 				'ArrowRight': 'move-right-down',
+				'ArrowDown': 'move-right-down',
 			}
 		//}
 	}

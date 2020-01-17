@@ -69,7 +69,16 @@ class Line extends NexContainer {
 		this.domNode.classList.add('data');
 	}
 	getEventTable(context) {
-		return null;
+		//if (context == ContextType.COMMAND) {
+			return {
+				'ShiftTab': 'select-parent',				
+				'Tab': 'select-first-child-or-create-insertion-point',
+				'ArrowLeft': 'move-left-up',
+				'ArrowUp': 'move-left-up',
+				'ArrowRight': 'move-right-down',
+				'ArrowDown': 'move-right-down',
+			}
+		//}
 	}
 	// TODO: move tables from these unused functions into getEventTable
 	getKeyFunnelVector(context) {

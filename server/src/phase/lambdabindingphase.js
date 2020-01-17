@@ -35,12 +35,12 @@ class LambdaBindingPhase extends Phase {
 	finish() {
 		let lambda = this.command.getLambda(this.env);
 		this.commandCallback.setLambda(lambda);
-		let closure = lambda.close(this.env);
+		let closure = lambda.lexicalEnv.pushEnv();
 		let args = [];
 		for (let i = 0; i < this.command.children.length; i++) {
 			args.push(this.command.children[i]);
 		}
-		lambda.bind(args);
+		lambda.bind(args, closure);
 		let parent = this.command.getParent();
 		parent.replaceChildWith(this.command, lambda);
 		this.phaseExecutor.pushPhase(new LambdaExecutePhase(this.phaseExecutor, lambda, closure));
