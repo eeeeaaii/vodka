@@ -74,6 +74,10 @@ class Expectation extends NexContainer {
 		}
 		this.getParent().replaceChildWith(this, newnex);
 		newnex.setSelected();
+		// have to do this in case global render type changed while we were
+		// waiting to fulfill
+		newnex.setRenderType(current_render_type);
+		newnex.render();
 		return newnex;
 	}
 	getEventTable(context) {

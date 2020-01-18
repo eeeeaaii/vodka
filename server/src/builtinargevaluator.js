@@ -212,4 +212,5 @@ BuiltinArgEvaluator.ARG_VALIDATORS = {
 	'Line': arg => (arg instanceof Line),
 	'Nil': arg => (arg instanceof Nil),
 	'Word': arg => (arg instanceof Word),
+	'Lambda': arg => (arg instanceof Lambda),
 };

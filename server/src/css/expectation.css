@@ -18,7 +18,15 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 .expectation {
-	display: none;
+	display: contents;
+}
+
+.expectation > .dotspan {
+	display:none;
+}
+
+.expectation.exploded > .dotspan {
+	display:inline;
 }
 
 .expectation.exploded {

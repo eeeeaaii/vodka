@@ -229,4 +229,30 @@ function createBasicBuiltins() {
 			return e;
 		}
 	)
+
+	Builtin.createBuiltin(
+		'do-on-after',
+		[
+			{name: 'a0', type:'Lambda'},
+			{name: 'a1', type:'*'},
+			{name: 'a2', type:'Integer'}
+		],
+		function(env, argEnv) {
+			let lambda = env.lb('a0');
+			let arg = env.lb('a1');
+			let delay = env.lb('a2');
+			let e = new Expectation();
+			e.appendChild(arg);
+			setTimeout(function() {
+				let cmd = new Command('');
+				cmd.appendChild(lambda);
+				e.removeChild(arg);
+				cmd.appendChild(arg);
+				e.appendChild(cmd);
+				let result = cmd.evaluate(BUILTINS);
+				e.fulfill(result);
+			}.bind(this), delay.getTypedValue());
+			return e;
+		}
+	)
 }
