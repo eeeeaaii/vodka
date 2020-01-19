@@ -149,29 +149,10 @@ var KeyResponseFunctions = {
 	},
 
 	'move-to-previous-leaf': function(s) {		
-		manipulator.selectPreviousLeafStoppingAtLine()
-			||  (
-				   manipulator.selectEnclosingLine()
-				&& manipulator.prependAndSelect(new InsertionPoint())
-				)
-			;
-	},
-	// deprecated
-	'legacy-move-to-previous-leaf': function(s) {		
 		manipulator.selectPreviousLeaf()
 			||  manipulator.insertBeforeSelectedAndSelect(new InsertionPoint());
 	},
 	'move-to-next-leaf': function(s) {		
-		manipulator.selectNextLeafStoppingAtLine()
-			||  (
-				   manipulator.selectEnclosingLine()
-				&& manipulator.selectNextSibling()
-				&& manipulator.prependAndSelect(new InsertionPoint())
-				)
-			;
-	},
-	// deprecated
-	'legacy-move-to-next-leaf': function(s) {		
 		manipulator.selectNextLeaf()
 			||  manipulator.insertAfterSelectedAndSelect(new InsertionPoint());
 	},

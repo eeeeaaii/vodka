@@ -56,9 +56,27 @@ class Letter extends Nex {
 		return this.value;
 	}
 	getEventTable(context) {
-		return {
+		let r = {
+			'ShiftTab': 'select-parent',
+			'Tab': 'move-right-down',
+			'ArrowLeft': 'move-left-up',
+			'ArrowUp': 'move-left-up',
+			'ArrowRight': 'move-right-down',
+			'ArrowDown': 'move-right-down',
 			'<': 'insert-zlist-as-next-sibling',
 		}
+		if (context == ContextType.WORD) {
+			r = {
+				'ShiftTab': 'select-parent',
+				'Tab': 'move-to-next-leaf',
+				'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
+				'ArrowDown': 'move-to-corresponding-letter-in-next-line',
+				'ArrowLeft': 'move-to-previous-leaf',
+				'ArrowRight': 'move-to-next-leaf',
+				'<': 'insert-zlist-as-next-sibling',
+			}
+		}
+		return r;
 	}
 	// TODO: move tables from these unused functions into getEventTable
 	getKeyFunnelVector(context) {

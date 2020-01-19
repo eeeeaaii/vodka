@@ -97,6 +97,27 @@ testactions.push({
 		type:'keyup',
 		code:'ShiftRight'
 	});
+
+// decided to change the name of the test file after
+// recording the test, but don't want to re-record.
+
+let doonekey = function(val) {
+	testactions.push({type:'keydown',code:''+val});
+	testactions.push({type:'keyup',code:''+val});
+}
+let dowholestring = function(s) {
+	for (let i = 0; i < s.length; i++) {
+		let c = s.charAt(i);
+		doonekey('Key' + c);
+	}
+}
+// shift - to make it actually in caps
+testactions.push({type:'keydown',code:'ShiftRight'});
+dowholestring('INTEGRATIONTESTING')
+// but shift-minus is underscore I guess so unshift
+testactions.push({type:'keyup',code:'ShiftRight'});
+doonekey('Minus')
+
 testactions.push({
 		type:'keydown',
 		code:'KeyS'

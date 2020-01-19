@@ -231,6 +231,15 @@ function createBasicBuiltins() {
 	)
 
 	Builtin.createBuiltin(
+		'random',
+		[],
+		function(env, argEnv) {
+			let n = Math.random();
+			return new Float(n);
+		}
+	)
+
+	Builtin.createBuiltin(
 		'do-on-after',
 		[
 			{name: 'a0', type:'Lambda'},
