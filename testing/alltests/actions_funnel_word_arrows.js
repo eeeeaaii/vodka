@@ -15,6 +15,14 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+/*
+This test types a bunch of random words into a line, separated
+by semicolons and spaces etc,
+then shift-tabs out to the line, then tabs into the first word.
+then it hits right arrow. Originally hitting right arrow on a word
+would skip separators in between and jump to the next word but I'm deprecating
+that behavior - but will keep this test, just going to reset the golden.
+*/
 
 var harness = require('../testharness');
 

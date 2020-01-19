@@ -1,0 +1,79 @@
+/*
+This file is part of Vodka.
+
+Vodka is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Vodka is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+
+
+.zlist {
+	height:0px;
+	width:0px;
+	align-self:flex-start;
+	display: inline-block;
+	padding: 0px;
+}
+
+.zlist.exploded {
+	height:10px; /* overridden by javascript */
+	width:20px;
+	padding-left: 5px;
+	padding-top: 5px;
+	border-left: 5px dotted #ffc4f5;
+	border-top: 5px dotted #ffc4f5;
+}
+
+.zlist.exploded.selected {
+	border-top: 5px solid #ffc4f5;
+	border-left: 5px solid #ffc4f5;
+}
+
+.zlist.exploded:empty {
+	width:0px;
+	height:0px;
+	border: 1px solid #ffc4f5;
+	padding:5px;
+}
+
+.zlist.exploded.selected:empty {
+	width:0px;
+	height:0px;
+	padding: 3px;
+	border: 3px solid #ffc4f5;
+}
+
+.zlist > .nex {
+	position: absolute;
+}
+
+.zlist.exploded > .nex:nth-child(1) { margin-top:0px; }
+.zlist.exploded > .nex:nth-child(2) { margin-top:10px; }
+.zlist.exploded > .nex:nth-child(3) { margin-top:20px; }
+.zlist.exploded > .nex:nth-child(4) { margin-top:30px; }
+.zlist.exploded > .nex:nth-child(5) { margin-top:40px; }
+.zlist.exploded > .nex:nth-child(6) { margin-top:50px; }
+.zlist.exploded > .nex:nth-child(7) { margin-top:60px; }
+.zlist.exploded > .nex:nth-child(8) { margin-top:70px; }
+.zlist.exploded > .nex:nth-child(9) { margin-top:80px; }
+.zlist.exploded > .nex:nth-child(10) { margin-top:90px; }
+.zlist.exploded > .nex:nth-child(11) { margin-top:100px; }
+.zlist.exploded > .nex:nth-child(12) { margin-top:110px; }
+.zlist.exploded > .nex:nth-child(13) { margin-top:120px; }
+.zlist.exploded > .nex:nth-child(14) { margin-top:130px; }
+.zlist.exploded > .nex:nth-child(15) { margin-top:140px; }
+.zlist.exploded > .nex:nth-child(16) { margin-top:150px; }
+.zlist.exploded > .nex:nth-child(17) { margin-top:160px; }
+
+
+

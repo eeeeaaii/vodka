@@ -173,4 +173,13 @@ function createTestBuiltins() {
 			return new Bool(env.lb('a0') instanceof NexContainer);
 		}
 	);
+	Builtin.createBuiltin(
+		'is-zlist',
+		[
+			{name:'a0', type:'*'}
+		],
+		function(env, argEnv) {
+			return new Bool(env.lb('a0') instanceof Zlist);
+		}
+	);
 }

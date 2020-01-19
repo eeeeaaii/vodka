@@ -15,6 +15,10 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+/*
+See comment in actions_funnel_word_arrows.
+This test is similar but more stuff is in the line besides just words.
+*/
 
 var harness = require('../testharness');
 

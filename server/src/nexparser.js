@@ -42,6 +42,9 @@ createstate('LETTER', 16);
 createstate('SEPARATOR', 17);
 createstate('SYMBOL', 18);
 
+createstate('STARTZLIST', 19);
+createstate('ENDZLIST', 20);
+
 
 class NexParser {
 	constructor(input) {
@@ -70,6 +73,8 @@ class NexParser {
 		    || this.testToken(/^\]/, st['ENDLINE'])
 		    || this.testToken(/^\(/, st['STARTWORD'])
 		    || this.testToken(/^\)/, st['ENDWORD'])
+		    || this.testToken(/^\</, st['STARTZLIST'])
+		    || this.testToken(/^\>/, st['ENDZLIST'])
 		    || this.testToken(/^~"([a-zA-Z_=<>+*/-]*)"([vh]*)\(/, st['STARTCOMMAND'])
 		    || this.testToken(/^~\)/, st['ENDCOMMAND'])
 		    || this.testToken(/^&"([a-zA-Z0-9 |_-]*)"([vh]*)\(/, st['STARTLAMBDA'])
@@ -121,6 +126,10 @@ class NexParser {
 			this.push(new Word());
 			break;
 		}
+		case st['STARTZLIST']: {
+			this.push(new Zlist());
+			break;
+		}
 		case st['STARTCOMMAND']: {
 			let c = new Command(this.data[0]);
 			if (this.data[1] == 'v') {
@@ -141,6 +150,7 @@ class NexParser {
 		case st['ENDLINE']:
 		case st['ENDWORD']:
 		case st['ENDCOMMAND']:
+		case st['ENDZLIST']:
 		case st['ENDLAMBDA']: {
 			this.pop();
 			break;

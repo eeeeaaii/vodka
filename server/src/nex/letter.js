@@ -56,7 +56,9 @@ class Letter extends Nex {
 		return this.value;
 	}
 	getEventTable(context) {
-		return null;
+		return {
+			'<': 'insert-zlist-as-next-sibling',
+		}
 	}
 	// TODO: move tables from these unused functions into getEventTable
 	getKeyFunnelVector(context) {

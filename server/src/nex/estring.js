@@ -101,27 +101,28 @@ class EString extends ValueNex {
 	render(forceEmpty) {
 		super.render();
 		this.domNode.innerHTML = this.prefix;
-		if (this.displayValue || forceEmpty) {
-			this.domNode.classList.add(this.className);
-			this.domNode.classList.add('valuenex');
-			if (this.mode == MODE_NORMAL) {
-				this.drawNormal();
-			} else {
-				this.drawExpanded();
-			}
+		this.domNode.classList.add(this.className);
+		this.domNode.classList.add('valuenex');
+		if (this.mode == MODE_NORMAL) {
+			this.drawNormal();
+		} else {
+			this.drawExpanded();
 		}
 	}
 
 	drawNormal() {
-		this.innerspan = document.createElement("div");
-		this.innerspan.classList.add('innerspan');
-		this.innerspan.innerHTML = (this.displayValue ? this.displayValue : '');
-		this.domNode.appendChild(this.innerspan);
+		if (this.displayValue !== '') {
+			this.innerspan = document.createElement("div");
+			this.innerspan.classList.add('innerspan');
+			this.innerspan.innerHTML = this.displayValue;
+			this.domNode.appendChild(this.innerspan);
+		}
 	}
 
 	drawExpanded() {
 		this.drawTextField();
 		this.drawButton();
+		this.inputfield.focus();
 	}
 
 	drawTextField() {
@@ -146,8 +147,7 @@ class EString extends ValueNex {
 
 	startModalEditing() {
 		this.mode = MODE_EXPANDED;
-		this.render(true);
-		this.inputfield.focus();
+		this.render();
 		deactivateKeyFunnel();
 	}
 

@@ -15,6 +15,10 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+/*
+This is just a basic test for the cons primitive that 
+puts an a inside a word that has "bcd" in it.
+*/
 
 var harness = require('../testharness');
 
@@ -26,7 +30,7 @@ harness.runTest(function() {
 		doKeyInput('o', 'KeyO', false, false, false);
 		doKeyInput('n', 'KeyN', false, false, false);
 		doKeyInput('s', 'KeyS', false, false, false);
-		doKeyInput('`', 'Backquote', false, false, false);
+		doKeyInput('Tab', 'Tab', false, false, false);
 		doKeyInput('a', 'KeyA', false, false, false);
 		doKeyInput('Shift', 'ShiftLeft', true, false, false);
 		doKeyInput('(', 'Digit9', true, false, false);

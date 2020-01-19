@@ -45,6 +45,7 @@ ContextType.COMMAND = 1;
 ContextType.DOC = 2;
 ContextType.WORD = 3;
 ContextType.LINE = 4;
+ContextType.ZLIST = 5;
 
 // These KeyResponseFunctions are all untested and not integrated. Need to integrate
 // one at a time and test.
@@ -232,6 +233,7 @@ var KeyResponseFunctions = {
 	'insert-word-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Word()); },
 	'insert-line-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Line()); },
 	'insert-doc-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Doc()); },
+	'insert-zlist-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Zlist()); },
 
 	'remove-if-empty': function(s) {
 		if (!s.hasChildren()) {
@@ -361,15 +363,24 @@ class KeyDispatcher {
 			if (table) {
 				if (table[eventName]) {
 					KeyResponseFunctions[table[eventName]](selectedNex);
+					root.render(); // hack?
 					return false; // to cancel browser event
 				}
 				if (table.defaultHandle) {
 					table.defaultHandle(eventName);
+					root.render(); // hack?
 					return false; // to cancel browser event
 				}
 			}
 			// fall back to legacy code
-			return selectedNex.getInputFunnel().processEvent(keycode, whichkey, hasShift, hasCtrl, hasAlt);
+			let funnel = selectedNex.getInputFunnel();
+			if (funnel) {
+				let r = funnel.processEvent(keycode, whichkey, hasShift, hasCtrl, hasAlt);
+				root.render(); // hack?
+				return r;
+			}
+			// didn't handle event, let the browser handle it.
+			return true;
 		}
 	}
 
