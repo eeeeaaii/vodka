@@ -34,8 +34,9 @@ class Zlist extends NexContainer {
 	getKeyFunnel() {
 		return null;
 	}
+
 	getContextType() {
-		return ContextType.ZLIST;
+		return ContextType.DOC;
 	}
 
 	render() {

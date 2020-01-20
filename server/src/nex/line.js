@@ -54,8 +54,9 @@ class Line extends NexContainer {
 		}
 		return null;
 	}
+
 	getContextType() {
-		return ContextType.LINE;
+		return ContextType.DOC;
 	}
 
 	// deprecated

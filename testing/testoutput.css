@@ -155,7 +155,11 @@ body {
 }
 
 .codeframeexpanded {
-	width:auto;
-	height:auto;
+	width:700px;
+	height:500px;
+}
+
+.codeframeexpanded iframe {
+	height:500px;
 }
 

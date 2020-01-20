@@ -18,26 +18,24 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 class Nex {
-	constructor() {
-		this.domNode = document.createElement("div");
-		this.domNode.onclick = (e) => {
-			if (selectedNex instanceof EString) {
-				selectedNex.finishInput();
+	constructor(skipdom) {
+		if (!skipdom) {
+			this.domNode = document.createElement("div");
+			this.domNode.onclick = (e) => {
+				if (selectedNex instanceof EString) {
+					selectedNex.finishInput();
+				}
+				this.setSelected();
+				e.stopPropagation();
 			}
-			this.setSelected();
-			e.stopPropagation();
+			this.domNode.classList.add('nex');
 		}
-		this.domNode.classList.add('nex');
 		this.parent = null;
 		this.selected = false;
 		this.renderType = current_render_type;
 		this.keyfunnel = null;
 		this.currentStyle = "";
 		this.enclosingClosure = null; // DO NOT COPY
-	}
-
-	getContextType() {
-		return ContextType.UNSPECIFIED;
 	}
 
 	getEventTable(context) {

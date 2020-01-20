@@ -18,8 +18,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 class ValueNex extends Nex {
-	constructor(val, prefix, className) {
-		super();
+	constructor(val, prefix, className, skipdom) {
+		super(skipdom);
 		this.value = '' + val;
 		this.prefix = prefix;
 		this.className = className;

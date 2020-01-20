@@ -31,6 +31,12 @@ class Word extends NexContainer {
 		return '(' + super.childrenToString() + ')';
 	}
 
+	// deprecated, words should not create a doc context,
+	// but it's needed for legacy behavior.
+	getContextType() {
+		return ContextType.DOC;
+	}
+
 	getValueAsString() {
 		let s = '';
 		for (let i = 0; i < this.children.length; i++) {
@@ -45,9 +51,6 @@ class Word extends NexContainer {
 
 	getKeyFunnel() {
 		return new WordKeyFunnel(this);
-	}
-	getContextType() {
-		return ContextType.WORD;
 	}
 
 	render() {

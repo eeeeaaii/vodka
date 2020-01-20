@@ -61,6 +61,7 @@ class Lambda extends NexContainer {
 	getSubPhaseFactory() {
 		return new LambdaSubPhaseFactory(this);
 	}
+
 	getContextType() {
 		return ContextType.COMMAND;
 	}

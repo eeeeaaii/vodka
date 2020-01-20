@@ -78,6 +78,10 @@ class NexContainer extends Nex {
 		}
 	}
 
+	getContextType() {
+		return ContextType.PASSTHROUGH;
+	}
+
 	hasChildren() {
 		return this.children.length > 0;
 	}
@@ -106,16 +110,16 @@ class NexContainer extends Nex {
 		return this.children[i];
 	}
 
-	removeChildAt(i) {
+	removeChildAt(i, skipdom) {
 		if (i < 0 || i >= this.children.length) return null;
 		let r = this.children[i];
 		this.children.splice(i, 1);
-		this.domNode.removeChild(r.domNode);
+		if (!skipdom) this.domNode.removeChild(r.domNode);
 		r.setParent(null);
 		return r;
 	}
 
-	insertChildAt(c, i) {
+	insertChildAt(c, i, skipdom) {
 		if (i < 0 || i > this.children.length) {
 			return;
 		}
@@ -147,14 +151,14 @@ class NexContainer extends Nex {
 		}
 		if (i == this.children.length) {
 			this.children.push(c);
-			this.domNode.appendChild(c.domNode);
+			if (!skipdom) this.domNode.appendChild(c.domNode);
 		} else {
 			this.children.splice(i, 0, c);			
-			this.domNode.insertBefore(c.domNode, this.children[i + 1].domNode);
+			if (!skipdom) this.domNode.insertBefore(c.domNode, this.children[i + 1].domNode);
 		}
 		c.setParent(this);
-		this.render();
-		c.render();
+		if (!skipdom) this.render();
+		if (!skipdom) c.render();
 		if (oldparent) {
 			oldparent.render();
 		}
