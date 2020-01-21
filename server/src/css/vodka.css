@@ -17,6 +17,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 body {
 	cursor: default;
+	margin: 0;
+	padding: 0;
 }
 
 .data {
