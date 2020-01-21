@@ -18,6 +18,58 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 function createTypeConversionBuiltins() {
 	Builtin.createBuiltin(
+		'to-integer',
+		[
+			{name: 'a0', type:'*'},
+		],
+		function(env, argEnv) {
+			let v = env.lb('a0');
+			if (v instanceof Integer) {
+				return v;
+			} else if (v instanceof Float) {
+				return new Integer(Math.floor(v.getTypedValue()));
+			} else if (v instanceof Bool) {
+				return v.getTypedValue() ? new Integer(1): new Integer(0);
+			} else if (v instanceof EString) {
+				let s = v.getFullTypedValue();
+				let mayben = parseInt(s);
+				if (Number.isNaN(mayben)) {
+					return new EError('Could not convert string to integer');					
+				} else {
+					return new Integer(mayben);
+				}
+			} else if (v instanceof Letter) {
+				// could be a number.
+				let s = v.getText();
+				let mayben = parseInt(s);
+				if (Number.isNaN(mayben)) {
+					return new EError('Could not convert letter to integer');					
+				} else {
+					return new Integer(mayben);
+				}
+			} else if (v instanceof Word || v instanceof Line || v instanceof Doc) {
+				// could be a number.
+				let s = v.getValueAsString();
+				let mayben = parseInt(s);
+				if (Number.isNaN(mayben)) {
+					// rofl
+					let errstr = v instanceof Word
+						? 'word'
+						: ((v instanceof Line)
+							? 'line'
+							: 'doc');
+					return new EError('Could not convert letter to integer');
+				} else {
+					return new Integer(mayben);
+				}
+			} else {
+				return new EError('Could not convert to integer');
+			}
+		}
+
+	)
+
+	Builtin.createBuiltin(
 		'to-string',
 		[
 			{name:'a0', type:'*'},

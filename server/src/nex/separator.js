@@ -39,41 +39,36 @@ class Separator extends Letter {
 	getEventTable(context) {
 		return null;
 	}
-	// TODO: move tables from these unused functions into getEventTable
-	getKeyFunnelVector(context) {
-		if (context == ContextType.LINE) {
-			let defaultFunction = function(letter) {
-				if (!(/^.$/.test(letter))) return;
-				let letterRegex = /^[a-zA-Z0-9']$/;
-				let isSeparator = !letterRegex.test(letter);
-				// TODO: maybe allow regexes in the funnel vector?
-				if (isSeparator) {
-					manipulator.insertAfterSelectedAndSelect(new Separator(letter));
-				} else {
-					KeyResponseFunctions['insert-letter-after-separator'](letter);
-				}
-			}.bind(this);
+
+	// TODO: maybe allow regexes in the funnel vector?
+	defaultHandle(key, isCommand) {
+		if (!(/^.$/.test(key))) {
+			throw UNHANDLED_KEY;
+		};
+		let letterRegex = /^[a-zA-Z0-9']$/;
+		let isSeparator = !letterRegex.test(key);
+		// TODO: maybe allow regexes in the funnel vector?
+		if (isSeparator) {
+			manipulator.insertAfterSelectedAndSelect(new Separator(key));
+		} else {
+			if (isCommand) {
+				manipulator.insertAfterSelectedAndSelect(new Letter(key));
+			} else {
+				KeyResponseFunctions['insert-letter-after-separator'](key);
+			}
+		}
+	}
+
+	getEventTable(context) {
+		var t = this;
+		if (context == ContextType.COMMAND) {
 			return {
 				'ShiftTab': 'select-parent',
-				'Tab': 'select-next-sibling',
-				'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
-				'ArrowDown': 'move-to-corresponding-letter-in-next-line',
-				'ArrowLeft': 'move-to-previous-leaf',
-				'ArrowRight': 'move-to-next-leaf',
-				'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
-				'Backspace': 'remove-selected-and-select-previous-leaf',
-				'~': 'insert-command-as-next-sibling',
-				'Enter': 'create-new-line-from-inside-line',
-				'defaultHandle': defaultFunction
-			};
-		} else if (context == ContextType.COMMAND) {
-			return {
-				'ShiftTab': 'select-parent',
-				'Tab': 'select-next-sibling',
-				'ArrowUp': 'move-left-up',
-				'ArrowDown': 'move-right-down',
+				'Tab': 'move-right-down',
 				'ArrowLeft': 'move-left-up',
+				'ArrowUp': 'move-left-up',
 				'ArrowRight': 'move-right-down',
+				'ArrowDown': 'move-right-down',
 				'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
 				'Backspace': 'remove-selected-and-select-previous-sibling',
 				'~': 'insert-command-as-next-sibling',
@@ -83,24 +78,44 @@ class Separator extends Letter {
 				'$': 'insert-string-as-next-sibling',
 				'%': 'insert-float-as-next-sibling',
 				'^': 'insert-nil-as-next-sibling',
+				'&': 'insert-lambda-as-next-sibling',
+				'<': 'insert-zlist-as-next-sibling',
 				'(': 'insert-word-as-next-sibling',
 				'[': 'insert-line-as-next-sibling',
 				'{': 'insert-doc-as-next-sibling',
-				'defaultHandle': null
-			};
-		} else {
+				defaultHandle: function(key) {
+					this.defaultHandle(key, true /* is command */);
+				}.bind(t)
+			}
+		} else if (context == ContextType.DOC) {
 			return {
 				'ShiftTab': 'select-parent',
-				'Tab': 'select-next-sibling',
-				'ArrowUp': 'move-left-up',
-				'ArrowDown': 'move-right-down',
-				'ArrowLeft': 'move-left-up',
-				'ArrowRight': 'move-right-down',
-				'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-				'Backspace': 'remove-selected-and-select-previous-sibling',
+				'Tab': 'move-to-next-leaf',
+				'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
+				'ArrowDown': 'move-to-corresponding-letter-in-next-line',
+				'ArrowLeft': 'move-to-previous-leaf',
+				'ArrowRight': 'move-to-next-leaf',
+				'ShiftBackspace': 'remove-separator-and-possibly-join-words',
+				'Backspace': 'remove-separator-and-possibly-join-words',
+				'Enter': 'do-line-break-after-letter',
 				'~': 'insert-command-as-next-sibling',
-				'defaultHandle': null
-			};
+				// all the rest also deprecated, to be removed.
+				'!': 'insert-bool-as-next-sibling',
+				'@': 'insert-symbol-as-next-sibling',
+				'#': 'insert-integer-as-next-sibling',
+				'$': 'insert-string-as-next-sibling',
+				'%': 'insert-float-as-next-sibling',
+				'^': 'insert-nil-as-next-sibling',
+				'&': 'insert-lambda-as-next-sibling',
+				// end deprecated
+				'<': 'insert-zlist-as-next-sibling',
+				'(': 'insert-word-as-next-sibling',
+				'[': 'insert-line-as-next-sibling',
+				'{': 'insert-doc-as-next-sibling',
+				defaultHandle: function(key) {
+					this.defaultHandle(key, false /* is command */);
+				}.bind(t)
+			}
 		}
 	}
 }

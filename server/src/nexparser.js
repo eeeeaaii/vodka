@@ -44,6 +44,8 @@ createstate('SYMBOL', 18);
 
 createstate('STARTZLIST', 19);
 createstate('ENDZLIST', 20);
+createstate('NEWLINE', 21); // newlines are deprecated and yucky
+createstate('NIL', 22);
 
 
 class NexParser {
@@ -79,14 +81,16 @@ class NexParser {
 		    || this.testToken(/^~\)/, st['ENDCOMMAND'])
 		    || this.testToken(/^&"([a-zA-Z0-9 |_-]*)"([vh]*)\(/, st['STARTLAMBDA'])
 		    || this.testToken(/^&\)/, st['ENDLAMBDA'])
+		    || this.testToken(/^\^/, st['NIL'])		    
 		    || this.testToken(/^!(yes|no)/, st['BOOL'])
 		    || this.testToken(/^\@([a-zA-Z0-9-_]*)/, st['SYMBOL'])
 		    || this.testToken(/^#([0-9-]*)/, st['INTEGER'])
 		    || this.testToken(/^%([e0-9.-_]*)/, st['FLOAT'])
 		    || this.testToken(/^\$"([^"]*)"/, st['STRING'])
 		    || this.testToken(/^\?"([^"]*)"/, st['ERROR'])
-		    || this.testToken(/^\|\((.)\)\|$/, st['LETTER'])
-		    || this.testToken(/^\|\[(.)\]\|$/, st['SEPARATOR'])
+		    || this.testToken(/^\|\[&nbsp;\]\|/, st['NEWLINE'])
+		    || this.testToken(/^\|\((.)\)\|/, st['LETTER'])
+		    || this.testToken(/^\|\[(.)\]\|/, st['SEPARATOR'])
 		    || 0;
 	}
 
@@ -99,7 +103,7 @@ class NexParser {
 		if (this.r == this.origr && this.r.hasChildren()) {
 			return this.r.getChildAt(0);
 		} else {
-			return new EError("compile error");
+			return new EError("error parsing saved vodka file");
 		}
 	}
 
@@ -194,6 +198,16 @@ class NexParser {
 		}
 		case st['SYMBOL']: {
 			let n = new ESymbol(this.data[0]);
+			this.r.appendChild(n);
+			break;
+		}
+		case st['NEWLINE']: {
+			let n = new Newline();
+			this.r.appendChild(n);
+			break;
+		}
+		case st['NIL']: {
+			let n = new Nil();
 			this.r.appendChild(n);
 			break;
 		}

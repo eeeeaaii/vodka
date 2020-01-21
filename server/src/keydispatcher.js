@@ -138,6 +138,12 @@ var KeyResponseFunctions = {
 			&& manipulator.insertAfterSelectedAndSelect(new Separator(s));
 	},
 
+	'remove-separator-and-possibly-join-words': function(s) {
+		manipulator.removeSelectedAndSelectPreviousLeaf();
+		let p = selectedNex.getParent();
+		manipulator.joinToSiblingIfSame(p);
+	},
+
 	// previously, inserting code objects in doc mode from a letter would append them to
 	// the parent in a weird way.
 	// all deprecated
@@ -151,14 +157,14 @@ var KeyResponseFunctions = {
 	'legacy-insert-lambda-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Lambda()); },
 
 
-	// 'insert-letter-after-separator': function(s) {
-	// 	let newword = new Word();
-	// 	let newletter = new Letter(s);
-	// 	newword.appendChild(newletter);
-	// 	manipulator.insertAfterSelectedAndSelect(newword);
-	// 	manipulator.joinToSiblingIfSame(newword);
-	// 	newletter.setSelected();
-	// },
+	'insert-letter-after-separator': function(s) {
+		let newword = new Word();
+		let newletter = new Letter(s);
+		newword.appendChild(newletter);
+		manipulator.insertAfterSelectedAndSelect(newword);
+		manipulator.joinToSiblingIfSame(newword);
+		newletter.setSelected();
+	},
 
 	// 'move-left-up-and-remove-self': function(s) {
 	// 	(manipulator.selectPreviousSibling()

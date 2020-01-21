@@ -97,6 +97,57 @@ function createMathBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'modulo',
+		[
+			{name:'a0', type:'Integer'},
+			{name:'a1', type:'Integer'},
+		],
+		function(env, argEnv) {
+			let a = env.lb('a0');
+			let b = env.lb('a1');
+			let result = a.getTypedValue() % b.getTypedValue();
+			return new Integer(result);
+		}
+	);
+
+	Builtin.createBuiltin(
+		'round',
+		[
+			{name:'a0', type:'Float'},
+		],
+		function(env, argEnv) {
+			let a = env.lb('a0').getTypedValue();
+			a = Math.round(a);
+			return new Float(a);
+		}
+	)
+
+	Builtin.createBuiltin(
+		'ceiling',
+		[
+			{name:'a0', type:'Float'},
+		],
+		function(env, argEnv) {
+			let a = env.lb('a0').getTypedValue();
+			a = Math.ceil(a);
+			return new Float(a);
+		}
+	)
+
+	Builtin.createBuiltin(
+		'floor',
+		[
+			{name:'a0', type:'Float'},
+		],
+		function(env, argEnv) {
+			let a = env.lb('a0').getTypedValue();
+			a = Math.floor(a);
+			return new Float(a);
+		}
+	)
+
+
+	Builtin.createBuiltin(
 		'=',
 		[
 			{name:'a0', type:'Number'},
