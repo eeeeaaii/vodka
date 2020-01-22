@@ -20,7 +20,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 class ESymbol extends ValueNex {
 	constructor(val) {
 		super((val) ? val : '', '@', 'esymbol')
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	makeCopy() {
@@ -51,7 +53,9 @@ class ESymbol extends ValueNex {
 			env = this.enclosingClosure;
 		}
 		let b = env.lookupBinding(this.getTypedValue());
-		console.log(`${INDENT()}symbol ${this.value} bound to ${b.debugString()}`);
+		if (CONSOLE_DEBUG) {
+			console.log(`${INDENT()}symbol ${this.value} bound to ${b.debugString()}`);
+		}
 		ILVL--;
 		return b;
 	}

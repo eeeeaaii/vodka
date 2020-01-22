@@ -29,7 +29,9 @@ class Bool extends ValueNex {
 			val = !!val ? 'yes' : 'no';
 		}
 		super(val, '!', 'boolean')
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	makeCopy() {

@@ -18,7 +18,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 class Zlist extends NexContainer {
 	constructor() {
 		super();
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	makeCopy() {
@@ -39,8 +41,8 @@ class Zlist extends NexContainer {
 		return ContextType.DOC;
 	}
 
-	render() {
-		super.render();
+	render(parentDomNode, thisDomNode) {
+		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add('zlist');
 		this.domNode.classList.add('data');
 		if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {

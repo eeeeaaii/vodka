@@ -26,7 +26,9 @@ function createSyscalls() {
 			let s = env.lb('a0').getFullTypedValue();
 			let n = env.lb('a1');
 			n.setCurrentStyle(s);
-			n.render();
+			if (!DEFER_DRAW) {
+				n.render();
+			}
 			return n;
 		}
 	);

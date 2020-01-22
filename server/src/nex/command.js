@@ -21,10 +21,12 @@ class Command extends NexContainer {
 	constructor(val) {
 		super();
 		this.commandtext = (val ? val : "");
-		this.codespan = document.createElement("span");
-		this.codespan.classList.add('codespan');
-		this.domNode.appendChild(this.codespan);
-		this.render();
+		if (!DEFER_DRAW) {
+			this.codespan = document.createElement("span");
+			this.codespan.classList.add('codespan');
+			this.domNode.appendChild(this.codespan);
+			this.render();
+		}
 	}
 
 	makeCopy() {
@@ -93,21 +95,32 @@ class Command extends NexContainer {
 			executionEnv = this.enclosingClosure;
 		}
 		let lambda = this.getLambda(executionEnv);
-		console.log(`${INDENT()}evaluating command: ${this.debugString()}`);
-		console.log(`${INDENT()}lambda is: ${lambda.debugString()}`);
+		if (CONSOLE_DEBUG) {
+			console.log(`${INDENT()}evaluating command: ${this.debugString()}`);
+			console.log(`${INDENT()}lambda is: ${lambda.debugString()}`);
+		}
 		let argContainer = new NexChildArgContainer(this);
-//		lambda.close(executionEnv);
 		let closure = lambda.lexicalEnv.pushEnv();
 		let argEvaluator = lambda.getArgEvaluator(argContainer, executionEnv, closure);
 		argEvaluator.evaluateAndBindArgs();
 		let r = lambda.executor(closure, executionEnv);
-		console.log(`${INDENT()}command returned: ${r.debugString()}`);
+		if (CONSOLE_DEBUG) {
+			console.log(`${INDENT()}command returned: ${r.debugString()}`);
+		}
 		ILVL--;
 		return r;
 	}
 
-	render() {
-		super.render();
+	render(parentDomNode, thisDomNode) {
+		if (DEFER_DRAW) {
+			if (!thisDomNode) {
+				this.domNode = thisDomNode = document.createElement("div");
+			}
+			this.codespan = document.createElement("span");
+			this.codespan.classList.add('codespan');
+			this.domNode.appendChild(this.codespan);
+		}
+		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add('command');
 		this.domNode.classList.add('codelist');
 		if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
@@ -124,17 +137,23 @@ class Command extends NexContainer {
 
 	setCommandText(t) {
 		this.commandtext = t;
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	deleteLastCommandLetter() {
 		this.commandtext = this.commandtext.substr(0, this.commandtext.length - 1);
-		this.render();	
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	appendCommandText(txt) {
 		this.commandtext = this.commandtext + txt;
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	// expression list interface

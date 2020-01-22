@@ -63,18 +63,20 @@ class NexContainer extends Nex {
 
 	toggleDir() {
 		this.vdir = !this.vdir;
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
-	render() {
-		super.render();
+	render(parentDomNode, thisDomNode) {
+		super.render(parentDomNode, thisDomNode);
 		if (this.vdir) {
 			this.domNode.classList.add('vdir');
 		} else {
 			this.domNode.classList.remove('vdir');
 		}
 		for (let i = 0; i < this.children.length; i++) {
-			this.children[i].render();
+			this.children[i].render(this.domNode);
 		}
 	}
 
@@ -110,16 +112,18 @@ class NexContainer extends Nex {
 		return this.children[i];
 	}
 
-	removeChildAt(i, skipdom) {
+	removeChildAt(i) {
 		if (i < 0 || i >= this.children.length) return null;
 		let r = this.children[i];
 		this.children.splice(i, 1);
-		if (!skipdom) this.domNode.removeChild(r.domNode);
+		if (!DEFER_DRAW) {
+			this.domNode.removeChild(r.domNode);
+		}
 		r.setParent(null);
 		return r;
 	}
 
-	insertChildAt(c, i, skipdom) {
+	insertChildAt(c, i) {
 		if (i < 0 || i > this.children.length) {
 			return;
 		}
@@ -151,16 +155,22 @@ class NexContainer extends Nex {
 		}
 		if (i == this.children.length) {
 			this.children.push(c);
-			if (!skipdom) this.domNode.appendChild(c.domNode);
+			if (!DEFER_DRAW) {
+				this.domNode.appendChild(c.domNode);
+			}
 		} else {
-			this.children.splice(i, 0, c);			
-			if (!skipdom) this.domNode.insertBefore(c.domNode, this.children[i + 1].domNode);
+			this.children.splice(i, 0, c);	
+			if (!DEFER_DRAW) {
+				this.domNode.insertBefore(c.domNode, this.children[i + 1].domNode);
+			}
 		}
 		c.setParent(this);
-		if (!skipdom) this.render();
-		if (!skipdom) c.render();
-		if (oldparent) {
-			oldparent.render();
+		if (!DEFER_DRAW) {
+			this.render();
+			c.render();
+			if (oldparent) {
+				oldparent.render();
+			}
 		}
 	}
 

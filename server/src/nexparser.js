@@ -97,7 +97,9 @@ class NexParser {
 	parse() {
 		let token;
 		while (token = this.getNextToken()) {
-			console.log(`token: ${st['-' + token]} data: ${this.data[0]} remaining: ${this.s}`);
+			if (CONSOLE_DEBUG) {
+				console.log(`token: ${st['-' + token]} data: ${this.data[0]} remaining: ${this.s}`);
+			}
 			this.doParse(token);
 		}
 		if (this.r == this.origr && this.r.hasChildren()) {

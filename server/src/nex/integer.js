@@ -18,12 +18,14 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 class Integer extends ValueNex {
-	constructor(val, skipdom) {
+	constructor(val) {
 		if (!val) {
 			val = '0';
 		}
-		super(val, '#', 'integer', skipdom)
-		if (!skipdom) this.render();
+		super(val, '#', 'integer')
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	makeCopy() {
@@ -43,7 +45,9 @@ class Integer extends ValueNex {
 		}
 		let n = Number(this.value);
 		this.value = '' + n;
-		this.render()
+		if (!DEFER_DRAW) {
+			this.render()
+		}
 		return this;
 	}
 

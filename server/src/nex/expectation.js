@@ -21,10 +21,12 @@ class Expectation extends NexContainer {
 	constructor(hackfunction) {
 		super()
 		this.hackfunction = hackfunction;
-		this.dotspan = document.createElement("span");
-		this.dotspan.classList.add('dotspan');
-		this.domNode.appendChild(this.dotspan);
-		this.render();
+		if (!DEFER_DRAW) {
+			this.dotspan = document.createElement("span");
+			this.dotspan.classList.add('dotspan');
+			this.domNode.appendChild(this.dotspan);
+			this.render();
+		}
 	}
 
 	makeCopy() {
@@ -46,8 +48,16 @@ class Expectation extends NexContainer {
 		return ContextType.COMMAND;
 	}
 
-	render() {
-		super.render();
+	render(parentDomNode, thisDomNode) {
+		if (DEFER_DRAW) {
+			if (!thisDomNode) {
+				this.domNode = thisDomNode = document.createElement("div");
+			}
+			this.dotspan = document.createElement("span");
+			this.dotspan.classList.add('dotspan');
+			this.domNode.appendChild(this.dotspan);
+		}
+		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add('expectation');
 		if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
 			this.dotspan.classList.add('exploded');
@@ -73,12 +83,17 @@ class Expectation extends NexContainer {
 		if (this.hackfunction) {
 			newnex = this.hackfunction(newnex);
 		}
-		this.getParent().replaceChildWith(this, newnex);
+		let parent = this.getParent();
+		parent.replaceChildWith(this, newnex);
 		newnex.setSelected();
 		// have to do this in case global render type changed while we were
 		// waiting to fulfill
 		newnex.setRenderType(current_render_type);
-		newnex.render();
+		if (!DEFER_DRAW) {
+			newnex.render();
+		} else {
+			newnex.rerenderSubtree();
+		}
 		return newnex;
 	}
 	getEventTable(context) {

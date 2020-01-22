@@ -20,7 +20,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 class Float extends ValueNex {
 	constructor(val) {
 		super((val) ? val : '', '%', 'float')
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	makeCopy() {

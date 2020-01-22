@@ -85,6 +85,18 @@ class Environment {
 		}
 	}
 
+	getAllBoundSymbolsAtThisLevel() {
+		var r = [];
+		let nm = null;
+		for (nm in this.symbols) {
+			r.push(nm);
+		}
+		for (nm in this.uniques) {
+			r.push(nm);
+		}
+		return r;
+	}
+
 	lookupBinding(name) {
 		if (this.symbols[name]) {
 			return this.symbols[name].makeCopy();

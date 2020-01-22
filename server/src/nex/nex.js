@@ -18,8 +18,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 class Nex {
-	constructor(skipdom) {
-		if (!skipdom) {
+	constructor() {
+		if (!DEFER_DRAW) {
 			this.domNode = document.createElement("div");
 			this.domNode.onclick = (e) => {
 				if (selectedNex instanceof EString) {
@@ -80,11 +80,16 @@ class Nex {
 	}
 
 	getLeftX() {
-		return this.domNode.getBoundingClientRect().left;
+		// should this call render() if there is no domnode?
+		if (this.domNode) {
+			return this.domNode.getBoundingClientRect().left;
+		} else return 0;
 	}
 
 	getRightX() {
-		return this.domNode.getBoundingClientRect().right;
+		if (this.domNode) {
+			return this.domNode.getBoundingClientRect().right;
+		}
 	}
 
 	setCurrentStyle(s) {
@@ -124,7 +129,44 @@ class Nex {
 		}
 	}
 
-	render() {
+	rerenderSubtree() {
+		if (this.domNode) {
+			while(this.domNode.firstChild) {
+				this.domNode.removeChild(this.domNode.firstChild);
+			}
+			this.render(this.getParent().domNode, this.domNode);
+		} else {
+			let parent = this.getParent();
+			let parentDom = parent.domNode;
+			while (parentDom.firstChild) {
+				parentDom.removeChild(parentDom.firstChild);
+			}
+			parent.render(parent.getParent(true).domNode, parent.domNode);
+		}
+	}
+
+	render(parentDomNode, thisDomNode) {
+		if (DEFER_DRAW) {
+			if (!thisDomNode) {
+				this.domNode = document.createElement("div");
+			} else {
+				// might already be equal but to make the api consistent
+				this.domNode = thisDomNode;
+			}
+			parentDomNode.appendChild(this.domNode);
+
+			this.domNode.onclick = (e) => {
+				if (selectedNex instanceof EString
+						&& selectedNex.getMode() == MODE_EXPANDED) {
+					selectedNex.finishInput();
+				}
+				this.setSelected();
+				e.stopPropagation();
+				root.render();
+			}
+			this.domNode.classList.add('nex');
+		}
+
 		if (this.selected) {
 			this.domNode.classList.add('selected');		
 		} else {
@@ -164,12 +206,16 @@ class Nex {
 		}
 		selectedNex = this;
 		this.selected = true;
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	setUnselected() {
 		this.selected = false;
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 	getEventTable(context) {
 		return null;

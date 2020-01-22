@@ -20,7 +20,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 class Nil extends ValueNex {
 	constructor() {
 		super('', '^', 'nil')
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	makeCopy() {

@@ -18,8 +18,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 class ValueNex extends Nex {
-	constructor(val, prefix, className, skipdom) {
-		super(skipdom);
+	constructor(val, prefix, className) {
+		super();
 		this.value = '' + val;
 		this.prefix = prefix;
 		this.className = className;
@@ -41,8 +41,8 @@ class ValueNex extends Nex {
 		return this.value;
 	}
 
-	render() {
-		super.render();
+	render(parentDomNode, thisDomNode) {
+		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add(this.className);
 		this.domNode.classList.add('valuenex');
 		this.domNode.innerHTML = '' + this.prefix + this.renderValue();
@@ -54,7 +54,9 @@ class ValueNex extends Nex {
 
 	setValue(v) {
 		this.value = v;
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	deleteLastLetter() {
@@ -62,13 +64,17 @@ class ValueNex extends Nex {
 		if (v == '') return;
 		v = v.substr(0, v.length - 1);
 		this.value = v;
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	appendText(txt) {
 		let v = this.value;
 		v = v + txt;
 		this.value = v;
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 }

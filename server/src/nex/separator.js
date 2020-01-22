@@ -18,7 +18,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 class Separator extends Letter {
 	constructor(letter) {
 		super(letter);
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	// makeCopy is same as superclass
@@ -31,8 +33,8 @@ class Separator extends Letter {
 		return new SeparatorKeyFunnel(this);
 	}
 
-	render() {
-		super.render();
+	render(parentDomNode, thisDomNode) {
+		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add('separator');
 		this.domNode.classList.add('data');
 	}

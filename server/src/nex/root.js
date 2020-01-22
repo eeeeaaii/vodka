@@ -18,12 +18,15 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 class Root extends NexContainer {
 	constructor(attached) {
 		super();
-		if (attached) {
-			this.domNode = document.getElementById('mixroot');			
-		} else {
-			this.domnode = document.createElement('div');
+		this.attached = attached;
+		if (!DEFER_DRAW) {
+			if (this.attached) {
+				this.domNode = document.getElementById('mixroot');			
+			} else {
+				this.domnode = document.createElement('div');
+			}
+			this.render();
 		}
-		this.render();
 	}
 
 	// makeCopy intentionally unimplemented
@@ -39,7 +42,15 @@ class Root extends NexContainer {
 	}
 
 	render() {
-		super.render();
+		let rootDomNode = null;
+		if (DEFER_DRAW) {
+			rootDomNode = document.getElementById('mixroot');
+			while (rootDomNode.firstChild) {
+				rootDomNode.removeChild(rootDomNode.firstChild);
+			}
+			this.domNode = rootDomNode;
+		}
+		super.render(rootDomNode);
 		this.domNode.classList.add('root');
 	}
 

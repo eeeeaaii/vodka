@@ -24,12 +24,14 @@ class Lambda extends NexContainer {
 			return new LambdaCommandPhase(phaseExecutor, nex, env);
 		}
 		this.amptext = val ? val : '';
-		this.codespan = document.createElement("span");
-		this.codespan.classList.add('codespan');
-		this.domNode.appendChild(this.codespan);
 		this.lexicalEnv = null;
 		this.cmdname = null;
-		this.render();
+		if (!DEFER_DRAW) {
+			this.codespan = document.createElement("span");
+			this.codespan.classList.add('codespan');
+			this.domNode.appendChild(this.codespan);
+			this.render();
+		}
 	}
 
 	makeCopy() {
@@ -66,15 +68,16 @@ class Lambda extends NexContainer {
 		return ContextType.COMMAND;
 	}
 
-	// pushSubPhases(phaseExecutor, env) {
-	// 	for (let i = this.children.length - 1; i >= 0; i--) {
-	// 		let c = this.children[i];
-	// 		c.pushPhases(phaseExecutor, env);
-	// 	}
-	// }
-
-	render() {
-		super.render();
+	render(parentDomNode, thisDomNode) {
+		if (DEFER_DRAW) {
+			if (!thisDomNode) {
+				this.domNode = thisDomNode = document.createElement("div");
+			}
+			this.codespan = document.createElement("span");
+			this.codespan.classList.add('codespan');
+			this.domNode.appendChild(this.codespan);
+		}
+		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add('lambda');
 		this.domNode.classList.add('codelist');
 		if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
@@ -93,20 +96,10 @@ class Lambda extends NexContainer {
 		return true;
 	}
 
-	/// deprecated?
 	evaluate(env) {
 		this.lexicalEnv = env;
 		return this;
 	}
-
-//	close(env) {
-//		this.closure = env.pushEnv();
-//		return this.closure;
-//	}
-
-//	getClosure() {
-//		return this.closure;
-//	}
 
 	getParamNames() {
 		let s = this.amptext.split(' ');
@@ -156,12 +149,16 @@ class Lambda extends NexContainer {
 
 	deleteLastAmpLetter() {
 		this.amptext = this.amptext.substr(0, this.amptext.length - 1);
-		this.render();	
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	appendAmpText(txt) {
 		this.amptext = this.amptext + txt;
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 	getEventTable(context) {
 		return null;

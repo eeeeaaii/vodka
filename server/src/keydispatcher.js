@@ -352,13 +352,17 @@ class KeyDispatcher {
 			if (table) {
 				if (table[eventName]) {
 					KeyResponseFunctions[table[eventName]](selectedNex);
-					root.render(); // hack?
+					if (!DEFER_DRAW) {
+						root.render(); // hack?
+					}
 					return false; // to cancel browser event
 				}
 				if (table.defaultHandle) {
 					try {
 						table.defaultHandle(eventName);
-						root.render(); // hack?
+						if (!DEFER_DRAW) {
+							root.render(); // hack?
+						}
 					} catch (e) {
 						if (e == UNHANDLED_KEY) {
 							console.log("UNHANDLED KEY " +
@@ -377,7 +381,9 @@ class KeyDispatcher {
 			let funnel = selectedNex.getInputFunnel();
 			if (funnel) {
 				let r = funnel.processEvent(keycode, whichkey, hasShift, hasCtrl, hasAlt);
-				root.render(); // hack?
+				if (!DEFER_DRAW) {
+					root.render(); // hack?
+				}
 				return r;
 			}
 			// didn't handle event, let the browser handle it.
@@ -416,7 +422,9 @@ class KeyDispatcher {
 			:  NEX_RENDER_TYPE_EXPLODED
 			);
 		root.setRenderType(current_render_type);
-		root.render();
+		if (!DEFER_DRAW) {
+			root.render();
+		}
 	}
 
 

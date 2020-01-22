@@ -19,7 +19,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 class Newline extends Separator {
 	constructor() {
 		super("&nbsp;");
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	makeCopy() {
@@ -36,8 +38,8 @@ class Newline extends Separator {
 		return new NewlineKeyFunnel(this);
 	}
 
-	render() {
-		super.render();
+	render(parentDomNode, thisDomNode) {
+		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add('newline');
 		this.domNode.classList.add('data');
 	}

@@ -20,7 +20,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 class Doc extends NexContainer {
 	constructor() {
 		super();
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	makeCopy() {
@@ -54,11 +56,10 @@ class Doc extends NexContainer {
 		return new DocKeyFunnel(this);
 	}
 
-	render() {
-		super.render();
+	render(parentDomNode, thisDomNode) {
+		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add('doc');
 		this.domNode.classList.add('data');
-
 	}
 	getEventTable(context) {
 		//if (context == ContextType.COMMAND) {

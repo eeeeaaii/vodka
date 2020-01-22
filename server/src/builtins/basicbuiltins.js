@@ -119,6 +119,21 @@ function createBasicBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'bound',
+		[
+		],
+		function(env, argEnv) {
+			let names = BUILTINS.getAllBoundSymbolsAtThisLevel();
+			let r = new Doc();
+			for (let i = 0; i < names.length; i++) {
+				let sym = new ESymbol(names[i]);
+				r.appendChild(sym);
+			}
+			return r;
+		}
+	);
+
+	Builtin.createBuiltin(
 		'save',
 		[
 			{name:'a0', type:'ESymbol', skipeval:true},

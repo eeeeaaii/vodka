@@ -20,7 +20,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 class Line extends NexContainer {
 	constructor() {
 		super();
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	makeCopy() {
@@ -64,8 +66,8 @@ class Line extends NexContainer {
 		return new LineKeyFunnel(this);
 	}
 
-	render() {
-		super.render();
+	render(parentDomNode, thisDomNode) {
+		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add('line');
 		this.domNode.classList.add('data');
 	}

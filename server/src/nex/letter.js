@@ -24,7 +24,9 @@ class Letter extends Nex {
 		if (letter == '') {
 			throw new Error('cannot have an empty letter');
 		}
-		this.render();
+		if (!DEFER_DRAW) {
+			this.render();
+		}
 	}
 
 	makeCopy() {
@@ -45,8 +47,8 @@ class Letter extends Nex {
 		return new LetterKeyFunnel(this);
 	}
 
-	render() {
-		super.render();
+	render(parentDomNode, thisDomNode) {
+		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add('letter');
 		this.domNode.classList.add('data');
 		this.domNode.innerHTML = (this.value == " " ? "&nbsp;" : this.value) ;
