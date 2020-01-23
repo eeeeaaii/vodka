@@ -225,6 +225,11 @@ var KeyResponseFunctions = {
 	// 	}
 	// },
 
+	'call-delete-handler-then-remove-selected-and-select-previous-sibling': function(s) {
+		s.callDeleteHandler();
+		manipulator.removeSelectedAndSelectPreviousSibling();
+	},
+
 	'remove-selected-and-select-previous-sibling': function(s) {
 		manipulator.removeSelectedAndSelectPreviousSibling();
 	},

@@ -29,6 +29,16 @@ class Expectation extends NexContainer {
 		}
 	}
 
+	setDeleteHandler(f) {
+		this.deleteHandler = f;
+	}
+
+	callDeleteHandler() {
+		if (this.deleteHandler) {
+			this.deleteHandler();
+		}
+	}
+
 	makeCopy() {
 		let r = new Expectation();
 		this.copyFieldsTo(r);
@@ -42,6 +52,7 @@ class Expectation extends NexContainer {
 	copyFieldsTo(nex) {
 		super.copyFieldsTo(nex);
 		nex.hackfunction = this.hackfunction;
+		nex.deleteHandler = this.deleteHandler;
 	}
 
 	getContextType() {
@@ -84,20 +95,27 @@ class Expectation extends NexContainer {
 			newnex = this.hackfunction(newnex);
 		}
 		let parent = this.getParent();
+		let wasSelected = this.isSelected();
 		parent.replaceChildWith(this, newnex);
-		newnex.setSelected();
+		if (wasSelected) {
+			newnex.setSelected();
+		}
 		// have to do this in case global render type changed while we were
 		// waiting to fulfill
 		newnex.setRenderType(current_render_type);
 		if (!DEFER_DRAW) {
 			newnex.render();
 		} else {
-			newnex.rerenderSubtree();
+			root.render();
+//			newnex.rerenderSubtree(); // this is broken somehow
 		}
 		return newnex;
 	}
 	getEventTable(context) {
-		return null;
+		return {
+			'ShiftBackspace': 'call-delete-handler-then-remove-selected-and-select-previous-sibling',
+			'Backspace': 'call-delete-handler-then-remove-selected-and-select-previous-sibling',
+		}
 	}
 	// TODO: move tables from these unused functions into getEventTable
 

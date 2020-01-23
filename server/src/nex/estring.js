@@ -169,7 +169,8 @@ class EString extends ValueNex {
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val); // calls render
 		if (DEFER_DRAW) {
-			this.rerenderSubtree();
+			root.render();
+//			this.rerenderSubtree(); // broken, why?
 		}
 	}
 	getEventTable(context) {

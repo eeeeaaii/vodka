@@ -67,6 +67,9 @@ class Command extends NexContainer {
 		let lambda = null;
 		if (cmdname) {
 			lambda = executionEnv.lookupBinding(cmdname);
+			if (!(lambda instanceof Lambda)) {
+				throw new EError(`attempting to run command but "${cmdname}"" is bound to something that is not a lambda`);
+			}
 		} else if (this.numChildren() > 0) {
 			let c = this.getChildAt(0);
 			this.removeChildAt(0);

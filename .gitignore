@@ -1,2 +1,4 @@
 .DS_STORE
 testing/____tmpfile.txt
+server/packages/poem*
+

@@ -134,6 +134,21 @@ function createBasicBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'built-ins',
+		[
+		],
+		function(env, argEnv) {
+			let names = BUILTINS.getParent().getAllBoundSymbolsAtThisLevel();
+			let r = new Doc();
+			for (let i = 0; i < names.length; i++) {
+				let sym = new ESymbol(names[i]);
+				r.appendChild(sym);
+			}
+			return r;
+		}
+	);
+
+	Builtin.createBuiltin(
 		'save',
 		[
 			{name:'a0', type:'ESymbol', skipeval:true},
@@ -267,15 +282,18 @@ function createBasicBuiltins() {
 			let delay = env.lb('a2');
 			let e = new Expectation();
 			e.appendChild(arg);
-			setTimeout(function() {
+			let clearVar = setTimeout(function() {
 				let cmd = new Command('');
 				cmd.appendChild(lambda);
 				e.removeChild(arg);
 				cmd.appendChild(arg);
 				e.appendChild(cmd);
-				let result = cmd.evaluate(BUILTINS);
+				let result = cmd.evaluate(argEnv);
 				e.fulfill(result);
 			}.bind(this), delay.getTypedValue());
+			e.setDeleteHandler(function() {
+				clearTimeout(clearVar);
+			}.bind(this));
 			return e;
 		}
 	)
