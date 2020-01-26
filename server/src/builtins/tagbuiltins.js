@@ -62,6 +62,4 @@ function createTagBuiltins() {
 			}
 		}
 	);
-
-
 }

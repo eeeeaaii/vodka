@@ -48,6 +48,10 @@ class Lambda extends NexContainer {
 		r.needsEval = this.needsEval;
 	}
 
+	renderChildrenIfNormal() {
+		return false;
+	}
+
 	toString() {
 		return `&"${this.amptext}"${this.vdir ? 'v' : 'h'}(${super.childrenToString()}&)`;
 	}
