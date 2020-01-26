@@ -132,7 +132,13 @@ class Command extends NexContainer {
 			this.codespan.classList.remove('exploded');
 		}
 		this.codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
+		this.renderTags();
 	}
+
+	renderChildrenIfNormal() {
+		return false;
+	}
+
 
 	getCommandText() {
 		return this.commandtext;
@@ -191,7 +197,6 @@ class Command extends NexContainer {
 		}.bind(this);
 
 		return {
-			'ShiftEnter': 'execute',
 			'ShiftTab': 'select-parent',
 			'Tab': 'select-first-child-or-create-insertion-point',
 			'ArrowUp': 'move-left-up',

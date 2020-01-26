@@ -76,6 +76,7 @@ class Expectation extends NexContainer {
 			this.dotspan.classList.remove('exploded');
 		}
 		this.dotspan.innerHTML = '...';
+		this.renderTags();
 	}
 
 	isEmpty() {

@@ -30,7 +30,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .expectation.exploded {
-	display:inline-block;
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
 	padding: 5px;
 	border-radius: 6px 6px 6px 6px;
 	margin-left:21px !important;

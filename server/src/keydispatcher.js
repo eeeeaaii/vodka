@@ -23,21 +23,6 @@ function insertOrAppend(s, obj) {
 	}
 }
 
-function doExecute(s) {
-	let n;
-	try {
-		n = s.evaluate(BUILTINS);
-	} catch (e) {
-		if (e instanceof EError) {
-			n = e;
-		} else {
-			throw e;
-		}
-	}
-	if (n) {
-		manipulator.replaceSelectedWith(n);
-	}
-}
 var UNHANDLED_KEY = 'unhandled_key'
 var ContextType = {};
 ContextType.PASSTHROUGH = 0;
@@ -97,7 +82,6 @@ var KeyResponseFunctions = {
 
 	// 'select-parent-and-remove-self': function(s) { manipulator.selectParent() && manipulator.removeNex(s); },
 
-	// 'execute': function(s) { doExecute(s); },
 	// 'start-modal-editing': function(s) { s.startModalEditing(); },
 
 	// 'replace-selected-with-command': function(s) { manipulator.replaceSelectedWith(new Command()); },
@@ -131,6 +115,11 @@ var KeyResponseFunctions = {
 	'insert-line-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Line()); },
 	'insert-doc-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Doc()); },
 	'insert-zlist-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Zlist()); },
+
+	// WIP
+	'insert-type-as-next-sibling': function(s) {
+		manipulator.insertAfterSelectedAndSelect(new Type());
+	},
 
 	'split-word-and-insert-separator': function(s) {
 		manipulator.splitCurrentWordIntoTwo()
@@ -348,6 +337,11 @@ class KeyDispatcher {
 		} else if (eventName == 'AltEnter') {
 			this.doAltEnter();
 			return false; // to cancel browser event
+		// TODO: string opening and closing is mapped to shift-enter,
+		// but this should be reserved for only executing code.
+//		} else if (eventName == 'ShiftEnter') {
+//			this.doShiftEnter();
+//			return false; // to cancel browser event
 		} else if (eventName == '`') {
 			// reserved for future use
 			return false; // to cancel browser event
@@ -356,11 +350,15 @@ class KeyDispatcher {
 			let table = selectedNex.getEventTable(keyContext);
 			if (table) {
 				if (table[eventName]) {
-					KeyResponseFunctions[table[eventName]](selectedNex);
-					if (!DEFER_DRAW) {
-						root.render(); // hack?
+					if (table[eventName] instanceof Nex) {
+						evaluateNex(table[eventName]);
+					} else {
+						KeyResponseFunctions[table[eventName]](selectedNex);
+						if (!DEFER_DRAW) {
+							root.render(); // hack?
+						}
+						return false; // to cancel browser event
 					}
-					return false; // to cancel browser event
 				}
 				if (table.defaultHandle) {
 					try {
@@ -430,6 +428,27 @@ class KeyDispatcher {
 		if (!DEFER_DRAW) {
 			root.render();
 		}
+	}
+
+	doShiftEnter() {
+		let n = this.evaluateNex(selectedNex);
+		if (n) {
+			manipulator.replaceSelectedWith(n);			
+		}
+	}
+
+	evaluateNex(nex) {
+		let result;
+		try {
+			result = nex.evaluate(BUILTINS);
+		} catch (e) {
+			if (e instanceof EError) {
+				result = e;
+			} else {
+				throw e;
+			}
+		}
+		return result;
 	}
 
 

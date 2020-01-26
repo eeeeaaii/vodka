@@ -59,6 +59,7 @@ class Word extends NexContainer {
 		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add('word');
 		this.domNode.classList.add('data');
+		this.renderTags();
 	}
 	getEventTable(context) {
 		//if (context == ContextType.COMMAND) {

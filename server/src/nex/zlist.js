@@ -50,6 +50,7 @@ class Zlist extends NexContainer {
 		} else {
 			this.domNode.style.height = '0px';
 		}
+		this.renderTags();
 
 	}
 	getEventTable(context) {

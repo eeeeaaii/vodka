@@ -16,7 +16,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-
 class Nex {
 	constructor() {
 		if (!DEFER_DRAW) {
@@ -36,6 +35,8 @@ class Nex {
 		this.keyfunnel = null;
 		this.currentStyle = "";
 		this.enclosingClosure = null; // DO NOT COPY
+
+		this.tags = [];
 	}
 
 	getEventTable(context) {
@@ -53,10 +54,33 @@ class Nex {
 
 	copyFieldsTo(nex) {
 		nex.currentStyle = this.currentStyle;
+		for (let i = 0; i < this.tags.length; i++) {
+			nex.tags[i] = this.tags[i].copy();
+		}
 	}
 
 	needsEvaluation() {
 		return false;
+	}
+
+	addTag(tag) {
+		if (this.hasTag(tag)) return;
+		this.tags.push(tag);
+	}
+
+	hasTag(tag) {
+		for (let i = 0; i < this.tags.length; i++) {
+			if (this.tags[i].equals(tag)) return true;
+		}
+		return false;
+	}
+
+	removeTag(tag) {
+		for (let i = 0; i < this.tags.length; i++) {
+			if (this.tags[i].equals(tag)) {
+				this.tags.splice(i, 1);
+			}
+		}
 	}
 
 	evaluate(env) {
@@ -130,6 +154,7 @@ class Nex {
 	}
 
 	rerenderSubtree() {
+		// TODO(this is brokedened)
 		if (this.domNode) {
 			while(this.domNode.firstChild) {
 				this.domNode.removeChild(this.domNode.firstChild);
@@ -172,12 +197,20 @@ class Nex {
 		} else {
 			this.domNode.classList.remove('selected');
 		}
-		if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
+		let isExploded = (this.renderType == NEX_RENDER_TYPE_EXPLODED);
+		if (isExploded) {
 			this.domNode.classList.add('exploded');
 		} else {
 			this.domNode.classList.remove('exploded');
 		}
 		this.domNode.setAttribute("style", this.currentStyle);
+	}
+
+	renderTags() {
+		let isExploded = (this.renderType == NEX_RENDER_TYPE_EXPLODED);
+		for (let i = 0; i < this.tags.length; i++) {
+			this.tags[i].draw(this.domNode, isExploded);
+		}		
 	}
 
 	setParent(p) {

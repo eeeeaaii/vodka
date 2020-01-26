@@ -63,6 +63,7 @@ function createBuiltins() {
 	createBasicBuiltins();
 	createMathBuiltins();
 	createStringBuiltins();
+	createTagBuiltins();
 	createLogicBuiltins();
 	createSyscalls();
 	createTestBuiltins();

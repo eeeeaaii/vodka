@@ -86,6 +86,7 @@ class Lambda extends NexContainer {
 			this.codespan.classList.remove('exploded');
 		}
 		this.codespan.innerHTML = '<span class="lambdasign">&#8907;</span>' + this.amptext.replace(/ /g, '&nbsp;');
+		this.renderTags();
 	}
 
 	setCmdName(nm) {

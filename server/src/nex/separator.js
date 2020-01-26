@@ -34,9 +34,10 @@ class Separator extends Letter {
 	}
 
 	render(parentDomNode, thisDomNode) {
-		super.render(parentDomNode, thisDomNode);
+		super.render(parentDomNode, thisDomNode, true /* skip tags */);
 		this.domNode.classList.add('separator');
 		this.domNode.classList.add('data');
+		this.renderTags();
 	}
 	getEventTable(context) {
 		return null;

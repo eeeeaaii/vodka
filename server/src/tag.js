@@ -15,31 +15,27 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+class Tag  {
+	constructor(name) {
+		this.name = name;
+	}
 
+	equals(tag) {
+		return this.name == tag.name;
+	}
 
-.valuenex {
-	display: none;
-}
+	draw(parentNode, isExploded) {
+		this.tagDomNode = document.createElement("div");
+		this.tagDomNode.classList.add('tag');
+		if (isExploded) {
+			this.tagDomNode.classList.add('exploded');
+		}
+		this.tagDomNode.innerHTML = this.name;
+		parentNode.appendChild(this.tagDomNode);
+	}
 
-.valuenex.exploded {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	font-family: Courier;
-	color: #444444;
-	font-style: italic;
-	font-size: 11px;
-	background-color: #e8e8e8;
-	border: 1px solid #aaaaaa;
-	padding: 5px;
-	border-radius: 6px 6px 6px 6px;
-}
-
-.valuenex.exploded.selected {
-	padding: 3px;
-	border: 3px solid #ff7777;
-	/*
-	border-bottom: 3px solid #ff7777;
-	border-top: 3px solid #ff7777;
-	*/
+	copy() {
+		let t = new Tag(this.name);
+		return t;
+	}
 }

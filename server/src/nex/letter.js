@@ -47,11 +47,15 @@ class Letter extends Nex {
 		return new LetterKeyFunnel(this);
 	}
 
-	render(parentDomNode, thisDomNode) {
+	render(parentDomNode, thisDomNode, skipTags) {
 		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add('letter');
 		this.domNode.classList.add('data');
 		this.domNode.innerHTML = (this.value == " " ? "&nbsp;" : this.value) ;
+		// TODO: clean up render steps, this is gross
+		if (!skipTags) {
+			this.renderTags();
+		}
 	}
 
 	getText() {
@@ -102,10 +106,14 @@ class Letter extends Nex {
 				'&': 'legacy-insert-lambda-as-next-sibling-of-parent',
 				// end deprecated
 
-				'<': 'insert-zlist-as-next-sibling',
 				'(': 'insert-word-as-next-sibling',
 				'[': 'insert-line-as-next-sibling',
 				'{': 'insert-doc-as-next-sibling',
+
+				//experimental
+				'<': 'insert-zlist-as-next-sibling',
+				'*': 'insert-type-as-next-sibling',
+
 				defaultHandle: function(key) {
 					this.defaultHandle(key, true /* is command */);
 				}.bind(t)
@@ -132,10 +140,16 @@ class Letter extends Nex {
 				'^': 'legacy-insert-nil-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
 				'&': 'legacy-insert-lambda-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
 				// end deprecated
-				'<': 'insert-zlist-as-next-sibling',
+
 				'(': 'insert-word-as-next-sibling',
 				'[': 'insert-line-as-next-sibling',
 				'{': 'insert-doc-as-next-sibling',
+
+				// experimental
+				'<': 'insert-zlist-as-next-sibling',
+				'*': 'insert-type-as-next-sibling',
+
+
 				defaultHandle: function(key) {
 					this.defaultHandle(key, false /* is command */);
 				}.bind(t)

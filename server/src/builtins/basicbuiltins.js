@@ -246,7 +246,7 @@ function createBasicBuiltins() {
 			}, time);
 			return exp;
 		}
-	)
+	);
 
 	// I'm not sure if I will need more creator functions or not.
 	Builtin.createBuiltin(
@@ -258,7 +258,7 @@ function createBasicBuiltins() {
 			e.appendChild(new Integer(4));
 			return e;
 		}
-	)
+	);
 
 	Builtin.createBuiltin(
 		'random',
@@ -267,7 +267,7 @@ function createBasicBuiltins() {
 			let n = Math.random();
 			return new Float(n);
 		}
-	)
+	);
 
 	Builtin.createBuiltin(
 		'do-on-after',
@@ -296,5 +296,6 @@ function createBasicBuiltins() {
 			}.bind(this));
 			return e;
 		}
-	)
+	);
+
 }

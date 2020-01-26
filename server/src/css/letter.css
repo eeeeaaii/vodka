@@ -17,7 +17,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 .letter {
-	display: inline-block;
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
 }
 
 .letter.exploded {

@@ -118,6 +118,7 @@ class EString extends ValueNex {
 		} else {
 			this.drawExpanded();
 		}
+		this.renderTags();
 	}
 
 	drawNormal() {

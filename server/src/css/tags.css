@@ -17,29 +17,18 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 
-.valuenex {
+.tag {
 	display: none;
 }
 
-.valuenex.exploded {
+.tag.exploded {
+	background-color:#6e6e6e;
+	color:#dddddd;
+	padding: 4px 8px 4px 8px;
+	margin: 3px;
 	display: flex;
 	flex-direction: row;
-	align-items: center;
+	align-items: flex-start;
 	font-family: Courier;
-	color: #444444;
-	font-style: italic;
-	font-size: 11px;
-	background-color: #e8e8e8;
-	border: 1px solid #aaaaaa;
-	padding: 5px;
-	border-radius: 6px 6px 6px 6px;
-}
-
-.valuenex.exploded.selected {
-	padding: 3px;
-	border: 3px solid #ff7777;
-	/*
-	border-bottom: 3px solid #ff7777;
-	border-top: 3px solid #ff7777;
-	*/
+	font-size: 9px;
 }
