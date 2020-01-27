@@ -177,9 +177,7 @@ class BuiltinArgEvaluator {
 				}
 				this.bindEnv.bind(param.name, w);
 			} else if (param.optional) {
-				if (i >= this.argContainer.numArgs()) {
-					this.bindEnv.bind(param.name, new Nil());
-				} else {
+				if (i < this.argContainer.numArgs()) {
 					this.bindEnv.bind(param.name, this.argContainer.getArgAt(i));
 				}
 			} else {

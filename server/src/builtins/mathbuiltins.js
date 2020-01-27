@@ -41,17 +41,26 @@ function createMathBuiltins() {
 		'-',
 		[
 			{name:'a0', type:'Number'},
-			{name:'a1', type:'Number'},
+			{name:'a1', type:'Number', optional:true},
 		],
 		function(env, argEnv) {
 			let a = env.lb('a0');
 			let b = env.lb('a1');
-			let result = a.getTypedValue() - b.getTypedValue();
-			if (a instanceof Float
-					|| b instanceof Float) {
-				return new Float(result);
+			if (b == UNBOUND) {
+				let n = (-a.getTypedValue());
+				if (a instanceof Float) {
+					return new Float(n);
+				} else {
+					return new Integer(n);
+				}
 			} else {
-				return new Integer(result);
+				let result = a.getTypedValue() - b.getTypedValue();
+				if (a instanceof Float
+						|| b instanceof Float) {
+					return new Float(result);
+				} else {
+					return new Integer(result);
+				}
 			}
 		}
 	);

@@ -17,6 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 const BUILTIN_ARG_PREFIX = '****arg****';
+const UNBOUND = "****UNBOUND****"
 
 class Environment {
 	constructor(parentEnv) {
@@ -68,7 +69,7 @@ class Environment {
 	lb(name) {
 		let nm = BUILTIN_ARG_PREFIX + name;
 		if (!this.symbols[nm]) {
-			return null;
+			return UNBOUND;
 		}
 		// hack - we are testing to see if it's a javascript array
 		// because we do a garbage thing where for variadics
