@@ -142,22 +142,38 @@ class Nex {
 		}
 	}
 
-	rerenderSubtree() {
-		// TODO(this is brokedened)
-		if (this.domNode) {
-			while(this.domNode.firstChild) {
-				this.domNode.removeChild(this.domNode.firstChild);
+	renderInto(domNode) {
+		this.renderedDomNode = domNode;
+		domNode.onclick = (e) => {
+			if (selectedNex instanceof EString
+					&& selectedNex.getMode() == MODE_EXPANDED) {
+				selectedNex.finishInput();
 			}
-			this.render(this.getParent().domNode, this.domNode);
-		} else {
-			let parent = this.getParent();
-			let parentDom = parent.domNode;
-			while (parentDom.firstChild) {
-				parentDom.removeChild(parentDom.firstChild);
-			}
-			parent.render(parent.getParent(true).domNode, parent.domNode);
+			this.setSelected();
+			e.stopPropagation();
+			root.render();
 		}
+		domNode.classList.add('nex');
+
+		if (this.selected) {
+			domNode.classList.add('selected');		
+		} else {
+			domNode.classList.remove('selected');
+		}
+		let isExploded = (this.renderType == NEX_RENDER_TYPE_EXPLODED);
+		if (isExploded) {
+			domNode.classList.add('exploded');
+		} else {
+			domNode.classList.remove('exploded');
+		}
+		domNode.setAttribute("style", this.currentStyle);
 	}
+
+	rerender() {
+		this.domNode.innerHTML = ""; // will get rid of children also.
+		this.renderInto(this.domNode);
+	}
+
 
 	render(parentDomNode, thisDomNode) {
 		if (!thisDomNode) {

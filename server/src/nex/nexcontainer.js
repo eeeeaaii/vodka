@@ -65,6 +65,24 @@ class NexContainer extends Nex {
 		this.vdir = !this.vdir;
 	}
 
+	renderInto(domNode) {
+		super.renderInto(domNode);
+		if (this.vdir) {
+			domNode.classList.add('vdir');
+		} else {
+			domNode.classList.remove('vdir');
+		}
+		if (this.renderType == NEX_RENDER_TYPE_NORMAL
+				&& !this.renderChildrenIfNormal()) {
+			return;
+		}
+		for (let i = 0; i < this.children.length; i++) {
+			let childDomNode = document.createElement("div");
+			domNode.appendChild(childDomNode);
+			this.children[i].renderInto(childDomNode);
+		}
+	}
+
 	render(parentDomNode, thisDomNode) {
 		super.render(parentDomNode, thisDomNode);
 		if (this.vdir) {

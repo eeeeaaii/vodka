@@ -15,7 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-var ILVL = 0;
+// TODO: audit, is this updated in step eval?
+let ILVL = 0;
 
 function resetStack() {
 	ILVL = 0;
@@ -35,19 +36,27 @@ function INDENT() {
 	return s;
 }
 
-var manipulator = null;
-var root = null;
-var selectedNex = null;
-var environment = null;
+// experiments
+
+const USE_RENDER_INTO = false;
+
+// global variables
+// TODO: fix naming convention and decide what's a const and what's
+// a singleton and generally what's what.
+
+const manipulator = new Manipulator();
+const root = new Root(true /* attached */);
+var selectedNex = null; // make singleton?
+//var environment = null; // unused
 
 const NEX_RENDER_TYPE_NORMAL = 1;
 const NEX_RENDER_TYPE_EXPLODED = 2;
 var current_render_type = NEX_RENDER_TYPE_NORMAL;
 
-var BUILTINS;
-var KEY_DISPATCHER = new KeyDispatcher();
+var BUILTINS = new Environment(null);
+const KEY_DISPATCHER = new KeyDispatcher();
 
-var CONSOLE_DEBUG = false;
+const CONSOLE_DEBUG = false;
 
 // DO NOT RENAME THIS METHOD OR YOU WILL BREAK ALL THE OLD TESTS
 function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
@@ -68,13 +77,10 @@ function createBuiltins() {
 }
 
 function setup() {
-	manipulator = new Manipulator();
-	environment = new Environment();
+//	environment = new Environment();
 	// createBuiltins is defined in executors.js
-	BUILTINS = new Environment(null);
 	createBuiltins();
 	BUILTINS = BUILTINS.pushEnv();
-	root = new Root(true /* attached */);
 	let topdoc = new Doc();
 	root.appendChild(topdoc);
 	topdoc.setSelected();
