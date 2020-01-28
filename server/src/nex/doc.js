@@ -20,9 +20,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 class Doc extends NexContainer {
 	constructor() {
 		super();
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 	}
 
 	makeCopy() {

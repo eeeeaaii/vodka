@@ -24,9 +24,6 @@ class Letter extends Nex {
 		if (letter == '') {
 			throw new Error('cannot have an empty letter');
 		}
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 	}
 
 	makeCopy() {

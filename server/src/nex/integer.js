@@ -23,9 +23,6 @@ class Integer extends ValueNex {
 			val = '0';
 		}
 		super(val, '#', 'integer')
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 	}
 
 	makeCopy() {
@@ -45,9 +42,6 @@ class Integer extends ValueNex {
 		}
 		let n = Number(this.value);
 		this.value = '' + n;
-		if (!DEFER_DRAW) {
-			this.render()
-		}
 		return this;
 	}
 

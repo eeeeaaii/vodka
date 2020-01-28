@@ -21,12 +21,6 @@ class Command extends NexContainer {
 	constructor(val) {
 		super();
 		this.commandtext = (val ? val : "");
-		if (!DEFER_DRAW) {
-			this.codespan = document.createElement("span");
-			this.codespan.classList.add('codespan');
-			this.domNode.appendChild(this.codespan);
-			this.render();
-		}
 	}
 
 	makeCopy() {
@@ -115,14 +109,12 @@ class Command extends NexContainer {
 	}
 
 	render(parentDomNode, thisDomNode) {
-		if (DEFER_DRAW) {
-			if (!thisDomNode) {
-				this.domNode = thisDomNode = document.createElement("div");
-			}
-			this.codespan = document.createElement("span");
-			this.codespan.classList.add('codespan');
-			this.domNode.appendChild(this.codespan);
+		if (!thisDomNode) {
+			this.domNode = thisDomNode = document.createElement("div");
 		}
+		this.codespan = document.createElement("span");
+		this.codespan.classList.add('codespan');
+		this.domNode.appendChild(this.codespan);
 		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add('command');
 		this.domNode.classList.add('codelist');
@@ -146,23 +138,14 @@ class Command extends NexContainer {
 
 	setCommandText(t) {
 		this.commandtext = t;
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 	}
 
 	deleteLastCommandLetter() {
 		this.commandtext = this.commandtext.substr(0, this.commandtext.length - 1);
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 	}
 
 	appendCommandText(txt) {
 		this.commandtext = this.commandtext + txt;
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 	}
 
 	// expression list interface

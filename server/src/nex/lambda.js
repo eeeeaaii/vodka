@@ -26,12 +26,6 @@ class Lambda extends NexContainer {
 		this.amptext = val ? val : '';
 		this.lexicalEnv = null;
 		this.cmdname = null;
-		if (!DEFER_DRAW) {
-			this.codespan = document.createElement("span");
-			this.codespan.classList.add('codespan');
-			this.domNode.appendChild(this.codespan);
-			this.render();
-		}
 	}
 
 	makeCopy() {
@@ -73,14 +67,12 @@ class Lambda extends NexContainer {
 	}
 
 	render(parentDomNode, thisDomNode) {
-		if (DEFER_DRAW) {
-			if (!thisDomNode) {
-				this.domNode = thisDomNode = document.createElement("div");
-			}
-			this.codespan = document.createElement("span");
-			this.codespan.classList.add('codespan');
-			this.domNode.appendChild(this.codespan);
+		if (!thisDomNode) {
+			this.domNode = thisDomNode = document.createElement("div");
 		}
+		this.codespan = document.createElement("span");
+		this.codespan.classList.add('codespan');
+		this.domNode.appendChild(this.codespan);
 		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add('lambda');
 		this.domNode.classList.add('codelist');
@@ -154,16 +146,10 @@ class Lambda extends NexContainer {
 
 	deleteLastAmpLetter() {
 		this.amptext = this.amptext.substr(0, this.amptext.length - 1);
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 	}
 
 	appendAmpText(txt) {
 		this.amptext = this.amptext + txt;
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 	}
 	getEventTable(context) {
 		return null;

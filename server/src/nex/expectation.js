@@ -21,12 +21,6 @@ class Expectation extends NexContainer {
 	constructor(hackfunction) {
 		super()
 		this.hackfunction = hackfunction;
-		if (!DEFER_DRAW) {
-			this.dotspan = document.createElement("span");
-			this.dotspan.classList.add('dotspan');
-			this.domNode.appendChild(this.dotspan);
-			this.render();
-		}
 	}
 
 	setDeleteHandler(f) {
@@ -60,14 +54,12 @@ class Expectation extends NexContainer {
 	}
 
 	render(parentDomNode, thisDomNode) {
-		if (DEFER_DRAW) {
-			if (!thisDomNode) {
-				this.domNode = thisDomNode = document.createElement("div");
-			}
-			this.dotspan = document.createElement("span");
-			this.dotspan.classList.add('dotspan');
-			this.domNode.appendChild(this.dotspan);
+		if (!thisDomNode) {
+			this.domNode = thisDomNode = document.createElement("div");
 		}
+		this.dotspan = document.createElement("span");
+		this.dotspan.classList.add('dotspan');
+		this.domNode.appendChild(this.dotspan);
 		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add('expectation');
 		if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
@@ -104,12 +96,7 @@ class Expectation extends NexContainer {
 		// have to do this in case global render type changed while we were
 		// waiting to fulfill
 		newnex.setRenderType(current_render_type);
-		if (!DEFER_DRAW) {
-			newnex.render();
-		} else {
-			root.render();
-//			newnex.rerenderSubtree(); // this is broken somehow
-		}
+		root.render();
 		return newnex;
 	}
 	getEventTable(context) {

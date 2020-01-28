@@ -20,9 +20,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 class ESymbol extends ValueNex {
 	constructor(val) {
 		super((val) ? val : '', '@', 'esymbol')
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 	}
 
 	makeCopy() {

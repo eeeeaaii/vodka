@@ -19,9 +19,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 class Newline extends Separator {
 	constructor() {
 		super("&nbsp;");
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 	}
 
 	makeCopy() {

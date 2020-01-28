@@ -20,9 +20,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 class InsertionPoint extends ValueNex {
 	constructor() {
 		super('&nbsp;', '', 'insertionpoint')
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 	}
 
 	makeCopy() {

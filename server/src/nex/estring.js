@@ -65,9 +65,6 @@ class EString extends ValueNex {
 
 	setMode(m) {
 		this.mode = m;
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 	}
 
 	getMode() {
@@ -76,9 +73,6 @@ class EString extends ValueNex {
 
 	toggleRendering() {
 		this.mode = (this.mode == MODE_NORMAL) ? MODE_EXPANDED : MODE_NORMAL;
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 	}
 
 	getTypedValue() {
@@ -98,9 +92,6 @@ class EString extends ValueNex {
 		this.displayValue = this.fullValue === ' ' ? '&nbsp;' : this.fullValue.trim();
 		if (this.displayValue.length > ESTRING_LIMIT) {
 			this.displayValue = this.displayValue.substr(0, (ESTRING_LIMIT - 3)) + '...';
-		}
-		if (!DEFER_DRAW) {
-			this.render();
 		}
 	}
 
@@ -158,9 +149,6 @@ class EString extends ValueNex {
 
 	startModalEditing() {
 		this.mode = MODE_EXPANDED;
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 		deactivateKeyFunnel();
 	}
 
@@ -169,10 +157,7 @@ class EString extends ValueNex {
 		activateKeyFunnel();
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val); // calls render
-		if (DEFER_DRAW) {
-			root.render();
-//			this.rerenderSubtree(); // broken, why?
-		}
+		root.render();
 	}
 	getEventTable(context) {
 		return null;

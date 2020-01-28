@@ -212,9 +212,6 @@ class KeyFunnel {
 			:  NEX_RENDER_TYPE_EXPLODED
 			);
 		root.setRenderType(current_render_type);
-		if (!DEFER_DRAW) {
-			root.render();
-		}
 	}
 
 	doEnter() {}

@@ -47,15 +47,12 @@ var current_render_type = NEX_RENDER_TYPE_NORMAL;
 var BUILTINS;
 var KEY_DISPATCHER = new KeyDispatcher();
 
-var DEFER_DRAW = true;
 var CONSOLE_DEBUG = false;
 
 // DO NOT RENAME THIS METHOD OR YOU WILL BREAK ALL THE OLD TESTS
 function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 	let r = KEY_DISPATCHER.dispatch(keycode, whichkey, hasShift, hasCtrl, hasAlt);
-	if (DEFER_DRAW) {
-		root.render();
-	}
+	root.render();
 	return r;
 }
 

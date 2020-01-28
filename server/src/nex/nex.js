@@ -18,17 +18,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 class Nex {
 	constructor() {
-		if (!DEFER_DRAW) {
-			this.domNode = document.createElement("div");
-			this.domNode.onclick = (e) => {
-				if (selectedNex instanceof EString) {
-					selectedNex.finishInput();
-				}
-				this.setSelected();
-				e.stopPropagation();
-			}
-			this.domNode.classList.add('nex');
-		}
 		this.parent = null;
 		this.selected = false;
 		this.renderType = current_render_type;
@@ -171,26 +160,24 @@ class Nex {
 	}
 
 	render(parentDomNode, thisDomNode) {
-		if (DEFER_DRAW) {
-			if (!thisDomNode) {
-				this.domNode = document.createElement("div");
-			} else {
-				// might already be equal but to make the api consistent
-				this.domNode = thisDomNode;
-			}
-			parentDomNode.appendChild(this.domNode);
-
-			this.domNode.onclick = (e) => {
-				if (selectedNex instanceof EString
-						&& selectedNex.getMode() == MODE_EXPANDED) {
-					selectedNex.finishInput();
-				}
-				this.setSelected();
-				e.stopPropagation();
-				root.render();
-			}
-			this.domNode.classList.add('nex');
+		if (!thisDomNode) {
+			this.domNode = document.createElement("div");
+		} else {
+			// might already be equal but to make the api consistent
+			this.domNode = thisDomNode;
 		}
+		parentDomNode.appendChild(this.domNode);
+
+		this.domNode.onclick = (e) => {
+			if (selectedNex instanceof EString
+					&& selectedNex.getMode() == MODE_EXPANDED) {
+				selectedNex.finishInput();
+			}
+			this.setSelected();
+			e.stopPropagation();
+			root.render();
+		}
+		this.domNode.classList.add('nex');
 
 		if (this.selected) {
 			this.domNode.classList.add('selected');		
@@ -239,16 +226,10 @@ class Nex {
 		}
 		selectedNex = this;
 		this.selected = true;
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 	}
 
 	setUnselected() {
 		this.selected = false;
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 	}
 	getEventTable(context) {
 		return null;

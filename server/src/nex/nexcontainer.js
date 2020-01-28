@@ -63,9 +63,6 @@ class NexContainer extends Nex {
 
 	toggleDir() {
 		this.vdir = !this.vdir;
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 	}
 
 	render(parentDomNode, thisDomNode) {
@@ -124,9 +121,6 @@ class NexContainer extends Nex {
 		if (i < 0 || i >= this.children.length) return null;
 		let r = this.children[i];
 		this.children.splice(i, 1);
-		if (!DEFER_DRAW) {
-			this.domNode.removeChild(r.domNode);
-		}
 		r.setParent(null);
 		return r;
 	}
@@ -163,23 +157,10 @@ class NexContainer extends Nex {
 		}
 		if (i == this.children.length) {
 			this.children.push(c);
-			if (!DEFER_DRAW) {
-				this.domNode.appendChild(c.domNode);
-			}
 		} else {
 			this.children.splice(i, 0, c);	
-			if (!DEFER_DRAW) {
-				this.domNode.insertBefore(c.domNode, this.children[i + 1].domNode);
-			}
 		}
 		c.setParent(this);
-		if (!DEFER_DRAW) {
-			this.render();
-			c.render();
-			if (oldparent) {
-				oldparent.render();
-			}
-		}
 	}
 
 	replaceChildAt(c, i) {

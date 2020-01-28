@@ -18,9 +18,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 class Separator extends Letter {
 	constructor(letter) {
 		super(letter);
-		if (!DEFER_DRAW) {
-			this.render();
-		}
 	}
 
 	// makeCopy is same as superclass
