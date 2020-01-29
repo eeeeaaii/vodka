@@ -125,6 +125,21 @@ To evaluate a command, select it and type shift-enter.
 
 Vodka is implemented in very plain vanilla JavaScript. It is essentially a prototype and I'm developing it rapidly, so it's not production-ready or secure. There is a facility for recording keystrokes and user actions, and then saving them out to a file to be played back in a test. The test framework uses headless chrome to automate the tests, and the "handlebars" markup framework to generate the test output file, so you'll have to npm those in if you want to run tests or create them. To actually run the server, you just need Node itself, nothing else.
 
+## Testing
+
+A comprehensive set of automated tests are in the "testing" directory. These were
+recorded from interactive Vodka sessions in the browser. All tests are screenshot
+tests. In order to run the test suite, you will need install a few node packages. Run
+the following in the "testing" directory:
+
+* npm i puppeteer
+* npm i handlebars
+
+Also, you will need to install imagemagick (the "magick" binary should be in your $PATH). For now, I am not storing test goldens in the repository, so if you
+do a git pull and want to do some work, first generate the goldens so you have
+a reference and you know if you've broken something (go into the testing directory
+and type "./runtests").
+
 ## Misc Notes
 
 Vodka is pre-alpha and, at the time you are reading this, many things are probably broken or not working. I have a road map that takes me into 2022, so there's a fair amount of work to do. However, I intend to get it minimally functional for livecoding/code-poetry and writing basic on-the-fly graphic design and layout code by early 2020. If you're interested in contributing, please get in touch with me at eeeeaaii@gmail.com.
