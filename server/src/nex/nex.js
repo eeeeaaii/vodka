@@ -93,15 +93,26 @@ class Nex {
 	}
 
 	getLeftX() {
-		// should this call render() if there is no domnode?
-		if (this.domNode) {
-			return this.domNode.getBoundingClientRect().left;
-		} else return 0;
+		if (USE_RENDER_INTO) {
+			if (this.renderedDomNode) {
+				return this.renderedDomNode.getBoundingClientRect().left;
+			} else return 0;
+		} else {
+			if (this.domNode) {
+				return this.domNode.getBoundingClientRect().left;
+			} else return 0;
+		}
 	}
 
 	getRightX() {
-		if (this.domNode) {
-			return this.domNode.getBoundingClientRect().right;
+		if (USE_RENDER_INTO) {
+			if (this.renderedDomNode) {
+				return this.renderedDomNode.getBoundingClientRect().right;
+			}
+		} else {
+			if (this.domNode) {
+				return this.domNode.getBoundingClientRect().right;
+			}
 		}
 	}
 
@@ -176,6 +187,7 @@ class Nex {
 			domNode.classList.remove('exploded');
 		}
 		domNode.setAttribute("style", this.currentStyle);
+		this.renderedDomNode = domNode; // save for later, like if we need to get x/y loc
 	}
 
 	render(parentDomNode, thisDomNode) {
