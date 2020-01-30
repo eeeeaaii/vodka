@@ -33,6 +33,11 @@ class Root extends NexContainer {
 		return new RootKeyFunnel(this);
 	}
 
+	renderInto(domNode) {
+		super.renderInto(domNode);
+		domNode.classList.add('root');
+	}
+
 	render() {
 		let rootDomNode = null;
 		rootDomNode = document.getElementById('mixroot');

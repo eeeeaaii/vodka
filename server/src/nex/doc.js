@@ -53,12 +53,20 @@ class Doc extends NexContainer {
 		return new DocKeyFunnel(this);
 	}
 
+	renderInto(domNode) {
+		super.renderInto(domNode);
+		domNode.classList.add('doc');
+		domNode.classList.add('data');
+		this.renderTags(domNode);
+	}
+
 	render(parentDomNode, thisDomNode) {
 		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add('doc');
 		this.domNode.classList.add('data');
 		this.renderTags();
 	}
+
 	getEventTable(context) {
 		//if (context == ContextType.COMMAND) {
 			return {

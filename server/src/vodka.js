@@ -38,7 +38,7 @@ function INDENT() {
 
 // experiments
 
-const USE_RENDER_INTO = false;
+const USE_RENDER_INTO = true;
 
 // global variables
 // TODO: fix naming convention and decide what's a const and what's
@@ -61,7 +61,11 @@ const CONSOLE_DEBUG = false;
 // DO NOT RENAME THIS METHOD OR YOU WILL BREAK ALL THE OLD TESTS
 function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 	let r = KEY_DISPATCHER.dispatch(keycode, whichkey, hasShift, hasCtrl, hasAlt);
-	root.render();
+	if (USE_RENDER_INTO) {
+		topLevelRender();
+	} else {
+		root.render();
+	}
 	return r;
 }
 
@@ -74,6 +78,15 @@ function createBuiltins() {
 	createSyscalls();
 	createTestBuiltins();
 	createTypeConversionBuiltins();
+}
+
+function topLevelRender() {
+	let rootDomNode = null;
+	rootDomNode = document.getElementById('mixroot');
+	while (rootDomNode.firstChild) {
+		rootDomNode.removeChild(rootDomNode.firstChild);
+	}
+	root.renderInto(rootDomNode);
 }
 
 function setup() {
@@ -100,5 +113,9 @@ function setup() {
 			return true;
 		}
 	}
-	root.render();
+	if (USE_RENDER_INTO) {
+		topLevelRender();
+	} else {
+		root.render();
+	}
 }

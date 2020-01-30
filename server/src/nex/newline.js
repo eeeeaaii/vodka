@@ -35,6 +35,13 @@ class Newline extends Separator {
 		return new NewlineKeyFunnel(this);
 	}
 
+	renderInto(domNode) {
+		super.renderInto(domNode);
+		domNode.classList.add('newline');
+		domNode.classList.add('data');
+		this.renderTags(domNode);
+	}
+
 	render(parentDomNode, thisDomNode) {
 		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add('newline');

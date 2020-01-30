@@ -52,6 +52,13 @@ class Word extends NexContainer {
 		return new WordKeyFunnel(this);
 	}
 
+	renderInto(domNode) {
+		super.renderInto(domNode);
+		domNode.classList.add('word');
+		domNode.classList.add('data');
+		this.renderTags(domNode);
+	}
+
 	render(parentDomNode, thisDomNode) {
 		super.render(parentDomNode, thisDomNode);
 		this.domNode.classList.add('word');

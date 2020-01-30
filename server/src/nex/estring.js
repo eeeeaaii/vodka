@@ -99,52 +99,81 @@ class EString extends ValueNex {
 		return new EStringKeyFunnel(this);
 	}
 
+	renderInto(domNode) {
+		super.renderInto(domNode);
+		domNode.innerHTML = this.prefix;
+		domNode.classList.add(this.className);
+		domNode.classList.add('valuenex');
+		if (this.mode == MODE_NORMAL) {
+			this.drawNormal(domNode);
+		} else {
+			this.drawExpanded(domNode);
+		}
+		this.renderTags(domNode);
+	}
+
 	render(parentDomNode, thisDomNode) {
 		super.render(parentDomNode, thisDomNode);
 		this.domNode.innerHTML = this.prefix;
 		this.domNode.classList.add(this.className);
 		this.domNode.classList.add('valuenex');
 		if (this.mode == MODE_NORMAL) {
-			this.drawNormal();
+			this.drawNormal(domNode);
 		} else {
-			this.drawExpanded();
+			this.drawExpanded(domNode);
 		}
-		this.renderTags();
+		this.renderTags(domNode);
 	}
 
-	drawNormal() {
+	drawNormal(domNode) {
+		// shim
+		if (!domNode) {
+			domNode = this.domNode;
+		}
 		if (this.displayValue !== '') {
 			this.innerspan = document.createElement("div");
 			this.innerspan.classList.add('innerspan');
 			this.innerspan.innerHTML = this.displayValue;
-			this.domNode.appendChild(this.innerspan);
+			domNode.appendChild(this.innerspan);
 		}
 	}
 
-	drawExpanded() {
-		this.drawTextField();
-		this.drawButton();
+	drawExpanded(domNode) {
+		// shim
+		if (!domNode) {
+			domNode = this.domNode;
+		}
+		this.drawTextField(domNode);
+		this.drawButton(domNode);
 		this.inputfield.focus();
 	}
 
-	drawTextField() {
+	drawTextField(domNode) {
+		// shim
+		if (!domNode) {
+			domNode = this.domNode;
+		}
 		this.inputfield = document.createElement("textarea");	
 		this.inputfield.classList.add('stringta');	
 		if (this.fullValue) {
 			this.inputfield.value = this.fullValue;
 		}
-		this.domNode.appendChild(this.inputfield);
+		domNode.appendChild(this.inputfield);
 		this.inputfield.classList.add('stringinput');
 	}
 
-	drawButton() {
+	drawButton(domNode) {
+		// shim
+		if (!domNode) {
+			domNode = this.domNode;
+		}
 		this.submitbutton = document.createElement("button")
 		this.submitbutton.classList.add('stringinputsubmit');			
 		let t = this;
 		this.submitbutton.onclick = function() {
 			t.finishInput();
 		}
-		this.domNode.appendChild(this.submitbutton);
+		domNode.appendChild(this.submitbutton);
 	}
 
 	startModalEditing() {
@@ -157,7 +186,11 @@ class EString extends ValueNex {
 		activateKeyFunnel();
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val); // calls render
-		root.render();
+		if (USE_RENDER_INTO) {
+			topLevelRender();
+		} else {
+			root.render();
+		}
 	}
 	getEventTable(context) {
 		return null;

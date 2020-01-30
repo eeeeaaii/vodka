@@ -53,6 +53,21 @@ class Expectation extends NexContainer {
 		return ContextType.COMMAND;
 	}
 
+	renderInto(domNode) {
+		let dotspan = document.createElement("span");
+		dotspan.classList.add('dotspan');
+		domNode.appendChild(dotspan);
+		super.renderInto(domNode);
+		domNode.classList.add('expectation');
+		if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
+			dotspan.classList.add('exploded');
+		} else {
+			dotspan.classList.remove('exploded');
+		}
+		dotspan.innerHTML = '...';
+		this.renderTags(domNode);
+	}
+
 	render(parentDomNode, thisDomNode) {
 		if (!thisDomNode) {
 			this.domNode = thisDomNode = document.createElement("div");
@@ -96,7 +111,11 @@ class Expectation extends NexContainer {
 		// have to do this in case global render type changed while we were
 		// waiting to fulfill
 		newnex.setRenderType(current_render_type);
-		root.render();
+		if (USE_RENDER_INTO) {
+			topLevelRender();
+		} else {
+			root.render();
+		}
 		return newnex;
 	}
 	getEventTable(context) {

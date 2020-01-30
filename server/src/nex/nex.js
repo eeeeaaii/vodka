@@ -142,6 +142,11 @@ class Nex {
 		}
 	}
 
+	rerender() {
+		this.domNode.innerHTML = ""; // will get rid of children also.
+		this.renderInto(this.domNode);
+	}
+
 	renderInto(domNode) {
 		this.renderedDomNode = domNode;
 		domNode.onclick = (e) => {
@@ -151,7 +156,11 @@ class Nex {
 			}
 			this.setSelected();
 			e.stopPropagation();
-			root.render();
+			if (USE_RENDER_INTO) {
+				topLevelRender();
+			} else {
+				root.render();
+			}
 		}
 		domNode.classList.add('nex');
 
@@ -169,12 +178,6 @@ class Nex {
 		domNode.setAttribute("style", this.currentStyle);
 	}
 
-	rerender() {
-		this.domNode.innerHTML = ""; // will get rid of children also.
-		this.renderInto(this.domNode);
-	}
-
-
 	render(parentDomNode, thisDomNode) {
 		if (!thisDomNode) {
 			this.domNode = document.createElement("div");
@@ -191,7 +194,11 @@ class Nex {
 			}
 			this.setSelected();
 			e.stopPropagation();
-			root.render();
+			if (USE_RENDER_INTO) {
+				topLevelRender();
+			} else {
+				root.render();
+			}
 		}
 		this.domNode.classList.add('nex');
 
@@ -209,10 +216,13 @@ class Nex {
 		this.domNode.setAttribute("style", this.currentStyle);
 	}
 
-	renderTags() {
+	renderTags(domNode) {
+		if (!domNode) {
+			domNode = this.domNode;
+		}
 		let isExploded = (this.renderType == NEX_RENDER_TYPE_EXPLODED);
 		for (let i = 0; i < this.tags.length; i++) {
-			this.tags[i].draw(this.domNode, isExploded);
+			this.tags[i].draw(domNode, isExploded);
 		}		
 	}
 
