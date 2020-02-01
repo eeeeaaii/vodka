@@ -19,167 +19,167 @@ function createTestBuiltins() {
 	Builtin.createBuiltin(
 		'is-error',
 		[
-			{name:'a0', type:'*'}
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof EError);
+			return new Bool(env.lb('nex') instanceof EError);
 		}
 	);
 
 	Builtin.createBuiltin(
 		'is-boolean',
 		[
-			{name:'a0', type:'*'}
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof Bool);
+			return new Bool(env.lb('nex') instanceof Bool);
 		}
 	);
 
 	Builtin.createBuiltin(
 		'is-command',
 		[
-			{name:'a0', type:'*'}
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof Command);
+			return new Bool(env.lb('nex') instanceof Command);
 		}
 	);
 
 	Builtin.createBuiltin(
 		'is-doc',
 		[
-			{name:'a0', type:'*'}
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof Doc);
+			return new Bool(env.lb('nex') instanceof Doc);
 		}
 	);
 
 	Builtin.createBuiltin(
 		'is-string',
 		[
-			{name:'a0', type:'*'}
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof EString);
+			return new Bool(env.lb('nex') instanceof EString);
 		}
 	);
 
 	Builtin.createBuiltin(
 		'is-symbol',
 		[
-			{name:'a0', type:'*'}
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof ESymbol);
+			return new Bool(env.lb('nex') instanceof ESymbol);
 		}
 	);
 
 	Builtin.createBuiltin(
 		'is-expectation',
 		[
-			{name:'a0', type:'*'}
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof Expectation);
+			return new Bool(env.lb('nex') instanceof Expectation);
 		}
 	);
 
 	Builtin.createBuiltin(
 		'is-float',
 		[
-			{name:'a0', type:'*'}
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof Float);
+			return new Bool(env.lb('nex') instanceof Float);
 		}
 	);
 
 	Builtin.createBuiltin(
 		'is-integer',
 		[
-			{name:'a0', type:'*'}
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof Integer);
+			return new Bool(env.lb('nex') instanceof Integer);
 		}
 	);
 
 	Builtin.createBuiltin(
 		'is-lambda',
 		[
-			{name:'a0', type:'*'}
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof Lambda);
+			return new Bool(env.lb('nex') instanceof Lambda);
 		}
 	);
 
 	Builtin.createBuiltin(
 		'is-letter',
 		[
-			{name:'a0', type:'*'}
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof Letter);
+			return new Bool(env.lb('nex') instanceof Letter);
 		}
 	);
 
 	Builtin.createBuiltin(
 		'is-line',
 		[
-			{name:'a0', type:'*'}
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof Line);
+			return new Bool(env.lb('nex') instanceof Line);
 		}
 	);
 
 	Builtin.createBuiltin(
 		'is-nil',
 		[
-			{name:'a0', type:'*'}
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof Nil);
+			return new Bool(env.lb('nex') instanceof Nil);
 		}
 	);
 	Builtin.createBuiltin(
 		'is-separator',
 		[
-			{name:'a0', type:'*'}
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof Separator
-				&& !(env.lb('a0') instanceof Letter));
+			return new Bool(env.lb('nex') instanceof Separator
+				&& !(env.lb('nex') instanceof Letter));
 		}
 	);
 	Builtin.createBuiltin(
 		'is-word',
 		[
-			{name:'a0', type:'*'}
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof Word);
+			return new Bool(env.lb('nex') instanceof Word);
 		}
 	);
 	Builtin.createBuiltin(
 		'is-list',
 		[
-			{name:'a0', type:'*'}
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof NexContainer);
+			return new Bool(env.lb('nex') instanceof NexContainer);
 		}
 	);
 	Builtin.createBuiltin(
 		'is-zlist',
 		[
-			{name:'a0', type:'*'}
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0') instanceof Zlist);
+			return new Bool(env.lb('nex') instanceof Zlist);
 		}
 	);
 }

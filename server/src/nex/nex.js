@@ -154,22 +154,29 @@ class Nex {
 	}
 
 	rerender() {
-		this.domNode.innerHTML = ""; // will get rid of children also.
-		this.renderInto(this.domNode);
+		if (!this.renderedDomNode) {
+			return; // can't rerender if we haven't rendered yet.
+		}
+		this.renderedDomNode.innerHTML = "";
+		while(this.renderedDomNode.classList.length > 0) {
+			this.renderedDomNode.classList.remove(this.renderedDomNode.classList.item(0));
+		}
+		this.renderedDomNode.setAttribute("style", "");
+		this.renderInto(this.renderedDomNode);
 	}
 
 	renderInto(domNode) {
-		this.renderedDomNode = domNode;
 		domNode.onclick = (e) => {
 			if (selectedNex instanceof EString
 					&& selectedNex.getMode() == MODE_EXPANDED) {
 				selectedNex.finishInput();
 			}
-			this.setSelected();
 			e.stopPropagation();
 			if (USE_RENDER_INTO) {
-				topLevelRender();
+				this.setSelected(true /*shallow-rerender*/);
+//				topLevelRender();
 			} else {
+				this.setSelected();
 				root.render();
 			}
 		}
@@ -204,11 +211,12 @@ class Nex {
 					&& selectedNex.getMode() == MODE_EXPANDED) {
 				selectedNex.finishInput();
 			}
-			this.setSelected();
 			e.stopPropagation();
 			if (USE_RENDER_INTO) {
-				topLevelRender();
+				this.setSelected(true /*shallow-rerender*/);
+//				topLevelRender();
 			} else {
+				this.setSelected();
 				root.render();
 			}
 		}
@@ -258,12 +266,18 @@ class Nex {
 		return this.selected;
 	}
 
-	setSelected() {
+	setSelected(rerender) {
 		if (selectedNex) {
 			selectedNex.setUnselected();
+			if (rerender) {
+				selectedNex.rerender(true /* shallow rerender, don't do children */);
+			}
 		}
 		selectedNex = this;
 		this.selected = true;
+		if (rerender) {
+			this.rerender(true /* shallow rerender, don't do children */);
+		}
 	}
 
 	setUnselected() {

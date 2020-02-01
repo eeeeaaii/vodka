@@ -15,30 +15,28 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-function createSyscalls() {
-	Builtin.createBuiltin(
-		'apply-style-to',
-		[
-			{name:'style$', type:'EString'},
-			{name:'nex', type:'*'}
-		],
-		function(env, argEnv) {
-			let s = env.lb('style$').getFullTypedValue();
-			let n = env.lb('nex');
-			n.setCurrentStyle(s);
-			return n;
-		}
-	);
 
-	Builtin.createBuiltin(
-		'get-style-from',
-		[
-			{name:'nex', type:'*'}
-		],
-		function(env, argEnv) {
-			let n = env.lb('nex');
-			let s = n.getCurrentStyle();
-			return new EString(s);
-		}
-	);
+/*
+.builtin {
+	display: none;
 }
+
+.builtin.exploded {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	font-family: Courier;
+	color: #444444;
+	font-style: italic;
+	font-size: 11px;
+	background-color: #e8e8e8;
+	border: 1px solid #aaaaaa;
+	padding: 5px;
+	border-radius: 6px 6px 6px 6px;
+}
+
+.builtin.exploded.selected {
+	padding: 3px;
+	border: 3px solid #ff7777;
+}
+*/

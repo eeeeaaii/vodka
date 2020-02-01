@@ -187,7 +187,8 @@ class EString extends ValueNex {
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val); // calls render
 		if (USE_RENDER_INTO) {
-			topLevelRender();
+			this.rerender();
+//			topLevelRender();
 		} else {
 			root.render();
 		}

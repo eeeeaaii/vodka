@@ -19,12 +19,12 @@ function createMathBuiltins() {
 	Builtin.createBuiltin(
 		'+',
 		[
-			{name:'a0', type:'Number',variadic:true},
+			{name:'add#%...', type:'Number',variadic:true}, // addends
 		],
 		function(env, argEnv) {
 			let total = 0;
 			let foundFloat = false;
-			let ar = env.lb('a0');
+			let ar = env.lb('add#%...');
 			for (let i = 0; i < ar.numChildren(); i++) {
 				let arg = ar.getChildAt(i);
 				if (arg instanceof Float) {
@@ -40,12 +40,12 @@ function createMathBuiltins() {
 	Builtin.createBuiltin(
 		'-',
 		[
-			{name:'a0', type:'Number'},
-			{name:'a1', type:'Number', optional:true},
+			{name:'min#%', type:'Number'}, // minuend
+			{name:'sub#%???', type:'Number', optional:true}, // subtrahend
 		],
 		function(env, argEnv) {
-			let a = env.lb('a0');
-			let b = env.lb('a1');
+			let a = env.lb('min#%');
+			let b = env.lb('sub#%???');
 			if (b == UNBOUND) {
 				let n = (-a.getTypedValue());
 				if (a instanceof Float) {
@@ -68,12 +68,12 @@ function createMathBuiltins() {
 	Builtin.createBuiltin(
 		'*',
 		[
-			{name:'a0', type:'Number',variadic:true}
+			{name:'fact#%...', type:'Number',variadic:true} // factor???
 		],
 		function(env, argEnv) {
 			let result = 1;
 			let foundFloat = false;
-			let ar = env.lb('a0');
+			let ar = env.lb('fact#%...');
 			for (let i = 0; i < ar.numChildren(); i++) {
 				let arg = ar.getChildAt(i);
 				if (arg instanceof Float) {
@@ -89,12 +89,12 @@ function createMathBuiltins() {
 	Builtin.createBuiltin(
 		'/',
 		[
-			{name:'a0', type:'Number'},
-			{name:'a1', type:'Number'},
+			{name:'divid#%', type:'Number'}, // dividend
+			{name:'divis#%', type:'Number'}, // divisor
 		],
 		function(env, argEnv) {
-			let a = env.lb('a0');
-			let b = env.lb('a1');
+			let a = env.lb('divid#%');
+			let b = env.lb('divis#%');
 			let result = a.getTypedValue() / b.getTypedValue();
 			if (a instanceof Float
 					|| b instanceof Float) {
@@ -108,12 +108,12 @@ function createMathBuiltins() {
 	Builtin.createBuiltin(
 		'modulo',
 		[
-			{name:'a0', type:'Integer'},
-			{name:'a1', type:'Integer'},
+			{name:'divid#', type:'Integer'}, //?
+			{name:'modulus#', type:'Integer'},
 		],
 		function(env, argEnv) {
-			let a = env.lb('a0');
-			let b = env.lb('a1');
+			let a = env.lb('divid#');
+			let b = env.lb('modulus#');
 			let result = a.getTypedValue() % b.getTypedValue();
 			return new Integer(result);
 		}
@@ -122,10 +122,10 @@ function createMathBuiltins() {
 	Builtin.createBuiltin(
 		'round',
 		[
-			{name:'a0', type:'Float'},
+			{name:'arg%', type:'Float'},
 		],
 		function(env, argEnv) {
-			let a = env.lb('a0').getTypedValue();
+			let a = env.lb('arg%').getTypedValue();
 			a = Math.round(a);
 			return new Float(a);
 		}
@@ -134,10 +134,10 @@ function createMathBuiltins() {
 	Builtin.createBuiltin(
 		'ceiling',
 		[
-			{name:'a0', type:'Float'},
+			{name:'arg%', type:'Float'},
 		],
 		function(env, argEnv) {
-			let a = env.lb('a0').getTypedValue();
+			let a = env.lb('arg%').getTypedValue();
 			a = Math.ceil(a);
 			return new Float(a);
 		}
@@ -146,10 +146,10 @@ function createMathBuiltins() {
 	Builtin.createBuiltin(
 		'floor',
 		[
-			{name:'a0', type:'Float'},
+			{name:'arg%', type:'Float'},
 		],
 		function(env, argEnv) {
-			let a = env.lb('a0').getTypedValue();
+			let a = env.lb('arg%').getTypedValue();
 			a = Math.floor(a);
 			return new Float(a);
 		}
@@ -159,12 +159,12 @@ function createMathBuiltins() {
 	Builtin.createBuiltin(
 		'=',
 		[
-			{name:'a0', type:'Number'},
-			{name:'a1', type:'Number'},
+			{name:'lhs#%', type:'Number'},
+			{name:'rhs#%', type:'Number'},
 		],
 		function(env, argEnv) {
-			let a = env.lb('a0').getTypedValue();
-			let b = env.lb('a1').getTypedValue();
+			let a = env.lb('lhs#%').getTypedValue();
+			let b = env.lb('rhs#%').getTypedValue();
 			let r = (a == b);
 			return new Bool(r);
 		}
@@ -173,12 +173,12 @@ function createMathBuiltins() {
 	Builtin.createBuiltin(
 		'<',
 		[
-			{name:'a0', type:'Number'},
-			{name:'a1', type:'Number'},
+			{name:'lhs#%', type:'Number'},
+			{name:'rhs#%', type:'Number'},
 		],
 		function(env, argEnv) {
-			let a = env.lb('a0').getTypedValue();
-			let b = env.lb('a1').getTypedValue();
+			let a = env.lb('lhs#%').getTypedValue();
+			let b = env.lb('rhs#%').getTypedValue();
 			let r = (a < b);
 			return new Bool(r);
 		}
@@ -187,12 +187,12 @@ function createMathBuiltins() {
 	Builtin.createBuiltin(
 		'<=',
 		[
-			{name:'a0', type:'Number'},
-			{name:'a1', type:'Number'},
+			{name:'lhs#%', type:'Number'},
+			{name:'rhs#%', type:'Number'},
 		],
 		function(env, argEnv) {
-			let a = env.lb('a0').getTypedValue();
-			let b = env.lb('a1').getTypedValue();
+			let a = env.lb('lhs#%').getTypedValue();
+			let b = env.lb('rhs#%').getTypedValue();
 			let r = (a <= b);
 			return new Bool(r);
 		}
@@ -201,12 +201,12 @@ function createMathBuiltins() {
 	Builtin.createBuiltin(
 		'>',
 		[
-			{name:'a0', type:'Number'},
-			{name:'a1', type:'Number'},
+			{name:'lhs#%', type:'Number'},
+			{name:'rhs#%', type:'Number'},
 		],
 		function(env, argEnv) {
-			let a = env.lb('a0').getTypedValue();
-			let b = env.lb('a1').getTypedValue();
+			let a = env.lb('lhs#%').getTypedValue();
+			let b = env.lb('rhs#%').getTypedValue();
 			let r = (a > b);
 			return new Bool(r);
 		}
@@ -215,12 +215,12 @@ function createMathBuiltins() {
 	Builtin.createBuiltin(
 		'>=',
 		[
-			{name:'a0', type:'Number'},
-			{name:'a1', type:'Number'},
+			{name:'lhs#%', type:'Number'},
+			{name:'rhs#%', type:'Number'},
 		],
 		function(env, argEnv) {
-			let a = env.lb('a0').getTypedValue();
-			let b = env.lb('a1').getTypedValue();
+			let a = env.lb('lhs#%').getTypedValue();
+			let b = env.lb('rhs#%').getTypedValue();
 			let r = (a >= b);
 			return new Bool(r);
 		}
@@ -229,12 +229,12 @@ function createMathBuiltins() {
 	Builtin.createBuiltin(
 		'<>',
 		[
-			{name:'a0', type:'Number'},
-			{name:'a1', type:'Number'},
+			{name:'lhs#%', type:'Number'},
+			{name:'rhs#%', type:'Number'},
 		],
 		function(env, argEnv) {
-			let a = env.lb('a0').getTypedValue();
-			let b = env.lb('a1').getTypedValue();
+			let a = env.lb('lhs#%').getTypedValue();
+			let b = env.lb('rhs#%').getTypedValue();
 			let r = (a != b);
 			return new Bool(r);
 		}

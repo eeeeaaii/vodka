@@ -65,6 +65,22 @@ class NexContainer extends Nex {
 		this.vdir = !this.vdir;
 	}
 
+	rerender(shallow) {
+		if (!this.renderedDomNode) {
+			return; // can't rerender if we haven't rendered yet.
+		}
+		if (shallow) {
+			this.savedChildDomNodes = [];
+			for (let i = 0; i < this.children.length; i++) {
+				this.savedChildDomNodes.push(this.children[i].renderedDomNode);
+			}
+			// note: this nex may create other dom nodes so we explicitly
+			// only save the children and we still allow the superclass
+			// to set innerHTML = ""
+		}
+		super.rerender();
+	}
+
 	renderInto(domNode) {
 		super.renderInto(domNode);
 		if (this.vdir) {
@@ -76,10 +92,19 @@ class NexContainer extends Nex {
 				&& !this.renderChildrenIfNormal()) {
 			return;
 		}
-		for (let i = 0; i < this.children.length; i++) {
-			let childDomNode = document.createElement("div");
-			domNode.appendChild(childDomNode);
-			this.children[i].renderInto(childDomNode);
+		if (this.savedChildDomNodes) {
+			// we are doing a shallow rerender
+			for (let i = 0; i < this.savedChildDomNodes.length; i++) {
+				domNode.appendChild(this.savedChildDomNodes[i]);
+			}
+			this.savedChildDomNodes = null;
+		} else {
+			// full rerender
+			for (let i = 0; i < this.children.length; i++) {
+				let childDomNode = document.createElement("div");
+				domNode.appendChild(childDomNode);
+				this.children[i].renderInto(childDomNode);
+			}
 		}
 	}
 

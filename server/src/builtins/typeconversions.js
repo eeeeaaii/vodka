@@ -20,10 +20,10 @@ function createTypeConversionBuiltins() {
 	Builtin.createBuiltin(
 		'to-integer',
 		[
-			{name: 'a0', type:'*'},
+			{name: 'nex', type:'*'},
 		],
 		function(env, argEnv) {
-			let v = env.lb('a0');
+			let v = env.lb('nex');
 			if (v instanceof Integer) {
 				return v;
 			} else if (v instanceof Float) {
@@ -72,10 +72,10 @@ function createTypeConversionBuiltins() {
 	Builtin.createBuiltin(
 		'to-string',
 		[
-			{name:'a0', type:'*'},
+			{name:'nex', type:'*'},
 		],
 		function(env, argEnv) {
-			let v = env.lb('a0');
+			let v = env.lb('nex');
 			let s = "";
 			if (v instanceof EString) {
 				// nothing to do but should we copy the object?

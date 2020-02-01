@@ -19,20 +19,20 @@ function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'car',
 		[
-			{name:'a0', type:'NexContainer'}
+			{name:'list()', type:'NexContainer'}
 		],
 		function(env, argEnv) {
-			return env.lb('a0').getFirstChild();
+			return env.lb('list()').getFirstChild();
 		}
 	);
 
 	Builtin.createBuiltin(
 		'cdr',
 		[
-			{name:'a0', type:'NexContainer'}
+			{name:'list()', type:'NexContainer'}
 		],
 		function(env, argEnv) {
-			let c = env.lb('a0');
+			let c = env.lb('list()');
 			c.removeChild(c.getChildAt(0));
 			return c;
 		}
@@ -41,12 +41,12 @@ function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'cons',
 		[
-			{name:'a0', type:'*'},
-			{name:'a1', type:'NexContainer'},
+			{name:'nex', type:'*'},
+			{name:'list()', type:'NexContainer'},
 		],
 		function(env, argEnv) {
-			let lst = env.lb('a1');
-			lst.prependChild(env.lb('a0'));
+			let lst = env.lb('list()');
+			lst.prependChild(env.lb('nex'));
 			return lst;
 		}
 	);
@@ -54,10 +54,10 @@ function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'is-empty',
 		[
-			{name:'a0', type:'NexContainer'},
+			{name:'list()', type:'NexContainer'},
 		],
 		function(env, argEnv) {
-			let lst = env.lb('a0');
+			let lst = env.lb('list()');
 			let rb = !lst.hasChildren();
 			return new Bool(rb);
 		}
@@ -66,10 +66,10 @@ function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'begin',
 		[
-			{name:'a0', type:'*', variadic:true}
+			{name:'nex*...', type:'*', variadic:true}
 		],
 		function(env, argEnv) {
-			let lst = env.lb('a0');
+			let lst = env.lb('nex*...');
 			if (lst.numChildren() == 0) {
 				return new Nil();
 			} else {
@@ -81,12 +81,12 @@ function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'let',
 		[
-			{name:'a0', type:'ESymbol',skipeval:true},
-			{name:'a1', type:'*'}
+			{name:'_name@', type:'ESymbol',skipeval:true},
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			let rhs = env.lb('a1');
-			argEnv.bind(env.lb('a0').getTypedValue(), rhs);
+			let rhs = env.lb('nex');
+			argEnv.bind(env.lb('_name@').getTypedValue(), rhs);
 			return rhs;
 		}
 	);
@@ -94,12 +94,12 @@ function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'bind',
 		[
-			{name:'a0', type:'ESymbol',skipeval:true},
-			{name:'a1', type:'*'}
+			{name:'_name@', type:'ESymbol',skipeval:true},
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			let val = env.lb('a1');
-			let name = env.lb('a0');
+			let val = env.lb('nex');
+			let name = env.lb('_name@');
 			BUILTINS.bindInPackage(name.getTypedValue(), val);
 			return name;
 		}
@@ -108,12 +108,12 @@ function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'bind-unique',
 		[
-			{name:'a0', type:'ESymbol', skipeval:true},
-			{name:'a1', type:'*'}
+			{name:'_name@', type:'ESymbol', skipeval:true},
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			let val = env.lb('a1');
-			BUILTINS.bindUniqueInPackage(env.lb('a0').getTypedValue(), val);
+			let val = env.lb('nex');
+			BUILTINS.bindUniqueInPackage(env.lb('_name@').getTypedValue(), val);
 			return val;
 		}
 	);
@@ -151,12 +151,12 @@ function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'save',
 		[
-			{name:'a0', type:'ESymbol', skipeval:true},
-			{name:'a1', type:'*', skipeval:true}
+			{name:'_name@', type:'ESymbol', skipeval:true},
+			{name:'_nex', type:'*', skipeval:true}
 		],
 		function(env, argEnv) {
-			let nm = env.lb('a0').getTypedValue();
-			let val = env.lb('a1');			
+			let nm = env.lb('_name@').getTypedValue();
+			let val = env.lb('_nex');			
 			let exp = new Expectation();
 			saveNex(nm, val, exp);
 			return exp;
@@ -166,12 +166,12 @@ function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'save-result',
 		[
-			{name:'a0', type:'ESymbol', skipeval:true},
-			{name:'a1', type:'*'}
+			{name:'_name@', type:'ESymbol', skipeval:true},
+			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			let nm = env.lb('a0').getTypedValue();
-			let val = env.lb('a1');			
+			let nm = env.lb('_name@').getTypedValue();
+			let val = env.lb('nex');			
 			let exp = new Expectation();
 			saveNex(nm, val, exp);
 			return exp;
@@ -181,10 +181,10 @@ function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'load',
 		[
-			{name:'a0', type:'ESymbol', skipeval:true},
+			{name:'_name@', type:'ESymbol', skipeval:true},
 		],
 		function(env, argEnv) {
-			let nm = env.lb('a0').getTypedValue();
+			let nm = env.lb('_name@').getTypedValue();
 			let exp = new Expectation();
 			loadNex(nm, exp);
 			return exp;
@@ -195,15 +195,13 @@ function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'edit',
 		[
-			{name:'sym', type:'ESymbol', skipeval:true},
-			{name:'val', type:'*', skipeval:true, optional:true},
-			{name:'result', type:'*', skipeval:true, optional:true},
-			{name:'evaluated', type:'*', skipeval:true, optional:true}
+			{name:'_name@', type:'ESymbol', skipeval:true},
+			{name:'_val???', type:'*', skipeval:true, optional:true},
 		],
 		function(env, argEnv) {
-			let sym = env.lb('sym').makeCopy();
+			let sym = env.lb('_name@').makeCopy();
 			let nm = sym.getTypedValue();
-			let val = env.lb('val');
+			let val = env.lb('_val???');
 			if (val) {
 				val = val.makeCopy();
 				toEval = val.makeCopy();
@@ -234,12 +232,12 @@ function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'eval-after',
 		[
-			{name: 'a0', type:'*'},
-			{name: 'a1', type:'Integer'}
+			{name: 'cmd', type:'*'},
+			{name: 'time#', type:'Integer'}
 		],
 		function(env, argEnv) {
-			let time = env.lb('a1').getTypedValue();
-			let toEval = env.lb('a0');
+			let time = env.lb('time#').getTypedValue();
+			let toEval = env.lb('cmd');
 			let exp = new Expectation();
 			setTimeout(function() {
 				exp.fulfill(toEval.evaluate(argEnv));
@@ -272,14 +270,14 @@ function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'do-on-after',
 		[
-			{name: 'a0', type:'Lambda'},
-			{name: 'a1', type:'*'},
-			{name: 'a2', type:'Integer'}
+			{name: 'func&', type:'Lambda'},
+			{name: 'arg', type:'*'},
+			{name: 'delay#', type:'Integer'}
 		],
 		function(env, argEnv) {
-			let lambda = env.lb('a0');
-			let arg = env.lb('a1');
-			let delay = env.lb('a2');
+			let lambda = env.lb('func&');
+			let arg = env.lb('arg');
+			let delay = env.lb('delay#');
 			let e = new Expectation();
 			e.appendChild(arg);
 			let clearVar = setTimeout(function() {

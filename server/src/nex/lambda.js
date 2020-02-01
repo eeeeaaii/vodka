@@ -66,6 +66,11 @@ class Lambda extends NexContainer {
 		return ContextType.COMMAND;
 	}
 
+	getSymbolForCodespan() {
+		return '&#8907;';
+	}
+
+
 	renderInto(domNode) {
 		let codespan = document.createElement("span");
 		codespan.classList.add('codespan');
@@ -78,7 +83,7 @@ class Lambda extends NexContainer {
 		} else {
 			codespan.classList.remove('exploded');
 		}
-		codespan.innerHTML = '<span class="lambdasign">&#8907;</span>' + this.amptext.replace(/ /g, '&nbsp;');
+		codespan.innerHTML = '<span class="lambdasign">' + this.getSymbolForCodespan() + '</span>' + this.amptext.replace(/ /g, '&nbsp;');
 		this.renderTags(domNode);
 	}
 

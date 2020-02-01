@@ -105,16 +105,17 @@ class Expectation extends NexContainer {
 		let parent = this.getParent();
 		let wasSelected = this.isSelected();
 		parent.replaceChildWith(this, newnex);
-		if (wasSelected) {
-			newnex.setSelected();
-		}
 		// have to do this in case global render type changed while we were
 		// waiting to fulfill
 		newnex.setRenderType(current_render_type);
 		if (USE_RENDER_INTO) {
-			topLevelRender();
+			parent.rerender();
+//			topLevelRender();
 		} else {
 			root.render();
+		}
+		if (wasSelected) {
+			newnex.setSelected(true/*shallow-rerender*/);
 		}
 		return newnex;
 	}

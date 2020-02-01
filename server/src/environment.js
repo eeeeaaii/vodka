@@ -16,7 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-const BUILTIN_ARG_PREFIX = '****arg****';
+const BUILTIN_ARG_PREFIX = '|';
 const UNBOUND = "****UNBOUND****"
 
 class Environment {

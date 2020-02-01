@@ -22,6 +22,11 @@ class Builtin extends Lambda {
 		super();
 		this.name = name;
 		this.params = params;
+		let amp = ' ' + name;
+		for (let i = 0; i < params.length; i++) {
+			amp += ' ' + params[i].name;
+		}
+		this.amptext = amp;
 		this.f = null;
 		this.lexicalEnv = BUILTINS;
 
@@ -37,6 +42,17 @@ class Builtin extends Lambda {
 		let r = new Builtin(this.name, this.params, this.subPhaseFactory);
 		this.copyFieldsTo(r);
 		return r;
+	}
+
+	getSymbolForCodespan() {
+		return '&szlig;';
+	}
+
+
+	renderInto(domNode) {
+		super.renderInto(domNode);
+		domNode.classList.add('builtin');
+		this.renderTags(domNode);
 	}
 
 	toString() {

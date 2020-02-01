@@ -19,12 +19,12 @@ function createTagBuiltins() {
 	Builtin.createBuiltin(
 		'add-tag',
 		[
-			{name: 'a0', type:'*', skipeval:true},
-			{name: 'a1', type:'EString'}
+			{name: '_nex', type:'*', skipeval:true},
+			{name: 'tag$', type:'EString'}
 		],
 		function(env, argEnv) {
-			let n = env.lb('a0');
-			let tagname = env.lb('a1').getFullTypedValue();
+			let n = env.lb('_nex');
+			let tagname = env.lb('tag$').getFullTypedValue();
 			n.addTag(new Tag(tagname));
 			return n;
 		}
@@ -33,12 +33,12 @@ function createTagBuiltins() {
 	Builtin.createBuiltin(
 		'remove-tag',
 		[
-			{name: 'a0', type:'*', skipeval:true},
-			{name: 'a1', type:'EString'}
+			{name: '_nex', type:'*', skipeval:true},
+			{name: 'tag$', type:'EString'}
 		],
 		function(env, argEnv) {
-			let n = env.lb('a0');
-			let tagname = env.lb('a1').getFullTypedValue();
+			let n = env.lb('_nex');
+			let tagname = env.lb('tag$').getFullTypedValue();
 			let tag = new Tag(tagname);
 			n.removeTag(tag);
 			return n;
@@ -48,12 +48,12 @@ function createTagBuiltins() {
 	Builtin.createBuiltin(
 		'has-tag',
 		[
-			{name: 'a0', type:'*', skipeval:true},
-			{name: 'a1', type:'EString'}
+			{name: '_nex', type:'*', skipeval:true},
+			{name: 'tag$', type:'EString'}
 		],
 		function(env, argEnv) {
-			let n = env.lb('a0');
-			let tagname = env.lb('a1').getFullTypedValue();
+			let n = env.lb('_nex');
+			let tagname = env.lb('tag$').getFullTypedValue();
 			let tag = new Tag(tagname);
 			if (n.hasTag(tag)) {
 				return new Bool(true);

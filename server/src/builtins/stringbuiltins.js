@@ -19,11 +19,11 @@ function createStringBuiltins() {
 	Builtin.createBuiltin(
 		'string-listify',
 		[
-			{name:'a0', type:'EString'}
+			{name:'str$', type:'EString'}
 		],
 		function(env, argEnv) {
 			let r = new Word();
-			let s = env.lb('a0').getFullTypedValue();
+			let s = env.lb('str$').getFullTypedValue();
 			for (let i = 0; i < s.length; i++) {
 				let c = s.charAt(i);
 				let cc = new EString(c);
@@ -36,12 +36,12 @@ function createStringBuiltins() {
 	Builtin.createBuiltin(
 		'string-char-at',
 		[
-			{name:'a0', type:'EString'},
-			{name:'a1', type:'Integer'}
+			{name:'str$', type:'EString'},
+			{name:'pos#', type:'Integer'}
 		],
 		function(env, argEnv) {
-			let s = env.lb('a0').getFullTypedValue();
-			let n = env.lb('a1').getTypedValue();
+			let s = env.lb('str$').getFullTypedValue();
+			let n = env.lb('pos#').getTypedValue();
 			if (n < 0 || n >= s.length) {
 				return new EError(`string index out of bounds: ${n} for string "${s}"`)
 			}
@@ -53,12 +53,12 @@ function createStringBuiltins() {
 	Builtin.createBuiltin(
 		'string-index-of',
 		[
-			{name:'a0', type:'EString'},
-			{name:'a1', type:'EString'}
+			{name:'str$', type:'EString'},
+			{name:'tofind$', type:'EString'}
 		],
 		function(env, argEnv) {
-			let s = env.lb('a0').getFullTypedValue();
-			let tofind = env.lb('a1').getFullTypedValue();
+			let s = env.lb('str$').getFullTypedValue();
+			let tofind = env.lb('tofind$').getFullTypedValue();
 			let i = s.indexOf(tofind);
 			if (i == -1) {
 				return new EError(`did not find "${tofind}" in "${s}"`)
@@ -71,10 +71,10 @@ function createStringBuiltins() {
 	Builtin.createBuiltin(
 		'string-length',
 		[
-			{name:'a0', type:'EString'}
+			{name:'str$', type:'EString'}
 		],
 		function(env, argEnv) {
-			let s = env.lb('a0').getFullTypedValue();
+			let s = env.lb('str$').getFullTypedValue();
 			let len = s.length;
 			return new Integer(len);
 		}
@@ -83,11 +83,11 @@ function createStringBuiltins() {
 	Builtin.createBuiltin(
 		'string-cat',
 		[
-			{name:'a0', type: 'EString', variadic:true}
+			{name:'strs$...', type: 'EString', variadic:true}
 		],
 		function(env, argEnv) {
 			let r = '';
-			let ar = env.lb('a0');
+			let ar = env.lb('strs$...');
 			for (let i = 0; i < ar.numChildren(); i++) {
 				let s = ar.getChildAt(i).getFullTypedValue();
 				r += s;
@@ -99,12 +99,12 @@ function createStringBuiltins() {
 	Builtin.createBuiltin(
 		'string-eq',
 		[
-			{name:'a0', type: 'EString'},
-			{name:'a1', type: 'EString'}
+			{name:'str1$', type: 'EString'},
+			{name:'str2$', type: 'EString'}
 		],
 		function(env, argEnv) {
-			let s1 = env.lb('a0').getFullTypedValue();
-			let s2 = env.lb('a1').getFullTypedValue();
+			let s1 = env.lb('str1$').getFullTypedValue();
+			let s2 = env.lb('str2$').getFullTypedValue();
 			return new Bool(s1 === s2);
 		}
 	);

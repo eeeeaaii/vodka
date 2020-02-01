@@ -53,6 +53,10 @@ class ESymbol extends ValueNex {
 		if (CONSOLE_DEBUG) {
 			console.log(`${INDENT()}symbol ${this.value} bound to ${b.debugString()}`);
 		}
+		// in some weird cases the symbol might have been bound
+		// when the render type was different than it is now
+		b.setRenderType(current_render_type);
+
 		ILVL--;
 		return b;
 	}

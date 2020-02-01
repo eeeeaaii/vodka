@@ -62,6 +62,8 @@ const CONSOLE_DEBUG = false;
 function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 	let r = KEY_DISPATCHER.dispatch(keycode, whichkey, hasShift, hasCtrl, hasAlt);
 	if (USE_RENDER_INTO) {
+		// TODO: somehow figure out the "highest level" nex affected by
+		// the keystroke and render from there down
 		topLevelRender();
 	} else {
 		root.render();

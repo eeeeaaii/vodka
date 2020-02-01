@@ -19,10 +19,10 @@ function createLogicBuiltins() {
 	Builtin.createBuiltin(
 		'not',
 		[
-			{name:'a0', type:'Bool'},
+			{name:'exp!', type:'Bool'},
 		],
 		function(env, argEnv) {
-			return new Bool(!env.lb('a0').getTypedValue());
+			return new Bool(!env.lb('exp!').getTypedValue());
 		}
 	)
 
@@ -30,38 +30,38 @@ function createLogicBuiltins() {
 	Builtin.createBuiltin(
 		'and',
 		[
-			{name:'a0', type:'Bool'},
-			{name:'a1', type:'Bool'},
+			{name:'exp1!', type:'Bool'},
+			{name:'exp2!', type:'Bool'},
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0').getTypedValue() && env.lb('a1').getTypedValue());
+			return new Bool(env.lb('exp1!').getTypedValue() && env.lb('exp2!').getTypedValue());
 		}
 	)
 
 	Builtin.createBuiltin(
 		'or',
 		[
-			{name:'a0', type:'Bool'},
-			{name:'a1', type:'Bool'},
+			{name:'exp1!', type:'Bool'},
+			{name:'exp2!', type:'Bool'},
 		],
 		function(env, argEnv) {
-			return new Bool(env.lb('a0').getTypedValue() || env.lb('a1').getTypedValue());
+			return new Bool(env.lb('exp1!').getTypedValue() || env.lb('exp2!').getTypedValue());
 		}
 	)
 
 	Builtin.createBuiltin(
 		'if',
 		[
-			{name:'a0', type:'Bool'},
-			{name:'a1', type:'*', skipeval:true},
-			{name:'a2', type:'*', skipeval:true},
+			{name:'cond!', type:'Bool'},
+			{name:'{true}', type:'*', skipeval:true},
+			{name:'{false}', type:'*', skipeval:true},
 		],
 		function(env, argEnv) {
-			let b = env.lb('a0').getTypedValue();
+			let b = env.lb('cond!').getTypedValue();
 			if (b) {
-				return env.lb('a1').evaluate(argEnv);
+				return env.lb('{true}').evaluate(argEnv);
 			} else {
-				return env.lb('a2').evaluate(argEnv);
+				return env.lb('{false}').evaluate(argEnv);
 			}
 		},
 		function(phaseExecutor, nex, env) {
