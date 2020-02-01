@@ -47,8 +47,8 @@ class EError extends EString {
 	}
 
 	// bork, does it bork the test tho?
-	drawTextField() {
-		super.drawTextField();
+	drawTextField(domNode) {
+		super.drawTextField(domNode);
 		this.inputfield.setAttribute("readonly", '');
 	}
 
