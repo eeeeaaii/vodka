@@ -267,6 +267,7 @@ class Nex {
 	}
 
 	setSelected(rerender) {
+		if (selectedNex == this) return;
 		if (selectedNex) {
 			selectedNex.setUnselected();
 			if (rerender) {

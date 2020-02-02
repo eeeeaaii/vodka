@@ -283,9 +283,8 @@ function createBasicBuiltins() {
 			let clearVar = setTimeout(function() {
 				let cmd = new Command('');
 				cmd.appendChild(lambda);
-				e.removeChild(arg);
+				e.removeChild(arg); // eventually not needed
 				cmd.appendChild(arg);
-				e.appendChild(cmd);
 				let result = cmd.evaluate(argEnv);
 				e.fulfill(result);
 			}.bind(this), delay.getTypedValue());
