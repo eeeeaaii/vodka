@@ -67,7 +67,7 @@ class Command extends NexContainer {
 		} else if (this.numChildren() > 0) {
 			let c = this.getChildAt(0);
 			this.removeChildAt(0);
-			lambda = c.evaluate(executionEnv);
+			lambda = evaluateNexSafely(c, executionEnv);
 			if (!(lambda instanceof Lambda)) {
 				throw new EError(`first argument ${lambda.debugString()} to command is not a lambda.`);
 			}

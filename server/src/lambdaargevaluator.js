@@ -31,7 +31,7 @@ class LambdaArgEvaluator {
 	}	
 
 	processArgument(arg) {
-		return arg.evaluate(this.argEnv);
+		return evaluateNexSafely(arg, this.argEnv);
 	}
 
 	processAllArgs() {

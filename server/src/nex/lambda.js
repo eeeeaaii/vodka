@@ -134,7 +134,7 @@ class Lambda extends NexContainer {
 		let r = new Nil();
 		for (let i = 0; i < this.children.length; i++) {
 			let c = this.children[i];
-			r = c.evaluate(closure);
+			r = evaluateNexSafely(c, closure);
 		}
 		return r;
 	}

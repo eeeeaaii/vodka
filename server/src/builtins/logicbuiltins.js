@@ -59,9 +59,9 @@ function createLogicBuiltins() {
 		function(env, argEnv) {
 			let b = env.lb('cond!').getTypedValue();
 			if (b) {
-				return env.lb('{true}').evaluate(argEnv);
+				return evaluateNexSafely(env.lb('{true}'), argEnv);
 			} else {
-				return env.lb('{false}').evaluate(argEnv);
+				return evaluateNexSafely(env.lb('{false}'), argEnv);
 			}
 		},
 		function(phaseExecutor, nex, env) {

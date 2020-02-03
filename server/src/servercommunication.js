@@ -45,3 +45,32 @@ function loadNex(name, expectation) {
 		expectation.fulfill(nex);
 	});
 }
+
+function importNex(name, expectation) {
+	let payload = `load\t${name}`;
+
+	sendToServer(payload, function(data) {
+		let nex = new NexParser(data).parse();
+		let result = evaluateNexSafely(nex, BUILTINS);
+		expectation.fulfill(result);
+	});
+}
+
+function importChain(importList, nex, expectation) {
+	if (importList.numChildren() == 0) {
+		let result = evaluateNexSafely(nex, BUILTINS);
+		expectation.fulfill(result);
+		// idk
+	} else {
+		let name = importList.removeChildAt(0).getTypedValue();
+		let payload = `load\t${name}`;
+
+		sendToServer(payload, function(data) {
+			let imported = new NexParser(data).parse();
+			evaluateNexSafely(imported, BUILTINS);
+			// discard result of evaluation.
+			importChain(importList, nex, expectation);
+		});
+	}
+
+}

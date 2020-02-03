@@ -74,7 +74,6 @@ class Builtin extends Lambda {
 
 	static bindBuiltinObject(name, nex) {
 		BUILTINS.bindUnique(name, nex);
-//		nex.evaluate(BUILTINS);
 	}
 
 	executor(closure, executionEnv) {

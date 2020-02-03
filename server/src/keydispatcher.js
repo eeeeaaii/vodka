@@ -15,6 +15,23 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+// use this wrapper to handle exceptions correctly, this
+// saves us from having to put exception handling in every
+// type of nex that can be evaluated.
+function evaluateNexSafely(nex, env) {
+	let result;
+	try {
+		result = nex.evaluate(env);
+	} catch (e) {
+		if (e instanceof EError) {
+			result = e;
+		} else {
+			throw e;
+		}
+	}
+	return result;
+}
+
 function insertOrAppend(s, obj) {
 	if (s.hasChildren()) {
 		manipulator.insertAfterSelectedAndSelect(obj);
@@ -351,7 +368,7 @@ class KeyDispatcher {
 			if (table) {
 				if (table[eventName]) {
 					if (table[eventName] instanceof Nex) {
-						evaluateNex(table[eventName]);
+						evaluateNexSafely(table[eventName], BUILTINS);
 					} else {
 						KeyResponseFunctions[table[eventName]](selectedNex);
 						return false; // to cancel browser event
@@ -419,26 +436,11 @@ class KeyDispatcher {
 	}
 
 	doShiftEnter() {
-		let n = this.evaluateNex(selectedNex);
+		let n = evaluateNexSafely(selectedNex, BUILTINS);
 		if (n) {
 			manipulator.replaceSelectedWith(n);			
 		}
 	}
-
-	evaluateNex(nex) {
-		let result;
-		try {
-			result = nex.evaluate(BUILTINS);
-		} catch (e) {
-			if (e instanceof EError) {
-				result = e;
-			} else {
-				throw e;
-			}
-		}
-		return result;
-	}
-
 
 	doAltEnter() {
 		let s = selectedNex;

@@ -77,6 +77,6 @@ class BuiltinCommandPhase extends ExpectationPhase {
 	}
 
 	getExpectationResult() {
-		return this.nex.evaluate(this.env);
+		return evaluateNexSafely(this.nex, this.env);
 	}	
 }

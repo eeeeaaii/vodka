@@ -151,7 +151,7 @@ class BuiltinArgEvaluator {
 		let param = this.effectiveParams[i];
 		let arg = this.argContainer.getArgAt(i);
 		if (!param.skipeval) {
-			arg = arg.evaluate(this.env);
+			arg = evaluateNexSafely(arg, this.env);
 		}
 		let typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[param.type](arg);
 

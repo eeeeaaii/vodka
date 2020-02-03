@@ -73,6 +73,7 @@ function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 
 function createBuiltins() {
 	createBasicBuiltins();
+	createFileBuiltins();
 	createMathBuiltins();
 	createStringBuiltins();
 	createTagBuiltins();
