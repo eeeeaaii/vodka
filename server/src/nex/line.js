@@ -86,6 +86,16 @@ class Line extends NexContainer {
 				'ArrowUp': 'move-left-up',
 				'ArrowRight': 'move-right-down',
 				'ArrowDown': 'move-right-down',
+				'~': 'insert-or-append-command',
+				'!': 'insert-or-append-bool',
+				'@': 'insert-or-append-symbol',
+				'#': 'insert-or-append-integer',
+				'$': 'insert-or-append-string',
+				'%': 'insert-or-append-float',
+				'^': 'insert-or-append-nil',
+				'(': 'insert-or-append-word',
+				'[': 'insert-or-append-line',
+				'{': 'insert-or-append-doc',
 			}
 		//}
 	}

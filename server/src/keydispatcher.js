@@ -95,13 +95,13 @@ var KeyResponseFunctions = {
 	// 'replace-selected-with-line': function(s) { manipulator.replaceSelectedWith(new Line()); },
 	// 'replace-selected-with-doc': function(s) { manipulator.replaceSelectedWith(new Doc()); },
 
-	// 'insert-or-append-command': function(s) { insertOrAppend(s, new Command()); },
-	// 'insert-or-append-bool': function(s) { insertOrAppend(s, new Bool()); },
-	// 'insert-or-append-symbol': function(s) { insertOrAppend(s, new ESymbol()); },
-	// 'insert-or-append-integer': function(s) { insertOrAppend(s, new Integer()); },
-	// 'insert-or-append-string': function(s) { insertOrAppend(s, new EString()); },
-	// 'insert-or-append-float': function(s) { insertOrAppend(s, new Float()); },
-	// 'insert-or-append-nil': function(s) { insertOrAppend(s, new Nil()); },
+	'insert-or-append-command': function(s) { insertOrAppend(s, new Command()); },
+	'insert-or-append-bool': function(s) { insertOrAppend(s, new Bool()); },
+	'insert-or-append-symbol': function(s) { insertOrAppend(s, new ESymbol()); },
+	'insert-or-append-integer': function(s) { insertOrAppend(s, new Integer()); },
+	'insert-or-append-string': function(s) { insertOrAppend(s, new EString()); },
+	'insert-or-append-float': function(s) { insertOrAppend(s, new Float()); },
+	'insert-or-append-nil': function(s) { insertOrAppend(s, new Nil()); },
 
 	'insert-command-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Command()); },
 	'insert-bool-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Bool()); },
@@ -188,9 +188,9 @@ var KeyResponseFunctions = {
 	},
 
 
-	// 'insert-or-append-word': function(s) { insertOrAppend(s, new Word()); },
-	// 'insert-or-append-line': function(s) { insertOrAppend(s, new Line()); },
-	// 'insert-or-append-doc': function(s) { insertOrAppend(s, new Doc()); },
+	'insert-or-append-word': function(s) { insertOrAppend(s, new Word()); },
+	'insert-or-append-line': function(s) { insertOrAppend(s, new Line()); },
+	'insert-or-append-doc': function(s) { insertOrAppend(s, new Doc()); },
 	// 'insert-or-append-word-to-doc': function(s) {
 	// 	if (s.hasChildren()) {
 	// 		manipulator.insertAfterSelectedAndSelect(new Word());
