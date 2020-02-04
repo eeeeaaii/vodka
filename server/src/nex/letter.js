@@ -56,17 +56,6 @@ class Letter extends Nex {
 		}
 	}
 
-	render(parentDomNode, thisDomNode, skipTags) {
-		super.render(parentDomNode, thisDomNode);
-		this.domNode.classList.add('letter');
-		this.domNode.classList.add('data');
-		this.domNode.innerHTML = (this.value == " " ? "&nbsp;" : this.value) ;
-		// TODO: clean up render steps, this is gross
-		if (!skipTags) {
-			this.renderTags();
-		}
-	}
-
 	getText() {
 		return this.value;
 	}

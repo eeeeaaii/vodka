@@ -42,12 +42,6 @@ class Newline extends Separator {
 		this.renderTags(domNode);
 	}
 
-	render(parentDomNode, thisDomNode) {
-		super.render(parentDomNode, thisDomNode);
-		this.domNode.classList.add('newline');
-		this.domNode.classList.add('data');
-		this.renderTags();
-	}
 	getEventTable(context) {
 		return null;
 	}

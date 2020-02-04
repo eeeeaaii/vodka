@@ -38,8 +38,6 @@ function INDENT() {
 
 // experiments
 
-const USE_RENDER_INTO = true;
-
 // global variables
 // TODO: fix naming convention and decide what's a const and what's
 // a singleton and generally what's what.
@@ -61,13 +59,9 @@ const CONSOLE_DEBUG = false;
 // DO NOT RENAME THIS METHOD OR YOU WILL BREAK ALL THE OLD TESTS
 function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 	let r = KEY_DISPATCHER.dispatch(keycode, whichkey, hasShift, hasCtrl, hasAlt);
-	if (USE_RENDER_INTO) {
-		// TODO: somehow figure out the "highest level" nex affected by
-		// the keystroke and render from there down
-		topLevelRender();
-	} else {
-		root.render();
-	}
+	// TODO: somehow figure out the "highest level" nex affected by
+	// the keystroke and render from there down
+	topLevelRender();
 	return r;
 }
 
@@ -116,9 +110,5 @@ function setup() {
 			return true;
 		}
 	}
-	if (USE_RENDER_INTO) {
-		topLevelRender();
-	} else {
-		root.render();
-	}
+	topLevelRender();
 }

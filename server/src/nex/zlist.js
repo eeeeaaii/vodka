@@ -50,18 +50,6 @@ class Zlist extends NexContainer {
 		this.renderTags(domNode);
 	}
 
-	render(parentDomNode, thisDomNode) {
-		super.render(parentDomNode, thisDomNode);
-		this.domNode.classList.add('zlist');
-		this.domNode.classList.add('data');
-		if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
-			this.domNode.style.height = '' + (this.children.length * 10) + 'px'; 
-		} else {
-			this.domNode.style.height = '0px';
-		}
-		this.renderTags();
-
-	}
 	getEventTable(context) {
 		return {
 			'ShiftTab': 'select-parent',				

@@ -68,24 +68,6 @@ class Expectation extends NexContainer {
 		this.renderTags(domNode);
 	}
 
-	render(parentDomNode, thisDomNode) {
-		if (!thisDomNode) {
-			this.domNode = thisDomNode = document.createElement("div");
-		}
-		this.dotspan = document.createElement("span");
-		this.dotspan.classList.add('dotspan');
-		this.domNode.appendChild(this.dotspan);
-		super.render(parentDomNode, thisDomNode);
-		this.domNode.classList.add('expectation');
-		if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
-			this.dotspan.classList.add('exploded');
-		} else {
-			this.dotspan.classList.remove('exploded');
-		}
-		this.dotspan.innerHTML = '...';
-		this.renderTags();
-	}
-
 	isEmpty() {
 		return true;
 	}
@@ -108,12 +90,7 @@ class Expectation extends NexContainer {
 		// have to do this in case global render type changed while we were
 		// waiting to fulfill
 		newnex.setRenderType(current_render_type);
-		if (USE_RENDER_INTO) {
-			parent.rerender();
-//			topLevelRender();
-		} else {
-			root.render();
-		}
+		parent.rerender();
 		if (wasSelected) {
 			newnex.setSelected(true/*shallow-rerender*/);
 		}

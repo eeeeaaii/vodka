@@ -87,25 +87,6 @@ class Lambda extends NexContainer {
 		this.renderTags(domNode);
 	}
 
-	render(parentDomNode, thisDomNode) {
-		if (!thisDomNode) {
-			this.domNode = thisDomNode = document.createElement("div");
-		}
-		this.codespan = document.createElement("span");
-		this.codespan.classList.add('codespan');
-		this.domNode.appendChild(this.codespan);
-		super.render(parentDomNode, thisDomNode);
-		this.domNode.classList.add('lambda');
-		this.domNode.classList.add('codelist');
-		if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
-			this.codespan.classList.add('exploded');
-		} else {
-			this.codespan.classList.remove('exploded');
-		}
-		this.codespan.innerHTML = '<span class="lambdasign">&#8907;</span>' + this.amptext.replace(/ /g, '&nbsp;');
-		this.renderTags();
-	}
-
 	setCmdName(nm) {
 		this.cmdname = nm;
 	}

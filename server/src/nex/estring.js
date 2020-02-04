@@ -112,19 +112,6 @@ class EString extends ValueNex {
 		this.renderTags(domNode);
 	}
 
-	render(parentDomNode, thisDomNode) {
-		super.render(parentDomNode, thisDomNode);
-		this.domNode.innerHTML = this.prefix;
-		this.domNode.classList.add(this.className);
-		this.domNode.classList.add('valuenex');
-		if (this.mode == MODE_NORMAL) {
-			this.drawNormal(domNode);
-		} else {
-			this.drawExpanded(domNode);
-		}
-		this.renderTags(domNode);
-	}
-
 	drawNormal(domNode) {
 		// shim
 		if (!domNode) {
@@ -186,12 +173,7 @@ class EString extends ValueNex {
 		activateKeyFunnel();
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val); // calls render
-		if (USE_RENDER_INTO) {
-			this.rerender();
-//			topLevelRender();
-		} else {
-			root.render();
-		}
+		this.rerender();
 	}
 	getEventTable(context) {
 		return null;

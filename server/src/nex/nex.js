@@ -93,26 +93,14 @@ class Nex {
 	}
 
 	getLeftX() {
-		if (USE_RENDER_INTO) {
-			if (this.renderedDomNode) {
-				return this.renderedDomNode.getBoundingClientRect().left;
-			} else return 0;
-		} else {
-			if (this.domNode) {
-				return this.domNode.getBoundingClientRect().left;
-			} else return 0;
-		}
+		if (this.renderedDomNode) {
+			return this.renderedDomNode.getBoundingClientRect().left;
+		} else return 0;
 	}
 
 	getRightX() {
-		if (USE_RENDER_INTO) {
-			if (this.renderedDomNode) {
-				return this.renderedDomNode.getBoundingClientRect().right;
-			}
-		} else {
-			if (this.domNode) {
-				return this.domNode.getBoundingClientRect().right;
-			}
+		if (this.renderedDomNode) {
+			return this.renderedDomNode.getBoundingClientRect().right;
 		}
 	}
 
@@ -172,13 +160,7 @@ class Nex {
 				selectedNex.finishInput();
 			}
 			e.stopPropagation();
-			if (USE_RENDER_INTO) {
-				this.setSelected(true /*shallow-rerender*/);
-//				topLevelRender();
-			} else {
-				this.setSelected();
-				root.render();
-			}
+			this.setSelected(true /*shallow-rerender*/);
 		}
 		domNode.classList.add('nex');
 
@@ -195,45 +177,6 @@ class Nex {
 		}
 		domNode.setAttribute("style", this.currentStyle);
 		this.renderedDomNode = domNode; // save for later, like if we need to get x/y loc
-	}
-
-	render(parentDomNode, thisDomNode) {
-		if (!thisDomNode) {
-			this.domNode = document.createElement("div");
-		} else {
-			// might already be equal but to make the api consistent
-			this.domNode = thisDomNode;
-		}
-		parentDomNode.appendChild(this.domNode);
-
-		this.domNode.onclick = (e) => {
-			if (selectedNex instanceof EString
-					&& selectedNex.getMode() == MODE_EXPANDED) {
-				selectedNex.finishInput();
-			}
-			e.stopPropagation();
-			if (USE_RENDER_INTO) {
-				this.setSelected(true /*shallow-rerender*/);
-//				topLevelRender();
-			} else {
-				this.setSelected();
-				root.render();
-			}
-		}
-		this.domNode.classList.add('nex');
-
-		if (this.selected) {
-			this.domNode.classList.add('selected');		
-		} else {
-			this.domNode.classList.remove('selected');
-		}
-		let isExploded = (this.renderType == NEX_RENDER_TYPE_EXPLODED);
-		if (isExploded) {
-			this.domNode.classList.add('exploded');
-		} else {
-			this.domNode.classList.remove('exploded');
-		}
-		this.domNode.setAttribute("style", this.currentStyle);
 	}
 
 	renderTags(domNode) {

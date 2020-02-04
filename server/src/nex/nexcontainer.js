@@ -108,22 +108,6 @@ class NexContainer extends Nex {
 		}
 	}
 
-	render(parentDomNode, thisDomNode) {
-		super.render(parentDomNode, thisDomNode);
-		if (this.vdir) {
-			this.domNode.classList.add('vdir');
-		} else {
-			this.domNode.classList.remove('vdir');
-		}
-		if (this.renderType == NEX_RENDER_TYPE_NORMAL
-				&& !this.renderChildrenIfNormal()) {
-			return;
-		}
-		for (let i = 0; i < this.children.length; i++) {
-			this.children[i].render(this.domNode);
-		}
-	}
-
 	renderChildrenIfNormal() {
 		return true;
 	}

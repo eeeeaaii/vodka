@@ -49,14 +49,6 @@ class ValueNex extends Nex {
 		this.renderTags(domNode);
 	}
 
-	render(parentDomNode, thisDomNode) {
-		super.render(parentDomNode, thisDomNode);
-		this.domNode.classList.add(this.className);
-		this.domNode.classList.add('valuenex');
-		this.domNode.innerHTML = '' + this.prefix + this.renderValue();
-		this.renderTags();
-	}
-
 	getTypedValue() {
 		return this.value;
 	}

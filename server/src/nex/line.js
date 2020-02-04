@@ -71,12 +71,6 @@ class Line extends NexContainer {
 
 	}
 
-	render(parentDomNode, thisDomNode) {
-		super.render(parentDomNode, thisDomNode);
-		this.domNode.classList.add('line');
-		this.domNode.classList.add('data');
-		this.renderTags();
-	}
 	getEventTable(context) {
 		//if (context == ContextType.COMMAND) {
 			return {
