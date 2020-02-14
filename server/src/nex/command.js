@@ -108,26 +108,31 @@ class Command extends NexContainer {
 		return r;
 	}
 
-	renderInto(domNode) {
-		this.codespan = document.createElement("span");
-		this.codespan.classList.add('codespan');
-		domNode.appendChild(this.codespan);
-		super.renderInto(domNode); // will create children
+	// renderFlags only passed in MULTIRENDER
+	renderInto(domNode, renderFlags) {
+		let codespan = null;
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+			codespan = document.createElement("span");
+			codespan.classList.add('codespan');
+			domNode.appendChild(codespan);
+		}
+		super.renderInto(domNode, renderFlags); // will create children
 		domNode.classList.add('command');
 		domNode.classList.add('codelist');
-		if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
-			this.codespan.classList.add('exploded');
-		} else {
-			this.codespan.classList.remove('exploded');
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+			if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
+				codespan.classList.add('exploded');
+			} else {
+				codespan.classList.remove('exploded');
+			}
+			codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
 		}
-		this.codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
-		this.renderTags(domNode);
+		this.renderTags(domNode, renderFlags);
 	}
 
 	renderChildrenIfNormal() {
 		return false;
 	}
-
 
 	getCommandText() {
 		return this.commandtext;

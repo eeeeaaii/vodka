@@ -41,12 +41,12 @@ class ValueNex extends Nex {
 		return this.value;
 	}
 
-	renderInto(domNode) {
-		super.renderInto(domNode);
+	renderInto(domNode, renderFlags) {
+		super.renderInto(domNode, renderFlags);
 		domNode.classList.add(this.className);
 		domNode.classList.add('valuenex');
 		domNode.innerHTML = '' + this.prefix + this.renderValue();
-		this.renderTags(domNode);
+		this.renderTags(domNode, renderFlags);
 	}
 
 	getTypedValue() {

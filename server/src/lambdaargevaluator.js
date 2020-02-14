@@ -14,6 +14,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
+//TODO!
+// tests are failing because here I automatically throw/bail if any arg is 
+// an error, but I implemented the string-split (I think) in the original
+// integration tests such that it assumes that one of the arguments is
+// an error. so I have to make a decision about what happens.
+// 2. getParent and setSelected don't even make sense in a multirender
+// world unless I have two notions: the node, and the nex.
 
 class LambdaArgEvaluator {
 	constructor(params, argContainer, bindEnv, argEnv) {
@@ -31,7 +38,11 @@ class LambdaArgEvaluator {
 	}	
 
 	processArgument(arg) {
-		return evaluateNexSafely(arg, this.argEnv);
+		let r = evaluateNexSafely(arg, this.argEnv);
+//		if (r instanceof EError) {
+//			throw r;
+//		}
+		return r;
 	}
 
 	processAllArgs() {

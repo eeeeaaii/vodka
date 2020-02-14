@@ -30,11 +30,11 @@ class Separator extends Letter {
 		return new SeparatorKeyFunnel(this);
 	}
 
-	renderInto(domNode) {
-		super.renderInto(domNode, true /* skip tags hack */);
+	renderInto(domNode, renderFlags) {
+		super.renderInto(domNode, renderFlags, true /* skip tags hack */);
 		domNode.classList.add('separator');
 		domNode.classList.add('data');
-		this.renderTags(domNode);
+		this.renderTags(domNode, renderFlags);
 	}
 
 	getEventTable(context) {

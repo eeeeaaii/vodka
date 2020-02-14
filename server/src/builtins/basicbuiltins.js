@@ -92,6 +92,19 @@ function createBasicBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'set',
+		[
+			{name:'_name@', type:'ESymbol',skipeval:true},
+			{name:'nex', type:'*'}
+		],
+		function(env, argEnv) {
+			let rhs = env.lb('nex');
+			argEnv.set(env.lb('_name@').getTypedValue(), rhs);
+			return rhs;
+		}
+	);
+
+	Builtin.createBuiltin(
 		'bind',
 		[
 			{name:'_name@', type:'ESymbol',skipeval:true},

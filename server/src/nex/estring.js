@@ -99,8 +99,10 @@ class EString extends ValueNex {
 		return new EStringKeyFunnel(this);
 	}
 
-	renderInto(domNode) {
-		super.renderInto(domNode);
+	renderInto(domNode, renderFlags) {
+		super.renderInto(domNode, renderFlags);
+		// this one always can rerender because it's not a container
+		// we only need to care about rerenders when it's a container type
 		domNode.innerHTML = this.prefix;
 		domNode.classList.add(this.className);
 		domNode.classList.add('valuenex');
@@ -109,7 +111,7 @@ class EString extends ValueNex {
 		} else {
 			this.drawExpanded(domNode);
 		}
-		this.renderTags(domNode);
+		this.renderTags(domNode, renderFlags);
 	}
 
 	drawNormal(domNode) {

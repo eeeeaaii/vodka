@@ -38,8 +38,8 @@ class Zlist extends NexContainer {
 		return ContextType.DOC;
 	}
 
-	renderInto(domNode) {
-		super.renderInto(domNode);
+	renderInto(domNode, renderFlags) {
+		super.renderInto(domNode, renderFlags);
 		domNode.classList.add('zlist');
 		domNode.classList.add('data');
 		if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
@@ -47,7 +47,7 @@ class Zlist extends NexContainer {
 		} else {
 			domNode.style.height = '0px';
 		}
-		this.renderTags(domNode);
+		this.renderTags(domNode, renderFlags);
 	}
 
 	getEventTable(context) {

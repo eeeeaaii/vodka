@@ -20,98 +20,28 @@ var harness = require('../testharness');
 
 var testactions = [];
 
-testactions.push({
-		type:'keydown',
-		code:'ShiftRight'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Digit4'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Digit4'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ShiftRight'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ShiftLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Enter'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Enter'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ShiftLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyH'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyH'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyE'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyE'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyL'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyL'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyL'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyL'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyO'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyO'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Tab'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Tab'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Enter'
-	});
-testactions.push({
-		type:'click',
-		x:'0',
-		y:'0'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Enter'
-	});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Digit4'});
+testactions.push({type:'keyup',code:'Digit4'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'KeyH'});
+testactions.push({type:'keyup',code:'KeyH'});
+testactions.push({type:'keydown',code:'KeyE'});
+testactions.push({type:'keyup',code:'KeyE'});
+testactions.push({type:'keydown',code:'KeyL'});
+testactions.push({type:'keyup',code:'KeyL'});
+testactions.push({type:'keydown',code:'KeyL'});
+testactions.push({type:'keyup',code:'KeyL'});
+testactions.push({type:'keydown',code:'KeyO'});
+testactions.push({type:'keyup',code:'KeyO'});
+testactions.push({type:'keydown',code:'Tab'});
+testactions.push({type:'keyup',code:'Tab'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'click',x:'0',y:'0'});
+testactions.push({type:'keyup',code:'Enter'});
 
 harness.runTest(testactions, 'direct');

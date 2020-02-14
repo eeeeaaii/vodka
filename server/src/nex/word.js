@@ -52,11 +52,11 @@ class Word extends NexContainer {
 		return new WordKeyFunnel(this);
 	}
 
-	renderInto(domNode) {
-		super.renderInto(domNode);
+	renderInto(domNode, renderFlags) {
+		super.renderInto(domNode, renderFlags);
 		domNode.classList.add('word');
 		domNode.classList.add('data');
-		this.renderTags(domNode);
+		this.renderTags(domNode, renderFlags);
 	}
 
 	getEventTable(context) {

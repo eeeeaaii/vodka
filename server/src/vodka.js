@@ -36,7 +36,17 @@ function INDENT() {
 	return s;
 }
 
+// render flags
+const RENDER_FLAG_NORMAL = 0;
+const RENDER_FLAG_SHALLOW = 1;
+const RENDER_FLAG_EXPLODED = 2; // not yet implemented?
+const RENDER_FLAG_RERENDER = 4;
+
 // experiments
+
+// experiment: allows the same nex to be rendered in multiple places
+// on the screen
+const MULTIRENDER = false;
 
 // global variables
 // TODO: fix naming convention and decide what's a const and what's
@@ -83,7 +93,11 @@ function topLevelRender() {
 	while (rootDomNode.firstChild) {
 		rootDomNode.removeChild(rootDomNode.firstChild);
 	}
-	root.renderInto(rootDomNode);
+	if (MULTIRENDER) {
+		root.renderInto(rootDomNode, RENDER_FLAG_NORMAL);
+	} else {
+		root.renderInto(rootDomNode);
+	}
 }
 
 function setup() {

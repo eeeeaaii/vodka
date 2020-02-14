@@ -152,6 +152,14 @@ class BuiltinArgEvaluator {
 		let arg = this.argContainer.getArgAt(i);
 		if (!param.skipeval) {
 			arg = evaluateNexSafely(arg, this.env);
+			// note that if we are evaluating the nex safely,
+			// EErrors are returned and not thrown. But for now
+			// we assume all functions assume that none of their
+			// args are EErrors -- we can add an "allow error"
+			// thing if we need that.
+//			if (arg instanceof EError) {
+//				throw arg;
+//			}
 		}
 		let typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[param.type](arg);
 

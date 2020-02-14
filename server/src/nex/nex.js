@@ -15,17 +15,28 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 class Nex {
 	constructor() {
+		// unused in MULTIRENDER
 		this.parent = null;
+
 		this.selected = false;
 		this.renderType = current_render_type;
 		this.keyfunnel = null;
 		this.currentStyle = "";
 		this.enclosingClosure = null; // DO NOT COPY
-
 		this.tags = [];
+		if (MULTIRENDER) {
+			this.activeNodes = [];
+		}
+	}
+
+	// only used in MULTIRENDER
+	requestNode() {
+		let newNode = document.createElement("div");
+		newNode.nex = this;
+		this.activeNodes.push(newNode);
+		return newNode;
 	}
 
 	getEventTable(context) {
@@ -93,14 +104,32 @@ class Nex {
 	}
 
 	getLeftX() {
-		if (this.renderedDomNode) {
-			return this.renderedDomNode.getBoundingClientRect().left;
-		} else return 0;
+		if (MULTIRENDER) {
+			if (this.activeNodes[0]) {
+				// not lovely, kinda broken, should work a different way?
+				return this.activeNodes[0].getBoundingClientRect().left;
+			} else {
+				return 0;
+			}
+		} else {
+			if (this.renderedDomNode) {
+				return this.renderedDomNode.getBoundingClientRect().left;
+			} else return 0;
+		}
 	}
 
 	getRightX() {
-		if (this.renderedDomNode) {
-			return this.renderedDomNode.getBoundingClientRect().right;
+		if (MULTIRENDER) {
+			if (this.activeNodes[0]) {
+				// not lovely, kinda broken, should work a different way?
+				return this.activeNodes[0].getBoundingClientRect().right;
+			} else {
+				return 0;
+			}
+		} else {
+			if (this.renderedDomNode) {
+				return this.renderedDomNode.getBoundingClientRect().right;
+			}
 		}
 	}
 
@@ -141,58 +170,96 @@ class Nex {
 		}
 	}
 
-	rerender() {
-		if (!this.renderedDomNode) {
-			return; // can't rerender if we haven't rendered yet.
+	// MULTIRENDER ONLY
+	doNodeRerender(node, renderFlags) {
+		if (renderFlags & RENDER_FLAG_RERENDER) {
+			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+				node.innerHTML = "";
+			}
+			while(node.classList.length > 0) {
+				node.classList.remove(node.classList.item(0));
+			}
+			node.setAttribute("style", "");
 		}
-		this.renderedDomNode.innerHTML = "";
-		while(this.renderedDomNode.classList.length > 0) {
-			this.renderedDomNode.classList.remove(this.renderedDomNode.classList.item(0));
-		}
-		this.renderedDomNode.setAttribute("style", "");
-		this.renderInto(this.renderedDomNode);
+		this.renderInto(node, renderFlags);
 	}
 
-	renderInto(domNode) {
-		domNode.onclick = (e) => {
-			if (selectedNex instanceof EString
-					&& selectedNex.getMode() == MODE_EXPANDED) {
-				selectedNex.finishInput();
+	// arg only used in MULTIRENDER
+	rerender(renderFlags) {
+		if (MULTIRENDER) {
+			for (let i = 0; i < this.activeNodes.length; i++) {
+				let node = this.activeNodes[i];
+				this.doNodeRerender(node, renderFlags | RENDER_FLAG_RERENDER);
 			}
-			e.stopPropagation();
-			this.setSelected(true /*shallow-rerender*/);
+		} else {
+			if (!this.renderedDomNode) {
+				return; // can't rerender if we haven't rendered yet.
+			}
+			this.renderedDomNode.innerHTML = "";
+			while(this.renderedDomNode.classList.length > 0) {
+				this.renderedDomNode.classList.remove(this.renderedDomNode.classList.item(0));
+			}
+			this.renderedDomNode.setAttribute("style", "");
+			this.renderInto(this.renderedDomNode);
+		}
+	}
+
+	renderInto(domNode, renderFlags) {
+		if (!(renderFlags & RENDER_FLAG_RERENDER)) {
+			domNode.onclick = (e) => {
+				if (selectedNex instanceof EString
+						&& selectedNex.getMode() == MODE_EXPANDED) {
+					selectedNex.finishInput();
+				}
+				e.stopPropagation();
+				this.setSelected(true /*shallow-rerender*/);
+			}
 		}
 		domNode.classList.add('nex');
 
 		if (this.selected) {
 			domNode.classList.add('selected');		
-		} else {
-			domNode.classList.remove('selected');
+		// } else {
+		// 	domNode.classList.remove('selected');
 		}
 		let isExploded = (this.renderType == NEX_RENDER_TYPE_EXPLODED);
 		if (isExploded) {
 			domNode.classList.add('exploded');
-		} else {
-			domNode.classList.remove('exploded');
+		// } else {
+		// 	domNode.classList.remove('exploded');
 		}
 		domNode.setAttribute("style", this.currentStyle);
-		this.renderedDomNode = domNode; // save for later, like if we need to get x/y loc
+		if (this.MULTIRENDER) {
+			// no op b/c it was already allocated and stored
+		} else {
+			this.renderedDomNode = domNode; // save for later, like if we need to get x/y loc
+		}
 	}
 
-	renderTags(domNode) {
-		if (!domNode) {
-			domNode = this.domNode;
+	renderTags(domNode, renderFlags) {
+		if (
+			(renderFlags & RENDER_FLAG_SHALLOW)
+			&& (renderFlags & RENDER_FLAG_RERENDER)) {
+			return;
 		}
+
+//}
+//		if (!domNode) {
+//			throw new "wtf";
+//			domNode = this.domNode;
+//		}
 		let isExploded = (this.renderType == NEX_RENDER_TYPE_EXPLODED);
 		for (let i = 0; i < this.tags.length; i++) {
 			this.tags[i].draw(domNode, isExploded);
 		}		
 	}
 
+	// unused in MULTIRENDER
 	setParent(p) {
 		this.parent = p;
 	}
 
+	// unused in MULTIRENDER
 	getParent(evenIfRoot) {
 		let p = this.parent;
 		if (p instanceof Root && !evenIfRoot) {
@@ -209,18 +276,30 @@ class Nex {
 		return this.selected;
 	}
 
+	setSelectedMultirender(domNode) {
+
+	}
+
 	setSelected(rerender) {
 		if (selectedNex == this) return;
 		if (selectedNex) {
 			selectedNex.setUnselected();
 			if (rerender) {
-				selectedNex.rerender(true /* shallow rerender, don't do children */);
+				if (MULTIRENDER) {
+					selectedNex.rerender(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW)
+				} else {
+					selectedNex.rerender(true /* shallow rerender, don't do children */);
+				}
 			}
 		}
 		selectedNex = this;
 		this.selected = true;
 		if (rerender) {
-			this.rerender(true /* shallow rerender, don't do children */);
+			if (MULTIRENDER) {
+				this.rerender(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW)
+			} else {
+				this.rerender(true /* shallow rerender, don't do children */);
+			}
 		}
 	}
 

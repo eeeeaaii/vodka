@@ -53,19 +53,24 @@ class Expectation extends NexContainer {
 		return ContextType.COMMAND;
 	}
 
-	renderInto(domNode) {
-		let dotspan = document.createElement("span");
-		dotspan.classList.add('dotspan');
-		domNode.appendChild(dotspan);
-		super.renderInto(domNode);
-		domNode.classList.add('expectation');
-		if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
-			dotspan.classList.add('exploded');
-		} else {
-			dotspan.classList.remove('exploded');
+	renderInto(domNode, renderFlags) {
+		let dotspan = null;
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+			dotspan = document.createElement("span");
+			dotspan.classList.add('dotspan');
+			domNode.appendChild(dotspan);
 		}
-		dotspan.innerHTML = '...';
-		this.renderTags(domNode);
+		super.renderInto(domNode, renderFlags);
+		domNode.classList.add('expectation');
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+			if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
+				dotspan.classList.add('exploded');
+			} else {
+				dotspan.classList.remove('exploded');
+			}
+			dotspan.innerHTML = '...';
+		}
+		this.renderTags(domNode, renderFlags);
 	}
 
 	isEmpty() {
@@ -90,7 +95,11 @@ class Expectation extends NexContainer {
 		// have to do this in case global render type changed while we were
 		// waiting to fulfill
 		newnex.setRenderType(current_render_type);
-		parent.rerender();
+		if (MULTIRENDER) {
+			parent.rerender(0);
+		} else {
+			parent.rerender();
+		}
 		if (wasSelected) {
 			newnex.setSelected(true/*shallow-rerender*/);
 		}

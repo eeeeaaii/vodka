@@ -33,20 +33,9 @@ class Root extends NexContainer {
 		return new RootKeyFunnel(this);
 	}
 
-	renderInto(domNode) {
-		super.renderInto(domNode);
+	renderInto(domNode, renderFlags) {
+		super.renderInto(domNode, renderFlags);
 		domNode.classList.add('root');
-	}
-
-	render() {
-		let rootDomNode = null;
-		rootDomNode = document.getElementById('mixroot');
-		while (rootDomNode.firstChild) {
-			rootDomNode.removeChild(rootDomNode.firstChild);
-		}
-		this.domNode = rootDomNode;
-		super.render(rootDomNode);
-		this.domNode.classList.add('root');
 	}
 
 }

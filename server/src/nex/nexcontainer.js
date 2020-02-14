@@ -65,24 +65,31 @@ class NexContainer extends Nex {
 		this.vdir = !this.vdir;
 	}
 
+	// for MULTIRENDER change arg name to renderFlags
 	rerender(shallow) {
-		if (!this.renderedDomNode) {
-			return; // can't rerender if we haven't rendered yet.
-		}
-		if (shallow) {
-			this.savedChildDomNodes = [];
-			for (let i = 0; i < this.children.length; i++) {
-				this.savedChildDomNodes.push(this.children[i].renderedDomNode);
+		if (MULTIRENDER) {
+			// forget saving child nodes, do it correctly.
+			let renderFlags = shallow;
+			super.rerender(renderFlags);
+		} else {
+			if (!this.renderedDomNode) {
+				return; // can't rerender if we haven't rendered yet.
 			}
-			// note: this nex may create other dom nodes so we explicitly
-			// only save the children and we still allow the superclass
-			// to set innerHTML = ""
+			if (shallow) {
+				this.savedChildDomNodes = [];
+				for (let i = 0; i < this.children.length; i++) {
+					this.savedChildDomNodes.push(this.children[i].renderedDomNode);
+				}
+				// note: this nex may create other dom nodes so we explicitly
+				// only save the children and we still allow the superclass
+				// to set innerHTML = ""
+			}
+			super.rerender();
 		}
-		super.rerender();
 	}
 
-	renderInto(domNode) {
-		super.renderInto(domNode);
+	renderInto(domNode, renderFlags) {
+		super.renderInto(domNode, renderFlags);
 		if (this.vdir) {
 			domNode.classList.add('vdir');
 		} else {
@@ -92,18 +99,28 @@ class NexContainer extends Nex {
 				&& !this.renderChildrenIfNormal()) {
 			return;
 		}
-		if (this.savedChildDomNodes) {
-			// we are doing a shallow rerender
-			for (let i = 0; i < this.savedChildDomNodes.length; i++) {
-				domNode.appendChild(this.savedChildDomNodes[i]);
+		if (MULTIRENDER) {
+			if (!(renderFlags & RENDER_FLAG_RERENDER)) {
+				for (let i = 0; i < this.children.length; i++) {
+					let childDomNode = this.children[i].requestNode();
+					domNode.appendChild(childDomNode);
+					this.children[i].renderInto(childDomNode);
+				}
 			}
-			this.savedChildDomNodes = null;
 		} else {
-			// full rerender
-			for (let i = 0; i < this.children.length; i++) {
-				let childDomNode = document.createElement("div");
-				domNode.appendChild(childDomNode);
-				this.children[i].renderInto(childDomNode);
+			if (this.savedChildDomNodes) {
+				// we are doing a shallow rerender
+				for (let i = 0; i < this.savedChildDomNodes.length; i++) {
+					domNode.appendChild(this.savedChildDomNodes[i]);
+				}
+				this.savedChildDomNodes = null;
+			} else {
+				// full rerender
+				for (let i = 0; i < this.children.length; i++) {
+					let childDomNode = document.createElement("div");
+					domNode.appendChild(childDomNode);
+					this.children[i].renderInto(childDomNode);
+				}
 			}
 		}
 	}

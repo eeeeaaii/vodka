@@ -49,10 +49,10 @@ class Builtin extends Lambda {
 	}
 
 
-	renderInto(domNode) {
-		super.renderInto(domNode);
+	renderInto(domNode, renderFlags) {
+		super.renderInto(domNode, renderFlags);
 		domNode.classList.add('builtin');
-		this.renderTags(domNode);
+		this.renderTags(domNode, renderFlags);
 	}
 
 	toString() {

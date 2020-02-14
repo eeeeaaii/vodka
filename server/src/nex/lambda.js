@@ -71,20 +71,25 @@ class Lambda extends NexContainer {
 	}
 
 
-	renderInto(domNode) {
-		let codespan = document.createElement("span");
-		codespan.classList.add('codespan');
-		domNode.appendChild(codespan);
-		super.renderInto(domNode);
+	renderInto(domNode, renderFlags) {
+		let codespan = null;
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+			codespan = document.createElement("span");
+			codespan.classList.add('codespan');
+			domNode.appendChild(codespan);
+		}
+		super.renderInto(domNode, renderFlags);
 		domNode.classList.add('lambda');
 		domNode.classList.add('codelist');
-		if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
-			codespan.classList.add('exploded');
-		} else {
-			codespan.classList.remove('exploded');
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+			if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
+				codespan.classList.add('exploded');
+			} else {
+				codespan.classList.remove('exploded');
+			}
+			codespan.innerHTML = '<span class="lambdasign">' + this.getSymbolForCodespan() + '</span>' + this.amptext.replace(/ /g, '&nbsp;');
 		}
-		codespan.innerHTML = '<span class="lambdasign">' + this.getSymbolForCodespan() + '</span>' + this.amptext.replace(/ /g, '&nbsp;');
-		this.renderTags(domNode);
+		this.renderTags(domNode, renderFlags);
 	}
 
 	setCmdName(nm) {

@@ -62,6 +62,14 @@ class Environment {
 		this.symbols[name] = val;
 	}
 
+	set(name, val) {
+		if (this.symbols[name]) {
+			this.symbols[name] = val;
+		} else if (this.parentEnv) {
+			this.parentEnv.set(name, val);
+		}
+	}
+
 	bindUnique(name, val) {
 		this.uniques[name] = val;
 	}
