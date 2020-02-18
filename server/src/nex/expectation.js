@@ -53,22 +53,42 @@ class Expectation extends NexContainer {
 		return ContextType.COMMAND;
 	}
 
-	renderInto(domNode, renderFlags) {
+	renderInto(domNode, shallow) {
 		let dotspan = null;
-		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-			dotspan = document.createElement("span");
-			dotspan.classList.add('dotspan');
-			domNode.appendChild(dotspan);
-		}
-		super.renderInto(domNode, renderFlags);
-		domNode.classList.add('expectation');
-		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-			if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
-				dotspan.classList.add('exploded');
-			} else {
-				dotspan.classList.remove('exploded');
+		if (RENDERFLAGS) {
+			var renderFlags = shallow;
+			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+				dotspan = document.createElement("span");
+				dotspan.classList.add('dotspan');
+				domNode.appendChild(dotspan);
 			}
-			dotspan.innerHTML = '...';
+		} else {
+			if (!shallow) {
+				dotspan = document.createElement("span");
+				dotspan.classList.add('dotspan');
+				domNode.appendChild(dotspan);
+			}
+		}
+		super.renderInto(domNode, shallow);
+		domNode.classList.add('expectation');
+		if (RENDERFLAGS) {
+			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+				if (renderFlags & RENDER_FLAG_EXPLODED) {
+					dotspan.classList.add('exploded');
+				} else {
+					dotspan.classList.remove('exploded');
+				}
+				dotspan.innerHTML = '...';
+			}
+		} else {
+			if (!shallow) {
+				if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
+					dotspan.classList.add('exploded');
+				} else {
+					dotspan.classList.remove('exploded');
+				}
+				dotspan.innerHTML = '...';
+			}
 		}
 		this.renderTags(domNode, renderFlags);
 	}
@@ -92,12 +112,12 @@ class Expectation extends NexContainer {
 		let parent = this.getParent();
 		let wasSelected = this.isSelected();
 		parent.replaceChildWith(this, newnex);
-		// have to do this in case global render type changed while we were
-		// waiting to fulfill
-		newnex.setRenderType(current_render_type);
-		if (MULTIRENDER) {
-			parent.rerender(0);
+		if (RENDERFLAGS) {
+			parent.rerender(current_default_render_flags);
 		} else {
+			// have to do this in case global render type changed while we were
+			// waiting to fulfill
+			newnex.setRenderType(current_render_type);
 			parent.rerender();
 		}
 		if (wasSelected) {

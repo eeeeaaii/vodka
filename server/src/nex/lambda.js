@@ -71,23 +71,45 @@ class Lambda extends NexContainer {
 	}
 
 
-	renderInto(domNode, renderFlags) {
-		let codespan = null;
-		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-			codespan = document.createElement("span");
-			codespan.classList.add('codespan');
-			domNode.appendChild(codespan);
+	renderInto(domNode, shallow) {
+		if (RENDERFLAGS) {
+			var renderFlags = shallow;
 		}
-		super.renderInto(domNode, renderFlags);
+		let codespan = null;
+		if (RENDERFLAGS) {
+			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+				codespan = document.createElement("span");
+				codespan.classList.add('codespan');
+				domNode.appendChild(codespan);
+			}
+		} else {
+			if (!shallow) {
+				codespan = document.createElement("span");
+				codespan.classList.add('codespan');
+				domNode.appendChild(codespan);
+			}
+		}
+		super.renderInto(domNode, shallow /* renderFlags */);
 		domNode.classList.add('lambda');
 		domNode.classList.add('codelist');
-		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-			if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
-				codespan.classList.add('exploded');
-			} else {
-				codespan.classList.remove('exploded');
+		if (RENDERFLAGS) {
+			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+				if (renderFlags & RENDER_FLAG_EXPLODED) {
+					codespan.classList.add('exploded');
+				} else {
+					codespan.classList.remove('exploded');
+				}
+				codespan.innerHTML = '<span class="lambdasign">' + this.getSymbolForCodespan() + '</span>' + this.amptext.replace(/ /g, '&nbsp;');
 			}
-			codespan.innerHTML = '<span class="lambdasign">' + this.getSymbolForCodespan() + '</span>' + this.amptext.replace(/ /g, '&nbsp;');
+		} else {
+			if (!shallow) {
+				if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
+					codespan.classList.add('exploded');
+				} else {
+					codespan.classList.remove('exploded');
+				}
+				codespan.innerHTML = '<span class="lambdasign">' + this.getSymbolForCodespan() + '</span>' + this.amptext.replace(/ /g, '&nbsp;');
+			}
 		}
 		this.renderTags(domNode, renderFlags);
 	}

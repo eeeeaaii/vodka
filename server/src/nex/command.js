@@ -108,17 +108,17 @@ class Command extends NexContainer {
 		return r;
 	}
 
-	// renderFlags only passed in MULTIRENDER
-	renderInto(domNode, renderFlags) {
+	// RENDERNODES version of this
+	renderIntoNode(renderNode, renderFlags) {
 		let codespan = null;
 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
 			codespan = document.createElement("span");
 			codespan.classList.add('codespan');
-			domNode.appendChild(codespan);
+			renderNode.appendDecorationDomNode(codespan);
 		}
-		super.renderInto(domNode, renderFlags); // will create children
-		domNode.classList.add('command');
-		domNode.classList.add('codelist');
+		super.renderIntoNode(renderNode, renderFlags); // will create children
+		renderNode.getDomNode().classList.add('command');
+		renderNode.getDomNode().add('codelist');
 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
 			if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
 				codespan.classList.add('exploded');
@@ -127,7 +127,52 @@ class Command extends NexContainer {
 			}
 			codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
 		}
-		this.renderTags(domNode, renderFlags);
+		this.renderTagsIntoNode(renderNode, renderFlags);
+	}
+
+	// deprecated
+	renderInto(domNode, shallow) {
+		if (RENDERFLAGS || RENDERNODES) {
+			var renderFlags = shallow;
+
+		}
+		let codespan = null;
+		if (RENDERFLAGS) {
+			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+				codespan = document.createElement("span");
+				codespan.classList.add('codespan');
+				domNode.appendChild(codespan);
+			}			
+		} else {
+			if (!shallow) {
+				codespan = document.createElement("span");
+				codespan.classList.add('codespan');
+				domNode.appendChild(codespan);
+			}
+		}
+		super.renderInto(domNode, shallow /* also renderFlags */); // will create children
+		domNode.classList.add('command');
+		domNode.classList.add('codelist');
+		if (RENDERFLAGS) {
+			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+				if (renderFlags & RENDER_FLAG_EXPLODED) {
+					codespan.classList.add('exploded');
+				} else {
+					codespan.classList.remove('exploded');
+				}
+				codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
+			}
+		} else {
+			if (!shallow) {
+				if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
+					codespan.classList.add('exploded');
+				} else {
+					codespan.classList.remove('exploded');
+				}
+				codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
+			}
+		}
+		this.renderTags(domNode, shallow /* renderFlags */);
 	}
 
 	renderChildrenIfNormal() {

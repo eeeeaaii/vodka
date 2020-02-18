@@ -39,14 +39,19 @@ function INDENT() {
 // render flags
 const RENDER_FLAG_NORMAL = 0;
 const RENDER_FLAG_SHALLOW = 1;
-const RENDER_FLAG_EXPLODED = 2; // not yet implemented?
+const RENDER_FLAG_EXPLODED = 2;
 const RENDER_FLAG_RERENDER = 4;
+// only used in RENDERNODES
+const RENDER_FLAG_SELECTED = 8;
 
 // experiments
 
-// experiment: allows the same nex to be rendered in multiple places
-// on the screen
-const MULTIRENDER = false;
+// - pass in render flags
+const RENDERFLAGS = true;
+
+// allows the same nex to be rendered in multiple places on the screen
+// (assumes RENDERFLAGS=true)
+const RENDERNODES = false;
 
 // global variables
 // TODO: fix naming convention and decide what's a const and what's
@@ -57,9 +62,15 @@ const root = new Root(true /* attached */);
 var selectedNex = null; // make singleton?
 //var environment = null; // unused
 
+// render type is deprecated, changing to flags
 const NEX_RENDER_TYPE_NORMAL = 1;
 const NEX_RENDER_TYPE_EXPLODED = 2;
-var current_render_type = NEX_RENDER_TYPE_NORMAL;
+
+if (RENDERNODES || RENDERFLAGS) {
+	var current_default_render_flags = RENDER_FLAG_NORMAL;
+} else {
+	var current_render_type = NEX_RENDER_TYPE_NORMAL;
+}
 
 var BUILTINS = new Environment(null);
 const KEY_DISPATCHER = new KeyDispatcher();
@@ -93,15 +104,18 @@ function topLevelRender() {
 	while (rootDomNode.firstChild) {
 		rootDomNode.removeChild(rootDomNode.firstChild);
 	}
-	if (MULTIRENDER) {
-		root.renderInto(rootDomNode, RENDER_FLAG_NORMAL);
+	if (RENDERNODES) {
+		let renderNode = new RenderNode(root);
+		renderNode.setDomNode(rootDomNode);
+		renderNode.render(current_default_render_flags);
+	} else if (RENDERFLAGS) {
+		root.renderInto(rootDomNode, current_default_render_flags);		
 	} else {
 		root.renderInto(rootDomNode);
 	}
 }
 
 function setup() {
-//	environment = new Environment();
 	// createBuiltins is defined in executors.js
 	createBuiltins();
 	BUILTINS = BUILTINS.pushEnv();

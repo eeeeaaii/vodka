@@ -99,8 +99,9 @@ class EString extends ValueNex {
 		return new EStringKeyFunnel(this);
 	}
 
-	renderInto(domNode, renderFlags) {
-		super.renderInto(domNode, renderFlags);
+	// RENDERFLAGS // change to renderFlags
+	renderInto(domNode, shallow) {
+		super.renderInto(domNode, shallow);
 		// this one always can rerender because it's not a container
 		// we only need to care about rerenders when it's a container type
 		domNode.innerHTML = this.prefix;
@@ -111,7 +112,7 @@ class EString extends ValueNex {
 		} else {
 			this.drawExpanded(domNode);
 		}
-		this.renderTags(domNode, renderFlags);
+		this.renderTags(domNode, shallow);
 	}
 
 	drawNormal(domNode) {
@@ -175,7 +176,11 @@ class EString extends ValueNex {
 		activateKeyFunnel();
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val); // calls render
-		this.rerender();
+		if (RENDERFLAGS) {
+			this.rerender(current_default_render_flags | RENDER_FLAG_SHALLOW)
+		} else {
+			this.rerender(true);
+		}
 	}
 	getEventTable(context) {
 		return null;

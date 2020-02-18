@@ -38,16 +38,27 @@ class Zlist extends NexContainer {
 		return ContextType.DOC;
 	}
 
-	renderInto(domNode, renderFlags) {
-		super.renderInto(domNode, renderFlags);
+	renderInto(domNode, shallow) {
+		if (RENDERFLAGS) {
+			var renderFlags = shallow;
+		}
+		super.renderInto(domNode, shallow);
 		domNode.classList.add('zlist');
 		domNode.classList.add('data');
-		if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
-			domNode.style.height = '' + (this.children.length * 10) + 'px'; 
+		if (RENDERFLAGS) {
+			if (renderFlags & NEX_RENDER_TYPE_EXPLODED) {
+				domNode.style.height = '' + (this.children.length * 10) + 'px'; 
+			} else {
+				domNode.style.height = '0px';
+			}
 		} else {
-			domNode.style.height = '0px';
+			if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
+				domNode.style.height = '' + (this.children.length * 10) + 'px'; 
+			} else {
+				domNode.style.height = '0px';
+			}
 		}
-		this.renderTags(domNode, renderFlags);
+		this.renderTags(domNode, shallow);
 	}
 
 	getEventTable(context) {

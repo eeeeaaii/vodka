@@ -65,16 +65,23 @@ class NexContainer extends Nex {
 		this.vdir = !this.vdir;
 	}
 
-	// for MULTIRENDER change arg name to renderFlags
 	rerender(shallow) {
-		if (MULTIRENDER) {
-			// forget saving child nodes, do it correctly.
+		if (!this.renderedDomNode) {
+			return; // can't rerender if we haven't rendered yet.
+		}
+		if (RENDERFLAGS) {
 			let renderFlags = shallow;
+			if (renderFlags & RENDER_FLAG_SHALLOW) {
+				this.savedChildDomNodes = [];
+				for (let i = 0; i < this.children.length; i++) {
+					this.savedChildDomNodes.push(this.children[i].renderedDomNode);
+				}
+				// note: this nex may create other dom nodes so we explicitly
+				// only save the children and we still allow the superclass
+				// to set innerHTML = ""
+			}
 			super.rerender(renderFlags);
 		} else {
-			if (!this.renderedDomNode) {
-				return; // can't rerender if we haven't rendered yet.
-			}
 			if (shallow) {
 				this.savedChildDomNodes = [];
 				for (let i = 0; i < this.children.length; i++) {
@@ -95,32 +102,30 @@ class NexContainer extends Nex {
 		} else {
 			domNode.classList.remove('vdir');
 		}
-		if (this.renderType == NEX_RENDER_TYPE_NORMAL
-				&& !this.renderChildrenIfNormal()) {
-			return;
-		}
-		if (MULTIRENDER) {
-			if (!(renderFlags & RENDER_FLAG_RERENDER)) {
-				for (let i = 0; i < this.children.length; i++) {
-					let childDomNode = this.children[i].requestNode();
-					domNode.appendChild(childDomNode);
-					this.children[i].renderInto(childDomNode);
-				}
+		if (RENDERFLAGS) {
+			if (!(renderFlags & RENDER_FLAG_EXPLODED)
+					&& !this.renderChildrenIfNormal()) {
+				return;
 			}
 		} else {
-			if (this.savedChildDomNodes) {
-				// we are doing a shallow rerender
-				for (let i = 0; i < this.savedChildDomNodes.length; i++) {
-					domNode.appendChild(this.savedChildDomNodes[i]);
-				}
-				this.savedChildDomNodes = null;
-			} else {
-				// full rerender
-				for (let i = 0; i < this.children.length; i++) {
-					let childDomNode = document.createElement("div");
-					domNode.appendChild(childDomNode);
-					this.children[i].renderInto(childDomNode);
-				}
+			if (this.renderType == NEX_RENDER_TYPE_NORMAL
+					&& !this.renderChildrenIfNormal()) {
+				return;
+			}
+		}
+
+		if (this.savedChildDomNodes) {
+			// we are doing a shallow rerender
+			for (let i = 0; i < this.savedChildDomNodes.length; i++) {
+				domNode.appendChild(this.savedChildDomNodes[i]);
+			}
+			this.savedChildDomNodes = null;
+		} else {
+			// full rerender
+			for (let i = 0; i < this.children.length; i++) {
+				let childDomNode = document.createElement("div");
+				domNode.appendChild(childDomNode);
+				this.children[i].renderInto(childDomNode, renderFlags);
 			}
 		}
 	}

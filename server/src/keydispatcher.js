@@ -427,12 +427,20 @@ class KeyDispatcher {
 	}
 
 	doEscape() {
-		current_render_type = (
-			current_render_type == NEX_RENDER_TYPE_EXPLODED
-			? NEX_RENDER_TYPE_NORMAL
-			:  NEX_RENDER_TYPE_EXPLODED
-			);
-		root.setRenderType(current_render_type);
+		if (RENDERFLAGS) {
+			if (current_default_render_flags & RENDER_FLAG_EXPLODED) {
+				current_default_render_flags &= (~RENDER_FLAG_EXPLODED);
+			} else {
+				current_default_render_flags |= RENDER_FLAG_EXPLODED;
+			}
+		} else {
+			current_render_type = (
+				current_render_type == NEX_RENDER_TYPE_EXPLODED
+				? NEX_RENDER_TYPE_NORMAL
+				:  NEX_RENDER_TYPE_EXPLODED
+				);
+			root.setRenderType(current_render_type);
+		}
 	}
 
 	doShiftEnter() {

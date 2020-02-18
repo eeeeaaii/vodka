@@ -17,26 +17,17 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 class Nex {
 	constructor() {
-		// unused in MULTIRENDER
+		// unused in RENDERNODES
 		this.parent = null;
 
 		this.selected = false;
-		this.renderType = current_render_type;
+		if (!RENDERFLAGS) {
+			this.renderType = current_render_type;
+		}
 		this.keyfunnel = null;
 		this.currentStyle = "";
 		this.enclosingClosure = null; // DO NOT COPY
 		this.tags = [];
-		if (MULTIRENDER) {
-			this.activeNodes = [];
-		}
-	}
-
-	// only used in MULTIRENDER
-	requestNode() {
-		let newNode = document.createElement("div");
-		newNode.nex = this;
-		this.activeNodes.push(newNode);
-		return newNode;
 	}
 
 	getEventTable(context) {
@@ -103,33 +94,25 @@ class Nex {
 		throw new Error("unimplemented export to string");
 	}
 
+	// Not used in RENDERNODES
 	getLeftX() {
-		if (MULTIRENDER) {
-			if (this.activeNodes[0]) {
-				// not lovely, kinda broken, should work a different way?
-				return this.activeNodes[0].getBoundingClientRect().left;
-			} else {
-				return 0;
-			}
-		} else {
-			if (this.renderedDomNode) {
-				return this.renderedDomNode.getBoundingClientRect().left;
-			} else return 0;
+		if (RENDERNODES) {
+			throw new Error("unused with RENDERNODES");
 		}
+		if (this.renderedDomNode) {
+			return this.renderedDomNode.getBoundingClientRect().left;
+		} else return 0;
 	}
 
+	// Not used in RENDERNODES
 	getRightX() {
-		if (MULTIRENDER) {
-			if (this.activeNodes[0]) {
-				// not lovely, kinda broken, should work a different way?
-				return this.activeNodes[0].getBoundingClientRect().right;
-			} else {
-				return 0;
-			}
+		if (RENDERNODES) {
+			throw new Error("unused with RENDERNODES");
+		}
+		if (this.renderedDomNode) {
+			return this.renderedDomNode.getBoundingClientRect().right;
 		} else {
-			if (this.renderedDomNode) {
-				return this.renderedDomNode.getBoundingClientRect().right;
-			}
+			return 0;
 		}
 	}
 
@@ -148,6 +131,9 @@ class Nex {
 	}
 
 	setRenderType(newType) {
+		if (RENDERFLAGS) {
+			throw new Error("setRenderType deprecated, using flags")
+		}
 		this.renderType = newType;
 	}
 
@@ -161,6 +147,9 @@ class Nex {
 	getKeyFunnel() {}
 
 	getPositionInParent() {
+		if (RENDERNODES) {
+			throw new Error("Don't use in RENDERNODES");
+		}
 		let p = this.getParent();
 		if (!p) return -1;
 		for (let i = 0; i < p.children.length; i++) {
@@ -170,49 +159,107 @@ class Nex {
 		}
 	}
 
-	// MULTIRENDER ONLY
-	doNodeRerender(node, renderFlags) {
+	// RENDERNODES only
+	rerenderIntoNode(renderNode, renderFlags) {
 		if (renderFlags & RENDER_FLAG_RERENDER) {
 			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-				node.innerHTML = "";
+				renderNode.getDomNode().innerHTML = "";
 			}
 			while(node.classList.length > 0) {
-				node.classList.remove(node.classList.item(0));
+				renderNode.getDomNode().classList.remove(
+					renderNode.getDomNode().classList.item(0));
 			}
-			node.setAttribute("style", "");
+			renderNode.getDomNode().setAttribute("style", "");
 		}
-		this.renderInto(node, renderFlags);
+		this.renderIntoNode(renderNode.getDomNode(), renderFlags);
 	}
 
-	// arg only used in MULTIRENDER
-	rerender(renderFlags) {
-		if (MULTIRENDER) {
-			for (let i = 0; i < this.activeNodes.length; i++) {
-				let node = this.activeNodes[i];
-				this.doNodeRerender(node, renderFlags | RENDER_FLAG_RERENDER);
+	// doNodeRerender(node, renderFlags) {
+	// 	if (renderFlags & RENDER_FLAG_RERENDER) {
+	// 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+	// 			node.innerHTML = "";
+	// 		}
+	// 		while(node.classList.length > 0) {
+	// 			node.classList.remove(node.classList.item(0));
+	// 		}
+	// 		node.setAttribute("style", "");
+	// 	}
+	// 	this.renderInto(node, renderFlags);
+	// }
+
+	rerender(shallow) {
+		if (RENDERFLAGS) {
+			var renderFlags = shallow;
+		}
+		if (!this.renderedDomNode) {
+			return; // can't rerender if we haven't rendered yet.
+		}
+		if (RENDERFLAGS) {
+			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+				this.renderedDomNode.innerHTML = "";
 			}
 		} else {
-			if (!this.renderedDomNode) {
-				return; // can't rerender if we haven't rendered yet.
-			}
 			this.renderedDomNode.innerHTML = "";
-			while(this.renderedDomNode.classList.length > 0) {
-				this.renderedDomNode.classList.remove(this.renderedDomNode.classList.item(0));
-			}
-			this.renderedDomNode.setAttribute("style", "");
-			this.renderInto(this.renderedDomNode);
 		}
+		while(this.renderedDomNode.classList.length > 0) {
+			this.renderedDomNode.classList.remove(this.renderedDomNode.classList.item(0));
+		}
+		this.renderedDomNode.setAttribute("style", "");
+		this.renderInto(this.renderedDomNode, shallow /* aka renderflags */);
 	}
 
-	renderInto(domNode, renderFlags) {
+	// RENDERNODES only
+	renderIntoNode(renderNode, renderFlags) {
+		if (!RENDERNODES) {
+			throw new Error("only use in RENDERNODES");
+		}
 		if (!(renderFlags & RENDER_FLAG_RERENDER)) {
-			domNode.onclick = (e) => {
+			renderNode.getDomNode().onclick = (e) => {
 				if (selectedNex instanceof EString
 						&& selectedNex.getMode() == MODE_EXPANDED) {
 					selectedNex.finishInput();
 				}
 				e.stopPropagation();
 				this.setSelected(true /*shallow-rerender*/);
+			}
+		}
+		renderNode.getDomNode().classList.add('nex');
+
+		if (renderFlags & RENDER_FLAG_SELECTED) {
+			renderNode.getDomNode().classList.add('selected');		
+		}
+		let isExploded = (this.renderType == NEX_RENDER_TYPE_EXPLODED);
+		if (isExploded) {
+			renderNode.getDomNode().classList.add('exploded');
+		}
+		renderNode.getDomNode().setAttribute("style", this.currentStyle);
+	}
+
+	_setClickHandler(domNode) {
+		domNode.onclick = (e) => {
+			if (selectedNex instanceof EString
+					&& selectedNex.getMode() == MODE_EXPANDED) {
+				selectedNex.finishInput();
+			}
+			e.stopPropagation();
+			this.setSelected(true /*shallow-rerender*/);
+		};
+	}
+
+	renderInto(domNode, shallow) {
+		if (RENDERNODES) {
+			throw new Error("don't use in RENDERNODES");
+		}
+		if (RENDERFLAGS) {
+			var renderFlags = shallow;
+		}
+		if (!RENDERFLAGS) {
+			if (!shallow) {
+				this._setClickHandler(domNode);
+			}
+		} else {
+			if (!(renderFlags & RENDER_FLAG_RERENDER)) {
+				this._setClickHandler(domNode);
 			}
 		}
 		domNode.classList.add('nex');
@@ -222,45 +269,72 @@ class Nex {
 		// } else {
 		// 	domNode.classList.remove('selected');
 		}
-		let isExploded = (this.renderType == NEX_RENDER_TYPE_EXPLODED);
+		let isExploded = null;
+		if (RENDERFLAGS) {
+			isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
+		} else {
+			isExploded = (this.renderType == NEX_RENDER_TYPE_EXPLODED);
+		}
 		if (isExploded) {
 			domNode.classList.add('exploded');
 		// } else {
 		// 	domNode.classList.remove('exploded');
 		}
 		domNode.setAttribute("style", this.currentStyle);
-		if (this.MULTIRENDER) {
-			// no op b/c it was already allocated and stored
-		} else {
-			this.renderedDomNode = domNode; // save for later, like if we need to get x/y loc
-		}
+		this.renderedDomNode = domNode; // save for later, like if we need to get x/y loc
 	}
 
-	renderTags(domNode, renderFlags) {
+	renderTagsIntoNode(renderNode, renderFlags) {
+		if (!RENDERNODES) {
+			throw new Error("only use in RENDERNODES");
+		}
 		if (
 			(renderFlags & RENDER_FLAG_SHALLOW)
 			&& (renderFlags & RENDER_FLAG_RERENDER)) {
 			return;
 		}
+		let isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
+		for (let i = 0; i < this.tags.length; i++) {
+			this.tags[i].draw(renderNode.getDomNode(), isExploded);
+		}		
+	}
 
-//}
-//		if (!domNode) {
-//			throw new "wtf";
-//			domNode = this.domNode;
-//		}
-		let isExploded = (this.renderType == NEX_RENDER_TYPE_EXPLODED);
+	renderTags(domNode, renderFlags) {
+		if (RENDERNODES) {
+			throw new Error("deprecated in RENDERNODES");
+		}
+		if (RENDERFLAGS) {
+			if (
+				(renderFlags & RENDER_FLAG_SHALLOW)
+				&& (renderFlags & RENDER_FLAG_RERENDER)) {
+				return;
+			}
+		}
+		let isExploded = null;
+		if (RENDERFLAGS) {
+			isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
+		} else {
+			isExploded = (this.renderType == NEX_RENDER_TYPE_EXPLODED);
+		}
 		for (let i = 0; i < this.tags.length; i++) {
 			this.tags[i].draw(domNode, isExploded);
 		}		
 	}
 
-	// unused in MULTIRENDER
+
+	// unused in RENDERNODES
 	setParent(p) {
+		if (RENDERNODES) {
+			throw new Error("deprecated in RENDERNODES");
+		}
 		this.parent = p;
 	}
 
-	// unused in MULTIRENDER
+	// not used in RENDERNODES
 	getParent(evenIfRoot) {
+		if (RENDERNODES) {
+			throw new Error("deprecated in RENDERNODES");
+		}
 		let p = this.parent;
 		if (p instanceof Root && !evenIfRoot) {
 			return null;
@@ -276,17 +350,16 @@ class Nex {
 		return this.selected;
 	}
 
-	setSelectedMultirender(domNode) {
-
-	}
-
 	setSelected(rerender) {
+		if (RENDERNODES) {
+			throw new Error("deprecated in RENDERNODES");
+		}
 		if (selectedNex == this) return;
 		if (selectedNex) {
 			selectedNex.setUnselected();
 			if (rerender) {
-				if (MULTIRENDER) {
-					selectedNex.rerender(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW)
+				if (RENDERFLAGS) {
+					selectedNex.rerender(current_default_render_flags | RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW)
 				} else {
 					selectedNex.rerender(true /* shallow rerender, don't do children */);
 				}
@@ -295,8 +368,8 @@ class Nex {
 		selectedNex = this;
 		this.selected = true;
 		if (rerender) {
-			if (MULTIRENDER) {
-				this.rerender(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW)
+			if (RENDERFLAGS) {
+				this.rerender(current_default_render_flags | RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW)
 			} else {
 				this.rerender(true /* shallow rerender, don't do children */);
 			}
@@ -304,8 +377,12 @@ class Nex {
 	}
 
 	setUnselected() {
+		if (RENDERNODES) {
+			throw new Error("deprecated in RENDERNODES");
+		}
 		this.selected = false;
 	}
+
 	getEventTable(context) {
 		return null;
 	}
