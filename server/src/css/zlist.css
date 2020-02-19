@@ -32,6 +32,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	padding-top: 5px;
 	border-left: 5px dotted #ffc4f5;
 	border-top: 5px dotted #ffc4f5;
+	border-radius: 6px;
 }
 
 .zlist.exploded.selected {

@@ -28,6 +28,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 .word.exploded {
 	padding: 5px;
 	border: 1px solid #c7c747;
+	border-radius: 6px;	
 }
 
 .word.exploded.selected {

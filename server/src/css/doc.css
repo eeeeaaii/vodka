@@ -26,6 +26,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 .doc.exploded {
 	padding: 5px;
 	border: 1px solid #1ece44;
+	border-radius: 6px;	
 }
 
 .doc.exploded.selected {
