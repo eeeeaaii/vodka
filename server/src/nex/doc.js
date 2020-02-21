@@ -68,20 +68,42 @@ class Doc extends NexContainer {
 	}
 
 	getEventTable(context) {
-		//if (context == ContextType.COMMAND) {
-			return {
-				'ShiftTab': 'select-parent',				
-				'Tab': 'select-first-child-or-create-insertion-point',
-				'ArrowLeft': 'move-left-up',
-				'ArrowUp': 'move-left-up',
-				'ArrowRight': 'move-right-down',
-				'ArrowDown': 'move-right-down',
+		let defaultFunction = function(letter) {
+			if (!(/^.$/.test(letter))) return;
+			let letterRegex = /^[a-zA-Z0-9']$/;
+			let isSeparator = !letterRegex.test(letter);
+			if (isSeparator) {
+				KeyResponseFunctions['append-separator-to-doc'](letter);
+			} else {
+				KeyResponseFunctions['append-letter-to-doc'](letter);
 			}
-		//}
+		}
+		return {
+			'ShiftTab': 'select-parent',				
+			'Tab': 'select-first-child-or-create-insertion-point',
+			'ArrowLeft': 'move-left-up',
+			'ArrowUp': 'move-left-up',
+			'ArrowRight': 'move-right-down',
+			'ArrowDown': 'move-right-down',
+			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
+			'Backspace': 'remove-selected-and-select-previous-sibling',
+			'~': 'insert-or-append-command',
+			'!': 'insert-or-append-bool',
+			'@': 'insert-or-append-symbol',
+			'#': 'insert-or-append-integer',
+			'$': 'insert-or-append-string',
+			'%': 'insert-or-append-float',
+			'^': 'insert-or-append-nil',
+			'(': 'insert-word-as-next-sibling',
+			'[': 'insert-line-as-next-sibling',
+			'{': 'insert-doc-as-next-sibling',
+			'defaultHandle': defaultFunction
+		}
 	}
 
 
 	// TODO: move tables from these unused functions into getEventTable
+	/*
 	getKeyFunnelVector(context) {
 		if (context == ContextType.COMMAND) {
 			return {
@@ -155,4 +177,5 @@ class Doc extends NexContainer {
 			};
 		}
 	}
+	*/
 }

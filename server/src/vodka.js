@@ -25,8 +25,6 @@ const RENDERFLAGS = true;
 const RENDERNODES = false;
 
 
-
-
 // TODO: audit, is this updated in step eval?
 let ILVL = 0;
 

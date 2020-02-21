@@ -865,7 +865,7 @@ testactions.push({
 		type:'keyup',
 		code:'Backspace'
 	});
-testactions.push({
+/*testactions.push({
 		type:'keydown',
 		code:'ShiftRight'
 	});
@@ -881,6 +881,7 @@ testactions.push({
 		type:'keyup',
 		code:'ShiftRight'
 	});
+	*/
 testactions.push({
 		type:'keydown',
 		code:'ArrowRight'

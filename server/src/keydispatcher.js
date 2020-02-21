@@ -209,22 +209,26 @@ var KeyResponseFunctions = {
 	'insert-or-append-word': function(s) { insertOrAppend(s, new Word()); },
 	'insert-or-append-line': function(s) { insertOrAppend(s, new Line()); },
 	'insert-or-append-doc': function(s) { insertOrAppend(s, new Doc()); },
-	// 'insert-or-append-word-to-doc': function(s) {
-	// 	if (s.hasChildren()) {
-	// 		manipulator.insertAfterSelectedAndSelect(new Word());
-	// 	} else {
-	// 		manipulator.appendAndSelect(new Line());
-	// 		manipulator.appendAndSelect(new Word());
-	// 	}
-	// },
-	// 'insert-or-append-doc-to-doc': function(s) {
-	// 	if (s.hasChildren()) {
-	// 		manipulator.insertAfterSelectedAndSelect(new Doc());
-	// 	} else {
-	// 		manipulator.appendAndSelect(new Line());
-	// 		manipulator.appendAndSelect(new Doc());
-	// 	}
-	// },
+
+	// this is doc-specific, will go away once we have classes
+	'append-letter-to-doc': function(s) {
+		manipulator.selectLastChild()
+			|| manipulator.appendAndSelect(new Line());
+		manipulator.selectLastChild()
+			|| manipulator.appendAndSelect(new Word());
+		if (manipulator.selectLastChild()) {
+			manipulator.insertAfterSelectedAndSelect(new Letter(s));
+		} else {
+			manipulator.appendAndSelect(new Letter(s))
+		}
+	},
+
+	'append-separator-to-doc': function(s) {
+		manipulator.selectLastChild()
+			|| manipulator.appendAndSelect(new Line());
+		manipulator.appendAndSelect(new Separator(s));
+	},
+
 
 	// 'remove-if-empty': function(s) {
 	// 	if (!s.hasChildren()) {
