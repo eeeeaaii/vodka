@@ -109,32 +109,39 @@ class Command extends NexContainer {
 	}
 
 	// RENDERNODES version of this
-	renderIntoNode(renderNode, renderFlags) {
-		let codespan = null;
-		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-			codespan = document.createElement("span");
-			codespan.classList.add('codespan');
-			renderNode.appendDecorationDomNode(codespan);
-		}
-		super.renderIntoNode(renderNode, renderFlags); // will create children
-		renderNode.getDomNode().classList.add('command');
-		renderNode.getDomNode().add('codelist');
-		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-			if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
-				codespan.classList.add('exploded');
-			} else {
-				codespan.classList.remove('exploded');
-			}
-			codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
-		}
-		this.renderTagsIntoNode(renderNode, renderFlags);
-	}
+
+
+	// renderIntoNode(renderNode, renderFlags) {
+	// 	let codespan = null;
+	// 	if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+	// 		codespan = document.createElement("span");
+	// 		codespan.classList.add('codespan');
+	// 		renderNode.appendDecorationDomNode(codespan);
+	// 	}
+	// 	super.renderIntoNode(renderNode, renderFlags); // will create children
+	// 	renderNode.getDomNode().classList.add('command');
+	// 	renderNode.getDomNode().add('codelist');
+	// 	if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+	// 		if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
+	// 			codespan.classList.add('exploded');
+	// 		} else {
+	// 			codespan.classList.remove('exploded');
+	// 		}
+	// 		codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
+	// 	}
+	// 	this.renderTagsIntoNode(renderNode, renderFlags);
+	// }
+
 
 	// deprecated
 	renderInto(domNode, shallow) {
+		let toPassToSuperclass = domNode;
+		if (RENDERNODES) {
+			// change param name
+			domNode = domNode.getDomNode();
+		}
 		if (RENDERFLAGS || RENDERNODES) {
 			var renderFlags = shallow;
-
 		}
 		let codespan = null;
 		if (RENDERFLAGS) {
@@ -150,7 +157,7 @@ class Command extends NexContainer {
 				domNode.appendChild(codespan);
 			}
 		}
-		super.renderInto(domNode, shallow /* also renderFlags */); // will create children
+		super.renderInto(toPassToSuperclass, shallow /* also renderFlags */); // will create children
 		domNode.classList.add('command');
 		domNode.classList.add('codelist');
 		if (RENDERFLAGS) {
@@ -172,7 +179,9 @@ class Command extends NexContainer {
 				codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
 			}
 		}
-		this.renderTags(domNode, shallow /* renderFlags */);
+		if (!RENDERNODES) {
+			this.renderTags(domNode, shallow);
+		}
 	}
 
 	renderChildrenIfNormal() {

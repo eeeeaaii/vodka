@@ -54,6 +54,11 @@ class Expectation extends NexContainer {
 	}
 
 	renderInto(domNode, shallow) {
+		let toPassToSuperclass = domNode;
+		if (RENDERNODES) {
+			// change param name
+			domNode = domNode.getDomNode();
+		}
 		let dotspan = null;
 		if (RENDERFLAGS) {
 			var renderFlags = shallow;
@@ -69,7 +74,7 @@ class Expectation extends NexContainer {
 				domNode.appendChild(dotspan);
 			}
 		}
-		super.renderInto(domNode, shallow);
+		super.renderInto(toPassToSuperclass, shallow);
 		domNode.classList.add('expectation');
 		if (RENDERFLAGS) {
 			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
@@ -90,7 +95,9 @@ class Expectation extends NexContainer {
 				dotspan.innerHTML = '...';
 			}
 		}
-		this.renderTags(domNode, renderFlags);
+		if (!RENDERNODES) {
+			this.renderTags(domNode, shallow);
+		}
 	}
 
 	isEmpty() {

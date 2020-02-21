@@ -15,6 +15,18 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+// experiments
+
+// - pass in render flags
+const RENDERFLAGS = true;
+
+// allows the same nex to be rendered in multiple places on the screen
+// (assumes RENDERFLAGS=true)
+const RENDERNODES = false;
+
+
+
+
 // TODO: audit, is this updated in step eval?
 let ILVL = 0;
 
@@ -44,22 +56,18 @@ const RENDER_FLAG_RERENDER = 4;
 // only used in RENDERNODES
 const RENDER_FLAG_SELECTED = 8;
 
-// experiments
-
-// - pass in render flags
-const RENDERFLAGS = true;
-
-// allows the same nex to be rendered in multiple places on the screen
-// (assumes RENDERFLAGS=true)
-const RENDERNODES = false;
 
 // global variables
 // TODO: fix naming convention and decide what's a const and what's
 // a singleton and generally what's what.
 
 const manipulator = new Manipulator();
-const root = new Root(true /* attached */);
-var selectedNex = null; // make singleton?
+var root = null;
+if (RENDERNODES) {
+	var selectedNode = null;
+} else {
+	var selectedNex = null; // make singleton?
+}
 //var environment = null; // unused
 
 // render type is deprecated, changing to flags
@@ -99,18 +107,21 @@ function createBuiltins() {
 }
 
 function topLevelRender() {
-	let rootDomNode = null;
-	rootDomNode = document.getElementById('mixroot');
-	while (rootDomNode.firstChild) {
-		rootDomNode.removeChild(rootDomNode.firstChild);
-	}
 	if (RENDERNODES) {
-		let renderNode = new RenderNode(root);
-		renderNode.setDomNode(rootDomNode);
-		renderNode.render(current_default_render_flags);
+		root.render(current_default_render_flags);
 	} else if (RENDERFLAGS) {
+		let rootDomNode = null;
+		rootDomNode = document.getElementById('mixroot');
+		while (rootDomNode.firstChild) {
+			rootDomNode.removeChild(rootDomNode.firstChild);
+		}
 		root.renderInto(rootDomNode, current_default_render_flags);		
 	} else {
+		let rootDomNode = null;
+		rootDomNode = document.getElementById('mixroot');
+		while (rootDomNode.firstChild) {
+			rootDomNode.removeChild(rootDomNode.firstChild);
+		}
 		root.renderInto(rootDomNode);
 	}
 }
@@ -119,9 +130,20 @@ function setup() {
 	// createBuiltins is defined in executors.js
 	createBuiltins();
 	BUILTINS = BUILTINS.pushEnv();
-	let topdoc = new Doc();
-	root.appendChild(topdoc);
-	topdoc.setSelected();
+	if (RENDERNODES) {
+		let rootnex = new Root(true /* attached */);
+		root = new RenderNode(rootnex);
+		let rootDomNode = document.getElementById('mixroot');
+		root.setDomNode(rootDomNode);
+
+		let docNode = root.appendChild(new Doc());
+		docNode.setSelected(false /* don't render yet */);
+	} else {
+		root = new Root(true /* attached */);
+		let topdoc = new Doc();
+		root.appendChild(topdoc);
+		topdoc.setSelected();
+	}
 	document.onclick = function(e) {
 		checkRecordState(e, 'mouse');
 		return true;

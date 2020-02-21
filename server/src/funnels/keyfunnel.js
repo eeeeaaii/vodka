@@ -46,6 +46,9 @@ class KeyFunnel {
 	}
 
 	processEvent(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
+		if (RENDERNODES) {
+			throw new Error('old keyfunnels not supported with RENDERNODES');
+		}
 		let spaceRegex = /^ $/;
 		let regularKeyRegex = /^[a-zA-Z0-9']$/;
 		let separatorKeyRegex = /^[~!@#$%^&*()_+={}|[\]\\:";<>?,./-]$/;

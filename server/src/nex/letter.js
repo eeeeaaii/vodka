@@ -45,14 +45,21 @@ class Letter extends Nex {
 	}
 
 	renderInto(domNode, renderFlags, skipTags) {
+		let toPassToSuperclass = domNode;
+		if (RENDERNODES) {
+			// change param name
+			domNode = domNode.getDomNode();
+		}
 		// skipTags = still gross
-		super.renderInto(domNode, renderFlags);
+		super.renderInto(toPassToSuperclass, renderFlags);
 		domNode.classList.add('letter');
 		domNode.classList.add('data');
 		domNode.innerHTML = (this.value == " " ? "&nbsp;" : this.value) ;
 		// TODO: clean up render steps, this is gross
-		if (!skipTags) {
-			this.renderTags(domNode, renderFlags);
+		if (!RENDERNODES) {
+			if (!skipTags) {
+				this.renderTags(domNode, renderFlags);
+			}
 		}
 	}
 

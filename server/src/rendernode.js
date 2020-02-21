@@ -25,6 +25,23 @@ class RenderNode {
 		this.domNode = document.createElement("div");
 	}
 
+	getNex() {
+		return this.nex;
+	}
+
+	getParent() {
+		return this.parent;
+	}
+
+	appendChild(nex) {
+		let renderNode = new RenderNode(nex);
+		this.childnodes.push(renderNode);
+		this.nex.appendChild(nex);
+		this.domNode.appendChild(renderNode.getDomNode())
+		renderNode.parent = this;
+		return renderNode;
+	}
+
 	appendDecorationDomNode(node) {
 		this.domNode.appendChild(node);
 	}
@@ -50,12 +67,38 @@ class RenderNode {
 		this.selected = false;
 	}
 
-	rerender(renderFlags) {
-		this.nex.rerenderIntoNode(this, renderFlags);
+	clearDomNode() {
+		while(this.domNode.classList.length > 0) {
+			this.domNode.classList.remove(this.domNode.classList.item(0));
+		}
+		this.domNode.setAttribute("style", "");
+		this.domNode.innerHTML = "";		
 	}
 
 	render(renderFlags) {
-		this.nex.renderIntoNode(this, renderFlags);
+		// test for shallow and rerender
+		this.clearDomNode();
+		let useFlags = this.selected
+				? renderFlags | RENDER_FLAG_SELECTED
+				: renderFlags;
+		this.nex.renderInto(this, useFlags);
+		for (let i = 0; i < this.childnodes.length; i++) {
+			let childRenderNode = this.childnodes[i];
+			childRenderNode.render(renderFlags);
+			this.domNode.appendChild(childRenderNode.getDomNode());
+
+		}
+		// if (this.nex instanceof NexContainer) {
+		// 	for (let i = 0; i < this.nex.numChildren(); i++) {
+		// 		let nexChild = this.nex.getChildAt(i);
+		// 		let childRenderNode = new RenderNode(nexChild);
+		// 		childRenderNode.render(renderFlags);
+		// 		this.domNode.appendChild(childRenderNode.getDomNode());
+		// 		this.childnodes.push(childRenderNode);
+		// 	}
+		// }
+		this.nex.renderTags(this.domNode, renderFlags);
+//		this.nex.renderIntoNode(this, renderFlags);
 	}
 
 	setSelected(rerender) {
@@ -63,13 +106,13 @@ class RenderNode {
 		if (selectedNode) {
 			selectedNode.setUnselected();
 			if (rerender) {
-				selectedNode.rerender(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW)
+				selectedNode.render(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW)
 			}
 		}
 		selectedNode = this;
 		this.selected = true;
 		if (rerender) {
-			this.rerender(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | RENDER_FLAG_SELECTED)
+			this.render(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | RENDER_FLAG_SELECTED)
 		}
 	}
 

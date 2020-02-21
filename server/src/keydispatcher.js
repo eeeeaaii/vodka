@@ -32,6 +32,7 @@ function evaluateNexSafely(nex, env) {
 	return result;
 }
 
+// s is either the nex or the node depending on RENDERNODES
 function insertOrAppend(s, obj) {
 	if (s.hasChildren()) {
 		manipulator.insertAfterSelectedAndSelect(obj);
@@ -328,10 +329,19 @@ var KeyResponseFunctions = {
 class KeyDispatcher {
 	dispatch(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 		let keyContext = ContextType.COMMAND;
-		let p = selectedNex.getParent();
-		if (p) {
-			while((keyContext = p.getContextType()) == ContextType.PASSTHROUGH) {
-				p = p.getParent();
+		if (RENDERNODES) {
+			let p = selectedNode.getParent();
+			if (p) {
+				while((keyContext = p.getNex().getContextType()) == ContextType.PASSTHROUGH) {
+					p = p.getParent();
+				}
+			}
+		} else {
+			let p = selectedNex.getParent();
+			if (p) {
+				while((keyContext = p.getContextType()) == ContextType.PASSTHROUGH) {
+					p = p.getParent();
+				}
 			}
 		}
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasAlt);
@@ -364,13 +374,19 @@ class KeyDispatcher {
 			return false; // to cancel browser event
 		} else {
 			// otherwise try the table first, then the keyfunnel
-			let table = selectedNex.getEventTable(keyContext);
+			let table = null;
+			if (RENDERNODES) {
+				table = selectedNode.getNex().getEventTable(keyContext);
+			} else {
+				table = selectedNex.getEventTable(keyContext);
+			}
 			if (table) {
 				if (table[eventName]) {
 					if (table[eventName] instanceof Nex) {
 						evaluateNexSafely(table[eventName], BUILTINS);
 					} else {
-						KeyResponseFunctions[table[eventName]](selectedNex);
+						KeyResponseFunctions[table[eventName]](
+								(RENDERNODES ? selectedNode : selectedNex));
 						return false; // to cancel browser event
 					}
 				}
@@ -392,7 +408,9 @@ class KeyDispatcher {
 				}
 			}
 			// fall back to legacy code
-			let funnel = selectedNex.getInputFunnel();
+			let funnel = RENDERNODES
+					? selectedNode.getNex().getInputFunnel()
+					: selectedNex.getInputFunnel();
 			if (funnel) {
 				let r = funnel.processEvent(keycode, whichkey, hasShift, hasCtrl, hasAlt);
 				return r;

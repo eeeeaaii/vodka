@@ -160,19 +160,19 @@ class Nex {
 	}
 
 	// RENDERNODES only
-	rerenderIntoNode(renderNode, renderFlags) {
-		if (renderFlags & RENDER_FLAG_RERENDER) {
-			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-				renderNode.getDomNode().innerHTML = "";
-			}
-			while(node.classList.length > 0) {
-				renderNode.getDomNode().classList.remove(
-					renderNode.getDomNode().classList.item(0));
-			}
-			renderNode.getDomNode().setAttribute("style", "");
-		}
-		this.renderIntoNode(renderNode.getDomNode(), renderFlags);
-	}
+	// rerenderIntoNode(renderNode, renderFlags) {
+	// 	if (renderFlags & RENDER_FLAG_RERENDER) {
+	// 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+	// 			renderNode.getDomNode().innerHTML = "";
+	// 		}
+	// 		while(node.classList.length > 0) {
+	// 			renderNode.getDomNode().classList.remove(
+	// 				renderNode.getDomNode().classList.item(0));
+	// 		}
+	// 		renderNode.getDomNode().setAttribute("style", "");
+	// 	}
+	// 	this.renderIntoNode(renderNode.getDomNode(), renderFlags);
+	// }
 
 	// doNodeRerender(node, renderFlags) {
 	// 	if (renderFlags & RENDER_FLAG_RERENDER) {
@@ -187,9 +187,51 @@ class Nex {
 	// 	this.renderInto(node, renderFlags);
 	// }
 
+	// RENDERNODES only
+	// renderIntoNode(renderNode, renderFlags) {
+	// 	if (!RENDERNODES) {
+	// 		throw new Error("only use in RENDERNODES");
+	// 	}
+	// 	if (!(renderFlags & RENDER_FLAG_RERENDER)) {
+	// 		renderNode.getDomNode().onclick = (e) => {
+	// 			if (selectedNex instanceof EString
+	// 					&& selectedNex.getMode() == MODE_EXPANDED) {
+	// 				selectedNex.finishInput();
+	// 			}
+	// 			e.stopPropagation();
+	// 			this.setSelected(true shallow-rerender);
+	// 		}
+	// 	}
+	// 	renderNode.getDomNode().classList.add('nex');
+
+	// 	if (renderFlags & RENDER_FLAG_SELECTED) {
+	// 		renderNode.getDomNode().classList.add('selected');		
+	// 	}
+	// 	let isExploded = (this.renderType == NEX_RENDER_TYPE_EXPLODED);
+	// 	if (isExploded) {
+	// 		renderNode.getDomNode().classList.add('exploded');
+	// 	}
+	// 	renderNode.getDomNode().setAttribute("style", this.currentStyle);
+	// }
+
+	_setClickHandler(domNode) {
+		domNode.onclick = (e) => {
+			if (selectedNex instanceof EString
+					&& selectedNex.getMode() == MODE_EXPANDED) {
+				selectedNex.finishInput();
+			}
+			e.stopPropagation();
+			this.setSelected(true /*shallow-rerender*/);
+		};
+	}
+
 	rerender(shallow) {
+		if (RENDERNODES) {
+			throw new Error('not used with rendernodes');
+		}
 		if (RENDERFLAGS) {
 			var renderFlags = shallow;
+			renderFlags |= RENDER_FLAG_RERENDER;
 		}
 		if (!this.renderedDomNode) {
 			return; // can't rerender if we haven't rendered yet.
@@ -208,47 +250,11 @@ class Nex {
 		this.renderInto(this.renderedDomNode, shallow /* aka renderflags */);
 	}
 
-	// RENDERNODES only
-	renderIntoNode(renderNode, renderFlags) {
-		if (!RENDERNODES) {
-			throw new Error("only use in RENDERNODES");
-		}
-		if (!(renderFlags & RENDER_FLAG_RERENDER)) {
-			renderNode.getDomNode().onclick = (e) => {
-				if (selectedNex instanceof EString
-						&& selectedNex.getMode() == MODE_EXPANDED) {
-					selectedNex.finishInput();
-				}
-				e.stopPropagation();
-				this.setSelected(true /*shallow-rerender*/);
-			}
-		}
-		renderNode.getDomNode().classList.add('nex');
-
-		if (renderFlags & RENDER_FLAG_SELECTED) {
-			renderNode.getDomNode().classList.add('selected');		
-		}
-		let isExploded = (this.renderType == NEX_RENDER_TYPE_EXPLODED);
-		if (isExploded) {
-			renderNode.getDomNode().classList.add('exploded');
-		}
-		renderNode.getDomNode().setAttribute("style", this.currentStyle);
-	}
-
-	_setClickHandler(domNode) {
-		domNode.onclick = (e) => {
-			if (selectedNex instanceof EString
-					&& selectedNex.getMode() == MODE_EXPANDED) {
-				selectedNex.finishInput();
-			}
-			e.stopPropagation();
-			this.setSelected(true /*shallow-rerender*/);
-		};
-	}
-
 	renderInto(domNode, shallow) {
+		let toPassToSuperclass = domNode;
 		if (RENDERNODES) {
-			throw new Error("don't use in RENDERNODES");
+			// change param name
+			domNode = domNode.getDomNode();
 		}
 		if (RENDERFLAGS) {
 			var renderFlags = shallow;
@@ -264,10 +270,16 @@ class Nex {
 		}
 		domNode.classList.add('nex');
 
-		if (this.selected) {
-			domNode.classList.add('selected');		
-		// } else {
-		// 	domNode.classList.remove('selected');
+		if (RENDERNODES) {
+			if (renderFlags & RENDER_FLAG_SELECTED) {
+				domNode.classList.add('selected');		
+			}
+		} else {
+			if (this.selected) {
+				domNode.classList.add('selected');		
+			// } else {
+			// 	domNode.classList.remove('selected');
+			}
 		}
 		let isExploded = null;
 		if (RENDERFLAGS) {
@@ -284,25 +296,22 @@ class Nex {
 		this.renderedDomNode = domNode; // save for later, like if we need to get x/y loc
 	}
 
-	renderTagsIntoNode(renderNode, renderFlags) {
-		if (!RENDERNODES) {
-			throw new Error("only use in RENDERNODES");
-		}
-		if (
-			(renderFlags & RENDER_FLAG_SHALLOW)
-			&& (renderFlags & RENDER_FLAG_RERENDER)) {
-			return;
-		}
-		let isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
-		for (let i = 0; i < this.tags.length; i++) {
-			this.tags[i].draw(renderNode.getDomNode(), isExploded);
-		}		
-	}
+	// renderTagsIntoNode(renderNode, renderFlags) {
+	// 	if (!RENDERNODES) {
+	// 		throw new Error("only use in RENDERNODES");
+	// 	}
+	// 	if (
+	// 		(renderFlags & RENDER_FLAG_SHALLOW)
+	// 		&& (renderFlags & RENDER_FLAG_RERENDER)) {
+	// 		return;
+	// 	}
+	// 	let isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
+	// 	for (let i = 0; i < this.tags.length; i++) {
+	// 		this.tags[i].draw(renderNode.getDomNode(), isExploded);
+	// 	}		
+	// }
 
 	renderTags(domNode, renderFlags) {
-		if (RENDERNODES) {
-			throw new Error("deprecated in RENDERNODES");
-		}
 		if (RENDERFLAGS) {
 			if (
 				(renderFlags & RENDER_FLAG_SHALLOW)

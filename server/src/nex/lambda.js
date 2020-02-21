@@ -72,6 +72,11 @@ class Lambda extends NexContainer {
 
 
 	renderInto(domNode, shallow) {
+		let toPassToSuperclass = domNode;
+		if (RENDERNODES) {
+			// change param name
+			domNode = domNode.getDomNode();
+		}
 		if (RENDERFLAGS) {
 			var renderFlags = shallow;
 		}
@@ -89,7 +94,7 @@ class Lambda extends NexContainer {
 				domNode.appendChild(codespan);
 			}
 		}
-		super.renderInto(domNode, shallow /* renderFlags */);
+		super.renderInto(toPassToSuperclass, shallow /* renderFlags */);
 		domNode.classList.add('lambda');
 		domNode.classList.add('codelist');
 		if (RENDERFLAGS) {
@@ -111,7 +116,9 @@ class Lambda extends NexContainer {
 				codespan.innerHTML = '<span class="lambdasign">' + this.getSymbolForCodespan() + '</span>' + this.amptext.replace(/ /g, '&nbsp;');
 			}
 		}
-		this.renderTags(domNode, renderFlags);
+		if (!RENDERNODES) {
+			this.renderTags(domNode, shallow);
+		}
 	}
 
 	setCmdName(nm) {

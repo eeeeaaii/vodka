@@ -29,12 +29,21 @@ class Root extends NexContainer {
 		}
 	}
 
+	getContextType() {
+		return ContextType.COMMAND;
+	}
+
 	getKeyFunnel() {
 		return new RootKeyFunnel(this);
 	}
 
 	renderInto(domNode, renderFlags) {
-		super.renderInto(domNode, renderFlags);
+		let toPassToSuperclass = domNode;
+		if (RENDERNODES) {
+			// change param name
+			domNode = domNode.getDomNode();
+		}
+		super.renderInto(toPassToSuperclass, renderFlags);
 		domNode.classList.add('root');
 	}
 

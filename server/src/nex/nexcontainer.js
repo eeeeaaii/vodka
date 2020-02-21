@@ -66,6 +66,9 @@ class NexContainer extends Nex {
 	}
 
 	rerender(shallow) {
+		if (RENDERNODES) {
+			throw new Error('not used with rendernodes');
+		}
 		if (!this.renderedDomNode) {
 			return; // can't rerender if we haven't rendered yet.
 		}
@@ -96,11 +99,20 @@ class NexContainer extends Nex {
 	}
 
 	renderInto(domNode, renderFlags) {
-		super.renderInto(domNode, renderFlags);
+		let toPassToSuperclass = domNode;
+		if (RENDERNODES) {
+			// change param name
+			domNode = domNode.getDomNode();
+		}
+		super.renderInto(toPassToSuperclass, renderFlags);
 		if (this.vdir) {
 			domNode.classList.add('vdir');
 		} else {
 			domNode.classList.remove('vdir');
+		}
+		if (RENDERNODES) {
+			// nothing more to do, the rest has to do with children
+			return;
 		}
 		if (RENDERFLAGS) {
 			if (!(renderFlags & RENDER_FLAG_EXPLODED)
@@ -170,7 +182,9 @@ class NexContainer extends Nex {
 		if (i < 0 || i >= this.children.length) return null;
 		let r = this.children[i];
 		this.children.splice(i, 1);
-		r.setParent(null);
+		if (!RENDERNODES) {
+			r.setParent(null);
+		}
 		return r;
 	}
 
@@ -178,30 +192,32 @@ class NexContainer extends Nex {
 		if (i < 0 || i > this.children.length) {
 			return;
 		}
-		let oldparent = c.getParent();
-		if (oldparent) {
-			if (oldparent == this) {
-				// ugh
-				let oldi = oldparent.getIndexOfChild(c);
-				if (oldi == i) {
-					// no-op
-					return;
-				} else if (oldi < i) {
-					// n0 old n2 n3 n4
-					//           ^ins
-					// remove:
-					// n0 n2 n3 n4
-					i--;
-					oldparent.removeChild(c);
+		if (!RENDERNODES) {
+			let oldparent = c.getParent();
+			if (oldparent) {
+				if (oldparent == this) {
+					// ugh
+					let oldi = oldparent.getIndexOfChild(c);
+					if (oldi == i) {
+						// no-op
+						return;
+					} else if (oldi < i) {
+						// n0 old n2 n3 n4
+						//           ^ins
+						// remove:
+						// n0 n2 n3 n4
+						i--;
+						oldparent.removeChild(c);
+					} else {
+						// n0 n1 n2 old n4
+						//    ^ins
+						// n0 n1 n2 n4
+						// it's fine
+						oldparent.removeChild(c);
+					}
 				} else {
-					// n0 n1 n2 old n4
-					//    ^ins
-					// n0 n1 n2 n4
-					// it's fine
 					oldparent.removeChild(c);
 				}
-			} else {
-				oldparent.removeChild(c);
 			}
 		}
 		if (i == this.children.length) {
@@ -209,7 +225,9 @@ class NexContainer extends Nex {
 		} else {
 			this.children.splice(i, 0, c);	
 		}
-		c.setParent(this);
+		if (!RENDERNODES) {
+			c.setParent(this);
+		}
 	}
 
 	replaceChildAt(c, i) {

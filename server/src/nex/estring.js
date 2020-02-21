@@ -101,7 +101,12 @@ class EString extends ValueNex {
 
 	// RENDERFLAGS // change to renderFlags
 	renderInto(domNode, shallow) {
-		super.renderInto(domNode, shallow);
+		let toPassToSuperclass = domNode;
+		if (RENDERNODES) {
+			// change param name
+			domNode = domNode.getDomNode();
+		}
+		super.renderInto(toPassToSuperclass, shallow);
 		// this one always can rerender because it's not a container
 		// we only need to care about rerenders when it's a container type
 		domNode.innerHTML = this.prefix;
@@ -112,13 +117,16 @@ class EString extends ValueNex {
 		} else {
 			this.drawExpanded(domNode);
 		}
-		this.renderTags(domNode, shallow);
+		if (!RENDERNODES) {
+			this.renderTags(domNode, shallow);
+		}
 	}
 
 	drawNormal(domNode) {
-		// shim
-		if (!domNode) {
-			domNode = this.domNode;
+		let toPass = domNode;
+		if (RENDERNODES) {
+			// change param name
+			domNode = domNode.getDomNode();
 		}
 		if (this.displayValue !== '') {
 			this.innerspan = document.createElement("div");
@@ -129,19 +137,21 @@ class EString extends ValueNex {
 	}
 
 	drawExpanded(domNode) {
-		// shim
-		if (!domNode) {
-			domNode = this.domNode;
+		let toPass = domNode;
+		if (RENDERNODES) {
+			// change param name
+			domNode = domNode.getDomNode();
 		}
-		this.drawTextField(domNode);
-		this.drawButton(domNode);
+		this.drawTextField(toPass);
+		this.drawButton(toPass);
 		this.inputfield.focus();
 	}
 
 	drawTextField(domNode) {
-		// shim
-		if (!domNode) {
-			domNode = this.domNode;
+		let toPass = domNode;
+		if (RENDERNODES) {
+			// change param name
+			domNode = domNode.getDomNode();
 		}
 		this.inputfield = document.createElement("textarea");	
 		this.inputfield.classList.add('stringta');	
@@ -153,15 +163,16 @@ class EString extends ValueNex {
 	}
 
 	drawButton(domNode) {
-		// shim
-		if (!domNode) {
-			domNode = this.domNode;
+		let toPass = domNode;
+		if (RENDERNODES) {
+			// change param name
+			domNode = domNode.getDomNode();
 		}
 		this.submitbutton = document.createElement("button")
 		this.submitbutton.classList.add('stringinputsubmit');			
 		let t = this;
 		this.submitbutton.onclick = function() {
-			t.finishInput();
+			t.finishInput(toPass);
 		}
 		domNode.appendChild(this.submitbutton);
 	}
@@ -171,12 +182,17 @@ class EString extends ValueNex {
 		deactivateKeyFunnel();
 	}
 
-	finishInput() {
+	// arg only used in RENDERNODES
+	finishInput(renderNode) {
 		let val = this.inputfield.value;
 		activateKeyFunnel();
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val); // calls render
-		if (RENDERFLAGS) {
+		if (RENDERNODES) {
+			renderNode.render(current_default_render_flags
+					| RENDER_FLAG_RERENDER
+					| RENDER_FLAG_SHALLOW);
+		} else if (RENDERFLAGS) {
 			this.rerender(current_default_render_flags | RENDER_FLAG_SHALLOW)
 		} else {
 			this.rerender(true);

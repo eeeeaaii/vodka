@@ -54,10 +54,17 @@ class Doc extends NexContainer {
 	}
 
 	renderInto(domNode, renderFlags) {
-		super.renderInto(domNode, renderFlags);
+		let toPassToSuperclass = domNode;
+		if (RENDERNODES) {
+			// change param name
+			domNode = domNode.getDomNode();
+		}
+		super.renderInto(toPassToSuperclass, renderFlags);
 		domNode.classList.add('doc');
 		domNode.classList.add('data');
-		this.renderTags(domNode, renderFlags);
+		if (!RENDERNODES) {
+			this.renderTags(domNode, renderFlags);
+		}
 	}
 
 	getEventTable(context) {

@@ -63,11 +63,18 @@ class Line extends NexContainer {
 		return new LineKeyFunnel(this);
 	}
 
-	renderInto(domNode, renderFlags) {
-		super.renderInto(domNode, renderFlags);
+	renderInto(domNode, shallow) {
+		let toPassToSuperclass = domNode;
+		if (RENDERNODES) {
+			// change param name
+			domNode = domNode.getDomNode();
+		}
+		super.renderInto(toPassToSuperclass, shallow);
 		domNode.classList.add('line');
 		domNode.classList.add('data');
-		this.renderTags(domNode, renderFlags);
+		if (!RENDERNODES) {
+			this.renderTags(domNode, shallow);
+		}
 
 	}
 

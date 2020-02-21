@@ -48,11 +48,17 @@ class Builtin extends Lambda {
 		return '&szlig;';
 	}
 
-
 	renderInto(domNode, renderFlags) {
-		super.renderInto(domNode, renderFlags);
+		let toPassToSuperclass = domNode;
+		if (RENDERNODES) {
+			// change param name
+			domNode = domNode.getDomNode();
+		}
+		super.renderInto(toPassToSuperclass, renderFlags);
 		domNode.classList.add('builtin');
-		this.renderTags(domNode, renderFlags);
+		if (!RENDERNODES) {
+			this.renderTags(domNode, renderFlags);
+		}
 	}
 
 	toString() {
