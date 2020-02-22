@@ -67,60 +67,89 @@ class Integer extends ValueNex {
 	getRawValue() {
 		return this.value;
 	}
-	getEventTable(context) {
-		return null;
-	}
-	// TODO: move tables from these unused functions into getEventTable
-	getKeyFunnelVector(context) {
-		if (context == ContextType.COMMAND) {
-			let defaultHandle = function(letter) {
-				let okChar = /^[0-9-]$/;
-				if (okChar.test(letter)) {
-					this.appendText(letter);
-				}
-			}.bind(this);
-			return {
-				'ShiftTab': 'select-parent',
-				'Tab': 'select-next-sibling',
-				'ArrowUp': 'move-left-up',
-				'ArrowDown': 'move-right-down',
-				'ArrowLeft': 'move-left-up',
-				'ArrowRight': 'move-right-down',
-				'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-				'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-sibling',
-				'~': 'insert-command-as-next-sibling',
-				'!': 'insert-bool-as-next-sibling',
-				'@': 'insert-symbol-as-next-sibling',
-				'#': 'insert-integer-as-next-sibling',
-				'$': 'insert-string-as-next-sibling',
-				'%': 'insert-float-as-next-sibling',
-				'^': 'insert-nil-as-next-sibling',
-				'(': 'insert-word-as-next-sibling',
-				'[': 'insert-line-as-next-sibling',
-				'{': 'insert-doc-as-next-sibling',
-				'defaultHandle': defaultHandle
-			};
+
+	appendWithChecks(txt) {
+		let t = this.getRawValue();
+		if (t == '0') {
+			if (txt == '0') {
+				return;
+			} else {
+				this.setValue(txt);
+			}
+		} else if (t == '-') {
+			if (txt == '0') {
+				return;
+			} else {
+				this.appendText(txt);
+			}
 		} else {
-			let docDefaultHandle = function(letter) {
-				let okChar = /^[0-9-]$/;
-				if (okChar.test(letter)) {
-					this.appendText(letter);
-				} else {
-					manipulator.insertAfterSelectedAndSelect(new Letter(letter));
-				}
-			}.bind(this);
-			return {
-				'ShiftTab': 'select-parent',
-				'Tab': 'select-next-sibling',
-				'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
-				'ArrowDown': 'move-to-corresponding-letter-in-next-line',
-				'ArrowLeft': 'move-to-previous-leaf',
-				'ArrowRight': 'move-to-next-leaf',
-				'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
-				'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-leaf',
-				'~': 'insert-command-as-next-sibling',
-				'defaultHandle': docDefaultHandle
-			};
+			if (txt == '-') {
+				return;
+			} else {
+				this.appendText(txt);
+			}
+		}
+	}
+
+	backspaceHack() {
+		let t = this.getRawValue();
+		if (t == '0') {
+			KeyResponseFunctions['remove-selected-and-select-previous-leaf'](this);
+			return;
+		}
+		this.deleteLastLetter();
+		t = this.getRawValue();
+		if (t == '') {
+			this.setValue('0');
+		}
+	}
+
+
+	getEventTable(context) {
+		let defaultHandle = function(txt) {
+			if (txt == 'Backspace') {
+				this.backspaceHack();
+				return;
+			}
+			if (!(/^.$/.test(txt))) {
+				return;
+			}
+			let okRegex = /^[0-9-]$/;
+			let letterRegex = /^[a-zA-Z0-9']$/;
+			let isSeparator = !letterRegex.test(txt);
+			if (okRegex.test(txt)) {
+				this.appendWithChecks(txt);
+			} else if (isSeparator) {
+				manipulator.insertAfterSelectedAndSelect(new Separator(txt));
+			} else {
+				let letter = new Letter(txt);
+				manipulator.insertAfterSelectedAndSelect(new Word())
+					&& manipulator.appendAndSelect(letter);
+			}
+		}.bind(this);
+		return {
+			'ShiftTab': 'select-parent',
+			'Tab': 'select-next-sibling',
+			'ArrowUp': 'move-left-up',
+			'ArrowDown': 'move-right-down',
+			'ArrowLeft': 'move-left-up',
+			'ArrowRight': 'move-right-down',
+			'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
+//			'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-leaf',
+			'Enter': 'do-line-break-always',
+			'ShiftEnter': 'evaluate-nex',
+			'~': 'insert-command-as-next-sibling',
+			'!': 'insert-bool-as-next-sibling',
+			'@': 'insert-symbol-as-next-sibling',
+			'#': 'insert-integer-as-next-sibling',
+			'$': 'insert-string-as-next-sibling',
+			'%': 'insert-float-as-next-sibling',
+			'^': 'insert-nil-as-next-sibling',
+			'&': 'insert-lambda-as-next-sibling',
+			'(': 'insert-word-as-next-sibling',
+			'[': 'insert-line-as-next-sibling',
+			'{': 'insert-doc-as-next-sibling',
+			'defaultHandle': defaultHandle
 		}
 	}
 }
