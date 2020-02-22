@@ -41,6 +41,13 @@ function insertOrAppend(s, obj) {
 	}
 }
 
+function evaluateNexAndReplace(s) {
+	let n = evaluateNexSafely(s, BUILTINS);
+	if (n) {
+		manipulator.replaceSelectedWith(n);			
+	}
+}
+
 var UNHANDLED_KEY = 'unhandled_key'
 var ContextType = {};
 ContextType.PASSTHROUGH = 0;
@@ -73,6 +80,14 @@ var KeyResponseFunctions = {
 	'move-to-next-leaf': function(s) {		
 		manipulator.selectNextLeaf()
 			||  manipulator.insertAfterSelectedAndSelect(new InsertionPoint());
+	},
+
+	'evaluate-nex': function(s) {
+		evaluateNexAndReplace(s);
+	},
+
+	'toggle-dir': function(s) {
+		s.toggleDir();
 	},
 
 
@@ -120,6 +135,7 @@ var KeyResponseFunctions = {
 	'insert-or-append-string': function(s) { insertOrAppend(s, new EString()); },
 	'insert-or-append-float': function(s) { insertOrAppend(s, new Float()); },
 	'insert-or-append-nil': function(s) { insertOrAppend(s, new Nil()); },
+	'insert-or-append-lambda': function(s) { insertOrAppend(s, new Lambda()); },
 
 	'insert-command-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Command()); },
 	'insert-bool-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Bool()); },
@@ -244,6 +260,16 @@ var KeyResponseFunctions = {
 	'remove-selected-and-select-previous-sibling': function(s) {
 		manipulator.removeSelectedAndSelectPreviousSibling();
 	},
+
+	'delete-last-command-letter-or-remove-selected-and-select-previous-sibling': function(s) {
+		if (!s.isEmpty()) {
+			s.deleteLastCommandLetter();
+		} else {
+			manipulator.removeSelectedAndSelectPreviousSibling();
+		}
+	},
+
+
 	// 'delete-last-letter-or-remove-selected-and-select-previous-sibling': function(s) {
 	// 	if (!s.isEmpty()) {
 	// 		s.deleteLastLetter();
@@ -462,13 +488,6 @@ class KeyDispatcher {
 				:  NEX_RENDER_TYPE_EXPLODED
 				);
 			root.setRenderType(current_render_type);
-		}
-	}
-
-	doShiftEnter() {
-		let n = evaluateNexSafely(selectedNex, BUILTINS);
-		if (n) {
-			manipulator.replaceSelectedWith(n);			
 		}
 	}
 

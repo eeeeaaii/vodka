@@ -196,6 +196,10 @@ class Command extends NexContainer {
 		this.commandtext = t;
 	}
 
+	isEmpty() {
+		return this.commandtext == null || this.commandtext == '';
+	}
+
 	deleteLastCommandLetter() {
 		this.commandtext = this.commandtext.substr(0, this.commandtext.length - 1);
 	}
@@ -222,16 +226,18 @@ class Command extends NexContainer {
 		return ContextType.COMMAND;
 	}
 
-
 	getEventTable(context) {
-		return null;
-	}
-	// TODO: move tables from these unused functions into getEventTable
-	getKeyFunnelVector(context) {
 		let defaultHandle = function(letter) {
 			let allowedKeyRegex = /^[a-zA-Z0-9-_=+/*<>:]$/;
+			let isLetterRegex = /^.$/;
 			if (allowedKeyRegex.test(letter)) {
-				this.appendText(letter);
+				this.appendCommandText(letter);
+			} else if (isLetterRegex.test(letter)) {
+				if (this.hasChildren()) {
+					manipulator.insertAfterSelectedAndSelect(new Letter(letter))
+				} else {
+					manipulator.appendAndSelect(new Letter(letter));
+				}
 			}
 		}.bind(this);
 
@@ -243,7 +249,9 @@ class Command extends NexContainer {
 			'ArrowDown': 'move-right-down',
 			'ArrowRight': 'move-right-down',
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-			'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-sibling',
+			'Backspace': 'delete-last-command-letter-or-remove-selected-and-select-previous-sibling',
+			'ShiftEnter': 'evaluate-nex',
+			'ShiftSpace': 'toggle-dir',
 			'~': 'insert-or-append-command',
 			'!': 'insert-or-append-bool',
 			'@': 'insert-or-append-symbol',
@@ -251,10 +259,14 @@ class Command extends NexContainer {
 			'$': 'insert-or-append-string',
 			'%': 'insert-or-append-float',
 			'^': 'insert-or-append-nil',
+			'&': 'insert-or-append-lambda',
 			'(': 'insert-or-append-word',
 			'[': 'insert-or-append-line',
 			'{': 'insert-or-append-doc',
 			'defaultHandle': defaultHandle
 		};
+	}
+	// TODO: move tables from these unused functions into getEventTable
+	getKeyFunnelVector(context) {
 	}
 }
