@@ -82,6 +82,7 @@ class ESymbol extends ValueNex {
 				'ArrowLeft': 'move-left-up',
 				'ArrowRight': 'move-right-down',
 				'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
+				'ShiftEnter': 'evaluate-nex',
 				'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-sibling',
 				'~': 'insert-command-as-next-sibling',
 				'!': 'insert-bool-as-next-sibling',

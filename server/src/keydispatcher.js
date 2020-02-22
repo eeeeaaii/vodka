@@ -278,13 +278,13 @@ var KeyResponseFunctions = {
 	// 		manipulator.removeSelectedAndSelectPreviousSibling();
 	// 	}
 	// },
-	// 'delete-last-letter-or-remove-selected-and-select-previous-leaf': function(s) {
-	// 	if (!s.isEmpty()) {
-	// 		s.deleteLastLetter();
-	// 	} else {
-	// 		manipulator.removeSelectedAndSelectPreviousLeaf();
-	// 	}
-	// },
+	'delete-last-letter-or-remove-selected-and-select-previous-leaf': function(s) {
+		if (!s.isEmpty()) {
+			s.deleteLastLetter();
+		} else {
+			manipulator.removeSelectedAndSelectPreviousLeaf();
+		}
+	},
 
 	'remove-selected-and-select-previous-leaf': function(s) {
 		let p = s.getParent();

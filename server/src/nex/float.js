@@ -57,60 +57,48 @@ class Float extends ValueNex {
 		}
 		return Number(v);
 	}
+
 	getEventTable(context) {
-		return null;
-	}
-	// TODO: move tables from these unused functions into getEventTable
-	getKeyFunnelVector(context) {
-		if (context == 'Doc') {
-			let docDefaultHandle = function(letter) {
-				let okChar = /^[e0-9.-]$/;
-				if (okChar.test(letter)) {
-					this.appendText(letter);
-				} else {
-					manipulator.insertAfterSelectedAndSelect(new Letter(letter));
-				}
-			}.bind(this);
-			return {
-				'ShiftTab': 'select-parent',
-				'Tab': 'select-next-sibling',
-				'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
-				'ArrowDown': 'move-to-corresponding-letter-in-next-line',
-				'ArrowLeft': 'move-to-previous-leaf',
-				'ArrowRight': 'move-to-next-leaf',
-				'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
-				'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-leaf',
-				'~': 'insert-command-as-next-sibling',
-				'defaultHandle': docDefaultHandle
-			};
-		} else {
-			let defaultHandle = function(letter) {
-				let okChar = /^[e0-9.-]$/;
-				if (okChar.test(letter)) {
-					this.appendText(letter);
-				}
-			}.bind(this);
-			return {
-				'ShiftTab': 'select-parent',
-				'Tab': 'select-next-sibling',
-				'ArrowUp': 'move-left-up',
-				'ArrowDown': 'move-right-down',
-				'ArrowLeft': 'move-left-up',
-				'ArrowRight': 'move-right-down',
-				'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-				'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-sibling',
-				'~': 'insert-command-as-next-sibling',
-				'!': 'insert-bool-as-next-sibling',
-				'@': 'insert-symbol-as-next-sibling',
-				'#': 'insert-integer-as-next-sibling',
-				'$': 'insert-string-as-next-sibling',
-				'%': 'insert-float-as-next-sibling',
-				'^': 'insert-nil-as-next-sibling',
-				'(': 'insert-word-as-next-sibling',
-				'[': 'insert-line-as-next-sibling',
-				'{': 'insert-doc-as-next-sibling',
-				'defaultHandle': defaultHandle
-			};
+		let defaultHandle = function(txt) {
+			if (!(/^.$/.test(txt))) {
+				return;
+			}
+			let okRegex = /^[e0-9.-]$/;
+			let letterRegex = /^[a-zA-Z0-9']$/;
+			let isSeparator = !letterRegex.test(txt);
+			if (okRegex.test(txt)) {
+				this.appendText(txt);
+			} else if (isSeparator) {
+				manipulator.insertAfterSelectedAndSelect(new Separator(txt));
+			} else {
+				let letter = new Letter(txt);
+				manipulator.insertAfterSelectedAndSelect(new Word())
+					&& manipulator.appendAndSelect(letter);
+			}
+		}.bind(this);
+		return {
+			'ShiftTab': 'select-parent',
+			'Tab': 'select-next-sibling',
+			'ArrowUp': 'move-left-up',
+			'ArrowDown': 'move-right-down',
+			'ArrowLeft': 'move-left-up',
+			'ArrowRight': 'move-right-down',
+			'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
+			'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-leaf',
+			'Enter': 'do-line-break-always',
+			'ShiftEnter': 'evaluate-nex',
+			'~': 'insert-command-as-next-sibling',
+			'!': 'insert-bool-as-next-sibling',
+			'@': 'insert-symbol-as-next-sibling',
+			'#': 'insert-integer-as-next-sibling',
+			'$': 'insert-string-as-next-sibling',
+			'%': 'insert-float-as-next-sibling',
+			'^': 'insert-nil-as-next-sibling',
+			'&': 'insert-lambda-as-next-sibling',
+			'(': 'insert-word-as-next-sibling',
+			'[': 'insert-line-as-next-sibling',
+			'{': 'insert-doc-as-next-sibling',
+			'defaultHandle': defaultHandle
 		}
 	}
 }

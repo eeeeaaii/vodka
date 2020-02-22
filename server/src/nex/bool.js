@@ -96,6 +96,7 @@ class Bool extends ValueNex {
 			'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
 			'Backspace': 'remove-selected-and-select-previous-leaf',
 			'Enter': 'do-line-break-always',
+			'ShiftEnter': 'evaluate-nex',
 			'~': 'insert-command-as-next-sibling',
 			'!': 'insert-bool-as-next-sibling',
 			'@': 'insert-symbol-as-next-sibling',
