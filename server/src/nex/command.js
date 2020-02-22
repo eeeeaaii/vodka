@@ -266,7 +266,4 @@ class Command extends NexContainer {
 			'defaultHandle': defaultHandle
 		};
 	}
-	// TODO: move tables from these unused functions into getEventTable
-	getKeyFunnelVector(context) {
-	}
 }

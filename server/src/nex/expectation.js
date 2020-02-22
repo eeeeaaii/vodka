@@ -134,33 +134,28 @@ class Expectation extends NexContainer {
 	}
 	getEventTable(context) {
 		return {
+			'ShiftTab': 'select-parent',
+			'Tab': 'select-first-child-or-create-insertion-point',
+			'ArrowUp': 'move-left-up',
+			'ArrowLeft': 'move-left-up',
+			'ArrowDown': 'move-right-down',
+			'ArrowRight': 'move-right-down',
+			'ShiftEnter': 'evaluate-nex',
+			'~': 'insert-or-append-command',
+			'!': 'insert-or-append-bool',
+			'@': 'insert-or-append-symbol',
+			'#': 'insert-or-append-integer',
+			'$': 'insert-or-append-string',
+			'%': 'insert-or-append-float',
+			'^': 'insert-or-append-nil',
+			'&': 'insert-or-append-lambda',
+			'(': 'insert-or-append-word',
+			'[': 'insert-or-append-line',
+			'{': 'insert-or-append-doc',
+			'defaultHandle': null,
+			// special stuff for expectations that gets rid of the js timeout
 			'ShiftBackspace': 'call-delete-handler-then-remove-selected-and-select-previous-sibling',
 			'Backspace': 'call-delete-handler-then-remove-selected-and-select-previous-sibling',
 		}
-	}
-	// TODO: move tables from these unused functions into getEventTable
-
-	getKeyFunnelVector(context) {
-		return {
-			'ShiftTab': 'select-parent',
-			'Tab': 'select-next-sibling',
-			'ArrowUp': 'move-left-up',
-			'ArrowDown': 'move-right-down',
-			'ArrowLeft': 'move-left-up',
-			'ArrowRight': 'move-right-down',
-			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-			'Backspace': 'remove-selected-and-select-previous-sibling',
-			'~': 'insert-command-as-next-sibling',
-			'!': 'insert-bool-as-next-sibling',
-			'@': 'insert-symbol-as-next-sibling',
-			'#': 'insert-integer-as-next-sibling',
-			'$': 'insert-string-as-next-sibling',
-			'%': 'insert-float-as-next-sibling',
-			'^': 'insert-nil-as-next-sibling',
-				'(': 'insert-word-as-next-sibling',
-				'[': 'insert-line-as-next-sibling',
-				'{': 'insert-doc-as-next-sibling',
-			'defaultHandle': null
-		};
 	}
 }

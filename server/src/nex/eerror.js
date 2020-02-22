@@ -53,6 +53,20 @@ class EError extends EString {
 	}
 
 	getEventTable(context) {
+		let defaultHandle = function(txt) {
+			if (!(/^.$/.test(txt))) {
+				return;
+			}
+			let letterRegex = /^[a-zA-Z0-9']$/;
+			let isSeparator = !letterRegex.test(txt);
+
+			if (isSeparator) {
+				manipulator.insertAfterSelectedAndSelect(new Separator(txt))
+			} else {
+				manipulator.insertAfterSelectedAndSelect(new Word())
+					&& selectedNex.getKeyFunnel().appendText(txt);
+			}
+		}.bind(this);
 		return {
 			'ShiftEnter': 'start-modal-editing',
 			'ShiftTab': 'select-parent',
@@ -74,7 +88,7 @@ class EError extends EString {
 			'(': 'insert-word-as-next-sibling',
 			'[': 'insert-line-as-next-sibling',
 			'{': 'insert-doc-as-next-sibling',
-			'defaultHandle': null
+			'defaultHandle': defaultHandle
 		};
 	}
 }
