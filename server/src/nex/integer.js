@@ -122,9 +122,8 @@ class Integer extends ValueNex {
 			} else if (isSeparator) {
 				manipulator.insertAfterSelectedAndSelect(new Separator(txt));
 			} else {
-				let letter = new Letter(txt);
 				manipulator.insertAfterSelectedAndSelect(new Word())
-					&& manipulator.appendAndSelect(letter);
+					&& manipulator.appendAndSelect(new Letter(txt));
 			}
 		}.bind(this);
 		return {
