@@ -115,7 +115,7 @@ var KeyResponseFunctions = {
 
 	// 'select-parent-and-remove-self': function(s) { manipulator.selectParent() && manipulator.removeNex(s); },
 
-	// 'start-modal-editing': function(s) { s.startModalEditing(); },
+	'start-modal-editing': function(s) { s.startModalEditing(); },
 
 	// 'replace-selected-with-command': function(s) { manipulator.replaceSelectedWith(new Command()); },
 	// 'replace-selected-with-bool': function(s) { manipulator.replaceSelectedWith(new Bool()); },

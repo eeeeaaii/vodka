@@ -128,9 +128,15 @@ class BuiltinArgEvaluator {
 		}
 	}
 
-	checkNumArgs() {
+	checkMinNumArgs() {
 		if (this.argContainer.numArgs() < this.numRequiredParams) {
 			throw new EError(this.name + ": not enough args passed to function.");
+		}
+	}
+
+	checkMaxNumArgs() {
+		if (this.argContainer.numArgs() > this.effectiveParams.length) {
+			throw new EError(this.name + ": too many args passed to function")
 		}
 	}
 
@@ -195,8 +201,9 @@ class BuiltinArgEvaluator {
 	}
 
 	evaluateAndBindArgs() {
-		this.checkNumArgs();
+		this.checkMinNumArgs();
 		this.padEffectiveParams();
+		this.checkMaxNumArgs();
 		this.processArgs();
 		this.bindArgs();
 	}

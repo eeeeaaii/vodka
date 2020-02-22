@@ -53,11 +53,6 @@ class EError extends EString {
 	}
 
 	getEventTable(context) {
-		return null;
-	}
-	// TODO: move tables from these unused functions into getEventTable
-
-	getKeyFunnelVector(context) {
 		return {
 			'ShiftEnter': 'start-modal-editing',
 			'ShiftTab': 'select-parent',
@@ -75,6 +70,7 @@ class EError extends EString {
 			'$': 'insert-string-as-next-sibling',
 			'%': 'insert-float-as-next-sibling',
 			'^': 'insert-nil-as-next-sibling',
+			'&': 'insert-lambda-as-next-sibling',
 			'(': 'insert-word-as-next-sibling',
 			'[': 'insert-line-as-next-sibling',
 			'{': 'insert-doc-as-next-sibling',

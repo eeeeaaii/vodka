@@ -108,7 +108,6 @@ class Bool extends ValueNex {
 			'[': 'insert-line-as-next-sibling',
 			'{': 'insert-doc-as-next-sibling',
 			'defaultHandle': defaultHandle
-
 		}
 	}
 
