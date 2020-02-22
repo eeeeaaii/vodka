@@ -191,9 +191,9 @@ class Manipulator {
 
 	selectNthChild(n) {
 		let s = (RENDERNODES ? selectedNode : selectedNex);
-		if (n >= s.children.length) return false;
+		if (n >= s.numChildren()) return false;
 		if (n < 0) return false;
-		let c = s.children[n];
+		let c = s.getChildAt(n);
 		if (!c) return false;
 		c.setSelected();
 		return true;
@@ -248,9 +248,15 @@ class Manipulator {
 	appendAndSelect(data) {
 		let s = (RENDERNODES ? selectedNode : selectedNex);
 		let newdata = data;
-		s.appendChild(newdata);
-		newdata.setSelected();
-		return true;		
+		if (RENDERNODES) {
+			let newNode = s.appendChild(newdata);
+			newNode.setSelected();
+			return true;		
+		} else {
+			s.appendChild(newdata);
+			newdata.setSelected();
+			return true;		
+		}
 	}
 
 	insertAfterSelected(data) {
@@ -383,9 +389,6 @@ class Manipulator {
 			p.removeChild(c);
 			nex.appendChild(c);
 		}
-//		let p2 = p.getParent();
-//		p2.insertChildAfter(on, p);
-//		return true;		
 	}
 
 	split(nex) {

@@ -178,6 +178,7 @@ class NexContainer extends Nex {
 		return this.children[i];
 	}
 
+	// called by RenderNode
 	removeChildAt(i) {
 		if (i < 0 || i >= this.children.length) return null;
 		let r = this.children[i];

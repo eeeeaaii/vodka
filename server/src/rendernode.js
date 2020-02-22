@@ -33,14 +33,30 @@ class RenderNode {
 		return this.parent;
 	}
 
-	appendChild(nex) {
-		let renderNode = new RenderNode(nex);
-		this.childnodes.push(renderNode);
-		this.nex.appendChild(nex);
-		this.domNode.appendChild(renderNode.getDomNode())
-		renderNode.parent = this;
-		return renderNode;
+	setParent() {
+		this.parent = null;
 	}
+
+	hasChildren() {
+		return this.childnodes.length > 0;
+	}
+
+	numChildren() {
+		return this.childnodes.length;
+	}
+
+	getRenderNodeFor(nex) {
+		return new RenderNode(nex);
+	}
+
+	// appendChild(nex) {
+	// 	let renderNode = new RenderNode(nex);
+	// 	this.childnodes.push(renderNode);
+	// 	this.nex.appendChild(nex);
+	// 	this.domNode.appendChild(renderNode.getDomNode())
+	// 	renderNode.parent = this;
+	// 	return renderNode;
+	// }
 
 	appendDecorationDomNode(node) {
 		this.domNode.appendChild(node);
@@ -88,17 +104,7 @@ class RenderNode {
 			this.domNode.appendChild(childRenderNode.getDomNode());
 
 		}
-		// if (this.nex instanceof NexContainer) {
-		// 	for (let i = 0; i < this.nex.numChildren(); i++) {
-		// 		let nexChild = this.nex.getChildAt(i);
-		// 		let childRenderNode = new RenderNode(nexChild);
-		// 		childRenderNode.render(renderFlags);
-		// 		this.domNode.appendChild(childRenderNode.getDomNode());
-		// 		this.childnodes.push(childRenderNode);
-		// 	}
-		// }
 		this.nex.renderTags(this.domNode, renderFlags);
-//		this.nex.renderIntoNode(this, renderFlags);
 	}
 
 	setSelected(rerender) {
@@ -119,5 +125,172 @@ class RenderNode {
 	setUnselected() {
 		this.selected = false;
 	}
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+
+    // most of these copied from nexcontainer
+	getIndexOfChild(c) {
+		for (let i = 0; i < this.childnodes.length; i++) {
+			if (this.childnodes[i] == c) {
+				return i;
+			}
+		}
+		return -100;// I have reasons
+	}
+
+	getChildAt(i, useDefault) {
+		i = (i < 0 && useDefault) ? 0 : i;
+		i = (i >= this.childnodes.length && useDefault) ? this.childnodes.length - 1: i;
+		if (i < 0 || i >= this.childnodes.length) return null;
+		return this.childnodes[i];
+	}
+
+	removeChildAt(i) {
+		if (i < 0 || i >= this.childnodes.length) return null;
+		let r = this.childnodes[i];
+		this.childnodes.splice(i, 1);
+		this.getNex().removeChildAt(i);
+		this.getDomNode().removeChild(r.getDomNode());
+		r.setParent(null);
+		return r;
+	}
+
+	insertChildAt(c, i) {
+		if (i < 0 || i > this.childnodes.length) {
+			return;
+		}
+		let oldparent = c.getParent();
+		if (oldparent) {
+			if (oldparent == this) {
+				// ugh
+				let oldi = oldparent.getIndexOfChild(c);
+				if (oldi == i) {
+					// no-op
+					return;
+				} else if (oldi < i) {
+					// n0 old n2 n3 n4
+					//           ^ins
+					// remove:
+					// n0 n2 n3 n4
+					i--;
+					oldparent.removeChild(c);
+				} else {
+					// n0 n1 n2 old n4
+					//    ^ins
+					// n0 n1 n2 n4
+					// it's fine
+					oldparent.removeChild(c);
+				}
+			} else {
+				oldparent.removeChild(c);
+			}
+		}
+		if (i == this.childnodes.length) {
+			this.childnodes.push(c);
+			this.getNex().appendChild(c.getNex());
+			this.domNode.appendChild(c.getDomNode());
+		} else {
+			this.childnodes.splice(i, 0, c);
+			this.getNex().insertChildAt(c.getNex(), i);
+			this.getDomNode().insertBefore(c.getDomNode(), this.childnodes[i + 1].getDomNode());
+		}
+		c.setParent(this);
+	}
+
+	replaceChildAt(c, i) {
+		if (c == this.childnodes[i]) return;
+		this.removeChildAt(i);
+		this.insertChildAt(c, i);
+	}
+
+	replaceChildWith(c, c2) {
+		if (c == c2) return;
+		let ind = this.getIndexOfChild(c);
+		this.replaceChildAt(c2, ind);
+	}
+
+	getChildAfter(c) {
+		let index = this.getIndexOfChild(c);
+		return this.getChildAt(index + 1);
+	}
 	
+	getChildBefore(c) {
+		let index = this.getIndexOfChild(c);
+		return this.getChildAt(index - 1);
+	}
+
+	getLastChild() {
+		return this.getChildAt(this.childnodes.length - 1);
+	}
+
+	getFirstChild() {
+		return this.getChildAt(0);
+	}
+
+	removeFirstChild() {
+		return this.removeChildAt(0);
+	}
+
+	removeChild(c) {
+		return this.removeChildAt(this.getIndexOfChild(c));
+	}
+
+	// delete this, it's the same as the other method
+	getPreviousSibling(c) {
+		return this.getChildBefore(c);
+	}
+
+	// delete this, it's the same as the other method
+	getNextSibling(c) {
+		return this.getChildAfter(c);
+	}
+
+	doForEachChild(f) {
+		for (let i = 0; i < this.childnodes.length; i++) {
+			f(this.childnodes[i]);
+		}
+	}
+
+	appendChild(c) {
+		if (c instanceof Nex) {
+			c = this.getRenderNodeFor(c);
+		}
+		this.insertChildAt(c, this.childnodes.length);
+		return c;
+	}
+
+	prependChild(c) {
+		if (c instanceof Nex) {
+			c = this.getRenderNodeFor(c);
+		}
+		this.insertChildAt(c, 0);
+		return c;
+	}
+
+	insertChildAfter(c, sib) {
+		if (c instanceof Nex) {
+			c = this.getRenderNodeFor(c);
+		}
+		this.insertChildAt(c, this.getIndexOfChild(sib) + 1);
+		return c;
+	}
+
+	insertChildBefore(c, sib) {
+		if (c instanceof Nex) {
+			c = this.getRenderNodeFor(c);
+		}
+		this.insertChildAt(c, this.getIndexOfChild(sib));
+		return c;
+	}
+
+	replaceChildWith(child, newchild) {
+		if (newchild instanceof Nex) {
+			newchild = this.getRenderNodeFor(newchild);
+		}
+		this.replaceChildAt(newchild, this.getIndexOfChild(child));
+		return newchild;
+	}    
 }
