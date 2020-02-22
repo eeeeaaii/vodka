@@ -317,6 +317,12 @@ var KeyResponseFunctions = {
 	// 	manipulator.removeNex(this.s);
 	// },
 
+	'do-line-break-always': function(s) {
+		let newline = new Newline();
+		manipulator.insertAfterSelected(newline)
+			&& manipulator.putAllNextSiblingsInNewLine()
+			&& newline.setSelected();
+	},
 
 
 	// 'delete-last-letter-or-remove-selected-and-select-previous-leaf': function(s) {
