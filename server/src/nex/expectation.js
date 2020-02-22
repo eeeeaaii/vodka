@@ -133,26 +133,40 @@ class Expectation extends NexContainer {
 		return newnex;
 	}
 	getEventTable(context) {
+		let defaultHandle = function(txt) {
+			if (!(/^.$/.test(txt))) {
+				return;
+			}
+			let letterRegex = /^[a-zA-Z0-9']$/;
+			let isSeparator = !letterRegex.test(txt);
+
+			if (isSeparator) {
+				manipulator.replaceSelectedWith(new Separator(txt));
+			} else {
+				manipulator.replaceSelectedWith(new Letter(txt));
+			}
+		}.bind(this);
+		// most of these have no tests?
 		return {
 			'ShiftTab': 'select-parent',
-			'Tab': 'select-first-child-or-create-insertion-point',
+			'Tab': 'select-first-child-or-fail',
 			'ArrowUp': 'move-left-up',
 			'ArrowLeft': 'move-left-up',
 			'ArrowDown': 'move-right-down',
 			'ArrowRight': 'move-right-down',
 			'ShiftEnter': 'evaluate-nex',
-			'~': 'insert-or-append-command',
-			'!': 'insert-or-append-bool',
-			'@': 'insert-or-append-symbol',
-			'#': 'insert-or-append-integer',
-			'$': 'insert-or-append-string',
-			'%': 'insert-or-append-float',
-			'^': 'insert-or-append-nil',
-			'&': 'insert-or-append-lambda',
-			'(': 'insert-or-append-word',
-			'[': 'insert-or-append-line',
-			'{': 'insert-or-append-doc',
-			'defaultHandle': null,
+			'~': 'replace-selected-with-command',
+			'!': 'replace-selected-with-bool',
+			'@': 'replace-selected-with-symbol',
+			'#': 'replace-selected-with-integer',
+			'$': 'replace-selected-with-string',
+			'%': 'replace-selected-with-float',
+			'^': 'replace-selected-with-nil',
+			'&': 'replace-selected-with-lambda',
+			'(': 'replace-selected-with-word',
+			'[': 'replace-selected-with-line',
+			'{': 'replace-selected-with-doc',
+			'defaultHandle': defaultHandle,
 			// special stuff for expectations that gets rid of the js timeout
 			'ShiftBackspace': 'call-delete-handler-then-remove-selected-and-select-previous-sibling',
 			'Backspace': 'call-delete-handler-then-remove-selected-and-select-previous-sibling',
