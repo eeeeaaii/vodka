@@ -383,6 +383,25 @@ var KeyResponseFunctions = {
 
 		}
 	},
+
+	'delete-newline': function(s) {
+		if (manipulator.selectPreviousLeaf()) {
+			manipulator.removeNex(s);
+			s = selectedNex;
+			let line;
+			let word;
+			if (s instanceof Letter) {
+				word = s.getParent();
+				line = word.getParent();
+			} else { // should be a separator
+				line = s.getParent();
+			}
+			manipulator.joinToSiblingIfSame(line);
+			if (word) {
+				manipulator.joinToSiblingIfSame(word);
+			}
+		}		
+	},
 	// 'create-new-line-from-inside-line': function(s) {
 	// 	manipulator.putAllNextSiblingsInNewLine()
 	// 	||
