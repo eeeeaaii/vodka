@@ -209,8 +209,11 @@ class EString extends ValueNex {
 			if (isSeparator) {
 				manipulator.insertAfterSelectedAndSelect(new Separator(txt))
 			} else {
-				manipulator.insertAfterSelectedAndSelect(new Word())
-					&& selectedNex.getKeyFunnel().appendText(txt);
+				let l = new Letter(txt);
+				let w = new Word();
+				w.appendChild(l);
+				manipulator.insertAfterSelectedAndSelect(w);
+				l.setSelected();
 			}
 		}.bind(this);
 		return {
@@ -223,6 +226,7 @@ class EString extends ValueNex {
 			'ArrowRight': 'move-right-down',
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
 			'Backspace': 'remove-selected-and-select-previous-sibling',
+			'Enter': 'do-line-break-always',
 			'~': 'insert-command-as-next-sibling',
 			'!': 'insert-bool-as-next-sibling',
 			'@': 'insert-symbol-as-next-sibling',

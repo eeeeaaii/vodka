@@ -79,26 +79,45 @@ class Line extends NexContainer {
 	}
 
 	getEventTable(context) {
-		//if (context == ContextType.COMMAND) {
-			return {
-				'ShiftTab': 'select-parent',				
-				'Tab': 'select-first-child-or-create-insertion-point',
-				'ArrowLeft': 'move-left-up',
-				'ArrowUp': 'move-left-up',
-				'ArrowRight': 'move-right-down',
-				'ArrowDown': 'move-right-down',
-				'~': 'insert-or-append-command',
-				'!': 'insert-or-append-bool',
-				'@': 'insert-or-append-symbol',
-				'#': 'insert-or-append-integer',
-				'$': 'insert-or-append-string',
-				'%': 'insert-or-append-float',
-				'^': 'insert-or-append-nil',
-				'(': 'insert-or-append-word',
-				'[': 'insert-or-append-line',
-				'{': 'insert-or-append-doc',
+		let defaultFunction = function(letter) {
+			if (!(/^.$/.test(letter))) return;
+			let letterRegex = /^[a-zA-Z0-9']$/;
+			let isSeparator = !letterRegex.test(letter);
+			if (isSeparator) {
+				manipulator.appendAndSelect(new Separator(letter));
+			} else {
+				if (manipulator.selectLastChild()) {
+					selectedNex.appendChild(new Letter(letter));
+				} else {
+					let w = new Word();
+					w.appendChild(new Letter(letter));
+					manipulator.appendAndSelect(w);
+				}
 			}
-		//}
+		}
+		return {
+			'ShiftTab': 'select-parent',				
+			'Tab': 'select-first-child-or-create-insertion-point',
+			'ArrowLeft': 'move-left-up',
+			'ArrowUp': 'move-left-up',
+			'ArrowRight': 'move-right-down',
+			'ArrowDown': 'move-right-down',
+			'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
+			'Backspace': 'remove-selected-and-select-previous-leaf',
+			'ShiftEnter': 'evaluate-nex',
+			'Enter': 'do-line-break-from-line',
+			'~': 'insert-command-as-next-sibling',
+			'!': 'insert-bool-as-next-sibling',
+			'@': 'insert-symbol-as-next-sibling',
+			'#': 'insert-integer-as-next-sibling',
+			'$': 'insert-string-as-next-sibling',
+			'%': 'insert-float-as-next-sibling',
+			'^': 'insert-nil-as-next-sibling',
+			'(': 'insert-word-as-next-sibling',
+			'[': 'insert-line-as-next-sibling',
+			'{': 'insert-doc-as-next-sibling',
+			'defaultHandle': defaultFunction
+		}
 	}
 	// TODO: move tables from these unused functions into getEventTable
 	getKeyFunnelVector(context) {

@@ -248,6 +248,7 @@ class Command extends NexContainer {
 			'ArrowLeft': 'move-left-up',
 			'ArrowDown': 'move-right-down',
 			'ArrowRight': 'move-right-down',
+			'Enter': 'do-line-break-always',
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
 			'Backspace': 'delete-last-command-letter-or-remove-selected-and-select-previous-sibling',
 			'ShiftEnter': 'evaluate-nex',

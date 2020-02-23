@@ -88,6 +88,7 @@ class Doc extends NexContainer {
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
 			'Backspace': 'remove-selected-and-select-previous-sibling',
 			'ShiftEnter': 'evaluate-nex',
+			'Enter': 'do-line-break-always',
 			'~': 'insert-or-append-command',
 			'!': 'insert-or-append-bool',
 			'@': 'insert-or-append-symbol',

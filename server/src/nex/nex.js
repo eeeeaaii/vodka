@@ -216,12 +216,21 @@ class Nex {
 
 	_setClickHandler(domNode) {
 		domNode.onclick = (e) => {
+			let insertAfterRemove = false;
+			let oldSelectedNex = selectedNex;
 			if (selectedNex instanceof EString
 					&& selectedNex.getMode() == MODE_EXPANDED) {
 				selectedNex.finishInput();
+			} else if (selectedNex instanceof InsertionPoint) {
+				insertAfterRemove = true;
 			}
+
 			e.stopPropagation();
 			this.setSelected(true /*shallow-rerender*/);
+			if (insertAfterRemove && selectedNex != oldSelectedNex) {
+				manipulator.removeNex(oldSelectedNex);
+				topLevelRender();
+			}
 		};
 	}
 

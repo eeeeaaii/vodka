@@ -20,277 +20,73 @@ var harness = require('../testharness');
 
 var testactions = [];
 
-testactions.push({
-		type:'keydown',
-		code:'ShiftLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyH'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ShiftLeft'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyH'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyE'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyE'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyL'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyL'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyL'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyL'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyO'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyO'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Semicolon'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Semicolon'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyA'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyA'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Semicolon'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Semicolon'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyA'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyA'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Semicolon'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Semicolon'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Semicolon'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Semicolon'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyA'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyA'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Enter'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Enter'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyA'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyA'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Quote'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Quote'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Semicolon'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Semicolon'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ArrowLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Semicolon'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Semicolon'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyA'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyA'
-	});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'KeyH'});
+                                                       testactions.push({type:'keyup',code:'ShiftLeft'});
+                                                       testactions.push({type:'keyup',code:'KeyH'});
+testactions.push({type:'keydown',code:'KeyE'});
+                                                       testactions.push({type:'keyup',code:'KeyE'});
+testactions.push({type:'keydown',code:'KeyL'});
+                                                       testactions.push({type:'keyup',code:'KeyL'});
+testactions.push({type:'keydown',code:'KeyL'});
+                                                       testactions.push({type:'keyup',code:'KeyL'});
+testactions.push({type:'keydown',code:'KeyO'});
+                                                       testactions.push({type:'keyup',code:'KeyO'});
+testactions.push({type:'keydown',code:'Semicolon'});
+                                                       testactions.push({type:'keyup',code:'Semicolon'});
+testactions.push({type:'keydown',code:'KeyA'});
+                                                       testactions.push({type:'keyup',code:'KeyA'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+                                                       testactions.push({type:'keyup',code:'ArrowLeft'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+                                                       testactions.push({type:'keyup',code:'ArrowLeft'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+                                                       testactions.push({type:'keyup',code:'ArrowLeft'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+                                                       testactions.push({type:'keyup',code:'ArrowLeft'});
+testactions.push({type:'keydown',code:'Semicolon'});
+                                                       testactions.push({type:'keyup',code:'Semicolon'});
+testactions.push({type:'keydown',code:'KeyA'});
+                                                       testactions.push({type:'keyup',code:'KeyA'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+                                                       testactions.push({type:'keyup',code:'ArrowLeft'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+                                                       testactions.push({type:'keyup',code:'ArrowLeft'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+                                                       testactions.push({type:'keyup',code:'ArrowLeft'});
+testactions.push({type:'keydown',code:'Semicolon'});
+                                                       testactions.push({type:'keyup',code:'Semicolon'});
+testactions.push({type:'keydown',code:'Semicolon'});
+                                                       testactions.push({type:'keyup',code:'Semicolon'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+                                                       testactions.push({type:'keyup',code:'ArrowLeft'});
+testactions.push({type:'keydown',code:'KeyA'});
+                                                       testactions.push({type:'keyup',code:'KeyA'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+                                                       testactions.push({type:'keyup',code:'ArrowLeft'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+                                                       testactions.push({type:'keyup',code:'ArrowLeft'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+                                                       testactions.push({type:'keyup',code:'ArrowLeft'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+                                                       testactions.push({type:'keyup',code:'ArrowLeft'});
+testactions.push({type:'keydown',code:'Enter'});
+                                                       testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keydown',code:'KeyA'});
+                                                       testactions.push({type:'keyup',code:'KeyA'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+                                                       testactions.push({type:'keyup',code:'ArrowLeft'});
+testactions.push({type:'keydown',code:'Quote'});
+                                                       testactions.push({type:'keyup',code:'Quote'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+                                                       testactions.push({type:'keyup',code:'ArrowLeft'});
+testactions.push({type:'keydown',code:'Semicolon'});
+                                                       testactions.push({type:'keyup',code:'Semicolon'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+                                                       testactions.push({type:'keyup',code:'ArrowLeft'});
+testactions.push({type:'keydown',code:'Semicolon'});
+                                                       testactions.push({type:'keyup',code:'Semicolon'});
+testactions.push({type:'keydown',code:'KeyA'});
+                                                       testactions.push({type:'keyup',code:'KeyA'});
 
 harness.runTest(testactions, 'direct');

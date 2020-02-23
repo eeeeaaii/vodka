@@ -155,6 +155,7 @@ class Expectation extends NexContainer {
 			'ArrowDown': 'move-right-down',
 			'ArrowRight': 'move-right-down',
 			'ShiftEnter': 'evaluate-nex',
+			'Enter': 'do-line-break-always',
 			'~': 'replace-selected-with-command',
 			'!': 'replace-selected-with-bool',
 			'@': 'replace-selected-with-symbol',

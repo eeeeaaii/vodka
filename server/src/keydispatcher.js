@@ -113,7 +113,7 @@ var KeyResponseFunctions = {
 	// 'select-next-sibling': function(s) { manipulator.selectNextSibling(); },
 	'select-first-child-or-fail': function(s) { manipulator.selectFirstChild(); },
 
-	// 'select-parent-and-remove-self': function(s) { manipulator.selectParent() && manipulator.removeNex(s); },
+	'select-parent-and-remove-self': function(s) { manipulator.selectParent() && manipulator.removeNex(s); },
 
 	'start-modal-editing': function(s) { s.startModalEditing(); },
 
@@ -201,14 +201,14 @@ var KeyResponseFunctions = {
 	// 	&& manipulator.removeNex(s);
 	// },
 
-	// 'move-to-previous-leaf-and-remove-self': function(s) {		
-	// 	manipulator.selectPreviousLeaf()
-	// 	&& manipulator.removeNex(s);
-	// },
-	// 'move-to-next-leaf-and-remove-self': function(s) {		
-	// 	manipulator.selectNextLeaf()
-	// 	&& manipulator.removeNex(s);
-	// },
+	'move-to-previous-leaf-and-remove-self': function(s) {		
+		manipulator.selectPreviousLeaf()
+		&& manipulator.removeNex(s);
+	},
+	'move-to-next-leaf-and-remove-self': function(s) {		
+		manipulator.selectNextLeaf()
+		&& manipulator.removeNex(s);
+	},
 	'move-to-corresponding-letter-in-previous-line': function(s) {
 		manipulator.selectCorrespondingLetterInPreviousLine()
 			 || manipulator.selectPreviousSibling()
@@ -313,16 +313,43 @@ var KeyResponseFunctions = {
 	// 	}
 	// },
 
-	// 'legacy-unchecked-remove-selected-and-select-previous-leaf': function(s) {
-	// 	manipulator.selectPreviousLeaf() || manipulator.selectParent();
-	// 	manipulator.removeNex(this.s);
-	// },
+	'legacy-unchecked-remove-selected-and-select-previous-leaf': function(s) {
+		manipulator.selectPreviousLeaf() || manipulator.selectParent();
+		manipulator.removeNex(s);
+	},
 
 	'do-line-break-always': function(s) {
 		let newline = new Newline();
 		manipulator.insertAfterSelected(newline)
 			&& manipulator.putAllNextSiblingsInNewLine()
 			&& newline.setSelected();
+	},
+
+	'do-line-break-from-line': function(s) {
+		if (isDoc(s.getParent())) {
+			manipulator.insertAfterSelectedAndSelect(new Line())
+				&& manipulator.appendAndSelect(new Newline());
+		} else {
+	// wtf
+			let newline = new Newline();
+			manipulator.insertAfterSelected(newline)
+				&& manipulator.putAllNextSiblingsInNewLine()
+				&& newline.setSelected();
+//			s.getParent().setSelected();
+//			s.getParent().getKeyFunnel().doEnter();
+		}		
+	},
+
+	'replace-selected-with-word-correctly': function(s) {
+		let obj = new Word();
+		if (isDoc(selectedNex.getParent())) {
+			let ln = new Line();
+			ln.appendChild(obj);
+			manipulator.replaceSelectedWith(ln);
+			obj.setSelected();
+		} else {
+			manipulator.replaceSelectedWith(obj);
+		}
 	},
 
 

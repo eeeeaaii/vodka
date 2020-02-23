@@ -77,6 +77,7 @@ class EError extends EString {
 			'ArrowRight': 'move-right-down',
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
 			'Backspace': 'remove-selected-and-select-previous-sibling',
+			'Enter': 'do-line-break-always',
 			'~': 'insert-command-as-next-sibling',
 			'!': 'insert-bool-as-next-sibling',
 			'@': 'insert-symbol-as-next-sibling',
