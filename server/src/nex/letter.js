@@ -89,76 +89,48 @@ class Letter extends Nex {
 
 	getEventTable(context) {
 		var t = this;
-		if (context == ContextType.COMMAND) {
-			return {
-				'ShiftTab': 'select-parent',
-				'Tab': 'move-right-down',
-				'ArrowLeft': 'move-left-up',
-				'ArrowUp': 'move-left-up',
-				'ArrowRight': 'move-right-down',
-				'ArrowDown': 'move-right-down',
-				'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-				'Backspace': 'remove-selected-and-select-previous-sibling',
 
-				// deprecated, change to insert-command-as-next-sibling
-				'~': 'legacy-insert-command-as-next-sibling-of-parent',
-				'!': 'legacy-insert-bool-as-next-sibling-of-parent',
-				'@': 'legacy-insert-symbol-as-next-sibling-of-parent',
-				'#': 'legacy-insert-integer-as-next-sibling-of-parent',
-				'$': 'legacy-insert-string-as-next-sibling-of-parent',
-				'%': 'legacy-insert-float-as-next-sibling-of-parent',
-				'^': 'legacy-insert-nil-as-next-sibling-of-parent',
-				'&': 'legacy-insert-lambda-as-next-sibling-of-parent',
-				// end deprecated
+		return {
+			'ShiftTab': 'select-parent',
+			'Tab': 'move-to-next-leaf',
+			'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
+			'ArrowDown': 'move-to-corresponding-letter-in-next-line',
+			'ArrowLeft': 'move-to-previous-leaf',
+			'ArrowRight': 'move-to-next-leaf',
+			'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
+			'Backspace': 'remove-selected-and-select-previous-leaf',
+			'Enter': 'do-line-break-after-letter',
+			// deprecated, change to insert-command-as-next-sibling
+			'~': 'legacy-insert-command-as-next-sibling-of-parent',
+			// all the rest also deprecated, to be removed.
+			'!': 'legacy-insert-bool-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+			'@': 'legacy-insert-symbol-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+			'#': 'legacy-insert-integer-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+			'$': 'legacy-insert-string-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+			'%': 'legacy-insert-float-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+			'^': 'legacy-insert-nil-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+			'&': 'legacy-insert-lambda-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+			// end deprecated
 
-				'(': 'insert-word-as-next-sibling',
-				'[': 'insert-line-as-next-sibling',
-				'{': 'insert-doc-as-next-sibling',
+			'(': 'insert-word-as-next-sibling',
+			'[': 'insert-line-as-next-sibling',
+			'{': 'insert-doc-as-next-sibling',
 
-				//experimental
-				'<': 'insert-zlist-as-next-sibling',
-				'*': 'insert-type-as-next-sibling',
+			// experimental
+			'<': 'insert-zlist-as-next-sibling',
+			'*': 'insert-type-as-next-sibling',
 
-				defaultHandle: function(key) {
-					this.defaultHandle(key, true /* is command */);
-				}.bind(t)
-			}
-		} else if (context == ContextType.DOC) {
-			return {
-				'ShiftTab': 'select-parent',
-				'Tab': 'move-to-next-leaf',
-				'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
-				'ArrowDown': 'move-to-corresponding-letter-in-next-line',
-				'ArrowLeft': 'move-to-previous-leaf',
-				'ArrowRight': 'move-to-next-leaf',
-				'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
-				'Backspace': 'remove-selected-and-select-previous-leaf',
-				'Enter': 'do-line-break-after-letter',
-				// deprecated, change to insert-command-as-next-sibling
-				'~': 'legacy-insert-command-as-next-sibling-of-parent',
-				// all the rest also deprecated, to be removed.
-				'!': 'legacy-insert-bool-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-				'@': 'legacy-insert-symbol-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-				'#': 'legacy-insert-integer-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-				'$': 'legacy-insert-string-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-				'%': 'legacy-insert-float-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-				'^': 'legacy-insert-nil-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-				'&': 'legacy-insert-lambda-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-				// end deprecated
-
-				'(': 'insert-word-as-next-sibling',
-				'[': 'insert-line-as-next-sibling',
-				'{': 'insert-doc-as-next-sibling',
-
-				// experimental
-				'<': 'insert-zlist-as-next-sibling',
-				'*': 'insert-type-as-next-sibling',
-
-
-				defaultHandle: function(key) {
-					this.defaultHandle(key, false /* is command */);
-				}.bind(t)
-			}
+			defaultHandle: (context == ContextType.COMMAND)
+					? (
+						function(key) {
+						this.defaultHandle(key, true /* is command */);
+						}.bind(t)
+						)
+					: (
+						function(key) {
+						this.defaultHandle(key, false /* is command */);
+						}.bind(t)
+						)
 		}
 	}
 }

@@ -33,8 +33,8 @@ class RenderNode {
 		return this.parent;
 	}
 
-	setParent() {
-		this.parent = null;
+	setParent(p) {
+		this.parent = p;
 	}
 
 	hasChildren() {

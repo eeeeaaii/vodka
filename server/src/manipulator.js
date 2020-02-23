@@ -19,6 +19,15 @@ var CLIPBOARD = null;
 
 class Manipulator {
 
+	conformData(data) {
+		if (RENDERNODES) {
+			if (data instanceof Nex) {
+				return new RenderNode(data);
+			}
+		}
+		return data;
+	}
+
 	doCut() {
 		CLIPBOARD = (RENDERNODES ? selectedNode : selectedNex).makeCopy();
 		let x = (RENDERNODES ? selectedNode : selectedNex);
@@ -246,6 +255,7 @@ class Manipulator {
 	}
 
 	appendAndSelect(data) {
+		data = this.conformData(data);
 		let s = (RENDERNODES ? selectedNode : selectedNex);
 		let newdata = data;
 		if (RENDERNODES) {
@@ -260,6 +270,7 @@ class Manipulator {
 	}
 
 	insertAfterSelected(data) {
+		data = this.conformData(data);
 		let s = (RENDERNODES ? selectedNode : selectedNex);
 		let p = s.getParent();
 		if (!p) return false;
@@ -268,11 +279,13 @@ class Manipulator {
 	}
 
 	insertAfterSelectedAndSelect(data) {
+		data = this.conformData(data);
 		return this.insertAfterSelected(data)
 			&& this.selectNextSibling();
 	}
 
 	insertBeforeSelected(data) {
+		data = this.conformData(data);
 		let s = (RENDERNODES ? selectedNode : selectedNex);
 		let p = s.getParent();
 		if (!p) return false;
@@ -320,6 +333,7 @@ class Manipulator {
 	}
 
 	removeNex(toDel) {
+		toDel = this.conformData(toDel);
 		let p = toDel.getParent();
 		if (!p) return false;
 		if (toDel.isSelected()) {
@@ -330,6 +344,7 @@ class Manipulator {
 	}
 
 	replaceSelectedWith(nex) {
+		nex = this.conformData(nex);
 		let s = (RENDERNODES ? selectedNode : selectedNex);
 		if (s === nex) return true; // trivially true
 		let p = s.getParent(true);
@@ -378,6 +393,7 @@ class Manipulator {
 	}
 
 	moveRemainingSiblingsInto(nex) {
+		nex = this.conformData(nex);
 		let s = (RENDERNODES ? selectedNode : selectedNex);
 		let p = s.getParent();
 		if (!p) return false;
@@ -392,6 +408,7 @@ class Manipulator {
 	}
 
 	split(nex) {
+		nex = this.conformData(nex);
 		let s = (RENDERNODES ? selectedNode : selectedNex);
 		let p = s.getParent();
 		if (!p) return false;
@@ -441,6 +458,9 @@ class Manipulator {
 	}
 
 	join(p, a, b) {
+		p = this.conformData(p);
+		a = this.conformData(a);
+		b = this.conformData(b);
 		let c;
 		while (c = b.removeFirstChild()) {
 			a.appendChild(c);
@@ -471,6 +491,7 @@ class Manipulator {
 	}
 
 	joinToSiblingIfSame(s) {
+		s = this.conformData(s);
 		let p = s.getParent();
 		if (!p) return false;
 		let c = p.getChildAfter(s);

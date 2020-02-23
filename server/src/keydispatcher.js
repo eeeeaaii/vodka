@@ -90,20 +90,6 @@ var KeyResponseFunctions = {
 		s.toggleDir();
 	},
 
-
-	// 'legacy-integer-backspace': function(s) {
-	// 	let t = this.s.getRawValue();
-	// 	if (t == '0') {
-	// 		this.doShiftBackspace();
-	// 		return;
-	// 	}
-	// 	this.s.deleteLastLetter();
-	// 	t = this.s.getRawValue();
-	// 	if (t == '') {
-	// 		this.s.setValue('0');
-	// 	}
-	// },
-
 	'select-parent': function(s) { manipulator.selectParent(); },
 	'select-first-child-or-create-insertion-point': function(s) {
 		if (!manipulator.selectFirstChild()) {
@@ -164,7 +150,7 @@ var KeyResponseFunctions = {
 
 	'remove-separator-and-possibly-join-words': function(s) {
 		manipulator.removeSelectedAndSelectPreviousLeaf();
-		let p = selectedNex.getParent();
+		let p = (RENDERNODES ? selectedNode : selectedNex).getParent();
 		manipulator.joinToSiblingIfSame(p);
 	},
 
@@ -183,23 +169,18 @@ var KeyResponseFunctions = {
 
 	'insert-letter-after-separator': function(s) {
 		let newword = new Word();
+		if (RENDERNODES) {
+			newword = new RenderNode(newword);
+		}
 		let newletter = new Letter(s);
+		if (RENDERNODES) {
+			newletter = new RenderNode(newletter);
+		}
 		newword.appendChild(newletter);
 		manipulator.insertAfterSelectedAndSelect(newword);
 		manipulator.joinToSiblingIfSame(newword);
 		newletter.setSelected();
 	},
-
-	// 'move-left-up-and-remove-self': function(s) {
-	// 	(manipulator.selectPreviousSibling()
-	// 		|| manipulator.selectParent())
-	// 	&& manipulator.removeNex(s);
-	// },
-	// 'move-right-down-and-remove-self': function(s) {
-	// 	(manipulator.selectNextSibling()
-	// 		||  manipulator.selectParent())
-	// 	&& manipulator.removeNex(s);
-	// },
 
 	'move-to-previous-leaf-and-remove-self': function(s) {		
 		manipulator.selectPreviousLeaf()
@@ -246,13 +227,6 @@ var KeyResponseFunctions = {
 		manipulator.appendAndSelect(new Separator(s));
 	},
 
-
-	// 'remove-if-empty': function(s) {
-	// 	if (!s.hasChildren()) {
-	// 		manipulator.removeSelectedAndSelectPreviousLeaf();
-	// 	}
-	// },
-
 	'call-delete-handler-then-remove-selected-and-select-previous-sibling': function(s) {
 		s.callDeleteHandler();
 		manipulator.removeSelectedAndSelectPreviousSibling();
@@ -278,13 +252,6 @@ var KeyResponseFunctions = {
 		}
 	},
 
-	// 'delete-last-letter-or-remove-selected-and-select-previous-sibling': function(s) {
-	// 	if (!s.isEmpty()) {
-	// 		s.deleteLastLetter();
-	// 	} else {
-	// 		manipulator.removeSelectedAndSelectPreviousSibling();
-	// 	}
-	// },
 	'delete-last-letter-or-remove-selected-and-select-previous-leaf': function(s) {
 		if (!s.isEmpty()) {
 			s.deleteLastLetter();
@@ -300,25 +267,6 @@ var KeyResponseFunctions = {
 			manipulator.removeNex(p);
 		}
 	},
-	// // deprecated I think
-	// 'legacy-remove-selected-and-select-previous-leaf': function(s) {
-	// 	manipulator.removeSelectedAndSelectPreviousLeaf();
-	// },
-
-
-
- 	// 'remove-selected-insertion-point-and-select-previous-leaf': function(s) {
-	// 	if (manipulator.selectPreviousLeaf()) {
-	// 		let parent = s.getParent();
-	// 		manipulator.removeNex(s);
-	// 		if (!parent.hasChildren()) {
-	// 			manipulator.removeNex(parent);
-	// 		}
-	// 	} else {
-	// 		manipulator.selectParent();
-	// 		manipulator.removeNex(s);
-	// 	}
-	// },
 
 	'legacy-unchecked-remove-selected-and-select-previous-leaf': function(s) {
 		manipulator.selectPreviousLeaf() || manipulator.selectParent();
@@ -337,20 +285,18 @@ var KeyResponseFunctions = {
 			manipulator.insertAfterSelectedAndSelect(new Line())
 				&& manipulator.appendAndSelect(new Newline());
 		} else {
-	// wtf
 			let newline = new Newline();
 			manipulator.insertAfterSelected(newline)
 				&& manipulator.putAllNextSiblingsInNewLine()
 				&& newline.setSelected();
-//			s.getParent().setSelected();
-//			s.getParent().getKeyFunnel().doEnter();
 		}		
 	},
 
 	'replace-selected-with-word-correctly': function(s) {
-		let obj = new Word();
-		if (isDoc(selectedNex.getParent())) {
-			let ln = new Line();
+		let selected = RENDERNODES ? selectedNode : selectedNex;
+		let obj = RENDERNODES ? new RenderNode(new Word()) : new Word();
+		if (isDoc(selected.getParent())) {
+			let ln = RENDERNODES ? new RenderNode(new Line()) : new Line();
 			ln.appendChild(obj);
 			manipulator.replaceSelectedWith(ln);
 			obj.setSelected();
@@ -360,13 +306,6 @@ var KeyResponseFunctions = {
 	},
 
 
-	// 'delete-last-letter-or-remove-selected-and-select-previous-leaf': function(s) {
-	// 	(!s.isEmpty()) ? s.deleteLastLetter() : manipulator.removeSelectedAndSelectPreviousLeaf();
-	// },
-
-	// 'just-make-new-line': function(s) {
-	// 	manipulator.insertAfterSelectedAndSelect(new Line());
-	// },
 	'do-line-break-after-letter': function(s) {
 		let newline = new Newline();
 		if (isWord(s.getParent())) {
@@ -387,10 +326,10 @@ var KeyResponseFunctions = {
 	'delete-newline': function(s) {
 		if (manipulator.selectPreviousLeaf()) {
 			manipulator.removeNex(s);
-			s = selectedNex;
+			s = RENDERNODES ? selectedNode : selectedNex;
 			let line;
 			let word;
-			if (s instanceof Letter) {
+			if ((RENDERNODES ? s.getNex() : s) instanceof Letter) {
 				word = s.getParent();
 				line = word.getParent();
 			} else { // should be a separator
@@ -402,14 +341,6 @@ var KeyResponseFunctions = {
 			}
 		}		
 	},
-	// 'create-new-line-from-inside-line': function(s) {
-	// 	manipulator.putAllNextSiblingsInNewLine()
-	// 	||
-	// 	(
-	// 		manipulator.selectParent()
-	// 		&& manipulator.insertAfterSelectedAndSelect(new Line())
-	// 		)
-	// },
 
 
 	// I hate commas
@@ -552,7 +483,7 @@ class KeyDispatcher {
 	}
 
 	doAltEnter() {
-		let s = selectedNex;
+		let s = (RENDERNODES ? selectedNode : selectedNex);
 		let phaseExecutor = s.phaseExecutor;
 		let firstStep = false;
 		if (!phaseExecutor) {
