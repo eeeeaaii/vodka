@@ -180,6 +180,10 @@ class Lambda extends NexContainer {
 		return this.amptext;
 	}
 
+	isEmpty() {
+		return this.amptext == null || this.amptext == '';
+	}
+
 	deleteLastAmpLetter() {
 		this.amptext = this.amptext.substr(0, this.amptext.length - 1);
 	}
@@ -187,28 +191,35 @@ class Lambda extends NexContainer {
 	appendAmpText(txt) {
 		this.amptext = this.amptext + txt;
 	}
+
+
 	getEventTable(context) {
-		return null;
-	}
-	// TODO: move tables from these unused functions into getEventTable
-	getKeyFunnelVector(context) {
 		let defaultHandle = function(letter) {
-			let allowedKeyRegex = /^[a-zA-Z0-9- ]$/;
+			let allowedKeyRegex = /^[a-zA-Z0-9-_ ]$/;
+			let isLetterRegex = /^.$/;
 			if (allowedKeyRegex.test(letter)) {
-				this.appendText(letter);
+				this.appendAmpText(letter);
+			} else if (isLetterRegex.test(letter)) {
+				if (this.hasChildren()) {
+					manipulator.insertAfterSelectedAndSelect(new Letter(letter))
+				} else {
+					manipulator.appendAndSelect(new Letter(letter));
+				}
 			}
 		}.bind(this);
 
 		return {
-			'ShiftEnter': 'execute',
 			'ShiftTab': 'select-parent',
 			'Tab': 'select-first-child-or-create-insertion-point',
 			'ArrowUp': 'move-left-up',
 			'ArrowLeft': 'move-left-up',
 			'ArrowDown': 'move-right-down',
 			'ArrowRight': 'move-right-down',
+			'Enter': 'do-line-break-always',
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-			'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-sibling',
+			'Backspace': 'delete-last-amp-letter-or-remove-selected-and-select-previous-sibling',
+			'ShiftEnter': 'evaluate-nex',
+			'ShiftSpace': 'toggle-dir',
 			'~': 'insert-or-append-command',
 			'!': 'insert-or-append-bool',
 			'@': 'insert-or-append-symbol',
@@ -216,6 +227,7 @@ class Lambda extends NexContainer {
 			'$': 'insert-or-append-string',
 			'%': 'insert-or-append-float',
 			'^': 'insert-or-append-nil',
+			'&': 'insert-or-append-lambda',
 			'(': 'insert-or-append-word',
 			'[': 'insert-or-append-line',
 			'{': 'insert-or-append-doc',

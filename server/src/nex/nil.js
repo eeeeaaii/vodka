@@ -43,11 +43,25 @@ class Nil extends ValueNex {
 	appendText(txt) {
 		return;
 	}
+
+
 	getEventTable(context) {
-		return null;
-	}
-	// TODO: move tables from these unused functions into getEventTable
-	getKeyFunnelVector(context) {
+		let defaultHandle = function(txt) {
+			if (!(/^.$/.test(txt))) {
+				return;
+			}
+			let letterRegex = /^[a-zA-Z0-9']$/;
+			let isSeparator = !letterRegex.test(txt);
+
+			if (isSeparator) {
+				manipulator.insertAfterSelectedAndSelect(new Separator(txt))
+			} else {
+				let w = new Word();
+				w.appendChild(new Letter(txt));
+				manipulator.insertAfterSelectedAndSelect(w);
+				w.setSelected();
+			}
+		}.bind(this);
 		return {
 			'ShiftTab': 'select-parent',
 			'Tab': 'select-next-sibling',
@@ -55,8 +69,10 @@ class Nil extends ValueNex {
 			'ArrowDown': 'move-right-down',
 			'ArrowLeft': 'move-left-up',
 			'ArrowRight': 'move-right-down',
-			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-			'Backspace': 'remove-selected-and-select-previous-sibling',
+			'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
+			'Backspace': 'remove-selected-and-select-previous-leaf',
+			'Enter': 'do-line-break-always',
+			'ShiftEnter': 'evaluate-nex',
 			'~': 'insert-command-as-next-sibling',
 			'!': 'insert-bool-as-next-sibling',
 			'@': 'insert-symbol-as-next-sibling',
@@ -64,10 +80,11 @@ class Nil extends ValueNex {
 			'$': 'insert-string-as-next-sibling',
 			'%': 'insert-float-as-next-sibling',
 			'^': 'insert-nil-as-next-sibling',
-				'(': 'insert-word-as-next-sibling',
-				'[': 'insert-line-as-next-sibling',
-				'{': 'insert-doc-as-next-sibling',
-			'defaultHandle': null
-		};
+			'&': 'insert-lambda-as-next-sibling',
+			'(': 'insert-word-as-next-sibling',
+			'[': 'insert-line-as-next-sibling',
+			'{': 'insert-doc-as-next-sibling',
+			'defaultHandle': defaultHandle
+		}
 	}
 }

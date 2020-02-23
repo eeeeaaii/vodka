@@ -111,43 +111,5 @@ class InsertionPoint extends ValueNex {
 		};
 	}
 	// TODO: move tables from these unused functions into getEventTable
-	/*
-	getKeyFunnelVector(context) {
-		if (context == ContextType.LINE) {
-			let defaultHandle = function(s) {
-			}.bind(this);
-			return {
-				'ShiftTab': 'select-parent-and-remove-self',
-				'ArrowLeft': 'move-to-previous-leaf-and-remove-self',
-				'ArrowRight': 'move-to-next-leaf-and-remove-self',
-				'Backspace': 'remove-selected-insertion-point-and-select-previous-leaf',
-				'ShiftBackspace': 'remove-selected-insertion-point-and-select-previous-leaf',
-				'defaultHandle': defaultHandle
-			};
-		} else {
-			let defaultHandle = function(s) {
-			}.bind(this);
 
-			return {
-				'ShiftTab': 'select-parent-and-remove-self',
-				'ArrowUp': 'move-left-up-and-remove-self',
-				'ArrowDown': 'move-right-down-and-remove-self',
-				'ArrowLeft': 'move-left-up-and-remove-self',
-				'ArrowRight': 'move-right-down-and-remove-self',
-				'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-				'Backspace': 'remove-selected-and-select-previous-sibling',
-				'~': 'replace-selected-with-command',
-				'!': 'replace-selected-with-bool',
-				'@': 'replace-selected-with-symbol',
-				'#': 'replace-selected-with-integer',
-				'$': 'replace-selected-with-string',
-				'%': 'replace-selected-with-float',
-				'^': 'replace-selected-with-nil',
-					'(': 'replace-selected-with-word',
-					'[': 'replace-selected-with-line',
-					'{': 'replace-selected-with-doc',
-				'defaultHandle': defaultHandle
-			};
-		}
-	}*/
 }

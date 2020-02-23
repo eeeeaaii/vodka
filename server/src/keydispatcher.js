@@ -270,6 +270,13 @@ var KeyResponseFunctions = {
 		}
 	},
 
+	'delete-last-amp-letter-or-remove-selected-and-select-previous-sibling': function(s) {
+		if (!s.isEmpty()) {
+			s.deleteLastAmpLetter();
+		} else {
+			manipulator.removeSelectedAndSelectPreviousSibling();
+		}
+	},
 
 	// 'delete-last-letter-or-remove-selected-and-select-previous-sibling': function(s) {
 	// 	if (!s.isEmpty()) {
