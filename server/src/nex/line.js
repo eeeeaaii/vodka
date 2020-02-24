@@ -22,6 +22,10 @@ class Line extends NexContainer {
 		super();
 	}
 
+	getTypeName() {
+		return '-line-';
+	}
+
 	makeCopy() {
 		let r = new Line();
 		this.copyFieldsTo(r);
@@ -78,33 +82,46 @@ class Line extends NexContainer {
 
 	}
 
-	getEventTable(context) {
-		let defaultFunction = function(letter) {
-			if (!(/^.$/.test(letter))) return;
-			let letterRegex = /^[a-zA-Z0-9']$/;
-			let isSeparator = !letterRegex.test(letter);
-			if (isSeparator) {
-				manipulator.appendAndSelect(new Separator(letter));
-			} else {
-				if (manipulator.selectLastChild()) {
-					selectedNex.appendChild(new Letter(letter));
-				} else {
-					let w = new Word();
-					w.appendChild(new Letter(letter));
-					manipulator.appendAndSelect(w);
-				}
+	getEventOverrides() {
+		return {
+			'-newline-': {
+				'Tab': 'move-to-next-leaf',
+				'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
+				'ArrowDown': 'move-to-corresponding-letter-in-next-line',
+				'ArrowLeft': 'move-to-previous-leaf',
+				'ArrowRight': 'move-to-next-leaf',
+				'Enter': 'do-line-break-after-letter'
+			},
+			'*': {
+				'Enter': 'do-line-break-in-line'
 			}
 		}
+	}
+
+	defaultHandle(txt) {
+		if (isNormallyHandled(txt)) {
+			return false;
+		}
+		let letterRegex = /^[a-zA-Z0-9']$/;
+		let isSeparator = !letterRegex.test(txt);
+		if (isSeparator) {
+			manipulator.appendAndSelect(new Separator(txt));
+		} else {
+			if (manipulator.selectLastChild()) {
+				selectedNex.appendChild(new Letter(txt));
+			} else {
+				let w = new Word();
+				w.appendChild(new Letter(txt));
+				manipulator.appendAndSelect(w);
+			}
+		}
+		return true;
+	}
+
+	getEventTable(context) {
 		return {
-			'ShiftTab': 'select-parent',				
-			'Tab': 'select-first-child-or-create-insertion-point',
-			'ArrowLeft': 'move-left-up',
-			'ArrowUp': 'move-left-up',
-			'ArrowRight': 'move-right-down',
-			'ArrowDown': 'move-right-down',
 			'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
 			'Backspace': 'remove-selected-and-select-previous-leaf',
-			'ShiftEnter': 'evaluate-nex',
 			'Enter': 'do-line-break-from-line',
 			'~': 'insert-command-as-next-sibling',
 			'!': 'insert-bool-as-next-sibling',
@@ -113,10 +130,10 @@ class Line extends NexContainer {
 			'$': 'insert-string-as-next-sibling',
 			'%': 'insert-float-as-next-sibling',
 			'^': 'insert-nil-as-next-sibling',
+			'&': 'insert-lambda-as-next-sibling',
 			'(': 'insert-word-as-next-sibling',
 			'[': 'insert-line-as-next-sibling',
 			'{': 'insert-doc-as-next-sibling',
-			'defaultHandle': defaultFunction
 		}
 	}
 }

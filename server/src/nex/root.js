@@ -21,6 +21,10 @@ class Root extends NexContainer {
 		this.attached = attached;
 	}
 
+	getTypeName() {
+		return '-root-';
+	}
+
 	// makeCopy intentionally unimplemented
 
 	debug() {

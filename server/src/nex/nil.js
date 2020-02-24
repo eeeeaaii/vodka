@@ -22,6 +22,10 @@ class Nil extends ValueNex {
 		super('', '^', 'nil')
 	}
 
+	getTypeName() {
+		return '-nil-';
+	}
+
 	makeCopy() {
 		let r = new Nil();
 		this.copyFieldsTo(r);
@@ -44,47 +48,27 @@ class Nil extends ValueNex {
 		return;
 	}
 
+	defaultHandle(txt) {
+		if (isNormallyHandled(txt)) {
+			return false;
+		}
+		let letterRegex = /^[a-zA-Z0-9']$/;
+		let isSeparator = !letterRegex.test(txt);
+
+		if (isSeparator) {
+			manipulator.insertAfterSelectedAndSelect(new Separator(txt))
+		} else {
+			let w = new Word();
+			w.appendChild(new Letter(txt));
+			manipulator.insertAfterSelectedAndSelect(w);
+			w.setSelected();
+		}
+		return true;
+	}
 
 	getEventTable(context) {
-		let defaultHandle = function(txt) {
-			if (!(/^.$/.test(txt))) {
-				return;
-			}
-			let letterRegex = /^[a-zA-Z0-9']$/;
-			let isSeparator = !letterRegex.test(txt);
-
-			if (isSeparator) {
-				manipulator.insertAfterSelectedAndSelect(new Separator(txt))
-			} else {
-				let w = new Word();
-				w.appendChild(new Letter(txt));
-				manipulator.insertAfterSelectedAndSelect(w);
-				w.setSelected();
-			}
-		}.bind(this);
 		return {
-			'ShiftTab': 'select-parent',
-			'Tab': 'select-next-sibling',
-			'ArrowUp': 'move-left-up',
-			'ArrowDown': 'move-right-down',
-			'ArrowLeft': 'move-left-up',
-			'ArrowRight': 'move-right-down',
-			'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
-			'Backspace': 'remove-selected-and-select-previous-leaf',
 			'Enter': 'do-line-break-always',
-			'ShiftEnter': 'evaluate-nex',
-			'~': 'insert-command-as-next-sibling',
-			'!': 'insert-bool-as-next-sibling',
-			'@': 'insert-symbol-as-next-sibling',
-			'#': 'insert-integer-as-next-sibling',
-			'$': 'insert-string-as-next-sibling',
-			'%': 'insert-float-as-next-sibling',
-			'^': 'insert-nil-as-next-sibling',
-			'&': 'insert-lambda-as-next-sibling',
-			'(': 'insert-word-as-next-sibling',
-			'[': 'insert-line-as-next-sibling',
-			'{': 'insert-doc-as-next-sibling',
-			'defaultHandle': defaultHandle
 		}
 	}
 }

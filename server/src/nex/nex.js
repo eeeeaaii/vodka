@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+NEXT_NEX_ID = 0;
+
 class Nex {
 	constructor() {
 		// unused in RENDERNODES
@@ -28,6 +30,15 @@ class Nex {
 		this.currentStyle = "";
 		this.enclosingClosure = null; // DO NOT COPY
 		this.tags = [];
+		this.id = NEXT_NEX_ID++;
+	}
+
+	getID() {
+		return this.id;
+	}
+
+	getTypeName() {
+		throw new Error('need a real type name!')
 	}
 
 	getEventTable(context) {
@@ -159,61 +170,6 @@ class Nex {
 		}
 	}
 
-	// RENDERNODES only
-	// rerenderIntoNode(renderNode, renderFlags) {
-	// 	if (renderFlags & RENDER_FLAG_RERENDER) {
-	// 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-	// 			renderNode.getDomNode().innerHTML = "";
-	// 		}
-	// 		while(node.classList.length > 0) {
-	// 			renderNode.getDomNode().classList.remove(
-	// 				renderNode.getDomNode().classList.item(0));
-	// 		}
-	// 		renderNode.getDomNode().setAttribute("style", "");
-	// 	}
-	// 	this.renderIntoNode(renderNode.getDomNode(), renderFlags);
-	// }
-
-	// doNodeRerender(node, renderFlags) {
-	// 	if (renderFlags & RENDER_FLAG_RERENDER) {
-	// 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-	// 			node.innerHTML = "";
-	// 		}
-	// 		while(node.classList.length > 0) {
-	// 			node.classList.remove(node.classList.item(0));
-	// 		}
-	// 		node.setAttribute("style", "");
-	// 	}
-	// 	this.renderInto(node, renderFlags);
-	// }
-
-	// RENDERNODES only
-	// renderIntoNode(renderNode, renderFlags) {
-	// 	if (!RENDERNODES) {
-	// 		throw new Error("only use in RENDERNODES");
-	// 	}
-	// 	if (!(renderFlags & RENDER_FLAG_RERENDER)) {
-	// 		renderNode.getDomNode().onclick = (e) => {
-	// 			if (selectedNex instanceof EString
-	// 					&& selectedNex.getMode() == MODE_EXPANDED) {
-	// 				selectedNex.finishInput();
-	// 			}
-	// 			e.stopPropagation();
-	// 			this.setSelected(true shallow-rerender);
-	// 		}
-	// 	}
-	// 	renderNode.getDomNode().classList.add('nex');
-
-	// 	if (renderFlags & RENDER_FLAG_SELECTED) {
-	// 		renderNode.getDomNode().classList.add('selected');		
-	// 	}
-	// 	let isExploded = (this.renderType == NEX_RENDER_TYPE_EXPLODED);
-	// 	if (isExploded) {
-	// 		renderNode.getDomNode().classList.add('exploded');
-	// 	}
-	// 	renderNode.getDomNode().setAttribute("style", this.currentStyle);
-	// }
-
 	_setClickHandler(domNode) {
 		domNode.onclick = (e) => {
 			let insertAfterRemove = false;
@@ -229,6 +185,26 @@ class Nex {
 			this.setSelected(true /*shallow-rerender*/);
 			if (insertAfterRemove && selectedNex != oldSelectedNex) {
 				manipulator.removeNex(oldSelectedNex);
+				topLevelRender();
+			}
+		};
+	}
+
+	_setRenderNodesClickHandler(renderNode) {
+		renderNode.getDomNode().onclick = (e) => {
+			let insertAfterRemove = false;
+			let oldSelectedNode = selectedNode;
+			if (selectedNode.getNex() instanceof EString
+					&& selectedNode.getNex().getMode() == MODE_EXPANDED) {
+				selectedNode.finishInput();
+			} else if (selectedNode.getNex() instanceof InsertionPoint) {
+				insertAfterRemove = true;
+			}
+
+			e.stopPropagation();
+			renderNode.setSelected(true /*shallow-rerender*/);
+			if (insertAfterRemove && selectedNode != oldSelectedNode) {
+				manipulator.removeNode(oldSelectedNode);
 				topLevelRender();
 			}
 		};
@@ -261,8 +237,10 @@ class Nex {
 
 	renderInto(domNode, shallow) {
 		let toPassToSuperclass = domNode;
+		let renderNode = null;
 		if (RENDERNODES) {
 			// change param name
+			renderNode = domNode;
 			domNode = domNode.getDomNode();
 		}
 		if (RENDERFLAGS) {
@@ -270,11 +248,15 @@ class Nex {
 		}
 		if (!RENDERFLAGS) {
 			if (!shallow) {
-				this._setClickHandler(domNode);
+				RENDERNODES
+					? this._setRenderNodesClickHandler(renderNode)
+					: this._setClickHandler(domNode);
 			}
 		} else {
 			if (!(renderFlags & RENDER_FLAG_RERENDER)) {
-				this._setClickHandler(domNode);
+				RENDERNODES
+					? this._setRenderNodesClickHandler(renderNode)
+					: this._setClickHandler(domNode);
 			}
 		}
 		domNode.classList.add('nex');
@@ -304,21 +286,6 @@ class Nex {
 		domNode.setAttribute("style", this.currentStyle);
 		this.renderedDomNode = domNode; // save for later, like if we need to get x/y loc
 	}
-
-	// renderTagsIntoNode(renderNode, renderFlags) {
-	// 	if (!RENDERNODES) {
-	// 		throw new Error("only use in RENDERNODES");
-	// 	}
-	// 	if (
-	// 		(renderFlags & RENDER_FLAG_SHALLOW)
-	// 		&& (renderFlags & RENDER_FLAG_RERENDER)) {
-	// 		return;
-	// 	}
-	// 	let isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
-	// 	for (let i = 0; i < this.tags.length; i++) {
-	// 		this.tags[i].draw(renderNode.getDomNode(), isExploded);
-	// 	}		
-	// }
 
 	renderTags(domNode, renderFlags) {
 		if (RENDERFLAGS) {
@@ -401,10 +368,18 @@ class Nex {
 		this.selected = false;
 	}
 
+	defaultHandle() {
+		
+	}
+
 	getEventTable(context) {
 		return null;
 	}
-	// TODO: move tables from these unused functions into getEventTable
+
+	getEventOverride() {
+		return null;
+	}
+
 }
 
 

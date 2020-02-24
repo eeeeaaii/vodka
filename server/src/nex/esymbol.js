@@ -22,6 +22,10 @@ class ESymbol extends ValueNex {
 		super((val) ? val : '', '@', 'esymbol')
 	}
 
+	getTypeName() {
+		return '-symbol-';
+	}
+
 	makeCopy() {
 		let r = new ESymbol(this.getTypedValue());
 		this.copyFieldsTo(r);
@@ -63,49 +67,32 @@ class ESymbol extends ValueNex {
 		return b;
 	}
 
+	defaultHandle(txt) {
+		if (isNormallyHandled(txt)) {
+			return false;
+		}
+		let allowedKeyRegex = /^[a-zA-Z0-9-_]$/;
+		let letterRegex = /^[a-zA-Z0-9']$/;
+		let isSeparator = !letterRegex.test(txt);
+
+		if (allowedKeyRegex.test(txt)) {
+			this.appendText(txt);
+		} else if (isSeparator) {
+			manipulator.insertAfterSelectedAndSelect(new Separator(txt));
+		} else {
+			let letter = new Letter(txt);
+			manipulator.insertAfterSelectedAndSelect(new Word())
+				&& manipulator.appendAndSelect(txt);
+
+		}
+		return true;
+	}
+
 	getEventTable(context) {
-		let defaultHandle = function(txt) {
-			if (!(/^.$/.test(txt))) {
-				return;
-			}
-			let allowedKeyRegex = /^[a-zA-Z0-9-_]$/;
-			let letterRegex = /^[a-zA-Z0-9']$/;
-			let isSeparator = !letterRegex.test(txt);
-
-			if (allowedKeyRegex.test(txt)) {
-				this.appendText(txt);
-			} else if (isSeparator) {
-				manipulator.insertAfterSelectedAndSelect(new Separator(txt));
-			} else {
-				let letter = new Letter(txt);
-				manipulator.insertAfterSelectedAndSelect(new Word())
-					&& manipulator.appendAndSelect(txt);
-
-			}
-		}.bind(this);
 		return {
-			'ShiftTab': 'select-parent',
-			'Tab': 'select-next-sibling',
-			'ArrowUp': 'move-left-up',
-			'ArrowDown': 'move-right-down',
-			'ArrowLeft': 'move-left-up',
-			'ArrowRight': 'move-right-down',
 			'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
 			'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-leaf',
 			'Enter': 'do-line-break-always',
-			'ShiftEnter': 'evaluate-nex',
-			'~': 'insert-command-as-next-sibling',
-			'!': 'insert-bool-as-next-sibling',
-			'@': 'insert-symbol-as-next-sibling',
-			'#': 'insert-integer-as-next-sibling',
-			'$': 'insert-string-as-next-sibling',
-			'%': 'insert-float-as-next-sibling',
-			'^': 'insert-nil-as-next-sibling',
-			'&': 'insert-lambda-as-next-sibling',
-			'(': 'insert-word-as-next-sibling',
-			'[': 'insert-line-as-next-sibling',
-			'{': 'insert-doc-as-next-sibling',
-			'defaultHandle': defaultHandle
 		}
 	}
 }

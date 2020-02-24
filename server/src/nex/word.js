@@ -20,6 +20,10 @@ class Word extends NexContainer {
 		super();
 	}
 
+	getTypeName() {
+		return '-word-';
+	}
+
 	makeCopy() {
 		let r = new Word();
 		this.copyFieldsTo(r);
@@ -66,32 +70,35 @@ class Word extends NexContainer {
 		}
 	}
 
-	getEventTable(context) {
-		let defaultFunction = function(letter) {
-			if (!(/^.$/.test(letter))) return;
-			let letterRegex = /^[a-zA-Z0-9']$/;
-			let isSeparator = !letterRegex.test(letter);
-			if (isSeparator) {
-				manipulator.insertAfterSelectedAndSelect(new Separator(letter));
+	getEventOverrides() {
+		return {
+			'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
+			'Backspace': 'remove-selected-and-select-previous-leaf'
+		}
+	}
+
+	defaultHandle(txt) {
+		if (isNormallyHandled(txt)) {
+			return false;
+		}
+		let letterRegex = /^[a-zA-Z0-9']$/;
+		let isSeparator = !letterRegex.test(txt);
+		if (isSeparator) {
+			manipulator.insertAfterSelectedAndSelect(new Separator(txt));
+		} else {
+			if (manipulator.selectLastChild()) {
+				manipulator.insertAfterSelectedAndSelect(new Letter(txt));
 			} else {
-				if (manipulator.selectLastChild()) {
-					manipulator.insertAfterSelectedAndSelect(new Letter(letter));
-				} else {
-					manipulator.appendAndSelect(new Letter(letter))
-				}
+				manipulator.appendAndSelect(new Letter(txt))
 			}
 		}
+		return true;
+	}
+
+	getEventTable(context) {
 		return {
-			'ShiftTab': 'select-parent',				
-			'Tab': 'select-first-child-or-create-insertion-point',
-			'ArrowLeft': 'move-left-up',
-			'ArrowUp': 'move-left-up',
-			'ArrowRight': 'move-right-down',
-			'ArrowDown': 'move-right-down',
-			'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
-			'Backspace': 'remove-selected-and-select-previous-leaf',
-			'ShiftEnter': 'evaluate-nex',
 			'Enter': 'do-line-break-always',
+			// weird and wrong?
 			'~': 'insert-command-as-next-sibling',
 			'!': 'insert-bool-as-next-sibling',
 			'@': 'insert-symbol-as-next-sibling',
@@ -99,10 +106,11 @@ class Word extends NexContainer {
 			'$': 'insert-string-as-next-sibling',
 			'%': 'insert-float-as-next-sibling',
 			'^': 'insert-nil-as-next-sibling',
+			'&': 'insert-nil-as-next-sibling',
 			'(': 'insert-word-as-next-sibling',
 			'[': 'insert-line-as-next-sibling',
 			'{': 'insert-doc-as-next-sibling',
-			'defaultHandle': defaultFunction
+
 		}
 	}
 }

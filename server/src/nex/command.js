@@ -23,6 +23,10 @@ class Command extends NexContainer {
 		this.commandtext = (val ? val : "");
 	}
 
+	getTypeName() {
+		return '-command-';
+	}
+
 	makeCopy() {
 		let r = new Command();
 		this.copyFieldsTo(r);
@@ -107,31 +111,6 @@ class Command extends NexContainer {
 		ILVL--;
 		return r;
 	}
-
-	// RENDERNODES version of this
-
-
-	// renderIntoNode(renderNode, renderFlags) {
-	// 	let codespan = null;
-	// 	if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-	// 		codespan = document.createElement("span");
-	// 		codespan.classList.add('codespan');
-	// 		renderNode.appendDecorationDomNode(codespan);
-	// 	}
-	// 	super.renderIntoNode(renderNode, renderFlags); // will create children
-	// 	renderNode.getDomNode().classList.add('command');
-	// 	renderNode.getDomNode().add('codelist');
-	// 	if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-	// 		if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
-	// 			codespan.classList.add('exploded');
-	// 		} else {
-	// 			codespan.classList.remove('exploded');
-	// 		}
-	// 		codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
-	// 	}
-	// 	this.renderTagsIntoNode(renderNode, renderFlags);
-	// }
-
 
 	// deprecated
 	renderInto(domNode, shallow) {
@@ -226,45 +205,29 @@ class Command extends NexContainer {
 		return ContextType.COMMAND;
 	}
 
-	getEventTable(context) {
-		let defaultHandle = function(letter) {
-			let allowedKeyRegex = /^[a-zA-Z0-9-_=+/*<>:]$/;
-			let isLetterRegex = /^.$/;
-			if (allowedKeyRegex.test(letter)) {
-				this.appendCommandText(letter);
-			} else if (isLetterRegex.test(letter)) {
-				if (this.hasChildren()) {
-					manipulator.insertAfterSelectedAndSelect(new Letter(letter))
-				} else {
-					manipulator.appendAndSelect(new Letter(letter));
-				}
+	defaultHandle(txt) {
+		if (isNormallyHandled(txt)) {
+			return false;
+		}
+		let allowedKeyRegex = /^[a-zA-Z0-9-_=+/*<>:]$/;
+		let isLetterRegex = /^.$/;
+		if (allowedKeyRegex.test(txt)) {
+			this.appendCommandText(txt);
+		} else if (isLetterRegex.test(txt)) {
+			if (this.hasChildren()) {
+				manipulator.insertAfterSelectedAndSelect(new Letter(txt))
+			} else {
+				manipulator.appendAndSelect(new Letter(txt));
 			}
-		}.bind(this);
+		}
+		return true;
+	}
 
+	getEventTable(context) {
 		return {
-			'ShiftTab': 'select-parent',
-			'Tab': 'select-first-child-or-create-insertion-point',
-			'ArrowUp': 'move-left-up',
-			'ArrowLeft': 'move-left-up',
-			'ArrowDown': 'move-right-down',
-			'ArrowRight': 'move-right-down',
 			'Enter': 'do-line-break-always',
-			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
 			'Backspace': 'delete-last-command-letter-or-remove-selected-and-select-previous-sibling',
-			'ShiftEnter': 'evaluate-nex',
 			'ShiftSpace': 'toggle-dir',
-			'~': 'insert-or-append-command',
-			'!': 'insert-or-append-bool',
-			'@': 'insert-or-append-symbol',
-			'#': 'insert-or-append-integer',
-			'$': 'insert-or-append-string',
-			'%': 'insert-or-append-float',
-			'^': 'insert-or-append-nil',
-			'&': 'insert-or-append-lambda',
-			'(': 'insert-or-append-word',
-			'[': 'insert-or-append-line',
-			'{': 'insert-or-append-doc',
-			'defaultHandle': defaultHandle
 		};
 	}
 }

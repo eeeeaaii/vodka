@@ -21,6 +21,10 @@ class Newline extends Separator {
 		super("&nbsp;");
 	}
 
+	getTypeName() {
+		return '-newline-';
+	}
+
 	makeCopy() {
 		let r = new Newline();
 		this.copyFieldsTo(r);
@@ -49,82 +53,36 @@ class Newline extends Separator {
 		}
 	}
 
-	defaultHandle(key, isCommand) {
-		if (!(/^.$/.test(key))) {
-			throw UNHANDLED_KEY;
-		};
+	defaultHandle(txt, context) {
+		if (isNormallyHandled(txt)) {
+			return false;
+		}
+		let isCommand = (context == ContextType.COMMAND);
 		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(key);
+		let isSeparator = !letterRegex.test(txt);
 		// TODO: maybe allow regexes in the funnel vector?
 		if (isSeparator) {
-			manipulator.insertAfterSelectedAndSelect(new Separator(key));
+			manipulator.insertAfterSelectedAndSelect(new Separator(txt));
 		} else {
 			if (isCommand) {
-				manipulator.insertAfterSelectedAndSelect(new Letter(key));
+				manipulator.insertAfterSelectedAndSelect(new Letter(txt));
 			} else {
-				KeyResponseFunctions['insert-letter-after-separator'](key);
+				KeyResponseFunctions['insert-letter-after-separator'](txt);
 			}
 		}
+		return true;
 	}
 
 	getEventTable(context) {
-		var t = this;
-		if (context == ContextType.COMMAND) {
-			return {
-				'ShiftTab': 'select-parent',
-				'Tab': 'move-right-down',
-				'ArrowLeft': 'move-left-up',
-				'ArrowUp': 'move-left-up',
-				'ArrowRight': 'move-right-down',
-				'ArrowDown': 'move-right-down',
-				'ShiftBackspace': 'delete-newline',
-				'Backspace':  'delete-newline',
-				'~': 'insert-command-as-next-sibling',
-				'!': 'insert-bool-as-next-sibling',
-				'@': 'insert-symbol-as-next-sibling',
-				'#': 'insert-integer-as-next-sibling',
-				'$': 'insert-string-as-next-sibling',
-				'%': 'insert-float-as-next-sibling',
-				'^': 'insert-nil-as-next-sibling',
-				'&': 'insert-lambda-as-next-sibling',
-				'<': 'insert-zlist-as-next-sibling',
-				'(': 'insert-word-as-next-sibling',
-				'[': 'insert-line-as-next-sibling',
-				'{': 'insert-doc-as-next-sibling',
-				defaultHandle: function(key) {
-					this.defaultHandle(key, true /* is command */);
-				}.bind(t)
-			}
-		} else if (context == ContextType.DOC) {
-			return {
-				'ShiftTab': 'select-parent',
-				'Tab': 'move-to-next-leaf',
-				'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
-				'ArrowDown': 'move-to-corresponding-letter-in-next-line',
-				'ArrowLeft': 'move-to-previous-leaf',
-				'ArrowRight': 'move-to-next-leaf',
-				'ShiftBackspace': 'delete-newline',
-				'Backspace':  'delete-newline',
-				'Enter': 'do-line-break-after-letter',
-				'~': 'insert-command-as-next-sibling',
-				// all the rest also deprecated, to be removed.
-				'!': 'insert-bool-as-next-sibling',
-				'@': 'insert-symbol-as-next-sibling',
-				'#': 'insert-integer-as-next-sibling',
-				'$': 'insert-string-as-next-sibling',
-				'%': 'insert-float-as-next-sibling',
-				'^': 'insert-nil-as-next-sibling',
-				'&': 'insert-lambda-as-next-sibling',
-				// end deprecated
-				'<': 'insert-zlist-as-next-sibling',
-				'(': 'insert-word-as-next-sibling',
-				'[': 'insert-line-as-next-sibling',
-				'{': 'insert-doc-as-next-sibling',
-				defaultHandle: function(key) {
-					this.defaultHandle(key, false /* is command */);
-				}.bind(t)
-			}
+		return {
+			'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
+			'ArrowDown': 'move-to-corresponding-letter-in-next-line',
+			'ArrowLeft': 'move-to-previous-leaf',
+			'ArrowRight': 'move-to-next-leaf',
+			'Tab': 'move-right-down',
+			'ShiftBackspace': 'delete-newline',
+			'Backspace':  'delete-newline',
+			'Enter': 'do-line-break-always',
 		}
 	}
-
 }

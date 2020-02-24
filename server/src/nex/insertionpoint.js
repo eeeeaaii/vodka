@@ -22,6 +22,10 @@ class InsertionPoint extends ValueNex {
 		super('&nbsp;', '', 'insertionpoint')
 	}
 
+	getTypeName() {
+		return '-insertionpoint-';
+	}
+
 	// TODO: fix the bug in this where if you click somewhere
 	// else the insertion point just hangs around.
 	// also with RENDERNODES there's actually no need for
@@ -49,44 +53,44 @@ class InsertionPoint extends ValueNex {
 
 	appendText(txt) {}
 
-	getEventTable(context) {
-		let defaultHandle = function(txt) {
-			if (!(/^.$/.test(txt))) {
-				return;
-			}
-			let letterRegex = /^[a-zA-Z0-9']$/;
-			let isSeparator = !letterRegex.test(txt);
+	defaultHandle(txt) {
+		if (isNormallyHandled(txt)) {
+			return false;
+		}
+		let letterRegex = /^[a-zA-Z0-9']$/;
+		let isSeparator = !letterRegex.test(txt);
 
-			if (isSeparator) {
-				if (isWord(this.getParent())) {
-					manipulator.selectParent()
-						&& manipulator.insertAfterSelectedAndSelect(new Separator(txt))
-						&& manipulator.removeNex(this);
-				} else {
-					manipulator.replaceSelectedWith(new Separator(txt));		
-				}
+		if (isSeparator) {
+			if (isWord(this.getParent())) {
+				manipulator.selectParent()
+					&& manipulator.insertAfterSelectedAndSelect(new Separator(txt))
+					&& manipulator.removeNex(this);
 			} else {
-				if (isDoc(this.getParent())) {
-					let ln = new Line();
-					let w = new Word();
-					let lt = new Letter(txt);
-					ln.appendChild(w);
-					w.appendChild(lt);
-					manipulator.replaceSelectedWith(ln);
-					lt.setSelected();
-				} else if (isLine(this.getParent())) {
-					let w = new Word();
-					let lt = new Letter(txt);
-					w.appendChild(lt);
-					manipulator.replaceSelectedWith(w);
-					lt.setSelected();
-				} else {			
-					manipulator.replaceSelectedWith(new Letter(txt));
-				}
+				manipulator.replaceSelectedWith(new Separator(txt));		
 			}
+		} else {
+			if (isDoc(this.getParent())) {
+				let ln = new Line();
+				let w = new Word();
+				let lt = new Letter(txt);
+				ln.appendChild(w);
+				w.appendChild(lt);
+				manipulator.replaceSelectedWith(ln);
+				lt.setSelected();
+			} else if (isLine(this.getParent())) {
+				let w = new Word();
+				let lt = new Letter(txt);
+				w.appendChild(lt);
+				manipulator.replaceSelectedWith(w);
+				lt.setSelected();
+			} else {			
+				manipulator.replaceSelectedWith(new Letter(txt));
+			}
+		}
+		return true;
+	}
 
-		}.bind(this);
-
+	getEventTable(context) {
 		return {
 			'ShiftTab': 'select-parent-and-remove-self',
 			'ArrowUp': 'move-to-previous-leaf-and-remove-self',
@@ -104,10 +108,9 @@ class InsertionPoint extends ValueNex {
 			'%': 'replace-selected-with-float',
 			'^': 'replace-selected-with-nil',
 			'&': 'replace-selected-with-lambda',
-				'(': 'replace-selected-with-word-correctly',
-				'[': 'replace-selected-with-line',
-				'{': 'replace-selected-with-doc',
-			'defaultHandle': defaultHandle
+			'(': 'replace-selected-with-word-correctly',
+			'[': 'replace-selected-with-line',
+			'{': 'replace-selected-with-doc',
 		};
 	}
 	// TODO: move tables from these unused functions into getEventTable

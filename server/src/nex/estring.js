@@ -35,6 +35,10 @@ class EString extends ValueNex {
 		this.setFullValue(val);// will call render
 	}
 
+	getTypeName() {
+		return '-string-';
+	}
+
 	makeCopy() {
 		let r = new EString(this.getFullTypedValue(), '$', 'string');
 		this.copyFieldsTo(r);
@@ -198,47 +202,29 @@ class EString extends ValueNex {
 			this.rerender(true);
 		}
 	}
-	getEventTable(context) {
-		let defaultHandle = function(txt) {
-			if (!(/^.$/.test(txt))) {
-				return;
-			}
-			let letterRegex = /^[a-zA-Z0-9']$/;
-			let isSeparator = !letterRegex.test(txt);
 
-			if (isSeparator) {
-				manipulator.insertAfterSelectedAndSelect(new Separator(txt))
-			} else {
-				let l = new Letter(txt);
-				let w = new Word();
-				w.appendChild(l);
-				manipulator.insertAfterSelectedAndSelect(w);
-				l.setSelected();
-			}
-		}.bind(this);
+	defaultHandle(txt) {
+		if (isNormallyHandled(txt)) {
+			return false;
+		}
+		let letterRegex = /^[a-zA-Z0-9']$/;
+		let isSeparator = !letterRegex.test(txt);
+
+		if (isSeparator) {
+			manipulator.insertAfterSelectedAndSelect(new Separator(txt))
+		} else {
+			let l = new Letter(txt);
+			let w = new Word();
+			w.appendChild(l);
+			manipulator.insertAfterSelectedAndSelect(w);
+			l.setSelected();
+		}
+	}
+
+	getEventTable(context) {
 		return {
 			'ShiftEnter': 'start-modal-editing',
-			'ShiftTab': 'select-parent',
-			'Tab': 'select-next-sibling',
-			'ArrowUp': 'move-left-up',
-			'ArrowDown': 'move-right-down',
-			'ArrowLeft': 'move-left-up',
-			'ArrowRight': 'move-right-down',
-			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-			'Backspace': 'remove-selected-and-select-previous-sibling',
 			'Enter': 'do-line-break-always',
-			'~': 'insert-command-as-next-sibling',
-			'!': 'insert-bool-as-next-sibling',
-			'@': 'insert-symbol-as-next-sibling',
-			'#': 'insert-integer-as-next-sibling',
-			'$': 'insert-string-as-next-sibling',
-			'%': 'insert-float-as-next-sibling',
-			'^': 'insert-nil-as-next-sibling',
-			'&': 'insert-lambda-as-next-sibling',
-			'(': 'insert-word-as-next-sibling',
-			'[': 'insert-line-as-next-sibling',
-			'{': 'insert-doc-as-next-sibling',
-			'defaultHandle': defaultHandle
 		};
 	}
 }

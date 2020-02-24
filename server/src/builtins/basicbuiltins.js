@@ -227,4 +227,70 @@ function createBasicBuiltins() {
 		}
 	);
 
+	Builtin.createBuiltin(
+		'eq',
+		[
+			{name: 'lhs', type:'*'},
+			{name: 'rhs', type:'*'}
+		],
+		function(env, argEnv) {
+			let lhs = env.lb('lhs');
+			let rhs = env.lb('rhs');
+			return new Bool(rhs.getID() == lhs.getID());
+		}
+	);
+
+	Builtin.createBuiltin(
+		'equal',
+		[
+			{name: 'lhs', type:'*'},
+			{name: 'rhs', type:'*'}
+		],
+		function(env, argEnv) {
+			let lhs = env.lb('lhs');
+			let rhs = env.lb('rhs');
+			if (lhs instanceof Bool && rhs instanceof Bool) {
+				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
+			} else if (lhs instanceof Builtin && rhs instanceof Builtin) {
+				return new Bool(lhs == rhs); // won't work until RENDERNODES
+			} else if (lhs instanceof EString && rhs instanceof EString) {
+				return new Bool(lhs.getFullTypedValue() == rhs.getFullTypedValue());
+			} else if (lhs instanceof ESymbol && rhs instanceof ESymbol) {
+				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
+			} else if (lhs instanceof Float && rhs instanceof Float) {
+				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
+			} else if (lhs instanceof Integer && rhs instanceof Integer) {
+				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
+			} else if (lhs instanceof Letter && rhs instanceof Letter) {
+				return new Bool(lhs.getText() == rhs.getText());
+			} else if (lhs instanceof Separator && rhs instanceof Separator) {
+				return new Bool(lhs.getText() == rhs.getText());
+			} else if (lhs instanceof Nil && rhs instanceof Nil) {
+				return new Bool(true);
+
+
+			} else if (lhs instanceof Command && rhs instanceof Command) {
+				// TODO: implement deep equals
+				return new EError('equal for lists is not implemented')
+			} else if (lhs instanceof Lambda && rhs instanceof Lambda) {
+				// TODO: implement deep equals
+				return new EError('equal for lists is not implemented')
+			} else if (lhs instanceof Doc && rhs instanceof Doc) {
+				// TODO: implement deep equals
+				return new EError('equal for lists is not implemented')
+			} else if (lhs instanceof Line && rhs instanceof Line) {
+				// TODO: implement deep equals
+				return new EError('equal for lists is not implemented')
+			} else if (lhs instanceof Word && rhs instanceof Word) {
+				// TODO: implement deep equals
+				return new EError('equal for lists is not implemented')
+			} else if (lhs instanceof Zlist && rhs instanceof Zlist) {
+				// TODO: implement deep equals
+				return new EError('equal for lists is not implemented')
+			} else if (lhs instanceof Expectation && rhs instanceof Expectation) {
+				// TODO: implement deep equals
+				return new EError('equal for lists is not implemented')
+			}
+		}
+	);
 }

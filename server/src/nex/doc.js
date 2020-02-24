@@ -22,6 +22,10 @@ class Doc extends NexContainer {
 		super();
 	}
 
+	getTypeName() {
+		return '-doc-';
+	}
+
 	makeCopy() {
 		let r = new Doc();
 		this.copyFieldsTo(r);
@@ -67,39 +71,27 @@ class Doc extends NexContainer {
 		}
 	}
 
-	getEventTable(context) {
-		let defaultFunction = function(letter) {
-			if (!(/^.$/.test(letter))) return;
-			let letterRegex = /^[a-zA-Z0-9']$/;
-			let isSeparator = !letterRegex.test(letter);
-			if (isSeparator) {
-				KeyResponseFunctions['append-separator-to-doc'](letter);
-			} else {
-				KeyResponseFunctions['append-letter-to-doc'](letter);
-			}
+	defaultHandle(txt) {
+		if (isNormallyHandled(txt)) {
+			return false;
 		}
+		let letterRegex = /^[a-zA-Z0-9']$/;
+		let isSeparator = !letterRegex.test(txt);
+		if (isSeparator) {
+			KeyResponseFunctions['append-separator-to-doc'](txt);
+		} else {
+			KeyResponseFunctions['append-letter-to-doc'](txt);
+		}
+		return true;
+	}
+
+	getEventTable(context) {
 		return {
-			'ShiftTab': 'select-parent',				
-			'Tab': 'select-first-child-or-create-insertion-point',
-			'ArrowLeft': 'move-left-up',
-			'ArrowUp': 'move-left-up',
-			'ArrowRight': 'move-right-down',
-			'ArrowDown': 'move-right-down',
-			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-			'Backspace': 'remove-selected-and-select-previous-sibling',
-			'ShiftEnter': 'evaluate-nex',
 			'Enter': 'do-line-break-always',
-			'~': 'insert-or-append-command',
-			'!': 'insert-or-append-bool',
-			'@': 'insert-or-append-symbol',
-			'#': 'insert-or-append-integer',
-			'$': 'insert-or-append-string',
-			'%': 'insert-or-append-float',
-			'^': 'insert-or-append-nil',
+			// wha
 			'(': 'insert-word-as-next-sibling',
 			'[': 'insert-line-as-next-sibling',
 			'{': 'insert-doc-as-next-sibling',
-			'defaultHandle': defaultFunction
 		}
 	}
 }

@@ -26,6 +26,10 @@ class Letter extends Nex {
 		}
 	}
 
+	getTypeName() {
+		return '-letter-';
+	}
+
 	makeCopy() {
 		let r = new Letter(this.value);
 		this.copyFieldsTo(r);
@@ -69,29 +73,35 @@ class Letter extends Nex {
 
 	// maybe instead of talking directly to the manipulator this could return a string
 	// that represents the function to call?
-	defaultHandle(key, isCommand) {
-		if (!(/^.$/.test(key))) {
+	defaultHandle(txt, context) {
+		if (isNormallyHandled(txt)) {
+			return false;
+		}
+		// zlists are experimental I guess?
+		if (txt == '<') {
+			return false;
+		}
+		let isCommand = (context == ContextType.COMMAND);
+		if (!(/^.$/.test(txt))) {
 			throw UNHANDLED_KEY;
 		};
 		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(key);
+		let isSeparator = !letterRegex.test(txt);
 		// TODO: maybe allow regexes in the funnel vector?
 		if (isSeparator) {
 			if (isCommand) {
-				manipulator.insertAfterSelectedAndSelect(new Separator(key));
+				manipulator.insertAfterSelectedAndSelect(new Separator(txt));
 			} else {
-				KeyResponseFunctions['split-word-and-insert-separator'](key);
+				KeyResponseFunctions['split-word-and-insert-separator'](txt);
 			}
 		} else {
-			manipulator.insertAfterSelectedAndSelect(new Letter(key));
+			manipulator.insertAfterSelectedAndSelect(new Letter(txt));
 		}
+		return true;
 	}
 
 	getEventTable(context) {
-		var t = this;
-
 		return {
-			'ShiftTab': 'select-parent',
 			'Tab': 'move-to-next-leaf',
 			'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
 			'ArrowDown': 'move-to-corresponding-letter-in-next-line',
@@ -119,18 +129,6 @@ class Letter extends Nex {
 			// experimental
 			'<': 'insert-zlist-as-next-sibling',
 			'*': 'insert-type-as-next-sibling',
-
-			defaultHandle: (context == ContextType.COMMAND)
-					? (
-						function(key) {
-						this.defaultHandle(key, true /* is command */);
-						}.bind(t)
-						)
-					: (
-						function(key) {
-						this.defaultHandle(key, false /* is command */);
-						}.bind(t)
-						)
 		}
 	}
 }

@@ -31,6 +31,10 @@ class Bool extends ValueNex {
 		super(val, '!', 'boolean')
 	}
 
+	getTypeName() {
+		return '-bool-';
+	}
+
 	makeCopy() {
 		let r = new Bool(this.getTypedValue());
 		this.copyFieldsTo(r);
@@ -62,53 +66,37 @@ class Bool extends ValueNex {
 		this.render();
 	}
 
-	getEventTable(context) {
+	defaultHandle(txt) {
 		// TODO: old behavior is that you can't put a boolean inside a word,
 		// so it automatically makes a new word -- except you can, with things
 		// like cut and paste, and it should be possible anyway.
-		let defaultHandle = function(txt) {
-			if (!(/^.$/.test(txt))) {
-				return;
-			}
-			let letterRegex = /^[a-zA-Z0-9']$/;
-			let isSeparator = !letterRegex.test(txt);
+		if (isNormallyHandled(txt)) {
+			return false;
+		}
+		let letterRegex = /^[a-zA-Z0-9']$/;
+		let isSeparator = !letterRegex.test(txt);
 
-			if (isSeparator) {
-				manipulator.insertAfterSelectedAndSelect(new Separator(txt));
-			} else if (txt == 'y' || txt == 'Y') {
-				this.setValue('yes');
-			} else if (txt == 'n' || txt == 'N') {
-				this.setValue('no');
-			} else {
-				let letter = new Letter(txt);
-				manipulator.insertAfterSelectedAndSelect(new Word())
-					&& manipulator.appendAndSelect(letter);
+		if (isSeparator) {
+			manipulator.insertAfterSelectedAndSelect(new Separator(txt));
+		} else if (txt == 'y' || txt == 'Y') {
+			this.setValue('yes');
+		} else if (txt == 'n' || txt == 'N') {
+			this.setValue('no');
+		} else {
+			let letter = new Letter(txt);
+			manipulator.insertAfterSelectedAndSelect(new Word())
+				&& manipulator.appendAndSelect(letter);
 
-			}
-		}.bind(this);
+		}
+		return true;
+	}
+
+	getEventTable(context) {
 		return {
-			'ShiftTab': 'select-parent',
-			'Tab': 'select-next-sibling',
-			'ArrowUp': 'move-left-up',
-			'ArrowDown': 'move-right-down',
-			'ArrowLeft': 'move-left-up',
-			'ArrowRight': 'move-right-down',
+			// these 2 are questionable but make tests pass?
 			'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
 			'Backspace': 'remove-selected-and-select-previous-leaf',
 			'Enter': 'do-line-break-always',
-			'ShiftEnter': 'evaluate-nex',
-			'~': 'insert-command-as-next-sibling',
-			'!': 'insert-bool-as-next-sibling',
-			'@': 'insert-symbol-as-next-sibling',
-			'#': 'insert-integer-as-next-sibling',
-			'$': 'insert-string-as-next-sibling',
-			'%': 'insert-float-as-next-sibling',
-			'^': 'insert-nil-as-next-sibling',
-			'&': 'insert-lambda-as-next-sibling',
-			'(': 'insert-word-as-next-sibling',
-			'[': 'insert-line-as-next-sibling',
-			'{': 'insert-doc-as-next-sibling',
-			'defaultHandle': defaultHandle
 		}
 	}
 }

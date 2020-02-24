@@ -23,6 +23,10 @@ class Expectation extends NexContainer {
 		this.hackfunction = hackfunction;
 	}
 
+	getTypeName() {
+		return '-expectation-';
+	}
+
 	setDeleteHandler(f) {
 		this.deleteHandler = f;
 	}
@@ -132,29 +136,26 @@ class Expectation extends NexContainer {
 		}
 		return newnex;
 	}
-	getEventTable(context) {
-		let defaultHandle = function(txt) {
-			if (!(/^.$/.test(txt))) {
-				return;
-			}
-			let letterRegex = /^[a-zA-Z0-9']$/;
-			let isSeparator = !letterRegex.test(txt);
 
-			if (isSeparator) {
-				manipulator.replaceSelectedWith(new Separator(txt));
-			} else {
-				manipulator.replaceSelectedWith(new Letter(txt));
-			}
-		}.bind(this);
+	defaultHandle(txt) {
+		if (isNormallyHandled(txt)) {
+			return false;
+		}
+		let letterRegex = /^[a-zA-Z0-9']$/;
+		let isSeparator = !letterRegex.test(txt);
+
+		if (isSeparator) {
+			manipulator.replaceSelectedWith(new Separator(txt));
+		} else {
+			manipulator.replaceSelectedWith(new Letter(txt));
+		}
+		return true;
+	}
+
+	getEventTable(context) {
 		// most of these have no tests?
 		return {
-			'ShiftTab': 'select-parent',
 			'Tab': 'select-first-child-or-fail',
-			'ArrowUp': 'move-left-up',
-			'ArrowLeft': 'move-left-up',
-			'ArrowDown': 'move-right-down',
-			'ArrowRight': 'move-right-down',
-			'ShiftEnter': 'evaluate-nex',
 			'Enter': 'do-line-break-always',
 			'~': 'replace-selected-with-command',
 			'!': 'replace-selected-with-bool',
@@ -167,7 +168,6 @@ class Expectation extends NexContainer {
 			'(': 'replace-selected-with-word',
 			'[': 'replace-selected-with-line',
 			'{': 'replace-selected-with-doc',
-			'defaultHandle': defaultHandle,
 			// special stuff for expectations that gets rid of the js timeout
 			'ShiftBackspace': 'call-delete-handler-then-remove-selected-and-select-previous-sibling',
 			'Backspace': 'call-delete-handler-then-remove-selected-and-select-previous-sibling',

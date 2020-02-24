@@ -41,10 +41,17 @@ function insertOrAppend(s, obj) {
 	}
 }
 
-function evaluateNexAndReplace(s) {
-	let n = evaluateNexSafely(s, BUILTINS);
-	if (n) {
-		manipulator.replaceSelectedWith(n);			
+function evaluateAndReplace(s) {
+	if (RENDERNODES) {
+		let n = evaluateNexSafely(s.getNex(), BUILTINS);
+		if (n) {
+			manipulator.replaceSelectedWith(new RenderNode(n));
+		}
+	} else {
+		let n = evaluateNexSafely(s, BUILTINS);
+		if (n) {
+			manipulator.replaceSelectedWith(n);			
+		}
 	}
 }
 
@@ -53,6 +60,16 @@ var ContextType = {};
 ContextType.PASSTHROUGH = 0;
 ContextType.COMMAND = 1;
 ContextType.DOC = 2;
+
+function isNormallyHandled(key) {
+	if (!(/^.$/.test(key))) {
+		return true;
+	}
+	if (/^[~!@#$%^&([{]$/.test(key)) {
+		return true;
+	}
+	return false;
+}
 
 // These KeyResponseFunctions are all untested and not integrated. Need to integrate
 // one at a time and test.
@@ -83,11 +100,11 @@ var KeyResponseFunctions = {
 	},
 
 	'evaluate-nex': function(s) {
-		evaluateNexAndReplace(s);
+		evaluateAndReplace(s);
 	},
 
 	'toggle-dir': function(s) {
-		s.toggleDir();
+		(RENDERNODES ? s.getNex() : s).toggleDir();
 	},
 
 	'select-parent': function(s) { manipulator.selectParent(); },
@@ -237,24 +254,24 @@ var KeyResponseFunctions = {
 	},
 
 	'delete-last-command-letter-or-remove-selected-and-select-previous-sibling': function(s) {
-		if (!s.isEmpty()) {
-			s.deleteLastCommandLetter();
+		if (!(RENDERNODES ? s.getNex() : s).isEmpty()) {
+			(RENDERNODES ? s.getNex() : s).deleteLastCommandLetter();
 		} else {
 			manipulator.removeSelectedAndSelectPreviousSibling();
 		}
 	},
 
 	'delete-last-amp-letter-or-remove-selected-and-select-previous-sibling': function(s) {
-		if (!s.isEmpty()) {
-			s.deleteLastAmpLetter();
+		if (!(RENDERNODES ? s.getNex() : s).isEmpty()) {
+			(RENDERNODES ? s.getNex() : s).deleteLastAmpLetter();
 		} else {
 			manipulator.removeSelectedAndSelectPreviousSibling();
 		}
 	},
 
 	'delete-last-letter-or-remove-selected-and-select-previous-leaf': function(s) {
-		if (!s.isEmpty()) {
-			s.deleteLastLetter();
+		if (!(RENDERNODES ? s.getNex() : s).isEmpty()) {
+			(RENDERNODES ? s.getNex() : s).deleteLastLetter();
 		} else {
 			manipulator.removeSelectedAndSelectPreviousLeaf();
 		}
@@ -274,7 +291,7 @@ var KeyResponseFunctions = {
 	},
 
 	'do-line-break-always': function(s) {
-		let newline = new Newline();
+		let newline = RENDERNODES ? new RenderNode(new Newline()) : new Newline();
 		manipulator.insertAfterSelected(newline)
 			&& manipulator.putAllNextSiblingsInNewLine()
 			&& newline.setSelected();
@@ -285,7 +302,7 @@ var KeyResponseFunctions = {
 			manipulator.insertAfterSelectedAndSelect(new Line())
 				&& manipulator.appendAndSelect(new Newline());
 		} else {
-			let newline = new Newline();
+			let newline = RENDERNODES ? new RenderNode(new Newline()) : new Newline();
 			manipulator.insertAfterSelected(newline)
 				&& manipulator.putAllNextSiblingsInNewLine()
 				&& newline.setSelected();
@@ -307,7 +324,7 @@ var KeyResponseFunctions = {
 
 
 	'do-line-break-after-letter': function(s) {
-		let newline = new Newline();
+		let newline = RENDERNODES ? new RenderNode(new Newline()) : new Newline();
 		if (isWord(s.getParent())) {
 			manipulator.splitCurrentWordIntoTwo()
 				&& manipulator.selectParent()
@@ -394,51 +411,111 @@ class KeyDispatcher {
 			// reserved for future use
 			return false; // to cancel browser event
 		} else {
+			// 1. look in override table
+			// 2. look in regular table
+			// 3. call defaultHandle
 			// otherwise try the table first, then the keyfunnel
-			let table = null;
-			if (RENDERNODES) {
-				table = selectedNode.getNex().getEventTable(keyContext);
-			} else {
-				table = selectedNex.getEventTable(keyContext);
-			}
-			if (table) {
-				if (table[eventName]) {
-					if (table[eventName] instanceof Nex) {
-						evaluateNexSafely(table[eventName], BUILTINS);
-					} else {
-						KeyResponseFunctions[table[eventName]](
-								(RENDERNODES ? selectedNode : selectedNex));
-						return false; // to cancel browser event
+			try {
+				let sourceNex = (RENDERNODES ? selectedNode.getNex() : selectedNex);
+				let parentNex = null;
+				if (RENDERNODES) {
+					if (selectedNode.getParent()) {
+						parentNex = selectedNode.getParent().getNex();
 					}
+				} else {
+					parentNex = selectedNex.getParent();
 				}
-				if (table.defaultHandle) {
-					try {
-						table.defaultHandle(eventName);
-					} catch (e) {
-						if (e == UNHANDLED_KEY) {
-							console.log("UNHANDLED KEY " +
-											':' + 'keycode=' + keycode +
-											',' + 'whichkey=' + whichkey +
-											',' + 'hasShift=' + hasShift +
-											',' + 'hasCtrl=' + hasCtrl +
-											',' + 'hasAlt=' + hasAlt);
-							return true;
-						} else throw e;
-					}
-					return false; // to cancel browser event
-				}
+				// returning false here means we tell the browser not to process the event.
+				if (this.runDefaultHandle(sourceNex, eventName, keyContext)) return false;
+				if (this.runFunctionFromOverrideTable(sourceNex, parentNex, eventName)) return false;
+				if (this.runFunctionFromRegularTable(sourceNex, eventName)) return false;
+				if (this.runFunctionFromGenericTable(sourceNex, eventName)) return false;
+				return true; // didn't handle it.
+			} catch (e) {
+				if (e == UNHANDLED_KEY) {
+					console.log("UNHANDLED KEY " +
+									':' + 'keycode=' + keycode +
+									',' + 'whichkey=' + whichkey +
+									',' + 'hasShift=' + hasShift +
+									',' + 'hasCtrl=' + hasCtrl +
+									',' + 'hasAlt=' + hasAlt);
+					return true;
+				} else throw e;
 			}
-			// fall back to legacy code
-			let funnel = RENDERNODES
-					? selectedNode.getNex().getInputFunnel()
-					: selectedNex.getInputFunnel();
-			if (funnel) {
-				let r = funnel.processEvent(keycode, whichkey, hasShift, hasCtrl, hasAlt);
-				return r;
-			}
-			// didn't handle event, let the browser handle it.
+		}
+	}
+
+	runDefaultHandle(sourceNex, eventName, context) {
+		return sourceNex.defaultHandle(eventName, context);
+	}
+
+	runFunctionFromGenericTable(sourceNex, eventName) {
+		let table = null;
+		if (sourceNex instanceof NexContainer) {
+			table = this.getNexContainerGenericTable();
+		} else {
+			table = this.getNexGenericTable();
+		}
+		let f = table[eventName];
+		if (f && this.actOnFunction(f)) {
 			return true;
 		}
+		return false;
+	}
+
+	runFunctionFromRegularTable(sourceNex, eventName) {
+		let table = sourceNex.getEventTable();
+		if (!table) {
+			return false;
+		}
+		let f = table[eventName];
+		if (f && this.actOnFunction(f)) {
+			return true;
+		}
+		return false;
+	}
+
+	runFunctionFromOverrideTable(sourceNex, parentNex, eventName) {
+		if (!parentNex) {
+			return false;
+		}
+		let table = parentNex.getEventOverride();
+		let nexTypeName = sourceNex.getTypeName();
+		if (!table) {
+			return false;
+		}
+		let subtable = null;
+		let f = null;
+		subtable = table[parentTypeName];
+		if (subtable) {
+			let f = subtable[eventName];
+			if (f && this.actOnFunction(f)) {
+				return true;
+			}
+		}
+		subtable = table['*'];
+		if (subtable) {
+			let f = subtable[eventName];
+			if (f && this.actOnFunction(f)) {
+				return true;
+			}
+		}
+		return null;
+	}
+
+	// returns true if it was a valid function that could be run
+	actOnFunction(f) {
+		if ((typeof f) == 'string') {
+			KeyResponseFunctions[f](RENDERNODES ? selectedNode : selectedNex);
+			return true;
+		} else if ((typeof f) == 'function') {
+			f(RENDERNODES ? selectedNode : selectedNex);
+			return true;
+		} else if (f instanceof Nex) {
+			evaluateNexSafely(f, BUILTINS)
+			return true;
+		}
+		return false;
 	}
 
 	getEventName(keycode, hasShift, hasCtrl, hasAlt) {
@@ -508,5 +585,55 @@ class KeyDispatcher {
 			// result of the last resolved expectation, probably
 			s.phaseExecutor = null;
 		}
+	}
+
+	getNexContainerGenericTable() {
+		return {
+			'ShiftTab': 'select-parent',
+			'Tab': 'select-first-child-or-create-insertion-point',
+			'ArrowUp': 'move-left-up',
+			'ArrowLeft': 'move-left-up',
+			'ArrowDown': 'move-right-down',
+			'ArrowRight': 'move-right-down',
+			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
+			'Backspace': 'remove-selected-and-select-previous-sibling',
+			'ShiftEnter': 'evaluate-nex',
+			'~': 'insert-or-append-command',
+			'!': 'insert-or-append-bool',
+			'@': 'insert-or-append-symbol',
+			'#': 'insert-or-append-integer',
+			'$': 'insert-or-append-string',
+			'%': 'insert-or-append-float',
+			'^': 'insert-or-append-nil',
+			'&': 'insert-or-append-lambda',
+			'(': 'insert-or-append-word',
+			'[': 'insert-or-append-line',
+			'{': 'insert-or-append-doc',
+		};
+	}
+
+	getNexGenericTable() {
+		return {
+			'ShiftTab': 'select-parent',
+			'Tab': 'select-next-sibling',
+			'ArrowUp': 'move-left-up',
+			'ArrowDown': 'move-right-down',
+			'ArrowLeft': 'move-left-up',
+			'ArrowRight': 'move-right-down',
+			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
+			'Backspace': 'remove-selected-and-select-previous-sibling',
+			'ShiftEnter': 'evaluate-nex',
+			'~': 'insert-command-as-next-sibling',
+			'!': 'insert-bool-as-next-sibling',
+			'@': 'insert-symbol-as-next-sibling',
+			'#': 'insert-integer-as-next-sibling',
+			'$': 'insert-string-as-next-sibling',
+			'%': 'insert-float-as-next-sibling',
+			'^': 'insert-nil-as-next-sibling',
+			'&': 'insert-lambda-as-next-sibling',
+			'(': 'insert-word-as-next-sibling',
+			'[': 'insert-line-as-next-sibling',
+			'{': 'insert-doc-as-next-sibling',
+		};
 	}
 }
