@@ -229,6 +229,13 @@ class NexContainer extends Nex {
 		if (!RENDERNODES) {
 			c.setParent(this);
 		}
+		// if we have RENDERNODES we have to do a little fuckery for expectations,
+		// but this should be okay because expectations are supposed to be temporary.
+		if (RENDERNODES) {
+			if (c instanceof Expectation) {
+				c.addParent(this);
+			}
+		}
 	}
 
 	replaceChildAt(c, i) {

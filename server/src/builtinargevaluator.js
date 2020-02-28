@@ -87,8 +87,6 @@ class BuiltinParamManager {
 	}
 }
 
-// erm, deprecate arg container I guess
-
 
 class BuiltinArgEvaluator {
 	constructor(name, params, argContainer, env, bindEnv) {

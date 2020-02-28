@@ -20,9 +20,21 @@ class RenderNode {
 	constructor(forNex) {
 		this.selected = false;
 		this.nex = forNex;
-		this.parent = null;
+		this.parentalfigure = null;
 		this.childnodes = [];
 		this.domNode = document.createElement("div");
+		this.createChildRenderNodes(forNex);
+	}
+
+	createChildRenderNodes(nex) {
+		if (!(nex instanceof NexContainer)) return;
+		for (let i = 0; i < nex.numChildren(); i++) {
+			let child = nex.getChildAt(i);
+			let childRenderNode = new RenderNode(child);
+			childRenderNode.setParent(this);
+			this.domNode.appendChild(childRenderNode.domNode);
+			this.childnodes.push(childRenderNode);
+		}
 	}
 
 	getNex() {
@@ -30,11 +42,11 @@ class RenderNode {
 	}
 
 	getParent() {
-		return this.parent;
+		return this.parentalfigure;
 	}
 
 	setParent(p) {
-		this.parent = p;
+		this.parentalfigure = p;
 	}
 
 	hasChildren() {
@@ -83,25 +95,78 @@ class RenderNode {
 		this.selected = false;
 	}
 
-	clearDomNode() {
+	clearDomNode(renderFlags) {
 		while(this.domNode.classList.length > 0) {
 			this.domNode.classList.remove(this.domNode.classList.item(0));
 		}
 		this.domNode.setAttribute("style", "");
-		this.domNode.innerHTML = "";		
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+			this.domNode.innerHTML = "";		
+		}
+	}
+
+	doStep() {
+		let oldNex = this.getNex();
+		let copiedNex = this.getNex().makeCopy();
+		this.getParent().replaceChildWith(oldNex, copiedNex);
+		copiedNex.doStep();
+		this.getParent().render(current_default_render_flags);
 	}
 
 	render(renderFlags) {
 		// test for shallow and rerender
-		this.clearDomNode();
+		this.clearDomNode(renderFlags);
+		if (selectWhenYouFindIt && this.getNex().getID() == selectWhenYouFindIt.getID()) {
+			this.setSelected(false);
+			selectWhenYouFindIt = null;
+		}
 		let useFlags = this.selected
 				? renderFlags | RENDER_FLAG_SELECTED
 				: renderFlags;
 		this.nex.renderInto(this, useFlags);
-		for (let i = 0; i < this.childnodes.length; i++) {
-			let childRenderNode = this.childnodes[i];
-			childRenderNode.render(renderFlags);
-			this.domNode.appendChild(childRenderNode.getDomNode());
+		if (!(renderFlags & RENDER_FLAG_EXPLODED)
+				&& isNexContainer(this.nex)
+				&& !this.nex.renderChildrenIfNormal()) {
+			return;
+		}
+		if (this.getNex() instanceof NexContainer && !(renderFlags & RENDER_FLAG_SHALLOW)) {
+			let i = 0;
+			for (i = 0; i < this.childnodes.length; i++) {
+				if (i >= this.getNex().numChildren()) {
+					// oops, we lost children since the last time we rendered
+					this.childnodes.splice(i, this.getNex().numChildren() - i);
+					// example:
+					// there were 5 nodes.
+					// two were deleted, now there are just 3.
+					// we render the first 3, so i=0, 1, then 2.
+					// now i == 3, which == numChildren()
+					// we want to splice out 2 nodes.
+					// numChildren() = 5, 5 - 3 = 2
+					// splice(i, numChildren() - i);
+					break;
+				}
+				let childRenderNode = this.childnodes[i];
+				if (childRenderNode.getNex().getID() != this.getNex().getChildAt(i).getID()) {
+					// the child changed since the last time we rendered!!!
+					// need to fix.
+					this.childnodes[i] = childRenderNode = new RenderNode(this.getNex().getChildAt(i));
+					this.childnodes[i].setParent(this);
+				}
+				// need to append child before drawing so things like focus() work right
+				this.domNode.appendChild(childRenderNode.getDomNode());
+				childRenderNode.render(renderFlags);
+
+			}
+			if (i < (this.getNex().numChildren() - 1)) {
+				// oops, more nodes added since the last time we rendered.
+				for ( ; i < this.getNex().numChildren(); i++) {
+					let newNode = new RenderNode(this.getNex().getChildAt(i));
+					newNode.setParent(this);
+					this.childnodes[i] = newNode;
+					this.domNode.appendChild(newNode.getDomNode());
+					newNode.render(renderFlags);
+				}
+			}
 
 		}
 		this.nex.renderTags(this.domNode, renderFlags);
@@ -112,18 +177,32 @@ class RenderNode {
 		if (selectedNode) {
 			selectedNode.setUnselected();
 			if (rerender) {
-				selectedNode.render(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW)
+				selectedNode.render(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | current_default_render_flags)
 			}
 		}
 		selectedNode = this;
 		this.selected = true;
 		if (rerender) {
-			this.render(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | RENDER_FLAG_SELECTED)
+			this.render(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | current_default_render_flags)
 		}
 	}
 
 	setUnselected() {
 		this.selected = false;
+	}
+
+	getLeftX() {
+		if (this.domNode) {
+			return this.domNode.getBoundingClientRect().left;
+		} else return 0;
+	}
+
+	getRightX() {
+		if (this.domNode) {
+			return this.domNode.getBoundingClientRect().right;
+		} else {
+			return 0;
+		}
 	}
 
     ////////////////////////////////////////

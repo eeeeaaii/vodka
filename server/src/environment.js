@@ -23,6 +23,7 @@ class Environment {
 	constructor(parentEnv) {
 		this.parentEnv = parentEnv;
 		this.symbols = {};
+		// deprecated
 		this.uniques = {};
 	}
 
@@ -71,6 +72,9 @@ class Environment {
 	}
 
 	bindUnique(name, val) {
+		if (RENDERNODES) {
+			throw new Error('deprecated in RENDERNODES');
+		}
 		this.uniques[name] = val;
 	}
 
@@ -108,7 +112,11 @@ class Environment {
 
 	lookupBinding(name) {
 		if (this.symbols[name]) {
-			return this.symbols[name].makeCopy();
+			if (RENDERNODES) {
+				return this.symbols[name];
+			} else {
+				return this.symbols[name].makeCopy();
+			}
 		} else if (this.uniques[name]) {
 			return this.uniques[name];
 		} else if (this.parentEnv) {

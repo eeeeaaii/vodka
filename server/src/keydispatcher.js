@@ -118,7 +118,9 @@ var KeyResponseFunctions = {
 
 	'select-parent-and-remove-self': function(s) { manipulator.selectParent() && manipulator.removeNex(s); },
 
-	'start-modal-editing': function(s) { s.startModalEditing(); },
+	'start-modal-editing': function(s) {
+		(RENDERNODES ? s.getNex() : s).startModalEditing();
+	},
 
 	'replace-selected-with-command': function(s) { manipulator.replaceSelectedWith(new Command()); },
 	'replace-selected-with-bool': function(s) { manipulator.replaceSelectedWith(new Bool()); },
@@ -342,19 +344,35 @@ var KeyResponseFunctions = {
 
 	'delete-newline': function(s) {
 		if (manipulator.selectPreviousLeaf()) {
+			let oldParent = s.getParent(); // may need later
 			manipulator.removeNex(s);
 			s = RENDERNODES ? selectedNode : selectedNex;
 			let line;
 			let word;
-			if ((RENDERNODES ? s.getNex() : s) instanceof Letter) {
-				word = s.getParent();
-				line = word.getParent();
-			} else { // should be a separator
-				line = s.getParent();
+			// when we selected the previous sibling, we may be:
+			// 1. in a word that's inside a line
+			// 2. in a line
+			// 3. neither
+			let parent = s.getParent();
+			if ((RENDERNODES ? parent.getNex() : parent) instanceof Line) {
+				manipulator.joinToSiblingIfSame(parent);
+				return true;
 			}
-			manipulator.joinToSiblingIfSame(line);
-			if (word) {
-				manipulator.joinToSiblingIfSame(word);
+			let parent2 = parent.getParent();
+			if (parent2 != null) {
+				if ((RENDERNODES ? parent2.getNex() : parent2) instanceof Line) {
+					manipulator.joinToSiblingIfSame(parent2);
+					// not done yet -- we also need to join words if applicable
+					if ((RENDERNODES ? parent.getNex() : parent) instanceof Word) {
+						manipulator.joinToSiblingIfSame(parent);
+					}
+					return true;
+				}
+			}
+			// if we aren't joining lines up, we at least need to delete the
+			// line we are *coming from* *if it's empty*
+			if (!oldParent.hasChildren()) {
+				manipulator.removeNex(oldParent);
 			}
 		}		
 	},
@@ -426,7 +444,11 @@ class KeyDispatcher {
 					parentNex = selectedNex.getParent();
 				}
 				// returning false here means we tell the browser not to process the event.
-				if (this.runDefaultHandle(sourceNex, eventName, keyContext)) return false;
+				if (RENDERNODES) {
+					if (this.runDefaultHandle(sourceNex, eventName, keyContext, selectedNode)) return false;
+				} else {
+					if (this.runDefaultHandle(sourceNex, eventName, keyContext)) return false;
+				}
 				if (this.runFunctionFromOverrideTable(sourceNex, parentNex, eventName)) return false;
 				if (this.runFunctionFromRegularTable(sourceNex, eventName)) return false;
 				if (this.runFunctionFromGenericTable(sourceNex, eventName)) return false;
@@ -445,8 +467,8 @@ class KeyDispatcher {
 		}
 	}
 
-	runDefaultHandle(sourceNex, eventName, context) {
-		return sourceNex.defaultHandle(eventName, context);
+	runDefaultHandle(sourceNex, eventName, context, sourceNode /* null if not RENDERNODES */) {
+		return sourceNex.defaultHandle(eventName, context, sourceNode);
 	}
 
 	runFunctionFromGenericTable(sourceNex, eventName) {
@@ -560,7 +582,12 @@ class KeyDispatcher {
 	}
 
 	doAltEnter() {
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		if (RENDERNODES) {
+			stepEvaluator.doStep();
+			return;
+//			throw new Error('step eval not working at all with rendernodes')
+		}
+		let s = selectedNex;
 		let phaseExecutor = s.phaseExecutor;
 		let firstStep = false;
 		if (!phaseExecutor) {

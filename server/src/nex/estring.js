@@ -117,9 +117,9 @@ class EString extends ValueNex {
 		domNode.classList.add(this.className);
 		domNode.classList.add('valuenex');
 		if (this.mode == MODE_NORMAL) {
-			this.drawNormal(domNode);
+			this.drawNormal(toPassToSuperclass);
 		} else {
-			this.drawExpanded(domNode);
+			this.drawExpanded(toPassToSuperclass);
 		}
 		if (!RENDERNODES) {
 			this.renderTags(domNode, shallow);
@@ -213,8 +213,8 @@ class EString extends ValueNex {
 		if (isSeparator) {
 			manipulator.insertAfterSelectedAndSelect(new Separator(txt))
 		} else {
-			let l = new Letter(txt);
-			let w = new Word();
+			let l = RENDERNODES ? new RenderNode(new Letter(txt)) : new Letter(txt);
+			let w = RENDERNODES ? new RenderNode(new Word()) :new Word();
 			w.appendChild(l);
 			manipulator.insertAfterSelectedAndSelect(w);
 			l.setSelected();

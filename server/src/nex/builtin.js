@@ -33,8 +33,8 @@ class Builtin extends Lambda {
 		this.phaseFactory =
 			phaseFactory 
 				? phaseFactory
-				: function(phaseExecutor, nex, env) {
-					return new BuiltinCommandPhase(phaseExecutor, nex, env);
+				: function(phaseExecutor, nex, env, renderNode) {
+					return new BuiltinCommandPhase(phaseExecutor, nex, env, renderNode);
 				  };
 	}
 
@@ -83,7 +83,11 @@ class Builtin extends Lambda {
 	}
 
 	static bindBuiltinObject(name, nex) {
-		BUILTINS.bindUnique(name, nex);
+		if (RENDERNODES) {
+			BUILTINS.bind(name, nex);
+		} else {
+			BUILTINS.bindUnique(name, nex);
+		}
 	}
 
 	executor(closure, executionEnv) {

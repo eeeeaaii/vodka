@@ -22,7 +22,7 @@ const RENDERFLAGS = true;
 
 // allows the same nex to be rendered in multiple places on the screen
 // (assumes RENDERFLAGS=true)
-const RENDERNODES = false;
+const RENDERNODES = true;
 
 
 // TODO: audit, is this updated in step eval?
@@ -60,12 +60,14 @@ const RENDER_FLAG_SELECTED = 8;
 // a singleton and generally what's what.
 
 const manipulator = new Manipulator();
+const stepEvaluator = new StepEvaluator();
 var root = null;
 if (RENDERNODES) {
 	var selectedNode = null;
 } else {
 	var selectedNex = null; // make singleton?
 }
+
 //var environment = null; // unused
 
 // render type is deprecated, changing to flags
@@ -88,7 +90,12 @@ function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 	let r = KEY_DISPATCHER.dispatch(keycode, whichkey, hasShift, hasCtrl, hasAlt);
 	// TODO: somehow figure out the "highest level" nex affected by
 	// the keystroke and render from there down
-	topLevelRender();
+
+	// if it returns false, it means we handled the keystroke and we are
+	// canceling the browser event - this also means something 'happened' so we render.
+	if (!r) {
+		topLevelRender();
+	}
 	return r;
 }
 
@@ -104,7 +111,13 @@ function createBuiltins() {
 	createTypeConversionBuiltins();
 }
 
-function topLevelRender() {
+var selectWhenYouFindIt = null;
+function topLevelRender(node) {
+	topLevelRenderSelectingNode(null);
+}
+
+function topLevelRenderSelectingNode(node) {
+	selectWhenYouFindIt = node;
 	if (RENDERNODES) {
 		root.render(current_default_render_flags);
 	} else if (RENDERFLAGS) {

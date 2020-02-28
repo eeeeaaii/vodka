@@ -95,10 +95,11 @@ class Integer extends ValueNex {
 		}
 	}
 
-	backspaceHack() {
+	backspaceHack(sourceNode) {
 		let t = this.getRawValue();
 		if (t == '0') {
-			KeyResponseFunctions['remove-selected-and-select-previous-leaf'](this);
+			KeyResponseFunctions['remove-selected-and-select-previous-leaf'](
+				(RENDERNODES ? sourceNode : this));
 			return;
 		}
 		this.deleteLastLetter();
@@ -108,9 +109,9 @@ class Integer extends ValueNex {
 		}
 	}
 
-	defaultHandle(txt) {
+	defaultHandle(txt, context, sourcenode) {
 		if (txt == 'Backspace') {
-			this.backspaceHack();
+			this.backspaceHack(sourcenode);
 			return true;
 		}
 		if (isNormallyHandled(txt)) {

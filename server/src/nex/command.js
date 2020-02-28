@@ -50,9 +50,10 @@ class Command extends NexContainer {
 		return new CommandKeyFunnel(this);
 	}
 
-	pushNexPhase(phaseExecutor, env) {
+	// if not RENDERNODES third arg null
+	pushNexPhase(phaseExecutor, env, renderNode) {
 		let lambda = this.getLambda(env);
-		phaseExecutor.pushPhase(lambda.phaseFactory(phaseExecutor, this, env))
+		phaseExecutor.pushPhase(lambda.phaseFactory(phaseExecutor, this, env, renderNode))
 	}
 
 	isLambdaCommand(env) {
@@ -89,6 +90,10 @@ class Command extends NexContainer {
 		return true;
 	}
 
+	doStep() {
+		//
+	}
+
 	evaluate(executionEnv) {
 		ILVL++;
 		stackCheck(); // not for step eval, this is to prevent call stack overflow.
@@ -100,7 +105,8 @@ class Command extends NexContainer {
 			console.log(`${INDENT()}evaluating command: ${this.debugString()}`);
 			console.log(`${INDENT()}lambda is: ${lambda.debugString()}`);
 		}
-		let argContainer = new NexChildArgContainer(this);
+//		let argContainer = new NexChildArgContainer(this);
+		let argContainer = (RENDERNODES ? new CopiedArgContainer(this) : new NexChildArgContainer(this));
 		let closure = lambda.lexicalEnv.pushEnv();
 		let argEvaluator = lambda.getArgEvaluator(argContainer, executionEnv, closure);
 		argEvaluator.evaluateAndBindArgs();

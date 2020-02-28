@@ -16,6 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 var st = {};
+var parserStack = [];
 
 function createstate(s, n) {
 	st[s] = n;
@@ -51,7 +52,7 @@ createstate('NIL', 22);
 class NexParser {
 	constructor(input) {
 		this.s = input;
-		this.r = this.origr = new Root(false /* do not attach */);
+//		this.r = this.origr = new Root(false /* do not attach */);
 	}
 
 	testToken(regexp, token) {
@@ -96,13 +97,15 @@ class NexParser {
 
 	parse() {
 		let token;
+		this.push(new Root());
 		while (token = this.getNextToken()) {
 			if (CONSOLE_DEBUG) {
 				console.log(`token: ${st['-' + token]} data: ${this.data[0]} remaining: ${this.s}`);
 			}
 			this.doParse(token);
 		}
-		if (this.r == this.origr && this.r.hasChildren()) {
+		this.pop();
+		if (parserStack.length == 0 && this.r.hasChildren()) {
 			return this.r.getChildAt(0);
 		} else {
 			return new EError("error parsing saved vodka file");
@@ -110,12 +113,19 @@ class NexParser {
 	}
 
 	push(n) {
-		this.r.appendChild(n);
+		if (parserStack.length > 0) {
+			this.r.appendChild(n);
+		}
+		parserStack.push(n);
 		this.r = n;
 	}
 
 	pop() {
-		this.r = this.r.getParent(true /* evenIfRoot */);
+		parserStack.pop();
+		if (parserStack.length > 0) {
+			this.r = parserStack[parserStack.length - 1];
+		}
+//		this.r = this.r.getParent(true /* evenIfRoot */);
 	}
 
 	doParse(token) {

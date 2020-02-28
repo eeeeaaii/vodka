@@ -97,6 +97,9 @@ class Nex {
 		return this;
 	}
 
+	doStep() {
+	}
+
 	makeCopy() {
 		throw new Error("unimplemented copy");
 	}

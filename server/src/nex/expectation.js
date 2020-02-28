@@ -21,6 +21,12 @@ class Expectation extends NexContainer {
 	constructor(hackfunction) {
 		super()
 		this.hackfunction = hackfunction;
+		this.parentlist = []; // for RENDERNODES
+	}
+
+	// for RENDERNODES
+	addParent(parent) {
+		this.parentlist.push(parent);
 	}
 
 	getTypeName() {
@@ -116,24 +122,67 @@ class Expectation extends NexContainer {
 
 	appendText(txt) {}
 
+	getAddressesOfThisInParent(parent) {
+		let addresses = [];
+		for (let i = 0; i < parent.numChildren(); i++) {
+			let child = parent.getChildAt(i);
+			if (child.getID() == this.getID()) {
+				// it's the same one
+				addresses.push(i);
+			}
+		}
+		return addresses;
+	}
+
+	fulfillRendernodes(newnex) {
+		// fuckery here
+		// for each parent, look at all its children and find out
+		// whether this expectation is still a child.
+		// If it is, replace with the thing.
+		// then do a global rerender.
+		// Maybe this is how we save step eval!
+
+		for (let i = 0; i < this.parentlist.length; i++) {
+			let parent = this.parentlist[i];
+			let addresses = this.getAddressesOfThisInParent(parent);
+			for (let j = 0; j < addresses.length; j++) {
+				let addr = addresses[j];
+				parent.replaceChildAt(newnex, addr);
+			}
+		}
+		// we don't know where the expectations are so we have to render everything.
+		topLevelRenderSelectingNode(newnex);
+
+	}
+
 	fulfill(newnex) {
+		if (RENDERNODES) {
+			this.fulfillRendernodes(newnex);
+			return;
+		}
 		if (this.hackfunction) {
 			newnex = this.hackfunction(newnex);
 		}
-		let parent = this.getParent();
-		let wasSelected = this.isSelected();
-		parent.replaceChildWith(this, newnex);
-		if (RENDERFLAGS) {
-			parent.rerender(current_default_render_flags);
+		if (RENDERNODES) {
+			this.fulfillRendernodes(newnex);
 		} else {
-			// have to do this in case global render type changed while we were
-			// waiting to fulfill
-			newnex.setRenderType(current_render_type);
-			parent.rerender();
+			let parent = this.getParent();
+			let wasSelected = this.isSelected();
+			parent.replaceChildWith(this, newnex);
+			if (RENDERFLAGS) {
+				parent.rerender(current_default_render_flags);
+			} else {
+				// have to do this in case global render type changed while we were
+				// waiting to fulfill
+				newnex.setRenderType(current_render_type);
+				parent.rerender();
+			}
+			if (wasSelected) {
+				newnex.setSelected(true/*shallow-rerender*/);
+			}
+
 		}
-		if (wasSelected) {
-			newnex.setSelected(true/*shallow-rerender*/);
-		}
+		// I don't think we usually do anything with this return value.
 		return newnex;
 	}
 

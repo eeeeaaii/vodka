@@ -15,21 +15,18 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-let usevoice = ('yes' == (new URL(document.location)).searchParams.get('usevoice'));
-
-// TODO: try this out!
-
-if (usevoice && annyang) {
-	var commands = {
-		'call *fname': function(fname) {
-			console.log("got the command " + fname);
-		},
-		'do things': function() {
-			console.log('did things');
-		}
+// only used with RENDERNODES
+class StepEvaluator {
+	doStep() {
+		// if you are step-evaluating a given command somewhere,
+		// you are going to destructively alter the contents of it.
+		// that command may be (probably is) bound to some symbol,
+		// so we want to copy it.
+		// The nex that it's inside will also be destructively changed,
+		// but can we assume that that nex is unimportant (i.e. not
+		// bound to anything)? or do we want to walk up the tree
+		// until we find something we are sure isn't bound (like the
+		// root doc)?
+		selectedNode.doStep();
 	}
-
-	annyang.addCommands(commands);
-	annyang.start();
 }

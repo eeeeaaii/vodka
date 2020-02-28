@@ -82,9 +82,6 @@ class Letter extends Nex {
 			return false;
 		}
 		let isCommand = (context == ContextType.COMMAND);
-		if (!(/^.$/.test(txt))) {
-			throw UNHANDLED_KEY;
-		};
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		// TODO: maybe allow regexes in the funnel vector?

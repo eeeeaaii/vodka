@@ -53,33 +53,35 @@ class InsertionPoint extends ValueNex {
 
 	appendText(txt) {}
 
-	defaultHandle(txt) {
+	defaultHandle(txt, context, sourceNode) {
 		if (isNormallyHandled(txt)) {
 			return false;
 		}
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 
+		let parent = (RENDERNODES ? sourceNode.getParent() : this.getParent());
+
 		if (isSeparator) {
-			if (isWord(this.getParent())) {
+			if (isWord(parent)) {
 				manipulator.selectParent()
 					&& manipulator.insertAfterSelectedAndSelect(new Separator(txt))
-					&& manipulator.removeNex(this);
+					&& manipulator.removeNex(sourceNode);
 			} else {
 				manipulator.replaceSelectedWith(new Separator(txt));		
 			}
 		} else {
-			if (isDoc(this.getParent())) {
-				let ln = new Line();
-				let w = new Word();
-				let lt = new Letter(txt);
+			if (isDoc(parent)) {
+				let ln = (RENDERNODES ? new RenderNode(new Line()) : new Line());
+				let w = (RENDERNODES ? new RenderNode(new Word()) : new Word());
+				let lt = (RENDERNODES ? new RenderNode(new Letter(txt)) : new Letter(txt));
 				ln.appendChild(w);
 				w.appendChild(lt);
 				manipulator.replaceSelectedWith(ln);
 				lt.setSelected();
-			} else if (isLine(this.getParent())) {
-				let w = new Word();
-				let lt = new Letter(txt);
+			} else if (isLine(parent)) {
+				let w = (RENDERNODES ? new RenderNode(new Word()) : new Word());
+				let lt = (RENDERNODES ? new RenderNode(new Letter(txt)) : new Letter(txt));
 				w.appendChild(lt);
 				manipulator.replaceSelectedWith(w);
 				lt.setSelected();
