@@ -86,6 +86,8 @@ class Environment {
 		// hack - we are testing to see if it's a javascript array
 		// because we do a garbage thing where for variadics
 		// we map a symbol to a js thing instead of a vodka thing.
+
+		// TODO: I think we can remove this.
 		if (this.symbols[nm].push) {
 			let tocopy = this.symbols[nm];
 			let z = [];
@@ -94,7 +96,11 @@ class Environment {
 			}
 			return z;
 		} else {
-			return this.symbols[nm].makeCopy();
+			if (RENDERNODES) {
+				return this.symbols[nm];
+			} else {
+				return this.symbols[nm].makeCopy();
+			}
 		}
 	}
 

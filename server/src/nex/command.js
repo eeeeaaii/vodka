@@ -27,9 +27,10 @@ class Command extends NexContainer {
 		return '-command-';
 	}
 
-	makeCopy() {
+	makeCopy(shallow) {
 		let r = new Command();
 		this.copyFieldsTo(r);
+		this.copyChildrenTo(r, shallow);
 		return r;
 	}
 
@@ -88,10 +89,6 @@ class Command extends NexContainer {
 
 	needsEvaluation() {
 		return true;
-	}
-
-	doStep() {
-		//
 	}
 
 	evaluate(executionEnv) {

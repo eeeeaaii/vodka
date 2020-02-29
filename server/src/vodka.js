@@ -24,6 +24,14 @@ const RENDERFLAGS = true;
 // (assumes RENDERFLAGS=true)
 const RENDERNODES = true;
 
+// TODO: needed tests
+//.  1. equal
+//.  2. some tests for object tags
+//.  3. copy and paste tests (same as 2?)
+//.  4. fix step eval and update goldens if necessary
+//.  5. tests for run-js
+//.  6. tests for cram and chop
+
 
 // TODO: audit, is this updated in step eval?
 let ILVL = 0;
@@ -111,6 +119,8 @@ function createBuiltins() {
 	createTypeConversionBuiltins();
 }
 
+let renderPassNumber = 0;
+
 var selectWhenYouFindIt = null;
 function topLevelRender(node) {
 	topLevelRenderSelectingNode(null);
@@ -118,6 +128,7 @@ function topLevelRender(node) {
 
 function topLevelRenderSelectingNode(node) {
 	selectWhenYouFindIt = node;
+	renderPassNumber++;
 	if (RENDERNODES) {
 		root.render(current_default_render_flags);
 	} else if (RENDERFLAGS) {

@@ -26,10 +26,17 @@ class NexContainer extends Nex {
 
 	copyFieldsTo(n) {
 		super.copyFieldsTo(n);
-		for (let i = 0; i < this.children.length; i++) {
-			n.appendChild(this.children[i].makeCopy());
-		}
 		n.vdir = this.vdir;
+	}
+
+	copyChildrenTo(n, shallow) {
+		for (let i = 0; i < this.children.length; i++) {
+			if (shallow) {
+				n.appendChild(this.children[i]);
+			} else {
+				n.appendChild(this.children[i].makeCopy());
+			}
+		}
 	}
 
 	childrenToString() {

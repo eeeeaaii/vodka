@@ -29,6 +29,37 @@ body {
 	position:static;
 }
 
+.duplicatednex {
+	position:relative;
+}
+
 .root {
 	display: contents;
 }
+
+.objecttag {
+	display:none;
+
+}
+
+.exploded > .objecttag {
+	border: 1px solid #990000;
+	background-color: #550000;
+	color: #ffffff;
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	font-family: Courier;
+	font-size: 9px;
+	padding: 2px 2px 2px 2px;
+	position:absolute;
+	left: -5px;
+	top: -8px;
+	opacity: 0.2;
+}
+
+.selected.exploded > .objecttag {
+	opacity: 1.0;
+	z-index: 100;
+}
+

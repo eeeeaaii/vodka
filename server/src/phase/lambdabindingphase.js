@@ -41,7 +41,9 @@ class LambdaBindingPhase extends Phase {
 			args.push(this.command.children[i]);
 		}
 		lambda.bind(args, closure);
-		let parent = this.command.getParent();
+		let parent = RENDERNODES
+				? this.command.getRenderNodes()[0].getParent().getNex()
+				: this.command.getParent();
 		parent.replaceChildWith(this.command, lambda);
 		this.phaseExecutor.pushPhase(new LambdaExecutePhase(this.phaseExecutor, lambda, closure));
 	}

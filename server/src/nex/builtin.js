@@ -42,9 +42,10 @@ class Builtin extends Lambda {
 		return '-builtin-';
 	}
 
-	makeCopy() {
+	makeCopy(shallow) {
 		let r = new Builtin(this.name, this.params, this.subPhaseFactory);
 		this.copyFieldsTo(r);
+		this.copyChildrenTo(r, shallow);
 		return r;
 	}
 

@@ -21,6 +21,9 @@ class Nex {
 	constructor() {
 		// unused in RENDERNODES
 		this.parent = null;
+		this.lastRenderPassNumber = null;
+		this.firstRenderNode = null;
+		this.rendernodes = [];
 
 		this.selected = false;
 		if (!RENDERFLAGS) {
@@ -31,6 +34,46 @@ class Nex {
 		this.enclosingClosure = null; // DO NOT COPY
 		this.tags = [];
 		this.id = NEXT_NEX_ID++;
+	}
+
+	doRenderSequencing(renderNode) {
+		if (this.lastRenderPassNumber == renderPassNumber) {
+			// this node has been rendered before in this pass!
+			// if this is the first dupe, we go back to the first one
+			// and prepend the object tag.
+			if (this.rendernodes.length == 1) {
+				this.prependObjectTag(this.rendernodes[0]);
+			}
+			this.rendernodes.push(renderNode);
+			this.prependObjectTag(renderNode);
+		} else {
+			this.rendernodes = [ renderNode ];
+			this.lastRenderPassNumber = renderPassNumber;
+			// for now we assume there will be only one render,
+			// do not prepend.
+		}
+	}
+
+	getRenderNodes() {
+		return this.rendernodes;
+	}
+
+	prependObjectTag(renderNode) {
+		let domNode = renderNode.getDomNode();
+		let firstChild = domNode.firstChild;
+		let tagNode = document.createElement("div");
+		tagNode.innerHTML = 'o'+this.getID();
+		tagNode.classList.add('objecttag');
+		domNode.classList.add('duplicatednex');
+		if (firstChild) {
+			domNode.insertBefore(tagNode, firstChild);
+		} else {
+			domNode.appendChild(tagNode);
+		}
+	}
+
+	getNumRendersThisPass() {
+		return numRendersThisPass;
 	}
 
 	getID() {
@@ -205,11 +248,11 @@ class Nex {
 			}
 
 			e.stopPropagation();
-			renderNode.setSelected(true /*shallow-rerender*/);
+			renderNode.setSelected(false /*shallow-rerender*/);
 			if (insertAfterRemove && selectedNode != oldSelectedNode) {
-				manipulator.removeNode(oldSelectedNode);
-				topLevelRender();
+				manipulator.removeNex(oldSelectedNode);
 			}
+			topLevelRender();
 		};
 	}
 
@@ -239,7 +282,6 @@ class Nex {
 	}
 
 	renderInto(domNode, shallow) {
-		let toPassToSuperclass = domNode;
 		let renderNode = null;
 		if (RENDERNODES) {
 			// change param name

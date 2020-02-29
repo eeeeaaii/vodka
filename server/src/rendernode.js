@@ -87,10 +87,6 @@ class RenderNode {
 		return this.selected;
 	}
 
-	setSelected() {
-		this.selected = true;
-	}
-
 	unselect() {
 		this.selected = false;
 	}
@@ -105,14 +101,6 @@ class RenderNode {
 		}
 	}
 
-	doStep() {
-		let oldNex = this.getNex();
-		let copiedNex = this.getNex().makeCopy();
-		this.getParent().replaceChildWith(oldNex, copiedNex);
-		copiedNex.doStep();
-		this.getParent().render(current_default_render_flags);
-	}
-
 	render(renderFlags) {
 		// test for shallow and rerender
 		this.clearDomNode(renderFlags);
@@ -124,6 +112,7 @@ class RenderNode {
 				? renderFlags | RENDER_FLAG_SELECTED
 				: renderFlags;
 		this.nex.renderInto(this, useFlags);
+		this.nex.doRenderSequencing(this);
 		if (!(renderFlags & RENDER_FLAG_EXPLODED)
 				&& isNexContainer(this.nex)
 				&& !this.nex.renderChildrenIfNormal()) {
@@ -157,7 +146,7 @@ class RenderNode {
 				childRenderNode.render(renderFlags);
 
 			}
-			if (i < (this.getNex().numChildren() - 1)) {
+			if (i < (this.getNex().numChildren())) {
 				// oops, more nodes added since the last time we rendered.
 				for ( ; i < this.getNex().numChildren(); i++) {
 					let newNode = new RenderNode(this.getNex().getChildAt(i));

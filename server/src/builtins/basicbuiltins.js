@@ -33,6 +33,25 @@ function createBasicBuiltins() {
 		],
 		function(env, argEnv) {
 			let c = env.lb('list()');
+			c = c.makeCopy(true);
+			if (c.numChildren() == 0) {
+				return new EError("cannot cdr an empty list");
+			}
+			c.removeChild(c.getChildAt(0));
+			return c;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'chop',
+		[
+			{name:'list()', type:'NexContainer'}
+		],
+		function(env, argEnv) {
+			let c = env.lb('list()');
+			if (c.numChildren() == 0) {
+				return new EError("cannot chop an empty list");
+			}
 			c.removeChild(c.getChildAt(0));
 			return c;
 		}
@@ -40,6 +59,22 @@ function createBasicBuiltins() {
 
 	Builtin.createBuiltin(
 		'cons',
+		[
+			{name:'nex', type:'*'},
+			{name:'list()', type:'NexContainer'},
+		],
+		function(env, argEnv) {
+			let lst = env.lb('list()');
+			// shallow copy is a reasonable facsimile of actually consing
+			// that we can use for now
+			lst = lst.makeCopy(true);
+			lst.prependChild(env.lb('nex'));
+			return lst;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'cram',
 		[
 			{name:'nex', type:'*'},
 			{name:'list()', type:'NexContainer'},
@@ -66,10 +101,10 @@ function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'begin',
 		[
-			{name:'nex*...', type:'*', variadic:true}
+			{name:'nex...', type:'*', variadic:true}
 		],
 		function(env, argEnv) {
-			let lst = env.lb('nex*...');
+			let lst = env.lb('nex...');
 			if (lst.numChildren() == 0) {
 				return new Nil();
 			} else {

@@ -23,7 +23,9 @@ class ExpectationPhase extends Phase {
 	}
 
 	start() {
-		this.parent = this.nex.getParent();
+		this.parent = RENDERNODES
+				? this.nex.getRenderNodes()[0].getParent().getNex()
+				: this.nex.getParent();
 		this.parent.replaceChildWith(this.nex, this.exp);
 		this.exp.appendChild(this.nex);
 		super.start();

@@ -185,7 +185,11 @@ class BuiltinArgEvaluator {
 			if (param.variadic) {
 				let w = new Word();
 				for (let j = i; j < this.argContainer.numArgs(); j++) {
-					w.appendChild(this.argContainer.getArgAt(j).makeCopy());
+					if (RENDERNODES) {
+						w.appendChild(this.argContainer.getArgAt(j));
+					} else {
+						w.appendChild(this.argContainer.getArgAt(j).makeCopy());
+					}
 				}
 				this.bindEnv.bind(param.name, w);
 			} else if (param.optional) {

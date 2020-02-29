@@ -43,15 +43,20 @@ class Manipulator {
 	}
 
 	doCopy() {
-		CLIPBOARD = (RENDERNODES ? selectedNode.getNex() : selectedNex).makeCopy();
+		if (RENDERNODES) {
+			CLIPBOARD = selectedNode.getNex();
+		} else {
+			CLIPBOARD = selectedNex.makeCopy();
+
+		}
 	}
 
 	doPaste() {
 		if (RENDERNODES) {
 			if (isInsertionPoint(selectedNode)) {
-				this.replaceSelectedWith(CLIPBOARD)
+				this.replaceSelectedWith(CLIPBOARD.makeCopy())
 			} else {
-				this.insertAfterSelectedAndSelect(CLIPBOARD)
+				this.insertAfterSelectedAndSelect(CLIPBOARD.makeCopy())
 			}
 		} else {
 			if (isInsertionPoint(selectedNex)) {

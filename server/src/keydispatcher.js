@@ -582,30 +582,56 @@ class KeyDispatcher {
 	}
 
 	doAltEnter() {
-		if (RENDERNODES) {
-			stepEvaluator.doStep();
-			return;
+		// if (RENDERNODES) {
+		// 	stepEvaluator.doStep();
+		// 	return;
 //			throw new Error('step eval not working at all with rendernodes')
-		}
-		let s = selectedNex;
+		// }
+		let s = RENDERNODES ? selectedNode.getNex() : selectedNex;
 		let phaseExecutor = s.phaseExecutor;
 		let firstStep = false;
 		if (!phaseExecutor) {
 			firstStep = true;
 			phaseExecutor = new PhaseExecutor();
+			if (RENDERNODES) {
+				// need to copy the selected nex, replace it in the parent, and discard!
+				let copiedNex = selectedNode.getNex().makeCopy();
+				let parentNode = selectedNode.getParent();
+				let parentNex = parentNode.getNex();
+				parentNex.replaceChildWith(selectedNode.getNex(), copiedNex);
+				// rerender the parent to refresh/fix the cached childnodes in it
+				parentNode.childnodes = []; // wtf
+				parentNode.render(current_default_render_flags);
+				let index = parentNex.getIndexOfChild(copiedNex);
+				let newSelectedNode = parentNode.getChildAt(index);
+				newSelectedNode.setSelected();
+				topLevelRender();
+				s = selectedNode.getNex();
+			}
 			s.pushNexPhase(phaseExecutor, BUILTINS);
 		}
 		phaseExecutor.doNextStep();
+		if (RENDERNODES) {
+			// to fix up all the pointers and stuff so that getParent works right below.
+			topLevelRender();
+		}
 		if (!phaseExecutor.finished()) {
 			// the resolution of an expectation will change the selected nex,
 			// so need to set it back
 			if (firstStep) {
 				// the first step is PROBABLY an expectation phase
-				let operativeNex = s.getParent();
-				operativeNex.setSelected();
-				operativeNex.phaseExecutor = phaseExecutor;
+				if (RENDERNODES) {
+					let operativeNode = s.getRenderNodes()[0].getParent();
+					let operativeNex = operativeNode.getNex();
+					operativeNode.setSelected();
+					operativeNex.phaseExecutor = phaseExecutor;
+				} else {
+					let operativeNex = s.getParent();
+					operativeNex.setSelected();
+					operativeNex.phaseExecutor = phaseExecutor;
+				}
 			} else {
-				s.setSelected();
+				RENDERNODES ? s.getRenderNodes()[0].setSelected() : s.setSelected();
 			}
 		} else {
 			// if I don't explicitly set the selected nex, it'll be the

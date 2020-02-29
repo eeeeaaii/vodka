@@ -18,6 +18,13 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 // only used with RENDERNODES
 class StepEvaluator {
 	doStep() {
+		// TODO: refactor step eval
+		// it would be so much simpler if step evaluating actually changed
+		// the selected node to be the next node that needs to be changed
+		// or evaluated. then I don't need to maintain a stack!
+
+
+
 		// if you are step-evaluating a given command somewhere,
 		// you are going to destructively alter the contents of it.
 		// that command may be (probably is) bound to some symbol,
@@ -27,6 +34,9 @@ class StepEvaluator {
 		// bound to anything)? or do we want to walk up the tree
 		// until we find something we are sure isn't bound (like the
 		// root doc)?
+		if (!selectedNode.isStepEvaluating()) {
+			selectedNode.startStepEvaluation();
+		}
 		selectedNode.doStep();
 	}
 }
