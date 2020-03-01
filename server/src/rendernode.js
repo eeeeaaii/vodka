@@ -23,7 +23,7 @@ class RenderNode {
 		this.parentalfigure = null;
 		this.childnodes = [];
 		this.domNode = document.createElement("div");
-		this.createChildRenderNodes(forNex);
+//		this.createChildRenderNodes(forNex);
 	}
 
 	createChildRenderNodes(nex) {

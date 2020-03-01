@@ -217,6 +217,7 @@ BuiltinArgEvaluator.ARG_VALIDATORS = {
 	'NexContainer': arg => (arg instanceof NexContainer),
 	'Bool': arg => (arg instanceof Bool),
 	'Command': arg => (arg instanceof Command),
+	'Expectation': arg => (arg instanceof Expectation),
 	'Doc': arg => (arg instanceof Doc),
 	'EString': arg => (arg instanceof EString),
 	'ESymbol': arg => (arg instanceof ESymbol),

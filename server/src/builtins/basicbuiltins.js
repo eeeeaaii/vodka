@@ -235,6 +235,48 @@ function createBasicBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'eval',
+		[
+			{name: 'nex', type:'*'}
+		],
+		function(env, argEnv) {
+			let expr = env.lb('nex');
+			let newresult = evaluateNexSafely(expr, argEnv);
+			return newresult;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'quote',
+		[
+			{name: 'nex', type:'*', skipeval:true}
+		],
+		function(env, argEnv) {
+			return env.lb('nex');
+		}
+	);
+
+	Builtin.createBuiltin(
+		'do-when-fulfilled',
+		[
+			{name: 'func&', type:'Lambda'},
+			{name: 'exp,', type:'Expectation'}
+		],
+		function(env, argEnv) {
+			let lambda = env.lb('func&');
+			let exp = env.lb('exp,');
+			let retExp = new Expectation();
+			exp.addCompletionListener(function(result) {
+				let cmd = new Command('');
+				cmd.appendChild(lambda);
+				cmd.appendChild(result);
+				let newresult = evaluateNexSafely(cmd, argEnv);
+				retExp.fulfill(newresult);
+			})
+			return retExp;
+		})
+
+	Builtin.createBuiltin(
 		'do-on-after',
 		[
 			{name: 'func&', type:'Lambda'},

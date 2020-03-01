@@ -46,7 +46,7 @@ class LambdaArgEvaluator {
 	}
 
 	processAllArgs() {
-		for (let i = 0; i < this.argContainer.numArgs(); i++) {
+		for (let i = (this.skipFirstArg ? 1 : 0); i < this.argContainer.numArgs(); i++) {
 			this.argContainer.setArgAt(
 				this.processArgument(this.argContainer.getArgAt(i)),
 				i);

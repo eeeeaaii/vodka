@@ -34,6 +34,9 @@ class LambdaBindingPhase extends Phase {
 
 	finish() {
 		let lambda = this.command.getLambda(this.env);
+		if (RENDERNODES) {
+			lambda = lambda.makeCopy();
+		}
 		this.commandCallback.setLambda(lambda);
 		let closure = lambda.lexicalEnv.pushEnv();
 		let args = [];

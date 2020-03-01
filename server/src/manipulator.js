@@ -361,9 +361,13 @@ class Manipulator {
 		}
 		let p = toDel.getParent();
 		if (!p) return false;
-		if ((RENDERNODES ? p.getNex() : p) instanceof Root) {
+		if (
+			((RENDERNODES ? p.getNex() : p) instanceof Root)
+			&&
+			(RENDERNODES ? p.getNex() : p).numChildren() == 1
+			) {
 			toDel.setSelected();
-			return false; // can't remove child of root
+			return false; // can't remove last child of root
 		}
 		if (toDel.isSelected()) {
 			p.setSelected();

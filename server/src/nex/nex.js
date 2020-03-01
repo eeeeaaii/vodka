@@ -242,7 +242,7 @@ class Nex {
 			let oldSelectedNode = selectedNode;
 			if (selectedNode.getNex() instanceof EString
 					&& selectedNode.getNex().getMode() == MODE_EXPANDED) {
-				selectedNode.finishInput();
+				selectedNode.getNex().finishInput();
 			} else if (selectedNode.getNex() instanceof InsertionPoint) {
 				insertAfterRemove = true;
 			}

@@ -21,12 +21,17 @@ class Expectation extends NexContainer {
 	constructor(hackfunction) {
 		super()
 		this.hackfunction = hackfunction;
+		this.completionlisteners = [];
 		this.parentlist = []; // for RENDERNODES
 	}
 
 	// for RENDERNODES
 	addParent(parent) {
 		this.parentlist.push(parent);
+	}
+
+	addCompletionListener(listener) {
+		this.completionlisteners.push(listener);
 	}
 
 	getTypeName() {
@@ -58,6 +63,7 @@ class Expectation extends NexContainer {
 		super.copyFieldsTo(nex);
 		nex.hackfunction = this.hackfunction;
 		nex.deleteHandler = this.deleteHandler;
+		nex.completionlisteners = this.completionlisteners;
 	}
 
 	getContextType() {
@@ -153,7 +159,9 @@ class Expectation extends NexContainer {
 		}
 		// we don't know where the expectations are so we have to render everything.
 		topLevelRenderSelectingNode(newnex);
-
+		for (let i = 0; i < this.completionlisteners.length; i++) {
+			this.completionlisteners[i](newnex);
+		}
 	}
 
 	fulfill(newnex) {
@@ -182,6 +190,9 @@ class Expectation extends NexContainer {
 				newnex.setSelected(true/*shallow-rerender*/);
 			}
 
+		}
+		for (let i = 0; i < this.completionlisteners.length; i++) {
+			this.completionlisteners[i](newnex);
 		}
 		// I don't think we usually do anything with this return value.
 		return newnex;

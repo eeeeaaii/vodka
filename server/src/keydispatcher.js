@@ -99,6 +99,10 @@ var KeyResponseFunctions = {
 			||  manipulator.insertAfterSelectedAndSelect(new InsertionPoint());
 	},
 
+	'select-next-sibling': function(s) {
+		manipulator.selectNextSibling();
+	},
+
 	'evaluate-nex': function(s) {
 		evaluateAndReplace(s);
 	},
@@ -247,7 +251,7 @@ var KeyResponseFunctions = {
 	},
 
 	'call-delete-handler-then-remove-selected-and-select-previous-sibling': function(s) {
-		s.callDeleteHandler();
+		(RENDERNODES ? s.getNex() : s).callDeleteHandler();
 		manipulator.removeSelectedAndSelectPreviousSibling();
 	},
 

@@ -18,11 +18,17 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 // so in a rendernodes world, this turns out to be a super important class.
 
 class CopiedArgContainer {
-	constructor(nex) {
+	constructor(nex, skipFirst) {
 		this.args = [];
 		this.needsEval = [];
-		for (let i = 0; i < nex.numChildren(); i++) {
-			this.args[i] = nex.getChildAt(i);
+		if (skipFirst) {
+			for (let i = 1; i < nex.numChildren(); i++) {
+				this.args[i - 1] = nex.getChildAt(i);
+			}
+		} else {
+			for (let i = 0; i < nex.numChildren(); i++) {
+				this.args[i] = nex.getChildAt(i);
+			}
 		}
 	}
 
@@ -53,9 +59,10 @@ class CopiedArgContainer {
 
 
 class NexChildArgContainer {
-	constructor(nex) {
+	constructor(nex, skipFirstArg) {
 		this.nex = nex;
 		this.needsEval = [];
+		this.offset = skipFirstArg ? 1 : 0;
 	}
 
 	setNeedsEvalForArgAt(needsEval, i) {
@@ -67,19 +74,19 @@ class NexChildArgContainer {
 	}
 
 	numArgs() {
-		return this.nex.numChildren();
+		return this.nex.numChildren() - this.offset;
 	}
 
 	getArgAt(i) {
-		return this.nex.getChildAt(i);
+		return this.nex.getChildAt(i + this.offset);
 	}
 
 	setArgAt(newarg, i) {
-		this.nex.replaceChildAt(newarg, i);
+		this.nex.replaceChildAt(newarg, i + this.offset);
 	}
 
 	removeArgAt(i) {
-		this.nex.removeChildAt(i);
+		this.nex.removeChildAt(i + this.offset);
 	}
 }
 

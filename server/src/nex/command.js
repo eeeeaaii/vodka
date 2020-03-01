@@ -21,6 +21,7 @@ class Command extends NexContainer {
 	constructor(val) {
 		super();
 		this.commandtext = (val ? val : "");
+		this.skipFirstArg = false;
 	}
 
 	getTypeName() {
@@ -65,6 +66,7 @@ class Command extends NexContainer {
 	getLambda(executionEnv) {
 		let cmdname = this.getCommandText();
 		let lambda = null;
+		this.skipFirstArg = false;
 		if (cmdname) {
 			lambda = executionEnv.lookupBinding(cmdname);
 			if (!(lambda instanceof Lambda)) {
@@ -72,7 +74,7 @@ class Command extends NexContainer {
 			}
 		} else if (this.numChildren() > 0) {
 			let c = this.getChildAt(0);
-			this.removeChildAt(0);
+			this.skipFirstArg = true;
 			lambda = evaluateNexSafely(c, executionEnv);
 			if (!(lambda instanceof Lambda)) {
 				throw new EError(`first argument ${lambda.debugString()} to command is not a lambda.`);
@@ -103,7 +105,7 @@ class Command extends NexContainer {
 			console.log(`${INDENT()}lambda is: ${lambda.debugString()}`);
 		}
 //		let argContainer = new NexChildArgContainer(this);
-		let argContainer = (RENDERNODES ? new CopiedArgContainer(this) : new NexChildArgContainer(this));
+		let argContainer = (RENDERNODES ? new CopiedArgContainer(this, this.skipFirstArg) : new NexChildArgContainer(this, this.skipFirstArg));
 		let closure = lambda.lexicalEnv.pushEnv();
 		let argEvaluator = lambda.getArgEvaluator(argContainer, executionEnv, closure);
 		argEvaluator.evaluateAndBindArgs();
