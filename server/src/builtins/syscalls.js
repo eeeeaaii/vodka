@@ -17,6 +17,18 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 function createSyscalls() {
 	Builtin.createBuiltin(
+		'log',
+		[
+			{name:'nex', type:'*'}
+		],
+		function(env, argEnv) {
+			let n = env.lb('nex');
+			console.log(n.debugString());
+			return new Nil();
+		}
+	);
+
+	Builtin.createBuiltin(
 		'apply-style-to',
 		[
 			{name:'style$', type:'EString'},

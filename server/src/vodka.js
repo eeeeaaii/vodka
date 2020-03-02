@@ -41,7 +41,7 @@ function resetStack() {
 }
 
 function stackCheck() {
-	if (ILVL > 500) {
+	if (ILVL > 10000) {
 		throw new Error('stack overflow');
 	}
 }

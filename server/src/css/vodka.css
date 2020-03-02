@@ -25,8 +25,9 @@ body {
 }
 
 .nex {
-	max-width:100%;
+	/*max-width:100%;*/
 	position:static;
+
 }
 
 .duplicatednex {
@@ -34,7 +35,7 @@ body {
 }
 
 .root {
-	display: contents;
+	display: flex;
 }
 
 .objecttag {
