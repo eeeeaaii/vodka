@@ -25,6 +25,8 @@ function createSyscalls() {
 		function(env, argEnv) {
 			let s = env.lb('style$').getFullTypedValue();
 			let n = env.lb('nex');
+			// TODO: use an exclamation point for the version that doesn't copy
+			n = n.makeCopy();
 			n.setCurrentStyle(s);
 			return n;
 		}
@@ -64,6 +66,7 @@ function createSyscalls() {
 					let nodes = child.getRenderNodes();
 					$node[i] = nodes[0];
 					if ($node[i]) {
+						// TODO: figure out if I should throw an exception if no dom object
 						$dom[i] = $node[i].getDomNode();
 					}
 				} else {
