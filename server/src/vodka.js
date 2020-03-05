@@ -31,6 +31,7 @@ const RENDERNODES = true;
 //.  4. fix step eval and update goldens if necessary
 //.  5. tests for run-js
 //.  6. tests for cram and chop
+//.  7. to-word
 
 
 // TODO: audit, is this updated in step eval?

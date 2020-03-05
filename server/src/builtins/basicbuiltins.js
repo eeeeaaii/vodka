@@ -17,6 +17,17 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 function createBasicBuiltins() {
 	Builtin.createBuiltin(
+		'copy',
+		[
+			{name:'nex', type:'*'}
+		],
+		function(env, argEnv) {
+			return env.lb('nex').makeCopy();
+		}
+	);
+
+
+	Builtin.createBuiltin(
 		'car',
 		[
 			{name:'list()', type:'NexContainer'}

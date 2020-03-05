@@ -18,6 +18,43 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 function createTypeConversionBuiltins() {
 	Builtin.createBuiltin(
+		'to-word',
+		[
+			{name: 'nex', type:'*'},
+		],
+		function(env, argEnv) {
+			let v = env.lb('nex');
+
+			let jsStringToDoc = (function(str) {
+				var w = new Word();
+				for (let i = 0; i < str.length; i++) {
+					let lt = new Letter(str.charAt(i));
+					w.appendChild(lt);
+				}
+				return w;
+			});
+			if (v instanceof Integer
+				|| v instanceof Float
+				|| v instanceof Bool
+				) {
+				return jsStringToDoc('' + v.getTypedValue())
+			} else if (v instanceof EString) {
+				return jsStringToDoc('' + v.getFullTypedValue())
+			} else if (v instanceof Letter) {
+				let w = new Word();
+				w.appendChild(v.makeCopy());
+				return w;
+			} else if (v instanceof Line || v instanceof Doc) {
+				// TODO: flatten and return
+				throw new EError('not yet implemented')
+			} else {
+				return new EError('Could not convert to word');
+			}
+		}
+	)
+
+
+	Builtin.createBuiltin(
 		'to-integer',
 		[
 			{name: 'nex', type:'*'},
@@ -66,7 +103,6 @@ function createTypeConversionBuiltins() {
 				return new EError('Could not convert to integer');
 			}
 		}
-
 	)
 
 	Builtin.createBuiltin(
