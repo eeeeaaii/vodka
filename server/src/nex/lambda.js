@@ -155,6 +155,10 @@ class Lambda extends NexContainer {
 		for (let i = 0; i < this.children.length; i++) {
 			let c = this.children[i];
 			r = evaluateNexSafely(c, closure);
+			if (r instanceof EError) {
+				r = wrapError('&amp;', (this.boundName ? this.boundName : this.debugString()) + ' error in expr ' + (i+1), r);
+				return r;
+			}
 		}
 		return r;
 	}
@@ -174,7 +178,7 @@ class Lambda extends NexContainer {
 	getArgEvaluator(argContainer, argEnv, closure) {
 		return new LambdaArgEvaluator(
 			this.getParamNames(),
-			argContainer, closure, argEnv);
+			argContainer, closure, argEnv, this.boundName ? this.boundName : this.debugString());
 	}
 
 	getStepEvaluator(stepContainer, env) {

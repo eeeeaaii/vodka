@@ -32,6 +32,7 @@ const RENDERNODES = true;
 //.  5. tests for run-js
 //.  6. tests for cram and chop
 //.  7. to-word
+//.  8. clean up eerror including its css
 
 
 // TODO: audit, is this updated in step eval?

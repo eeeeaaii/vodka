@@ -23,12 +23,13 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 // world unless I have two notions: the node, and the nex.
 
 class LambdaArgEvaluator {
-	constructor(params, argContainer, bindEnv, argEnv) {
+	constructor(params, argContainer, bindEnv, argEnv, debugstr) {
 		this.params = params;
 		this.argContainer = argContainer;
 		this.bindEnv = bindEnv;
 		this.argEnv = argEnv;
 		this.numRequiredParams = params.length;
+		this.debugstr = debugstr;
 	}
 
 	checkNumParams() {
@@ -47,8 +48,12 @@ class LambdaArgEvaluator {
 
 	processAllArgs() {
 		for (let i = (this.skipFirstArg ? 1 : 0); i < this.argContainer.numArgs(); i++) {
+			let argval = this.processArgument(this.argContainer.getArgAt(i));
+			if (argval instanceof EError) {
+				throw wrapError('&#8907;', this.debugstr + ": error in arg " + (i+1), argval);
+			}
 			this.argContainer.setArgAt(
-				this.processArgument(this.argContainer.getArgAt(i)),
+				argval,
 				i);
 		}
 	}

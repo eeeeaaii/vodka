@@ -378,6 +378,8 @@ function createBasicBuiltins() {
 			} else if (lhs instanceof Expectation && rhs instanceof Expectation) {
 				// TODO: implement deep equals
 				return new EError('equal for lists is not implemented')
+			} else {
+				return new Bool(false);
 			}
 		}
 	);

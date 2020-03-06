@@ -32,6 +32,12 @@ function evaluateNexSafely(nex, env) {
 	return result;
 }
 
+function wrapError(prefix, message, inner) {
+	let e = new EError(message, prefix);
+	e.appendChild(inner);
+	return e;
+}
+
 // s is either the nex or the node depending on RENDERNODES
 function insertOrAppend(s, obj) {
 	if (s.hasChildren()) {

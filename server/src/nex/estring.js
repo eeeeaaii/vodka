@@ -99,10 +99,6 @@ class EString extends ValueNex {
 		}
 	}
 
-	getKeyFunnel() {
-		return new EStringKeyFunnel(this);
-	}
-
 	// RENDERFLAGS // change to renderFlags
 	renderInto(domNode, shallow) {
 		let toPassToSuperclass = domNode;
@@ -143,6 +139,8 @@ class EString extends ValueNex {
 	drawExpanded(domNode) {
 		let toPass = domNode;
 		if (RENDERNODES) {
+			// TODO: fix this junk
+			this.cachedThingUgh = domNode;
 			// change param name
 			domNode = domNode.getDomNode();
 		}
@@ -188,6 +186,9 @@ class EString extends ValueNex {
 
 	// arg only used in RENDERNODES
 	finishInput(renderNode) {
+		if (!renderNode && this.cachedThingUgh) {
+			renderNode = this.cachedThingUgh;
+		}
 		let val = this.inputfield.value;
 		activateKeyFunnel();
 		this.mode = MODE_NORMAL;

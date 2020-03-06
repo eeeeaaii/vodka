@@ -17,8 +17,24 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 .eerror {
+}
+
+.eerror.exploded {
+	border-radius: 6px;	
 	font-style: italic;
 	font-family: monospace;
 	color: #aa0000;
-	background: repeating-linear-gradient (45deg, #ffdddd, #ffdddd 2px,	transparent 2.1px, transparent 9px);
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	padding-left:22px;
+}
+
+.eerror > .innerspan {
+	margin-bottom: 4px;
+}
+
+.eerror.exploded.selected {
+	padding-left:22px;
+	border: 3px solid #ff7777;
 }

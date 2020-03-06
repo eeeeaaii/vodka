@@ -16,11 +16,18 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-
-class EError extends EString {
-	constructor(val) {
+class EError extends NexContainer {
+	constructor(val, prefix) {
+		super();
 		if (!val) val = '';
-		super(val, '?', 'eerror')
+		if (!prefix) {
+			this.prefix = '?';
+		} else {
+			this.prefix = prefix;
+		}
+		this.className = 'eerror';
+		this.mode = MODE_NORMAL;
+//		super(val, '?', 'eerror')
 		this.setFullValue(val); // will call render
 	}
 
@@ -33,6 +40,38 @@ class EError extends EString {
 		this.copyFieldsTo(r);
 		return r;
 	}
+
+	setMode(m) {
+		this.mode = m;
+	}
+
+	getMode() {
+		return this.mode;
+	}
+
+	toggleRendering() {
+		this.mode = (this.mode == MODE_NORMAL) ? MODE_EXPANDED : MODE_NORMAL;
+	}
+
+	getTypedValue() {
+		throw new Error("do not use this method, only use getFullTypedValue or getDisplayValue");
+	}
+
+	getFullTypedValue() {
+		return this.fullValue;
+	}
+
+	getDisplayValue() {
+		return this.displayValue;
+	}
+
+	setFullValue(fullval) {
+		this.fullValue = fullval;
+		this.displayValue = this.prefix + '&nbsp;' + this.fullValue.trim();
+//		if (this.displayValue.length > ESTRING_LIMIT) {
+//			this.displayValue = this.displayValue.substr(0, (ESTRING_LIMIT - 3)) + '...';
+//		}
+	}	
 
 	toString() {
 		return '?"' + this.escapeContents() + '"';
@@ -52,8 +91,95 @@ class EError extends EString {
 
 	// bork, does it bork the test tho?
 	drawTextField(domNode) {
-		super.drawTextField(domNode);
+		let toPass = domNode;
+		if (RENDERNODES) {
+			// change param name
+			domNode = domNode.getDomNode();
+		}
+		this.inputfield = document.createElement("textarea");	
+		this.inputfield.classList.add('stringta');	
+		if (this.fullValue) {
+			this.inputfield.value = this.fullValue;
+		}
+		domNode.appendChild(this.inputfield);
+		this.inputfield.classList.add('stringinput');
 		this.inputfield.setAttribute("readonly", '');
+	}
+
+
+	startModalEditing() {
+		this.mode = MODE_EXPANDED;
+		deactivateKeyFunnel();
+	}
+
+	drawNormal(domNode) {
+		let toPass = domNode;
+		if (RENDERNODES) {
+			// change param name
+			domNode = domNode.getDomNode();
+		}
+		if (this.displayValue !== '') {
+			this.innerspan = document.createElement("div");
+			this.innerspan.classList.add('innerspan');
+			this.innerspan.innerHTML = this.displayValue;
+			domNode.appendChild(this.innerspan);
+		}
+	}
+
+	// arg only used in RENDERNODES
+	finishInput(renderNode) {
+		if (!renderNode && this.cachedThingUgh) {
+			renderNode = this.cachedThingUgh;
+		}
+		let val = this.inputfield.value;
+		activateKeyFunnel();
+		this.mode = MODE_NORMAL;
+		this.setFullValue(val); // calls render
+		if (RENDERNODES) {
+			renderNode.render(current_default_render_flags
+					| RENDER_FLAG_RERENDER
+					| RENDER_FLAG_SHALLOW);
+		} else if (RENDERFLAGS) {
+			this.rerender(current_default_render_flags | RENDER_FLAG_SHALLOW)
+		} else {
+			this.rerender(true);
+		}
+	}
+
+	drawExpanded(domNode) {
+		let toPass = domNode;
+		if (RENDERNODES) {
+			// TODO: fix this junk
+			this.cachedThingUgh = domNode;
+			// change param name
+			domNode = domNode.getDomNode();
+		}
+		this.drawTextField(toPass);
+		this.drawButton(toPass);
+		this.inputfield.focus();
+	}
+
+	// RENDERFLAGS // change to renderFlags
+	renderInto(domNode, shallow) {
+		let toPassToSuperclass = domNode;
+		if (RENDERNODES) {
+			// change param name
+			domNode = domNode.getDomNode();
+		}
+		super.renderInto(toPassToSuperclass, shallow);
+		// this one always can rerender because it's not a container
+		// we only need to care about rerenders when it's a container type
+//		domNode.innerHTML = this.prefix;
+		domNode.classList.add('valuenex');
+		domNode.classList.add(this.className);
+		if (this.mode == MODE_NORMAL) {
+			this.drawNormal(toPassToSuperclass);
+		} else {
+			this.drawExpanded(toPassToSuperclass);
+		}
+		if (!RENDERNODES) {
+			this.renderTags(domNode, shallow);
+		}
 	}
 
 	defaultHandle(txt) {
@@ -74,7 +200,6 @@ class EError extends EString {
 
 	getEventTable(context) {
 		return {
-			'ShiftEnter': 'start-modal-editing',
 			'Enter': 'do-line-break-always',
 		};
 	}

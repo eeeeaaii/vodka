@@ -59,9 +59,17 @@ function createLogicBuiltins() {
 		function(env, argEnv) {
 			let b = env.lb('cond!').getTypedValue();
 			if (b) {
-				return evaluateNexSafely(env.lb('{true}'), argEnv);
+				let iftrue = evaluateNexSafely(env.lb('{true}'), argEnv);
+				if (iftrue instanceof EError) {
+					iftrue = wrapError('&szlig;', 'if: error in argument 2', iftrue);
+				}
+				return iftrue;
 			} else {
-				return evaluateNexSafely(env.lb('{false}'), argEnv);
+				let iffalse = evaluateNexSafely(env.lb('{false}'), argEnv);
+				if (iffalse instanceof EError) {
+					iffalse = wrapError('&szlig;', 'if: error in argument 3', iffalse);
+				}
+				return iffalse;
 			}
 		},
 		function(phaseExecutor, nex, env) {

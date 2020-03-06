@@ -60,6 +60,7 @@ class Environment {
 	}
 
 	bind(name, val) {
+		val.setBoundName(name);
 		this.symbols[name] = val;
 	}
 

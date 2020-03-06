@@ -60,11 +60,7 @@ function createStringBuiltins() {
 			let s = env.lb('str$').getFullTypedValue();
 			let tofind = env.lb('tofind$').getFullTypedValue();
 			let i = s.indexOf(tofind);
-			if (i == -1) {
-				return new EError(`did not find "${tofind}" in "${s}"`)
-			} else {
-				return new Integer(i);
-			}
+			return new Integer(i);
 		}
 	);
 

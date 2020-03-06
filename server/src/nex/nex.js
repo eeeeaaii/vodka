@@ -34,6 +34,12 @@ class Nex {
 		this.enclosingClosure = null; // DO NOT COPY
 		this.tags = [];
 		this.id = NEXT_NEX_ID++;
+		this.boundName = "";
+	}
+
+	setBoundName(str) {
+		// I mean it's not perfect, it will get overwritten each time, but...
+		this.boundName = str;
 	}
 
 	doRenderSequencing(renderNode) {
@@ -220,7 +226,8 @@ class Nex {
 		domNode.onclick = (e) => {
 			let insertAfterRemove = false;
 			let oldSelectedNex = selectedNex;
-			if (selectedNex instanceof EString
+			if ((selectedNex instanceof EString
+				|| selectedNex instanceof EError)
 					&& selectedNex.getMode() == MODE_EXPANDED) {
 				selectedNex.finishInput();
 			} else if (selectedNex instanceof InsertionPoint) {
@@ -240,7 +247,8 @@ class Nex {
 		renderNode.getDomNode().onclick = (e) => {
 			let insertAfterRemove = false;
 			let oldSelectedNode = selectedNode;
-			if (selectedNode.getNex() instanceof EString
+			if ((selectedNode.getNex() instanceof EString
+				|| selectedNode.getNex() instanceof EError)
 					&& selectedNode.getNex().getMode() == MODE_EXPANDED) {
 				selectedNode.getNex().finishInput();
 			} else if (selectedNode.getNex() instanceof InsertionPoint) {
