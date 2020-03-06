@@ -37,6 +37,10 @@ class Nex {
 		this.boundName = "";
 	}
 
+	getTypeName() {
+		throw new Error("only leaf types have names");
+	}
+
 	setBoundName(str) {
 		// I mean it's not perfect, it will get overwritten each time, but...
 		this.boundName = str;

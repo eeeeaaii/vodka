@@ -156,7 +156,7 @@ class BuiltinArgEvaluator {
 		let arg = this.argContainer.getArgAt(i);
 		if (!param.skipeval) {
 			arg = evaluateNexSafely(arg, this.env);
-			if (arg instanceof EError) {
+			if (arg.getTypeName() == '-error-') {
 				throw wrapError('&szlig;', this.name + ": error in argument " + (i+1), arg);
 			}
 		}
@@ -214,18 +214,18 @@ class BuiltinArgEvaluator {
 BuiltinArgEvaluator.ARG_VALIDATORS = {
 	'*': arg => true,
 	'NexContainer': arg => (arg instanceof NexContainer),
-	'Bool': arg => (arg instanceof Bool),
-	'Command': arg => (arg instanceof Command),
-	'Expectation': arg => (arg instanceof Expectation),
-	'Doc': arg => (arg instanceof Doc),
-	'EString': arg => (arg instanceof EString),
-	'ESymbol': arg => (arg instanceof ESymbol),
-	'Float': arg => (arg instanceof Float),
-	'Number': arg => (arg instanceof Integer || arg instanceof Float),
-	'Integer': arg => (arg instanceof Integer),
-	'Letter': arg => (arg instanceof Letter),
-	'Line': arg => (arg instanceof Line),
-	'Nil': arg => (arg instanceof Nil),
-	'Word': arg => (arg instanceof Word),
-	'Lambda': arg => (arg instanceof Lambda),
+	'Bool': arg => (arg.getTypeName() == '-bool-'),
+	'Command': arg => (arg.getTypeName() == '-command-'),
+	'Expectation': arg => (arg.getTypeName() == '-expectation-'),
+	'Doc': arg => (arg.getTypeName() == '-doc-'),
+	'EString': arg => (arg.getTypeName() == '-string-'),
+	'ESymbol': arg => (arg.getTypeName() == '-symbol-'),
+	'Float': arg => (arg.getTypeName() == '-float-'),
+	'Number': arg => (arg.getTypeName() == '-integer-' || arg.getTypeName() == '-float-'),
+	'Integer': arg => (arg.getTypeName() == '-integer-'),
+	'Letter': arg => (arg.getTypeName() == '-letter-'),
+	'Line': arg => (arg.getTypeName() == '-line-'),
+	'Nil': arg => (arg.getTypeName() == '-nil-'),
+	'Word': arg => (arg.getTypeName() == '-word-'),
+	'Lambda': arg => (arg.getTypeName() == '-lambda-'),
 };
