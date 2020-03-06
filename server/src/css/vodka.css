@@ -21,6 +21,10 @@ body {
 	padding: 0;
 }
 
+#hiddenroot {
+	visibility: hidden;
+}
+
 .data {
 }
 

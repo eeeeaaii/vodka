@@ -72,6 +72,7 @@ const RENDER_FLAG_SELECTED = 8;
 const manipulator = new Manipulator();
 const stepEvaluator = new StepEvaluator();
 var root = null;
+var hiddenroot = null;
 if (RENDERNODES) {
 	var selectedNode = null;
 } else {
@@ -155,6 +156,10 @@ function setup() {
 	createBuiltins();
 	BUILTINS = BUILTINS.pushEnv();
 	if (RENDERNODES) {
+		hiddenroot = new RenderNode(new Root(true));
+		let hiddenRootDomNode = document.getElementById('hiddenroot');
+		hiddenroot.setDomNode(hiddenRootDomNode);
+
 		let rootnex = new Root(true /* attached */);
 		root = new RenderNode(rootnex);
 		let rootDomNode = document.getElementById('mixroot');

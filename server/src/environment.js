@@ -124,8 +124,8 @@ class Environment {
 			} else {
 				return this.symbols[name].makeCopy();
 			}
-		} else if (this.uniques[name]) {
-			return this.uniques[name];
+//		} else if (this.uniques[name]) {
+//			return this.uniques[name];
 		} else if (this.parentEnv) {
 			return this.parentEnv.lookupBinding(name);
 		} else {

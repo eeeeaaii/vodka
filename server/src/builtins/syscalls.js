@@ -57,6 +57,39 @@ function createSyscalls() {
 	);
 
 	Builtin.createBuiltin(
+		'get-pixel-width',
+		[
+			{name:'nex', type:'*'}
+		],
+		function(env, argEnv) {
+			let n = env.lb('nex');
+			let rn = new RenderNode(n);
+			hiddenroot.appendChild(rn);
+			hiddenroot.render(0);
+			let w = rn.getDomNode().getBoundingClientRect().width;
+			hiddenroot.removeChildAt(0);
+			return new Float(w);
+		}
+	);
+
+	Builtin.createBuiltin(
+		'get-pixel-height',
+		[
+			{name:'nex', type:'*'}
+		],
+		function(env, argEnv) {
+			let n = env.lb('nex');
+			let rn = new RenderNode(n);
+			hiddenroot.appendChild(rn);
+			hiddenroot.render(0);
+			let w = rn.getDomNode().getBoundingClientRect().height;
+			hiddenroot.removeChildAt(0);
+			return new Float(w);
+		}
+	);
+
+
+	Builtin.createBuiltin(
 		'run-js',
 		[
 			{name:'expr$', type:'EString'},
