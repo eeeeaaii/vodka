@@ -32,6 +32,12 @@ body {
 	margin-bottom: 15px;
 }
 
+.regencommand {
+	width: 400px;
+	height: 20px;
+	font-size: 9px;
+}
+
 .summaryname {
 	font-family: Courier;
 	font-size: 18px;

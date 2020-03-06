@@ -45,9 +45,15 @@ do_image_comparison() {
 		cp ${TESTOUTPUT} ${GOLDEN}
 		REGENERATED_GOLDEN=true
 	fi
+	if [ "${DIFF_MODE}" == "NORMAL" ]; then
+		EXT="-n"
+	else
+		EXT="-e"
+	fi
 	echo "      {" >> ${OUTFILE}
 	echo "        \"diff_type\": \"${DIFF_MODE}\"," >> ${OUTFILE}
 	echo "        \"regenerated_golden\": ${REGENERATED_GOLDEN}," >> ${OUTFILE}
+	echo "        \"regenerate_command\": \"./goldenupdate.sh ${BASENAME} ${EXT}\"," >> ${OUTFILE}
 	echo "        \"diff_succeeded\": ${DIFF_SUCCEEDED}" >> ${OUTFILE}
 	echo "      }" >> ${OUTFILE}
 }
