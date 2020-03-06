@@ -57,13 +57,13 @@ class Zlist extends NexContainer {
 		domNode.classList.add('data');
 		if (RENDERFLAGS) {
 			if (renderFlags & NEX_RENDER_TYPE_EXPLODED) {
-				domNode.style.height = '' + (this.children.length * 10) + 'px'; 
+				domNode.style.height = '' + (this.numChildren() * 10) + 'px'; 
 			} else {
 				domNode.style.height = '0px';
 			}
 		} else {
 			if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
-				domNode.style.height = '' + (this.children.length * 10) + 'px'; 
+				domNode.style.height = '' + (this.numChildren() * 10) + 'px'; 
 			} else {
 				domNode.style.height = '0px';
 			}

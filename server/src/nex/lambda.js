@@ -24,6 +24,8 @@ class Lambda extends NexContainer {
 			return new LambdaCommandPhase(phaseExecutor, nex, env);
 		}
 		this.amptext = val ? val : '';
+		this.cachedParamNames = [];
+		this.cacheParamNames();
 		this.lexicalEnv = null;
 		this.cmdname = null;
 	}
@@ -42,6 +44,7 @@ class Lambda extends NexContainer {
 	copyFieldsTo(r) {
 		super.copyFieldsTo(r);
 		r.amptext = this.amptext;
+		r.cacheParamNames();
 		r.lexicalEnv = this.lexicalEnv;
 		r.cmdname = this.cmdname;
 		r.needsEval = this.needsEval;
@@ -139,27 +142,28 @@ class Lambda extends NexContainer {
 		return this;
 	}
 
-	getParamNames() {
-		let s = this.amptext.split(' ');
+	cacheParamNames() {
+		let s = this.amptext.trim().split(' ');
 		let p = [];
 		for (let i = 0; i < s.length; i++) {
-			if (s[i] !== '') {
-				p.push(s[i]);
-			}
+			p.push(s[i]);
 		}
-		return p;
+		this.cachedParamNames = p;
+	}
+
+	getParamNames() {
+		return this.cachedParamNames;
 	}
 
 	executor(closure) {
 		let r = new Nil();
-		for (let i = 0; i < this.children.length; i++) {
-			let c = this.children[i];
+		this.doForEachChild(c => {
 			r = evaluateNexSafely(c, closure);
 			if (r instanceof EError) {
 				r = wrapError('&amp;', (this.boundName ? this.boundName : this.debugString()) + ' error in expr ' + (i+1), r);
 				return r;
 			}
-		}
+		});
 		return r;
 	}
 
@@ -195,10 +199,12 @@ class Lambda extends NexContainer {
 
 	deleteLastAmpLetter() {
 		this.amptext = this.amptext.substr(0, this.amptext.length - 1);
+		this.cacheParamNames();
 	}
 
 	appendAmpText(txt) {
 		this.amptext = this.amptext + txt;
+		this.cacheParamNames();
 	}
 
 	defaultHandle(txt) {

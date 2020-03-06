@@ -44,12 +44,39 @@ function createBasicBuiltins() {
 		],
 		function(env, argEnv) {
 			let c = env.lb('list()');
-			c = c.makeCopy(true);
 			if (c.numChildren() == 0) {
 				return new EError("cannot cdr an empty list");
 			}
-			c.removeChild(c.getChildAt(0));
-			return c;
+			if (LINKEDLIST) {
+				let newOne = c.makeCopy(true);
+				c.getChildrenForCdr(newOne);
+				return newOne;
+			} else {
+				c = c.makeCopy(true);
+				c.removeChild(c.getChildAt(0));
+				return c;
+			}
+		}
+	);
+
+	Builtin.createBuiltin(
+		'cons',
+		[
+			{name:'nex', type:'*'},
+			{name:'list()', type:'NexContainer'},
+		],
+		function(env, argEnv) {
+			let lst = env.lb('list()');
+			let nex = env.lb('nex');
+			if (LINKEDLIST) {
+				let newOne = lst.makeCopy(true);
+				lst.setChildrenForCons(nex, newOne);
+				return newOne;
+			} else {
+				lst = lst.makeCopy(true);
+				lst.prependChild(nex);
+				return lst;
+			}
 		}
 	);
 
@@ -65,22 +92,6 @@ function createBasicBuiltins() {
 			}
 			c.removeChild(c.getChildAt(0));
 			return c;
-		}
-	);
-
-	Builtin.createBuiltin(
-		'cons',
-		[
-			{name:'nex', type:'*'},
-			{name:'list()', type:'NexContainer'},
-		],
-		function(env, argEnv) {
-			let lst = env.lb('list()');
-			// shallow copy is a reasonable facsimile of actually consing
-			// that we can use for now
-			lst = lst.makeCopy(true);
-			lst.prependChild(env.lb('nex'));
-			return lst;
 		}
 	);
 

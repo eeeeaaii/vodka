@@ -39,8 +39,7 @@ class Line extends NexContainer {
 
 	getValueAsString() {
 		let s = '';
-		for (let i = 0; i < this.children.length; i++) {
-			let c = this.children[i];
+		this.doForEachChild(c => {
 			if (c instanceof Letter) { // erm the space character is a letter ugh
 				s += c.getText();
 			} else if (c instanceof Word) {
@@ -48,7 +47,7 @@ class Line extends NexContainer {
 			} else {
 				throw new EError('cannot convert line to string, invalid format');
 			}
-		}
+		});
 		return s;
 	}
 

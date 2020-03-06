@@ -21,11 +21,21 @@ class Command extends NexContainer {
 	constructor(val) {
 		super();
 		this.commandtext = (val ? val : "");
+		this.cachedBuiltin = null;
+		this.cacheGlobalBuiltin();
 		this.skipFirstArg = false;
 	}
 
 	getTypeName() {
 		return '-command-';
+	}
+
+	cacheGlobalBuiltin() {
+		try {
+			this.cachedBuiltin = BUILTINS.lookupBinding(this.commandtext);
+		} catch (e) {
+			this.cachedBuiltin = null;
+		}
 	}
 
 	makeCopy(shallow) {
@@ -42,6 +52,7 @@ class Command extends NexContainer {
 	copyFieldsTo(nex) {
 		super.copyFieldsTo(nex);
 		nex.commandtext = this.commandtext;
+		nex.cacheGlobalBuiltin();
 	}
 
 	debugString() {
@@ -64,6 +75,9 @@ class Command extends NexContainer {
 	}
 
 	getLambda(executionEnv) {
+		if (this.cachedBuiltin) {
+			return this.cachedBuiltin;
+		}
 		let cmdname = this.getCommandText();
 		let lambda = null;
 		this.skipFirstArg = false;
@@ -178,6 +192,7 @@ class Command extends NexContainer {
 
 	setCommandText(t) {
 		this.commandtext = t;
+		this.cacheGlobalBuiltin();
 	}
 
 	isEmpty() {
@@ -186,10 +201,12 @@ class Command extends NexContainer {
 
 	deleteLastCommandLetter() {
 		this.commandtext = this.commandtext.substr(0, this.commandtext.length - 1);
+		this.cacheGlobalBuiltin();
 	}
 
 	appendCommandText(txt) {
 		this.commandtext = this.commandtext + txt;
+		this.cacheGlobalBuiltin();
 	}
 
 	// expression list interface

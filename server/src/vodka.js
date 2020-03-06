@@ -24,6 +24,10 @@ const RENDERFLAGS = true;
 // (assumes RENDERFLAGS=true)
 const RENDERNODES = true;
 
+// store children of NexContainer as linked list
+// allowing cons/cdr to work as expected
+const LINKEDLIST= true;
+
 // TODO: needed tests
 //.  1. equal
 //.  2. some tests for object tags
@@ -33,6 +37,7 @@ const RENDERNODES = true;
 //.  6. tests for cram and chop
 //.  7. to-word
 //.  8. clean up eerror including its css
+//.  9. instanceof checks are slow, for nexes instead compare to getTypeName()
 
 
 // TODO: audit, is this updated in step eval?

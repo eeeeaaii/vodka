@@ -118,11 +118,12 @@ class Environment {
 	}
 
 	lookupBinding(name) {
-		if (this.symbols[name]) {
+		let tmp = this.symbols[name];
+		if (tmp) {
 			if (RENDERNODES) {
-				return this.symbols[name];
+				return tmp;
 			} else {
-				return this.symbols[name].makeCopy();
+				return tmp.makeCopy();
 			}
 //		} else if (this.uniques[name]) {
 //			return this.uniques[name];

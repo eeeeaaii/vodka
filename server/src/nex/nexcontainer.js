@@ -16,12 +16,27 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
+// used with LINKEDLIST
+class ChildNex {
+	// lol
+	constructor(n) {
+		this.n = n;
+		this.next = null;
+	}
+}
+
 
 class NexContainer extends Nex {
 	constructor() {
 		super();
 		this.vdir = false;
-		this.children = [];
+		if (LINKEDLIST) {
+			this.firstChildNex = null;
+			this.numChildNexes = 0;
+			this.lastChildNex = null;
+		} else {
+			this.children = [];
+		}
 	}
 
 	copyFieldsTo(n) {
@@ -29,42 +44,103 @@ class NexContainer extends Nex {
 		n.vdir = this.vdir;
 	}
 
+	// let the caller instantiate the new container
+	// because we don't know what type it is.
+	// all this does is set the child pointers
+	setChildrenForCons(nex, newContainer) {
+		let newP = new ChildNex(nex);
+		newP.next = this.firstChildNex;
+		newContainer.firstChildNex = newP;
+		if (this.lastChildNex == null) {
+			newContainer.lastChildNex = newP;
+		} else {
+			newContainer.lastChildNex = this.lastChildNex;
+		}
+		newContainer.numChildNexes = this.numChildNexes + 1;
+	}
+
+	getChildrenForCdr(newContainer) {
+		if (this.firstChildNex == null) {
+			throw new Error('check for empty list outside of here');
+		}
+		newContainer.firstChildNex = this.firstChildNex.next;
+		newContainer.numChildNexes = this.numChildNexes - 1;
+		newContainer.lastChildNex = this.lastChildNex;
+	}
+
 	copyChildrenTo(n, shallow) {
-		for (let i = 0; i < this.children.length; i++) {
+		if (LINKEDLIST) {
+			// shallow is already only used for cdr/cons
 			if (shallow) {
-				n.appendChild(this.children[i]);
+				return;
 			} else {
-				n.appendChild(this.children[i].makeCopy());
+				for (let p = this.firstChildNex; p != null; p = p.next) {
+					n.appendChild(p.n.makeCopy());
+				}
+			}
+		} else {
+			for (let i = 0; i < this.children.length; i++) {
+				if (shallow) {
+					n.appendChild(this.children[i]);
+				} else {
+					n.appendChild(this.children[i].makeCopy());
+				}
 			}
 		}
 	}
 
 	childrenToString() {
 		let r = "";
-		for (let i = 0; i < this.children.length; i++) {
-			if (i > 0) {
-				r += ' ';
+		if (LINKEDLIST) {
+			let i = 0;
+			for (let p = this.firstChildNex; p != null; p = p.next) {
+				if (++i > 0) {
+					r += ' ';
+				}
+				r += p.n.toString();
 			}
-			r += this.children[i].toString();
+		} else {
+			for (let i = 0; i < this.children.length; i++) {
+				if (i > 0) {
+					r += ' ';
+				}
+				r += this.children[i].toString();
+			}
 		}
 		return r;		
 	}
 
 	childrenDebugString() {
 		let r = "";
-		for (let i = 0; i < this.children.length; i++) {
-			if (i > 0) {
-				r += ' ';
+		if (LINKEDLIST) {
+			let i = 0;
+			for (let p = this.firstChildNex; p != null; p = p.next) {
+				if (++i > 0) {
+					r += ' ';
+				}
+				r += p.n.debugString();
 			}
-			r += this.children[i].debugString();
+		} else {
+			for (let i = 0; i < this.children.length; i++) {
+				if (i > 0) {
+					r += ' ';
+				}
+				r += this.children[i].debugString();
+			}
 		}
 		return r;				
 	}
 
 	setRenderType(newType) {
 		super.setRenderType(newType);
-		for (let i = 0; i < this.children.length; i++) {
-			this.children[i].setRenderType(newType);
+		if (LINKEDLIST) {
+			for (let p = this.firstChildNex; p != null; p = p.next) {
+				p.n.setRenderType(newType);
+			}
+		} else {
+			for (let i = 0; i < this.children.length; i++) {
+				this.children[i].setRenderType(newType);
+			}
 		}
 	}
 
@@ -83,8 +159,14 @@ class NexContainer extends Nex {
 			let renderFlags = shallow;
 			if (renderFlags & RENDER_FLAG_SHALLOW) {
 				this.savedChildDomNodes = [];
-				for (let i = 0; i < this.children.length; i++) {
-					this.savedChildDomNodes.push(this.children[i].renderedDomNode);
+				if (LINKEDLIST) {
+					for (let p = this.firstChildNex; p != null; p = p.next) {
+						this.savedChildDomNodes.push(p.n.renderedDomNode);
+					}
+				} else {
+					for (let i = 0; i < this.children.length; i++) {
+						this.savedChildDomNodes.push(this.children[i].renderedDomNode);
+					}
 				}
 				// note: this nex may create other dom nodes so we explicitly
 				// only save the children and we still allow the superclass
@@ -94,8 +176,14 @@ class NexContainer extends Nex {
 		} else {
 			if (shallow) {
 				this.savedChildDomNodes = [];
-				for (let i = 0; i < this.children.length; i++) {
-					this.savedChildDomNodes.push(this.children[i].renderedDomNode);
+				if (LINKEDLIST) {
+					for (let p = this.firstChildNex; p != null; p = p.next) {
+						this.savedChildDomNodes.push(p.n.renderedDomNode);
+					}
+				} else {
+					for (let i = 0; i < this.children.length; i++) {
+						this.savedChildDomNodes.push(this.children[i].renderedDomNode);
+					}
 				}
 				// note: this nex may create other dom nodes so we explicitly
 				// only save the children and we still allow the superclass
@@ -141,10 +229,18 @@ class NexContainer extends Nex {
 			this.savedChildDomNodes = null;
 		} else {
 			// full rerender
-			for (let i = 0; i < this.children.length; i++) {
-				let childDomNode = document.createElement("div");
-				domNode.appendChild(childDomNode);
-				this.children[i].renderInto(childDomNode, renderFlags);
+			if (LINKEDLIST) {
+				for (let p = this.firstChildNex; p != null; p = p.next) {
+					let childDomNode = document.createElement("div");
+					domNode.appendChild(childDomNode);
+					p.n.renderInto(childDomNode, renderFlags);
+				}
+			} else {
+				for (let i = 0; i < this.children.length; i++) {
+					let childDomNode = document.createElement("div");
+					domNode.appendChild(childDomNode);
+					this.children[i].renderInto(childDomNode, renderFlags);
+				}
 			}
 		}
 	}
@@ -158,46 +254,106 @@ class NexContainer extends Nex {
 	}
 
 	hasChildren() {
-		return this.children.length > 0;
+		if (LINKEDLIST) {
+			return this.firstChildNex != null;
+		} else {
+			return this.children.length > 0;
+		}
 	}
 
 	getChildren() {
-		return this.children;
+		if (LINKEDLIST) {
+			// not called anyway
+			throw new Error("not allowed with LINKEDLIST")
+		} else {
+			return this.children;
+		}
 	}
 
 	numChildren() {
-		return this.children.length;
+		if (LINKEDLIST) {
+			return this.numChildNexes;
+		} else {
+			return this.children.length;
+		}
 	}
 
 	getIndexOfChild(c) {
-		for (let i = 0; i < this.children.length; i++) {
-			if (this.children[i] == c) {
-				return i;
+		if (LINKEDLIST) {
+			let i = 0;
+			for (let p = this.firstChildNex; p != null; p = p.next, i++) {
+				if (p.n == c) {
+					return i;
+				}
+			}
+		} else {
+			for (let i = 0; i < this.children.length; i++) {
+				if (this.children[i] == c) {
+					return i;
+				}
 			}
 		}
 		return -100;// I have reasons
 	}
 
 	getChildAt(i, useDefault) {
-		i = (i < 0 && useDefault) ? 0 : i;
-		i = (i >= this.children.length && useDefault) ? this.children.length - 1: i;
-		if (i < 0 || i >= this.children.length) return null;
-		return this.children[i];
+		if (LINKEDLIST) {
+			i = (i < 0 && useDefault) ? 0 : i;
+			i = (i >= this.numChildNexes && useDefault) ? this.numChildNexes - 1: i;
+			if (i < 0 || i >= this.numChildNexes) return null;
+			let ii = 0;
+			let p = this.firstChildNex;
+			while(ii++ != i) p = p.next;
+			return p.n;
+		} else {
+			i = (i < 0 && useDefault) ? 0 : i;
+			i = (i >= this.children.length && useDefault) ? this.children.length - 1: i;
+			if (i < 0 || i >= this.children.length) return null;
+			return this.children[i];
+		}
 	}
 
 	// called by RenderNode
 	removeChildAt(i) {
-		if (i < 0 || i >= this.children.length) return null;
-		let r = this.children[i];
-		this.children.splice(i, 1);
-		if (!RENDERNODES) {
-			r.setParent(null);
+		if (LINKEDLIST) {
+			if (i < 0 || i >= this.numChildNexes) return null;
+			let r = null;
+			if (i == 0) {
+				if (this.lastChildNex == this.firstChildNex) {
+					this.lastChildNex = null;
+				}
+				r = this.firstChildNex.n;
+				this.firstChildNex = this.firstChildNex.next;
+			} else {
+				let q = 0;
+				// predecessor
+				let pred = this.firstChildNex;
+				while(q++ != (i-1)) pred = pred.next;
+				let p = pred.next;
+				r = p.n;
+				pred.next = p.next;
+				if (p.next == null) {
+					this.lastChildNex = pred;
+				}
+			}
+			this.numChildNexes--;
+			if (!RENDERNODES) {
+				r.setParent(null);
+			}
+			return r;
+		} else {
+			if (i < 0 || i >= this.children.length) return null;
+			let r = this.children[i];
+			this.children.splice(i, 1);
+			if (!RENDERNODES) {
+				r.setParent(null);
+			}
+			return r;
 		}
-		return r;
 	}
 
 	insertChildAt(c, i) {
-		if (i < 0 || i > this.children.length) {
+		if (i < 0 || i > (LINKEDLIST ? this.numChildNexes : this.children.length)) {
 			return;
 		}
 		if (!RENDERNODES) {
@@ -228,10 +384,31 @@ class NexContainer extends Nex {
 				}
 			}
 		}
-		if (i == this.children.length) {
-			this.children.push(c);
+		if (LINKEDLIST) {
+			let newP = new ChildNex(c);
+			if (i == 0) {
+				if (this.lastChildNex == null) {
+					this.lastChildNex = newP;
+				}
+				newP.next = this.firstChildNex;
+				this.firstChildNex = newP;
+			} else {
+				let q = 0;
+				let pred = this.firstChildNex;
+				while(q++ != (i-1)) pred = pred.next;
+				if (pred == this.lastChildNex) {
+					this.lastChildNex = newP;
+				}
+				newP.next = pred.next;
+				pred.next = newP;
+			}
+			this.numChildNexes++;
 		} else {
-			this.children.splice(i, 0, c);	
+			if (i == this.children.length) {
+				this.children.push(c);
+			} else {
+				this.children.splice(i, 0, c);	
+			}
 		}
 		if (!RENDERNODES) {
 			c.setParent(this);
@@ -246,7 +423,15 @@ class NexContainer extends Nex {
 	}
 
 	replaceChildAt(c, i) {
-		if (c == this.children[i]) return;
+		if (LINKEDLIST) {
+			if (i < 0 || i >= this.numChildNexes) return;
+			let q = 0;
+			let p = this.firstChildNex;
+			while(q++ != i) p = p.next;
+			if (p.n == c) return;
+		} else {
+			if (c == this.children[i]) return;
+		}
 		this.removeChildAt(i);
 		this.insertChildAt(c, i);
 	}
@@ -268,7 +453,7 @@ class NexContainer extends Nex {
 	}
 
 	getLastChild() {
-		return this.getChildAt(this.children.length - 1);
+		return this.getChildAt((LINKEDLIST ? this.numChildNexes : this.children.length) - 1);
 	}
 
 	getFirstChild() {
@@ -294,7 +479,7 @@ class NexContainer extends Nex {
 	}
 
 	appendChild(c) {
-		this.insertChildAt(c, this.children.length);
+		this.insertChildAt(c, (LINKEDLIST ? this.numChildNexes : this.children.length));
 	}
 
 	prependChild(c) {
@@ -302,8 +487,15 @@ class NexContainer extends Nex {
 	}
 
 	doForEachChild(f) {
-		for (let i = 0; i < this.children.length; i++) {
-			f(this.children[i]);
+		if (LINKEDLIST) {
+			for (let p = this.firstChildNex; p != null; p = p.next) {
+				f(p.n);
+			}
+
+		} else {
+			for (let i = 0; i < this.children.length; i++) {
+				f(this.children[i]);
+			}
 		}
 	}
 

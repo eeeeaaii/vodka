@@ -27,10 +27,11 @@ class Root extends NexContainer {
 
 	// makeCopy intentionally unimplemented
 
+	// dead code?
 	debug() {
-		for (let i = 0; i < this.children.length; i++) {
-			this.children[i].debug();
-		}
+		this.doForEachChild(c => {
+			c.debug();
+		});
 	}
 
 	getContextType() {
