@@ -146,7 +146,9 @@ class Lambda extends NexContainer {
 		let s = this.amptext.trim().split(' ');
 		let p = [];
 		for (let i = 0; i < s.length; i++) {
-			p.push(s[i]);
+			if (s[i] != "") {
+				p.push(s[i]);
+			}
 		}
 		this.cachedParamNames = p;
 	}

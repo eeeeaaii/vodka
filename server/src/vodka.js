@@ -38,6 +38,9 @@ const LINKEDLIST= true;
 //.  7. to-word
 //.  8. clean up eerror including its css
 //.  9. instanceof checks are slow, for nexes instead compare to getTypeName()
+//.  10. make it so that expectations, when evaluated, return the CURRENT contents.
+//.  11. make it so you can specify arg type with the codes I use in the builtin param names,
+//.      and that you can have them in lambdas.
 
 
 // TODO: audit, is this updated in step eval?

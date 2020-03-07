@@ -136,6 +136,39 @@ function createBasicBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'run',
+		[
+			{name:'nex', type:'*', skipeval:true}
+		],
+		function(env, argEnv) {
+			let nex = env.lb('nex');
+
+			let exp = new Expectation();
+			let result = evaluateNexSafely(nex, argEnv);
+			let again = new Command('run');
+			again.setVertical();
+
+			if (result.getTypeName() == '-error-') {
+				result = wrapError('&szlig;', 'run: error in argument', result);
+				exp.appendChild(result);
+				again.appendChild(result);
+				again.appendChild(nex);
+				setTimeout(function() {
+					exp.fulfill(again);
+				}, 2000);
+			} else {
+				exp.appendChild(result);
+				again.appendChild(nex);
+				setTimeout(function() {
+					exp.fulfill(again);
+				}, 2000);
+			}
+			return exp;
+		}
+	);
+
+
+	Builtin.createBuiltin(
 		'let',
 		[
 			{name:'_name@', type:'ESymbol',skipeval:true},

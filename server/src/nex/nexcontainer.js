@@ -25,6 +25,24 @@ class ChildNex {
 	}
 }
 
+class Iterator {
+	constructor(childNex) {
+		this.current = childNex;		
+	}
+
+	hasMore() {
+		return !!this.current;
+	}
+
+	next() {
+		this.current = this.current.next;
+	}
+
+	get() {
+		return this.current.n;
+	}
+}
+
 
 class NexContainer extends Nex {
 	constructor() {
@@ -37,6 +55,10 @@ class NexContainer extends Nex {
 		} else {
 			this.children = [];
 		}
+	}
+
+	iterator() {
+		return new Iterator(this.firstChildNex);
 	}
 
 	copyFieldsTo(n) {
@@ -146,6 +168,14 @@ class NexContainer extends Nex {
 
 	toggleDir() {
 		this.vdir = !this.vdir;
+	}
+
+	setVertical() {
+		this.vdir = true;
+	}
+
+	setHorizontal() {
+		this.vdir = false;
 	}
 
 	rerender(shallow) {
