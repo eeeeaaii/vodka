@@ -110,6 +110,7 @@ class InsertionPoint extends ValueNex {
 			'%': 'replace-selected-with-float',
 			'^': 'replace-selected-with-nil',
 			'&': 'replace-selected-with-lambda',
+			'*': 'replace-selected-with-expectation',
 			'(': 'replace-selected-with-word-correctly',
 			'[': 'replace-selected-with-line',
 			'{': 'replace-selected-with-doc',

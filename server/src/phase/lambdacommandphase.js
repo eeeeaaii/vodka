@@ -27,7 +27,8 @@ class LambdaCommandPhase extends ExpectationPhase {
 	init() {
 		if (!this.initialized) {
 			this.processed = [];
-			for (let i = 0; i < this.nex.children.length; i++) {
+			let tmpChildren = this.nex.getChildrenForStepEval();
+			for (let i = 0; i < tmpChildren.length; i++) {
 				this.processed[i] = false;
 			}
 			this.initialized = true;
@@ -36,13 +37,14 @@ class LambdaCommandPhase extends ExpectationPhase {
 
 	continue() {
 		this.init();
-		for (var i = 0; i < this.nex.children.length; i++) {
+		let tmpChildren = this.nex.getChildrenForStepEval();
+		for (var i = 0; i < tmpChildren.length; i++) {
 			if (!this.processed[i]) {
 				this.processed[i] = true;
-				let c = this.nex.children[i];
+				let c = tmpChildren[i];
 				let needsEval = c.needsEvaluation();
 				if (needsEval) {
-					this.nex.children[i].pushNexPhase(this.phaseExecutor, this.env);
+					tmpChildren[i].pushNexPhase(this.phaseExecutor, this.env);
 					return true;
 				}
 			}
@@ -60,8 +62,9 @@ class LambdaCommandPhase extends ExpectationPhase {
 	}
 
 	start() {
-		for (let i = 0; i < this.nex.children.length; i++) {
-			this.nex.children[i].setEnclosingClosure(this.env);
+		let tmpChildren = this.nex.getChildrenForStepEval();
+		for (let i = 0; i < tmpChildren.length; i++) {
+			tmpChildren[i].setEnclosingClosure(this.env);
 		}
 		super.start();
 	}
@@ -72,6 +75,7 @@ class LambdaCommandPhase extends ExpectationPhase {
 	}
 
 	getExpectationResult() {
-		return this.exp.children[0]; // erm
+		let tmpChildren = this.exp.getChildrenForStepEval();
+		return tmpChildren[0]; // erm
 	}
 }

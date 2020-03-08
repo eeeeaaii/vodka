@@ -57,6 +57,17 @@ class NexContainer extends Nex {
 		}
 	}
 
+	getChildrenForStepEval() {
+		if (!isStepEvaluating) {
+			throw new Error("Cannot use unless step evaluating");
+		}
+		let r = [];
+		this.doForEachChild(function(c) {
+			r.push(c);
+		});
+		return r;
+	}
+
 	iterator() {
 		return new Iterator(this.firstChildNex);
 	}

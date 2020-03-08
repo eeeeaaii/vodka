@@ -22,7 +22,7 @@ class BuiltinCommandPhase extends ExpectationPhase {
 		this.phaseExecutor = phaseExecutor;
 		this.builtin = nex.getLambda(env);
 		this.params = this.builtin.params;
-		this.builtinParamManager = new BuiltinParamManager(this.params, nex.children);
+		this.builtinParamManager = new BuiltinParamManager(this.params, nex.getChildrenForStepEval());
 
 		this.initialized = false;
 	}
@@ -30,7 +30,8 @@ class BuiltinCommandPhase extends ExpectationPhase {
 	init() {
 		if (!this.initialized) {
 			this.processed = [];
-			for (let i = 0; i < this.nex.children.length; i++) {
+			let tmpChildren = this.nex.getChildrenForStepEval();
+			for (let i = 0; i < tmpChildren.length; i++) {
 				this.processed[i] = false;
 			}
 			this.builtinParamManager.reconcile();
@@ -40,13 +41,14 @@ class BuiltinCommandPhase extends ExpectationPhase {
 
 	continue() {
 		this.init();
-		for (var i = 0; i < this.nex.children.length; i++) {
+		let tmpChildren = this.nex.getChildrenForStepEval();
+		for (var i = 0; i < tmpChildren.length; i++) {
 			if (!this.processed[i]) {
 				this.processed[i] = true;
-				let c = this.nex.children[i];
+				let c = tmpChildren[i];
 				let needsEval = c.needsEvaluation();
 				if (needsEval && !this.builtinParamManager.effectiveParams[i].skipeval) {
-					this.nex.children[i].pushNexPhase(this.phaseExecutor, this.env);
+					tmpChildren[i].pushNexPhase(this.phaseExecutor, this.env);
 					return true;
 				}
 			}
@@ -57,8 +59,9 @@ class BuiltinCommandPhase extends ExpectationPhase {
 
 	isFinished() {
 		this.init();
-		for (var i = 0; i < this.nex.children.length; i++) {
-			let c = this.nex.children[i];
+		let tmpChildren = this.nex.getChildrenForStepEval()
+		for (var i = 0; i < tmpChildren.length; i++) {
+			let c = tmpChildren[i];
 			let needsEval = c.needsEvaluation();
 			if (!this.processed[i] && needsEval) {
 				return false;
@@ -69,8 +72,9 @@ class BuiltinCommandPhase extends ExpectationPhase {
 
 	start() {
 		this.builtinParamManager.reconcile();
-		for (let i = this.nex.children.length - 1; i >= 0; i--) {
-			this.nex.children[i].setEnclosingClosure(this.env);
+		let tmpChildren = this.nex.getChildrenForStepEval()
+		for (let i = tmpChildren.length - 1; i >= 0; i--) {
+			tmpChildren[i].setEnclosingClosure(this.env);
 		}
 		super.start();
 		return false;

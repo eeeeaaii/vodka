@@ -239,4 +239,15 @@ function createMathBuiltins() {
 			return new Bool(r);
 		}
 	);
+
+
+	Builtin.createBuiltin(
+		'random',
+		[],
+		function(env, argEnv) {
+			let n = Math.random();
+			return new Float(n);
+		}
+	);
+
 }

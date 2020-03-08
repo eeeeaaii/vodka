@@ -117,6 +117,7 @@ class Letter extends Nex {
 			'%': 'legacy-insert-float-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
 			'^': 'legacy-insert-nil-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
 			'&': 'legacy-insert-lambda-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+			'*': 'legacy-insert-expectation-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
 			// end deprecated
 
 			'(': 'insert-word-as-next-sibling',

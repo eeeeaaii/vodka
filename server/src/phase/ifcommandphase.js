@@ -24,17 +24,19 @@ class IfCommandPhase extends ExpectationPhase {
 	}
 
 	start() {
-		this.nex.children[0].pushNexPhase(this.phaseExecutor, this.env);
+		let tmpChildren = this.nex.getChildrenForStepEval();
+		tmpChildren[0].pushNexPhase(this.phaseExecutor, this.env);
 		super.start();
 	}
 
 	continue() {
-		this.test = this.nex.children[0].getTypedValue();
+		let tmpChildren = this.nex.getChildrenForStepEval();
+		this.test = tmpChildren[0].getTypedValue();
 		if (this.test) {
-			this.nex.children[1].pushNexPhase(this.phaseExecutor, this.env);
+			tmpChildren[1].pushNexPhase(this.phaseExecutor, this.env);
 			this.nex.replaceChildAt(new Nil(), 2);
 		} else {
-			this.nex.children[2].pushNexPhase(this.phaseExecutor, this.env);
+			tmpChildren[2].pushNexPhase(this.phaseExecutor, this.env);
 			this.nex.replaceChildAt(new Nil(), 1);
 		}
 		this.continued = true;
@@ -46,10 +48,11 @@ class IfCommandPhase extends ExpectationPhase {
 	}
 
 	getExpectationResult() {
+		let tmpChildren = this.nex.getChildrenForStepEval();
 		if (this.test) {
-			return this.nex.children[1];
+			return tmpChildren[1];
 		} else {
-			return this.nex.children[2];
+			return tmpChildren[2];
 		}
 	}
 }

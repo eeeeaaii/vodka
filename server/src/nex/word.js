@@ -43,13 +43,12 @@ class Word extends NexContainer {
 
 	getValueAsString() {
 		let s = '';
-		for (let i = 0; i < this.children.length; i++) {
-			let c = this.children[i];
+		this.doForEachChild(function(c) {
 			if (!(c instanceof Letter)) {
 				throw new EError('cannot convert word to string, invalid format');
 			}
 			s += c.getText();
-		}
+		})
 		return s;
 	}
 
@@ -107,7 +106,8 @@ class Word extends NexContainer {
 			'$': 'insert-string-as-next-sibling',
 			'%': 'insert-float-as-next-sibling',
 			'^': 'insert-nil-as-next-sibling',
-			'&': 'insert-nil-as-next-sibling',
+			'&': 'insert-lambda-as-next-sibling',
+			'*': 'insert-expectation-as-next-sibling',
 			'(': 'insert-word-as-next-sibling',
 			'[': 'insert-line-as-next-sibling',
 			'{': 'insert-doc-as-next-sibling',

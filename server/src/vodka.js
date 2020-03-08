@@ -41,7 +41,13 @@ const LINKEDLIST= true;
 //.  10. make it so that expectations, when evaluated, return the CURRENT contents.
 //.  11. make it so you can specify arg type with the codes I use in the builtin param names,
 //.      and that you can have them in lambdas.
-
+//.  12. make a list type that is just "list" that can be vert/horiz, looks like
+//.      a command or lambda but without the symbol, and which, when you evaluate it,
+//       replaces each of its children with the result of evaluating that child
+//.  13. execution_stepeval_bindwithnormal is broken because somehow when you are step evaluating
+//       and you click on a subexpression with bound environment and you normal-eval it,
+//.      if you click on the result of that inner normal-eval inside its expectation,
+//.      and shift-tab to go to the parent YOU DON'T GO ANYWHERE. why.
 
 // TODO: audit, is this updated in step eval?
 let ILVL = 0;
@@ -89,6 +95,11 @@ if (RENDERNODES) {
 
 //var environment = null; // unused
 
+// we allow certain "illegal" things when we are step evaluating,
+// since performance is less of a factor.
+var isStepEvaluating = false;
+
+
 // render type is deprecated, changing to flags
 const NEX_RENDER_TYPE_NORMAL = 1;
 const NEX_RENDER_TYPE_EXPLODED = 2;
@@ -120,6 +131,7 @@ function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 
 function createBuiltins() {
 	createBasicBuiltins();
+	createAsyncBuiltins();
 	createFileBuiltins();
 	createMathBuiltins();
 	createStringBuiltins();

@@ -228,7 +228,9 @@ class Command extends NexContainer {
 	}
 
 	defaultHandle(txt) {
-		if (isNormallyHandled(txt)) {
+		// we have a little exception here
+		// TODO: fix this somehow
+		if (txt != '*' && isNormallyHandled(txt)) {
 			return false;
 		}
 		let allowedKeyRegex = /^[a-zA-Z0-9-_=+/*<>:]$/;

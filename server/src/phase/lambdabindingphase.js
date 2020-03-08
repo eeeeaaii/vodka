@@ -40,8 +40,9 @@ class LambdaBindingPhase extends Phase {
 		this.commandCallback.setLambda(lambda);
 		let closure = lambda.lexicalEnv.pushEnv();
 		let args = [];
-		for (let i = 0; i < this.command.children.length; i++) {
-			args.push(this.command.children[i]);
+		let tmpChildren = this.command.getChildrenForStepEval();
+		for (let i = 0; i < tmpChildren.length; i++) {
+			args.push(tmpChildren[i]);
 		}
 		lambda.bind(args, closure);
 		let parent = RENDERNODES

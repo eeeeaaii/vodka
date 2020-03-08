@@ -71,7 +71,7 @@ function isNormallyHandled(key) {
 	if (!(/^.$/.test(key))) {
 		return true;
 	}
-	if (/^[~!@#$%^&([{]$/.test(key)) {
+	if (/^[~!@#$%^*&([{]$/.test(key)) {
 		return true;
 	}
 	return false;
@@ -140,6 +140,7 @@ var KeyResponseFunctions = {
 	'replace-selected-with-float': function(s) { manipulator.replaceSelectedWith(new Float()); },
 	'replace-selected-with-nil': function(s) { manipulator.replaceSelectedWith(new Nil()); },
 	'replace-selected-with-lambda': function(s) { manipulator.replaceSelectedWith(new Lambda()); },
+	'replace-selected-with-expectation': function(s) { manipulator.replaceSelectedWith(new Expectation()); },
 	'replace-selected-with-word': function(s) { manipulator.replaceSelectedWith(new Word()); },
 	'replace-selected-with-line': function(s) { manipulator.replaceSelectedWith(new Line()); },
 	'replace-selected-with-doc': function(s) { manipulator.replaceSelectedWith(new Doc()); },
@@ -152,6 +153,11 @@ var KeyResponseFunctions = {
 	'insert-or-append-float': function(s) { insertOrAppend(s, new Float()); },
 	'insert-or-append-nil': function(s) { insertOrAppend(s, new Nil()); },
 	'insert-or-append-lambda': function(s) { insertOrAppend(s, new Lambda()); },
+	'insert-or-append-expectation': function(s) { insertOrAppend(s, new Expectation()); },
+	'insert-or-append-word': function(s) { insertOrAppend(s, new Word()); },
+	'insert-or-append-line': function(s) { insertOrAppend(s, new Line()); },
+	'insert-or-append-doc': function(s) { insertOrAppend(s, new Doc()); },
+
 
 	'insert-command-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Command()); },
 	'insert-bool-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Bool()); },
@@ -161,6 +167,7 @@ var KeyResponseFunctions = {
 	'insert-float-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Float()); },
 	'insert-nil-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Nil()); },
 	'insert-lambda-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Lambda()); },
+	'insert-expectation-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Expectation()); },
 	'insert-word-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Word()); },
 	'insert-line-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Line()); },
 	'insert-doc-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Doc()); },
@@ -194,6 +201,7 @@ var KeyResponseFunctions = {
 	'legacy-insert-float-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Float()); },
 	'legacy-insert-nil-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Nil()); },
 	'legacy-insert-lambda-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Lambda()); },
+	'legacy-insert-expectation-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Expectation()); },
 
 
 	'insert-letter-after-separator': function(s) {
@@ -232,10 +240,6 @@ var KeyResponseFunctions = {
 			;
 	},
 
-
-	'insert-or-append-word': function(s) { insertOrAppend(s, new Word()); },
-	'insert-or-append-line': function(s) { insertOrAppend(s, new Line()); },
-	'insert-or-append-doc': function(s) { insertOrAppend(s, new Doc()); },
 
 	// this is doc-specific, will go away once we have classes
 	'append-letter-to-doc': function(s) {
@@ -597,56 +601,61 @@ class KeyDispatcher {
 		// 	return;
 //			throw new Error('step eval not working at all with rendernodes')
 		// }
-		let s = RENDERNODES ? selectedNode.getNex() : selectedNex;
-		let phaseExecutor = s.phaseExecutor;
-		let firstStep = false;
-		if (!phaseExecutor) {
-			firstStep = true;
-			phaseExecutor = new PhaseExecutor();
-			if (RENDERNODES) {
-				// need to copy the selected nex, replace it in the parent, and discard!
-				let copiedNex = selectedNode.getNex().makeCopy();
-				let parentNode = selectedNode.getParent();
-				let parentNex = parentNode.getNex();
-				parentNex.replaceChildWith(selectedNode.getNex(), copiedNex);
-				// rerender the parent to refresh/fix the cached childnodes in it
-				parentNode.childnodes = []; // wtf
-				parentNode.render(current_default_render_flags);
-				let index = parentNex.getIndexOfChild(copiedNex);
-				let newSelectedNode = parentNode.getChildAt(index);
-				newSelectedNode.setSelected();
-				topLevelRender();
-				s = selectedNode.getNex();
-			}
-			s.pushNexPhase(phaseExecutor, BUILTINS);
-		}
-		phaseExecutor.doNextStep();
-		if (RENDERNODES) {
-			// to fix up all the pointers and stuff so that getParent works right below.
-			topLevelRender();
-		}
-		if (!phaseExecutor.finished()) {
-			// the resolution of an expectation will change the selected nex,
-			// so need to set it back
-			if (firstStep) {
-				// the first step is PROBABLY an expectation phase
+		isStepEvaluating = true;
+		try {
+			let s = RENDERNODES ? selectedNode.getNex() : selectedNex;
+			let phaseExecutor = s.phaseExecutor;
+			let firstStep = false;
+			if (!phaseExecutor) {
+				firstStep = true;
+				phaseExecutor = new PhaseExecutor();
 				if (RENDERNODES) {
-					let operativeNode = s.getRenderNodes()[0].getParent();
-					let operativeNex = operativeNode.getNex();
-					operativeNode.setSelected();
-					operativeNex.phaseExecutor = phaseExecutor;
+					// need to copy the selected nex, replace it in the parent, and discard!
+					let copiedNex = selectedNode.getNex().makeCopy();
+					let parentNode = selectedNode.getParent();
+					let parentNex = parentNode.getNex();
+					parentNex.replaceChildWith(selectedNode.getNex(), copiedNex);
+					// rerender the parent to refresh/fix the cached childnodes in it
+					parentNode.childnodes = []; // wtf
+					parentNode.render(current_default_render_flags);
+					let index = parentNex.getIndexOfChild(copiedNex);
+					let newSelectedNode = parentNode.getChildAt(index);
+					newSelectedNode.setSelected();
+					topLevelRender();
+					s = selectedNode.getNex();
+				}
+				s.pushNexPhase(phaseExecutor, BUILTINS);
+			}
+			phaseExecutor.doNextStep();
+			if (RENDERNODES) {
+				// to fix up all the pointers and stuff so that getParent works right below.
+				topLevelRender();
+			}
+			if (!phaseExecutor.finished()) {
+				// the resolution of an expectation will change the selected nex,
+				// so need to set it back
+				if (firstStep) {
+					// the first step is PROBABLY an expectation phase
+					if (RENDERNODES) {
+						let operativeNode = s.getRenderNodes()[0].getParent();
+						let operativeNex = operativeNode.getNex();
+						operativeNode.setSelected();
+						operativeNex.phaseExecutor = phaseExecutor;
+					} else {
+						let operativeNex = s.getParent();
+						operativeNex.setSelected();
+						operativeNex.phaseExecutor = phaseExecutor;
+					}
 				} else {
-					let operativeNex = s.getParent();
-					operativeNex.setSelected();
-					operativeNex.phaseExecutor = phaseExecutor;
+					RENDERNODES ? s.getRenderNodes()[0].setSelected() : s.setSelected();
 				}
 			} else {
-				RENDERNODES ? s.getRenderNodes()[0].setSelected() : s.setSelected();
+				// if I don't explicitly set the selected nex, it'll be the
+				// result of the last resolved expectation, probably
+				s.phaseExecutor = null;
 			}
-		} else {
-			// if I don't explicitly set the selected nex, it'll be the
-			// result of the last resolved expectation, probably
-			s.phaseExecutor = null;
+		} finally {
+			isStepEvaluating = false;
 		}
 	}
 
@@ -669,6 +678,7 @@ class KeyDispatcher {
 			'%': 'insert-or-append-float',
 			'^': 'insert-or-append-nil',
 			'&': 'insert-or-append-lambda',
+			'*': 'insert-or-append-expectation',
 			'(': 'insert-or-append-word',
 			'[': 'insert-or-append-line',
 			'{': 'insert-or-append-doc',
@@ -694,6 +704,7 @@ class KeyDispatcher {
 			'%': 'insert-float-as-next-sibling',
 			'^': 'insert-nil-as-next-sibling',
 			'&': 'insert-lambda-as-next-sibling',
+			'*': 'insert-expectation-as-next-sibling',
 			'(': 'insert-word-as-next-sibling',
 			'[': 'insert-line-as-next-sibling',
 			'{': 'insert-doc-as-next-sibling',

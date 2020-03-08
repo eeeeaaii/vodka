@@ -20,9 +20,20 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 class Expectation extends NexContainer {
 	constructor(hackfunction) {
 		super()
+		// TODO: deprecated, remove. the only place
+		// this is used is in the old "edit" primitive
+		// which is also deprecated
 		this.hackfunction = hackfunction;
 		this.completionlisteners = [];
 		this.parentlist = []; // for RENDERNODES
+		// fff is somehow more readable than "fulfillfunction"
+		// like I don't have to remember how to spell it
+		this.fff = null;
+		this.ffed = false;
+	}
+
+	setFFF(f) {
+		this.fff = f;
 	}
 
 	// for RENDERNODES
@@ -40,6 +51,21 @@ class Expectation extends NexContainer {
 
 	setDeleteHandler(f) {
 		this.deleteHandler = f;
+	}
+
+	evaluate(env) {
+		ILVL++;
+		let rval = this.getFulfilledThing();
+		ILVL--;
+		return rval;
+	}
+
+	insertChildAt(c, i) {
+		if (i > 1) {
+			throw new EError('Expectation cannot have more than one child.');
+		} else {
+			super.insertChildAt(c, i);
+		}
 	}
 
 	callDeleteHandler() {
@@ -64,6 +90,7 @@ class Expectation extends NexContainer {
 		nex.hackfunction = this.hackfunction;
 		nex.deleteHandler = this.deleteHandler;
 		nex.completionlisteners = this.completionlisteners;
+		nex.fff = this.fff;
 	}
 
 	getContextType() {
@@ -141,14 +168,41 @@ class Expectation extends NexContainer {
 		return addresses;
 	}
 
-	fulfillRendernodes(newnex) {
+	// TODO: rename this to fulfill,
+	// and rename the function formerly known as fulfill
+	// to fulfullAndSetChild or something
+	getFulfilledThing(passedInFFF) {
+		if (this.ffed) {
+			throw new EError('Cannot fulfill an already-fulfilled expectation');
+		}
+		if (!this.fff) {
+			// either it was passed in or um
+			if (passedInFFF) {
+				if ((typeof passedInFFF) == 'function') {
+					this.fff = passedInFFF;
+				} else {
+					this.fff = function() {
+						return passedInFFF;
+					};
+				}
+			} else {
+				this.fff = (function() {
+					return this.getChildAt(0);
+				}).bind(this);
+			}
+		}
+		this.ffed = true;
+		return this.fff();
+	}
+
+	fulfillRendernodes(passedInFFF) {
+		let newnex = this.getFulfilledThing(passedInFFF);
+
 		// fuckery here
 		// for each parent, look at all its children and find out
 		// whether this expectation is still a child.
 		// If it is, replace with the thing.
 		// then do a global rerender.
-		// Maybe this is how we save step eval!
-
 		for (let i = 0; i < this.parentlist.length; i++) {
 			let parent = this.parentlist[i];
 			let addresses = this.getAddressesOfThisInParent(parent);
@@ -158,6 +212,7 @@ class Expectation extends NexContainer {
 			}
 		}
 		// we don't know where the expectations are so we have to render everything.
+		// TODO: make a render queue so the renderer doesn't get spammed, and actually we do know
 		topLevelRenderSelectingNode(newnex);
 		for (let i = 0; i < this.completionlisteners.length; i++) {
 			this.completionlisteners[i](newnex);
@@ -205,10 +260,16 @@ class Expectation extends NexContainer {
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 
+		let toInsert = null;
 		if (isSeparator) {
-			manipulator.replaceSelectedWith(new Separator(txt));
+			toInsert = new Separator(txt);
 		} else {
-			manipulator.replaceSelectedWith(new Letter(txt));
+			toInsert = new Letter(txt);
+		}
+		if (this.hasChildren()) {
+			manipulator.insertAfterSelectedAndSelect(toInsert)
+		} else {
+			manipulator.appendAndSelect(toInsert);
 		}
 		return true;
 	}
@@ -216,19 +277,19 @@ class Expectation extends NexContainer {
 	getEventTable(context) {
 		// most of these have no tests?
 		return {
-			'Tab': 'select-first-child-or-fail',
+//			'Tab': 'select-first-child-or-fail',
 			'Enter': 'do-line-break-always',
-			'~': 'replace-selected-with-command',
-			'!': 'replace-selected-with-bool',
-			'@': 'replace-selected-with-symbol',
-			'#': 'replace-selected-with-integer',
-			'$': 'replace-selected-with-string',
-			'%': 'replace-selected-with-float',
-			'^': 'replace-selected-with-nil',
-			'&': 'replace-selected-with-lambda',
-			'(': 'replace-selected-with-word',
-			'[': 'replace-selected-with-line',
-			'{': 'replace-selected-with-doc',
+			// '~': 'replace-selected-with-command',
+			// '!': 'replace-selected-with-bool',
+			// '@': 'replace-selected-with-symbol',
+			// '#': 'replace-selected-with-integer',
+			// '$': 'replace-selected-with-string',
+			// '%': 'replace-selected-with-float',
+			// '^': 'replace-selected-with-nil',
+			// '&': 'replace-selected-with-lambda',
+			// '(': 'replace-selected-with-word',
+			// '[': 'replace-selected-with-line',
+			// '{': 'replace-selected-with-doc',
 			// special stuff for expectations that gets rid of the js timeout
 			'ShiftBackspace': 'call-delete-handler-then-remove-selected-and-select-previous-sibling',
 			'Backspace': 'call-delete-handler-then-remove-selected-and-select-previous-sibling',

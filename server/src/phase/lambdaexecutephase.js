@@ -26,8 +26,9 @@ class LambdaExecutePhase extends Phase {
 	}
 
 	anyNeedEvaluation() {
-		for (let i = 0; i < this.lambda.children.length; i++) {
-			if (!this.processed[i] && this.lambda.children[i].needsEvaluation()) {
+		let tmpChildren = this.lambda.getChildrenForStepEval();
+		for (let i = 0; i < tmpChildren.length; i++) {
+			if (!this.processed[i] && tmpChildren[i].needsEvaluation()) {
 				return true;
 			}
 		}
@@ -36,8 +37,9 @@ class LambdaExecutePhase extends Phase {
 
 	start() {
 		super.start();
-		for (let i = 0; i < this.lambda.children.length; i++) {
-			this.lambda.children[i].setEnclosingClosure(this.closure);
+		let tmpChildren = this.lambda.getChildrenForStepEval();
+		for (let i = 0; i < tmpChildren.length; i++) {
+			tmpChildren[i].setEnclosingClosure(this.closure);
 			this.processed[i] = false;
 		}
 		// start is really a no-op, other than setting closure, because this is not an expectation
@@ -48,10 +50,11 @@ class LambdaExecutePhase extends Phase {
 
 	continue() {
 		if (this.anyNeedEvaluation()) {
-			for (let i = 0; i < this.lambda.children.length; i++) {
-				if (!this.processed[i] && this.lambda.children[i].needsEvaluation()) {
+			let tmpChildren = this.lambda.getChildrenForStepEval();
+			for (let i = 0; i < tmpChildren.length; i++) {
+				if (!this.processed[i] && tmpChildren[i].needsEvaluation()) {
 					this.processed[i] = true;
-					this.lambda.children[i].pushNexPhase(this.phaseExecutor, this.closure);
+					tmpChildren[i].pushNexPhase(this.phaseExecutor, this.closure);
 					return true;
 				}
 			}
@@ -64,7 +67,8 @@ class LambdaExecutePhase extends Phase {
 	}
 
 	finish() {
-		let result = this.lambda.children[this.lambda.children.length - 1];
+		let tmpChildren = this.lambda.getChildrenForStepEval();
+		let result = tmpChildren[tmpChildren.length - 1];
 		let parent = RENDERNODES
 				? this.lambda.getRenderNodes()[0].getParent().getNex()
 				: this.lambda.getParent();

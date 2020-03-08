@@ -88,7 +88,7 @@ function createFileBuiltins() {
 		}
 	);
 
-	// this is temporary, I can implement this on top of save/load
+	// deprecated, remove, maybe re-implement as bootstrapped
 	Builtin.createBuiltin(
 		'edit',
 		[

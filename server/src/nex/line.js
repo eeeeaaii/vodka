@@ -131,6 +131,7 @@ class Line extends NexContainer {
 			'%': 'insert-float-as-next-sibling',
 			'^': 'insert-nil-as-next-sibling',
 			'&': 'insert-lambda-as-next-sibling',
+			'*': 'insert-expectation-as-next-sibling',
 			'(': 'insert-word-as-next-sibling',
 			'[': 'insert-line-as-next-sibling',
 			'{': 'insert-doc-as-next-sibling',
