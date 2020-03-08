@@ -40,7 +40,7 @@ harness.runTest(function() {
 		doKeyInput('Shift', 'ShiftLeft', true, false, false);
 		doKeyInput('_', 'Minus', true, false, false);
 		doKeyInput('Shift', 'ShiftLeft', true, false, false);
-		doKeyInput('*', 'Digit8', true, false, false);
+		doKeyInput(';', 'Digit8', true, false, false);
 		doKeyInput('Shift', 'ShiftRight', true, false, false);
 		doKeyInput('@', 'Digit2', true, false, false);
 		doKeyInput('a', 'KeyA', false, false, false);
