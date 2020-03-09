@@ -17,6 +17,40 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 // test: functions_conversion_tostring
 /*
 Tests all the conversions from other things to strings: bools, floats, ints, letters, words, lines, and docs.
+
+~to-string
+!
+shift-tab
+~to-string
+~
+backspace
+!y
+shift-tab
+~to-string
+%45.45
+shift-tab
+~to-string
+#323
+shift-tab
+~to-string
+tab
+j
+~to-string
+(hello
+shift-tab x2
+~to-string
+[hello there
+shift-tab x3
+~to-string
+{hello there
+enter
+people
+shift-tab x4
+arrow-up x7
+shift-enter-arrowdown x7 (shift-enter, THEN arrowdown)
+shift-enter
+
+
 */
 
 	// |Shift|~|t|o|-|s|t|r|i|n|g|Shift|!|Shift|Tab|Shift|~|t|o|-|s|t|r|i|n|g|Shift|~|Backspace|Shift|!|y|Shift|Tab|Shift|~|t|o|-|s|t|r|i|n|g|Shift|%|4|5|.|4|5|Shift|Tab|Shift|~|t|o|-|s|t|r|i|n|g|Shift|#|3|2|3|Shift|Tab|Shift|~|t|o|-|s|t|r|i|n|g|Tab|j|Shift|~|t|o|-|s|t|r|i|n|g|Shift|(|h|e|l|l|o|Shift|Tab|Tab|Shift|~|t|o|-|s|t|r|i|n|g|[|h|e|l|l|o| |t|h|e|r|e|Shift|Tab|Tab|Tab|Shift|~|t|o|-|s|t|r|i|n|g|Shift|{|h|e|l|l|o| |t|h|e|r|e|Enter|p|e|o|p|l|e|Shift|Tab|Tab|Tab|Tab|ArrowUp|ArrowUp|ArrowUp|ArrowUp|ArrowUp|ArrowUp|ArrowUp|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Shift|Enter

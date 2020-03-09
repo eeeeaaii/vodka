@@ -159,12 +159,14 @@ class Lambda extends NexContainer {
 
 	executor(closure) {
 		let r = new Nil();
+		let i = 0;
 		this.doForEachChild(c => {
 			r = evaluateNexSafely(c, closure);
 			if (r instanceof EError) {
 				r = wrapError('&amp;', (this.boundName ? this.boundName : this.debugString()) + ' error in expr ' + (i+1), r);
 				return r;
 			}
+			i++;
 		});
 		return r;
 	}

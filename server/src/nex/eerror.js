@@ -41,6 +41,16 @@ class EError extends NexContainer {
 		return r;
 	}
 
+	escapeContents() {
+		let fv = this.getFullTypedValue();
+		fv = fv.replace(new RegExp('"', 'g'), QUOTE_ESCAPE);
+		return fv;
+	}
+
+	unScrewUp() {
+		this.setFullValue(this.getFullTypedValue().replace(new RegExp(QUOTE_ESCAPE, "g"), '"'));
+	}
+	
 	setMode(m) {
 		this.mode = m;
 	}
