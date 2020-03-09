@@ -132,53 +132,31 @@ class Command extends NexContainer {
 	}
 
 	// deprecated
-	renderInto(domNode, shallow) {
+	renderInto(domNode, renderFlags) {
 		let toPassToSuperclass = domNode;
 		if (RENDERNODES) {
 			// change param name
 			domNode = domNode.getDomNode();
 		}
-		if (RENDERFLAGS || RENDERNODES) {
-			var renderFlags = shallow;
-		}
 		let codespan = null;
-		if (RENDERFLAGS) {
-			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-				codespan = document.createElement("span");
-				codespan.classList.add('codespan');
-				domNode.appendChild(codespan);
-			}			
-		} else {
-			if (!shallow) {
-				codespan = document.createElement("span");
-				codespan.classList.add('codespan');
-				domNode.appendChild(codespan);
-			}
-		}
-		super.renderInto(toPassToSuperclass, shallow /* also renderFlags */); // will create children
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+			codespan = document.createElement("span");
+			codespan.classList.add('codespan');
+			domNode.appendChild(codespan);
+		}			
+		super.renderInto(toPassToSuperclass, renderFlags); // will create children
 		domNode.classList.add('command');
 		domNode.classList.add('codelist');
-		if (RENDERFLAGS) {
-			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-				if (renderFlags & RENDER_FLAG_EXPLODED) {
-					codespan.classList.add('exploded');
-				} else {
-					codespan.classList.remove('exploded');
-				}
-				codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+			if (renderFlags & RENDER_FLAG_EXPLODED) {
+				codespan.classList.add('exploded');
+			} else {
+				codespan.classList.remove('exploded');
 			}
-		} else {
-			if (!shallow) {
-				if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
-					codespan.classList.add('exploded');
-				} else {
-					codespan.classList.remove('exploded');
-				}
-				codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
-			}
+			codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
 		}
 		if (!RENDERNODES) {
-			this.renderTags(domNode, shallow);
+			this.renderTags(domNode, renderFlags);
 		}
 	}
 

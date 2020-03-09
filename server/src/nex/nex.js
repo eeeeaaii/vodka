@@ -26,9 +26,6 @@ class Nex {
 		this.rendernodes = [];
 
 		this.selected = false;
-		if (!RENDERFLAGS) {
-			this.renderType = current_render_type;
-		}
 		this.keyfunnel = null;
 		this.currentStyle = "";
 		this.enclosingClosure = null; // DO NOT COPY
@@ -197,13 +194,6 @@ class Nex {
 		return this.toString();
 	}
 
-	setRenderType(newType) {
-		if (RENDERFLAGS) {
-			throw new Error("setRenderType deprecated, using flags")
-		}
-		this.renderType = newType;
-	}
-
 	getInputFunnel() {
 		if (!this.keyfunnel) {
 			this.keyfunnel = this.getKeyFunnel();
@@ -268,53 +258,35 @@ class Nex {
 		};
 	}
 
-	rerender(shallow) {
+	rerender(renderFlags) {
 		if (RENDERNODES) {
 			throw new Error('not used with rendernodes');
 		}
-		if (RENDERFLAGS) {
-			var renderFlags = shallow;
-			renderFlags |= RENDER_FLAG_RERENDER;
-		}
+		renderFlags |= RENDER_FLAG_RERENDER;
 		if (!this.renderedDomNode) {
 			return; // can't rerender if we haven't rendered yet.
 		}
-		if (RENDERFLAGS) {
-			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-				this.renderedDomNode.innerHTML = "";
-			}
-		} else {
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
 			this.renderedDomNode.innerHTML = "";
 		}
 		while(this.renderedDomNode.classList.length > 0) {
 			this.renderedDomNode.classList.remove(this.renderedDomNode.classList.item(0));
 		}
 		this.renderedDomNode.setAttribute("style", "");
-		this.renderInto(this.renderedDomNode, shallow /* aka renderflags */);
+		this.renderInto(this.renderedDomNode, renderFlags);
 	}
 
-	renderInto(domNode, shallow) {
+	renderInto(domNode, renderFlags) {
 		let renderNode = null;
 		if (RENDERNODES) {
 			// change param name
 			renderNode = domNode;
 			domNode = domNode.getDomNode();
 		}
-		if (RENDERFLAGS) {
-			var renderFlags = shallow;
-		}
-		if (!RENDERFLAGS) {
-			if (!shallow) {
-				RENDERNODES
-					? this._setRenderNodesClickHandler(renderNode)
-					: this._setClickHandler(domNode);
-			}
-		} else {
-			if (!(renderFlags & RENDER_FLAG_RERENDER)) {
-				RENDERNODES
-					? this._setRenderNodesClickHandler(renderNode)
-					: this._setClickHandler(domNode);
-			}
+		if (!(renderFlags & RENDER_FLAG_RERENDER)) {
+			RENDERNODES
+				? this._setRenderNodesClickHandler(renderNode)
+				: this._setClickHandler(domNode);
 		}
 		domNode.classList.add('nex');
 
@@ -329,35 +301,21 @@ class Nex {
 			// 	domNode.classList.remove('selected');
 			}
 		}
-		let isExploded = null;
-		if (RENDERFLAGS) {
-			isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
-		} else {
-			isExploded = (this.renderType == NEX_RENDER_TYPE_EXPLODED);
-		}
+		let isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
 		if (isExploded) {
 			domNode.classList.add('exploded');
-		// } else {
-		// 	domNode.classList.remove('exploded');
 		}
 		domNode.setAttribute("style", this.currentStyle);
 		this.renderedDomNode = domNode; // save for later, like if we need to get x/y loc
 	}
 
 	renderTags(domNode, renderFlags) {
-		if (RENDERFLAGS) {
-			if (
-				(renderFlags & RENDER_FLAG_SHALLOW)
-				&& (renderFlags & RENDER_FLAG_RERENDER)) {
-				return;
-			}
+		if (
+			(renderFlags & RENDER_FLAG_SHALLOW)
+			&& (renderFlags & RENDER_FLAG_RERENDER)) {
+			return;
 		}
-		let isExploded = null;
-		if (RENDERFLAGS) {
-			isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
-		} else {
-			isExploded = (this.renderType == NEX_RENDER_TYPE_EXPLODED);
-		}
+		let isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
 		for (let i = 0; i < this.tags.length; i++) {
 			this.tags[i].draw(domNode, isExploded);
 		}		
@@ -400,21 +358,13 @@ class Nex {
 		if (selectedNex) {
 			selectedNex.setUnselected();
 			if (rerender) {
-				if (RENDERFLAGS) {
-					selectedNex.rerender(current_default_render_flags | RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW)
-				} else {
-					selectedNex.rerender(true /* shallow rerender, don't do children */);
-				}
+				selectedNex.rerender(current_default_render_flags | RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW)
 			}
 		}
 		selectedNex = this;
 		this.selected = true;
 		if (rerender) {
-			if (RENDERFLAGS) {
-				this.rerender(current_default_render_flags | RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW)
-			} else {
-				this.rerender(true /* shallow rerender, don't do children */);
-			}
+			this.rerender(current_default_render_flags | RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW)
 		}
 	}
 

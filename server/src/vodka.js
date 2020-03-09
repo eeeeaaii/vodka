@@ -17,11 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 // experiments
 
-// - pass in render flags
-const RENDERFLAGS = true;
-
 // allows the same nex to be rendered in multiple places on the screen
-// (assumes RENDERFLAGS=true)
 const RENDERNODES = true;
 
 // store children of NexContainer as linked list
@@ -36,15 +32,15 @@ const LINKEDLIST= true;
 //.  5. tests for run-js
 //.  6. tests for cram and chop
 //.  7. to-word
-//.  8. clean up eerror including its css
+//.  8. DONE - clean up eerror including its css
 //.  9. instanceof checks are slow, for nexes instead compare to getTypeName()
-//.  10. make it so that expectations, when evaluated, return the CURRENT contents.
+//.  10. DONE - make it so that expectations, when evaluated, return the CURRENT contents.
 //.  11. make it so you can specify arg type with the codes I use in the builtin param names,
 //.      and that you can have them in lambdas.
 //.  12. make a list type that is just "list" that can be vert/horiz, looks like
 //.      a command or lambda but without the symbol, and which, when you evaluate it,
 //       replaces each of its children with the result of evaluating that child
-//.  13. execution_stepeval_bindwithnormal is broken because somehow when you are step evaluating
+//.  13. NO LONGER SUPPORTED - execution_stepeval_bindwithnormal is broken because somehow when you are step evaluating
 //       and you click on a subexpression with bound environment and you normal-eval it,
 //.      if you click on the result of that inner normal-eval inside its expectation,
 //.      and shift-tab to go to the parent YOU DON'T GO ANYWHERE. why.
@@ -104,11 +100,7 @@ var isStepEvaluating = false;
 const NEX_RENDER_TYPE_NORMAL = 1;
 const NEX_RENDER_TYPE_EXPLODED = 2;
 
-if (RENDERNODES || RENDERFLAGS) {
-	var current_default_render_flags = RENDER_FLAG_NORMAL;
-} else {
-	var current_render_type = NEX_RENDER_TYPE_NORMAL;
-}
+var current_default_render_flags = RENDER_FLAG_NORMAL;
 
 var BUILTINS = new Environment(null);
 const KEY_DISPATCHER = new KeyDispatcher();
@@ -154,20 +146,13 @@ function topLevelRenderSelectingNode(node) {
 	renderPassNumber++;
 	if (RENDERNODES) {
 		root.render(current_default_render_flags);
-	} else if (RENDERFLAGS) {
-		let rootDomNode = null;
-		rootDomNode = document.getElementById('mixroot');
-		while (rootDomNode.firstChild) {
-			rootDomNode.removeChild(rootDomNode.firstChild);
-		}
-		root.renderInto(rootDomNode, current_default_render_flags);		
 	} else {
 		let rootDomNode = null;
 		rootDomNode = document.getElementById('mixroot');
 		while (rootDomNode.firstChild) {
 			rootDomNode.removeChild(rootDomNode.firstChild);
 		}
-		root.renderInto(rootDomNode);
+		root.renderInto(rootDomNode, current_default_render_flags);		
 	}
 }
 

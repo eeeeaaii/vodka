@@ -579,28 +579,14 @@ class KeyDispatcher {
 	}
 
 	doEscape() {
-		if (RENDERFLAGS) {
-			if (current_default_render_flags & RENDER_FLAG_EXPLODED) {
-				current_default_render_flags &= (~RENDER_FLAG_EXPLODED);
-			} else {
-				current_default_render_flags |= RENDER_FLAG_EXPLODED;
-			}
+		if (current_default_render_flags & RENDER_FLAG_EXPLODED) {
+			current_default_render_flags &= (~RENDER_FLAG_EXPLODED);
 		} else {
-			current_render_type = (
-				current_render_type == NEX_RENDER_TYPE_EXPLODED
-				? NEX_RENDER_TYPE_NORMAL
-				:  NEX_RENDER_TYPE_EXPLODED
-				);
-			root.setRenderType(current_render_type);
+			current_default_render_flags |= RENDER_FLAG_EXPLODED;
 		}
 	}
 
 	doAltEnter() {
-		// if (RENDERNODES) {
-		// 	stepEvaluator.doStep();
-		// 	return;
-//			throw new Error('step eval not working at all with rendernodes')
-		// }
 		isStepEvaluating = true;
 		try {
 			let s = RENDERNODES ? selectedNode.getNex() : selectedNex;

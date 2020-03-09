@@ -24,12 +24,22 @@ class Expectation extends NexContainer {
 		// this is used is in the old "edit" primitive
 		// which is also deprecated
 		this.hackfunction = hackfunction;
+		// also deprecated
 		this.completionlisteners = [];
 		this.parentlist = []; // for RENDERNODES
 		// fff is somehow more readable than "fulfillfunction"
 		// like I don't have to remember how to spell it
 		this.fff = null;
 		this.ffed = false;
+	}
+
+	copyFieldsTo(nex) {
+		super.copyFieldsTo(nex);
+		nex.deleteHandler = this.deleteHandler;
+		nex.fff = this.fff;
+		// notably we do NOT copy ffed because
+		// if the original one is already fulfilled, we might want
+		// to make a copy of it so it can be fulfilled again.
 	}
 
 	setFFF(f) {
@@ -85,62 +95,34 @@ class Expectation extends NexContainer {
 		return '...';
 	}
 
-	copyFieldsTo(nex) {
-		super.copyFieldsTo(nex);
-		nex.hackfunction = this.hackfunction;
-		nex.deleteHandler = this.deleteHandler;
-		nex.completionlisteners = this.completionlisteners;
-		nex.fff = this.fff;
-	}
-
 	getContextType() {
 		return ContextType.COMMAND;
 	}
 
-	renderInto(domNode, shallow) {
+	renderInto(domNode, renderFlags) {
 		let toPassToSuperclass = domNode;
 		if (RENDERNODES) {
 			// change param name
 			domNode = domNode.getDomNode();
 		}
 		let dotspan = null;
-		if (RENDERFLAGS) {
-			var renderFlags = shallow;
-			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-				dotspan = document.createElement("span");
-				dotspan.classList.add('dotspan');
-				domNode.appendChild(dotspan);
-			}
-		} else {
-			if (!shallow) {
-				dotspan = document.createElement("span");
-				dotspan.classList.add('dotspan');
-				domNode.appendChild(dotspan);
-			}
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+			dotspan = document.createElement("span");
+			dotspan.classList.add('dotspan');
+			domNode.appendChild(dotspan);
 		}
-		super.renderInto(toPassToSuperclass, shallow);
+		super.renderInto(toPassToSuperclass, renderFlags);
 		domNode.classList.add('expectation');
-		if (RENDERFLAGS) {
-			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-				if (renderFlags & RENDER_FLAG_EXPLODED) {
-					dotspan.classList.add('exploded');
-				} else {
-					dotspan.classList.remove('exploded');
-				}
-				dotspan.innerHTML = '...';
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+			if (renderFlags & RENDER_FLAG_EXPLODED) {
+				dotspan.classList.add('exploded');
+			} else {
+				dotspan.classList.remove('exploded');
 			}
-		} else {
-			if (!shallow) {
-				if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
-					dotspan.classList.add('exploded');
-				} else {
-					dotspan.classList.remove('exploded');
-				}
-				dotspan.innerHTML = '...';
-			}
+			dotspan.innerHTML = '...';
 		}
 		if (!RENDERNODES) {
-			this.renderTags(domNode, shallow);
+			this.renderTags(domNode, renderFlags);
 		}
 	}
 
@@ -233,14 +215,7 @@ class Expectation extends NexContainer {
 			let parent = this.getParent();
 			let wasSelected = this.isSelected();
 			parent.replaceChildWith(this, newnex);
-			if (RENDERFLAGS) {
-				parent.rerender(current_default_render_flags);
-			} else {
-				// have to do this in case global render type changed while we were
-				// waiting to fulfill
-				newnex.setRenderType(current_render_type);
-				parent.rerender();
-			}
+			parent.rerender(current_default_render_flags);
 			if (wasSelected) {
 				newnex.setSelected(true/*shallow-rerender*/);
 			}

@@ -24,11 +24,12 @@ function createAsyncBuiltins() {
 		],
 		function(env, argEnv) {
 			let time = env.lb('time#').getTypedValue();
-			let exp = env.lb('exp,'); //
+			let exp = env.lb('exp,');
+			let newexp = exp.makeCopy();
 			setTimeout(function() {
-				exp.fulfill();
+				newexp.fulfill();
 			}, time);
-			return exp;
+			return newexp;
 		}
 	);
 
@@ -42,23 +43,15 @@ function createAsyncBuiltins() {
 		function(env, argEnv) {
 			let lambda = env.lb('func&');
 			let exp = env.lb('exp,');
+			let newexp = exp.makeCopy();
 			let fff = function() {
 				let cmd = new Command('');
 				cmd.appendChild(lambda);
-				cmd.appendChild(exp.getChildAt(0));
+				cmd.appendChild(newexp.getChildAt(0));
 				return evaluateNexSafely(cmd, argEnv);
 			};
-			exp.setFFF(fff);
-			return exp;
-			// let retExp = new Expectation();
-			// exp.addCompletionListener(function(result) {
-			// 	let cmd = new Command('');
-			// 	cmd.appendChild(lambda);
-			// 	cmd.appendChild(result);
-			// 	let newresult = evaluateNexSafely(cmd, argEnv);
-			// 	retExp.fulfill(newresult);
-			// })
-			// return retExp;
+			newexp.setFFF(fff);
+			return newexp;
 		}
 	);
 

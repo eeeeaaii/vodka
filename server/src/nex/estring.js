@@ -99,14 +99,13 @@ class EString extends ValueNex {
 		}
 	}
 
-	// RENDERFLAGS // change to renderFlags
-	renderInto(domNode, shallow) {
+	renderInto(domNode, renderFlags) {
 		let toPassToSuperclass = domNode;
 		if (RENDERNODES) {
 			// change param name
 			domNode = domNode.getDomNode();
 		}
-		super.renderInto(toPassToSuperclass, shallow);
+		super.renderInto(toPassToSuperclass, renderFlags);
 		// this one always can rerender because it's not a container
 		// we only need to care about rerenders when it's a container type
 		domNode.innerHTML = this.prefix;
@@ -118,7 +117,7 @@ class EString extends ValueNex {
 			this.drawExpanded(toPassToSuperclass);
 		}
 		if (!RENDERNODES) {
-			this.renderTags(domNode, shallow);
+			this.renderTags(domNode, renderFlags);
 		}
 	}
 
@@ -197,10 +196,8 @@ class EString extends ValueNex {
 			renderNode.render(current_default_render_flags
 					| RENDER_FLAG_RERENDER
 					| RENDER_FLAG_SHALLOW);
-		} else if (RENDERFLAGS) {
-			this.rerender(current_default_render_flags | RENDER_FLAG_SHALLOW)
 		} else {
-			this.rerender(true);
+			this.rerender(current_default_render_flags | RENDER_FLAG_SHALLOW)
 		}
 	}
 

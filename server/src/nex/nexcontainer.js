@@ -189,49 +189,29 @@ class NexContainer extends Nex {
 		this.vdir = false;
 	}
 
-	rerender(shallow) {
+	rerender(renderFlags) {
 		if (RENDERNODES) {
 			throw new Error('not used with rendernodes');
 		}
 		if (!this.renderedDomNode) {
 			return; // can't rerender if we haven't rendered yet.
 		}
-		if (RENDERFLAGS) {
-			let renderFlags = shallow;
-			if (renderFlags & RENDER_FLAG_SHALLOW) {
-				this.savedChildDomNodes = [];
-				if (LINKEDLIST) {
-					for (let p = this.firstChildNex; p != null; p = p.next) {
-						this.savedChildDomNodes.push(p.n.renderedDomNode);
-					}
-				} else {
-					for (let i = 0; i < this.children.length; i++) {
-						this.savedChildDomNodes.push(this.children[i].renderedDomNode);
-					}
+		if (renderFlags & RENDER_FLAG_SHALLOW) {
+			this.savedChildDomNodes = [];
+			if (LINKEDLIST) {
+				for (let p = this.firstChildNex; p != null; p = p.next) {
+					this.savedChildDomNodes.push(p.n.renderedDomNode);
 				}
-				// note: this nex may create other dom nodes so we explicitly
-				// only save the children and we still allow the superclass
-				// to set innerHTML = ""
-			}
-			super.rerender(renderFlags);
-		} else {
-			if (shallow) {
-				this.savedChildDomNodes = [];
-				if (LINKEDLIST) {
-					for (let p = this.firstChildNex; p != null; p = p.next) {
-						this.savedChildDomNodes.push(p.n.renderedDomNode);
-					}
-				} else {
-					for (let i = 0; i < this.children.length; i++) {
-						this.savedChildDomNodes.push(this.children[i].renderedDomNode);
-					}
+			} else {
+				for (let i = 0; i < this.children.length; i++) {
+					this.savedChildDomNodes.push(this.children[i].renderedDomNode);
 				}
-				// note: this nex may create other dom nodes so we explicitly
-				// only save the children and we still allow the superclass
-				// to set innerHTML = ""
 			}
-			super.rerender();
+			// note: this nex may create other dom nodes so we explicitly
+			// only save the children and we still allow the superclass
+			// to set innerHTML = ""
 		}
+		super.rerender(renderFlags);
 	}
 
 	renderInto(domNode, renderFlags) {
@@ -250,16 +230,9 @@ class NexContainer extends Nex {
 			// nothing more to do, the rest has to do with children
 			return;
 		}
-		if (RENDERFLAGS) {
-			if (!(renderFlags & RENDER_FLAG_EXPLODED)
-					&& !this.renderChildrenIfNormal()) {
-				return;
-			}
-		} else {
-			if (this.renderType == NEX_RENDER_TYPE_NORMAL
-					&& !this.renderChildrenIfNormal()) {
-				return;
-			}
+		if (!(renderFlags & RENDER_FLAG_EXPLODED)
+				&& !this.renderChildrenIfNormal()) {
+			return;
 		}
 
 		if (this.savedChildDomNodes) {

@@ -79,53 +79,31 @@ class Lambda extends NexContainer {
 	}
 
 
-	renderInto(domNode, shallow) {
+	renderInto(domNode, renderFlags) {
 		let toPassToSuperclass = domNode;
 		if (RENDERNODES) {
 			// change param name
 			domNode = domNode.getDomNode();
 		}
-		if (RENDERFLAGS) {
-			var renderFlags = shallow;
-		}
 		let codespan = null;
-		if (RENDERFLAGS) {
-			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-				codespan = document.createElement("span");
-				codespan.classList.add('codespan');
-				domNode.appendChild(codespan);
-			}
-		} else {
-			if (!shallow) {
-				codespan = document.createElement("span");
-				codespan.classList.add('codespan');
-				domNode.appendChild(codespan);
-			}
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+			codespan = document.createElement("span");
+			codespan.classList.add('codespan');
+			domNode.appendChild(codespan);
 		}
-		super.renderInto(toPassToSuperclass, shallow /* renderFlags */);
+		super.renderInto(toPassToSuperclass, renderFlags);
 		domNode.classList.add('lambda');
 		domNode.classList.add('codelist');
-		if (RENDERFLAGS) {
-			if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-				if (renderFlags & RENDER_FLAG_EXPLODED) {
-					codespan.classList.add('exploded');
-				} else {
-					codespan.classList.remove('exploded');
-				}
-				codespan.innerHTML = '<span class="lambdasign">' + this.getSymbolForCodespan() + '</span>' + this.amptext.replace(/ /g, '&nbsp;');
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+			if (renderFlags & RENDER_FLAG_EXPLODED) {
+				codespan.classList.add('exploded');
+			} else {
+				codespan.classList.remove('exploded');
 			}
-		} else {
-			if (!shallow) {
-				if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
-					codespan.classList.add('exploded');
-				} else {
-					codespan.classList.remove('exploded');
-				}
-				codespan.innerHTML = '<span class="lambdasign">' + this.getSymbolForCodespan() + '</span>' + this.amptext.replace(/ /g, '&nbsp;');
-			}
+			codespan.innerHTML = '<span class="lambdasign">' + this.getSymbolForCodespan() + '</span>' + this.amptext.replace(/ /g, '&nbsp;');
 		}
 		if (!RENDERNODES) {
-			this.renderTags(domNode, shallow);
+			this.renderTags(domNode, renderFlags);
 		}
 	}
 

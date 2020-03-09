@@ -43,30 +43,19 @@ class Zlist extends NexContainer {
 		return ContextType.DOC;
 	}
 
-	renderInto(domNode, shallow) {
+	renderInto(domNode, renderFlags) {
 		let toPassToSuperclass = domNode;
 		if (RENDERNODES) {
 			// change param name
 			domNode = domNode.getDomNode();
 		}
-		if (RENDERFLAGS) {
-			var renderFlags = shallow;
-		}
-		super.renderInto(toPassToSuperclass, shallow);
+		super.renderInto(toPassToSuperclass, renderFlags);
 		domNode.classList.add('zlist');
 		domNode.classList.add('data');
-		if (RENDERFLAGS) {
-			if (renderFlags & NEX_RENDER_TYPE_EXPLODED) {
-				domNode.style.height = '' + (this.numChildren() * 10) + 'px'; 
-			} else {
-				domNode.style.height = '0px';
-			}
+		if (renderFlags & NEX_RENDER_TYPE_EXPLODED) {
+			domNode.style.height = '' + (this.numChildren() * 10) + 'px'; 
 		} else {
-			if (this.renderType == NEX_RENDER_TYPE_EXPLODED) {
-				domNode.style.height = '' + (this.numChildren() * 10) + 'px'; 
-			} else {
-				domNode.style.height = '0px';
-			}
+			domNode.style.height = '0px';
 		}
 		if (!RENDERNODES) {
 			this.renderTags(domNode, shallow);

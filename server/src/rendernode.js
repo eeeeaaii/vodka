@@ -102,7 +102,6 @@ class RenderNode {
 	}
 
 	render(renderFlags) {
-		// test for shallow and rerender
 		this.clearDomNode(renderFlags);
 		if (selectWhenYouFindIt && this.getNex().getID() == selectWhenYouFindIt.getID()) {
 			this.setSelected(false);

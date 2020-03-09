@@ -149,10 +149,8 @@ class EError extends NexContainer {
 			renderNode.render(current_default_render_flags
 					| RENDER_FLAG_RERENDER
 					| RENDER_FLAG_SHALLOW);
-		} else if (RENDERFLAGS) {
-			this.rerender(current_default_render_flags | RENDER_FLAG_SHALLOW)
 		} else {
-			this.rerender(true);
+			this.rerender(current_default_render_flags | RENDER_FLAG_SHALLOW)
 		}
 	}
 
@@ -169,17 +167,15 @@ class EError extends NexContainer {
 		this.inputfield.focus();
 	}
 
-	// RENDERFLAGS // change to renderFlags
-	renderInto(domNode, shallow) {
+	renderInto(domNode, renderFlags) {
 		let toPassToSuperclass = domNode;
 		if (RENDERNODES) {
 			// change param name
 			domNode = domNode.getDomNode();
 		}
-		super.renderInto(toPassToSuperclass, shallow);
+		super.renderInto(toPassToSuperclass, renderFlags);
 		// this one always can rerender because it's not a container
 		// we only need to care about rerenders when it's a container type
-//		domNode.innerHTML = this.prefix;
 		domNode.classList.add('valuenex');
 		domNode.classList.add(this.className);
 		if (this.mode == MODE_NORMAL) {
@@ -188,7 +184,7 @@ class EError extends NexContainer {
 			this.drawExpanded(toPassToSuperclass);
 		}
 		if (!RENDERNODES) {
-			this.renderTags(domNode, shallow);
+			this.renderTags(domNode, renderFlags);
 		}
 	}
 

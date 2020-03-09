@@ -41,19 +41,18 @@ class ValueNex extends Nex {
 		return this.value;
 	}
 
-	// RENDERFLAGS change to renderFlags
-	renderInto(domNode, shallow) {
+	renderInto(domNode, renderFlags) {
 		let toPassToSuperclass = domNode;
 		if (RENDERNODES) {
 			// change param name
 			domNode = domNode.getDomNode();
 		}
-		super.renderInto(toPassToSuperclass, shallow);
+		super.renderInto(toPassToSuperclass, renderFlags);
 		domNode.classList.add(this.className);
 		domNode.classList.add('valuenex');
 		domNode.innerHTML = '' + this.prefix + this.renderValue();
 		if (!RENDERNODES) {
-			this.renderTags(domNode, shallow);
+			this.renderTags(domNode, renderFlags);
 		}
 	}
 
