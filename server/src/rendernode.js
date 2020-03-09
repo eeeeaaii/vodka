@@ -23,7 +23,9 @@ class RenderNode {
 		this.parentalfigure = null;
 		this.childnodes = [];
 		this.domNode = document.createElement("div");
-//		this.createChildRenderNodes(forNex);
+
+		this.explodedOverride = -1;
+		this.firstToggleOnNexRender = false;
 	}
 
 	createChildRenderNodes(nex) {
@@ -61,15 +63,6 @@ class RenderNode {
 		return new RenderNode(nex);
 	}
 
-	// appendChild(nex) {
-	// 	let renderNode = new RenderNode(nex);
-	// 	this.childnodes.push(renderNode);
-	// 	this.nex.appendChild(nex);
-	// 	this.domNode.appendChild(renderNode.getDomNode())
-	// 	renderNode.parent = this;
-	// 	return renderNode;
-	// }
-
 	appendDecorationDomNode(node) {
 		this.domNode.appendChild(node);
 	}
@@ -101,7 +94,39 @@ class RenderNode {
 		}
 	}
 
+	toggleExplodedOverride() {
+		// it's not really a toggle, it's more like
+		// we tell it to toggle, then on the next
+		// render it wakes up, figures out whether it's
+		// a normal or exploded render, and then
+		// does the opposite from then until it's reset.
+		this.firstToggleOnNexRender = true;
+	}
+
+	applyExplodedOverride(renderFlags) {
+		if (renderFlags & RENDER_FLAG_REMOVE_OVERRIDES) {
+			this.firstToggleOnNexRender = false;
+			this.explodedOverride = -1;
+			return renderFlags;
+		}
+		if (this.firstToggleOnNexRender) {
+			this.firstToggleOnNexRender = false;
+			if (renderFlags & RENDER_FLAG_NORMAL) {
+				this.explodedOverride = RENDER_FLAG_EXPLODED;
+			} else if (renderFlags & RENDER_FLAG_EXPLODED) {
+				this.explodedOverride = RENDER_FLAG_NORMAL;
+			}
+		}
+		if (this.explodedOverride != -1) {
+			renderFlags &= (~RENDER_FLAG_NORMAL);
+			renderFlags &= (~RENDER_FLAG_EXPLODED);
+			renderFlags |= this.explodedOverride;
+		}
+		return renderFlags;
+	}
+
 	render(renderFlags) {
+		renderFlags = this.applyExplodedOverride(renderFlags);
 		this.clearDomNode(renderFlags);
 		if (selectWhenYouFindIt && this.getNex().getID() == selectWhenYouFindIt.getID()) {
 			this.setSelected(false);

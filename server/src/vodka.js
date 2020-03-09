@@ -73,6 +73,9 @@ const RENDER_FLAG_EXPLODED = 2;
 const RENDER_FLAG_RERENDER = 4;
 // only used in RENDERNODES
 const RENDER_FLAG_SELECTED = 8;
+const RENDER_FLAG_REMOVE_OVERRIDES = 16; // get rid of normal/exploded overrides
+
+var overrideOnNextRender = false;
 
 
 // global variables
@@ -95,10 +98,6 @@ if (RENDERNODES) {
 // since performance is less of a factor.
 var isStepEvaluating = false;
 
-
-// render type is deprecated, changing to flags
-const NEX_RENDER_TYPE_NORMAL = 1;
-const NEX_RENDER_TYPE_EXPLODED = 2;
 
 var current_default_render_flags = RENDER_FLAG_NORMAL;
 
@@ -144,15 +143,20 @@ function topLevelRender(node) {
 function topLevelRenderSelectingNode(node) {
 	selectWhenYouFindIt = node;
 	renderPassNumber++;
+	let flags = current_default_render_flags;
+	if (overrideOnNextRender) {
+		overrideOnNextRender = false;
+		flags |= RENDER_FLAG_REMOVE_OVERRIDES;
+	}
 	if (RENDERNODES) {
-		root.render(current_default_render_flags);
+		root.render(flags);
 	} else {
 		let rootDomNode = null;
 		rootDomNode = document.getElementById('mixroot');
 		while (rootDomNode.firstChild) {
 			rootDomNode.removeChild(rootDomNode.firstChild);
 		}
-		root.renderInto(rootDomNode, current_default_render_flags);		
+		root.renderInto(rootDomNode, flags);		
 	}
 }
 

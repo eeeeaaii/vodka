@@ -52,7 +52,7 @@ class Zlist extends NexContainer {
 		super.renderInto(toPassToSuperclass, renderFlags);
 		domNode.classList.add('zlist');
 		domNode.classList.add('data');
-		if (renderFlags & NEX_RENDER_TYPE_EXPLODED) {
+		if (renderFlags & RENDER_FLAG_EXPLODED) {
 			domNode.style.height = '' + (this.numChildren() * 10) + 'px'; 
 		} else {
 			domNode.style.height = '0px';

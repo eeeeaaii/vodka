@@ -117,6 +117,12 @@ var KeyResponseFunctions = {
 		(RENDERNODES ? s.getNex() : s).toggleDir();
 	},
 
+	'toggle-exploded': function(s) {
+		if (RENDERNODES) {
+			s.toggleExplodedOverride();
+		} // else no op
+	},
+
 	'select-parent': function(s) { manipulator.selectParent(); },
 	'select-first-child-or-create-insertion-point': function(s) {
 		if (!manipulator.selectFirstChild()) {
@@ -481,6 +487,34 @@ class KeyDispatcher {
 		}
 	}
 
+	getEventName(keycode, hasShift, hasCtrl, hasAlt) {
+		if (keycode == 'Enter' && hasAlt) {
+			return 'AltEnter';
+		} else if (keycode == 'Escape' && hasShift) {
+			return 'ShiftEscape';
+		} else if (keycode == 'Enter' && hasShift) {
+			return 'ShiftEnter';
+		} else if (keycode == 'Tab' && hasShift) {
+			return 'ShiftTab';
+		} else if (keycode == ' ' && hasShift) {
+			return 'ShiftSpace';
+		} else if (keycode == ' ' && hasAlt) {
+			return 'AltSpace';
+		// } else if (keycode == ' ') {
+		// 	return 'Space';
+		} else if (keycode == 'Backspace' && hasShift) {
+			return 'ShiftBackspace';
+		} else if (keycode == 'x' && hasAlt) {
+			return 'Alt-x';
+		} else if (keycode == 'c' && hasAlt) {
+			return 'Alt-c';
+		} else if (keycode == 'v' && hasAlt) {
+			return 'Alt-v';
+		} else {
+			return keycode;
+		}
+	}
+
 	runDefaultHandle(sourceNex, eventName, context, sourceNode /* null if not RENDERNODES */) {
 		return sourceNex.defaultHandle(eventName, context, sourceNode);
 	}
@@ -554,36 +588,13 @@ class KeyDispatcher {
 		return false;
 	}
 
-	getEventName(keycode, hasShift, hasCtrl, hasAlt) {
-		if (keycode == 'Enter' && hasAlt) {
-			return 'AltEnter';
-		} else if (keycode == 'Enter' && hasShift) {
-			return 'ShiftEnter';
-		} else if (keycode == 'Tab' && hasShift) {
-			return 'ShiftTab';
-		} else if (keycode == ' ' && hasShift) {
-			return 'ShiftSpace';
-		// } else if (keycode == ' ') {
-		// 	return 'Space';
-		} else if (keycode == 'Backspace' && hasShift) {
-			return 'ShiftBackspace';
-		} else if (keycode == 'x' && hasAlt) {
-			return 'Alt-x';
-		} else if (keycode == 'c' && hasAlt) {
-			return 'Alt-c';
-		} else if (keycode == 'v' && hasAlt) {
-			return 'Alt-v';
-		} else {
-			return keycode;
-		}
-	}
-
 	doEscape() {
 		if (current_default_render_flags & RENDER_FLAG_EXPLODED) {
 			current_default_render_flags &= (~RENDER_FLAG_EXPLODED);
 		} else {
 			current_default_render_flags |= RENDER_FLAG_EXPLODED;
 		}
+		overrideOnNextRender = true;
 	}
 
 	doAltEnter() {
@@ -656,6 +667,7 @@ class KeyDispatcher {
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
 			'Backspace': 'remove-selected-and-select-previous-sibling',
 			'ShiftEnter': 'evaluate-nex',
+			'ShiftEscape': 'toggle-exploded',
 			'~': 'insert-or-append-command',
 			'!': 'insert-or-append-bool',
 			'@': 'insert-or-append-symbol',
@@ -682,6 +694,7 @@ class KeyDispatcher {
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
 			'Backspace': 'remove-selected-and-select-previous-sibling',
 			'ShiftEnter': 'evaluate-nex',
+			'ShiftEscape': 'toggle-exploded',
 			'~': 'insert-command-as-next-sibling',
 			'!': 'insert-bool-as-next-sibling',
 			'@': 'insert-symbol-as-next-sibling',
