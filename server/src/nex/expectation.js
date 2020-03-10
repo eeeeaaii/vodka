@@ -33,6 +33,11 @@ class Expectation extends NexContainer {
 		this.ffed = false;
 	}
 
+	toString() {
+		return `*(${super.childrenToString()}*)`;
+	}
+
+
 	copyFieldsTo(nex) {
 		super.copyFieldsTo(nex);
 		nex.deleteHandler = this.deleteHandler;
@@ -89,10 +94,6 @@ class Expectation extends NexContainer {
 		this.copyFieldsTo(r);
 		this.copyChildrenTo(r, shallow);
 		return r;
-	}
-
-	toString() {
-		return '...';
 	}
 
 	getContextType() {
@@ -195,7 +196,10 @@ class Expectation extends NexContainer {
 		}
 		// we don't know where the expectations are so we have to render everything.
 		// TODO: make a render queue so the renderer doesn't get spammed, and actually we do know
+
+		// why can't I select things?
 		topLevelRenderSelectingNode(newnex);
+//		topLevelRender();
 		for (let i = 0; i < this.completionlisteners.length; i++) {
 			this.completionlisteners[i](newnex);
 		}

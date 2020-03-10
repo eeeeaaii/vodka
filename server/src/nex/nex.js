@@ -237,8 +237,20 @@ class Nex {
 		};
 	}
 
+	// can return null if user clicks on some other thing
+	getParentNexOfDomElement(elt) {
+		while(elt && !elt.classList.contains('nex')) {
+			elt = elt.parentNode;
+		}
+		return elt;
+	}
+
 	_setRenderNodesClickHandler(renderNode) {
 		renderNode.getDomNode().onclick = (e) => {
+			let parentNexDomElt = this.getParentNexOfDomElement(e.target);
+			if (selectedNode.getDomNode() == parentNexDomElt) {
+				return;
+			}
 			let insertAfterRemove = false;
 			let oldSelectedNode = selectedNode;
 			if ((selectedNode.getNex() instanceof EString

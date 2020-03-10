@@ -54,6 +54,58 @@ function createTypeConversionBuiltins() {
 	)
 
 
+
+	Builtin.createBuiltin(
+		'to-float',
+		[
+			{name: 'nex', type:'*'},
+		],
+		function(env, argEnv) {
+			let v = env.lb('nex');
+			if (v instanceof Float) {
+				return v;
+			} else if (v instanceof Integer) {
+				return new Float(v.getTypedValue());
+			} else if (v instanceof Bool) {
+				return v.getTypedValue() ? new Float(1): new Float(0);
+			} else if (v instanceof EString) {
+				let s = v.getFullTypedValue();
+				let mayben = parseFloat(s);
+				if (Number.isNaN(mayben)) {
+					return new EError('Could not convert string to float');					
+				} else {
+					return new Float(mayben);
+				}
+			} else if (v instanceof Letter) {
+				// could be a number.
+				let s = v.getText();
+				let mayben = parseFloat(s);
+				if (Number.isNaN(mayben)) {
+					return new EError('Could not convert letter to float');					
+				} else {
+					return new Float(mayben);
+				}
+			} else if (v instanceof Word || v instanceof Line || v instanceof Doc) {
+				// could be a number.
+				let s = v.getValueAsString();
+				let mayben = parseFloat(s);
+				if (Number.isNaN(mayben)) {
+					// rofl
+					let errstr = v instanceof Word
+						? 'word'
+						: ((v instanceof Line)
+							? 'line'
+							: 'doc');
+					return new EError('Could not convert ' + errstr + ' to float');
+				} else {
+					return new Float(mayben);
+				}
+			} else {
+				return new EError('Could not convert to float');
+			}
+		}
+	)
+
 	Builtin.createBuiltin(
 		'to-integer',
 		[
@@ -95,7 +147,7 @@ function createTypeConversionBuiltins() {
 						: ((v instanceof Line)
 							? 'line'
 							: 'doc');
-					return new EError('Could not convert letter to integer');
+					return new EError('Could not convert ' + errstr + ' to integer');
 				} else {
 					return new Integer(mayben);
 				}

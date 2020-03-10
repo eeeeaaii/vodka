@@ -161,7 +161,7 @@ function createBasicBuiltins() {
 				again.appendChild(nex);
 				setTimeout(function() {
 					exp.fulfill(again);
-				}, 2000);
+				}, 500);
 			}
 			return exp;
 		}
@@ -272,6 +272,17 @@ function createBasicBuiltins() {
 			return env.lb('nex');
 		}
 	);
+
+	Builtin.createBuiltin(
+		'jslog',
+		[
+			{name: 'nex', type:'*'}
+		],
+		function(env, argEnv) {
+			let nex = env.lb('nex');
+			console.log(nex.debugString());
+			return nex;
+		})
 
 	Builtin.createBuiltin(
 		'eq',

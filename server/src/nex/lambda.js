@@ -138,14 +138,24 @@ class Lambda extends NexContainer {
 	executor(closure) {
 		let r = new Nil();
 		let i = 0;
-		this.doForEachChild(c => {
-			r = evaluateNexSafely(c, closure);
-			if (r instanceof EError) {
-				r = wrapError('&amp;', (this.boundName ? this.boundName : this.debugString()) + ' error in expr ' + (i+1), r);
-				return r;
+		// need the try/catch because of the js lambda here
+		try {
+			this.doForEachChild(c => {
+				r = evaluateNexSafely(c, closure);
+				if (r instanceof EError) {
+					r = wrapError('&amp;', (this.boundName ? this.boundName : this.debugString()) + ' error in expr ' + (i+1), r);
+					// because of =>
+					throw r;
+				}
+				i++;
+			});
+		} catch (e) {
+			if (e instanceof EError) {
+				return e;
+			} else {
+				throw e;
 			}
-			i++;
-		});
+		}
 		return r;
 	}
 

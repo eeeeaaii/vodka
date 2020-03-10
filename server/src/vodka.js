@@ -44,6 +44,13 @@ const LINKEDLIST= true;
 //       and you click on a subexpression with bound environment and you normal-eval it,
 //.      if you click on the result of that inner normal-eval inside its expectation,
 //.      and shift-tab to go to the parent YOU DON'T GO ANYWHERE. why.
+//.  14. need test for partial-exploded mode ,it doesn't work because esc is integral to my
+//.      test recording framework
+//.  15. exceptions thrown from failed parse of file
+//.  16. errors do not save/restore correctly
+//.  17. I should have a test for each type of error location to make sure error propagation
+//.      doesn't get broken. so basically any place that evaluateNexSafely is called
+//.  18. test for to-float
 
 // TODO: audit, is this updated in step eval?
 let ILVL = 0;

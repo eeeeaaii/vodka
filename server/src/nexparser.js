@@ -48,10 +48,14 @@ createstate('ENDZLIST', 20);
 createstate('NEWLINE', 21); // newlines are deprecated and yucky
 createstate('NIL', 22);
 
+createstate('STARTEXPECTATION', 23);
+createstate('ENDEXPECTATION', 24);
+
 
 class NexParser {
 	constructor(input) {
 		this.s = input;
+		this.origInput = input;
 //		this.r = this.origr = new Root(false /* do not attach */);
 	}
 
@@ -78,6 +82,8 @@ class NexParser {
 		    || this.testToken(/^\)/, st['ENDWORD'])
 		    || this.testToken(/^\</, st['STARTZLIST'])
 		    || this.testToken(/^\>/, st['ENDZLIST'])
+		    || this.testToken(/^\*\(/, st['STARTEXPECTATION'])
+		    || this.testToken(/^\*\)/, st['ENDEXPECTATION'])
 		    || this.testToken(/^~"([a-zA-Z_=<>+*/-]*)"([vh]*)\(/, st['STARTCOMMAND'])
 		    || this.testToken(/^~\)/, st['ENDCOMMAND'])
 		    || this.testToken(/^&"([a-zA-Z0-9 |_-]*)"([vh]*)\(/, st['STARTLAMBDA'])
@@ -108,7 +114,14 @@ class NexParser {
 		if (parserStack.length == 0 && this.r.hasChildren()) {
 			return this.r.getChildAt(0);
 		} else {
-			return new EError("error parsing saved vodka file");
+			let error = new EError("error parsing saved vodka file");
+			let orig = new EString(this.origInput);
+			orig.addTag(new Tag("original input"));
+			let rem = new EString(this.s);
+			rem.addTag(new Tag("remaining input"));
+			error.appendChild(orig);
+			error.appendChild(rem);
+			return error;
 		}
 	}
 
@@ -146,6 +159,10 @@ class NexParser {
 			this.push(new Zlist());
 			break;
 		}
+		case st['STARTEXPECTATION']: {
+			this.push(new Expectation());
+			break;
+		}
 		case st['STARTCOMMAND']: {
 			let c = new Command(this.data[0]);
 			if (this.data[1] == 'v') {
@@ -167,6 +184,7 @@ class NexParser {
 		case st['ENDWORD']:
 		case st['ENDCOMMAND']:
 		case st['ENDZLIST']:
+		case st['ENDEXPECTATION']:
 		case st['ENDLAMBDA']: {
 			this.pop();
 			break;
