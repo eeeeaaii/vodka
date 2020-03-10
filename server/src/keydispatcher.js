@@ -38,7 +38,6 @@ function wrapError(prefix, message, inner) {
 	return e;
 }
 
-// s is either the nex or the node depending on RENDERNODES
 function insertOrAppend(s, obj) {
 	if (s.hasChildren()) {
 		manipulator.insertAfterSelectedAndSelect(obj);
@@ -48,16 +47,9 @@ function insertOrAppend(s, obj) {
 }
 
 function evaluateAndReplace(s) {
-	if (RENDERNODES) {
-		let n = evaluateNexSafely(s.getNex(), BUILTINS);
-		if (n) {
-			manipulator.replaceSelectedWith(new RenderNode(n));
-		}
-	} else {
-		let n = evaluateNexSafely(s, BUILTINS);
-		if (n) {
-			manipulator.replaceSelectedWith(n);			
-		}
+	let n = evaluateNexSafely(s.getNex(), BUILTINS);
+	if (n) {
+		manipulator.replaceSelectedWith(new RenderNode(n));
 	}
 }
 
@@ -114,13 +106,11 @@ var KeyResponseFunctions = {
 	},
 
 	'toggle-dir': function(s) {
-		(RENDERNODES ? s.getNex() : s).toggleDir();
+		s.getNex().toggleDir();
 	},
 
 	'toggle-exploded': function(s) {
-		if (RENDERNODES) {
-			s.toggleExplodedOverride();
-		} // else no op
+		s.toggleExplodedOverride();
 	},
 
 	'select-parent': function(s) { manipulator.selectParent(); },
@@ -135,7 +125,7 @@ var KeyResponseFunctions = {
 	'select-parent-and-remove-self': function(s) { manipulator.selectParent() && manipulator.removeNex(s); },
 
 	'start-modal-editing': function(s) {
-		(RENDERNODES ? s.getNex() : s).startModalEditing();
+		s.getNex().startModalEditing();
 	},
 
 	'replace-selected-with-command': function(s) { manipulator.replaceSelectedWith(new Command()); },
@@ -192,7 +182,7 @@ var KeyResponseFunctions = {
 
 	'remove-separator-and-possibly-join-words': function(s) {
 		manipulator.removeSelectedAndSelectPreviousLeaf();
-		let p = (RENDERNODES ? selectedNode : selectedNex).getParent();
+		let p = selectedNode.getParent();
 		manipulator.joinToSiblingIfSame(p);
 	},
 
@@ -212,13 +202,9 @@ var KeyResponseFunctions = {
 
 	'insert-letter-after-separator': function(s) {
 		let newword = new Word();
-		if (RENDERNODES) {
-			newword = new RenderNode(newword);
-		}
+		newword = new RenderNode(newword);
 		let newletter = new Letter(s);
-		if (RENDERNODES) {
-			newletter = new RenderNode(newletter);
-		}
+		newletter = new RenderNode(newletter);
 		newword.appendChild(newletter);
 		manipulator.insertAfterSelectedAndSelect(newword);
 		manipulator.joinToSiblingIfSame(newword);
@@ -267,7 +253,7 @@ var KeyResponseFunctions = {
 	},
 
 	'call-delete-handler-then-remove-selected-and-select-previous-sibling': function(s) {
-		(RENDERNODES ? s.getNex() : s).callDeleteHandler();
+		s.getNex().callDeleteHandler();
 		manipulator.removeSelectedAndSelectPreviousSibling();
 	},
 
@@ -276,24 +262,24 @@ var KeyResponseFunctions = {
 	},
 
 	'delete-last-command-letter-or-remove-selected-and-select-previous-sibling': function(s) {
-		if (!(RENDERNODES ? s.getNex() : s).isEmpty()) {
-			(RENDERNODES ? s.getNex() : s).deleteLastCommandLetter();
+		if (!s.getNex().isEmpty()) {
+			s.getNex().deleteLastCommandLetter();
 		} else {
 			manipulator.removeSelectedAndSelectPreviousSibling();
 		}
 	},
 
 	'delete-last-amp-letter-or-remove-selected-and-select-previous-sibling': function(s) {
-		if (!(RENDERNODES ? s.getNex() : s).isEmpty()) {
-			(RENDERNODES ? s.getNex() : s).deleteLastAmpLetter();
+		if (!s.getNex().isEmpty()) {
+			s.getNex().deleteLastAmpLetter();
 		} else {
 			manipulator.removeSelectedAndSelectPreviousSibling();
 		}
 	},
 
 	'delete-last-letter-or-remove-selected-and-select-previous-leaf': function(s) {
-		if (!(RENDERNODES ? s.getNex() : s).isEmpty()) {
-			(RENDERNODES ? s.getNex() : s).deleteLastLetter();
+		if (!s.getNex().isEmpty()) {
+			s.getNex().deleteLastLetter();
 		} else {
 			manipulator.removeSelectedAndSelectPreviousLeaf();
 		}
@@ -313,7 +299,7 @@ var KeyResponseFunctions = {
 	},
 
 	'do-line-break-always': function(s) {
-		let newline = RENDERNODES ? new RenderNode(new Newline()) : new Newline();
+		let newline = new RenderNode(new Newline());
 		manipulator.insertAfterSelected(newline)
 			&& manipulator.putAllNextSiblingsInNewLine()
 			&& newline.setSelected();
@@ -324,7 +310,7 @@ var KeyResponseFunctions = {
 			manipulator.insertAfterSelectedAndSelect(new Line())
 				&& manipulator.appendAndSelect(new Newline());
 		} else {
-			let newline = RENDERNODES ? new RenderNode(new Newline()) : new Newline();
+			let newline = new RenderNode(new Newline());
 			manipulator.insertAfterSelected(newline)
 				&& manipulator.putAllNextSiblingsInNewLine()
 				&& newline.setSelected();
@@ -332,10 +318,10 @@ var KeyResponseFunctions = {
 	},
 
 	'replace-selected-with-word-correctly': function(s) {
-		let selected = RENDERNODES ? selectedNode : selectedNex;
-		let obj = RENDERNODES ? new RenderNode(new Word()) : new Word();
+		let selected = selectedNode;
+		let obj = new RenderNode(new Word());
 		if (isDoc(selected.getParent())) {
-			let ln = RENDERNODES ? new RenderNode(new Line()) : new Line();
+			let ln = new RenderNode(new Line());
 			ln.appendChild(obj);
 			manipulator.replaceSelectedWith(ln);
 			obj.setSelected();
@@ -346,7 +332,7 @@ var KeyResponseFunctions = {
 
 
 	'do-line-break-after-letter': function(s) {
-		let newline = RENDERNODES ? new RenderNode(new Newline()) : new Newline();
+		let newline = new RenderNode(new Newline());
 		if (isWord(s.getParent())) {
 			manipulator.splitCurrentWordIntoTwo()
 				&& manipulator.selectParent()
@@ -366,7 +352,7 @@ var KeyResponseFunctions = {
 		if (manipulator.selectPreviousLeaf()) {
 			let oldParent = s.getParent(); // may need later
 			manipulator.removeNex(s);
-			s = RENDERNODES ? selectedNode : selectedNex;
+			s = selectedNode;
 			let line;
 			let word;
 			// when we selected the previous sibling, we may be:
@@ -374,16 +360,16 @@ var KeyResponseFunctions = {
 			// 2. in a line
 			// 3. neither
 			let parent = s.getParent();
-			if ((RENDERNODES ? parent.getNex() : parent) instanceof Line) {
+			if (parent.getNex() instanceof Line) {
 				manipulator.joinToSiblingIfSame(parent);
 				return true;
 			}
 			let parent2 = parent.getParent();
 			if (parent2 != null) {
-				if ((RENDERNODES ? parent2.getNex() : parent2) instanceof Line) {
+				if (parent2.getNex() instanceof Line) {
 					manipulator.joinToSiblingIfSame(parent2);
 					// not done yet -- we also need to join words if applicable
-					if ((RENDERNODES ? parent.getNex() : parent) instanceof Word) {
+					if (parent.getNex() instanceof Word) {
 						manipulator.joinToSiblingIfSame(parent);
 					}
 					return true;
@@ -405,19 +391,10 @@ var KeyResponseFunctions = {
 class KeyDispatcher {
 	dispatch(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 		let keyContext = ContextType.COMMAND;
-		if (RENDERNODES) {
-			let p = selectedNode.getParent();
-			if (p) {
-				while((keyContext = p.getNex().getContextType()) == ContextType.PASSTHROUGH) {
-					p = p.getParent();
-				}
-			}
-		} else {
-			let p = selectedNex.getParent();
-			if (p) {
-				while((keyContext = p.getContextType()) == ContextType.PASSTHROUGH) {
-					p = p.getParent();
-				}
+		let p = selectedNode.getParent();
+		if (p) {
+			while((keyContext = p.getNex().getContextType()) == ContextType.PASSTHROUGH) {
+				p = p.getParent();
 			}
 		}
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasAlt);
@@ -442,9 +419,6 @@ class KeyDispatcher {
 			return false; // to cancel browser event
 		// TODO: string opening and closing is mapped to shift-enter,
 		// but this should be reserved for only executing code.
-//		} else if (eventName == 'ShiftEnter') {
-//			this.doShiftEnter();
-//			return false; // to cancel browser event
 		} else if (eventName == '`') {
 			// reserved for future use
 			return false; // to cancel browser event
@@ -454,21 +428,13 @@ class KeyDispatcher {
 			// 3. call defaultHandle
 			// otherwise try the table first, then the keyfunnel
 			try {
-				let sourceNex = (RENDERNODES ? selectedNode.getNex() : selectedNex);
+				let sourceNex = (selectedNode.getNex());
 				let parentNex = null;
-				if (RENDERNODES) {
-					if (selectedNode.getParent()) {
-						parentNex = selectedNode.getParent().getNex();
-					}
-				} else {
-					parentNex = selectedNex.getParent();
+				if (selectedNode.getParent()) {
+					parentNex = selectedNode.getParent().getNex();
 				}
 				// returning false here means we tell the browser not to process the event.
-				if (RENDERNODES) {
-					if (this.runDefaultHandle(sourceNex, eventName, keyContext, selectedNode)) return false;
-				} else {
-					if (this.runDefaultHandle(sourceNex, eventName, keyContext)) return false;
-				}
+				if (this.runDefaultHandle(sourceNex, eventName, keyContext, selectedNode)) return false;
 				if (this.runFunctionFromOverrideTable(sourceNex, parentNex, eventName)) return false;
 				if (this.runFunctionFromRegularTable(sourceNex, eventName)) return false;
 				if (this.runFunctionFromGenericTable(sourceNex, eventName)) return false;
@@ -515,7 +481,7 @@ class KeyDispatcher {
 		}
 	}
 
-	runDefaultHandle(sourceNex, eventName, context, sourceNode /* null if not RENDERNODES */) {
+	runDefaultHandle(sourceNex, eventName, context, sourceNode) {
 		return sourceNex.defaultHandle(eventName, context, sourceNode);
 	}
 
@@ -576,10 +542,10 @@ class KeyDispatcher {
 	// returns true if it was a valid function that could be run
 	actOnFunction(f) {
 		if ((typeof f) == 'string') {
-			KeyResponseFunctions[f](RENDERNODES ? selectedNode : selectedNex);
+			KeyResponseFunctions[f](selectedNode);
 			return true;
 		} else if ((typeof f) == 'function') {
-			f(RENDERNODES ? selectedNode : selectedNex);
+			f(selectedNode);
 			return true;
 		} else if (f instanceof Nex) {
 			evaluateNexSafely(f, BUILTINS)
@@ -600,51 +566,40 @@ class KeyDispatcher {
 	doAltEnter() {
 		isStepEvaluating = true;
 		try {
-			let s = RENDERNODES ? selectedNode.getNex() : selectedNex;
+			let s = selectedNode.getNex();
 			let phaseExecutor = s.phaseExecutor;
 			let firstStep = false;
 			if (!phaseExecutor) {
 				firstStep = true;
 				phaseExecutor = new PhaseExecutor();
-				if (RENDERNODES) {
-					// need to copy the selected nex, replace it in the parent, and discard!
-					let copiedNex = selectedNode.getNex().makeCopy();
-					let parentNode = selectedNode.getParent();
-					let parentNex = parentNode.getNex();
-					parentNex.replaceChildWith(selectedNode.getNex(), copiedNex);
-					// rerender the parent to refresh/fix the cached childnodes in it
-					parentNode.childnodes = []; // wtf
-					parentNode.render(current_default_render_flags);
-					let index = parentNex.getIndexOfChild(copiedNex);
-					let newSelectedNode = parentNode.getChildAt(index);
-					newSelectedNode.setSelected();
-					topLevelRender();
-					s = selectedNode.getNex();
-				}
+				// need to copy the selected nex, replace it in the parent, and discard!
+				let copiedNex = selectedNode.getNex().makeCopy();
+				let parentNode = selectedNode.getParent();
+				let parentNex = parentNode.getNex();
+				parentNex.replaceChildWith(selectedNode.getNex(), copiedNex);
+				// rerender the parent to refresh/fix the cached childnodes in it
+				parentNode.childnodes = []; // wtf
+				parentNode.render(current_default_render_flags);
+				let index = parentNex.getIndexOfChild(copiedNex);
+				let newSelectedNode = parentNode.getChildAt(index);
+				newSelectedNode.setSelected();
+				topLevelRender();
+				s = selectedNode.getNex();
 				s.pushNexPhase(phaseExecutor, BUILTINS);
 			}
 			phaseExecutor.doNextStep();
-			if (RENDERNODES) {
-				// to fix up all the pointers and stuff so that getParent works right below.
-				topLevelRender();
-			}
+			topLevelRender();
 			if (!phaseExecutor.finished()) {
 				// the resolution of an expectation will change the selected nex,
 				// so need to set it back
 				if (firstStep) {
 					// the first step is PROBABLY an expectation phase
-					if (RENDERNODES) {
-						let operativeNode = s.getRenderNodes()[0].getParent();
-						let operativeNex = operativeNode.getNex();
-						operativeNode.setSelected();
-						operativeNex.phaseExecutor = phaseExecutor;
-					} else {
-						let operativeNex = s.getParent();
-						operativeNex.setSelected();
-						operativeNex.phaseExecutor = phaseExecutor;
-					}
+					let operativeNode = s.getRenderNodes()[0].getParent();
+					let operativeNex = operativeNode.getNex();
+					operativeNode.setSelected();
+					operativeNex.phaseExecutor = phaseExecutor;
 				} else {
-					RENDERNODES ? s.getRenderNodes()[0].setSelected() : s.setSelected();
+					s.getRenderNodes()[0].setSelected();
 				}
 			} else {
 				// if I don't explicitly set the selected nex, it'll be the

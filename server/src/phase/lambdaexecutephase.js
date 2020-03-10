@@ -69,9 +69,7 @@ class LambdaExecutePhase extends Phase {
 	finish() {
 		let tmpChildren = this.lambda.getChildrenForStepEval();
 		let result = tmpChildren[tmpChildren.length - 1];
-		let parent = RENDERNODES
-				? this.lambda.getRenderNodes()[0].getParent().getNex()
-				: this.lambda.getParent();
+		let parent = this.lambda.getRenderNodes()[0].getParent().getNex();
 		parent.replaceChildWith(this.lambda, result);
 
 	}

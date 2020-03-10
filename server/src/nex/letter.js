@@ -48,23 +48,12 @@ class Letter extends Nex {
 		return new LetterKeyFunnel(this);
 	}
 
-	renderInto(domNode, renderFlags, skipTags) {
-		let toPassToSuperclass = domNode;
-		if (RENDERNODES) {
-			// change param name
-			domNode = domNode.getDomNode();
-		}
-		// skipTags = still gross
-		super.renderInto(toPassToSuperclass, renderFlags);
+	renderInto(renderNode, renderFlags, skipTags) {
+		let domNode = renderNode.getDomNode();
+		super.renderInto(renderNode, renderFlags);
 		domNode.classList.add('letter');
 		domNode.classList.add('data');
 		domNode.innerHTML = (this.value == " " ? "&nbsp;" : this.value) ;
-		// TODO: clean up render steps, this is gross
-		if (!RENDERNODES) {
-			if (!skipTags) {
-				this.renderTags(domNode, renderFlags);
-			}
-		}
 	}
 
 	getText() {

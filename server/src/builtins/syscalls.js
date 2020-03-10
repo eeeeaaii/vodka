@@ -101,13 +101,11 @@ function createSyscalls() {
 			let lst = env.lb('nex...');
 			var $dom = [];
 			var $nex = [];
-			if (RENDERNODES) {
-				var $node = [];
-			}
+			var $node = [];
 			for (let i = 0; i < lst.numChildren(); i++) {
 				let child = lst.getChildAt(i);
 				$nex[i] = child;
-				if (RENDERNODES && child.getRenderNodes()) {
+				if (child.getRenderNodes()) {
 					let nodes = child.getRenderNodes();
 					$node[i] = nodes[0];
 					if ($node[i]) {

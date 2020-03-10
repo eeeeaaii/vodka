@@ -189,73 +189,13 @@ class NexContainer extends Nex {
 		this.vdir = false;
 	}
 
-	rerender(renderFlags) {
-		if (RENDERNODES) {
-			throw new Error('not used with rendernodes');
-		}
-		if (!this.renderedDomNode) {
-			return; // can't rerender if we haven't rendered yet.
-		}
-		if (renderFlags & RENDER_FLAG_SHALLOW) {
-			this.savedChildDomNodes = [];
-			if (LINKEDLIST) {
-				for (let p = this.firstChildNex; p != null; p = p.next) {
-					this.savedChildDomNodes.push(p.n.renderedDomNode);
-				}
-			} else {
-				for (let i = 0; i < this.children.length; i++) {
-					this.savedChildDomNodes.push(this.children[i].renderedDomNode);
-				}
-			}
-			// note: this nex may create other dom nodes so we explicitly
-			// only save the children and we still allow the superclass
-			// to set innerHTML = ""
-		}
-		super.rerender(renderFlags);
-	}
-
-	renderInto(domNode, renderFlags) {
-		let toPassToSuperclass = domNode;
-		if (RENDERNODES) {
-			// change param name
-			domNode = domNode.getDomNode();
-		}
-		super.renderInto(toPassToSuperclass, renderFlags);
+	renderInto(renderNode, renderFlags) {
+		let domNode = renderNode.getDomNode();
+		super.renderInto(renderNode, renderFlags);
 		if (this.vdir) {
 			domNode.classList.add('vdir');
 		} else {
 			domNode.classList.remove('vdir');
-		}
-		if (RENDERNODES) {
-			// nothing more to do, the rest has to do with children
-			return;
-		}
-		if (!(renderFlags & RENDER_FLAG_EXPLODED)
-				&& !this.renderChildrenIfNormal()) {
-			return;
-		}
-
-		if (this.savedChildDomNodes) {
-			// we are doing a shallow rerender
-			for (let i = 0; i < this.savedChildDomNodes.length; i++) {
-				domNode.appendChild(this.savedChildDomNodes[i]);
-			}
-			this.savedChildDomNodes = null;
-		} else {
-			// full rerender
-			if (LINKEDLIST) {
-				for (let p = this.firstChildNex; p != null; p = p.next) {
-					let childDomNode = document.createElement("div");
-					domNode.appendChild(childDomNode);
-					p.n.renderInto(childDomNode, renderFlags);
-				}
-			} else {
-				for (let i = 0; i < this.children.length; i++) {
-					let childDomNode = document.createElement("div");
-					domNode.appendChild(childDomNode);
-					this.children[i].renderInto(childDomNode, renderFlags);
-				}
-			}
 		}
 	}
 
@@ -351,17 +291,11 @@ class NexContainer extends Nex {
 				}
 			}
 			this.numChildNexes--;
-			if (!RENDERNODES) {
-				r.setParent(null);
-			}
 			return r;
 		} else {
 			if (i < 0 || i >= this.children.length) return null;
 			let r = this.children[i];
 			this.children.splice(i, 1);
-			if (!RENDERNODES) {
-				r.setParent(null);
-			}
 			return r;
 		}
 	}
@@ -369,34 +303,6 @@ class NexContainer extends Nex {
 	insertChildAt(c, i) {
 		if (i < 0 || i > (LINKEDLIST ? this.numChildNexes : this.children.length)) {
 			return;
-		}
-		if (!RENDERNODES) {
-			let oldparent = c.getParent();
-			if (oldparent) {
-				if (oldparent == this) {
-					// ugh
-					let oldi = oldparent.getIndexOfChild(c);
-					if (oldi == i) {
-						// no-op
-						return;
-					} else if (oldi < i) {
-						// n0 old n2 n3 n4
-						//           ^ins
-						// remove:
-						// n0 n2 n3 n4
-						i--;
-						oldparent.removeChild(c);
-					} else {
-						// n0 n1 n2 old n4
-						//    ^ins
-						// n0 n1 n2 n4
-						// it's fine
-						oldparent.removeChild(c);
-					}
-				} else {
-					oldparent.removeChild(c);
-				}
-			}
 		}
 		if (LINKEDLIST) {
 			let newP = new ChildNex(c);
@@ -424,15 +330,9 @@ class NexContainer extends Nex {
 				this.children.splice(i, 0, c);	
 			}
 		}
-		if (!RENDERNODES) {
-			c.setParent(this);
-		}
-		// if we have RENDERNODES we have to do a little fuckery for expectations,
-		// but this should be okay because expectations are supposed to be temporary.
-		if (RENDERNODES) {
-			if (c instanceof Expectation) {
-				c.addParent(this);
-			}
+		// expectations fuckery -- better way? at least they are temporary?
+		if (c instanceof Expectation) {
+			c.addParent(this);
 		}
 	}
 

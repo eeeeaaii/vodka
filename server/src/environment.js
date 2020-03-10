@@ -23,8 +23,6 @@ class Environment {
 	constructor(parentEnv) {
 		this.parentEnv = parentEnv;
 		this.symbols = {};
-		// deprecated
-		this.uniques = {};
 	}
 
 	debug(lvl) {
@@ -55,10 +53,6 @@ class Environment {
 		this.bind(name, val);
 	}
 
-	bindUniqueInPackage(name, val) {
-		this.bindUnique(name, val);
-	}
-
 	bind(name, val) {
 		val.setBoundName(name);
 		this.symbols[name] = val;
@@ -70,13 +64,6 @@ class Environment {
 		} else if (this.parentEnv) {
 			this.parentEnv.set(name, val);
 		}
-	}
-
-	bindUnique(name, val) {
-		if (RENDERNODES) {
-			throw new Error('deprecated in RENDERNODES');
-		}
-		this.uniques[name] = val;
 	}
 
 	lb(name) {
@@ -97,11 +84,7 @@ class Environment {
 			}
 			return z;
 		} else {
-			if (RENDERNODES) {
-				return this.symbols[nm];
-			} else {
-				return this.symbols[nm].makeCopy();
-			}
+			return this.symbols[nm];
 		}
 	}
 
@@ -111,22 +94,13 @@ class Environment {
 		for (nm in this.symbols) {
 			r.push(nm);
 		}
-		for (nm in this.uniques) {
-			r.push(nm);
-		}
 		return r;
 	}
 
 	lookupBinding(name) {
 		let tmp = this.symbols[name];
 		if (tmp) {
-			if (RENDERNODES) {
-				return tmp;
-			} else {
-				return tmp.makeCopy();
-			}
-//		} else if (this.uniques[name]) {
-//			return this.uniques[name];
+			return tmp;
 		} else if (this.parentEnv) {
 			return this.parentEnv.lookupBinding(name);
 		} else {

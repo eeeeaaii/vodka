@@ -25,32 +25,32 @@ function isDocElement(n) {
 }
 
 function isExpectation(n) {
-	if (RENDERNODES && (n instanceof RenderNode)) n = n.getNex();
+	if (n instanceof RenderNode) n = n.getNex();
 	return (n instanceof Expectation);
 }
 
 function isDoc(n) {
-	if (RENDERNODES && (n instanceof RenderNode)) n = n.getNex();
+	if (n instanceof RenderNode) n = n.getNex();
 	return (n instanceof Doc);
 }
 
 function isLine(n) {
-	if (RENDERNODES && (n instanceof RenderNode)) n = n.getNex();
+	if (n instanceof RenderNode) n = n.getNex();
 	return (n instanceof Line);
 }
 
 function isWord(n) {
-	if (RENDERNODES && (n instanceof RenderNode)) n = n.getNex();
+	if (n instanceof RenderNode) n = n.getNex();
 	return (n instanceof Word);
 }
 
 function isSeparator(n) {
-	if (RENDERNODES && (n instanceof RenderNode)) n = n.getNex();
+	if (n instanceof RenderNode) n = n.getNex();
 	return (n instanceof Separator);
 }
 
 function isLetter(n) {
-	if (RENDERNODES && (n instanceof RenderNode)) n = n.getNex();
+	if (n instanceof RenderNode) n = n.getNex();
 	return (n instanceof Letter && !(n instanceof Separator));
 }
 
@@ -59,26 +59,26 @@ function isCodeContainer(n) {
 }
 
 function isNexContainer(n) {
-	if (RENDERNODES && (n instanceof RenderNode)) n = n.getNex();
+	if (n instanceof RenderNode) n = n.getNex();
 	return (n instanceof NexContainer);
 }
 
 function isEString(n) {
-	if (RENDERNODES && (n instanceof RenderNode)) n = n.getNex();
+	if (n instanceof RenderNode) n = n.getNex();
 	return (n instanceof EString);
 }
 
 function isCommand(n) {
-	if (RENDERNODES && (n instanceof RenderNode)) n = n.getNex();
+	if (n instanceof RenderNode) n = n.getNex();
 	return (n instanceof Command);
 }
 
 function isLambda(n) {
-	if (RENDERNODES && (n instanceof RenderNode)) n = n.getNex();
+	if (n instanceof RenderNode) n = n.getNex();
 	return (n instanceof Lambda);
 }
 
 function isInsertionPoint(n) {
-	if (RENDERNODES && (n instanceof RenderNode)) n = n.getNex();
+	if (n instanceof RenderNode) n = n.getNex();
 	return (n instanceof InsertionPoint);
 }

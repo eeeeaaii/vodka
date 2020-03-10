@@ -17,9 +17,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 // experiments
 
-// allows the same nex to be rendered in multiple places on the screen
-const RENDERNODES = true;
-
 // store children of NexContainer as linked list
 // allowing cons/cdr to work as expected
 const LINKEDLIST= true;
@@ -78,7 +75,6 @@ const RENDER_FLAG_NORMAL = 0;
 const RENDER_FLAG_SHALLOW = 1;
 const RENDER_FLAG_EXPLODED = 2;
 const RENDER_FLAG_RERENDER = 4;
-// only used in RENDERNODES
 const RENDER_FLAG_SELECTED = 8;
 const RENDER_FLAG_REMOVE_OVERRIDES = 16; // get rid of normal/exploded overrides
 
@@ -93,11 +89,7 @@ const manipulator = new Manipulator();
 const stepEvaluator = new StepEvaluator();
 var root = null;
 var hiddenroot = null;
-if (RENDERNODES) {
-	var selectedNode = null;
-} else {
-	var selectedNex = null; // make singleton?
-}
+var selectedNode = null;
 
 //var environment = null; // unused
 
@@ -155,40 +147,24 @@ function topLevelRenderSelectingNode(node) {
 		overrideOnNextRender = false;
 		flags |= RENDER_FLAG_REMOVE_OVERRIDES;
 	}
-	if (RENDERNODES) {
-		root.render(flags);
-	} else {
-		let rootDomNode = null;
-		rootDomNode = document.getElementById('mixroot');
-		while (rootDomNode.firstChild) {
-			rootDomNode.removeChild(rootDomNode.firstChild);
-		}
-		root.renderInto(rootDomNode, flags);		
-	}
+	root.render(flags);
 }
 
 function setup() {
 	// createBuiltins is defined in executors.js
 	createBuiltins();
 	BUILTINS = BUILTINS.pushEnv();
-	if (RENDERNODES) {
-		hiddenroot = new RenderNode(new Root(true));
-		let hiddenRootDomNode = document.getElementById('hiddenroot');
-		hiddenroot.setDomNode(hiddenRootDomNode);
+	hiddenroot = new RenderNode(new Root(true));
+	let hiddenRootDomNode = document.getElementById('hiddenroot');
+	hiddenroot.setDomNode(hiddenRootDomNode);
 
-		let rootnex = new Root(true /* attached */);
-		root = new RenderNode(rootnex);
-		let rootDomNode = document.getElementById('mixroot');
-		root.setDomNode(rootDomNode);
+	let rootnex = new Root(true /* attached */);
+	root = new RenderNode(rootnex);
+	let rootDomNode = document.getElementById('mixroot');
+	root.setDomNode(rootDomNode);
 
-		let docNode = root.appendChild(new Doc());
-		docNode.setSelected(false /* don't render yet */);
-	} else {
-		root = new Root(true /* attached */);
-		let topdoc = new Doc();
-		root.appendChild(topdoc);
-		topdoc.setSelected();
-	}
+	let docNode = root.appendChild(new Doc());
+	docNode.setSelected(false /* don't render yet */);
 	document.onclick = function(e) {
 		checkRecordState(e, 'mouse');
 		return true;

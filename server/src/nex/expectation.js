@@ -26,7 +26,7 @@ class Expectation extends NexContainer {
 		this.hackfunction = hackfunction;
 		// also deprecated
 		this.completionlisteners = [];
-		this.parentlist = []; // for RENDERNODES
+		this.parentlist = [];
 		// fff is somehow more readable than "fulfillfunction"
 		// like I don't have to remember how to spell it
 		this.fff = null;
@@ -51,7 +51,6 @@ class Expectation extends NexContainer {
 		this.fff = f;
 	}
 
-	// for RENDERNODES
 	addParent(parent) {
 		this.parentlist.push(parent);
 	}
@@ -100,19 +99,15 @@ class Expectation extends NexContainer {
 		return ContextType.COMMAND;
 	}
 
-	renderInto(domNode, renderFlags) {
-		let toPassToSuperclass = domNode;
-		if (RENDERNODES) {
-			// change param name
-			domNode = domNode.getDomNode();
-		}
+	renderInto(renderNode, renderFlags) {
+		let domNode = renderNode.getDomNode();
 		let dotspan = null;
 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
 			dotspan = document.createElement("span");
 			dotspan.classList.add('dotspan');
 			domNode.appendChild(dotspan);
 		}
-		super.renderInto(toPassToSuperclass, renderFlags);
+		super.renderInto(renderNode, renderFlags);
 		domNode.classList.add('expectation');
 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
 			if (renderFlags & RENDER_FLAG_EXPLODED) {
@@ -121,9 +116,6 @@ class Expectation extends NexContainer {
 				dotspan.classList.remove('exploded');
 			}
 			dotspan.innerHTML = '...';
-		}
-		if (!RENDERNODES) {
-			this.renderTags(domNode, renderFlags);
 		}
 	}
 
@@ -178,7 +170,7 @@ class Expectation extends NexContainer {
 		return this.fff();
 	}
 
-	fulfillRendernodes(passedInFFF) {
+	fulfill(passedInFFF) {
 		let newnex = this.getFulfilledThing(passedInFFF);
 
 		// fuckery here
@@ -203,33 +195,6 @@ class Expectation extends NexContainer {
 		for (let i = 0; i < this.completionlisteners.length; i++) {
 			this.completionlisteners[i](newnex);
 		}
-	}
-
-	fulfill(newnex) {
-		if (RENDERNODES) {
-			this.fulfillRendernodes(newnex);
-			return;
-		}
-		if (this.hackfunction) {
-			newnex = this.hackfunction(newnex);
-		}
-		if (RENDERNODES) {
-			this.fulfillRendernodes(newnex);
-		} else {
-			let parent = this.getParent();
-			let wasSelected = this.isSelected();
-			parent.replaceChildWith(this, newnex);
-			parent.rerender(current_default_render_flags);
-			if (wasSelected) {
-				newnex.setSelected(true/*shallow-rerender*/);
-			}
-
-		}
-		for (let i = 0; i < this.completionlisteners.length; i++) {
-			this.completionlisteners[i](newnex);
-		}
-		// I don't think we usually do anything with this return value.
-		return newnex;
 	}
 
 	defaultHandle(txt) {

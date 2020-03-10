@@ -28,8 +28,9 @@ class InsertionPoint extends ValueNex {
 
 	// TODO: fix the bug in this where if you click somewhere
 	// else the insertion point just hangs around.
-	// also with RENDERNODES there's actually no need for
-	// this to be a nex, it can be a RenderNode only.
+	// TODO: make this not a nex anymore and handle at the RenderNode level
+	// TODO: just get rid of insertion points and have pre-insert
+	// TODO: figure out which of the above todo's to do
 
 	makeCopy() {
 		let r = new InsertionPoint();
@@ -60,7 +61,7 @@ class InsertionPoint extends ValueNex {
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 
-		let parent = (RENDERNODES ? sourceNode.getParent() : this.getParent());
+		let parent = sourceNode.getParent();
 
 		if (isSeparator) {
 			if (isWord(parent)) {
@@ -72,16 +73,16 @@ class InsertionPoint extends ValueNex {
 			}
 		} else {
 			if (isDoc(parent)) {
-				let ln = (RENDERNODES ? new RenderNode(new Line()) : new Line());
-				let w = (RENDERNODES ? new RenderNode(new Word()) : new Word());
-				let lt = (RENDERNODES ? new RenderNode(new Letter(txt)) : new Letter(txt));
+				let ln = new RenderNode(new Line());
+				let w = new RenderNode(new Word());
+				let lt = new RenderNode(new Letter(txt));
 				ln.appendChild(w);
 				w.appendChild(lt);
 				manipulator.replaceSelectedWith(ln);
 				lt.setSelected();
 			} else if (isLine(parent)) {
-				let w = (RENDERNODES ? new RenderNode(new Word()) : new Word());
-				let lt = (RENDERNODES ? new RenderNode(new Letter(txt)) : new Letter(txt));
+				let w = new RenderNode(new Word());
+				let lt = new RenderNode(new Letter(txt));
 				w.appendChild(lt);
 				manipulator.replaceSelectedWith(w);
 				lt.setSelected();

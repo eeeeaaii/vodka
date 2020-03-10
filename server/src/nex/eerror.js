@@ -100,12 +100,8 @@ class EError extends NexContainer {
 	}
 
 	// bork, does it bork the test tho?
-	drawTextField(domNode) {
-		let toPass = domNode;
-		if (RENDERNODES) {
-			// change param name
-			domNode = domNode.getDomNode();
-		}
+	drawTextField(renderNode) {
+		let domNode = renderNode.getDomNode();
 		this.inputfield = document.createElement("textarea");	
 		this.inputfield.classList.add('stringta');	
 		if (this.fullValue) {
@@ -122,12 +118,8 @@ class EError extends NexContainer {
 		deactivateKeyFunnel();
 	}
 
-	drawNormal(domNode) {
-		let toPass = domNode;
-		if (RENDERNODES) {
-			// change param name
-			domNode = domNode.getDomNode();
-		}
+	drawNormal(renderNode) {
+		let domNode = renderNode.getDomNode();
 		if (this.displayValue !== '') {
 			this.innerspan = document.createElement("div");
 			this.innerspan.classList.add('innerspan');
@@ -136,55 +128,40 @@ class EError extends NexContainer {
 		}
 	}
 
-	// arg only used in RENDERNODES
 	finishInput(renderNode) {
-		if (!renderNode && this.cachedThingUgh) {
-			renderNode = this.cachedThingUgh;
+		if (!renderNode && this.cachedRenderNodeHack) {
+			renderNode = this.cachedRenderNodeHack;
 		}
 		let val = this.inputfield.value;
 		activateKeyFunnel();
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val); // calls render
-		if (RENDERNODES) {
-			renderNode.render(current_default_render_flags
-					| RENDER_FLAG_RERENDER
-					| RENDER_FLAG_SHALLOW);
-		} else {
-			this.rerender(current_default_render_flags | RENDER_FLAG_SHALLOW)
-		}
+		renderNode.render(current_default_render_flags
+				| RENDER_FLAG_RERENDER
+				| RENDER_FLAG_SHALLOW);
 	}
 
-	drawExpanded(domNode) {
-		let toPass = domNode;
-		if (RENDERNODES) {
-			// TODO: fix this junk
-			this.cachedThingUgh = domNode;
-			// change param name
-			domNode = domNode.getDomNode();
-		}
-		this.drawTextField(toPass);
-		this.drawButton(toPass);
+	// TODO: this is dead code, errors are never drawn in "expanded mode" anymore
+
+	drawExpanded(renderNode) {
+		// TODO: fix this junk
+		this.cachedRenderNodeHack = renderNode;
+		this.drawTextField(renderNode);
+		this.drawButton(renderNode);
 		this.inputfield.focus();
 	}
 
-	renderInto(domNode, renderFlags) {
-		let toPassToSuperclass = domNode;
-		if (RENDERNODES) {
-			// change param name
-			domNode = domNode.getDomNode();
-		}
-		super.renderInto(toPassToSuperclass, renderFlags);
+	renderInto(renderNode, renderFlags) {
+		let domNode = renderNode.getDomNode();
+		super.renderInto(renderNode, renderFlags);
 		// this one always can rerender because it's not a container
 		// we only need to care about rerenders when it's a container type
 		domNode.classList.add('valuenex');
 		domNode.classList.add(this.className);
 		if (this.mode == MODE_NORMAL) {
-			this.drawNormal(toPassToSuperclass);
+			this.drawNormal(renderNode);
 		} else {
-			this.drawExpanded(toPassToSuperclass);
-		}
-		if (!RENDERNODES) {
-			this.renderTags(domNode, renderFlags);
+			this.drawExpanded(renderNode);
 		}
 	}
 

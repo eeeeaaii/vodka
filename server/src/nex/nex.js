@@ -19,8 +19,6 @@ NEXT_NEX_ID = 0;
 
 class Nex {
 	constructor() {
-		// unused in RENDERNODES
-		this.parent = null;
 		this.lastRenderPassNumber = null;
 		this.firstRenderNode = null;
 		this.rendernodes = [];
@@ -158,28 +156,6 @@ class Nex {
 		throw new Error("unimplemented export to string");
 	}
 
-	// Not used in RENDERNODES
-	getLeftX() {
-		if (RENDERNODES) {
-			throw new Error("unused with RENDERNODES");
-		}
-		if (this.renderedDomNode) {
-			return this.renderedDomNode.getBoundingClientRect().left;
-		} else return 0;
-	}
-
-	// Not used in RENDERNODES
-	getRightX() {
-		if (RENDERNODES) {
-			throw new Error("unused with RENDERNODES");
-		}
-		if (this.renderedDomNode) {
-			return this.renderedDomNode.getBoundingClientRect().right;
-		} else {
-			return 0;
-		}
-	}
-
 	setCurrentStyle(s) {
 		this.currentStyle = s;
 	}
@@ -203,40 +179,6 @@ class Nex {
 
 	getKeyFunnel() {}
 
-	getPositionInParent() {
-		if (RENDERNODES) {
-			throw new Error("Don't use in RENDERNODES");
-		}
-		let p = this.getParent();
-		if (!p) return -1;
-		for (let i = 0; i < p.children.length; i++) {
-			if (p.children[i] == this) {
-				return i;
-			}
-		}
-	}
-
-	_setClickHandler(domNode) {
-		domNode.onclick = (e) => {
-			let insertAfterRemove = false;
-			let oldSelectedNex = selectedNex;
-			if ((selectedNex instanceof EString
-				|| selectedNex instanceof EError)
-					&& selectedNex.getMode() == MODE_EXPANDED) {
-				selectedNex.finishInput();
-			} else if (selectedNex instanceof InsertionPoint) {
-				insertAfterRemove = true;
-			}
-
-			e.stopPropagation();
-			this.setSelected(true /*shallow-rerender*/);
-			if (insertAfterRemove && selectedNex != oldSelectedNex) {
-				manipulator.removeNex(oldSelectedNex);
-				topLevelRender();
-			}
-		};
-	}
-
 	// can return null if user clicks on some other thing
 	getParentNexOfDomElement(elt) {
 		while(elt && !elt.classList.contains('nex')) {
@@ -245,7 +187,7 @@ class Nex {
 		return elt;
 	}
 
-	_setRenderNodesClickHandler(renderNode) {
+	_setClickHandler(renderNode) {
 		renderNode.getDomNode().onclick = (e) => {
 			let parentNexDomElt = this.getParentNexOfDomElement(e.target);
 			if (selectedNode.getDomNode() == parentNexDomElt) {
@@ -270,57 +212,24 @@ class Nex {
 		};
 	}
 
-	rerender(renderFlags) {
-		if (RENDERNODES) {
-			throw new Error('not used with rendernodes');
-		}
-		renderFlags |= RENDER_FLAG_RERENDER;
-		if (!this.renderedDomNode) {
-			return; // can't rerender if we haven't rendered yet.
-		}
-		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-			this.renderedDomNode.innerHTML = "";
-		}
-		while(this.renderedDomNode.classList.length > 0) {
-			this.renderedDomNode.classList.remove(this.renderedDomNode.classList.item(0));
-		}
-		this.renderedDomNode.setAttribute("style", "");
-		this.renderInto(this.renderedDomNode, renderFlags);
-	}
-
-	renderInto(domNode, renderFlags) {
-		let renderNode = null;
-		if (RENDERNODES) {
-			// change param name
-			renderNode = domNode;
-			domNode = domNode.getDomNode();
-		}
+	renderInto(renderNode, renderFlags) {
+		let domNode = renderNode.getDomNode();
 		if (!(renderFlags & RENDER_FLAG_RERENDER)) {
-			RENDERNODES
-				? this._setRenderNodesClickHandler(renderNode)
-				: this._setClickHandler(domNode);
+			this._setClickHandler(renderNode);
 		}
 		domNode.classList.add('nex');
 
-		if (RENDERNODES) {
-			if (renderFlags & RENDER_FLAG_SELECTED) {
-				domNode.classList.add('selected');		
-			}
-		} else {
-			if (this.selected) {
-				domNode.classList.add('selected');		
-			// } else {
-			// 	domNode.classList.remove('selected');
-			}
+		if (renderFlags & RENDER_FLAG_SELECTED) {
+			domNode.classList.add('selected');		
 		}
 		let isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
 		if (isExploded) {
 			domNode.classList.add('exploded');
 		}
 		domNode.setAttribute("style", this.currentStyle);
-		this.renderedDomNode = domNode; // save for later, like if we need to get x/y loc
 	}
 
+	// actually is a domNode, not a renderNode
 	renderTags(domNode, renderFlags) {
 		if (
 			(renderFlags & RENDER_FLAG_SHALLOW)
@@ -333,58 +242,12 @@ class Nex {
 		}		
 	}
 
-
-	// unused in RENDERNODES
-	setParent(p) {
-		if (RENDERNODES) {
-			throw new Error("deprecated in RENDERNODES");
-		}
-		this.parent = p;
-	}
-
-	// not used in RENDERNODES
-	getParent(evenIfRoot) {
-		if (RENDERNODES) {
-			throw new Error("deprecated in RENDERNODES");
-		}
-		let p = this.parent;
-		if (p instanceof Root && !evenIfRoot) {
-			return null;
-		}
-		return this.parent;
-	}
-
 	isLeaf() {
 		return true;
 	}
 
 	isSelected() {
 		return this.selected;
-	}
-
-	setSelected(rerender) {
-		if (RENDERNODES) {
-			throw new Error("deprecated in RENDERNODES");
-		}
-		if (selectedNex == this) return;
-		if (selectedNex) {
-			selectedNex.setUnselected();
-			if (rerender) {
-				selectedNex.rerender(current_default_render_flags | RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW)
-			}
-		}
-		selectedNex = this;
-		this.selected = true;
-		if (rerender) {
-			this.rerender(current_default_render_flags | RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW)
-		}
-	}
-
-	setUnselected() {
-		if (RENDERNODES) {
-			throw new Error("deprecated in RENDERNODES");
-		}
-		this.selected = false;
 	}
 
 	defaultHandle() {

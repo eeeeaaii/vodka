@@ -98,8 +98,7 @@ class Integer extends ValueNex {
 	backspaceHack(sourceNode) {
 		let t = this.getRawValue();
 		if (t == '0') {
-			KeyResponseFunctions['remove-selected-and-select-previous-leaf'](
-				(RENDERNODES ? sourceNode : this));
+			KeyResponseFunctions['remove-selected-and-select-previous-leaf'](sourceNode);
 			return;
 		}
 		this.deleteLastLetter();

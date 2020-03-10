@@ -33,10 +33,8 @@ class LambdaBindingPhase extends Phase {
 	}
 
 	finish() {
-		let lambda = this.command.getLambda(this.env);
-		if (RENDERNODES) {
-			lambda = lambda.makeCopy();
-		}
+		// have to make copy because we modify the lambda I guess
+		let lambda = this.command.getLambda(this.env).makeCopy();
 		this.commandCallback.setLambda(lambda);
 		let closure = lambda.lexicalEnv.pushEnv();
 		let args = [];
@@ -45,9 +43,7 @@ class LambdaBindingPhase extends Phase {
 			args.push(tmpChildren[i]);
 		}
 		lambda.bind(args, closure);
-		let parent = RENDERNODES
-				? this.command.getRenderNodes()[0].getParent().getNex()
-				: this.command.getParent();
+		let parent = this.command.getRenderNodes()[0].getParent().getNex();
 		parent.replaceChildWith(this.command, lambda);
 		this.phaseExecutor.pushPhase(new LambdaExecutePhase(this.phaseExecutor, lambda, closure));
 	}

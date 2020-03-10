@@ -99,34 +99,23 @@ class EString extends ValueNex {
 		}
 	}
 
-	renderInto(domNode, renderFlags) {
-		let toPassToSuperclass = domNode;
-		if (RENDERNODES) {
-			// change param name
-			domNode = domNode.getDomNode();
-		}
-		super.renderInto(toPassToSuperclass, renderFlags);
+	renderInto(renderNode, renderFlags) {
+		let domNode = renderNode.getDomNode();
+		super.renderInto(renderNode, renderFlags);
 		// this one always can rerender because it's not a container
 		// we only need to care about rerenders when it's a container type
 		domNode.innerHTML = this.prefix;
 		domNode.classList.add(this.className);
 		domNode.classList.add('valuenex');
 		if (this.mode == MODE_NORMAL) {
-			this.drawNormal(toPassToSuperclass);
+			this.drawNormal(renderNode);
 		} else {
-			this.drawExpanded(toPassToSuperclass);
-		}
-		if (!RENDERNODES) {
-			this.renderTags(domNode, renderFlags);
+			this.drawExpanded(renderNode);
 		}
 	}
 
-	drawNormal(domNode) {
-		let toPass = domNode;
-		if (RENDERNODES) {
-			// change param name
-			domNode = domNode.getDomNode();
-		}
+	drawNormal(renderNode) {
+		let domNode = renderNode.getDomNode();
 		if (this.displayValue !== '') {
 			this.innerspan = document.createElement("div");
 			this.innerspan.classList.add('innerspan');
@@ -135,25 +124,16 @@ class EString extends ValueNex {
 		}
 	}
 
-	drawExpanded(domNode) {
-		let toPass = domNode;
-		if (RENDERNODES) {
-			// TODO: fix this junk
-			this.cachedThingUgh = domNode;
-			// change param name
-			domNode = domNode.getDomNode();
-		}
-		this.drawTextField(toPass);
-		this.drawButton(toPass);
+	drawExpanded(renderNode) {
+		// TODO: fix this junk
+		this.cachedRenderNodeHack = renderNode;
+		this.drawTextField(renderNode);
+		this.drawButton(renderNode);
 		this.inputfield.focus();
 	}
 
-	drawTextField(domNode) {
-		let toPass = domNode;
-		if (RENDERNODES) {
-			// change param name
-			domNode = domNode.getDomNode();
-		}
+	drawTextField(renderNode) {
+		let domNode = renderNode.getDomNode();
 		this.inputfield = document.createElement("textarea");	
 		this.inputfield.classList.add('stringta');	
 		if (this.fullValue) {
@@ -163,17 +143,13 @@ class EString extends ValueNex {
 		this.inputfield.classList.add('stringinput');
 	}
 
-	drawButton(domNode) {
-		let toPass = domNode;
-		if (RENDERNODES) {
-			// change param name
-			domNode = domNode.getDomNode();
-		}
+	drawButton(renderNode) {
+		let domNode = renderNode.getDomNode();
 		this.submitbutton = document.createElement("button")
 		this.submitbutton.classList.add('stringinputsubmit');			
 		let t = this;
 		this.submitbutton.onclick = function() {
-			t.finishInput(toPass);
+			t.finishInput(renderNode);
 		}
 		domNode.appendChild(this.submitbutton);
 	}
@@ -183,22 +159,17 @@ class EString extends ValueNex {
 		deactivateKeyFunnel();
 	}
 
-	// arg only used in RENDERNODES
 	finishInput(renderNode) {
-		if (!renderNode && this.cachedThingUgh) {
-			renderNode = this.cachedThingUgh;
+		if (!renderNode && this.cachedRenderNodeHack) {
+			renderNode = this.cachedRenderNodeHack;
 		}
 		let val = this.inputfield.value;
 		activateKeyFunnel();
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val); // calls render
-		if (RENDERNODES) {
-			renderNode.render(current_default_render_flags
-					| RENDER_FLAG_RERENDER
-					| RENDER_FLAG_SHALLOW);
-		} else {
-			this.rerender(current_default_render_flags | RENDER_FLAG_SHALLOW)
-		}
+		renderNode.render(current_default_render_flags
+				| RENDER_FLAG_RERENDER
+				| RENDER_FLAG_SHALLOW);
 	}
 
 	defaultHandle(txt) {
@@ -211,8 +182,8 @@ class EString extends ValueNex {
 		if (isSeparator) {
 			manipulator.insertAfterSelectedAndSelect(new Separator(txt))
 		} else {
-			let l = RENDERNODES ? new RenderNode(new Letter(txt)) : new Letter(txt);
-			let w = RENDERNODES ? new RenderNode(new Word()) :new Word();
+			let l = new RenderNode(new Letter(txt));
+			let w = new RenderNode(new Word());
 			w.appendChild(l);
 			manipulator.insertAfterSelectedAndSelect(w);
 			l.setSelected();

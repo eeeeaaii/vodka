@@ -15,7 +15,6 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// only used with RENDERNODES
 class StepEvaluator {
 	doStep() {
 		// TODO: refactor step eval

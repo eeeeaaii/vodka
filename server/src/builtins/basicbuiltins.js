@@ -309,7 +309,7 @@ function createBasicBuiltins() {
 			if (lhs instanceof Bool && rhs instanceof Bool) {
 				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
 			} else if (lhs instanceof Builtin && rhs instanceof Builtin) {
-				return new Bool(lhs == rhs); // won't work until RENDERNODES
+				return new Bool(lhs.getID() == rhs.getID());
 			} else if (lhs instanceof EString && rhs instanceof EString) {
 				return new Bool(lhs.getFullTypedValue() == rhs.getFullTypedValue());
 			} else if (lhs instanceof ESymbol && rhs instanceof ESymbol) {

@@ -20,56 +20,33 @@ var CLIPBOARD = null;
 class Manipulator {
 
 	conformData(data) {
-		if (RENDERNODES) {
-			if (data instanceof Nex) {
-				return new RenderNode(data);
-			}
-		}
-		return data;
+		if (data instanceof Nex) {
+			return new RenderNode(data);
+		} else return data;
 	}
 
 	doCut() {
-		if (RENDERNODES) {
-			CLIPBOARD = selectedNode.getNex();
-			let x = selectedNode;
-			this.selectPreviousSibling() || this.selectParent();		
-			this.removeNex(x);
-		} else {
-			CLIPBOARD = (RENDERNODES ? selectedNode : selectedNex).makeCopy();
-			let x = (RENDERNODES ? selectedNode : selectedNex);
-			this.selectPreviousSibling() || this.selectParent();		
-			this.removeNex(x);
-		}
+		CLIPBOARD = selectedNode.getNex();
+		let x = selectedNode;
+		this.selectPreviousSibling() || this.selectParent();		
+		this.removeNex(x);
 	}
 
 	doCopy() {
-		if (RENDERNODES) {
-			CLIPBOARD = selectedNode.getNex();
-		} else {
-			CLIPBOARD = selectedNex.makeCopy();
-
-		}
+		CLIPBOARD = selectedNode.getNex();
 	}
 
 	doPaste() {
-		if (RENDERNODES) {
-			if (isInsertionPoint(selectedNode)) {
-				this.replaceSelectedWith(CLIPBOARD.makeCopy())
-			} else {
-				this.insertAfterSelectedAndSelect(CLIPBOARD.makeCopy())
-			}
+		if (isInsertionPoint(selectedNode)) {
+			this.replaceSelectedWith(CLIPBOARD.makeCopy())
 		} else {
-			if (isInsertionPoint(selectedNex)) {
-				this.replaceSelectedWith(CLIPBOARD.makeCopy())
-			} else {
-				this.insertAfterSelectedAndSelect(CLIPBOARD.makeCopy())
-			}
+			this.insertAfterSelectedAndSelect(CLIPBOARD.makeCopy())
 		}
 	}
 
 	findNextSiblingThatSatisfies(f) {
 		while (this.selectNextSibling()) {
-			if (f((RENDERNODES ? selectedNode : selectedNex))) {
+			if (f(selectedNode)) {
 				return true;
 			}
 		}
@@ -80,30 +57,30 @@ class Manipulator {
 
 	selectCorrespondingLetterInPreviousLine() {
 		// get the current line and the previous line.
-		let enclosingLine = this.getEnclosingLine((RENDERNODES ? selectedNode : selectedNex));
+		let enclosingLine = this.getEnclosingLine(selectedNode);
 		if (!enclosingLine) return false;
 		let doc = enclosingLine.getParent();
 		if (!doc) return false;
 		let previousLine = doc.getChildBefore(enclosingLine);
 		if (!previousLine) return false;
 
-		let original = (RENDERNODES ? selectedNode : selectedNex);
+		let original = (selectedNode);
 		let targetX = original.getLeftX();
 		let c;
 
 		previousLine.setSelected();
 		this.selectFirstLeaf();
-		let lastX = (RENDERNODES ? selectedNode : selectedNex).getLeftX();
+		let lastX = (selectedNode).getLeftX();
 		if (targetX <= lastX) {
 			return true;
 		}
 
 		do {
-			if (this.getEnclosingLine((RENDERNODES ? selectedNode : selectedNex)) != previousLine) {
+			if (this.getEnclosingLine((selectedNode)) != previousLine) {
 				this.selectPreviousLeaf();
 				break;
 			}
-			let x = (RENDERNODES ? selectedNode : selectedNex).getLeftX();
+			let x = (selectedNode).getLeftX();
 			if (x > targetX) {
 				// this is the one
 				break;
@@ -115,30 +92,30 @@ class Manipulator {
 
 	selectCorrespondingLetterInNextLine() {
 		// get the current line and the previous line.
-		let enclosingLine = this.getEnclosingLine((RENDERNODES ? selectedNode : selectedNex));
+		let enclosingLine = this.getEnclosingLine((selectedNode));
 		if (!enclosingLine) return false;
 		let doc = enclosingLine.getParent();
 		if (!doc) return false;
 		let nextLine = doc.getChildAfter(enclosingLine);
 		if (!nextLine) return false;
 
-		let original = (RENDERNODES ? selectedNode : selectedNex);
+		let original = (selectedNode);
 		let targetX = original.getLeftX();
 		let c;
 
 		nextLine.setSelected();
 		this.selectFirstLeaf();
-		let lastX = (RENDERNODES ? selectedNode : selectedNex).getLeftX();
+		let lastX = (selectedNode).getLeftX();
 		if (targetX <= lastX) {
 			return true;
 		}
 
 		do {
-			if (this.getEnclosingLine((RENDERNODES ? selectedNode : selectedNex)) != nextLine) {
+			if (this.getEnclosingLine((selectedNode)) != nextLine) {
 				this.selectPreviousLeaf();
 				break;
 			}
-			let x = (RENDERNODES ? selectedNode : selectedNex).getLeftX();
+			let x = (selectedNode).getLeftX();
 			if (x > targetX) {
 				// this is the one
 				break;
@@ -160,33 +137,33 @@ class Manipulator {
 	// traversal
 
 	selectPreviousLeaf() {
-		let first = (RENDERNODES ? selectedNode : selectedNex);
+		let first = (selectedNode);
 		while(!this.selectPreviousSibling()) {
 			let p = this.selectParent();
-			if (!p || isCodeContainer((RENDERNODES ? selectedNode : selectedNex))) {
+			if (!p || isCodeContainer((selectedNode))) {
 				first.setSelected();
 				return false;
 			}
 		}
-		while(!isCodeContainer((RENDERNODES ? selectedNode : selectedNex)) && this.selectLastChild());
+		while(!isCodeContainer((selectedNode)) && this.selectLastChild());
 		return true;
 	}
 
 	selectNextLeaf() {
-		let first = (RENDERNODES ? selectedNode : selectedNex);
+		let first = (selectedNode);
 		while(!this.selectNextSibling()) {
 			let p = this.selectParent();
-			if (!p || isCodeContainer((RENDERNODES ? selectedNode : selectedNex))) {
+			if (!p || isCodeContainer((selectedNode))) {
 				first.setSelected();
 				return false;
 			}
 		}
-		while(!isCodeContainer((RENDERNODES ? selectedNode : selectedNex)) && this.selectFirstChild());
+		while(!isCodeContainer((selectedNode)) && this.selectFirstChild());
 		return true;
 	}
 
 	selectFirstLeaf() {
-		let c = (RENDERNODES ? selectedNode : selectedNex);
+		let c = (selectedNode);
 		while(isNexContainer(c) && c.hasChildren()) {
 			c = c.getFirstChild();
 		}
@@ -197,7 +174,7 @@ class Manipulator {
 	// generic selection stuff
 
 	selectLastChild() {
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		let s = (selectedNode);
 		if (!isNexContainer(s)) return false;
 		let c = s.getLastChild();
 		if (c) {
@@ -208,7 +185,7 @@ class Manipulator {
 	}
 
 	selectFirstChild() {
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		let s = (selectedNode);
 		if (!isNexContainer(s)) return false;
 		let c = s.getFirstChild();
 		if (c) {
@@ -219,7 +196,7 @@ class Manipulator {
 	}
 
 	selectNthChild(n) {
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		let s = (selectedNode);
 		if (n >= s.numChildren()) return false;
 		if (n < 0) return false;
 		let c = s.getChildAt(n);
@@ -229,7 +206,7 @@ class Manipulator {
 	}
 
 	selectNextSibling() {
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		let s = (selectedNode);
 		let p = s.getParent();
 		if (!p) return false;
 		let nextSib = p.getNextSibling(s);
@@ -241,7 +218,7 @@ class Manipulator {
 	}
 
 	selectPreviousSibling() {
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		let s = (selectedNode);
 		let p = s.getParent();
 		if (!p) return false;
 		let sib = p.getPreviousSibling(s);
@@ -253,7 +230,7 @@ class Manipulator {
 	}
 
 	selectParent() {
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		let s = (selectedNode);
 		let p = s.getParent();
 		if (!p) return false;
 		p.setSelected();
@@ -263,7 +240,7 @@ class Manipulator {
 	// CRUD operations
 
 	appendNewEString() {
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		let s = (selectedNode);
 		let i = 0;
 		for(i = 0;
 			s.getChildAt(i) && isEString(s.getChildAt(i));
@@ -276,22 +253,15 @@ class Manipulator {
 
 	appendAndSelect(data) {
 		data = this.conformData(data);
-		let s = (RENDERNODES ? selectedNode : selectedNex);
-		let newdata = data;
-		if (RENDERNODES) {
-			let newNode = s.appendChild(newdata);
-			newNode.setSelected();
-			return true;		
-		} else {
-			s.appendChild(newdata);
-			newdata.setSelected();
-			return true;		
-		}
+		let s = selectedNode;
+		let newNode = s.appendChild(data);
+		newNode.setSelected();
+		return true;		
 	}
 
 	insertAfterSelected(data) {
 		data = this.conformData(data);
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		let s = (selectedNode);
 		let p = s.getParent();
 		if (!p) return false;
 		p.insertChildAfter(data, s);
@@ -306,7 +276,7 @@ class Manipulator {
 
 	insertBeforeSelected(data) {
 		data = this.conformData(data);
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		let s = (selectedNode);
 		let p = s.getParent();
 		if (!p) return false;
 		p.insertChildBefore(data, s);
@@ -319,10 +289,10 @@ class Manipulator {
 	}
 
 	attemptToRemoveLastItemInCommand() {
-		let p = (RENDERNODES ? selectedNode : selectedNex).getParent();
+		let p = (selectedNode).getParent();
 		if (!p) return false;
 		if (p.numChildren() == 1 && isCodeContainer(p)) {
-			if (!this.removeNex((RENDERNODES ? selectedNode : selectedNex))) return false;
+			if (!this.removeNex((selectedNode))) return false;
 			p.setSelected();
 			this.appendAndSelect(new InsertionPoint());
 			return true;
@@ -331,7 +301,7 @@ class Manipulator {
 	}
 
 	removeSelectedAndSelectPreviousSibling() {
-		let toDel = (RENDERNODES ? selectedNode : selectedNex);
+		let toDel = (selectedNode);
 		return (
 			this.attemptToRemoveLastItemInCommand()
 			||
@@ -342,7 +312,7 @@ class Manipulator {
 	}
 
 	removeSelectedAndSelectPreviousLeaf() {
-		let toDel = (RENDERNODES ? selectedNode : selectedNex);
+		let toDel = (selectedNode);
 		return (
 			this.attemptToRemoveLastItemInCommand()
 			||
@@ -353,18 +323,16 @@ class Manipulator {
 	}
 
 	removeNex(toDel) {
-		if (RENDERNODES) {
-			// toDel must not be a nex, has to be a RenderNode.
-			if (!(toDel instanceof RenderNode)) {
-				throw new Error('need to delete the rendernode not the nex');
-			}
+		// toDel must not be a nex, has to be a RenderNode.
+		if (!(toDel instanceof RenderNode)) {
+			throw new Error('need to delete the rendernode not the nex');
 		}
 		let p = toDel.getParent();
 		if (!p) return false;
 		if (
-			((RENDERNODES ? p.getNex() : p) instanceof Root)
+			((p.getNex()) instanceof Root)
 			&&
-			(RENDERNODES ? p.getNex() : p).numChildren() == 1
+			(p.getNex()).numChildren() == 1
 			) {
 			toDel.setSelected();
 			return false; // can't remove last child of root
@@ -378,7 +346,7 @@ class Manipulator {
 
 	replaceSelectedWith(nex) {
 		nex = this.conformData(nex);
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		let s = (selectedNode);
 		if (s === nex) return true; // trivially true
 		let p = s.getParent(true);
 		if (!p) return false;
@@ -388,7 +356,7 @@ class Manipulator {
 	}
 
 	replaceSelectedWithNewCommand() {
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		let s = (selectedNode);
 		let p = s.getParent(true);
 		if (!p) return false;
 		let nex = new Command();
@@ -400,7 +368,7 @@ class Manipulator {
 	// split/join
 
 	selectTopmostEnclosingLine() {
-		let p = (RENDERNODES ? selectedNode : selectedNex).getParent();
+		let p = (selectedNode).getParent();
 		if (!p) return false;
 		while(!isLine(p)) {
 			p = p.getParent();
@@ -427,7 +395,7 @@ class Manipulator {
 
 	moveRemainingSiblingsInto(nex) {
 		nex = this.conformData(nex);
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		let s = (selectedNode);
 		let p = s.getParent();
 		if (!p) return false;
 		if (p.getLastChild() == s) {
@@ -442,7 +410,7 @@ class Manipulator {
 
 	split(nex) {
 		nex = this.conformData(nex);
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		let s = (selectedNode);
 		let p = s.getParent();
 		if (!p) return false;
 		if (p.getLastChild() == s) {
@@ -471,7 +439,7 @@ class Manipulator {
 		// to select is the last thing in
 		// the first of the two
 		// things being joined.
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		let s = (selectedNode);
 		let toSelect = s.getLastChild();
 		if (!toSelect) {
 			return false;
@@ -504,7 +472,7 @@ class Manipulator {
 	}
 
 	joinSelectedToNextSiblingIfSameType() {
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		let s = (selectedNode);
 		let p = s.getParent();
 		if (!p) return false;
 		let c = p.getChildAfter(s);
@@ -516,7 +484,7 @@ class Manipulator {
 	}
 
 	joinParentOfSelectedToNextSiblingIfSameType() {
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		let s = (selectedNode);
 		let p = s.getParent();
 		if (!p) return false;
 		p.setSelected();
@@ -538,7 +506,7 @@ class Manipulator {
 	// wrapping
 
 	wrapSelectedInCommand() {
-		let s = (RENDERNODES ? selectedNode : selectedNex);
+		let s = (selectedNode);
 		let p = s.getParent(true);
 		if (!p) return false;
 		let c = new Command();
@@ -551,7 +519,7 @@ class Manipulator {
 	// idk
 
 	startNewEString() {
-		(RENDERNODES ? selectedNode : selectedNex).createNewEString();
+		(selectedNode).createNewEString();
 		return true;
 	}
 

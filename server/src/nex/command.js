@@ -63,7 +63,6 @@ class Command extends NexContainer {
 		return new CommandKeyFunnel(this);
 	}
 
-	// if not RENDERNODES third arg null
 	pushNexPhase(phaseExecutor, env, renderNode) {
 		let lambda = this.getLambda(env);
 		phaseExecutor.pushPhase(lambda.phaseFactory(phaseExecutor, this, env, renderNode))
@@ -118,8 +117,7 @@ class Command extends NexContainer {
 			console.log(`${INDENT()}evaluating command: ${this.debugString()}`);
 			console.log(`${INDENT()}lambda is: ${lambda.debugString()}`);
 		}
-//		let argContainer = new NexChildArgContainer(this);
-		let argContainer = (RENDERNODES ? new CopiedArgContainer(this, this.skipFirstArg) : new NexChildArgContainer(this, this.skipFirstArg));
+		let argContainer = new CopiedArgContainer(this, this.skipFirstArg);
 		let closure = lambda.lexicalEnv.pushEnv();
 		let argEvaluator = lambda.getArgEvaluator(argContainer, executionEnv, closure);
 		argEvaluator.evaluateAndBindArgs();
@@ -132,19 +130,15 @@ class Command extends NexContainer {
 	}
 
 	// deprecated
-	renderInto(domNode, renderFlags) {
-		let toPassToSuperclass = domNode;
-		if (RENDERNODES) {
-			// change param name
-			domNode = domNode.getDomNode();
-		}
+	renderInto(renderNode, renderFlags) {
+		let domNode = renderNode.getDomNode();
 		let codespan = null;
 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
 			codespan = document.createElement("span");
 			codespan.classList.add('codespan');
 			domNode.appendChild(codespan);
 		}			
-		super.renderInto(toPassToSuperclass, renderFlags); // will create children
+		super.renderInto(renderNode, renderFlags); // will create children
 		domNode.classList.add('command');
 		domNode.classList.add('codelist');
 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
@@ -154,9 +148,6 @@ class Command extends NexContainer {
 				codespan.classList.remove('exploded');
 			}
 			codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
-		}
-		if (!RENDERNODES) {
-			this.renderTags(domNode, renderFlags);
 		}
 	}
 
