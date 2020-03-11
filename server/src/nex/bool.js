@@ -61,11 +61,6 @@ class Bool extends ValueNex {
 		return this.value;
 	}
 
-	toggleValue(v) {
-		this.setValue(this.value === 'yes' ? 'no' : 'yes');
-		this.render();
-	}
-
 	defaultHandle(txt) {
 		// TODO: old behavior is that you can't put a boolean inside a word,
 		// so it automatically makes a new word -- except you can, with things

@@ -189,13 +189,21 @@ class RenderNode {
 		if (selectedNode) {
 			selectedNode.setUnselected();
 			if (rerender) {
-				selectedNode.render(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | current_default_render_flags)
+				if (PRIORITYQUEUE) {
+					eventQueue.renderNodeRender(selectedNode, RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | current_default_render_flags);
+				} else {
+					selectedNode.render(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | current_default_render_flags);
+				}
 			}
 		}
 		selectedNode = this;
 		this.selected = true;
 		if (rerender) {
-			this.render(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | current_default_render_flags)
+			if (PRIORITYQUEUE) {
+				eventQueue.renderNodeRender(this, RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | current_default_render_flags);
+			} else {
+				this.render(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | current_default_render_flags);
+			}
 		}
 	}
 

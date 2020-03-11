@@ -189,9 +189,11 @@ class Expectation extends NexContainer {
 		// we don't know where the expectations are so we have to render everything.
 		// TODO: make a render queue so the renderer doesn't get spammed, and actually we do know
 
-		// why can't I select things?
-		topLevelRenderSelectingNode(newnex);
-//		topLevelRender();
+		if (this.getRenderNodes()[0] && this.getRenderNodes()[0].isSelected()) {
+			PRIORITYQUEUE ? eventQueue.enqueueTopLevelRenderSelectingNode(newnex) : topLevelRenderSelectingNode(newnex);
+		} else {
+			PRIORITYQUEUE ? eventQueue.enqueueTopLevelRender(newnex) : topLevelRender(newnex);
+		}
 		for (let i = 0; i < this.completionlisteners.length; i++) {
 			this.completionlisteners[i](newnex);
 		}

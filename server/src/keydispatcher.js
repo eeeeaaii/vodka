@@ -577,12 +577,14 @@ class KeyDispatcher {
 				let parentNode = selectedNode.getParent();
 				let parentNex = parentNode.getNex();
 				parentNex.replaceChildWith(selectedNode.getNex(), copiedNex);
-				// rerender the parent to refresh/fix the cached childnodes in it
 				parentNode.childnodes = []; // wtf
+				// hack: rerender the parent to refresh/fix the cached childnodes in it
+				// we cannot use eventqueue because this thread needs this data later on :(
 				parentNode.render(current_default_render_flags);
 				let index = parentNex.getIndexOfChild(copiedNex);
 				let newSelectedNode = parentNode.getChildAt(index);
 				newSelectedNode.setSelected();
+				// gross
 				topLevelRender();
 				s = selectedNode.getNex();
 				s.pushNexPhase(phaseExecutor, BUILTINS);

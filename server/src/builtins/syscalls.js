@@ -65,6 +65,7 @@ function createSyscalls() {
 			let n = env.lb('nex');
 			let rn = new RenderNode(n);
 			hiddenroot.appendChild(rn);
+			// has to be synchronous so we can measure
 			hiddenroot.render(0);
 			let w = rn.getDomNode().getBoundingClientRect().width;
 			hiddenroot.removeChildAt(0);
@@ -81,6 +82,7 @@ function createSyscalls() {
 			let n = env.lb('nex');
 			let rn = new RenderNode(n);
 			hiddenroot.appendChild(rn);
+			// has to be synchronous so we can measure
 			hiddenroot.render(0);
 			let w = rn.getDomNode().getBoundingClientRect().height;
 			hiddenroot.removeChildAt(0);

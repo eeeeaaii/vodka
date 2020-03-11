@@ -27,7 +27,8 @@ function createAsyncBuiltins() {
 			let exp = env.lb('exp,');
 			let newexp = exp.makeCopy();
 			setTimeout(function() {
-				newexp.fulfill();
+				eventQueue.enqueueExpectationFulfill(newexp);
+//				newexp.fulfill();
 			}, time);
 			return newexp;
 		}

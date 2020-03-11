@@ -135,10 +135,18 @@ class EError extends NexContainer {
 		let val = this.inputfield.value;
 		activateKeyFunnel();
 		this.mode = MODE_NORMAL;
-		this.setFullValue(val); // calls render
-		renderNode.render(current_default_render_flags
-				| RENDER_FLAG_RERENDER
-				| RENDER_FLAG_SHALLOW);
+		this.setFullValue(val);
+		if (PRIORITYQUEUE) {
+			eventQueue.enqueueRenderNodeRender(
+					renderNode,
+					current_default_render_flags
+						| RENDER_FLAG_RERENDER
+						| RENDER_FLAG_SHALLOW);
+		} else {
+			renderNode.render(current_default_render_flags
+					| RENDER_FLAG_RERENDER
+					| RENDER_FLAG_SHALLOW);
+		}
 	}
 
 	// TODO: this is dead code, errors are never drawn in "expanded mode" anymore

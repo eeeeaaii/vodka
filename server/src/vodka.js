@@ -17,6 +17,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 // experiments
 
+// priority queue for events renders
+const PRIORITYQUEUE = true;
+
 // store children of NexContainer as linked list
 // allowing cons/cdr to work as expected
 const LINKEDLIST= true;
@@ -81,12 +84,14 @@ const RENDER_FLAG_REMOVE_OVERRIDES = 16; // get rid of normal/exploded overrides
 var overrideOnNextRender = false;
 
 
+
 // global variables
 // TODO: fix naming convention and decide what's a const and what's
 // a singleton and generally what's what.
 
 const manipulator = new Manipulator();
 const stepEvaluator = new StepEvaluator();
+const eventQueue = new EventQueue();
 var root = null;
 var hiddenroot = null;
 var selectedNode = null;
@@ -105,6 +110,15 @@ const KEY_DISPATCHER = new KeyDispatcher();
 
 const CONSOLE_DEBUG = false;
 
+var appFlags = {};
+
+function getAppFlags() {
+	var params = new URLSearchParams(window.location.search);
+	params.forEach(function(value, key) {
+		appFlags[key] = value;
+	})
+}
+
 // DO NOT RENAME THIS METHOD OR YOU WILL BREAK ALL THE OLD TESTS
 function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 	let r = KEY_DISPATCHER.dispatch(keycode, whichkey, hasShift, hasCtrl, hasAlt);
@@ -114,7 +128,7 @@ function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 	// if it returns false, it means we handled the keystroke and we are
 	// canceling the browser event - this also means something 'happened' so we render.
 	if (!r) {
-		topLevelRender();
+		PRIORITYQUEUE ? eventQueue.enqueueTopLevelRender() : topLevelRender();
 	}
 	return r;
 }
@@ -153,6 +167,7 @@ function topLevelRenderSelectingNode(node) {
 function setup() {
 	// createBuiltins is defined in executors.js
 	createBuiltins();
+	getAppFlags();
 	BUILTINS = BUILTINS.pushEnv();
 	hiddenroot = new RenderNode(new Root(true));
 	let hiddenRootDomNode = document.getElementById('hiddenroot');
@@ -176,10 +191,15 @@ function setup() {
 	document.onkeydown = function(e) {
 		checkRecordState(e, 'down');
 		if (key_funnel_active) {
-			return doKeyInput(e.key, e.code, e.shiftKey, e.ctrlKey, e.metaKey);
+			if (PRIORITYQUEUE) {
+				eventQueue.enqueueDoKeyInput(e.key, e.code, e.shiftKey, e.ctrlKey, e.metaKey);
+				return false; // we no longer know if we can honor the browser event?
+			} else {
+				return doKeyInput(e.key, e.code, e.shiftKey, e.ctrlKey, e.metaKey);
+			}
 		} else {
 			return true;
 		}
 	}
-	topLevelRender();
+	PRIORITYQUEUE ? eventQueue.enqueueTopLevelRender() : topLevelRender();
 }

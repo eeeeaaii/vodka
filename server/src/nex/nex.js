@@ -42,11 +42,11 @@ class Nex {
 	}
 
 	doRenderSequencing(renderNode) {
-		if (this.lastRenderPassNumber == renderPassNumber) {
+		if (appFlags['otags'] || this.lastRenderPassNumber == renderPassNumber) {
 			// this node has been rendered before in this pass!
 			// if this is the first dupe, we go back to the first one
 			// and prepend the object tag.
-			if (this.rendernodes.length == 1) {
+			if (appFlags['otags'] || this.rendernodes.length == 1) {
 				this.prependObjectTag(this.rendernodes[0]);
 			}
 			this.rendernodes.push(renderNode);
@@ -64,7 +64,9 @@ class Nex {
 	}
 
 	prependObjectTag(renderNode) {
+		if (!renderNode) return;
 		let domNode = renderNode.getDomNode();
+		if (!domNode) return;
 		let firstChild = domNode.firstChild;
 		let tagNode = document.createElement("div");
 		tagNode.innerHTML = 'o'+this.getID();
@@ -188,28 +190,36 @@ class Nex {
 	}
 
 	_setClickHandler(renderNode) {
-		renderNode.getDomNode().onclick = (e) => {
-			let parentNexDomElt = this.getParentNexOfDomElement(e.target);
-			if (selectedNode.getDomNode() == parentNexDomElt) {
-				return;
-			}
-			let insertAfterRemove = false;
-			let oldSelectedNode = selectedNode;
-			if ((selectedNode.getNex() instanceof EString
-				|| selectedNode.getNex() instanceof EError)
-					&& selectedNode.getNex().getMode() == MODE_EXPANDED) {
-				selectedNode.getNex().finishInput();
-			} else if (selectedNode.getNex() instanceof InsertionPoint) {
-				insertAfterRemove = true;
-			}
-
-			e.stopPropagation();
-			renderNode.setSelected(false /*shallow-rerender*/);
-			if (insertAfterRemove && selectedNode != oldSelectedNode) {
-				manipulator.removeNex(oldSelectedNode);
-			}
-			topLevelRender();
+		renderNode.getDomNode().onmousedown = (event) => {
+			console.log('a');
+			PRIORITYQUEUE
+					? eventQueue.enqueueDoClickHandlerAction(this, renderNode, event)
+					: this.doClickHandlerAction(renderNode);
+			event.stopPropagation();
 		};
+	}
+
+	doClickHandlerAction(renderNode, e) {
+		let parentNexDomElt = this.getParentNexOfDomElement(e.target);
+		if (selectedNode.getDomNode() == parentNexDomElt) {
+			return;
+		}
+		let insertAfterRemove = false;
+		let oldSelectedNode = selectedNode;
+		if ((selectedNode.getNex() instanceof EString
+			|| selectedNode.getNex() instanceof EError)
+				&& selectedNode.getNex().getMode() == MODE_EXPANDED) {
+			selectedNode.getNex().finishInput();
+		} else if (selectedNode.getNex() instanceof InsertionPoint) {
+			insertAfterRemove = true;
+		}
+
+		e.stopPropagation();
+		renderNode.setSelected(false /*shallow-rerender*/);
+		if (insertAfterRemove && selectedNode != oldSelectedNode) {
+			manipulator.removeNex(oldSelectedNode);
+		}
+		PRIORITYQUEUE ? eventQueue.enqueueImportantTopLevelRender() : topLevelRender();
 	}
 
 	renderInto(renderNode, renderFlags) {

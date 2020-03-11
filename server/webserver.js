@@ -31,6 +31,10 @@ const server = http.createServer((message, res) => {
 	} else {
 		if (path == "/") {
 			path = "/host.html"
+		} else if (path.indexOf('/?') == 0) {
+			let i = path.indexOf('?');
+			let qs = path.substring(i);
+			path = "/host.html" + qs;
 		}
 		path = "./src" + path;
 		doFileRequest(path, res);
@@ -79,6 +83,11 @@ function doLoad(data, cb) {
 }
 
 function doFileRequest(path, res) {
+	// chop off query string
+	let z = path.indexOf('?');
+	if (z > -1) {
+		path = path.substr(0, z);
+	}
 	let mimetype = getMimeTypeFromExt(path);
 	fs.readFile(path, function(err, data) {
 		if (err) {
