@@ -125,7 +125,6 @@ class EString extends ValueNex {
 	}
 
 	drawExpanded(renderNode) {
-		// TODO: fix this junk
 		this.cachedRenderNodeHack = renderNode;
 		this.drawTextField(renderNode);
 		this.drawButton(renderNode);

@@ -26,8 +26,6 @@ a set of required args then some optional ones (could be zero A's)
 variadics are packaged up inside a list of some type (maybe a word)
 */
 
-// TODO: get rid of the arg container class and use BuiltinParamManager inside the arg evaluator
-
 class BuiltinParamManager {
 	constructor(params, args) {
 		this.params = params;
@@ -156,14 +154,14 @@ class BuiltinArgEvaluator {
 		let arg = this.argContainer.getArgAt(i);
 		if (!param.skipeval) {
 			arg = evaluateNexSafely(arg, this.env);
-			if (arg.getTypeName() == '-error-') {
+			if (arg.getTypeName() == '-error-' && arg.getErrorType() == ERROR_TYPE_FATAL) {
 				throw wrapError('&szlig;', this.name + ": error in argument " + (i+1), arg);
 			}
 		}
 		let typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[param.type](arg);
 
 		if (!typeChecksOut) {
-			if (arg instanceof EError) {
+			if (arg.getTypeName() == '-error-') {
 				throw wrapError('&szlig;', this.name + ": expects a " + param.type + " for argument " + (i+1) + " but got error (enclosed)", arg);
 			} else {
 				throw new EError(this.name + ": expects a " + param.type + " for argument " + (i+1) + " but got " + arg.getTypeName());
@@ -216,6 +214,10 @@ BuiltinArgEvaluator.ARG_VALIDATORS = {
 	'Doc': arg => (arg.getTypeName() == '-doc-'),
 	'EString': arg => (arg.getTypeName() == '-string-'),
 	'ESymbol': arg => (arg.getTypeName() == '-symbol-'),
+	'EError': arg => {
+		// errors can only be passed as arguments if they are not fatal
+		return (arg.getTypeName() == '-error-' && arg.getErrorType() != ERROR_TYPE_FATAL);
+	},
 	'Float': arg => (arg.getTypeName() == '-float-'),
 	'Number': arg => (arg.getTypeName() == '-integer-' || arg.getTypeName() == '-float-'),
 	'Integer': arg => (arg.getTypeName() == '-integer-'),

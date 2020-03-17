@@ -60,13 +60,13 @@ function createLogicBuiltins() {
 			let b = env.lb('cond!').getTypedValue();
 			if (b) {
 				let iftrue = evaluateNexSafely(env.lb('{true}'), argEnv);
-				if (iftrue instanceof EError) {
+				if (iftrue.getTypeName() == '-error-' && iftrue.getErrorType() == ERROR_TYPE_FATAL) {
 					iftrue = wrapError('&szlig;', 'if: error in argument 2', iftrue);
 				}
 				return iftrue;
 			} else {
 				let iffalse = evaluateNexSafely(env.lb('{false}'), argEnv);
-				if (iffalse instanceof EError) {
+				if (iffalse.getTypeName() == '-error-' && iffalse.getErrorType() == ERROR_TYPE_FATAL) {
 					iffalse = wrapError('&szlig;', 'if: error in argument 3', iffalse);
 				}
 				return iffalse;

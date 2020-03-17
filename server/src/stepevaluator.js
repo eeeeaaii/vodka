@@ -17,7 +17,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 class StepEvaluator {
 	doStep() {
-		// TODO: refactor step eval
 		// it would be so much simpler if step evaluating actually changed
 		// the selected node to be the next node that needs to be changed
 		// or evaluated. then I don't need to maintain a stack!

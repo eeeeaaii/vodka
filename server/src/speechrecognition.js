@@ -18,8 +18,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 let usevoice = ('yes' == (new URL(document.location)).searchParams.get('usevoice'));
 
-// TODO: try this out!
-
 if (usevoice && annyang) {
 	var commands = {
 		'call *fname': function(fname) {

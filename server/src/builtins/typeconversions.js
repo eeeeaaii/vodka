@@ -45,7 +45,6 @@ function createTypeConversionBuiltins() {
 				w.appendChild(v.makeCopy());
 				return w;
 			} else if (v instanceof Line || v instanceof Doc) {
-				// TODO: flatten and return
 				return new EError('not yet implemented')
 			} else {
 				return new EError('Could not convert to word');

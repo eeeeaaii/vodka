@@ -30,6 +30,18 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	padding-left:22px;
 }
 
+.eerror.fatal {
+	color: #aa0000;
+}
+
+.eerror.warning {
+	color: #0000aa;
+}
+
+.eerror.info {
+	color: #00aa00;
+}
+
 .eerror > .innerspan {
 	margin-bottom: 4px;
 }

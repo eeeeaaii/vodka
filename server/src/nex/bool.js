@@ -62,7 +62,7 @@ class Bool extends ValueNex {
 	}
 
 	defaultHandle(txt) {
-		// TODO: old behavior is that you can't put a boolean inside a word,
+		// old behavior is that you can't put a boolean inside a word,
 		// so it automatically makes a new word -- except you can, with things
 		// like cut and paste, and it should be possible anyway.
 		if (isNormallyHandled(txt)) {

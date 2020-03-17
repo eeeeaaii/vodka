@@ -38,7 +38,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 #define WHELK_BIND(x, y) global->addBinding((x), (Code*)GSA.newProcedureSubtype(new (y)()).getP());
 
-// TODO: separate this into two objects: a storage manager (reference counter)
+// Need to separate this into two objects: a storage manager (reference counter)
 // and a storage allocator. The allocator creates things and hands them off
 // to the manager. sPointer can depend on the manager because it needs to
 // automatically increment and decrement pointers and free them in its copy constructors etc,

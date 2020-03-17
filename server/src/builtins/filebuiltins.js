@@ -24,9 +24,11 @@ function createFileBuiltins() {
 			{name:'_nex', type:'*', skipeval:true}
 		],
 		function(env, argEnv) {
-			let nm = env.lb('_name@').getTypedValue();
+			let namesym = env.lb('_name@');
+			let nm = namesym.getTypedValue();
 			let val = env.lb('_nex');			
 			let exp = new Expectation();
+			exp.appendChild(namesym)
 			saveNex(nm, val, exp);
 			return exp;
 		}
@@ -39,9 +41,11 @@ function createFileBuiltins() {
 			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
-			let nm = env.lb('_name@').getTypedValue();
+			let namesym = env.lb('_name@');
+			let nm = namesym.getTypedValue();
 			let val = env.lb('nex');			
 			let exp = new Expectation();
+			exp.appendChild(namesym)
 			saveNex(nm, val, exp);
 			return exp;
 		}
@@ -53,8 +57,10 @@ function createFileBuiltins() {
 			{name:'_name@', type:'ESymbol', skipeval:true},
 		],
 		function(env, argEnv) {
-			let nm = env.lb('_name@').getTypedValue();
+			let namesym = env.lb('_name@');
+			let nm = namesym.getTypedValue();
 			let exp = new Expectation();
+			exp.appendChild(namesym)
 			loadNex(nm, exp);
 			return exp;
 		}
@@ -66,8 +72,10 @@ function createFileBuiltins() {
 			{name:'_name@', type:'ESymbol', skipeval:true},
 		],
 		function(env, argEnv) {
-			let nm = env.lb('_name@').getTypedValue();
+			let namesym = env.lb('_name@');
+			let nm = namesym.getTypedValue();
 			let exp = new Expectation();
+			exp.appendChild(namesym)
 			importNex(nm, exp);
 			return exp;
 		}
@@ -83,12 +91,14 @@ function createFileBuiltins() {
 			let importList = env.lb('imports()');
 			let nex = env.lb('_nex');
 			let exp = new Expectation();
+			exp.appendChild(importList);
 			importChain(importList, nex, exp);
 			return exp;
 		}
 	);
 
 	// deprecated, remove, maybe re-implement as bootstrapped
+	/*
 	Builtin.createBuiltin(
 		'edit',
 		[
@@ -125,4 +135,5 @@ function createFileBuiltins() {
 			}
 		}
 	);
+	*/
 }

@@ -1,0 +1,45 @@
+
+
+- implement rendering that only renders what's dirty
+- make a better naming convention for global variables decide what's a const and what's a singleton and generally what's what.
+- test for equal
+- some tests for object tags
+- copy and paste tests (same as 2?)
+- fix step eval and update goldens if necessary
+- tests for run-js
+- tests for cram and chop
+- test for to-word
+- instanceof checks are slow, for nexes instead compare to getTypeName()
+- make it so you can specify arg type with the codes I use in the builtin param names, and that you can have them in lambdas.
+- make a list type that is just "list" that can be vert/horiz, looks like a command or lambda but without the symbol, and which, when you evaluate it, replaces each of its children with the result of evaluating that child
+- NO LONGER SUPPORTED - execution_stepeval_bindwithnormal is broken because somehow when you are step evaluating and you click on a subexpression with bound environment and you normal-eval it, if you click on the result of that inner normal-eval inside its expectation, and shift-tab to go to the parent YOU DON'T GO ANYWHERE. why.
+- need test for partial-exploded mode ,it doesn't work because esc is integral to my test recording framework
+- exceptions thrown from failed parse of file
+- errors do not save/restore correctly
+- I should have a test for each type of error location to make sure error propagation doesn't get broken. so basically any place that evaluateNexSafely is called
+- test for to-float
+- backtick puts in tags, tags precede rather than follow content
+- tests for catch, eval
+- is ILVL still needed and is it updated in step eval (does it need to be)?
+- either get rid of insertion points and just do pre and post- inserts, or have insertion points handled at the renderNode level, rather then being nexes.
+- rename getFulfilledThing to fulfill
+- try voice commands
+- figure out if it makes sense to allow regexes in the event table
+- make exceptions just modify child instead of replacing itself in parent
+- remove old edit primitive
+- remove "hackfunction" from expectation
+- fix render node hacks in estring class coming from the normal/expanded drawing logic
+- remove dead code from eerror class because it can't be drawn in expanded mode anymore
+- figure out what to do in run-js if no DOM object (throw exception? create one?)
+- make arithmetic functions use plus, minus words instead of symbols
+- make docs so that !#$ characters add those literal characters and the only ones that work are ~@
+- use a different key for modifying string contents rather than shift-enter
+- change the step eval stuff so that alt-enter changes the selected item rather than maintaining a stack
+- try having different ctrl/alt/shift chords for insert/append/prepend/enclose versions of !@#$
+- remove makeCopy/js array hack in Environment.lb
+- implement to-word for lines and docs
+- start using exclamation points for primitives that set values like in regular lisp, like apply-style-to
+- implement "equal" for list types (needs to be deep equal)
+- get rid of and/or bootstrap do-on-after
+- make "type creation" primitives (make-integer, make-float, etc)
+- BuiltinParamManager and BuiltinArgEvaluator do the same thing, merge somehow

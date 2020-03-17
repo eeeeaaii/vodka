@@ -197,8 +197,6 @@ class Command extends NexContainer {
 	}
 
 	defaultHandle(txt) {
-		// we have a little exception here
-		// TODO: fix this somehow
 		if (txt != '*' && isNormallyHandled(txt)) {
 			return false;
 		}

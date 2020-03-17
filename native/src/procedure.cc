@@ -1436,7 +1436,7 @@ void Close_Input_Port::getPrototype(vector<int>& prototype)
 
 sPointer<Expression> Close_Input_Port::apply()
 {
-	// TODO: broken!
+	// broken!
 	((Port*)arg(0))->close();
 	return 0;
 }
@@ -1453,7 +1453,7 @@ void Close_Output_Port::getPrototype(vector<int>& prototype)
 
 sPointer<Expression> Close_Output_Port::apply()
 {
-	// TODO: broken!
+	// broken!
 	((Port*)arg(0))->close();
 	return 0;
 }

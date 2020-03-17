@@ -20,17 +20,14 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 class Expectation extends NexContainer {
 	constructor(hackfunction) {
 		super()
-		// TODO: deprecated, remove. the only place
-		// this is used is in the old "edit" primitive
-		// which is also deprecated
 		this.hackfunction = hackfunction;
-		// also deprecated
 		this.completionlisteners = [];
 		this.parentlist = [];
 		// fff is somehow more readable than "fulfillfunction"
 		// like I don't have to remember how to spell it
 		this.fff = null;
 		this.ffed = false;
+		this.discontinued = false;
 	}
 
 	toString() {
@@ -45,6 +42,10 @@ class Expectation extends NexContainer {
 		// notably we do NOT copy ffed because
 		// if the original one is already fulfilled, we might want
 		// to make a copy of it so it can be fulfilled again.
+	}
+
+	discontinue() {
+		this.discontinued = true;
 	}
 
 	setFFF(f) {
@@ -69,6 +70,7 @@ class Expectation extends NexContainer {
 
 	evaluate(env) {
 		ILVL++;
+		// if discontinued this will just be itself
 		let rval = this.getFulfilledThing();
 		ILVL--;
 		return rval;
@@ -143,10 +145,10 @@ class Expectation extends NexContainer {
 		return addresses;
 	}
 
-	// TODO: rename this to fulfill,
-	// and rename the function formerly known as fulfill
-	// to fulfullAndSetChild or something
 	getFulfilledThing(passedInFFF) {
+		if (this.discontinued) {
+			return this;
+		}
 		if (this.ffed) {
 			throw new EError('Cannot fulfill an already-fulfilled expectation');
 		}
@@ -170,7 +172,17 @@ class Expectation extends NexContainer {
 		return this.fff();
 	}
 
+	checkChildren() {
+		if (this.numChildren() == 0) {
+			throw new EError("cannot fulfill an empty expectation");
+		}
+		if (this.numChildren() > 1) {
+			throw new EError("expectation cannot have more than one value");
+		}
+	}
+
 	fulfill(passedInFFF) {
+		this.checkChildren();
 		let newnex = this.getFulfilledThing(passedInFFF);
 
 		// fuckery here
@@ -187,7 +199,6 @@ class Expectation extends NexContainer {
 			}
 		}
 		// we don't know where the expectations are so we have to render everything.
-		// TODO: make a render queue so the renderer doesn't get spammed, and actually we do know
 
 		if (this.getRenderNodes()[0] && this.getRenderNodes()[0].isSelected()) {
 			PRIORITYQUEUE ? eventQueue.enqueueTopLevelRenderSelectingNode(newnex) : topLevelRenderSelectingNode(newnex);

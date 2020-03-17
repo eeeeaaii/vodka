@@ -26,11 +26,6 @@ class InsertionPoint extends ValueNex {
 		return '-insertionpoint-';
 	}
 
-	// TODO: fix the bug in this where if you click somewhere
-	// else the insertion point just hangs around.
-	// TODO: make this not a nex anymore and handle at the RenderNode level
-	// TODO: just get rid of insertion points and have pre-insert
-	// TODO: figure out which of the above todo's to do
 
 	makeCopy() {
 		let r = new InsertionPoint();
@@ -117,6 +112,4 @@ class InsertionPoint extends ValueNex {
 			'{': 'replace-selected-with-doc',
 		};
 	}
-	// TODO: move tables from these unused functions into getEventTable
-
 }

@@ -134,6 +134,7 @@ function createBasicBuiltins() {
 			}
 		}
 	);
+	/*
 
 	Builtin.createBuiltin(
 		'run',
@@ -166,7 +167,7 @@ function createBasicBuiltins() {
 			return exp;
 		}
 	);
-
+	*/
 
 	Builtin.createBuiltin(
 		'let',
@@ -251,6 +252,7 @@ function createBasicBuiltins() {
 		}
 	);
 
+	// 'eval' is really eval again because args to functions are evaled
 	Builtin.createBuiltin(
 		'eval',
 		[
@@ -259,9 +261,50 @@ function createBasicBuiltins() {
 		function(env, argEnv) {
 			let expr = env.lb('nex');
 			let newresult = evaluateNexSafely(expr, argEnv);
-			return newresult;
+			// we do not wrap errors for eval - we let
+			// the caller deal with it
+			return newresult;				
 		}
 	);
+
+	Builtin.createBuiltin(
+		'convert-type-if-error',
+		[
+			{name:'errtype$', type:'EString'},
+			{name: 'nex', type:'*', skipeval:true}
+		],
+		function(env, argEnv) {
+			let expr = env.lb('nex');
+			let newresult = evaluateNexSafely(expr, argEnv);
+			if (newresult.getTypeName() != '-error-') {
+				// you might think this function would throw an
+				// error if you tried to pass it something that's
+				// not an error, but the problem with doing that
+				// is that you can't test for whether something is
+				// an error WITHOUT using this function. So non-errors
+				// are passed unchanged.
+				return newresult;
+			}
+
+			let etstring = env.lb('errtype$').getFullTypedValue();
+			let errtype = ERROR_TYPE_FATAL;
+			switch(etstring) {
+				case "warn":
+					errtype = ERROR_TYPE_WARN;
+					break;
+				case "info":
+					errtype = ERROR_TYPE_INFO;
+					break;
+				case "fatal":
+					break;
+				default:
+					throw new EError("set-error-type: invalid error type string (valid strings are 'info', 'warn', and 'fatal'");
+			}
+
+			newresult.setErrorType(errtype);
+			return newresult;
+		}
+	);	
 
 	Builtin.createBuiltin(
 		'quote',
@@ -327,25 +370,18 @@ function createBasicBuiltins() {
 
 
 			} else if (lhs instanceof Command && rhs instanceof Command) {
-				// TODO: implement deep equals
 				return new EError('equal for lists is not implemented')
 			} else if (lhs instanceof Lambda && rhs instanceof Lambda) {
-				// TODO: implement deep equals
 				return new EError('equal for lists is not implemented')
 			} else if (lhs instanceof Doc && rhs instanceof Doc) {
-				// TODO: implement deep equals
 				return new EError('equal for lists is not implemented')
 			} else if (lhs instanceof Line && rhs instanceof Line) {
-				// TODO: implement deep equals
 				return new EError('equal for lists is not implemented')
 			} else if (lhs instanceof Word && rhs instanceof Word) {
-				// TODO: implement deep equals
 				return new EError('equal for lists is not implemented')
 			} else if (lhs instanceof Zlist && rhs instanceof Zlist) {
-				// TODO: implement deep equals
 				return new EError('equal for lists is not implemented')
 			} else if (lhs instanceof Expectation && rhs instanceof Expectation) {
-				// TODO: implement deep equals
 				return new EError('equal for lists is not implemented')
 			} else {
 				return new Bool(false);

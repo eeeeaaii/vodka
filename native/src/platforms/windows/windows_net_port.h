@@ -24,8 +24,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 #include <vcclr.h>
 #include <string>
 
-// TODO: these classes are not finished at all
-
 namespace whelk {
 
 	class WindowsClientPort :

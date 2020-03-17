@@ -417,8 +417,6 @@ class KeyDispatcher {
 		} else if (eventName == 'AltEnter') {
 			this.doAltEnter();
 			return false; // to cancel browser event
-		// TODO: string opening and closing is mapped to shift-enter,
-		// but this should be reserved for only executing code.
 		} else if (eventName == '`') {
 			// reserved for future use
 			return false; // to cancel browser event

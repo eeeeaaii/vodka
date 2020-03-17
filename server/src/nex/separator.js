@@ -44,7 +44,6 @@ class Separator extends Letter {
 		return null;
 	}
 
-	// TODO: maybe allow regexes in the funnel vector?
 	defaultHandle(txt, context) {
 		if (isNormallyHandled(txt)) {
 			return false;
@@ -55,7 +54,6 @@ class Separator extends Letter {
 		};
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
-		// TODO: maybe allow regexes in the funnel vector?
 		if (isSeparator) {
 			manipulator.insertAfterSelectedAndSelect(new Separator(txt));
 		} else {

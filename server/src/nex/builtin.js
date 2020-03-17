@@ -95,7 +95,5 @@ class Builtin extends Lambda {
 	getEventTable(context) {
 		return null;
 	}
-	// TODO: move tables from these unused functions into getEventTable
-
 }
 

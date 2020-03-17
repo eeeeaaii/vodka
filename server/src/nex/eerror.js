@@ -15,6 +15,9 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+var ERROR_TYPE_FATAL = 0;
+var ERROR_TYPE_WARN = 1;
+var ERROR_TYPE_INFO = 2
 
 class EError extends NexContainer {
 	constructor(val, prefix) {
@@ -29,6 +32,15 @@ class EError extends NexContainer {
 		this.mode = MODE_NORMAL;
 //		super(val, '?', 'eerror')
 		this.setFullValue(val); // will call render
+		this.errorType = ERROR_TYPE_FATAL; // default
+	}
+
+	setErrorType(et) {
+		this.errorType = et;
+	}
+
+	getErrorType(et) {
+		return this.errorType;
 	}
 
 	getTypeName() {
@@ -149,10 +161,7 @@ class EError extends NexContainer {
 		}
 	}
 
-	// TODO: this is dead code, errors are never drawn in "expanded mode" anymore
-
 	drawExpanded(renderNode) {
-		// TODO: fix this junk
 		this.cachedRenderNodeHack = renderNode;
 		this.drawTextField(renderNode);
 		this.drawButton(renderNode);
@@ -166,6 +175,17 @@ class EError extends NexContainer {
 		// we only need to care about rerenders when it's a container type
 		domNode.classList.add('valuenex');
 		domNode.classList.add(this.className);
+		switch(this.errorType) {
+			case ERROR_TYPE_FATAL:
+				domNode.classList.add('fatal');
+				break;
+			case ERROR_TYPE_WARN:
+				domNode.classList.add('warning');
+				break;
+			case ERROR_TYPE_INFO:
+				domNode.classList.add('info');
+				break;
+		}
 		if (this.mode == MODE_NORMAL) {
 			this.drawNormal(renderNode);
 		} else {

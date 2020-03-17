@@ -44,7 +44,11 @@ function createAsyncBuiltins() {
 		function(env, argEnv) {
 			let lambda = env.lb('func&');
 			let exp = env.lb('exp,');
+			// because we are making a copy, we check children
+			// immediately - if we were not copying, we could
+			// check children upon fulfillment
 			let newexp = exp.makeCopy();
+			newexp.checkChildren();
 			let fff = function() {
 				let cmd = new Command('');
 				cmd.appendChild(lambda);
@@ -56,7 +60,37 @@ function createAsyncBuiltins() {
 		}
 	);
 
-	
+	Builtin.createBuiltin(
+		'discontinue',
+		[
+			{name: 'exp,', type: 'Expectation', skipeval: true}
+		],
+		function(env, argEnv) {
+			let exp = env.lb('exp,').makeCopy();
+			exp.discontinue();
+			return exp;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'ff-after-child',
+		[
+			{name: 'exp1,', type:'Expectation'},
+			{name: 'exp2,', type:'Expectation'},
+		],
+		function(env, argEnv) {
+			let exp1 = env.lb('exp1,');
+			if (exp1.numChildren() == 0) {
+				throw new EError('ff-after-child: cannot chain an empty expectation');
+			}
+			if (exp1.numChildren() > 1) {
+				throw new EError('ff-after-child: too many children, cannot chain');
+			}
+			let exp2 = exp1.getChildAt(0);
+			exp2.addCompletionListener(exp1);
+			return exp1;
+		}
+	);	
 
 	// deprecated
 	Builtin.createBuiltin(
@@ -98,7 +132,6 @@ function createAsyncBuiltins() {
 		}
 	);
 
-	// TODO: move this to typecreation.js and make ones for other types
 	Builtin.createBuiltin(
 		'make-expectation',
 		[
@@ -113,7 +146,6 @@ function createAsyncBuiltins() {
 
 
 
-	// TODO: bootstrap
 	Builtin.createBuiltin(
 		'do-on-after',
 		[

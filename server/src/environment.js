@@ -75,7 +75,6 @@ class Environment {
 		// because we do a garbage thing where for variadics
 		// we map a symbol to a js thing instead of a vodka thing.
 
-		// TODO: I think we can remove this.
 		if (this.symbols[nm].push) {
 			let tocopy = this.symbols[nm];
 			let z = [];

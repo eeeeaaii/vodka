@@ -14,7 +14,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
-//TODO!
 // tests are failing because here I automatically throw/bail if any arg is 
 // an error, but I implemented the string-split (I think) in the original
 // integration tests such that it assumes that one of the arguments is
@@ -48,8 +47,9 @@ class LambdaArgEvaluator {
 
 	processAllArgs() {
 		for (let i = (this.skipFirstArg ? 1 : 0); i < this.argContainer.numArgs(); i++) {
-			let argval = this.processArgument(this.argContainer.getArgAt(i));
-			if (argval instanceof EError) {
+			let arg = this.argContainer.getArgAt(i)
+			let argval = this.processArgument(arg);
+			if (argval.getTypeName() == '-error-' && argval.getErrorType() == ERROR_TYPE_FATAL) {
 				throw wrapError('&#8907;', this.debugstr + ": error in arg " + (i+1), argval);
 			}
 			this.argContainer.setArgAt(
