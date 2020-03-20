@@ -1,5 +1,6 @@
 
 
+- make expectations replace just their contents
 - implement rendering that only renders what's dirty
 - make a better naming convention for global variables decide what's a const and what's a singleton and generally what's what.
 - test for equal
