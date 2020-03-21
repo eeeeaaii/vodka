@@ -47,17 +47,17 @@ class BuiltinParamManager {
 			let param = this.params[i];
 			if (param.optional) {
 				if (this.hasvariadics) {
-					throw new Error("can't have variadics and also optionals.");
+					throw new Error("Sorry, but you can't mix variadics and also optionals in the same param list!");
 				}
 				this.hasoptionals = true;
 				continue;
 			}
 			if (param.variadic) {
 				if (this.hasoptionals) {
-					throw new Error("can't have variadics and also optionals.");
+					throw new Error("Sorry, but you can't mix variadics and also optionals in the same param list!");
 				}
 				if (this.hasvariadics) {
-					throw new Error("can't have multiple variadics");
+					throw new Error("Sorry, but you can't have multiple variadics in a single param list!");
 				}
 				this.hasvariadics = true;
 				continue;
@@ -68,7 +68,10 @@ class BuiltinParamManager {
 
 	checkNumArgs() {
 		if (this.args.length < this.numRequiredParams) {
-			throw new EError(this.name + ": not enough args passed to function.");
+			throw new EError("Sorry, but there were not enough"
+				+ " args passed to the function " + this.name
+				+ ". You needed " + this.numRequiredParams
+				+ " but there were only " + this.args.length + " args!");
 		}
 	}
 
@@ -126,12 +129,19 @@ class BuiltinArgEvaluator {
 
 	checkMinNumArgs() {
 		if (this.argContainer.numArgs() < this.numRequiredParams) {
-			throw new EError(this.name + ": not enough args passed to function.");
+			throw new EError("Sorry, but there were not enough"
+				+ " args passed to the function " + this.name
+				+ ". You needed " + this.numRequiredParams
+				+ " but there were only " + this.argContainer.numArgs() + " args!");
 		}
 	}
 
 	checkMaxNumArgs() {
 		if (this.argContainer.numArgs() > this.effectiveParams.length) {
+			throw new EError("Sorry, but there were *too many*"
+				+ " args passed to the function " + this.name
+				+ ". The max is " + this.effectiveParams.length
+				+ " but you passed " + this.argContainer.numArgs() + " args.");
 			throw new EError(this.name + ": too many args passed to function")
 		}
 	}

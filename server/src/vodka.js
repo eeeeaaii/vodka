@@ -63,11 +63,20 @@ const eventQueue = new EventQueue();
 const KEY_DISPATCHER = new KeyDispatcher();
 
 
+
 // GLOBAL FUNCTIONS
 // (not all of them)
 
 function resetStack() {
 	stackLevel = 0;
+}
+
+function pushStackLevel() {
+	stackLevel++;
+}
+
+function popStackLevel() {
+	stackLevel--;
 }
 
 function stackCheck() {

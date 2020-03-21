@@ -49,7 +49,7 @@ class ESymbol extends ValueNex {
 	}
 
 	evaluate(env) {
-		ILVL++;
+		pushStackLevel();
 		if (this.enclosingClosure) {
 			env = this.enclosingClosure;
 		}
@@ -57,7 +57,7 @@ class ESymbol extends ValueNex {
 		if (CONSOLE_DEBUG) {
 			console.log(`${INDENT()}symbol ${this.value} bound to ${b.debugString()}`);
 		}
-		ILVL--;
+		popStackLevel();
 		return b;
 	}
 

@@ -107,7 +107,7 @@ class Command extends NexContainer {
 	}
 
 	evaluate(executionEnv) {
-		ILVL++;
+		pushStackLevel();
 		stackCheck(); // not for step eval, this is to prevent call stack overflow.
 		if (this.enclosingClosure) {
 			executionEnv = this.enclosingClosure;
@@ -125,7 +125,7 @@ class Command extends NexContainer {
 		if (CONSOLE_DEBUG) {
 			console.log(`${INDENT()}command returned: ${r.debugString()}`);
 		}
-		ILVL--;
+		popStackLevel();
 		return r;
 	}
 

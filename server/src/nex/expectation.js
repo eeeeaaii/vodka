@@ -69,10 +69,10 @@ class Expectation extends NexContainer {
 	}
 
 	evaluate(env) {
-		ILVL++;
+		pushStackLevel();
 		// if discontinued this will just be itself
 		let rval = this.getFulfilledThing();
-		ILVL--;
+		popStackLevel();
 		return rval;
 	}
 
