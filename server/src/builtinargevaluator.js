@@ -165,16 +165,32 @@ class BuiltinArgEvaluator {
 		if (!param.skipeval) {
 			arg = evaluateNexSafely(arg, this.env);
 			if (arg.getTypeName() == '-error-' && arg.getErrorType() == ERROR_TYPE_FATAL) {
-				throw wrapError('&szlig;', this.name + ": error in argument " + (i+1), arg);
+				throw wrapError('&szlig;', "Sorry but when " + this.name
+					+ " was evaluating its arguments, it got an error"
+					+ " for argument " + (i+1)
+					+ " and the program can't keep going anymore."
+					+ " BTW, this argument is supposed to be a " + param.type
+					+ ".");
 			}
 		}
 		let typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[param.type](arg);
 
 		if (!typeChecksOut) {
 			if (arg.getTypeName() == '-error-') {
-				throw wrapError('&szlig;', this.name + ": expects a " + param.type + " for argument " + (i+1) + " but got error (enclosed)", arg);
+				throw wrapError('&szlig;', "Okay so when " + this.name
+					+ " was evaluating its arguments, it got an error"
+					+ " for argument " + (i+1)
+					+ " This is not a severe error, and in some situations"
+					+ " the program could"
+					+ " keep going, but in this case " + this.name
+					+ " needs you to pass a " + param.type
+					+ " for this argument. We will enclose the error for you."
 			} else {
-				throw new EError(this.name + ": expects a " + param.type + " for argument " + (i+1) + " but got " + arg.getTypeName());
+				throw new EError("Sorry! But " + this.name
+					+ " needs you to pass  a " + param.type
+					+ " for argument " + (i+1)
+					+ " but instead it's a " + arg.getTypeName()
+					+ ".");
 			}
 		}
 		this.argContainer.setArgAt(arg, i);

@@ -35,11 +35,19 @@ class Doc extends NexContainer {
 
 	getValueAsString() {
 		let s = '';
+		let index = 0;
 		this.doForEachChild(c => {
+			index++;
 			if (c instanceof Line) {
 				s += c.getValueAsString();
 			} else {
-				throw new EError('cannot convert doc to string, invalid format');
+				throw new EError(`We are trying to convert this document`
+					+ ` to a string, but we can't, because `
+					+ ` the document has a child that's not a Line.`
+					+ ` A document normally should contain only Lines.`
+					+ ` Instead, this document has an object of type ${c.getTypeName()}`
+					+ ` at position ${index}. If it helps, we can give the`
+					+ ` textual representation of that object as ${c.debugString()}`);
 			}
 		});
 		return s;

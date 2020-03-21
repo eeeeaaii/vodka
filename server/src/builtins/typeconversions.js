@@ -45,9 +45,10 @@ function createTypeConversionBuiltins() {
 				w.appendChild(v.makeCopy());
 				return w;
 			} else if (v instanceof Line || v instanceof Doc) {
-				return new EError('not yet implemented')
+				return new EError('Sorry, our bad - calling to-work on a Line or Doc is not yet implemented :(')
 			} else {
-				return new EError('Could not convert to word');
+				return new EError('Okay, so to-word was called on an object of'
+					+ `type "${v.getTypeName()}". This is not supported -- sorry about that.`);
 			}
 		}
 	)
@@ -71,7 +72,10 @@ function createTypeConversionBuiltins() {
 				let s = v.getFullTypedValue();
 				let mayben = parseFloat(s);
 				if (Number.isNaN(mayben)) {
-					return new EError('Could not convert string to float');					
+					return new EError('Okay so to-float tried to turn this string'
+						+ ` "${s}" into a float, but it couldn't.`
+						+ ` There might be characters in that string`
+						+ ` that aren't numeric.`);					
 				} else {
 					return new Float(mayben);
 				}
@@ -80,7 +84,10 @@ function createTypeConversionBuiltins() {
 				let s = v.getText();
 				let mayben = parseFloat(s);
 				if (Number.isNaN(mayben)) {
-					return new EError('Could not convert letter to float');					
+					return new EError('Okay so to-float tried to turn a letter object'
+						+ ` "${s}" into a float, but it couldn't.`
+						+ ` The letter objects that you can realistically turn into`
+						+ ` a float are the single digits 0-9.`);					
 				} else {
 					return new Float(mayben);
 				}
@@ -95,12 +102,18 @@ function createTypeConversionBuiltins() {
 						: ((v instanceof Line)
 							? 'line'
 							: 'doc');
-					return new EError('Could not convert ' + errstr + ' to float');
+					return new EError('So we tried to convert an object of type'
+						+ ` ${v.getTypeName()} into a float, but it didn't work.`
+						+ ` When we converted that object into a string representation,`
+						+ ` we got ${mayben}. There might be non-numeric characters`
+						+ ` or something like that.`);
 				} else {
 					return new Float(mayben);
 				}
 			} else {
-				return new EError('Could not convert to float');
+				return new EError('You wanted us to convert an object of type'
+					+ ` ${v.getTypeName()} to a float, but we haven't implemented`
+					+ ` any conversion logic for that type yet. Sorry about that!`);
 			}
 		}
 	)
@@ -122,7 +135,9 @@ function createTypeConversionBuiltins() {
 				let s = v.getFullTypedValue();
 				let mayben = parseInt(s);
 				if (Number.isNaN(mayben)) {
-					return new EError('Could not convert string to integer');					
+					return new EError(`Sorry, we tried to convert the string ${mayben}`
+						+ ` into an integer, but it didn't work. Maybe there are non-digit`
+						+ ` characters in it.`);					
 				} else {
 					return new Integer(mayben);
 				}
@@ -131,7 +146,10 @@ function createTypeConversionBuiltins() {
 				let s = v.getText();
 				let mayben = parseInt(s);
 				if (Number.isNaN(mayben)) {
-					return new EError('Could not convert letter to integer');					
+					return new EError(`So you asked us to convert the letter`
+						+ ` ${mayben} into an integer, but we can't.`
+						+ ` The only letters we can really convert into`
+						+ ` integers are the letters 0-9.`);
 				} else {
 					return new Integer(mayben);
 				}
@@ -141,17 +159,18 @@ function createTypeConversionBuiltins() {
 				let mayben = parseInt(s);
 				if (Number.isNaN(mayben)) {
 					// rofl
-					let errstr = v instanceof Word
-						? 'word'
-						: ((v instanceof Line)
-							? 'line'
-							: 'doc');
-					return new EError('Could not convert ' + errstr + ' to integer');
+					return new EError('So we tried to convert an object of type'
+						+ ` ${v.getTypeName()} into an integer, but it didn't work.`
+						+ ` When we converted that object into a string representation,`
+						+ ` we got ${mayben}. There might be non-numeric characters`
+						+ ` or something like that.`);
 				} else {
 					return new Integer(mayben);
 				}
 			} else {
-				return new EError('Could not convert to integer');
+				return new EError('You wanted us to convert an object of type'
+					+ ` ${v.getTypeName()} to an integer, but we haven't implemented`
+					+ ` any conversion logic for that type yet. Sorry about that!`);
 			}
 		}
 	)
@@ -163,33 +182,33 @@ function createTypeConversionBuiltins() {
 		],
 		function(env, argEnv) {
 			let v = env.lb('nex');
-			let s = "";
 			if (v instanceof EString) {
-				// nothing to do but should we copy the object?
-				return v;
+				return new EString(v.getFullTypedValue());
 			} else if (v instanceof Bool) {
-				s = v.getTypedValue() ? 'yes' : 'no';
+				return new EString(v.getTypedValue() ? 'yes' : 'no');
 			} else if (v instanceof Float) {
-				s = '' + v.getTypedValue();
+				return new EString('' + v.getTypedValue());
 			} else if (v instanceof Integer) {
-				s = '' + v.getTypedValue();
+				return new EString('' + v.getTypedValue());
 			} else if (v instanceof Letter) {
-				s = '' + v.getText();
+				return new EString('' + v.getText());
 			} else if (v instanceof Separator) {
-				s = '' + v.getText();
+				return new EString('' + v.getText());
 			} else if (v instanceof Word || v instanceof Line || v instanceof Doc) {
-				try {
-					s = v.getValueAsString();
-				} catch (eerror) {
-					// probably contained non-letters
+				let ss = v.getValueAsString();
+				if (typeof(ss) == 'string') {
+					return new EString(ss);
+				} else {
+					return new EError(`We tried to convert an object of type`
+						+ ` ${v.getTypeName()} into a string, but it didn't work.`
+						+ ` We got this back: ${'' + ss}. Sorry we couldn't help more.`);
 				}
-			}
-			if (!s) {
-				return new EError('Could not convert to string, invalid format');
 			} else {
-				return new EString(s);
-			}
+				return new EError('You wanted us to convert an object of type'
+					+ ` ${v.getTypeName()} to a string, but we haven't implemented`
+					+ ` any conversion logic for that type yet. Sorry about that!`);
 
+			}
 		}
 	);
 }

@@ -81,10 +81,16 @@ function createAsyncBuiltins() {
 		function(env, argEnv) {
 			let exp1 = env.lb('exp1,');
 			if (exp1.numChildren() == 0) {
-				throw new EError('ff-after-child: cannot chain an empty expectation');
+				throw new EError("Hey so ff-after-child is used to chain an expectation after"
+				+ " another one. This means that the expectation you pass into it"
+				+ " needs to have one child. But the one you passed in is empty.");
 			}
 			if (exp1.numChildren() > 1) {
-				throw new EError('ff-after-child: too many children, cannot chain');
+				throw new EError("Hey so ff-after-child is used to chain an expectation after"
+				+ " another one. This means that the expectation you pass into it"
+				+ " needs to have just one child. But the one you passed in has more than"
+				+ " one child, so it's not clear which one we should chain it after.");
+
 			}
 			let exp2 = exp1.getChildAt(0);
 			exp2.addCompletionListener(exp1);

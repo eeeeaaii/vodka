@@ -45,7 +45,12 @@ function createBasicBuiltins() {
 		function(env, argEnv) {
 			let c = env.lb('list()');
 			if (c.numChildren() == 0) {
-				return new EError("cannot cdr an empty list");
+				return new EError("Okay so cdr gives you a new list containing all"
+					+ " the elements in a list after the first one."
+					+ " But if you pass it an empty list, then it's sort of"
+					+ " impossible to remove the first element, right?"
+					+ " So this is an error. Any list you pass to cdr"
+					+ " has to have at least one element in it.");
 			}
 			if (LINKEDLIST) {
 				let newOne = c.makeCopy(true);
@@ -88,7 +93,10 @@ function createBasicBuiltins() {
 		function(env, argEnv) {
 			let c = env.lb('list()');
 			if (c.numChildren() == 0) {
-				return new EError("cannot chop an empty list");
+				return new EError("So chop is used to remove the first "
+					+ " element in a list. But if the list is empty,"
+					+ " then it has no first element -- so this is an"
+					+ " error.");
 			}
 			c.removeChild(c.getChildAt(0));
 			return c;
@@ -298,7 +306,12 @@ function createBasicBuiltins() {
 				case "fatal":
 					break;
 				default:
-					throw new EError("set-error-type: invalid error type string (valid strings are 'info', 'warn', and 'fatal'");
+					throw new EError("So you're trying to set the"
+						+ " error type with convert-type-if-error."
+						+ " You need to pass in a string containing"
+						+ " the name of one of the error types,"
+						+ " which are 'info', 'warn', and 'fatal'."
+						+ " What you passed in though was this: " + etstring);
 			}
 
 			newresult.setErrorType(errtype);
@@ -370,19 +383,19 @@ function createBasicBuiltins() {
 
 
 			} else if (lhs instanceof Command && rhs instanceof Command) {
-				return new EError('equal for lists is not implemented')
+				return new EError('Sorry, our bad -- equal for lists is not implemented yet :(')
 			} else if (lhs instanceof Lambda && rhs instanceof Lambda) {
-				return new EError('equal for lists is not implemented')
+				return new EError('Sorry, our bad -- equal for lists is not implemented yet :(')
 			} else if (lhs instanceof Doc && rhs instanceof Doc) {
-				return new EError('equal for lists is not implemented')
+				return new EError('Sorry, our bad -- equal for lists is not implemented yet :(')
 			} else if (lhs instanceof Line && rhs instanceof Line) {
-				return new EError('equal for lists is not implemented')
+				return new EError('Sorry, our bad -- equal for lists is not implemented yet :(')
 			} else if (lhs instanceof Word && rhs instanceof Word) {
-				return new EError('equal for lists is not implemented')
+				return new EError('Sorry, our bad -- equal for lists is not implemented yet :(')
 			} else if (lhs instanceof Zlist && rhs instanceof Zlist) {
-				return new EError('equal for lists is not implemented')
+				return new EError('Sorry, our bad -- equal for lists is not implemented yet :(')
 			} else if (lhs instanceof Expectation && rhs instanceof Expectation) {
-				return new EError('equal for lists is not implemented')
+				return new EError('Sorry, our bad -- equal for lists is not implemented yet :(')
 			} else {
 				return new Bool(false);
 			}

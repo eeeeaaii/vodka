@@ -83,17 +83,34 @@ class Command extends NexContainer {
 		if (cmdname) {
 			lambda = executionEnv.lookupBinding(cmdname);
 			if (!(lambda instanceof Lambda)) {
-				throw new EError(`attempting to run command but "${cmdname}"" is bound to something that is not a lambda`);
+				throw new EError(`So we are trying to run a command, but`
+					+ ` the command name you provided was ${cmdname},`
+					+ ` which is bound to something that is not a lambda -`
+					+ ` but command objects can only execute lambdas (i.e. code).`
+					+ ` The symbol ${cmdname} is instead bound to an`
+					+ ` object of type ${lambda.getTypeName()}.`
+					+ ` If it helps, we can give you the textual representation`
+					+ ` of that object as follows: ${lambda.debugString()}`);
 			}
 		} else if (this.numChildren() > 0) {
 			let c = this.getChildAt(0);
 			this.skipFirstArg = true;
 			lambda = evaluateNexSafely(c, executionEnv);
 			if (!(lambda instanceof Lambda)) {
-				throw new EError(`first argument ${lambda.debugString()} to command is not a lambda.`);
+				throw new EError(`So this is a command with no name,`
+					+ ` which is fine, as long as the first child`
+					+ ` (in other words, the first argument)`
+					+ ` evaluates to a lambda. However, it doesn't.`
+					+ ` Instead, what we got for the first argument`
+					+ ` was an object of type ${lambda.getTypeName()}.`
+					+ ` If it helps, we can give you the textual representation`
+					+ ` of that object as follows: ${lambda.debugString()}`);
 			}
 		} else {
-			throw new EError("no-name command must provide a lambda in first argument.");		
+			throw new EError(`Commands with no name have to have`
+				+ ` a lambda as their first argument. This tells the`
+				+ ` command what code to run. However, this command had no children`
+				+ ` at all! So we have to generate an error and we cannot continue.`);
 		}
 		if (lambda == null) {
 			throw new Error("this shouldn't happen");
