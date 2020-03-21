@@ -69,9 +69,9 @@ class BuiltinParamManager {
 	checkNumArgs() {
 		if (this.args.length < this.numRequiredParams) {
 			throw new EError("Sorry, but there were not enough"
-				+ " args passed to the function " + this.name
-				+ ". You needed " + this.numRequiredParams
-				+ " but there were only " + this.args.length + " args!");
+				+ " arguments passed to the function " + this.name
+				+ ". There should be " + this.numRequiredParams
+				+ " but there were only " + this.args.length + " args.");
 		}
 	}
 
@@ -130,7 +130,7 @@ class BuiltinArgEvaluator {
 	checkMinNumArgs() {
 		if (this.argContainer.numArgs() < this.numRequiredParams) {
 			throw new EError("Sorry, but there were not enough"
-				+ " args passed to the function " + this.name
+				+ " arguments passed to the function " + this.name
 				+ ". You needed " + this.numRequiredParams
 				+ " but there were only " + this.argContainer.numArgs() + " args!");
 		}
@@ -139,7 +139,7 @@ class BuiltinArgEvaluator {
 	checkMaxNumArgs() {
 		if (this.argContainer.numArgs() > this.effectiveParams.length) {
 			throw new EError("Sorry, but there were *too many*"
-				+ " args passed to the function " + this.name
+				+ " arguments passed to the function " + this.name
 				+ ". The max is " + this.effectiveParams.length
 				+ " but you passed " + this.argContainer.numArgs() + " args.");
 			throw new EError(this.name + ": too many args passed to function")
@@ -184,7 +184,7 @@ class BuiltinArgEvaluator {
 					+ " the program could"
 					+ " keep going, but in this case " + this.name
 					+ " needs you to pass a " + param.type
-					+ " for this argument. We will enclose the error for you."
+					+ " for this argument. We will enclose the error for you.");
 			} else {
 				throw new EError("Sorry! But " + this.name
 					+ " needs you to pass  a " + param.type

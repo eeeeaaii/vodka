@@ -103,7 +103,12 @@ class Environment {
 		} else if (this.parentEnv) {
 			return this.parentEnv.lookupBinding(name);
 		} else {
-			throw new EError(`Unbound symbol ${name}`);
+			throw new EError(`So we tried to look up the symbol ${name} in memory, but there's`
+				+ ` nothing stored under that name. Either that`
+				+ ` symbol needs to be globally bound to something using "bind", or it needs`
+				+ ` to be assigned a value in the local lexical environment using "let".`
+				+ ` Double check the scope of your "let" statements and also just the spelling`
+				+ ` of this symbol to make sure you didn't make a typo.`);
 		}
 	}
 }

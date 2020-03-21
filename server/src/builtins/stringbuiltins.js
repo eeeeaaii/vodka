@@ -44,11 +44,12 @@ function createStringBuiltins() {
 			let n = env.lb('pos#').getTypedValue();
 			if (n < 0 || n >= s.length) {
 				return new EError(`So the function string-char-at`
-					+ ` needs you to pass in index of`
+					+ ` needs you to pass in the index of`
 					+ ` the char you want to pull out.`
-					+ ` This string goes from index 0 to index ${s.length - 1}`
-					+ ` but you passed in ${n}, which is outside the bounds`
-					+ ` of the string.`
+					+ ` The string you are working with here`
+					+ ` is ${s}, which goes from index [0] to index [${s.length - 1}].`
+					+ ` But you passed in [${n}], which is outside the bounds`
+					+ ` of the string.`);
 			}
 			let c = s.charAt(n);
 			return new EString(c);
