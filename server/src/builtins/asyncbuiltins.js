@@ -26,10 +26,11 @@ function createAsyncBuiltins() {
 			let time = env.lb('time#').getTypedValue();
 			let exp = env.lb('exp,');
 			let newexp = exp.makeCopy();
-			setTimeout(function() {
-				eventQueue.enqueueExpectationFulfill(newexp);
+			newexp.setTimeout(time);
+//			setTimeout(function() {
+//				eventQueue.enqueueExpectationFulfill(newexp);
 //				newexp.fulfill();
-			}, time);
+//			}, time);
 			return newexp;
 		}
 	);
@@ -49,13 +50,14 @@ function createAsyncBuiltins() {
 			// check children upon fulfillment
 			let newexp = exp.makeCopy();
 			newexp.checkChildren();
-			let fff = function() {
-				let cmd = new Command('');
-				cmd.appendChild(lambda);
-				cmd.appendChild(newexp.getChildAt(0));
-				return evaluateNexSafely(cmd, argEnv);
-			};
-			newexp.setFFF(fff);
+			newexp.setupFFWith(lambda, argEnv);
+			// let fff = function() {
+			// 	let cmd = new Command('');
+			// 	cmd.appendChild(lambda);
+			// 	cmd.appendChild(newexp.getChildAt(0));
+			// 	return evaluateNexSafely(cmd, argEnv);
+			// };
+//			newexp.setFFF(fff);
 			return newexp;
 		}
 	);

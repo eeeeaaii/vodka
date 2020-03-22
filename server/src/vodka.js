@@ -17,6 +17,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 // EXPERIMENTS
 
+// fast render for expectations
+const FASTEXPECTATIONS = true;
+
 // priority queue for event, renders, etc
 const PRIORITYQUEUE = true;
 
@@ -127,6 +130,12 @@ function createBuiltins() {
 
 function topLevelRender(node) {
 	topLevelRenderSelectingNode(null);
+}
+
+function nodeLevelRender(node) {
+	renderPassNumber++;
+	let flags = current_default_render_flags;
+	node.render(flags);
 }
 
 function topLevelRenderSelectingNode(node) {

@@ -14,6 +14,30 @@ class EventQueue {
 		this.lowPriority = [];
 	}
 
+	enqueueRenderNodeRenderSelecting(renderNode, flags, selectThisNode) {
+		let item = {
+			action: "renderNodeRenderSelecting",
+			renderNode: renderNode,
+			selectThisNode: selectThisNode,
+			flags: flags,
+			equals: function(other) {
+				 // ref equals is okay?
+				return
+					other.action == this.action
+					&& other.selectThisNode == this.selectThisNode
+					&& other.renderNode == this.renderNode
+					&& other.flags == this.flags;
+			},
+			do: function() {
+				selectWhenYouFindIt = this.selectThisNode;
+				renderPassNumber++;
+				this.renderNode.render(this.flags);
+			}
+		};
+		this.normalPriority.push(item);
+		this.setTimeoutForProcessingNextItem(item);
+	}
+
 	enqueueRenderNodeRender(renderNode, flags) {
 		let item = {
 			action: "renderNodeRender",
@@ -27,6 +51,7 @@ class EventQueue {
 					&& other.flags == this.flags;
 			},
 			do: function() {
+				renderPassNumber++;
 				this.renderNode.render(this.flags);
 			}
 		};

@@ -32,7 +32,12 @@ class Command extends NexContainer {
 
 	cacheGlobalBuiltin() {
 		try {
-			this.cachedBuiltin = BUILTINS.lookupBinding(this.commandtext);
+			let binding = BUILTINS.lookupBinding(this.commandtext);
+			if (binding instanceof Builtin) {
+				this.cachedBuiltin = binding;
+			} else {
+				this.cachedBuiltin = null;
+			}
 		} catch (e) {
 			this.cachedBuiltin = null;
 		}
@@ -70,7 +75,7 @@ class Command extends NexContainer {
 
 	isLambdaCommand(env) {
 		let lambda = this.getLambda(env);
-		return !(lambda instanceof Builtin);	
+		return !(lambda instanceof Builtin);
 	}
 
 	getLambda(executionEnv) {

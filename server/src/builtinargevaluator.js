@@ -170,7 +170,7 @@ class BuiltinArgEvaluator {
 					+ " for argument " + (i+1)
 					+ " and the program can't keep going anymore."
 					+ " BTW, this argument is supposed to be a " + param.type
-					+ ".");
+					+ ". The error is enclosed.", arg);
 			}
 		}
 		let typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[param.type](arg);
@@ -184,7 +184,7 @@ class BuiltinArgEvaluator {
 					+ " the program could"
 					+ " keep going, but in this case " + this.name
 					+ " needs you to pass a " + param.type
-					+ " for this argument. We will enclose the error for you.");
+					+ " for this argument. We will enclose the error for you.", arg);
 			} else {
 				throw new EError("Sorry! But " + this.name
 					+ " needs you to pass  a " + param.type

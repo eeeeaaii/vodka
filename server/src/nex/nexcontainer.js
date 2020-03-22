@@ -81,6 +81,9 @@ class NexContainer extends Nex {
 	// because we don't know what type it is.
 	// all this does is set the child pointers
 	setChildrenForCons(nex, newContainer) {
+		// because of the expectation parent hack
+		// and the fact that this is a "back door" way of
+		// giving a new a new parent, we have to do some things.
 		let newP = new ChildNex(nex);
 		newP.next = this.firstChildNex;
 		newContainer.firstChildNex = newP;
@@ -90,6 +93,12 @@ class NexContainer extends Nex {
 			newContainer.lastChildNex = this.lastChildNex;
 		}
 		newContainer.numChildNexes = this.numChildNexes + 1;
+		// expectation hack
+		for (let p = newP; p != null; p = p.next) {
+			if (p.n.addParent) {
+				p.n.addParent(newContainer);
+			}
+		}
 	}
 
 	getChildrenForCdr(newContainer) {

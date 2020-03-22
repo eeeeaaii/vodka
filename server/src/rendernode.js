@@ -23,8 +23,13 @@ class RenderNode {
 		this.childnodes = [];
 		this.domNode = document.createElement("div");
 
+		this.isCurrentlyExploded = false;
 		this.explodedOverride = -1;
 		this.firstToggleOnNexRender = false;
+	}
+
+	isExploded() {
+		return this.isCurrentlyExploded;
 	}
 
 	createChildRenderNodes(nex) {
@@ -136,6 +141,8 @@ class RenderNode {
 				: renderFlags;
 		this.nex.renderInto(this, useFlags);
 		this.nex.doRenderSequencing(this);
+		this.isCurrentlyExploded = !!(renderFlags & RENDER_FLAG_EXPLODED);
+
 		if (!(renderFlags & RENDER_FLAG_EXPLODED)
 				&& isNexContainer(this.nex)
 				&& !this.nex.renderChildrenIfNormal()) {

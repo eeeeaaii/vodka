@@ -63,7 +63,7 @@ class LambdaArgEvaluator {
 					+ ` to this error handler. However you might recognize the function`
 					+ ` if we give you a`
 					+ ` textual representation of the function definition`
-					+ ` - so here goes: ${this.debugstr}`);
+					+ ` - so here goes: ${this.debugstr}`, argval);
 			}
 			this.argContainer.setArgAt(
 				argval,

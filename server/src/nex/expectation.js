@@ -28,10 +28,21 @@ class Expectation extends NexContainer {
 		this.fff = null;
 		this.ffed = false;
 		this.discontinued = false;
+		this.waitingOnTimeout = -1;
+		this.ffwithLambda = null;
+		this.ffwithArgEnv = null;
 	}
 
 	toString() {
 		return `*(${super.childrenToString()}*)`;
+	}
+
+	setTimeout(time) {
+		this.waitingOnTimeout = time;
+		setTimeout((function() {
+			this.waitingOnTimeout = -1;
+			eventQueue.enqueueExpectationFulfill(this);
+		}).bind(this), time);
 	}
 
 
@@ -39,6 +50,14 @@ class Expectation extends NexContainer {
 		super.copyFieldsTo(nex);
 		nex.deleteHandler = this.deleteHandler;
 		nex.fff = this.fff;
+		// if we copy an expectation while it has a pending timeout,
+		// the new one gets its own timeout.
+		if (this.waitingOnTimeout > -1) {
+			nex.setTimeout(this.waitingOnTimeout);
+		}
+		if (this.ffwithLambda) {
+			nex.setupFFWith(this.ffwithLambda, this.ffwithArgEnv);
+		}
 		// notably we do NOT copy ffed because
 		// if the original one is already fulfilled, we might want
 		// to make a copy of it so it can be fulfilled again.
@@ -50,6 +69,17 @@ class Expectation extends NexContainer {
 
 	setFFF(f) {
 		this.fff = f;
+	}
+
+	setupFFWith(lambda, argEnv) {
+		this.ffwithLambda = lambda;
+		this.ffwithArgEnv = argEnv;
+		this.fff = (function() {
+			let cmd = new Command('');
+			cmd.appendChild(this.ffwithLambda);
+			cmd.appendChild(this.getChildAt(0));
+			return evaluateNexSafely(cmd, this.ffwithArgEnv);
+		}).bind(this);
 	}
 
 	addParent(parent) {
@@ -185,6 +215,8 @@ class Expectation extends NexContainer {
 		this.checkChildren();
 		let newnex = this.getFulfilledThing(passedInFFF);
 
+		let shouldSelect = this.getRenderNodes()[0] && this.getRenderNodes()[0].isSelected();
+
 		// fuckery here
 		// for each parent, look at all its children and find out
 		// whether this expectation is still a child.
@@ -197,13 +229,22 @@ class Expectation extends NexContainer {
 				let addr = addresses[j];
 				parent.replaceChildAt(newnex, addr);
 			}
+			if (FASTEXPECTATIONS) {
+				if (shouldSelect) {
+					parent.renderOnlyThisNex(newnex);
+				} else {
+					parent.renderOnlyThisNex(null);
+				}
+			}
 		}
 		// we don't know where the expectations are so we have to render everything.
 
-		if (this.getRenderNodes()[0] && this.getRenderNodes()[0].isSelected()) {
-			PRIORITYQUEUE ? eventQueue.enqueueTopLevelRenderSelectingNode(newnex) : topLevelRenderSelectingNode(newnex);
-		} else {
-			PRIORITYQUEUE ? eventQueue.enqueueTopLevelRender(newnex) : topLevelRender(newnex);
+		if (!FASTEXPECTATIONS) {
+			if (shouldSelect) {
+	 			PRIORITYQUEUE ? eventQueue.enqueueTopLevelRenderSelectingNode(newnex) : topLevelRenderSelectingNode(newnex);
+			} else {
+				PRIORITYQUEUE ? eventQueue.enqueueTopLevelRender(newnex) : topLevelRender(newnex);
+			}
 		}
 		for (let i = 0; i < this.completionlisteners.length; i++) {
 			this.completionlisteners[i](newnex);
