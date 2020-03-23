@@ -41,11 +41,11 @@ function createMathBuiltins() {
 		'-',
 		[
 			{name:'min#%', type:'Number'}, // minuend
-			{name:'sub#%???', type:'Number', optional:true}, // subtrahend
+			{name:'?sub#%', type:'Number', optional:true}, // subtrahend
 		],
 		function(env, argEnv) {
 			let a = env.lb('min#%');
-			let b = env.lb('sub#%???');
+			let b = env.lb('?sub#%');
 			if (b == UNBOUND) {
 				let n = (-a.getTypedValue());
 				if (a instanceof Float) {
@@ -128,6 +128,42 @@ function createMathBuiltins() {
 			let a = env.lb('arg%').getTypedValue();
 			a = Math.round(a);
 			return new Float(a);
+		}
+	)
+
+	Builtin.createBuiltin(
+		'sin',
+		[
+			{name:'arg%', type:'Float'},
+		],
+		function(env, argEnv) {
+			let a = env.lb('arg%').getTypedValue();
+			let b = Math.sin(a);
+			return new Float(b);
+		}
+	)
+
+	Builtin.createBuiltin(
+		'cos',
+		[
+			{name:'arg%', type:'Float'},
+		],
+		function(env, argEnv) {
+			let a = env.lb('arg%').getTypedValue();
+			let b = Math.cos(a);
+			return new Float(b);
+		}
+	)
+
+	Builtin.createBuiltin(
+		'tan',
+		[
+			{name:'arg%', type:'Float'},
+		],
+		function(env, argEnv) {
+			let a = env.lb('arg%').getTypedValue();
+			let b = Math.tan(a);
+			return new Float(b);
 		}
 	)
 

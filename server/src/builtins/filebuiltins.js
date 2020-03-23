@@ -28,11 +28,57 @@ function createFileBuiltins() {
 			let nm = namesym.getTypedValue();
 			let val = env.lb('_nex');			
 			let exp = new Expectation();
-			exp.appendChild(namesym)
+			let savingMessage = new EError("saving...");
+			savingMessage.setErrorType(ERROR_TYPE_INFO);
+			exp.appendChild(savingMessage)
 			saveNex(nm, val, exp);
 			return exp;
 		}
 	);
+
+	// in order to make this variadic so it mirrors begin it has to be a builtin
+	Builtin.createBuiltin(
+		'save-and-run',
+		[
+			{name:'_name@', type:'ESymbol', skipeval:true},
+			{name:'_nex...', type:'*', skipeval:true, variadic:true}
+		],
+		function(env, argEnv) {
+			let namesym = env.lb('_name@');
+			let lst = env.lb('_nex...');
+			let nm = namesym.getTypedValue();
+			// construct thing to save
+			let toSave = new Command('run');
+			toSave.setVertical();
+			// we aren't running it yet.
+			for (let i = 0; i < lst.numChildren(); i++) {
+				let c = lst.getChildAt(i);
+				toSave.appendChild(c.makeCopy());
+			}
+			let exp = new Expectation();
+			let savingMessage = new EError("saving...");
+			savingMessage.setErrorType(ERROR_TYPE_INFO);
+			exp.appendChild(savingMessage)
+			saveNexWithCallback(nm, toSave, exp, (function(result) {
+				let resultRun = new Command('save-and-run');
+				resultRun.setVertical();
+				resultRun.appendChild(namesym.makeCopy());
+				for (var i = 0; i < toSave.numChildren(); i++) {
+					let c = toSave.getChildAt(i);
+					let result = evaluateNexSafely(c, argEnv);
+					let ccopy = c.makeCopy();
+					resultRun.appendChild(ccopy);
+					if (result.getTypeName() == '-error-') {
+						resultRun.appendChild(result);
+						ccopy.addTag(new Tag("Error follows"));
+					}
+				}
+				exp.fulfill(resultRun);
+			}).bind(this));
+			return exp;
+		}
+	);
+
 
 	Builtin.createBuiltin(
 		'save-result',
@@ -96,44 +142,4 @@ function createFileBuiltins() {
 			return exp;
 		}
 	);
-
-	// deprecated, remove, maybe re-implement as bootstrapped
-	/*
-	Builtin.createBuiltin(
-		'edit',
-		[
-			{name:'_name@', type:'ESymbol', skipeval:true},
-			{name:'_val???', type:'*', skipeval:true, optional:true},
-		],
-		function(env, argEnv) {
-			let sym = env.lb('_name@').makeCopy();
-			let nm = sym.getTypedValue();
-			let val = env.lb('_val???');
-			if (val) {
-				val = val.makeCopy();
-				toEval = val.makeCopy();
-				let evaluated = evaluateNexSafely(toEval, argEnv);
-				let exp = new Expectation(function(result) {
-					let c = new Command('edit');
-					c.appendChild(sym)
-					c.appendChild(val);
-					c.appendChild(result);
-					c.appendChild(evaluated);
-					return c;
-				});
-				saveNex(nm, val, exp);
-				return exp;
-			} else {
-				let exp = new Expectation(function(newval) {
-					let c = new Command('edit');
-					c.appendChild(sym);
-					c.appendChild(newval);
-					return c;
-				})
-				loadNex(nm, exp);
-				return exp;
-			}
-		}
-	);
-	*/
 }

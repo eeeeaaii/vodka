@@ -17,6 +17,53 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 function createAsyncBuiltins() {
 	Builtin.createBuiltin(
+		'ff-stop',
+		[
+			{name: 'exp,', type:'Expectation', optional:true}
+		],
+		function(env, argEnv) {
+			let exp = env.lb('exp,');
+			if (exp == UNBOUND) {
+				TIMEOUTS_GEN++;
+				return new Nil();
+			} else {
+				exp.stop();
+				return exp;
+			}
+		}
+	);
+
+
+	Builtin.createBuiltin(
+		'ff-unlimited',
+		[
+			{name: 'exp,', type:'Expectation'}
+		],
+		function(env, argEnv) {
+			let exp = env.lb('exp,').makeCopy();
+			exp.setUnlimited();
+			return exp;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'ff-every',
+		[
+			{name: 'exp,', type:'Expectation'},
+			{name: 'time#', type:'Integer'}
+		],
+		function(env, argEnv) {
+			let time = env.lb('time#').getTypedValue();
+			let exp = env.lb('exp,');
+			let newexp = exp.makeCopy();
+			newexp.setUnlimited();
+			newexp.setTimeoutEvery(time);
+			return newexp;
+		}
+	);
+		
+
+	Builtin.createBuiltin(
 		'ff-after',
 		[
 			{name: 'exp,', type:'Expectation'},
@@ -27,10 +74,6 @@ function createAsyncBuiltins() {
 			let exp = env.lb('exp,');
 			let newexp = exp.makeCopy();
 			newexp.setTimeout(time);
-//			setTimeout(function() {
-//				eventQueue.enqueueExpectationFulfill(newexp);
-//				newexp.fulfill();
-//			}, time);
 			return newexp;
 		}
 	);
@@ -51,13 +94,6 @@ function createAsyncBuiltins() {
 			let newexp = exp.makeCopy();
 			newexp.checkChildren();
 			newexp.setupFFWith(lambda, argEnv);
-			// let fff = function() {
-			// 	let cmd = new Command('');
-			// 	cmd.appendChild(lambda);
-			// 	cmd.appendChild(newexp.getChildAt(0));
-			// 	return evaluateNexSafely(cmd, argEnv);
-			// };
-//			newexp.setFFF(fff);
 			return newexp;
 		}
 	);
@@ -75,10 +111,9 @@ function createAsyncBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'ff-after-child',
+		'ff-chain-after-child',
 		[
-			{name: 'exp1,', type:'Expectation'},
-			{name: 'exp2,', type:'Expectation'},
+			{name: 'exp1,', type:'Expectation'}
 		],
 		function(env, argEnv) {
 			let exp1 = env.lb('exp1,');
@@ -95,6 +130,20 @@ function createAsyncBuiltins() {
 
 			}
 			let exp2 = exp1.getChildAt(0);
+			exp2.addCompletionListener(exp1);
+			return exp1;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'ff-chain-after',
+		[
+			{name: 'exp1,', type:'Expectation'},
+			{name: 'exp2,', type:'Expectation'}
+		],
+		function(env, argEnv) {
+			let exp1 = env.lb('exp1,');
+			let exp2 = env.lb('exp2,');
 			exp2.addCompletionListener(exp1);
 			return exp1;
 		}

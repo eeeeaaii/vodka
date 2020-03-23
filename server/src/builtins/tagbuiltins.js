@@ -46,6 +46,20 @@ function createTagBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'clear-tags',
+		[
+			{name: '_nex', type:'*', skipeval:true},
+		],
+		function(env, argEnv) {
+			let n = env.lb('_nex');
+			let tagname = env.lb('tag$').getFullTypedValue();
+			let tag = new Tag(tagname);
+			n.clearTags();
+			return n;
+		}
+	);
+
+	Builtin.createBuiltin(
 		'has-tag',
 		[
 			{name: '_nex', type:'*', skipeval:true},

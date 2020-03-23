@@ -142,40 +142,30 @@ function createBasicBuiltins() {
 			}
 		}
 	);
-	/*
 
+	// in order to make this variadic so it mirrors begin it has to be a builtin
 	Builtin.createBuiltin(
 		'run',
 		[
-			{name:'nex', type:'*', skipeval:true}
+			{name:'_nex...', type:'*', skipeval:true, variadic:true}
 		],
 		function(env, argEnv) {
-			let nex = env.lb('nex');
-
-			let exp = new Expectation();
-			let result = evaluateNexSafely(nex, argEnv);
-			let again = new Command('run');
-			again.setVertical();
-
-			if (result.getTypeName() == '-error-') {
-				result = wrapError('&szlig;', 'run: error in argument', result);
-				exp.appendChild(result);
-				again.appendChild(result);
-				again.appendChild(nex);
-				setTimeout(function() {
-					exp.fulfill(again);
-				}, 2000);
-			} else {
-				exp.appendChild(result);
-				again.appendChild(nex);
-				setTimeout(function() {
-					exp.fulfill(again);
-				}, 500);
+			let lst = env.lb('_nex...');
+			let resultRun = new Command('run');
+			resultRun.setVertical();
+			for (let i = 0; i < lst.numChildren(); i++) {
+				let c = lst.getChildAt(i);
+				let result = evaluateNexSafely(c, argEnv);
+				let ccopy = c.makeCopy();
+				resultRun.appendChild(ccopy);
+				if (result.getTypeName() == '-error-') {
+					resultRun.appendChild(result);
+					ccopy.addTag(new Tag("Error follows"));
+				}
 			}
-			return exp;
+			return resultRun;
 		}
 	);
-	*/
 
 	Builtin.createBuiltin(
 		'let',
@@ -233,11 +223,22 @@ function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'bound',
 		[
+			{name: '?search$', type:'EString', optional:true}
 		],
 		function(env, argEnv) {
+			let ssnex = env.lb('?search$');
+			let ss = "";
+			if (ssnex != UNBOUND) {
+				ss = ssnex.getFullTypedValue();
+			}
 			let names = BUILTINS.getAllBoundSymbolsAtThisLevel();
 			let r = new Doc();
 			for (let i = 0; i < names.length; i++) {
+				if (ss != "") {
+					if (!(names[i].indexOf(ss) >= 0)) {
+						continue;
+					}
+				}
 				let sym = new ESymbol(names[i]);
 				r.appendChild(sym);
 			}
@@ -248,11 +249,22 @@ function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'built-ins',
 		[
+			{name: '?search$', type:'EString', optional:true}
 		],
 		function(env, argEnv) {
+			let ssnex = env.lb('?search$');
+			let ss = "";
+			if (ssnex != UNBOUND) {
+				ss = ssnex.getFullTypedValue();
+			}
 			let names = BUILTINS.getParent().getAllBoundSymbolsAtThisLevel();
 			let r = new Doc();
 			for (let i = 0; i < names.length; i++) {
+				if (ss != "") {
+					if (!(names[i].indexOf(ss) >= 0)) {
+						continue;
+					}
+				}
 				let sym = new ESymbol(names[i]);
 				r.appendChild(sym);
 			}
@@ -275,6 +287,7 @@ function createBasicBuiltins() {
 		}
 	);
 
+	// TODO: actually what I should do is tag it with something like "not fatal"
 	Builtin.createBuiltin(
 		'convert-type-if-error',
 		[

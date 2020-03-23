@@ -17,6 +17,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 // EXPERIMENTS
 
+const EXPECTATIONS_NO_PARENT = true;
+
 // fast render for expectations
 const FASTEXPECTATIONS = true;
 

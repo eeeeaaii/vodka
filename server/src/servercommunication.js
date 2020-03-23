@@ -33,7 +33,16 @@ function saveNex(name, nex, expectation) {
 
 	sendToServer(payload, function(data) {
 		let e = new EError("success");
+		e.setErrorType(ERROR_TYPE_INFO);
 		expectation.fulfill(e);
+	});
+}
+
+function saveNexWithCallback(name, nex, expectation, callback) {
+	let payload = `save\t${name}\t${nex.toString()}`;
+
+	sendToServer(payload, function(data) {
+		callback(data);
 	});
 }
 
@@ -41,6 +50,7 @@ function loadNex(name, expectation) {
 	let payload = `load\t${name}`;
 
 	sendToServer(payload, function(data) {
+		document.title = name;
 		let nex = new NexParser(data).parse();
 		expectation.fulfill(nex);
 	});
@@ -52,7 +62,16 @@ function importNex(name, expectation) {
 	sendToServer(payload, function(data) {
 		let nex = new NexParser(data).parse();
 		let result = evaluateNexSafely(nex, BUILTINS);
-		expectation.fulfill(result);
+		let r = null;
+		if (result.getTypeName() != '-error-') {
+			r = new EError("Import successful.");
+			r.setErrorType(ERROR_TYPE_INFO);
+		} else {
+			r = new EError("Import failed.");
+			r.setErrorType(ERROR_TYPE_WARN);
+			r.appendChild(result);
+		}
+		expectation.fulfill(r);
 	});
 }
 

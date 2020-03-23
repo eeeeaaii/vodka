@@ -162,6 +162,10 @@ class Nex {
 		}
 	}
 
+	clearTags() {
+		this.tags = [];		
+	}
+
 	evaluate(env) {
 		return this;
 	}
@@ -218,7 +222,6 @@ class Nex {
 
 	_setClickHandler(renderNode) {
 		renderNode.getDomNode().onmousedown = (event) => {
-			console.log('a');
 			PRIORITYQUEUE
 					? eventQueue.enqueueDoClickHandlerAction(this, renderNode, event)
 					: this.doClickHandlerAction(renderNode);

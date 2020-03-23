@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+var TIMEOUTS_GEN = 0;
+
 
 
 class Expectation extends NexContainer {
@@ -29,8 +31,15 @@ class Expectation extends NexContainer {
 		this.ffed = false;
 		this.discontinued = false;
 		this.waitingOnTimeout = -1;
+		this.everyTimeout = -1;
 		this.ffwithLambda = null;
 		this.ffwithArgEnv = null;
+		this.unlimited = false;
+
+	}
+
+	setUnlimited() {
+		this.unlimited = true;
 	}
 
 	toString() {
@@ -45,15 +54,38 @@ class Expectation extends NexContainer {
 		}).bind(this), time);
 	}
 
+	clearEveryTimeout() {
+		this.everyTimeout = -1;
+	}
+
+	stop() {
+		this.timeoutsGen--;
+	}
+
+	setTimeoutEvery(time) {
+		this.timeoutsGen = TIMEOUTS_GEN;
+		this.everyTimeout = time;
+		let f = (function() {
+			eventQueue.enqueueExpectationFulfill(this);
+			if (this.everyTimeout != -1 && this.timeoutsGen == TIMEOUTS_GEN) {
+				setTimeout(f, time);
+			}
+		}).bind(this);
+		setTimeout(f, time);
+	}
 
 	copyFieldsTo(nex) {
 		super.copyFieldsTo(nex);
 		nex.deleteHandler = this.deleteHandler;
 		nex.fff = this.fff;
+		nex.unlimited = this.unlimited;
 		// if we copy an expectation while it has a pending timeout,
 		// the new one gets its own timeout.
 		if (this.waitingOnTimeout > -1) {
 			nex.setTimeout(this.waitingOnTimeout);
+		}
+		if (this.everyTimeout > -1) {
+			nex.setTimeoutEvery(this.everyTimeout);
 		}
 		if (this.ffwithLambda) {
 			nex.setupFFWith(this.ffwithLambda, this.ffwithArgEnv);
@@ -100,8 +132,15 @@ class Expectation extends NexContainer {
 
 	evaluate(env) {
 		pushStackLevel();
+		let rval = null;;
 		// if discontinued this will just be itself
-		let rval = this.getFulfilledThing();
+		if (EXPECTATIONS_NO_PARENT) {
+			return this.getChildAt(0).makeCopy();
+//			this.fulfill();
+			rval = this;
+		} else {
+			rval = this.getFulfilledThing();
+		}
 		popStackLevel();
 		return rval;
 	}
@@ -198,7 +237,9 @@ class Expectation extends NexContainer {
 				}).bind(this);
 			}
 		}
-		this.ffed = true;
+		if (!this.unlimited) {
+			this.ffed = true;
+		}
 		return this.fff();
 	}
 
@@ -216,6 +257,19 @@ class Expectation extends NexContainer {
 		let newnex = this.getFulfilledThing(passedInFFF);
 
 		let shouldSelect = this.getRenderNodes()[0] && this.getRenderNodes()[0].isSelected();
+
+		if (EXPECTATIONS_NO_PARENT) {
+			this.replaceChildAt(newnex, 0);
+			if (FASTEXPECTATIONS) {
+				this.renderOnlyThisNex(null);
+			} else {
+				PRIORITYQUEUE ? eventQueue.enqueueTopLevelRender(newnex) : topLevelRender(newnex);
+			}
+			for (let i = 0; i < this.completionlisteners.length; i++) {
+				this.completionlisteners[i](newnex);
+			}
+			return;
+		}
 
 		// fuckery here
 		// for each parent, look at all its children and find out
