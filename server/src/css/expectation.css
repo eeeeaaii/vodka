@@ -46,11 +46,18 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 .dotspan.exploded {
 	border: 1px solid #aaaaaa;
 	margin: 0px 12px 0px -27px;
-	padding: 0px 4px 6px 4px;
+	padding: 0px 12px 8px 4px;
 	display: inline-block;
 	line-height: .6;
 	border-radius:6px 0px 0px 6px;
+}
 
+.dotspan.exploded.fulfilled {
+	padding: 7px 6px 2px 6px;
+}
+
+.dotspan.exploded.threedots {
+	padding: 0px 4px 8px 4px;
 }
 
 .expectation.exploded.selected > .dotspan {

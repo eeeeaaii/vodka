@@ -66,6 +66,8 @@ NEW FEATURES = be careful
 - implement "equal" for list types (needs to be deep equal)
 - make native primitives for some common operations that could be bootstrapped (like iteration)
 - make "type creation" primitives (make-integer, make-float, etc)
+- make the ff primitives use "skip eval" but test arguments to see if they are
+  already expectations and if so just use, otherwise eval argument.
 
 
 EXPERIMENTS TO TRY = be extra careful

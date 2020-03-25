@@ -355,6 +355,17 @@ class Manipulator {
 		return true;
 	}
 
+	replaceSelectedWithFirstChildOfSelected() {
+		let s = selectedNode;
+		let p = s.getParent(true);
+		if (!p) return false;
+		if (!(s.numChildren() == 1)) return false;
+		let nex = s.getChildAt(0);
+		p.replaceChildWith(s, nex);
+		nex.setSelected();
+		return true;
+	}
+
 	replaceSelectedWithNewCommand() {
 		let s = (selectedNode);
 		let p = s.getParent(true);

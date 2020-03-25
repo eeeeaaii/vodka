@@ -20,22 +20,17 @@ var TIMEOUTS_GEN = 0;
 
 
 class Expectation extends NexContainer {
-	constructor(hackfunction) {
+	constructor() {
 		super()
-		this.hackfunction = hackfunction;
 		this.completionlisteners = [];
 		this.parentlist = [];
-		// fff is somehow more readable than "fulfillfunction"
-		// like I don't have to remember how to spell it
-		this.fff = null;
-		this.ffed = false;
-		this.discontinued = false;
 		this.waitingOnTimeout = -1;
 		this.everyTimeout = -1;
+		this.fff = null;
+		this.ffed = false;
 		this.ffwithLambda = null;
-		this.ffwithArgEnv = null;
+		this.ffobject = null;
 		this.unlimited = false;
-
 	}
 
 	setUnlimited() {
@@ -78,6 +73,8 @@ class Expectation extends NexContainer {
 		super.copyFieldsTo(nex);
 		nex.deleteHandler = this.deleteHandler;
 		nex.fff = this.fff;
+		nex.ffobject = this.ffobject;
+		nex.ffwithLambda = this.ffwithLambda;
 		nex.unlimited = this.unlimited;
 		// if we copy an expectation while it has a pending timeout,
 		// the new one gets its own timeout.
@@ -87,31 +84,37 @@ class Expectation extends NexContainer {
 		if (this.everyTimeout > -1) {
 			nex.setTimeoutEvery(this.everyTimeout);
 		}
-		if (this.ffwithLambda) {
-			nex.setupFFWith(this.ffwithLambda, this.ffwithArgEnv);
-		}
 		// notably we do NOT copy ffed because
 		// if the original one is already fulfilled, we might want
 		// to make a copy of it so it can be fulfilled again.
 	}
 
-	discontinue() {
-		this.discontinued = true;
-	}
-
 	setFFF(f) {
+		this.ffobject = null;
+		this.ffwithLambda = null;
 		this.fff = f;
 	}
 
+	setFFObject(val) {
+		this.fff = null;
+		this.ffwithLambda = null;
+		this.ffobject = val;
+	}
+
 	setupFFWith(lambda, argEnv) {
-		this.ffwithLambda = lambda;
-		this.ffwithArgEnv = argEnv;
-		this.fff = (function() {
-			let cmd = new Command('');
-			cmd.appendChild(this.ffwithLambda);
-			cmd.appendChild(this.getChildAt(0));
-			return evaluateNexSafely(cmd, this.ffwithArgEnv);
-		}).bind(this);
+		this.fff = null;
+		this.ffobject = null;
+		this.ffwithLambda = {
+			lambda: lambda,
+			argEnv: argEnv
+		};
+	}
+
+	fulfillWithLambda() {
+		let cmd = new Command('');
+		cmd.appendChild(this.ffwithLambda.lambda);
+		cmd.appendChild(this.getChildAt(0));
+		return evaluateNexSafely(cmd, this.ffwithLambda.argEnv);		
 	}
 
 	addParent(parent) {
@@ -133,10 +136,7 @@ class Expectation extends NexContainer {
 	evaluate(env) {
 		pushStackLevel();
 		let rval = null;;
-		// if discontinued this will just be itself
 		if (EXPECTATIONS_NO_PARENT) {
-			return this.getChildAt(0).makeCopy();
-//			this.fulfill();
 			rval = this;
 		} else {
 			rval = this.getFulfilledThing();
@@ -186,7 +186,32 @@ class Expectation extends NexContainer {
 			} else {
 				dotspan.classList.remove('exploded');
 			}
-			dotspan.innerHTML = '...';
+			this.unsetDotSpanPaddingClasses(dotspan);
+			this.setDotSpanPaddingClass(dotspan);
+			dotspan.innerHTML = this.getDotSpanHTML();
+		}
+	}
+
+	getDotSpanHTML() {
+		if (this.ffed) {
+			return '*';
+		}
+		if (this.fff || this.ffobject || this.ffwithLambda) {
+			return '...';
+		}
+		return '.';
+	}
+
+	unsetDotSpanPaddingClasses(dotspan) {
+		dotspan.classList.remove('fulfilled');
+ 		dotspan.classList.remove('threedots');
+	}
+
+	setDotSpanPaddingClass(dotspan) {
+		if (this.ffed) {
+			dotspan.classList.add('fulfilled');
+		} else if (this.fff || this.ffobject || this.ffwithLambda) {
+			dotspan.classList.add('threedots');
 		}
 	}
 
@@ -215,32 +240,25 @@ class Expectation extends NexContainer {
 	}
 
 	getFulfilledThing(passedInFFF) {
-		if (this.discontinued) {
-			return this;
-		}
-		if (this.ffed) {
+		if (this.ffed && !this.unlimited) {
 			throw new EError('Cannot fulfill an already-fulfilled expectation');
 		}
-		if (!this.fff) {
-			// either it was passed in or um
-			if (passedInFFF) {
-				if ((typeof passedInFFF) == 'function') {
-					this.fff = passedInFFF;
-				} else {
-					this.fff = function() {
-						return passedInFFF;
-					};
-				}
+		this.ffed = true;
+		if (passedInFFF) {
+			if ((typeof passedInFFF) == 'function') {
+				return passedInFFF();
 			} else {
-				this.fff = (function() {
-					return this.getChildAt(0);
-				}).bind(this);
+				return passedInFFF;
 			}
+		} else if (this.fff) {
+			return this.fff();
+		} else if (this.ffobject) {
+			return this.ffobject;
+		} else if (this.ffwithLambda) {
+			return this.fulfillWithLambda();
+		} else {
+			throw new EError("cannot fulfill unset expectation");
 		}
-		if (!this.unlimited) {
-			this.ffed = true;
-		}
-		return this.fff();
 	}
 
 	checkChildren() {
@@ -266,7 +284,7 @@ class Expectation extends NexContainer {
 				PRIORITYQUEUE ? eventQueue.enqueueTopLevelRender(newnex) : topLevelRender(newnex);
 			}
 			for (let i = 0; i < this.completionlisteners.length; i++) {
-				this.completionlisteners[i](newnex);
+				this.completionlisteners[i].fulfill();
 			}
 			return;
 		}
@@ -329,19 +347,8 @@ class Expectation extends NexContainer {
 	getEventTable(context) {
 		// most of these have no tests?
 		return {
-//			'Tab': 'select-first-child-or-fail',
+			'ShiftEnter': 'return-exp-child',
 			'Enter': 'do-line-break-always',
-			// '~': 'replace-selected-with-command',
-			// '!': 'replace-selected-with-bool',
-			// '@': 'replace-selected-with-symbol',
-			// '#': 'replace-selected-with-integer',
-			// '$': 'replace-selected-with-string',
-			// '%': 'replace-selected-with-float',
-			// '^': 'replace-selected-with-nil',
-			// '&': 'replace-selected-with-lambda',
-			// '(': 'replace-selected-with-word',
-			// '[': 'replace-selected-with-line',
-			// '{': 'replace-selected-with-doc',
 			// special stuff for expectations that gets rid of the js timeout
 			'ShiftBackspace': 'call-delete-handler-then-remove-selected-and-select-previous-sibling',
 			'Backspace': 'call-delete-handler-then-remove-selected-and-select-previous-sibling',

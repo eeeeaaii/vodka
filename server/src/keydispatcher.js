@@ -128,6 +128,10 @@ var KeyResponseFunctions = {
 		s.getNex().startModalEditing();
 	},
 
+	'return-exp-child': function(s) {
+		manipulator.replaceSelectedWithFirstChildOfSelected();
+	},
+
 	'replace-selected-with-command': function(s) { manipulator.replaceSelectedWith(new Command()); },
 	'replace-selected-with-bool': function(s) { manipulator.replaceSelectedWith(new Bool()); },
 	'replace-selected-with-symbol': function(s) { manipulator.replaceSelectedWith(new ESymbol()); },
