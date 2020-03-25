@@ -116,17 +116,6 @@ function createBasicBuiltins() {
 		}
 	);
 
-	Builtin.createBuiltin(
-		'is-empty',
-		[
-			{name:'list()', type:'NexContainer'},
-		],
-		function(env, argEnv) {
-			let lst = env.lb('list()');
-			let rb = !lst.hasChildren();
-			return new Bool(rb);
-		}
-	);
 
 	Builtin.createBuiltin(
 		'begin',
@@ -167,111 +156,6 @@ function createBasicBuiltins() {
 		}
 	);
 
-	Builtin.createBuiltin(
-		'let',
-		[
-			{name:'_name@', type:'ESymbol',skipeval:true},
-			{name:'nex', type:'*'}
-		],
-		function(env, argEnv) {
-			let rhs = env.lb('nex');
-			argEnv.bind(env.lb('_name@').getTypedValue(), rhs);
-			return rhs;
-		}
-	);
-
-	Builtin.createBuiltin(
-		'set',
-		[
-			{name:'_name@', type:'ESymbol',skipeval:true},
-			{name:'nex', type:'*'}
-		],
-		function(env, argEnv) {
-			let rhs = env.lb('nex');
-			argEnv.set(env.lb('_name@').getTypedValue(), rhs);
-			return rhs;
-		}
-	);
-
-	Builtin.createBuiltin(
-		'bind',
-		[
-			{name:'_name@', type:'ESymbol',skipeval:true},
-			{name:'nex', type:'*'}
-		],
-		function(env, argEnv) {
-			let val = env.lb('nex');
-			let name = env.lb('_name@');
-			BUILTINS.bindInPackage(name.getTypedValue(), val);
-			return name;
-		}
-	);
-
-	Builtin.createBuiltin(
-		'bind-unique',
-		[
-			{name:'_name@', type:'ESymbol', skipeval:true},
-			{name:'nex', type:'*'}
-		],
-		function(env, argEnv) {
-			let val = env.lb('nex');
-			BUILTINS.bindUniqueInPackage(env.lb('_name@').getTypedValue(), val);
-			return val;
-		}
-	);
-
-	Builtin.createBuiltin(
-		'bound',
-		[
-			{name: '?search$', type:'EString', optional:true}
-		],
-		function(env, argEnv) {
-			let ssnex = env.lb('?search$');
-			let ss = "";
-			if (ssnex != UNBOUND) {
-				ss = ssnex.getFullTypedValue();
-			}
-			let names = BUILTINS.getAllBoundSymbolsAtThisLevel();
-			let r = new Doc();
-			for (let i = 0; i < names.length; i++) {
-				if (ss != "") {
-					if (!(names[i].indexOf(ss) >= 0)) {
-						continue;
-					}
-				}
-				let sym = new ESymbol(names[i]);
-				r.appendChild(sym);
-			}
-			return r;
-		}
-	);
-
-	Builtin.createBuiltin(
-		'built-ins',
-		[
-			{name: '?search$', type:'EString', optional:true}
-		],
-		function(env, argEnv) {
-			let ssnex = env.lb('?search$');
-			let ss = "";
-			if (ssnex != UNBOUND) {
-				ss = ssnex.getFullTypedValue();
-			}
-			let names = BUILTINS.getParent().getAllBoundSymbolsAtThisLevel();
-			let r = new Doc();
-			for (let i = 0; i < names.length; i++) {
-				if (ss != "") {
-					if (!(names[i].indexOf(ss) >= 0)) {
-						continue;
-					}
-				}
-				let sym = new ESymbol(names[i]);
-				r.appendChild(sym);
-			}
-			return r;
-		}
-	);
-
 	// 'eval' is really eval again because args to functions are evaled
 	Builtin.createBuiltin(
 		'eval',
@@ -286,72 +170,6 @@ function createBasicBuiltins() {
 			return newresult;				
 		}
 	);
-
-	// TODO: actually what I should do is tag it with something like "not fatal"
-	Builtin.createBuiltin(
-		'convert-type-if-error',
-		[
-			{name:'errtype$', type:'EString'},
-			{name: 'nex', type:'*', skipeval:true}
-		],
-		function(env, argEnv) {
-			let expr = env.lb('nex');
-			let newresult = evaluateNexSafely(expr, argEnv);
-			if (newresult.getTypeName() != '-error-') {
-				// you might think this function would throw an
-				// error if you tried to pass it something that's
-				// not an error, but the problem with doing that
-				// is that you can't test for whether something is
-				// an error WITHOUT using this function. So non-errors
-				// are passed unchanged.
-				return newresult;
-			}
-
-			let etstring = env.lb('errtype$').getFullTypedValue();
-			let errtype = ERROR_TYPE_FATAL;
-			switch(etstring) {
-				case "warn":
-					errtype = ERROR_TYPE_WARN;
-					break;
-				case "info":
-					errtype = ERROR_TYPE_INFO;
-					break;
-				case "fatal":
-					break;
-				default:
-					throw new EError("So you're trying to set the"
-						+ " error type with convert-type-if-error."
-						+ " You need to pass in a string containing"
-						+ " the name of one of the error types,"
-						+ " which are 'info', 'warn', and 'fatal'."
-						+ " What you passed in though was this: " + etstring);
-			}
-
-			newresult.setErrorType(errtype);
-			return newresult;
-		}
-	);	
-
-	Builtin.createBuiltin(
-		'quote',
-		[
-			{name: 'nex', type:'*', skipeval:true}
-		],
-		function(env, argEnv) {
-			return env.lb('nex');
-		}
-	);
-
-	Builtin.createBuiltin(
-		'jslog',
-		[
-			{name: 'nex', type:'*'}
-		],
-		function(env, argEnv) {
-			let nex = env.lb('nex');
-			console.log(nex.debugString());
-			return nex;
-		})
 
 	Builtin.createBuiltin(
 		'eq',

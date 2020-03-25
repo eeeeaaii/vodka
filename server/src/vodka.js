@@ -105,8 +105,8 @@ function getAppFlags() {
 	})
 }
 
-// DO NOT RENAME THIS METHOD OR YOU WILL BREAK ALL THE OLD TESTS
-function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
+
+function doRealKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 	let r = KEY_DISPATCHER.dispatch(keycode, whichkey, hasShift, hasCtrl, hasAlt);
 
 	// if it returns false, it means we handled the keystroke and we are
@@ -114,18 +114,50 @@ function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 	if (!r) {
 		PRIORITYQUEUE ? eventQueue.enqueueTopLevelRender() : topLevelRender();
 	}
-	return r;
+	return r;	
+}
+
+// omgg
+function doKeyInputNotForTests(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
+	if (PRIORITYQUEUE) {
+		eventQueue.enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt);
+		return false; // we no longer know if we can honor the browser event?
+	} else {
+		return doRealKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt);
+	}
+}
+
+var testEventQueue = [];
+
+// DO NOT RENAME THIS METHOD OR YOU WILL BREAK ALL THE OLD TESTS
+function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
+	if (PRIORITYQUEUE) {
+		// in order to make this simulate user activity better I'd need
+		// to go modify all the tests so they don't call this method
+		// synchronously. Instead I will force a full-screen render
+		// in between key events -- there are certain things that
+		// require render node caching to happen in between user
+		// events (which usually happens because people can't
+		// type keys fast enough to beat the js scheduler)
+		eventQueue.enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt);
+		eventQueue.enqueueImportantTopLevelRender();
+		return false; // we no longer know if we can honor the browser event?
+	} else {
+		return doRealKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt);
+	}
 }
 
 function createBuiltins() {
-	createBasicBuiltins();
 	createAsyncBuiltins();
+	createBasicBuiltins();
+	createEnvironmentBuiltins();
 	createFileBuiltins();
+	createLogicBuiltins();
+	createMakeBuiltins();
 	createMathBuiltins();
 	createStringBuiltins();
-	createTagBuiltins();
-	createLogicBuiltins();
 	createSyscalls();
+	createTagBuiltins();
 	createTestBuiltins();
 	createTypeConversionBuiltins();
 }
@@ -180,12 +212,7 @@ function setup() {
 	document.onkeydown = function(e) {
 		checkRecordState(e, 'down');
 		if (key_funnel_active) {
-			if (PRIORITYQUEUE) {
-				eventQueue.enqueueDoKeyInput(e.key, e.code, e.shiftKey, e.ctrlKey, e.metaKey);
-				return false; // we no longer know if we can honor the browser event?
-			} else {
-				return doKeyInput(e.key, e.code, e.shiftKey, e.ctrlKey, e.metaKey);
-			}
+			return doKeyInputNotForTests(e.key, e.code, e.shiftKey, e.ctrlKey, e.metaKey);
 		} else {
 			return true;
 		}

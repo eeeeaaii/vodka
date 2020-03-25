@@ -17,6 +17,18 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 function createTestBuiltins() {
 	Builtin.createBuiltin(
+		'is-empty',
+		[
+			{name:'list()', type:'NexContainer'},
+		],
+		function(env, argEnv) {
+			let lst = env.lb('list()');
+			let rb = !lst.hasChildren();
+			return new Bool(rb);
+		}
+	);
+
+	Builtin.createBuiltin(
 		'is-error',
 		[
 			{name:'nex', type:'*'}

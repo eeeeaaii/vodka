@@ -17,6 +17,7 @@ class EventQueue {
 	enqueueRenderNodeRenderSelecting(renderNode, flags, selectThisNode) {
 		let item = {
 			action: "renderNodeRenderSelecting",
+			shouldDedupe: true,
 			renderNode: renderNode,
 			selectThisNode: selectThisNode,
 			flags: flags,
@@ -42,6 +43,7 @@ class EventQueue {
 		let item = {
 			action: "renderNodeRender",
 			renderNode: renderNode,
+			shouldDedupe: true,
 			flags: flags,
 			equals: function(other) {
 				 // ref equals is okay?
@@ -67,6 +69,7 @@ class EventQueue {
 			hasShift: hasShift,
 			hasCtrl: hasCtrl,
 			hasAlt: hasAlt,
+			shouldDedupe: false,
 			equals: function(other) {
 				return
 					other.action == this.action
@@ -77,7 +80,7 @@ class EventQueue {
 					&& other.hasAlt == this.hasAlt;
 			},
 			do: function() {
-				doKeyInput(this.keycode, this.whichkey, this.hasShift, this.hasCtrl, this.hasAlt);
+				doRealKeyInput(this.keycode, this.whichkey, this.hasShift, this.hasCtrl, this.hasAlt);
 			}
 		};
 		this.highPriority.push(item);
@@ -88,6 +91,7 @@ class EventQueue {
 		let item = {
 			action: "topLevelRenderSelectingNode",
 			nex: nex,
+			shouldDedupe: true,
 			equals: function(other) {
 				return
 					other.action == this.action
@@ -104,6 +108,7 @@ class EventQueue {
 	enqueueImportantTopLevelRender() {
 		let item = {
 			action: "topLevelRender",
+			shouldDedupe: true,
 			equals: function(other) {
 				return
 				other.action == this.action;
@@ -120,6 +125,7 @@ class EventQueue {
 		let item = {
 			action: "doClickHandlerAction",
 			target: target,
+			shouldDedupe: false,
 			renderNode: renderNode,
 			event: event,
 			equals: function(other) {
@@ -139,6 +145,7 @@ class EventQueue {
 		let item = {
 			action: "expectationFulfill",
 			exp: exp,
+			shouldDedupe: false,
 			equals: function(other) {
 				return other.action == this.action
 						&& other.exp.getID() == this.exp.getID();
@@ -155,6 +162,7 @@ class EventQueue {
 	enqueueTopLevelRender() {
 		let item = {
 			action: "topLevelRender",
+			shouldDedupe: true,
 			equals: function(other) {
 				return other.action == this.action;
 			},
@@ -167,12 +175,6 @@ class EventQueue {
 	}
 
 	setTimeoutForProcessingNextItem(item) {
-		// if (item) {
-		// 	console.log('enqueued ' + item.action);
-		// 	console.log('hp: ' + this.highPriority.length + ' np:' + this.normalPriority.length + ' lp:' + this.lowPriority.length);
-		// } else {
-		// 	console.log('just going to next item');
-		// }
 		setTimeout((function() {
 			this.processNextItem();
 		}).bind(this), 0);
@@ -185,9 +187,8 @@ class EventQueue {
 		if (!queueToUse && this.lowPriority.length > 0) queueToUse = this.lowPriority;
 		if (!queueToUse) return;
 		let item = queueToUse.shift();
-		// console.log('processing item ' + item.action);
 		// if a bunch of equivalent actions were enqueued, pop them all and just do one
-		while(queueToUse.length > 0 && queueToUse[0].equals(item)) {
+		while(queueToUse.length > 0 && queueToUse[0].equals(item) && queueToUse[0].shouldDedupe) {
 			queueToUse.shift();
 		}
 		item.do();

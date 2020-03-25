@@ -16,17 +16,18 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 function createSyscalls() {
-	// Builtin.createBuiltin(
-	// 	'log',
-	// 	[
-	// 		{name:'nex', type:'*'}
-	// 	],
-	// 	function(env, argEnv) {
-	// 		let n = env.lb('nex');
-	// 		console.log(n.debugString());
-	// 		return new Nil();
-	// 	}
-	// );
+
+	Builtin.createBuiltin(
+		'jslog',
+		[
+			{name: 'nex', type:'*'}
+		],
+		function(env, argEnv) {
+			let nex = env.lb('nex');
+			console.log(nex.debugString());
+			return nex;
+		}
+	);
 
 	Builtin.createBuiltin(
 		'apply-style-to',
@@ -88,7 +89,6 @@ function createSyscalls() {
 			return new Float(w);
 		}
 	);
-
 
 	Builtin.createBuiltin(
 		'run-js',

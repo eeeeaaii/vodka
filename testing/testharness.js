@@ -20,6 +20,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 const puppeteer = require('puppeteer');
 
+function delay(timeout) {
+	return new Promise((resolve) => {
+		setTimeout(resolve, timeout);
+	});
+}
+
 module.exports = {
 	runTest: function(testinput, method) {
 		(async() => {
@@ -28,6 +34,11 @@ module.exports = {
 //			const browser = await puppeteer.launch({headless:false, slowMo:250});
 			const browser = await puppeteer.launch();
 			const page = await browser.newPage();
+			page.on('console', msg => {
+				for (let i = 0; i < msg.args().length; ++i) {
+				    console.log(`${i}: ${msg.args()[i]}`);
+				}
+   			})
 			await page.goto('http://localhost:3000', {waitUntil: 'networkidle2'});
 			if (method == 'direct') {
 				await page.evaluate(function() {
@@ -47,10 +58,13 @@ module.exports = {
 							await page.keyboard.up(t.code);
 							break;
 					}
+					await delay(2);
 				}
 			} else {
 				// legacy mode, where we call the javascript 'doKeyInput' method
 				await page.evaluate(testinput);
+				// wait for the event queue to finish I guess
+				await delay(150);
 			}
 			await page.screenshot({path: exploded_out});
 			await page.evaluate(function() {

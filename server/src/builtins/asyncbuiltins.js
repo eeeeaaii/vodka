@@ -33,7 +33,6 @@ function createAsyncBuiltins() {
 		}
 	);
 
-
 	Builtin.createBuiltin(
 		'ff-unlimited',
 		[
@@ -146,88 +145,6 @@ function createAsyncBuiltins() {
 			let exp2 = env.lb('exp2,');
 			exp2.addCompletionListener(exp1);
 			return exp1;
-		}
-	);	
-
-	// deprecated
-	Builtin.createBuiltin(
-		'do-when-fulfilled',
-		[
-			{name: 'func&', type:'Lambda'},
-			{name: 'exp,', type:'Expectation'}
-		],
-		function(env, argEnv) {
-			let lambda = env.lb('func&');
-			let exp = env.lb('exp,');
-			let retExp = new Expectation();
-			exp.addCompletionListener(function(result) {
-				let cmd = new Command('');
-				cmd.appendChild(lambda);
-				cmd.appendChild(result);
-				let newresult = evaluateNexSafely(cmd, argEnv);
-				retExp.fulfill(newresult);
-			})
-			return retExp;
-		}
-	);
-
-	// deprecated
-	Builtin.createBuiltin(
-		'eval-after',
-		[
-			{name: 'cmd', type:'*'},
-			{name: 'time#', type:'Integer'}
-		],
-		function(env, argEnv) {
-			let time = env.lb('time#').getTypedValue();
-			let toEval = env.lb('cmd');
-			let exp = new Expectation();
-			setTimeout(function() {
-				exp.fulfill(evaluateNexSafely(toEval, argEnv));
-			}, time);
-			return exp;
-		}
-	);
-
-	Builtin.createBuiltin(
-		'make-expectation',
-		[
-			{name: 'nex', type:'*'}
-		],
-		function(env, argEnv) {
-			let exp = new Expectation();
-			exp.appendChild(env.lb('nex'));
-			return exp;
-		}
-	);
-
-
-
-	Builtin.createBuiltin(
-		'do-on-after',
-		[
-			{name: 'func&', type:'Lambda'},
-			{name: 'arg', type:'*'},
-			{name: 'delay#', type:'Integer'}
-		],
-		function(env, argEnv) {
-			let lambda = env.lb('func&');
-			let arg = env.lb('arg');
-			let delay = env.lb('delay#');
-			let e = new Expectation();
-			e.appendChild(arg);
-			let clearVar = setTimeout(function() {
-				let cmd = new Command('');
-				cmd.appendChild(lambda);
-				e.removeChild(arg); // eventually not needed
-				cmd.appendChild(arg);
-				let result = evaluateNexSafely(cmd, argEnv);
-				e.fulfill(result);
-			}.bind(this), delay.getTypedValue());
-			e.setDeleteHandler(function() {
-				clearTimeout(clearVar);
-			}.bind(this));
-			return e;
 		}
 	);
 }
