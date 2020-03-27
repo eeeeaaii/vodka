@@ -61,27 +61,23 @@ class Nex {
 
 	renderOnlyThisNex(selectThisNode) {
 		for (let i = 0; i < this.rendernodes.length; i++) {
-			if (PRIORITYQUEUE) {
-				let flags = current_default_render_flags;
-				flags &= (~RENDER_FLAG_NORMAL);
-				flags &= (~RENDER_FLAG_EXPLODED);
+			let flags = current_default_render_flags;
+			flags &= (~RENDER_FLAG_NORMAL);
+			flags &= (~RENDER_FLAG_EXPLODED);
 
-				if (selectThisNode) {
-					eventQueue.enqueueRenderNodeRenderSelecting(
-							this.rendernodes[i],
-							flags
-							| (this.rendernodes[i].isExploded() ? RENDER_FLAG_EXPLODED : RENDER_FLAG_NORMAL)
-							,
-							selectThisNode);
-				} else {
-					eventQueue.enqueueRenderNodeRender(
-							this.rendernodes[i],
-							flags
-							| (this.rendernodes[i].isExploded() ? RENDER_FLAG_EXPLODED : RENDER_FLAG_NORMAL)
-							);
-				}
+			if (selectThisNode) {
+				eventQueue.enqueueRenderNodeRenderSelecting(
+						this.rendernodes[i],
+						flags
+						| (this.rendernodes[i].isExploded() ? RENDER_FLAG_EXPLODED : RENDER_FLAG_NORMAL)
+						,
+						selectThisNode);
 			} else {
-				nodeLevelRender(this.rendernodes[i]);
+				eventQueue.enqueueRenderNodeRender(
+						this.rendernodes[i],
+						flags
+						| (this.rendernodes[i].isExploded() ? RENDER_FLAG_EXPLODED : RENDER_FLAG_NORMAL)
+						);
 			}
 		}
 	}
@@ -222,9 +218,7 @@ class Nex {
 
 	_setClickHandler(renderNode) {
 		renderNode.getDomNode().onmousedown = (event) => {
-			PRIORITYQUEUE
-					? eventQueue.enqueueDoClickHandlerAction(this, renderNode, event)
-					: this.doClickHandlerAction(renderNode);
+			eventQueue.enqueueDoClickHandlerAction(this, renderNode, event)
 			event.stopPropagation();
 		};
 	}
@@ -249,7 +243,7 @@ class Nex {
 		if (insertAfterRemove && selectedNode != oldSelectedNode) {
 			manipulator.removeNex(oldSelectedNode);
 		}
-		PRIORITYQUEUE ? eventQueue.enqueueImportantTopLevelRender() : topLevelRender();
+		eventQueue.enqueueImportantTopLevelRender();
 	}
 
 	renderInto(renderNode, renderFlags) {

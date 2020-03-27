@@ -52,15 +52,9 @@ function createBasicBuiltins() {
 					+ " So this is an error. Any list you pass to cdr"
 					+ " has to have at least one element in it.");
 			}
-			if (LINKEDLIST) {
-				let newOne = c.makeCopy(true);
-				c.getChildrenForCdr(newOne);
-				return newOne;
-			} else {
-				c = c.makeCopy(true);
-				c.removeChild(c.getChildAt(0));
-				return c;
-			}
+			let newOne = c.makeCopy(true);
+			c.getChildrenForCdr(newOne);
+			return newOne;
 		}
 	);
 
@@ -73,15 +67,9 @@ function createBasicBuiltins() {
 		function(env, argEnv) {
 			let lst = env.lb('list()');
 			let nex = env.lb('nex');
-			if (LINKEDLIST) {
-				let newOne = lst.makeCopy(true);
-				lst.setChildrenForCons(nex, newOne);
-				return newOne;
-			} else {
-				lst = lst.makeCopy(true);
-				lst.prependChild(nex);
-				return lst;
-			}
+			let newOne = lst.makeCopy(true);
+			lst.setChildrenForCons(nex, newOne);
+			return newOne;
 		}
 	);
 

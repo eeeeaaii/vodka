@@ -17,18 +17,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 // EXPERIMENTS
 
-const EXPECTATIONS_NO_PARENT = true;
-
-// fast render for expectations
-const FASTEXPECTATIONS = true;
-
-// priority queue for event, renders, etc
-const PRIORITYQUEUE = true;
-
-// store children of NexContainer as linked list
-// allowing cons/cdr to work as expected
-const LINKEDLIST= true;
-
 // CONSTANTS
 
 // render flags
@@ -112,39 +100,31 @@ function doRealKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 	// if it returns false, it means we handled the keystroke and we are
 	// canceling the browser event - this also means something 'happened' so we render.
 	if (!r) {
-		PRIORITYQUEUE ? eventQueue.enqueueTopLevelRender() : topLevelRender();
+		eventQueue.enqueueTopLevelRender();
 	}
 	return r;	
 }
 
 // omgg
 function doKeyInputNotForTests(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
-	if (PRIORITYQUEUE) {
-		eventQueue.enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt);
-		return false; // we no longer know if we can honor the browser event?
-	} else {
-		return doRealKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt);
-	}
+	eventQueue.enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt);
+	return false; // we no longer know if we can honor the browser event?
 }
 
 var testEventQueue = [];
 
 // DO NOT RENAME THIS METHOD OR YOU WILL BREAK ALL THE OLD TESTS
 function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
-	if (PRIORITYQUEUE) {
-		// in order to make this simulate user activity better I'd need
-		// to go modify all the tests so they don't call this method
-		// synchronously. Instead I will force a full-screen render
-		// in between key events -- there are certain things that
-		// require render node caching to happen in between user
-		// events (which usually happens because people can't
-		// type keys fast enough to beat the js scheduler)
-		eventQueue.enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt);
-		eventQueue.enqueueImportantTopLevelRender();
-		return false; // we no longer know if we can honor the browser event?
-	} else {
-		return doRealKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt);
-	}
+	// in order to make this simulate user activity better I'd need
+	// to go modify all the tests so they don't call this method
+	// synchronously. Instead I will force a full-screen render
+	// in between key events -- there are certain things that
+	// require render node caching to happen in between user
+	// events (which usually happens because people can't
+	// type keys fast enough to beat the js scheduler)
+	eventQueue.enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt);
+	eventQueue.enqueueImportantTopLevelRender();
+	return false; // we no longer know if we can honor the browser event?
 }
 
 function createBuiltins() {
@@ -217,5 +197,5 @@ function setup() {
 			return true;
 		}
 	}
-	PRIORITYQUEUE ? eventQueue.enqueueTopLevelRender() : topLevelRender();
+	eventQueue.enqueueTopLevelRender();
 }

@@ -23,7 +23,6 @@ class Expectation extends NexContainer {
 	constructor() {
 		super()
 		this.completionlisteners = [];
-		this.parentlist = [];
 		this.waitingOnTimeout = -1;
 		this.everyTimeout = -1;
 		this.fff = null;
@@ -31,6 +30,10 @@ class Expectation extends NexContainer {
 		this.ffwithLambda = null;
 		this.ffobject = null;
 		this.unlimited = false;
+	}
+
+	isSet() {
+		return this.fff | this.ffwithLambda | this.ffobject;
 	}
 
 	setUnlimited() {
@@ -117,10 +120,6 @@ class Expectation extends NexContainer {
 		return evaluateNexSafely(cmd, this.ffwithLambda.argEnv);		
 	}
 
-	addParent(parent) {
-		this.parentlist.push(parent);
-	}
-
 	addCompletionListener(listener) {
 		this.completionlisteners.push(listener);
 	}
@@ -136,11 +135,7 @@ class Expectation extends NexContainer {
 	evaluate(env) {
 		pushStackLevel();
 		let rval = null;;
-		if (EXPECTATIONS_NO_PARENT) {
-			rval = this;
-		} else {
-			rval = this.getFulfilledThing();
-		}
+		rval = this;
 		popStackLevel();
 		return rval;
 	}
@@ -239,11 +234,10 @@ class Expectation extends NexContainer {
 		return addresses;
 	}
 
-	getFulfilledThing(passedInFFF) {
+	_getFulfilledThing(passedInFFF) {
 		if (this.ffed && !this.unlimited) {
 			throw new EError('Cannot fulfill an already-fulfilled expectation');
 		}
-		this.ffed = true;
 		if (passedInFFF) {
 			if ((typeof passedInFFF) == 'function') {
 				return passedInFFF();
@@ -271,56 +265,36 @@ class Expectation extends NexContainer {
 	}
 
 	fulfill(passedInFFF) {
-		this.checkChildren();
-		let newnex = this.getFulfilledThing(passedInFFF);
 
 		let shouldSelect = this.getRenderNodes()[0] && this.getRenderNodes()[0].isSelected();
 
-		if (EXPECTATIONS_NO_PARENT) {
-			this.replaceChildAt(newnex, 0);
-			if (FASTEXPECTATIONS) {
-				this.renderOnlyThisNex(null);
-			} else {
-				PRIORITYQUEUE ? eventQueue.enqueueTopLevelRender(newnex) : topLevelRender(newnex);
+		if (this.numChildren() == 0) {
+			this.appendChild(new EError("cannot fulfill an empty expectation"));
+		} else if (this.numChildren() > 1) {
+			while(this.numChildren() > 0) {
+				this.removeChildAt(0);
 			}
-			for (let i = 0; i < this.completionlisteners.length; i++) {
-				this.completionlisteners[i].fulfill();
-			}
-			return;
-		}
-
-		// fuckery here
-		// for each parent, look at all its children and find out
-		// whether this expectation is still a child.
-		// If it is, replace with the thing.
-		// then do a global rerender.
-		for (let i = 0; i < this.parentlist.length; i++) {
-			let parent = this.parentlist[i];
-			let addresses = this.getAddressesOfThisInParent(parent);
-			for (let j = 0; j < addresses.length; j++) {
-				let addr = addresses[j];
-				parent.replaceChildAt(newnex, addr);
-			}
-			if (FASTEXPECTATIONS) {
-				if (shouldSelect) {
-					parent.renderOnlyThisNex(newnex);
-				} else {
-					parent.renderOnlyThisNex(null);
+			this.appendChild(new EError("expectations cannot have more than one child value"));
+		} else {
+			// if anything goes wrong while fulfilling an exp,
+			// we fulfill with the error
+			let newnex = null;
+			try {
+				newnex = this._getFulfilledThing(passedInFFF);
+				this.ffed = true;
+			} catch (e) {
+				if (e instanceof EError) {
+					newnex = e;
 				}
 			}
+			this.replaceChildAt(newnex, 0);
 		}
-		// we don't know where the expectations are so we have to render everything.
 
-		if (!FASTEXPECTATIONS) {
-			if (shouldSelect) {
-	 			PRIORITYQUEUE ? eventQueue.enqueueTopLevelRenderSelectingNode(newnex) : topLevelRenderSelectingNode(newnex);
-			} else {
-				PRIORITYQUEUE ? eventQueue.enqueueTopLevelRender(newnex) : topLevelRender(newnex);
-			}
-		}
+		this.renderOnlyThisNex(null);
 		for (let i = 0; i < this.completionlisteners.length; i++) {
-			this.completionlisteners[i](newnex);
+			this.completionlisteners[i].fulfill();
 		}
+		return;
 	}
 
 	defaultHandle(txt) {

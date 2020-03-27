@@ -196,21 +196,13 @@ class RenderNode {
 		if (selectedNode) {
 			selectedNode.setUnselected();
 			if (rerender) {
-				if (PRIORITYQUEUE) {
-					eventQueue.renderNodeRender(selectedNode, RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | current_default_render_flags);
-				} else {
-					selectedNode.render(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | current_default_render_flags);
-				}
+				eventQueue.renderNodeRender(selectedNode, RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | current_default_render_flags);
 			}
 		}
 		selectedNode = this;
 		this.selected = true;
 		if (rerender) {
-			if (PRIORITYQUEUE) {
-				eventQueue.renderNodeRender(this, RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | current_default_render_flags);
-			} else {
-				this.render(RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | current_default_render_flags);
-			}
+			eventQueue.renderNodeRender(this, RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | current_default_render_flags);
 		}
 	}
 

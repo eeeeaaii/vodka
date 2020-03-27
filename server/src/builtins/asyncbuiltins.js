@@ -43,9 +43,8 @@ function createAsyncBuiltins() {
 			let exp = env.lb('exp,');
 			let val = env.lb('nex');
 
-			let newexp = exp.makeCopy();
-			newexp.checkChildren();
-			newexp.setFFObject(val);
+			exp.checkChildren();
+			exp.setFFObject(val);
 			return newexp;
 		}
 	);
@@ -59,9 +58,8 @@ function createAsyncBuiltins() {
 		function(env, argEnv) {
 			let time = env.lb('time#').getTypedValue();
 			let exp = env.lb('exp,');
-			let newexp = exp.makeCopy();
-			newexp.setTimeout(time);
-			return newexp;
+			exp.setTimeout(time);
+			return exp;
 		}
 	);
 
@@ -109,6 +107,11 @@ function createAsyncBuiltins() {
 		}
 	);
 
+	// deprecated, instead just make it so you can
+	// chain an expectation to fulfill after itself, i.e.
+	// (ff-after @foo @foo)
+	// and make it so that it can be repeatedly fulfilled
+	// by setting it to unlimited or neverending or whatever
 	Builtin.createBuiltin(
 		'ff-every',
 		[

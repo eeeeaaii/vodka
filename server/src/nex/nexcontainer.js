@@ -16,7 +16,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-// used with LINKEDLIST
 class ChildNex {
 	// lol
 	constructor(n) {
@@ -48,13 +47,9 @@ class NexContainer extends Nex {
 	constructor() {
 		super();
 		this.vdir = false;
-		if (LINKEDLIST) {
-			this.firstChildNex = null;
-			this.numChildNexes = 0;
-			this.lastChildNex = null;
-		} else {
-			this.children = [];
-		}
+		this.firstChildNex = null;
+		this.numChildNexes = 0;
+		this.lastChildNex = null;
 	}
 
 	getChildrenForStepEval() {
@@ -111,78 +106,44 @@ class NexContainer extends Nex {
 	}
 
 	copyChildrenTo(n, shallow) {
-		if (LINKEDLIST) {
-			// shallow is already only used for cdr/cons
-			if (shallow) {
-				return;
-			} else {
-				for (let p = this.firstChildNex; p != null; p = p.next) {
-					n.appendChild(p.n.makeCopy());
-				}
-			}
+		// shallow is already only used for cdr/cons
+		if (shallow) {
+			return;
 		} else {
-			for (let i = 0; i < this.children.length; i++) {
-				if (shallow) {
-					n.appendChild(this.children[i]);
-				} else {
-					n.appendChild(this.children[i].makeCopy());
-				}
+			for (let p = this.firstChildNex; p != null; p = p.next) {
+				n.appendChild(p.n.makeCopy());
 			}
 		}
 	}
 
 	childrenToString() {
 		let r = "";
-		if (LINKEDLIST) {
-			let i = 0;
-			for (let p = this.firstChildNex; p != null; p = p.next) {
-				if (++i > 0) {
-					r += ' ';
-				}
-				r += p.n.toString();
+		let i = 0;
+		for (let p = this.firstChildNex; p != null; p = p.next) {
+			if (++i > 0) {
+				r += ' ';
 			}
-		} else {
-			for (let i = 0; i < this.children.length; i++) {
-				if (i > 0) {
-					r += ' ';
-				}
-				r += this.children[i].toString();
-			}
+			r += p.n.toString();
 		}
 		return r;		
 	}
 
 	childrenDebugString() {
 		let r = "";
-		if (LINKEDLIST) {
-			let i = 0;
-			for (let p = this.firstChildNex; p != null; p = p.next) {
-				if (++i > 0) {
-					r += ' ';
-				}
-				r += p.n.debugString();
+		let i = 0;
+		for (let p = this.firstChildNex; p != null; p = p.next) {
+			if (++i > 0) {
+				r += ' ';
 			}
-		} else {
-			for (let i = 0; i < this.children.length; i++) {
-				if (i > 0) {
-					r += ' ';
-				}
-				r += this.children[i].debugString();
-			}
+			r += p.n.debugString();
 		}
 		return r;				
 	}
 
 	setRenderType(newType) {
 		super.setRenderType(newType);
-		if (LINKEDLIST) {
-			for (let p = this.firstChildNex; p != null; p = p.next) {
-				p.n.setRenderType(newType);
-			}
-		} else {
-			for (let i = 0; i < this.children.length; i++) {
-				this.children[i].setRenderType(newType);
-			}
+		for (let p = this.firstChildNex; p != null; p = p.next) {
+			p.n.setRenderType(newType);
 		}
 	}
 
@@ -217,144 +178,89 @@ class NexContainer extends Nex {
 	}
 
 	hasChildren() {
-		if (LINKEDLIST) {
-			return this.firstChildNex != null;
-		} else {
-			return this.children.length > 0;
-		}
-	}
-
-	getChildren() {
-		if (LINKEDLIST) {
-			// not called anyway
-			throw new Error("not allowed with LINKEDLIST")
-		} else {
-			return this.children;
-		}
+		return this.firstChildNex != null;
 	}
 
 	numChildren() {
-		if (LINKEDLIST) {
-			return this.numChildNexes;
-		} else {
-			return this.children.length;
-		}
+		return this.numChildNexes;
 	}
 
 	getIndexOfChild(c) {
-		if (LINKEDLIST) {
-			let i = 0;
-			for (let p = this.firstChildNex; p != null; p = p.next, i++) {
-				if (p.n == c) {
-					return i;
-				}
-			}
-		} else {
-			for (let i = 0; i < this.children.length; i++) {
-				if (this.children[i] == c) {
-					return i;
-				}
+		let i = 0;
+		for (let p = this.firstChildNex; p != null; p = p.next, i++) {
+			if (p.n == c) {
+				return i;
 			}
 		}
 		return -100;// I have reasons
 	}
 
 	getChildAt(i, useDefault) {
-		if (LINKEDLIST) {
-			i = (i < 0 && useDefault) ? 0 : i;
-			i = (i >= this.numChildNexes && useDefault) ? this.numChildNexes - 1: i;
-			if (i < 0 || i >= this.numChildNexes) return null;
-			let ii = 0;
-			let p = this.firstChildNex;
-			while(ii++ != i) p = p.next;
-			return p.n;
-		} else {
-			i = (i < 0 && useDefault) ? 0 : i;
-			i = (i >= this.children.length && useDefault) ? this.children.length - 1: i;
-			if (i < 0 || i >= this.children.length) return null;
-			return this.children[i];
-		}
+		i = (i < 0 && useDefault) ? 0 : i;
+		i = (i >= this.numChildNexes && useDefault) ? this.numChildNexes - 1: i;
+		if (i < 0 || i >= this.numChildNexes) return null;
+		let ii = 0;
+		let p = this.firstChildNex;
+		while(ii++ != i) p = p.next;
+		return p.n;
 	}
 
 	// called by RenderNode
 	removeChildAt(i) {
-		if (LINKEDLIST) {
-			if (i < 0 || i >= this.numChildNexes) return null;
-			let r = null;
-			if (i == 0) {
-				if (this.lastChildNex == this.firstChildNex) {
-					this.lastChildNex = null;
-				}
-				r = this.firstChildNex.n;
-				this.firstChildNex = this.firstChildNex.next;
-			} else {
-				let q = 0;
-				// predecessor
-				let pred = this.firstChildNex;
-				while(q++ != (i-1)) pred = pred.next;
-				let p = pred.next;
-				r = p.n;
-				pred.next = p.next;
-				if (p.next == null) {
-					this.lastChildNex = pred;
-				}
+		if (i < 0 || i >= this.numChildNexes) return null;
+		let r = null;
+		if (i == 0) {
+			if (this.lastChildNex == this.firstChildNex) {
+				this.lastChildNex = null;
 			}
-			this.numChildNexes--;
-			return r;
+			r = this.firstChildNex.n;
+			this.firstChildNex = this.firstChildNex.next;
 		} else {
-			if (i < 0 || i >= this.children.length) return null;
-			let r = this.children[i];
-			this.children.splice(i, 1);
-			return r;
+			let q = 0;
+			// predecessor
+			let pred = this.firstChildNex;
+			while(q++ != (i-1)) pred = pred.next;
+			let p = pred.next;
+			r = p.n;
+			pred.next = p.next;
+			if (p.next == null) {
+				this.lastChildNex = pred;
+			}
 		}
+		this.numChildNexes--;
+		return r;
 	}
 
 	insertChildAt(c, i) {
-		if (i < 0 || i > (LINKEDLIST ? this.numChildNexes : this.children.length)) {
+		if (i < 0 || i > this.numChildNexes) {
 			return;
 		}
-		if (LINKEDLIST) {
-			let newP = new ChildNex(c);
-			if (i == 0) {
-				if (this.lastChildNex == null) {
-					this.lastChildNex = newP;
-				}
-				newP.next = this.firstChildNex;
-				this.firstChildNex = newP;
-			} else {
-				let q = 0;
-				let pred = this.firstChildNex;
-				while(q++ != (i-1)) pred = pred.next;
-				if (pred == this.lastChildNex) {
-					this.lastChildNex = newP;
-				}
-				newP.next = pred.next;
-				pred.next = newP;
+		let newP = new ChildNex(c);
+		if (i == 0) {
+			if (this.lastChildNex == null) {
+				this.lastChildNex = newP;
 			}
-			this.numChildNexes++;
+			newP.next = this.firstChildNex;
+			this.firstChildNex = newP;
 		} else {
-			if (i == this.children.length) {
-				this.children.push(c);
-			} else {
-				this.children.splice(i, 0, c);	
+			let q = 0;
+			let pred = this.firstChildNex;
+			while(q++ != (i-1)) pred = pred.next;
+			if (pred == this.lastChildNex) {
+				this.lastChildNex = newP;
 			}
+			newP.next = pred.next;
+			pred.next = newP;
 		}
-		// expectations fuckery -- better way? at least they are temporary?
-		if (c instanceof Expectation) {
-			c.addParent(this);
-		}
+		this.numChildNexes++;
 	}
 
 	replaceChildAt(c, i) {
-		if (LINKEDLIST) {
-			if (i < 0 || i >= this.numChildNexes) return;
-			let q = 0;
-			let p = this.firstChildNex;
-			while(q++ != i) p = p.next;
-			if (p.n == c) return;
-		} else {
-			if (c == this.children[i]) return;
-		}
+		if (i < 0 || i >= this.numChildNexes) return;
+		let q = 0;
+		let p = this.firstChildNex;
+		while(q++ != i) p = p.next;
+		if (p.n == c) return;
 		this.removeChildAt(i);
 		this.insertChildAt(c, i);
 	}
@@ -376,7 +282,7 @@ class NexContainer extends Nex {
 	}
 
 	getLastChild() {
-		return this.getChildAt((LINKEDLIST ? this.numChildNexes : this.children.length) - 1);
+		return this.getChildAt(this.numChildNexes - 1);
 	}
 
 	getFirstChild() {
@@ -402,7 +308,7 @@ class NexContainer extends Nex {
 	}
 
 	appendChild(c) {
-		this.insertChildAt(c, (LINKEDLIST ? this.numChildNexes : this.children.length));
+		this.insertChildAt(c, this.numChildNexes);
 	}
 
 	prependChild(c) {
@@ -410,15 +316,8 @@ class NexContainer extends Nex {
 	}
 
 	doForEachChild(f) {
-		if (LINKEDLIST) {
-			for (let p = this.firstChildNex; p != null; p = p.next) {
-				f(p.n);
-			}
-
-		} else {
-			for (let i = 0; i < this.children.length; i++) {
-				f(this.children[i]);
-			}
+		for (let p = this.firstChildNex; p != null; p = p.next) {
+			f(p.n);
 		}
 	}
 
