@@ -151,7 +151,7 @@ class EventQueue {
 						&& other.exp.getID() == this.exp.getID();
 			},
 			do: function() {
-				this.exp.fulfill();
+				this.exp.startFulfill();
 			}
 		};
 		this.lowPriority.push(item);

@@ -261,6 +261,9 @@ class Nex {
 			domNode.classList.add('exploded');
 		}
 		domNode.setAttribute("style", this.currentStyle);
+		if (renderFlags & RENDER_FLAG_DEPTH_EXCEEDED) {
+			this.clearDomNode(domNode);
+		}
 	}
 
 	// actually is a domNode, not a renderNode

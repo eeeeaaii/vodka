@@ -26,6 +26,7 @@ const RENDER_FLAG_EXPLODED = 2;
 const RENDER_FLAG_RERENDER = 4;
 const RENDER_FLAG_SELECTED = 8;
 const RENDER_FLAG_REMOVE_OVERRIDES = 16; // get rid of normal/exploded overrides
+const RENDER_FLAG_DEPTH_EXCEEDED = 32;
 
 // GLOBAL VARIABLES
 
@@ -35,6 +36,9 @@ var isStepEvaluating = false; // allows some performance-heavy operations while 
 const CONSOLE_DEBUG = false;
 var appFlags = {};
 var selectWhenYouFindIt = null;
+
+// app-wide params
+const MAX_RENDER_DEPTH = 500;
 
 // renderer state
 var root = null;
@@ -54,6 +58,7 @@ const manipulator = new Manipulator();
 const stepEvaluator = new StepEvaluator();
 const eventQueue = new EventQueue();
 const KEY_DISPATCHER = new KeyDispatcher();
+
 
 
 
@@ -160,6 +165,7 @@ function topLevelRenderSelectingNode(node) {
 		overrideOnNextRender = false;
 		flags |= RENDER_FLAG_REMOVE_OVERRIDES;
 	}
+	root.setRenderDepth(0);
 	root.render(flags);
 }
 

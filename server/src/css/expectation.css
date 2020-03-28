@@ -60,6 +60,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	padding: 0px 4px 8px 4px;
 }
 
+.dotspan.exploded.twodots {
+	padding: 0px 8px 8px 4px;
+}
+
 .expectation.exploded.selected > .dotspan {
 	border-color: #ff7777;
 }

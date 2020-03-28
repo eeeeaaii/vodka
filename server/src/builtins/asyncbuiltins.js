@@ -16,21 +16,51 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 function createAsyncBuiltins() {
+
 	Builtin.createBuiltin(
-		'ff',
+		'chain',
 		[
-			{name: 'exp,', type:'Expectation'},
+			{name:'lst...', type:'*', variadic:true}
 		],
 		function(env, argEnv) {
-			// normalize exp
-			let exp = env.lb('exp,');
-			if (exp.ffed) {
-				return new EError('ff: cannot fulfill an already-filled expectation');
+			// The first one can be any type of nex.
+			// if it's an expectation, we treat it differently
+			// than otherwise.
+			let lst = env.lb('lst...');
+			if (lst.numChildren() == 0) {
+				return new EError("chain: cannot chain without at least one expectation")
 			}
-			exp.fulfill();
-			return exp;
+			let first = lst.getChildAt(0);
+			if (lst.numChildren() == 1 && !(first.getTypeName() == '-expectation-')) {
+				return new EError("chain: cannot chain without at least one expectation")				
+			}
+			let explist = [];
+			if (first.getTypeName() == "-expectation-") {
+				explist[0] = first;
+			} else {
+				let firstExp = new Expectation();
+				firstExp.appendChild(first);
+				explist[0] = firstExp;
+			}
+			for (let i = 1; i < lst.numChildren(); i++) {
+				explist[i] = lst.getChildAt(i);
+			}
+			let toFF = explist[0];
+			let p = toFF;
+			for (let j = 1; j < explist.length; j++) {
+				let e = explist[j];
+				p.addCompletionListener(e);
+				p.appendChild(e);
+				p = e;
+			}
+			for (let k = explist.length - 1; k > 0; k--) {
+				explist[k].appendChild(explist[k - 1]);
+			}
+			toFF.fulfill();
+			return toFF;
 		}
 	);
+
 
 	Builtin.createBuiltin(
 		'ff-with',
@@ -42,15 +72,33 @@ function createAsyncBuiltins() {
 			// normalize exp
 			let exp = env.lb('exp,');
 			let val = env.lb('nex');
-
-			exp.checkChildren();
-			exp.setFFObject(val);
-			return newexp;
+			if (exp.isSet()) {
+				return new EError('cannot set an already-set expectation');
+			}
+			exp.set(exp.createFulfillWithNex(val));
+			return exp;
 		}
 	);
 
 	Builtin.createBuiltin(
-		'ff-after-delay',
+		'ff-with-function',
+		[
+			{name: 'exp,', type:'Expectation'},
+			{name: 'func&', type:'Lambda'}
+		],
+		function(env, argEnv) {
+			let lambda = env.lb('func&');
+			let exp = env.lb('exp,');
+			if (exp.isSet()) {
+				return new EError('cannot set an already-set expectation');
+			}
+			exp.set(exp.createFulfillWithLambda(lambda, argEnv));
+			return exp;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'ff-with-delay',
 		[
 			{name: 'exp,', type:'Expectation'},
 			{name: 'time#', type:'Integer'}
@@ -58,35 +106,23 @@ function createAsyncBuiltins() {
 		function(env, argEnv) {
 			let time = env.lb('time#').getTypedValue();
 			let exp = env.lb('exp,');
-			exp.setTimeout(time);
+			if (exp.isSet()) {
+				return new EError('cannot set an already-set expectation');
+			}
+			exp.set(exp.createFulfillWithTimeout(time));
 			return exp;
 		}
 	);
 
 	Builtin.createBuiltin(
-		'ff-after',
-		[
-			{name: 'exp1,', type:'Expectation'},
-			{name: 'exp2,', type:'Expectation'}
-		],
-		function(env, argEnv) {
-			let exp1 = env.lb('exp1,');
-			let exp2 = env.lb('exp2,');
-			exp2.addCompletionListener(exp1);
-			return exp1;
-		}
-	);
-
-
-	Builtin.createBuiltin(
-		'ff-stop',
+		'stop-next-ff',
 		[
 			{name: 'exp,', type:'Expectation', optional:true}
 		],
 		function(env, argEnv) {
 			let exp = env.lb('exp,');
 			if (exp == UNBOUND) {
-				TIMEOUTS_GEN++;
+				FF_GEN++;
 				return new Nil();
 			} else {
 				exp.stop();
@@ -96,16 +132,22 @@ function createAsyncBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'ff-unlimited',
+		'set-repeatable-ff',
 		[
 			{name: 'exp,', type:'Expectation'}
 		],
 		function(env, argEnv) {
-			let exp = env.lb('exp,').makeCopy();
+			let exp = env.lb('exp,');
 			exp.setUnlimited();
 			return exp;
 		}
 	);
+
+	// everything below this is deprecated
+
+
+
+
 
 	// deprecated, instead just make it so you can
 	// chain an expectation to fulfill after itself, i.e.
@@ -124,25 +166,6 @@ function createAsyncBuiltins() {
 			let newexp = exp.makeCopy();
 			newexp.setUnlimited();
 			newexp.setTimeoutEvery(time);
-			return newexp;
-		}
-	);
-
-	Builtin.createBuiltin(
-		'ff-with-function',
-		[
-			{name: 'exp,', type:'Expectation'},
-			{name: 'func&', type:'Lambda'}
-		],
-		function(env, argEnv) {
-			let lambda = env.lb('func&');
-			let exp = env.lb('exp,');
-			// because we are making a copy, we check children
-			// immediately - if we were not copying, we could
-			// check children upon fulfillment
-			let newexp = exp.makeCopy();
-			newexp.checkChildren();
-			newexp.setupFFWith(lambda, argEnv);
 			return newexp;
 		}
 	);

@@ -22,10 +22,13 @@ class RenderNode {
 		this.parentalfigure = null;
 		this.childnodes = [];
 		this.domNode = document.createElement("div");
-
 		this.isCurrentlyExploded = false;
 		this.explodedOverride = -1;
 		this.firstToggleOnNexRender = false;
+	}
+
+	setRenderDepth(depth) {
+		this.renderDepth = depth;
 	}
 
 	isExploded() {
@@ -129,6 +132,12 @@ class RenderNode {
 		return renderFlags;
 	}
 
+	renderDepthExceeded() {
+		let domNode = this.getDomNode();
+		domNode.innerHTML = '&#8253;&#8253;&#8253;';
+		domNode.classList.add('render-depth-exceeded')
+	}
+
 	render(renderFlags) {
 		renderFlags = this.applyExplodedOverride(renderFlags);
 		this.clearDomNode(renderFlags);
@@ -139,6 +148,10 @@ class RenderNode {
 		let useFlags = this.selected
 				? renderFlags | RENDER_FLAG_SELECTED
 				: renderFlags;
+		if (this.renderDepth > MAX_RENDER_DEPTH) {
+			this.renderDepthExceeded();
+			return;
+		}
 		this.nex.renderInto(this, useFlags);
 		this.nex.doRenderSequencing(this);
 		this.isCurrentlyExploded = !!(renderFlags & RENDER_FLAG_EXPLODED);
@@ -171,6 +184,7 @@ class RenderNode {
 					this.childnodes[i] = childRenderNode = new RenderNode(this.getNex().getChildAt(i));
 					this.childnodes[i].setParent(this);
 				}
+				childRenderNode.setRenderDepth(this.renderDepth + 1);
 				// need to append child before drawing so things like focus() work right
 				this.domNode.appendChild(childRenderNode.getDomNode());
 				childRenderNode.render(renderFlags);
@@ -181,6 +195,7 @@ class RenderNode {
 				for ( ; i < this.getNex().numChildren(); i++) {
 					let newNode = new RenderNode(this.getNex().getChildAt(i));
 					newNode.setParent(this);
+					newNode.setRenderDepth(this.renderDepth + 1);
 					this.childnodes[i] = newNode;
 					this.domNode.appendChild(newNode.getDomNode());
 					newNode.render(renderFlags);
