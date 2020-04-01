@@ -27,6 +27,36 @@ class RenderNode {
 		this.firstToggleOnNexRender = false;
 	}
 
+	setAlertStyle(node, isBg) {
+		let s = isBg ? '-bg' : '';
+		if (this.selected) {
+			node.classList.remove(`animating-unselected${s}-lambda`);
+			node.classList.remove(`animating-selected${s}-lambda`);
+			node.classList.add(`animating-selected${s}-lambda`);
+		} else {
+			node.classList.remove(`animating-unselected${s}-lambda`);
+			node.classList.remove(`animating-selected${s}-lambda`);
+			node.classList.add(`animating-unselected${s}-lambda`);
+		}
+	}
+
+	doAlertAnimation() {
+		// nex should only be a lambda.
+		let codespan = null;
+		for (let i = 0; i < this.domNode.childNodes.length; i++) {
+			let child = this.domNode.childNodes[i];
+			if (child.classList && child.classList.contains('codespan')) {
+				// this is the part of the lambda that has the params etc
+				codespan = child;
+			}
+		}
+		if (codespan == null) {
+			throw new Error('tried to call doAlertAnimation on something thats not a lambda');
+		}
+		this.setAlertStyle(codespan, true);
+		this.setAlertStyle(this.domNode, false);
+	}
+
 	setRenderDepth(depth) {
 		this.renderDepth = depth;
 	}
@@ -95,6 +125,16 @@ class RenderNode {
 		while(this.domNode.classList.length > 0) {
 			this.domNode.classList.remove(this.domNode.classList.item(0));
 		}
+
+		// let i = 0;
+		// while(this.domNode.classList.length > i) {
+		// 	let className = this.domNode.classList[i];
+		// 	if (className.indexOf('animating') == 0) {
+		// 		i++;
+		// 	} else {
+		// 		this.domNode.classList.remove(this.domNode.classList.item(i));
+		// 	}
+		// }
 		this.domNode.setAttribute("style", "");
 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
 			this.domNode.innerHTML = "";		

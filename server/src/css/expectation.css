@@ -36,15 +36,15 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	padding: 5px;
 	border-radius: 6px 6px 6px 6px;
 	margin-left:21px !important;
-	border: 1px solid #aaaaaa;
+	border: 1px solid var(--unselected-border);
 }
 
 .expectation.exploded.selected {
-	border-color: #ff7777;
+	border-color: var(--selected-border);
 }
 
 .dotspan.exploded {
-	border: 1px solid #aaaaaa;
+	border: 1px solid var(--unselected-border);
 	margin: 0px 12px 0px -27px;
 	padding: 0px 12px 8px 4px;
 	display: inline-block;
@@ -65,5 +65,5 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .expectation.exploded.selected > .dotspan {
-	border-color: #ff7777;
+	border-color: var(--selected-border);
 }

@@ -53,6 +53,13 @@ function evaluateAndReplace(s) {
 	}
 }
 
+function evaluateAndCopy(s) {
+	let n = evaluateNexSafely(s.getNex(), BUILTINS);
+	if (n) {
+		manipulator.replaceSelectedWith(new RenderNode(n));
+	}
+}
+
 var UNHANDLED_KEY = 'unhandled_key'
 var ContextType = {};
 ContextType.PASSTHROUGH = 0;
@@ -103,6 +110,10 @@ var KeyResponseFunctions = {
 
 	'evaluate-nex': function(s) {
 		evaluateAndReplace(s);
+	},
+
+	'evaluate-and-copy': function(s) {
+		evaluateAndCopy(s);
 	},
 
 	'toggle-dir': function(s) {
@@ -456,7 +467,12 @@ class KeyDispatcher {
 	}
 
 	getEventName(keycode, hasShift, hasCtrl, hasAlt) {
-		if (keycode == 'Enter' && hasAlt) {
+		// maybe I should rewrite this to do something like this:
+		// return `${shiftPrefix}${altPrefix}${keycode}`
+		// the only thing is I don't want it to return 'Shift!' or 'Shift$'
+		if (keycode == 'Enter' && hasAlt && hasShift) {
+			return 'ShiftAltEnter';
+		} else if (keycode == 'Enter' && hasAlt) {
 			return 'AltEnter';
 		} else if (keycode == 'Escape' && hasShift) {
 			return 'ShiftEscape';

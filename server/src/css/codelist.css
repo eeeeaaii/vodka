@@ -20,16 +20,16 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	display: flex;
 	flex-direction: row;
 	align-items: flex-start;
-	/*border: 3px solid #aaaaaa;*/
+	/*border: 3px solid var(--unselected-border);*/
 	border-width: 1.5px 3.5px 1.5px 3.5px;
 	border-style: solid;
-	border-color: #aaaaaa;
+	border-color: var(--unselected-border);
 	border-radius: 6px;	
 	padding: 5px 2px 5px 0px;
 }
 
 .codelist.exploded.selected {
-	border-color: #ff7777;
+	border-color: var(--selected-border);
 }
 
 
@@ -69,7 +69,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	color: #444444;
 	font-style: italic;
 	font-size: 15px;
-	background-color: #aaaaaa;
+	background-color: var(--unselected-border);
 	border: 0px;
 	padding: 3px 7px 4px 5px;
 	border-radius: 0px 6px 6px 0px;
@@ -87,7 +87,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .selected > .codespan {
-	background-color: #ff7777;
+	background-color: var(--selected-border);
 }
 
 

@@ -68,10 +68,8 @@ class BuiltinParamManager {
 
 	checkNumArgs() {
 		if (this.args.length < this.numRequiredParams) {
-			throw new EError("Sorry, but there were not enough"
-				+ " arguments passed to the function " + this.name
-				+ ". There should be " + this.numRequiredParams
-				+ " but there were only " + this.args.length + " args.");
+			let v = this.params[this.params.length - 1].variadic ? '(at least) ' : '';
+			throw new EError(`${this.name}: stopping because ${v}${this.numRequiredParams} arguments expected but there were only ${this.args.length}. Sorry!`)
 		}
 	}
 
@@ -129,20 +127,13 @@ class BuiltinArgEvaluator {
 
 	checkMinNumArgs() {
 		if (this.argContainer.numArgs() < this.numRequiredParams) {
-			throw new EError("Sorry, but there were not enough"
-				+ " arguments passed to the function " + this.name
-				+ ". You needed " + this.numRequiredParams
-				+ " but there were only " + this.argContainer.numArgs() + " args!");
+			throw new EError(`${this.name}: not enough args. You needed ${this.numRequiredParams} but there were only ${this.argContainer.numArgs()}. Sorry!`);
 		}
 	}
 
 	checkMaxNumArgs() {
 		if (this.argContainer.numArgs() > this.effectiveParams.length) {
-			throw new EError("Sorry, but there were *too many*"
-				+ " arguments passed to the function " + this.name
-				+ ". The max is " + this.effectiveParams.length
-				+ " but you passed " + this.argContainer.numArgs() + " args.");
-			throw new EError(this.name + ": too many args passed to function")
+			throw new EError(`${this.name}: too many args. The max is ${this.effectiveParams.length} but you passed ${this.argContainer.numArgs()}. Sorry!`);
 		}
 	}
 
@@ -161,36 +152,21 @@ class BuiltinArgEvaluator {
 
 	processSingleArg(i) {
 		let param = this.effectiveParams[i];
+		let expectedType = param.type;
 		let arg = this.argContainer.getArgAt(i);
 		if (!param.skipeval) {
 			arg = evaluateNexSafely(arg, this.env);
 			if (arg.getTypeName() == '-error-' && arg.getErrorType() == ERROR_TYPE_FATAL) {
-				throw wrapError('&szlig;', "Sorry but when " + this.name
-					+ " was evaluating its arguments, it got an error"
-					+ " for argument " + (i+1)
-					+ " and the program can't keep going anymore."
-					+ " BTW, this argument is supposed to be a " + param.type
-					+ ". The error is enclosed.", arg);
+				throw wrapError('&szlig;', `${this.name}: fatal error in argument ${i + 1} (expected type ${param.type}), cannot continue. Sorry!`, arg);
 			}
 		}
-		let typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[param.type](arg);
+		let typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[expectedType](arg);
 
 		if (!typeChecksOut) {
 			if (arg.getTypeName() == '-error-') {
-				throw wrapError('&szlig;', "Okay so when " + this.name
-					+ " was evaluating its arguments, it got an error"
-					+ " for argument " + (i+1)
-					+ " This is not a severe error, and in some situations"
-					+ " the program could"
-					+ " keep going, but in this case " + this.name
-					+ " needs you to pass a " + param.type
-					+ " for this argument. We will enclose the error for you.", arg);
+				throw wrapError('&szlig;', `${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, arg);
 			} else {
-				throw new EError("Sorry! But " + this.name
-					+ " needs you to pass  a " + param.type
-					+ " for argument " + (i+1)
-					+ " but instead it's a " + arg.getTypeName()
-					+ ".");
+				throw new EError(`${this.name}: stopping because expected ${expectedType} for arg ${i + 1} but got ${arg.getTypeName()}. Sorry!`);
 			}
 		}
 		this.argContainer.setArgAt(arg, i);

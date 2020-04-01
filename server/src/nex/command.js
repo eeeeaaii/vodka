@@ -23,7 +23,8 @@ class Command extends NexContainer {
 		this.commandtext = (val ? val : "");
 		this.cachedBuiltin = null;
 		this.cacheGlobalBuiltin();
-		this.skipFirstArg = false;
+		this.symbolversion = -1;
+		this.symbol = null;
 	}
 
 	getTypeName() {
@@ -78,50 +79,95 @@ class Command extends NexContainer {
 		return !(lambda instanceof Builtin);
 	}
 
+	// getSymbol() {
+	// 	if (this.symbolversion >= 0) {
+	// 		return this.symbol;
+	// 	};
+	// 	let cmdtxt = this.getCommandText();
+	// 	if (cmdtxt) {
+	// 		return cmdtxt;
+	// 	} else if (this.numChildren() == 0) {
+	// 		throw new EError(`COMMAND: command with no name and no children has nothing to execute. Sorry!`);
+	// 	} else if (this.getChildAt(0).getTypeName() == '-symbol-') {
+	// 		return this.getChildAt(0).getTypedValue();
+	// 	} else {
+	// 		return null; // no symbol, first arg must just *be* a lambda.
+	// 	}
+	// }
+
+	shouldSkipFirstArg() {
+		return !this.getCommandText();
+	}
+/*
+	getLambda2(executionEnv) {
+		// the last time the name of this command was modified, it mapped
+		// to a builtin, so we just return that... we know the definition
+		// of a builtin will not change.
+		if (this.cachedBuiltin) {
+			return this.cachedBuiltin;
+		}
+		// this may have a symbol mapping. if so, we need to get its binding,
+		// check the version to make sure the version we have cached is correct
+		// (unless we don't have it cached)
+		let symbol = this.getSymbol();
+		if (symbol) {
+			let binding = executionEnv.lookupFullBinding(symbol);
+			if (this.symbolversion < 0 || (this.symbolversion != binding.version)) {
+				this.cachedLambda = binding.val;
+				this.cachedLambda.setCmdName(symbol); // this is for debugging
+				this.symbolversion = binding.version;
+			}
+			return this.cachedLambda;
+		} else if (this.numChildren() > 0) {
+			// we don't make a copy because we have to re-evaluate every time anyway
+			let c = this.getChildAt(0);
+			let lambda = evaluateNexSafely(c, executionEnv);
+			if (!(lambda instanceof Lambda)) {
+				throw new EError(`COMMAND: stopping because first child of unnamed command is not a lambda. Sorry! Debug string for object of type ${lambda.getTypeName()} follows: ${lambda.debugString()}`)
+			}
+			return lambda;
+		} else {
+			throw new EError(`COMMAND: command with no name and no children has nothing to execute. Sorry!`)
+		}
+	}
+	*/
+
 	getLambda(executionEnv) {
 		if (this.cachedBuiltin) {
 			return this.cachedBuiltin;
 		}
 		let cmdname = this.getCommandText();
 		let lambda = null;
-		this.skipFirstArg = false;
+//		this.skipFirstArg = false;
 		if (cmdname) {
 			lambda = executionEnv.lookupBinding(cmdname);
 			if (!(lambda instanceof Lambda)) {
-				throw new EError(`So we are trying to run a command, but`
-					+ ` the command name you provided was ${cmdname},`
-					+ ` which is bound to something that is not a lambda -`
-					+ ` but command objects can only execute lambdas (i.e. code).`
-					+ ` The symbol ${cmdname} is instead bound to an`
-					+ ` object of type ${lambda.getTypeName()}.`
-					+ ` If it helps, we can give you the textual representation`
-					+ ` of that object as follows: ${lambda.debugString()}`);
+				throw new EError(`${cmdname}: stopping because command name not bound to lambda, so cannot execute. Sorry! Debug string for object bound to ${cmdname} of type ${lambda.getTypeName()} follows: ${lambda.debugString()}`)
 			}
 		} else if (this.numChildren() > 0) {
 			let c = this.getChildAt(0);
-			this.skipFirstArg = true;
+//			this.skipFirstArg = true;
 			lambda = evaluateNexSafely(c, executionEnv);
 			if (!(lambda instanceof Lambda)) {
-				throw new EError(`So this is a command with no name,`
-					+ ` which is fine, as long as the first child`
-					+ ` (in other words, the first argument)`
-					+ ` evaluates to a lambda. However, it doesn't.`
-					+ ` Instead, what we got for the first argument`
-					+ ` was an object of type ${lambda.getTypeName()}.`
-					+ ` If it helps, we can give you the textual representation`
-					+ ` of that object as follows: ${lambda.debugString()}`);
+				throw new EError(`COMMAND: stopping because first child of unnamed command is not a lambda. Sorry! Debug string for object of type ${lambda.getTypeName()} follows: ${lambda.debugString()}`)
 			}
 		} else {
-			throw new EError(`Commands with no name have to have`
-				+ ` a lambda as their first argument. This tells the`
-				+ ` command what code to run. However, this command had no children`
-				+ ` at all! So we have to generate an error and we cannot continue.`);
+			throw new EError(`COMMAND: command with no name and no children has nothing to execute. Sorry!`)
 		}
 		if (lambda == null) {
 			throw new Error("this shouldn't happen");
 		}
 		lambda.setCmdName(cmdname);
+		this.doAlertAnimation(lambda);
 		return lambda;
+	}
+
+	doAlertAnimation(lambda) {
+		let rn = lambda.getRenderNodes();
+		for (let i = 0; i < rn.length; i++) {
+			eventQueue.enqueueAlertAnimation(rn[i]);
+//			rn[i].doAlertAnimation();
+		}
 	}
 
 	needsEvaluation() {
@@ -139,7 +185,7 @@ class Command extends NexContainer {
 			console.log(`${INDENT()}evaluating command: ${this.debugString()}`);
 			console.log(`${INDENT()}lambda is: ${lambda.debugString()}`);
 		}
-		let argContainer = new CopiedArgContainer(this, this.skipFirstArg);
+		let argContainer = new CopiedArgContainer(this, this.shouldSkipFirstArg());
 		let closure = lambda.lexicalEnv.pushEnv();
 		let argEvaluator = lambda.getArgEvaluator(argContainer, executionEnv, closure);
 		argEvaluator.evaluateAndBindArgs();
@@ -151,7 +197,6 @@ class Command extends NexContainer {
 		return r;
 	}
 
-	// deprecated
 	renderInto(renderNode, renderFlags) {
 		let domNode = renderNode.getDomNode();
 		let codespan = null;
@@ -184,6 +229,8 @@ class Command extends NexContainer {
 	setCommandText(t) {
 		this.commandtext = t;
 		this.cacheGlobalBuiltin();
+//		this.symbolversion = -1;
+
 	}
 
 	isEmpty() {

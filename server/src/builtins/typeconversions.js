@@ -199,14 +199,10 @@ function createTypeConversionBuiltins() {
 				if (typeof(ss) == 'string') {
 					return new EString(ss);
 				} else {
-					return new EError(`We tried to convert an object of type`
-						+ ` ${v.getTypeName()} into a string, but it didn't work.`
-						+ ` We got this back: ${'' + ss}. Sorry we couldn't help more.`);
+					return new EError(`to-string: object of type ${v.getTypeName()} failed to convert into a string. Result was ${'' + ss}. No more information available. Sorry!`)
 				}
 			} else {
-				return new EError('You wanted us to convert an object of type'
-					+ ` ${v.getTypeName()} to a string, but we haven't implemented`
-					+ ` any conversion logic for that type yet. Sorry about that!`);
+				return new EError(`to-string: unimplemented for type ${v.getTypeName()}. Sorry!`);
 
 			}
 		}
@@ -245,12 +241,7 @@ function createTypeConversionBuiltins() {
 				case "fatal":
 					break;
 				default:
-					throw new EError("So you're trying to set the"
-						+ " error type with convert-type-if-error."
-						+ " You need to pass in a string containing"
-						+ " the name of one of the error types,"
-						+ " which are 'info', 'warn', and 'fatal'."
-						+ " What you passed in though was this: " + etstring);
+					return new EError(`convert-type-if-error: cannot continue because unrecognized type ${etstring} (valid types are 'info', 'warn', and 'fatal'). Sorry!`);
 			}
 
 			newresult.setErrorType(errtype);

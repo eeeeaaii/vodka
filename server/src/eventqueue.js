@@ -7,11 +7,47 @@
 // marked w/ the appropriate priority, then we
 // pop and execute anything that's been queued.
 
+// we have:
+// - user events, which preempt everything because responsiveness
+// - exception fulfill, which should preempt rendering because they affect how things get rendered
+// - rendering
+// - true low priority things, like alert animation
+// additionally, in certain contexts we need to enqueue render events at an equal priority
+// to user events, like for example for older tests that directly call into doKeyInput
+// rather than mimicking browser events.
+
+// do not do the thing where you have multiple names for a queue
+const USER_EVENT_PRIORITY = 0;
+const EXCEPTION_PRIORITY = 1;
+const RENDER_PRIORITY = 2;
+const LOW_PRIORITY = 3;
+
 class EventQueue {
 	constructor() {
-		this.highPriority = [];
-		this.normalPriority = [];
-		this.lowPriority = [];
+		this.queueSet = [];
+		this.queueSet[USER_EVENT_PRIORITY] = [];
+		this.queueSet[EXCEPTION_PRIORITY] = [];
+		this.queueSet[RENDER_PRIORITY] = [];
+		this.queueSet[LOW_PRIORITY] = [];
+	}
+
+	enqueueAlertAnimation(renderNode) {
+		let item = {
+			action: "doAlertAnimation",
+			shouldDedupe: true,
+			renderNode: renderNode,
+			equals: function(other) {
+				 // ref equals is okay?
+				return
+					other.action == this.action
+					&& other.renderNode == this.renderNode;
+			},
+			do: function() {
+				this.renderNode.doAlertAnimation();
+			}
+		};
+		this.queueSet[LOW_PRIORITY].push(item);
+		this.setTimeoutForProcessingNextItem(item);
 	}
 
 	enqueueRenderNodeRenderSelecting(renderNode, flags, selectThisNode) {
@@ -35,7 +71,7 @@ class EventQueue {
 				this.renderNode.render(this.flags);
 			}
 		};
-		this.normalPriority.push(item);
+		this.queueSet[RENDER_PRIORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
@@ -57,7 +93,7 @@ class EventQueue {
 				this.renderNode.render(this.flags);
 			}
 		};
-		this.normalPriority.push(item);
+		this.queueSet[RENDER_PRIORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
@@ -83,7 +119,7 @@ class EventQueue {
 				doRealKeyInput(this.keycode, this.whichkey, this.hasShift, this.hasCtrl, this.hasAlt);
 			}
 		};
-		this.highPriority.push(item);
+		this.queueSet[USER_EVENT_PRIORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
@@ -101,7 +137,7 @@ class EventQueue {
 				topLevelRenderSelectingNode(this.nex);
 			}
 		};
-		this.lowPriority.push(item);
+		this.queueSet[RENDER_PRIORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
@@ -117,7 +153,8 @@ class EventQueue {
 				topLevelRender();
 			}
 		};
-		this.highPriority.push(item);
+		// push to the user event queue because higher priority
+		this.queueSet[USER_EVENT_PRIORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
@@ -137,24 +174,26 @@ class EventQueue {
 				this.target.doClickHandlerAction(this.renderNode, event);
 			}
 		};
-		this.highPriority.push(item);
+		// TODO: test this and see if it works at render priority
+		this.queueSet[USER_EVENT_PRIORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
-	enqueueExpectationFulfill(exp) {
+	enqueueExpectationFulfill(exp, result) {
 		let item = {
 			action: "expectationFulfill",
 			exp: exp,
+			result: result,
 			shouldDedupe: false,
 			equals: function(other) {
 				return other.action == this.action
 						&& other.exp.getID() == this.exp.getID();
 			},
 			do: function() {
-				this.exp.startFulfill();
+				this.exp.fulfill(this.result);
 			}
 		};
-		this.lowPriority.push(item);
+		this.queueSet[EXCEPTION_PRIORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
@@ -170,7 +209,7 @@ class EventQueue {
 				topLevelRender();
 			}
 		};
-		this.normalPriority.push(item);
+		this.queueSet[RENDER_PRIORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
@@ -180,11 +219,18 @@ class EventQueue {
 		}).bind(this), 0);
 	}
 
+	selectQueue() {
+		// queues with lower indices in the queueSet array have higher priority
+		for (let i = 0; i < this.queueSet.length; i++) {
+			if (this.queueSet[i].length > 0) {
+				return this.queueSet[i];
+			}
+		}
+		return null;
+	}
+
 	processNextItem() {
-		let queueToUse = null;
-		if (!queueToUse && this.highPriority.length > 0) queueToUse = this.highPriority;
-		if (!queueToUse && this.normalPriority.length > 0) queueToUse = this.normalPriority;
-		if (!queueToUse && this.lowPriority.length > 0) queueToUse = this.lowPriority;
+		let queueToUse = this.selectQueue();
 		if (!queueToUse) return;
 		let item = queueToUse.shift();
 		// if a bunch of equivalent actions were enqueued, pop them all and just do one

@@ -33,15 +33,7 @@ class LambdaArgEvaluator {
 
 	checkNumParams() {
 		if (this.argContainer.numArgs() < this.numRequiredParams) {
-			throw new EError("Hey so in this user-defined lambda function, "
-				+ " there were not enough args passed in. It needs"
-				+ ` ${this.numRequiredParams} but you passed in ${this.argContainer.numArgs()}.`
-				+ ` You might have bound this function`
-				+ ` to a name at some point, but that name isn't available`
-				+ ` to this error handler. However you might recognize the function`
-				+ ` if we give you a`
-				+ ` textual representation of the function definition`
-				+ ` - so here goes: ${this.debugstr}`);
+			throw new EError(`${this.debugstr}: stopping because not enough arguments (${this.numRequiredParams} required, got ${this.argContainer.numArgs()}). Sorry!`);
 		}
 	}	
 
@@ -55,15 +47,7 @@ class LambdaArgEvaluator {
 			let arg = this.argContainer.getArgAt(i)
 			let argval = this.processArgument(arg);
 			if (argval.getTypeName() == '-error-' && argval.getErrorType() == ERROR_TYPE_FATAL) {
-				throw wrapError('&#8907;', `Okay so when we were evaluating the args of this`
-					+ ` user-defined lambda function, we encountered an error in`
-					+ ` argument number ${i+1} and we have to stop running the program.`
-					+ ` The error is enclosed. You might have bound this function`
-					+ ` to a name at some point, but that name isn't available`
-					+ ` to this error handler. However you might recognize the function`
-					+ ` if we give you a`
-					+ ` textual representation of the function definition`
-					+ ` - so here goes: ${this.debugstr}`, argval);
+				throw wrapError('&#8907;', `${debugstr}: fatal error in arg ${i + 1}, stopping. Sorry!`, argval);
 			}
 			this.argContainer.setArgAt(
 				argval,

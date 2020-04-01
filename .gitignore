@@ -1,4 +1,5 @@
 .DS_STORE
+ACTUAL_LIVECODING_IDEAS.txt
 testing/____tmpfile.txt
 server/packages/poem*
 server/packages/perf*

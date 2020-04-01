@@ -30,15 +30,15 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	font-style: italic;
 	font-size: 11px;
 	background-color: #e8e8e8;
-	border: 1px solid #aaaaaa;
+	border: 1px solid var(--unselected-border);
 	padding: 5px;
 }
 
 .valuenex.exploded.selected {
 	padding: 3px;
-	border: 3px solid #ff7777;
+	border: 3px solid var(--selected-border);
 	/*
-	border-bottom: 3px solid #ff7777;
-	border-top: 3px solid #ff7777;
+	border-bottom: 3px solid var(--selected-border);
+	border-top: 3px solid var(--selected-border);
 	*/
 }

@@ -24,3 +24,46 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	font-weight: bold;
 }
 
+@keyframes show-execution-selected {
+	0% {border-color: var(--selected-border);}
+	5% {border-color: #ffff77;}
+	100% {border-color: var(--selected-border);}
+}
+
+@keyframes show-execution-unselected {
+	0% {border-color: var(--unselected-border);}
+	5% {border-color: yellow;}
+	100% {border-color: var(--unselected-border);}
+}
+
+@keyframes show-execution-selected-bg {
+	0% {border-color: var(--selected-border);}
+	5% {border-color: #ffff77;}
+	100% {border-color: var(--selected-border);}
+}
+
+@keyframes show-execution-unselected-bg {
+	0% {background-color: var(--unselected-border);}
+	5% {background-color: yellow;}
+	100% {background-color: var(--unselected-border);}
+}
+
+.animating-selected-lambda {
+	animation-duration: .7s;
+	animation-name: show-execution-selected;
+}
+
+.animating-unselected-lambda {
+	animation-duration: .7s;
+	animation-name: show-execution-unselected;
+}
+
+.animating-selected-bg-lambda {
+	animation-duration: .7s;
+	animation-name: show-execution-selected-bg;
+}
+
+.animating-unselected-bg-lambda {
+	animation-duration: .7s;
+	animation-name: show-execution-unselected-bg;
+}

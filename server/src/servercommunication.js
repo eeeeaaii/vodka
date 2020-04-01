@@ -31,10 +31,11 @@ function sendToServer(payload, cb) {
 function saveNex(name, nex, expectation) {
 	let payload = `save\t${name}\t${nex.toString()}`;
 
+	let callback = expectation.getCallbackForSet();
 	sendToServer(payload, function(data) {
 		let e = new EError("success");
 		e.setErrorType(ERROR_TYPE_INFO);
-		expectation.fulfill(e);
+		callback(e);
 	});
 }
 
@@ -49,10 +50,11 @@ function saveNexWithCallback(name, nex, expectation, callback) {
 function loadNex(name, expectation) {
 	let payload = `load\t${name}`;
 
+	let callback = expectation.getCallbackForSet();
 	sendToServer(payload, function(data) {
 		document.title = name;
 		let nex = new NexParser(data).parse();
-		expectation.fulfill(nex);
+		callback(nex);
 	});
 }
 

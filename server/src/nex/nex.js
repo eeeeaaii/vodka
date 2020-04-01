@@ -30,6 +30,7 @@ class Nex {
 		this.tags = [];
 		this.id = NEXT_NEX_ID++;
 		this.boundName = "";
+		this.extraClickHandler = null;
 	}
 
 	getTypeName() {
@@ -224,6 +225,10 @@ class Nex {
 	}
 
 	doClickHandlerAction(renderNode, e) {
+		if (this.extraClickHandler) {
+			this.extraClickHandler();
+			return;
+		}
 		let parentNexDomElt = this.getParentNexOfDomElement(e.target);
 		if (selectedNode.getDomNode() == parentNexDomElt) {
 			return;

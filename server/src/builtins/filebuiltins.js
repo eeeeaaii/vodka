@@ -44,6 +44,7 @@ function createFileBuiltins() {
 			{name:'_nex...', type:'*', skipeval:true, variadic:true}
 		],
 		function(env, argEnv) {
+			return new EError("not supported anymore TODO:fix");
 			let namesym = env.lb('_name@');
 			let lst = env.lb('_nex...');
 			let nm = namesym.getTypedValue();

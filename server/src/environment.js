@@ -29,11 +29,8 @@ class Environment {
 		if (!lvl) {
 			lvl = '';
 		}
-		for (let x in this.symbols) {
-			console.log(`${lvl}${x}=${this.symbols[x]}`)
-		}
-		for (let x in this.uniques) {
-			console.log(`${lvl}${x}:${this.uniques[x]}`)
+		for (let name in this.symbols) {
+			console.log(`${lvl}${name}=${this.symbols[name].val}`)
 		}
 		if (this.parentEnv) {
 			this.parentEnv.debug(lvl + '  ')
@@ -55,12 +52,22 @@ class Environment {
 
 	bind(name, val) {
 		val.setBoundName(name);
-		this.symbols[name] = val;
+		if (this.symbols[name]) {
+			this.symbols[name].val = val;
+			this.symbols[name].version++;
+		} else {
+			this.symbols[name] = {
+				val: val,
+				version: 0
+			};
+		}
 	}
 
 	set(name, val) {
 		if (this.symbols[name]) {
-			this.symbols[name] = val;
+			let rec = this.symbols[name];
+			rec.val = val;
+			rec.version++;
 		} else if (this.parentEnv) {
 			this.parentEnv.set(name, val);
 		}
@@ -71,20 +78,7 @@ class Environment {
 		if (!this.symbols[nm]) {
 			return UNBOUND;
 		}
-		// hack - we are testing to see if it's a javascript array
-		// because we do a garbage thing where for variadics
-		// we map a symbol to a js thing instead of a vodka thing.
-
-		if (this.symbols[nm].push) {
-			let tocopy = this.symbols[nm];
-			let z = [];
-			for (let i = 0; i < tocopy.length; i++) {
-				z.push(tocopy[i].makeCopy());
-			}
-			return z;
-		} else {
-			return this.symbols[nm];
-		}
+		return this.symbols[nm].val;
 	}
 
 	getAllBoundSymbolsAtThisLevel() {
@@ -96,19 +90,25 @@ class Environment {
 		return r;
 	}
 
-	lookupBinding(name) {
+	lookupFullBinding(name) {
 		let tmp = this.symbols[name];
 		if (tmp) {
 			return tmp;
 		} else if (this.parentEnv) {
 			return this.parentEnv.lookupBinding(name);
 		} else {
-			throw new EError(`So we tried to look up the symbol ${name} in memory, but there's`
-				+ ` nothing stored under that name. Either that`
-				+ ` symbol needs to be globally bound to something using "bind", or it needs`
-				+ ` to be assigned a value in the local lexical environment using "let".`
-				+ ` Double check the scope of your "let" statements and also just the spelling`
-				+ ` of this symbol to make sure you didn't make a typo.`);
+			throw new EError(`undefined symbol: ${name}. Sorry!`);
+		}
+	}
+
+	lookupBinding(name) {
+		let tmp = this.symbols[name];
+		if (tmp) {
+			return tmp.val;
+		} else if (this.parentEnv) {
+			return this.parentEnv.lookupBinding(name);
+		} else {
+			throw new EError(`undefined symbol: ${name}. Sorry!`);
 		}
 	}
 }
