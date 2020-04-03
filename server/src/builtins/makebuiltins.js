@@ -27,4 +27,13 @@ function createMakeBuiltins() {
 			return exp;
 		}
 	);
+
+	Builtin.createBuiltin(
+		'make-zlist',
+		[
+		],
+		function(env, argEnv) {
+			return new Zlist();
+		}
+	);
 }

@@ -33,7 +33,11 @@ function createBasicBuiltins() {
 			{name:'list()', type:'NexContainer'}
 		],
 		function(env, argEnv) {
-			return env.lb('list()').getFirstChild();
+			let lst = env.lb('list()');
+			if (lst.numChildren() == 0) {
+				return new EError('car: cannot get first element of empty list. Sorry!');
+			}
+			return lst.getFirstChild();
 		}
 	);
 
@@ -45,12 +49,7 @@ function createBasicBuiltins() {
 		function(env, argEnv) {
 			let c = env.lb('list()');
 			if (c.numChildren() == 0) {
-				return new EError("Okay so cdr gives you a new list containing all"
-					+ " the elements in a list after the first one."
-					+ " But if you pass it an empty list, then it's sort of"
-					+ " impossible to remove the first element, right?"
-					+ " So this is an error. Any list you pass to cdr"
-					+ " has to have at least one element in it.");
+				return new EError("cdr: given an empty list, cannot make a new list with first element removed. Sorry!");
 			}
 			let newOne = c.makeCopy(true);
 			c.getChildrenForCdr(newOne);
@@ -81,10 +80,7 @@ function createBasicBuiltins() {
 		function(env, argEnv) {
 			let c = env.lb('list()');
 			if (c.numChildren() == 0) {
-				return new EError("So chop is used to remove the first "
-					+ " element in a list. But if the list is empty,"
-					+ " then it has no first element -- so this is an"
-					+ " error.");
+				return new EError("chop: cannot remove first element of empty list. Sorry!");
 			}
 			c.removeChild(c.getChildAt(0));
 			return c;
@@ -202,19 +198,19 @@ function createBasicBuiltins() {
 
 
 			} else if (lhs instanceof Command && rhs instanceof Command) {
-				return new EError('Sorry, our bad -- equal for lists is not implemented yet :(')
+				return new EError('equal: equal for lists is not implemented yet. Sorry!')
 			} else if (lhs instanceof Lambda && rhs instanceof Lambda) {
-				return new EError('Sorry, our bad -- equal for lists is not implemented yet :(')
+				return new EError('equal: equal for lists is not implemented yet. Sorry!')
 			} else if (lhs instanceof Doc && rhs instanceof Doc) {
-				return new EError('Sorry, our bad -- equal for lists is not implemented yet :(')
+				return new EError('equal: equal for lists is not implemented yet. Sorry!')
 			} else if (lhs instanceof Line && rhs instanceof Line) {
-				return new EError('Sorry, our bad -- equal for lists is not implemented yet :(')
+				return new EError('equal: equal for lists is not implemented yet. Sorry!')
 			} else if (lhs instanceof Word && rhs instanceof Word) {
-				return new EError('Sorry, our bad -- equal for lists is not implemented yet :(')
+				return new EError('equal: equal for lists is not implemented yet. Sorry!')
 			} else if (lhs instanceof Zlist && rhs instanceof Zlist) {
-				return new EError('Sorry, our bad -- equal for lists is not implemented yet :(')
+				return new EError('equal: equal for lists is not implemented yet. Sorry!')
 			} else if (lhs instanceof Expectation && rhs instanceof Expectation) {
-				return new EError('Sorry, our bad -- equal for lists is not implemented yet :(')
+				return new EError('equal: equal for lists is not implemented yet. Sorry!')
 			} else {
 				return new Bool(false);
 			}

@@ -54,6 +54,7 @@ USABILITY IMPROVEMENTS = nice to have
 
 
 NEW FEATURES = be careful
+- short circuit evaluation for conditionals
 - make it so you can change exploded/normal in code by setting a tag
 - make a tag type that is sort of an enum (like radio buttons)
 - make a "toggle" tag type (like a form checkbox)
