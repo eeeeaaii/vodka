@@ -73,6 +73,22 @@ function createBasicBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'cap',
+		[
+			{name:'list()', type:'NexContainer'}
+		],
+		function(env, argEnv) {
+			let c = env.lb('list()');
+			if (c.numChildren() == 0) {
+				return new EError("chop: cannot get first element of empty list. Sorry!");
+			}
+			let r = c.getChildAt(0);
+			c.removeChild(c.getChildAt(0));
+			return r;
+		}
+	);
+
+	Builtin.createBuiltin(
 		'chop',
 		[
 			{name:'list()', type:'NexContainer'}
@@ -100,6 +116,15 @@ function createBasicBuiltins() {
 		}
 	);
 
+	Builtin.createBuiltin(
+		'quote',
+		[
+			{name:'_nex', type:'*', skipeval:true},
+		],
+		function(env, argEnv) {
+			return env.lb('_nex');
+		}
+	);
 
 	Builtin.createBuiltin(
 		'begin',

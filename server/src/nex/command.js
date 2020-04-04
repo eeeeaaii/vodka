@@ -32,15 +32,16 @@ class Command extends NexContainer {
 	}
 
 	cacheGlobalBuiltin() {
+		this.cachedBuiltin = null;
 		try {
 			let binding = BUILTINS.lookupBinding(this.commandtext);
-			if (binding instanceof Builtin) {
+			if (binding) {
 				this.cachedBuiltin = binding;
-			} else {
-				this.cachedBuiltin = null;
 			}
 		} catch (e) {
-			this.cachedBuiltin = null;
+			if (!(e instanceof EError)) {
+				throw e;
+			}
 		}
 	}
 
@@ -79,26 +80,28 @@ class Command extends NexContainer {
 		return !(lambda instanceof Builtin);
 	}
 
-	// getSymbol() {
-	// 	if (this.symbolversion >= 0) {
-	// 		return this.symbol;
-	// 	};
-	// 	let cmdtxt = this.getCommandText();
-	// 	if (cmdtxt) {
-	// 		return cmdtxt;
-	// 	} else if (this.numChildren() == 0) {
-	// 		throw new EError(`COMMAND: command with no name and no children has nothing to execute. Sorry!`);
-	// 	} else if (this.getChildAt(0).getTypeName() == '-symbol-') {
-	// 		return this.getChildAt(0).getTypedValue();
-	// 	} else {
-	// 		return null; // no symbol, first arg must just *be* a lambda.
-	// 	}
-	// }
+	// UNUSED BUT AT SOME POINT CONSIDER DOING IT THIS WAY INSTEAD
+	getSymbol() {
+		if (this.symbolversion >= 0) {
+			return this.symbol;
+		};
+		let cmdtxt = this.getCommandText();
+		if (cmdtxt) {
+			return cmdtxt;
+		} else if (this.numChildren() == 0) {
+			throw new EError(`COMMAND: command with no name and no children has nothing to execute. Sorry!`);
+		} else if (this.getChildAt(0).getTypeName() == '-symbol-') {
+			return this.getChildAt(0).getTypedValue();
+		} else {
+			return null; // no symbol, first arg must just *be* a lambda.
+		}
+	}
 
 	shouldSkipFirstArg() {
 		return !this.getCommandText();
 	}
-/*
+
+	// UNUSED BUT AT SOME POINT CONSIDER DOING IT THIS WAY INSTEAD
 	getLambda2(executionEnv) {
 		// the last time the name of this command was modified, it mapped
 		// to a builtin, so we just return that... we know the definition
@@ -130,7 +133,6 @@ class Command extends NexContainer {
 			throw new EError(`COMMAND: command with no name and no children has nothing to execute. Sorry!`)
 		}
 	}
-	*/
 
 	getLambda(executionEnv) {
 		if (this.cachedBuiltin) {
@@ -229,6 +231,8 @@ class Command extends NexContainer {
 	setCommandText(t) {
 		this.commandtext = t;
 		this.cacheGlobalBuiltin();
+		this.searchingOn = null;
+		this.previousMatch = null;
 //		this.symbolversion = -1;
 
 	}
@@ -240,11 +244,15 @@ class Command extends NexContainer {
 	deleteLastCommandLetter() {
 		this.commandtext = this.commandtext.substr(0, this.commandtext.length - 1);
 		this.cacheGlobalBuiltin();
+		this.searchingOn = null;
+		this.previousMatch = null;
 	}
 
 	appendCommandText(txt) {
 		this.commandtext = this.commandtext + txt;
 		this.cacheGlobalBuiltin();
+		this.searchingOn = null;
+		this.previousMatch = null;
 	}
 
 	// expression list interface
@@ -263,6 +271,14 @@ class Command extends NexContainer {
 
 	getContextType() {
 		return ContextType.COMMAND;
+	}
+
+	autocomplete() {
+		let searchText = this.searchingOn ? this.searchingOn : this.getCommandText();
+		let match = autocomplete.findNextMatchAfter(searchText, this.previousMatch);
+		this.setCommandText(match);
+		this.searchingOn = searchText;
+		this.previousMatch = match;
 	}
 
 	defaultHandle(txt) {
@@ -288,6 +304,7 @@ class Command extends NexContainer {
 			'Enter': 'do-line-break-always',
 			'Backspace': 'delete-last-command-letter-or-remove-selected-and-select-previous-sibling',
 			'ShiftSpace': 'toggle-dir',
+			'CtrlSpace': 'autocomplete'
 		};
 	}
 }

@@ -95,6 +95,9 @@ function createMathBuiltins() {
 		function(env, argEnv) {
 			let a = env.lb('divid#%');
 			let b = env.lb('divis#%');
+			if (b.getTypedValue() == 0) {
+				return new EError('divide: cannot divide by zero, Sorry!');
+			}
 			let result = a.getTypedValue() / b.getTypedValue();
 			if (a instanceof Float
 					|| b instanceof Float) {

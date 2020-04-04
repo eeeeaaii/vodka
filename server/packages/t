@@ -1,1 +1,1 @@
-@hello-_a
+~"bind"h( @remove-style &" stylename stylelist"v( ~"if"v( ~"is-empty"h( @stylelist~) () ~"begin"v( ~"let"h( @pair ~"car"h( @stylelist~)~) ~"let"h( @name ~"car"h( @pair~)~) ~"if"v( ~"string-eq"h( @name @stylename~) ~"cdr"h( @stylelist~) ~"cons"h( @pair ~"remove-style"h( @stylename @stylelist~)~)~)~)~)&)~)

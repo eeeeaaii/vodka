@@ -52,60 +52,56 @@ function createEnvironmentBuiltins() {
 		function(env, argEnv) {
 			let val = env.lb('nex');
 			let name = env.lb('_name@');
-			BUILTINS.bindInPackage(name.getTypedValue(), val);
+			BINDINGS.bindInPackage(name.getTypedValue(), val);
 			return name;
 		}
 	);
 
 	Builtin.createBuiltin(
-		'bound',
+		'bindings',
 		[
-			{name: '?search$', type:'EString', optional:true}
+			{name: '_?search@', type:'ESymbol', skipeval:true, optional:true}
 		],
 		function(env, argEnv) {
-			let ssnex = env.lb('?search$');
+			let ssnex = env.lb('_?search@');
 			let ss = "";
 			if (ssnex != UNBOUND) {
-				ss = ssnex.getFullTypedValue();
+				ss = ssnex.getTypedValue();
 			}
-			let names = BUILTINS.getAllBoundSymbolsAtThisLevel();
-			let r = new Doc();
-			for (let i = 0; i < names.length; i++) {
-				if (ss != "") {
-					if (!(names[i].indexOf(ss) >= 0)) {
-						continue;
-					}
+			let matches = autocomplete.findAllBindingsMatching(ss);
+			if (matches.length == 1) {
+				return new ESymbol(matches[0]);
+			} else {
+				let r = new Doc();
+				for (let j = 0; j < matches.length; j++) {
+					r.appendChild(new ESymbol(matches[j]))
 				}
-				let sym = new ESymbol(names[i]);
-				r.appendChild(sym);
+				return r;
 			}
-			return r;
 		}
 	);
 
 	Builtin.createBuiltin(
-		'built-ins',
+		'builtins',
 		[
-			{name: '?search$', type:'EString', optional:true}
+			{name: '_?search@', type:'ESymbol', skipeval:true, optional:true}
 		],
 		function(env, argEnv) {
-			let ssnex = env.lb('?search$');
+			let ssnex = env.lb('_?search@');
 			let ss = "";
 			if (ssnex != UNBOUND) {
-				ss = ssnex.getFullTypedValue();
+				ss = ssnex.getTypedValue();
 			}
-			let names = BUILTINS.getParent().getAllBoundSymbolsAtThisLevel();
-			let r = new Doc();
-			for (let i = 0; i < names.length; i++) {
-				if (ss != "") {
-					if (!(names[i].indexOf(ss) >= 0)) {
-						continue;
-					}
+			let matches = autocomplete.findAllBuiltinsMatching(ss);
+			if (matches.length == 1) {
+				return new ESymbol(matches[0]);
+			} else {
+				let r = new Doc();
+				for (let j = 0; j < matches.length; j++) {
+					r.appendChild(new ESymbol(matches[j]))
 				}
-				let sym = new ESymbol(names[i]);
-				r.appendChild(sym);
+				return r;
 			}
-			return r;
 		}
 	);
 }

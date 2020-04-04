@@ -19,7 +19,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 class Float extends ValueNex {
 	constructor(val) {
-		super((val) ? val : '', '%', 'float')
+		super((val) ? val : '0.0', '%', 'float')
 	}
 
 	getTypeName() {
@@ -32,13 +32,20 @@ class Float extends ValueNex {
 		return r;
 	}
 
+	makeStringValid(str) {
+		if (!this.isValid(str)) {
+			return "0";
+		}
+		return str;
+	}
+
 	isValid() {
 		return !isNaN(this.value);
 	}
 
 	evaluate() {
 		if (!this.isValid()) {
-			throw new EError('Tried to evaluate incomplete float: "' + this.value + '"');
+			return 0.0;
 		}
 		return this;
 	}
@@ -57,7 +64,7 @@ class Float extends ValueNex {
 			v = "0";
 		}
 		if (isNaN(v)) {
-			throw new Error(`Float literal incomplete (is "${v}")`);
+			return 0.0;
 		}
 		return Number(v);
 	}

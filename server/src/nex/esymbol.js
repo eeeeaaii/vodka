@@ -65,7 +65,7 @@ class ESymbol extends ValueNex {
 		if (isNormallyHandled(txt)) {
 			return false;
 		}
-		let allowedKeyRegex = /^[a-zA-Z0-9-_]$/;
+		let allowedKeyRegex = /^[a-zA-Z0-9-_:]$/;
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 

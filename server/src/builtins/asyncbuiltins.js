@@ -19,14 +19,19 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 function createAsyncBuiltins() {
 	Builtin.createBuiltin(
-		'cancel',
+		'cancel-ff',
 		[
-			{name: 'exp,', type:'Expectation'},
+			{name: 'exp,', type:'Expectation', optional:true}
 		],
 		function(env, argEnv) {
 			let exp = env.lb('exp,');
-			exp.cancel();
-			return exp;
+			if (exp == UNBOUND) {
+				FF_GEN++;
+				return new Nil();
+			} else {
+				exp.cancel();
+				return exp;
+			}
 		}
 	);
 

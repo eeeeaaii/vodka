@@ -27,21 +27,17 @@ class RenderNode {
 		this.firstToggleOnNexRender = false;
 	}
 
-	setAlertStyle(node, isBg) {
-		let s = isBg ? '-bg' : '';
-		if (this.selected) {
-			node.classList.remove(`animating-unselected${s}-lambda`);
-			node.classList.remove(`animating-selected${s}-lambda`);
-			node.classList.add(`animating-selected${s}-lambda`);
-		} else {
-			node.classList.remove(`animating-unselected${s}-lambda`);
-			node.classList.remove(`animating-selected${s}-lambda`);
-			node.classList.add(`animating-unselected${s}-lambda`);
-		}
+	setAlertStyle(node, codespan) {
+		let sel = this.selected ? `selected` : `unselected`;
+		let currentNumber = node.classList.contains(`animating-${sel}-lambda-1`) ? "1" : "2"
+		let newNumber = currentNumber == "1" ? "2" : "1";
+		node.classList.remove(`animating-${sel}-lambda-${currentNumber}`);
+		node.classList.add(`animating-${sel}-lambda-${newNumber}`);
+		codespan.classList.remove(`animating-${sel}-bg-lambda-${currentNumber}`);
+		codespan.classList.add(`animating-${sel}-bg-lambda-${newNumber}`);
 	}
 
-	doAlertAnimation() {
-		// nex should only be a lambda.
+	getCodespanForAlertAnimation() {
 		let codespan = null;
 		for (let i = 0; i < this.domNode.childNodes.length; i++) {
 			let child = this.domNode.childNodes[i];
@@ -53,8 +49,12 @@ class RenderNode {
 		if (codespan == null) {
 			throw new Error('tried to call doAlertAnimation on something thats not a lambda');
 		}
-		this.setAlertStyle(codespan, true);
-		this.setAlertStyle(this.domNode, false);
+		return codespan;
+	}
+
+	doAlertAnimation() {
+		// nex should only be a lambda.
+		this.setAlertStyle(this.domNode, this.getCodespanForAlertAnimation());
 	}
 
 	setRenderDepth(depth) {

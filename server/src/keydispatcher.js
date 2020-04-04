@@ -47,14 +47,14 @@ function insertOrAppend(s, obj) {
 }
 
 function evaluateAndReplace(s) {
-	let n = evaluateNexSafely(s.getNex(), BUILTINS);
+	let n = evaluateNexSafely(s.getNex(), BINDINGS);
 	if (n) {
 		manipulator.replaceSelectedWith(new RenderNode(n));
 	}
 }
 
 function evaluateAndCopy(s) {
-	let n = evaluateNexSafely(s.getNex(), BUILTINS);
+	let n = evaluateNexSafely(s.getNex(), BINDINGS);
 	if (n) {
 		manipulator.replaceSelectedWith(new RenderNode(n));
 	}
@@ -109,6 +109,7 @@ var KeyResponseFunctions = {
 	},
 
 	'evaluate-nex': function(s) {
+		beep();
 		evaluateAndReplace(s);
 	},
 
@@ -141,6 +142,10 @@ var KeyResponseFunctions = {
 
 	'return-exp-child': function(s) {
 		manipulator.replaceSelectedWithFirstChildOfSelected();
+	},
+
+	'autocomplete': function(s) {
+		s.getNex().autocomplete();
 	},
 
 	'replace-selected-with-command': function(s) { manipulator.replaceSelectedWith(new Command()); },
@@ -482,6 +487,8 @@ class KeyDispatcher {
 			return 'ShiftTab';
 		} else if (keycode == ' ' && hasShift) {
 			return 'ShiftSpace';
+		} else if (keycode == ' ' && hasCtrl) {
+			return 'CtrlSpace';
 		} else if (keycode == ' ' && hasAlt) {
 			return 'AltSpace';
 		// } else if (keycode == ' ') {
@@ -566,7 +573,7 @@ class KeyDispatcher {
 			f(selectedNode);
 			return true;
 		} else if (f instanceof Nex) {
-			evaluateNexSafely(f, BUILTINS)
+			evaluateNexSafely(f, BINDINGS)
 			return true;
 		}
 		return false;
@@ -605,7 +612,7 @@ class KeyDispatcher {
 				// gross
 				topLevelRender();
 				s = selectedNode.getNex();
-				s.pushNexPhase(phaseExecutor, BUILTINS);
+				s.pushNexPhase(phaseExecutor, BINDINGS);
 			}
 			phaseExecutor.doNextStep();
 			topLevelRender();

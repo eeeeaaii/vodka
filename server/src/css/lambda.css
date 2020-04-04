@@ -24,46 +24,90 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	font-weight: bold;
 }
 
-@keyframes show-execution-selected {
+@keyframes show-execution-selected-1 {
 	0% {border-color: var(--selected-border);}
 	5% {border-color: #ffff77;}
 	100% {border-color: var(--selected-border);}
 }
 
-@keyframes show-execution-unselected {
+@keyframes show-execution-unselected-1 {
 	0% {border-color: var(--unselected-border);}
 	5% {border-color: yellow;}
 	100% {border-color: var(--unselected-border);}
 }
 
-@keyframes show-execution-selected-bg {
+@keyframes show-execution-selected-bg-1 {
 	0% {border-color: var(--selected-border);}
 	5% {border-color: #ffff77;}
 	100% {border-color: var(--selected-border);}
 }
 
-@keyframes show-execution-unselected-bg {
+@keyframes show-execution-unselected-bg-1 {
 	0% {background-color: var(--unselected-border);}
 	5% {background-color: yellow;}
 	100% {background-color: var(--unselected-border);}
 }
 
-.animating-selected-lambda {
-	animation-duration: .7s;
-	animation-name: show-execution-selected;
+@keyframes show-execution-selected-2 {
+	0% {border-color: var(--selected-border);}
+	5% {border-color: #ffff77;}
+	100% {border-color: var(--selected-border);}
 }
 
-.animating-unselected-lambda {
-	animation-duration: .7s;
-	animation-name: show-execution-unselected;
+@keyframes show-execution-unselected-2 {
+	0% {border-color: var(--unselected-border);}
+	5% {border-color: yellow;}
+	100% {border-color: var(--unselected-border);}
 }
 
-.animating-selected-bg-lambda {
-	animation-duration: .7s;
-	animation-name: show-execution-selected-bg;
+@keyframes show-execution-selected-bg-2 {
+	0% {border-color: var(--selected-border);}
+	5% {border-color: #ffff77;}
+	100% {border-color: var(--selected-border);}
 }
 
-.animating-unselected-bg-lambda {
+@keyframes show-execution-unselected-bg-2 {
+	0% {background-color: var(--unselected-border);}
+	5% {background-color: yellow;}
+	100% {background-color: var(--unselected-border);}
+}
+
+.animating-selected-lambda-1 {
 	animation-duration: .7s;
-	animation-name: show-execution-unselected-bg;
+	animation-name: show-execution-selected-1;
+}
+
+.animating-unselected-lambda-1 {
+	animation-duration: .7s;
+	animation-name: show-execution-unselected-1;
+}
+
+.animating-selected-bg-lambda-1 {
+	animation-duration: .7s;
+	animation-name: show-execution-selected-bg-1;
+}
+
+.animating-unselected-bg-lambda-1 {
+	animation-duration: .7s;
+	animation-name: show-execution-unselected-bg-1;
+}
+
+.animating-selected-lambda-2 {
+	animation-duration: .70s;
+	animation-name: show-execution-selected-2;
+}
+
+.animating-unselected-lambda-2 {
+	animation-duration: .70s;
+	animation-name: show-execution-unselected-2;
+}
+
+.animating-selected-bg-lambda-2 {
+	animation-duration: .70s;
+	animation-name: show-execution-selected-bg-2;
+}
+
+.animating-unselected-bg-lambda-2 {
+	animation-duration: .70s;
+	animation-name: show-execution-unselected-bg-2;
 }

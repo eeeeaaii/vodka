@@ -33,6 +33,7 @@ class Expectation extends NexContainer {
 
 	ffWith(fff, argEnv) {
 		this.fff = fff;
+		this.ffgen = FF_GEN;
 		this.ffArgEnv = argEnv;
 	}
 
@@ -52,6 +53,9 @@ class Expectation extends NexContainer {
 	}
 
 	fulfill(result) {
+		if (this.ffgen < FF_GEN) {
+			return;
+		}
 		if (!result) {
 			if (this.numChildren() != 1) {
 				result = new EError("expectation needs one child to be fulfilled")
@@ -73,7 +77,7 @@ class Expectation extends NexContainer {
 	}
 
 	cancel() {
-		this.fff = null;
+		this.ffgen--;
 	}
 
 	// standard nex stuff below

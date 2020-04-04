@@ -48,11 +48,14 @@ function doApiRequest(message, res) {
 		body.push(chunk);
 	}).on('end', () => {
 		bstr = Buffer.concat(body).toString();
-		serviceApiRequest(bstr, function(respData) {
-			res.writeHead(200, {'Content-Type': 'text/xml'});
-			res.write(respData);
-			res.end();			
-		})
+		serviceApiRequest(
+			bstr,
+			function(respData) {
+				res.writeHead(200, {'Content-Type': 'text/xml'});
+				res.write(respData);
+				res.end();			
+			}
+		)
 	});
 }
 
@@ -71,14 +74,23 @@ function doSave(data, cb) {
 	let nm = data.substr(0, i);
 	let savedata = data.substr(i+1);
 	fs.writeFile('./packages/' + nm, savedata, function(err) {
-		cb("^");
+		if (err) {
+			cb("^")
+		} else {
+			cb("^");
+		}
 	})
 }
 
 function doLoad(data, cb) {
 	let nm = data;
+	let filename = './packages/' + nm;
 	fs.readFile('./packages/' + nm, function(err, data) {
-		cb(data);
+		if (err) {
+			cb(`?"file not found: '${nm}'. Sorry!"`);
+		} else {
+			cb(data)
+		}
 	})	
 }
 

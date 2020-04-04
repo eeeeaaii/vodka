@@ -20,6 +20,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
   --unselected-border: #aaaaaa;
 }
 
+* {
+	box-sizing:border-box;
+}
+
 body {
 	cursor: default;
 	margin: 0;

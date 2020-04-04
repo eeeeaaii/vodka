@@ -98,16 +98,16 @@ function createStringBuiltins() {
 		}
 	);
 
-	Builtin.createBuiltin(
-		'string-eq',
-		[
-			{name:'str1$', type: 'EString'},
-			{name:'str2$', type: 'EString'}
-		],
-		function(env, argEnv) {
-			let s1 = env.lb('str1$').getFullTypedValue();
-			let s2 = env.lb('str2$').getFullTypedValue();
-			return new Bool(s1 === s2);
-		}
-	);
+	// Builtin.createBuiltin(
+	// 	'string-eq',
+	// 	[
+	// 		{name:'str1$', type: 'EString'},
+	// 		{name:'str2$', type: 'EString'}
+	// 	],
+	// 	function(env, argEnv) {
+	// 		let s1 = env.lb('str1$').getFullTypedValue();
+	// 		let s2 = env.lb('str2$').getFullTypedValue();
+	// 		return new Bool(s1 === s2);
+	// 	}
+	// );
 }

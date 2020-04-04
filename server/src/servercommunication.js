@@ -39,6 +39,19 @@ function saveNex(name, nex, expectation) {
 	});
 }
 
+function saveFileNex(name, nex, expectation) {
+	let payload = `save\t${name}\t${nex.toString()}`;
+
+	let callback = expectation.getCallbackForSet();
+	sendToServer(payload, function(data) {
+		let a = new Command("save-file");
+		a.setVertical();
+		a.appendChild(new ESymbol(name));
+		a.appendChild(nex);
+		callback(a);
+	});
+}
+
 function saveNexWithCallback(name, nex, expectation, callback) {
 	let payload = `save\t${name}\t${nex.toString()}`;
 
@@ -63,7 +76,7 @@ function importNex(name, expectation) {
 
 	sendToServer(payload, function(data) {
 		let nex = new NexParser(data).parse();
-		let result = evaluateNexSafely(nex, BUILTINS);
+		let result = evaluateNexSafely(nex, BINDINGS);
 		let r = null;
 		if (result.getTypeName() != '-error-') {
 			r = new EError("Import successful.");
@@ -79,7 +92,7 @@ function importNex(name, expectation) {
 
 function importChain(importList, nex, expectation) {
 	if (importList.numChildren() == 0) {
-		let result = evaluateNexSafely(nex, BUILTINS);
+		let result = evaluateNexSafely(nex, BINDINGS);
 		expectation.fulfill(result);
 		// idk
 	} else {
@@ -88,7 +101,7 @@ function importChain(importList, nex, expectation) {
 
 		sendToServer(payload, function(data) {
 			let imported = new NexParser(data).parse();
-			evaluateNexSafely(imported, BUILTINS);
+			evaluateNexSafely(imported, BINDINGS);
 			// discard result of evaluation.
 			importChain(importList, nex, expectation);
 		});

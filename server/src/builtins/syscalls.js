@@ -30,7 +30,7 @@ function createSyscalls() {
 	);
 
 	Builtin.createBuiltin(
-		'apply-style-to',
+		'apply-css-style-to',
 		[
 			{name:'style$', type:'EString'},
 			{name:'nex', type:'*'}
@@ -45,7 +45,7 @@ function createSyscalls() {
 	);
 
 	Builtin.createBuiltin(
-		'get-style-from',
+		'get-css-style-from',
 		[
 			{name:'nex', type:'*'}
 		],
