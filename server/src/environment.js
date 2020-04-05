@@ -95,10 +95,12 @@ class Environment {
 		val.setBoundName(name);
 		if (this.symbols[name]) {
 			this.symbols[name].val = val;
+			this.symbols[name].closure = val.closure;
 			this.symbols[name].version++;
 		} else {
 			this.symbols[name] = {
 				val: val,
+				closure: val.closure,
 				version: 0
 			};
 		}
@@ -110,6 +112,7 @@ class Environment {
 			throw new EError(`undefined symbol ${name}, cannot set. Sorry!`)
 		}
 		binding.val = val;
+		binding.closure = val.closure;
 		binding.version++; // I forget what this is for
 	}
 
@@ -119,6 +122,7 @@ class Environment {
 		if (!this.symbols[nm]) {
 			return UNBOUND;
 		}
+		this.symbols[nm].val.closure = this.symbols[nm].closure;
 		return this.symbols[nm].val;
 	}
 
@@ -169,6 +173,7 @@ class Environment {
 		if (!binding) {
 			throw new EError(`undefined symbol: ${name}. Sorry!`);
 		}
+		binding.val.closure = binding.closure;
 		return binding;
 	}
 

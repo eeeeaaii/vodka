@@ -24,7 +24,7 @@ class Expectation extends NexContainer {
 		super()
 		this.fff = null;
 		this.isSet = false;
-		this.lambdaLexicalEnvironment = null;
+		this.lambdaClosure = null;
 	}
 
 	copyFieldsTo(nex) {
@@ -36,7 +36,7 @@ class Expectation extends NexContainer {
 		this.fff = fff;
 		this.ffgen = FF_GEN;
 		this.fffClosure = closure;
-		this.lambdaLexicalEnvironment = fff.lexicalEnv;
+		this.lambdaClosure = fff.closure;
 	}
 
 	getCallbackForSet() {
@@ -74,7 +74,7 @@ class Expectation extends NexContainer {
 					// can restore the lexical environment to the way it was
 					// when it is fulfilled.
 
-					this.fff.lexicalEnv = this.lambdaLexicalEnvironment;
+					this.fff.closure = this.lambdaClosure;
 					let cmd = new Command('');
 					// also. The way I am doing this is problematic because the lambda has
 					// ALREADY been evaluated and has a lexical environment, but if I

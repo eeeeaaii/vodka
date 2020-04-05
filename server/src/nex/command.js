@@ -195,7 +195,7 @@ class Command extends NexContainer {
 			console.log(`${INDENT()}lambda is: ${lambda.debugString()}`);
 		}
 		let argContainer = new CopiedArgContainer(this, this.shouldSkipFirstArg());
-		let closure = lambda.lexicalEnv;
+		let closure = lambda.closure;
 		// you need to make a new lexical environment every time you evaluate the lambda
 		// but you ALSO need to make a new one every time you evaluate the command.
 		// the lambda could be evaluated again if its codepath is covered again.

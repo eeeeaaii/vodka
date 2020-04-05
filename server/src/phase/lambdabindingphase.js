@@ -36,7 +36,7 @@ class LambdaBindingPhase extends Phase {
 		// have to make copy because we modify the lambda I guess
 		let lambda = this.command.getLambda(this.env).makeCopy();
 		this.commandCallback.setLambda(lambda);
-		let closure = lambda.lexicalEnv.pushEnv();
+		let closure = lambda.closure.pushEnv();
 		let args = [];
 		let tmpChildren = this.command.getChildrenForStepEval();
 		for (let i = 0; i < tmpChildren.length; i++) {

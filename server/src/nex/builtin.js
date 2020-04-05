@@ -28,7 +28,7 @@ class Builtin extends Lambda {
 		}
 		this.amptext = amp;
 		this.f = null;
-		this.lexicalEnv = BUILTINS;
+		this.closure = BUILTINS;
 
 		this.phaseFactory =
 			phaseFactory 

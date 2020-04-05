@@ -31,6 +31,7 @@ class Nex {
 		this.id = NEXT_NEX_ID++;
 		this.boundName = "";
 		this.extraClickHandler = null;
+		this.closure = null; // only lambdas have closures but just copying is prob cheaper than testing?
 	}
 
 	getTypeName() {
