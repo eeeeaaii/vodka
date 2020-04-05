@@ -109,8 +109,9 @@ class Lambda extends NexContainer {
 	}
 
 	evaluate(env) {
-		this.lexicalEnv = env;
-		return this;
+		let copyOfThis = this.makeCopy();
+		copyOfThis.lexicalEnv = env.pushEnv();
+		return copyOfThis;
 	}
 
 	cacheParamNames() {

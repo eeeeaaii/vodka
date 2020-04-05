@@ -24,6 +24,7 @@ class Expectation extends NexContainer {
 		super()
 		this.fff = null;
 		this.isSet = false;
+		this.lambdaLexicalEnvironment = null;
 	}
 
 	copyFieldsTo(nex) {
@@ -31,10 +32,11 @@ class Expectation extends NexContainer {
 		nex.fff = this.fff;
 	}
 
-	ffWith(fff, argEnv) {
+	ffWith(fff, closure) {
 		this.fff = fff;
 		this.ffgen = FF_GEN;
-		this.ffArgEnv = argEnv;
+		this.fffClosure = closure;
+		this.lambdaLexicalEnvironment = fff.lexicalEnv;
 	}
 
 	getCallbackForSet() {
@@ -62,10 +64,28 @@ class Expectation extends NexContainer {
 			} else {
 				result = this.getChildAt(0);
 				if (this.fff) {
+					// the lambda's lexical environment can change (not the symbols stored
+					// in it, but their VALUES) if the code that the lambda appears in
+					// is executed more than once. At the time we set ffWith,
+					// we need to record the lexical environment at that time,
+					// so that if the lexical environment changes again between
+					// now and the time the expectation is fullfilled, because the code
+					// containing the lambda is evaluated again, the expectation
+					// can restore the lexical environment to the way it was
+					// when it is fulfilled.
+
+					this.fff.lexicalEnv = this.lambdaLexicalEnvironment;
 					let cmd = new Command('');
+					// also. The way I am doing this is problematic because the lambda has
+					// ALREADY been evaluated and has a lexical environment, but if I
+					// put put it in as the first child of the command,
+					// the machinery inside command will thing that someone did this:
+					// (~ (& ...) a b c)
+					// and will evaluate the lambda AGAIN to grab a new lexical environment.
+					cmd.setFirstLambdaChildHasAlreadyBeenEvaluated(true);
 					cmd.appendChild(this.fff);
 					cmd.appendChild(result);;
-					result = evaluateNexSafely(cmd, this.ffArgEnv);
+					result = evaluateNexSafely(cmd, this.fffClosure);
 				}
 			}
 		}

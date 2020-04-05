@@ -25,10 +25,15 @@ class Command extends NexContainer {
 		this.cacheGlobalBuiltin();
 		this.symbolversion = -1;
 		this.symbol = null;
+		this.firstLambdaChildHasAlreadyBeenEvaluated = false;
 	}
 
 	getTypeName() {
 		return '-command-';
+	}
+
+	setFirstLambdaChildHasAlreadyBeenEvaluated(val) {
+		this.firstLambdaChildHasAlreadyBeenEvaluated = val;
 	}
 
 	cacheGlobalBuiltin() {
@@ -124,7 +129,9 @@ class Command extends NexContainer {
 		} else if (this.numChildren() > 0) {
 			// we don't make a copy because we have to re-evaluate every time anyway
 			let c = this.getChildAt(0);
-			let lambda = evaluateNexSafely(c, executionEnv);
+			if (!this.firstLambdaChildHasAlreadyBeenEvaluated) {
+				let lambda = evaluateNexSafely(c, executionEnv);
+			}
 			if (!(lambda instanceof Lambda)) {
 				throw new EError(`COMMAND: stopping because first child of unnamed command is not a lambda. Sorry! Debug string for object of type ${lambda.getTypeName()} follows: ${lambda.debugString()}`)
 			}
@@ -188,7 +195,12 @@ class Command extends NexContainer {
 			console.log(`${INDENT()}lambda is: ${lambda.debugString()}`);
 		}
 		let argContainer = new CopiedArgContainer(this, this.shouldSkipFirstArg());
-		let closure = lambda.lexicalEnv.pushEnv();
+		let closure = lambda.lexicalEnv;
+		// you need to make a new lexical environment every time you evaluate the lambda
+		// but you ALSO need to make a new one every time you evaluate the command.
+		// the lambda could be evaluated again if its codepath is covered again.
+		// also a given command can be evaluated multiple times
+		closure = closure.pushEnv();
 		let argEvaluator = lambda.getArgEvaluator(argContainer, executionEnv, closure);
 		argEvaluator.evaluateAndBindArgs();
 		let r = lambda.executor(closure, executionEnv);

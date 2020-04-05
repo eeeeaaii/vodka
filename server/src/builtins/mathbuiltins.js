@@ -171,6 +171,99 @@ function createMathBuiltins() {
 	)
 
 	Builtin.createBuiltin(
+		'asin',
+		[
+			{name:'arg%', type:'Float'},
+		],
+		function(env, argEnv) {
+			let a = env.lb('arg%').getTypedValue();
+			let b = Math.asin(a);
+			return new Float(b);
+		}
+	)
+
+	Builtin.createBuiltin(
+		'acos',
+		[
+			{name:'arg%', type:'Float'},
+		],
+		function(env, argEnv) {
+			let a = env.lb('arg%').getTypedValue();
+			let b = Math.acos(a);
+			return new Float(b);
+		}
+	)
+
+	Builtin.createBuiltin(
+		'atan',
+		[
+			{name:'arg%', type:'Float'},
+		],
+		function(env, argEnv) {
+			let a = env.lb('arg%').getTypedValue();
+			let b = Math.atan(a);
+			return new Float(b);
+		}
+	)
+
+	Builtin.createBuiltin(
+		'atan2',
+		[
+			{name:'y%', type:'Float'},
+			{name:'x%', type:'Float'},
+		],
+		function(env, argEnv) {
+			let y = env.lb('y%').getTypedValue();
+			let x = env.lb('x%').getTypedValue();
+			return new Float(Math.atan2(y, x));
+		}
+	)
+
+	Builtin.createBuiltin(
+		'exp',
+		[
+			{name:'a%', type:'Float'},
+		],
+		function(env, argEnv) {
+			let a = env.lb('a%').getTypedValue();
+			return new Float(Math.exp(a));
+		}
+	)
+
+	Builtin.createBuiltin(
+		'log',
+		[
+			{name:'a%', type:'Float'},
+		],
+		function(env, argEnv) {
+			let a = env.lb('a%').getTypedValue();
+			return new Float(Math.log(a));
+		}
+	)
+
+	Builtin.createBuiltin(
+		'log10',
+		[
+			{name:'a%', type:'Float'},
+		],
+		function(env, argEnv) {
+			let a = env.lb('a%').getTypedValue();
+			return new Float(Math.log10(a));
+		}
+	)
+
+	Builtin.createBuiltin(
+		'log2',
+		[
+			{name:'a%', type:'Float'},
+		],
+		function(env, argEnv) {
+			let a = env.lb('a%').getTypedValue();
+			return new Float(Math.log2(a));
+		}
+	)
+
+	Builtin.createBuiltin(
 		'ceiling',
 		[
 			{name:'arg%', type:'Float'},
@@ -194,6 +287,31 @@ function createMathBuiltins() {
 		}
 	)
 
+	Builtin.createBuiltin(
+		'power',
+		[
+			{name:'a%', type:'Float'},
+			{name:'b%', type:'Float'},
+		],
+		function(env, argEnv) {
+			let a = env.lb('a%').getTypedValue();
+			let b = env.lb('b%').getTypedValue();
+			return new Float(Math.pow(a, b));
+		}
+	)
+
+	Builtin.createBuiltin(
+		'square-root',
+		[
+			{name:'a%', type:'Float'},
+			{name:'b%', type:'Float'},
+		],
+		function(env, argEnv) {
+			let a = env.lb('a%').getTypedValue();
+			let b = env.lb('b%').getTypedValue();
+			return new Float(Math.sqrt(a, b));
+		}
+	)
 
 	Builtin.createBuiltin(
 		'=',
