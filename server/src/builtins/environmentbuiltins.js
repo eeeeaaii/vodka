@@ -52,7 +52,13 @@ function createEnvironmentBuiltins() {
 		function(env, argEnv) {
 			let val = env.lb('nex');
 			let name = env.lb('_name@');
-			BINDINGS.bindInPackage(name.getTypedValue(), val);
+			let namevalue = name.getTypedValue();
+			if (PERFORMANCE_MONITOR) {
+				if (val.getTypeName() == '-lambda-') {
+					perfmon.registerMethod(namevalue);
+				}
+			}
+			BINDINGS.bindInPackage(namevalue, val);
 			return name;
 		}
 	);

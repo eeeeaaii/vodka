@@ -34,6 +34,8 @@ const RENDER_FLAG_DEPTH_EXCEEDED = 32;
 var overrideOnNextRender = false;
 var isStepEvaluating = false; // allows some performance-heavy operations while step evaluating
 const CONSOLE_DEBUG = false;
+const EVENT_DEBUG = false;
+const PERFORMANCE_MONITOR = true;
 var appFlags = {};
 var selectWhenYouFindIt = null;
 
@@ -64,7 +66,15 @@ const stepEvaluator = new StepEvaluator();
 const eventQueue = new EventQueue();
 const KEY_DISPATCHER = new KeyDispatcher();
 const autocomplete = new Autocomplete();
+const perfmon = new PerformanceMonitor();
 
+function dumpPerf() {
+	perfmon.dump();
+}
+
+function startPerf() {
+	perfmon.activate();
+}
 
 
 

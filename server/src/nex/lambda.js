@@ -105,6 +105,10 @@ class Lambda extends NexContainer {
 		this.cmdname = nm;
 	}
 
+	getCmdName() {
+		return this.cmdname;
+	}
+
 	needsEvaluation() {
 		return true;
 	}

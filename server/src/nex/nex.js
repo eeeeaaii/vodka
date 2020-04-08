@@ -32,6 +32,7 @@ class Nex {
 		this.boundName = "";
 		this.extraClickHandler = null;
 		this.closure = null; // only lambdas have closures but just copying is prob cheaper than testing?
+		this.inPackage = null; // well here we go with more things in the env I guess.
 	}
 
 	getTypeName() {
@@ -94,7 +95,7 @@ class Nex {
 		if (!domNode) return;
 		let firstChild = domNode.firstChild;
 		let tagNode = document.createElement("div");
-		tagNode.innerHTML = 'o'+this.getID();
+		tagNode.appendChild(document.createTextNode('o'+this.getID()));
 		tagNode.classList.add('objecttag');
 		domNode.classList.add('duplicatednex');
 		if (firstChild) {

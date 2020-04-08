@@ -32,6 +32,11 @@ body {
 
 #hiddenroot {
 	visibility: hidden;
+	width:10000px;
+	/*
+	the hiddenroot is used for width calculations
+	but if the width is not 10000 then the contents get wrapped
+	*/
 }
 
 .data {

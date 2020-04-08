@@ -38,6 +38,10 @@ class Builtin extends Lambda {
 				  };
 	}
 
+	getCmdName() {
+		return this.name;
+	}
+
 	getTypeName() {
 		return '-builtin-';
 	}
@@ -72,6 +76,9 @@ class Builtin extends Lambda {
 			params[i].name = BUILTIN_ARG_PREFIX + params[i].name;
 		}
 		let nex = new Builtin(name, params, argEvalFactory ? argEvalFactory : null);
+		if (PERFORMANCE_MONITOR) {
+			perfmon.registerMethod(name);
+		}
 		nex.setF(f);
 		Builtin.bindBuiltinObject(name, nex);
 	}

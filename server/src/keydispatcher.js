@@ -48,6 +48,9 @@ function insertOrAppend(s, obj) {
 
 function evaluateAndReplace(s) {
 	let n = evaluateNexSafely(s.getNex(), BINDINGS);
+	if (n.getTypeName() == '-error-' && n.getErrorType() == ERROR_TYPE_FATAL) {
+		beep();
+	}
 	if (n) {
 		manipulator.replaceSelectedWith(new RenderNode(n));
 	}
@@ -109,7 +112,7 @@ var KeyResponseFunctions = {
 	},
 
 	'evaluate-nex': function(s) {
-		beep();
+//		beep();
 		evaluateAndReplace(s);
 	},
 

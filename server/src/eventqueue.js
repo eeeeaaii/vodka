@@ -32,6 +32,7 @@ class EventQueue {
 	}
 
 	enqueueAlertAnimation(renderNode) {
+		EVENT_DEBUG ? console.log('enqueueing: AlertAnimation'):null;
 		let item = {
 			action: "doAlertAnimation",
 			shouldDedupe: true,
@@ -51,6 +52,7 @@ class EventQueue {
 	}
 
 	enqueueRenderNodeRenderSelecting(renderNode, flags, selectThisNode) {
+		EVENT_DEBUG ? console.log('enqueueing: RenderNodeRenderSelecting'):null;
 		let item = {
 			action: "renderNodeRenderSelecting",
 			shouldDedupe: true,
@@ -76,6 +78,7 @@ class EventQueue {
 	}
 
 	enqueueRenderNodeRender(renderNode, flags) {
+		EVENT_DEBUG ? console.log('enqueueing: RenderNodeRender'):null;
 		let item = {
 			action: "renderNodeRender",
 			renderNode: renderNode,
@@ -98,6 +101,7 @@ class EventQueue {
 	}
 
 	enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
+		EVENT_DEBUG ? console.log('enqueueing: DoKeyInput'):null;
 		let item = {
 			action: "doKeyInput",
 			keycode: keycode,
@@ -124,6 +128,7 @@ class EventQueue {
 	}
 
 	enqueueTopLevelRenderSelectingNode(nex) {
+		EVENT_DEBUG ? console.log('enqueueing: TopLevelRenderSelectingNode'):null;
 		let item = {
 			action: "topLevelRenderSelectingNode",
 			nex: nex,
@@ -142,6 +147,7 @@ class EventQueue {
 	}
 
 	enqueueImportantTopLevelRender() {
+		EVENT_DEBUG ? console.log('enqueueing: ImportantTopLevelRender'):null;
 		let item = {
 			action: "topLevelRender",
 			shouldDedupe: true,
@@ -159,6 +165,7 @@ class EventQueue {
 	}
 
 	enqueueDoClickHandlerAction(target, renderNode, event) {
+		EVENT_DEBUG ? console.log('enqueueing: DoClickHandlerAction'):null;
 		let item = {
 			action: "doClickHandlerAction",
 			target: target,
@@ -180,6 +187,7 @@ class EventQueue {
 	}
 
 	enqueueExpectationFulfill(exp, result) {
+		EVENT_DEBUG ? console.log('enqueueing: ExpectationFulfill'):null;
 		let item = {
 			action: "expectationFulfill",
 			exp: exp,
@@ -199,6 +207,7 @@ class EventQueue {
 
 
 	enqueueTopLevelRender() {
+		EVENT_DEBUG ? console.log('enqueueing: TopLevelRender'):null;
 		let item = {
 			action: "topLevelRender",
 			shouldDedupe: true,
@@ -233,6 +242,7 @@ class EventQueue {
 		let queueToUse = this.selectQueue();
 		if (!queueToUse) return;
 		let item = queueToUse.shift();
+		EVENT_DEBUG ? console.log(`processing: ${item.action}`):null;
 		// if a bunch of equivalent actions were enqueued, pop them all and just do one
 		while(queueToUse.length > 0 && queueToUse[0].equals(item) && queueToUse[0].shouldDedupe) {
 			queueToUse.shift();

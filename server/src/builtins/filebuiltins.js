@@ -36,24 +36,24 @@ function createFileBuiltins() {
 		}
 	);
 
-	Builtin.createBuiltin(
-		'save-file',
-		[
-			{name:'_name@', type:'ESymbol', skipeval:true},
-			{name:'_nex', type:'*', skipeval:true}
-		],
-		function(env, argEnv) {
-			let namesym = env.lb('_name@');
-			let nm = namesym.getTypedValue();
-			let val = env.lb('_nex');			
-			let exp = new Expectation();
-			let savingMessage = new EError("saving...");
-			savingMessage.setErrorType(ERROR_TYPE_INFO);
-			exp.appendChild(savingMessage)
-			saveFileNex(nm, val, exp);
-			return exp;
-		}
-	);
+	// Builtin.createBuiltin(
+	// 	'save-file',
+	// 	[
+	// 		{name:'_name@', type:'ESymbol', skipeval:true},
+	// 		{name:'_nex', type:'*', skipeval:true}
+	// 	],
+	// 	function(env, argEnv) {
+	// 		let namesym = env.lb('_name@');
+	// 		let nm = namesym.getTypedValue();
+	// 		let val = env.lb('_nex');			
+	// 		let exp = new Expectation();
+	// 		let savingMessage = new EError("saving...");
+	// 		savingMessage.setErrorType(ERROR_TYPE_INFO);
+	// 		exp.appendChild(savingMessage)
+	// 		saveFileNex(nm, val, exp);
+	// 		return exp;
+	// 	}
+	// );
 	Builtin.createBuiltin(
 		'load',
 		[

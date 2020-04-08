@@ -82,25 +82,28 @@ class Environment {
 		}
 		if (this.currentPackageForBinding) {
 			name = this.currentPackageForBinding + ':' + name;
-			if (val.getTypeName() == '-lambda-') {
-				let use = new Command('use');
-				use.appendChild(new ESymbol(this.currentPackageForBinding));
-				val.prependChild(use);
-			}
+			// if (val.getTypeName() == '-lambda-') {
+			// 	let use = new Command('use');
+			// 	use.appendChild(new ESymbol(this.currentPackageForBinding));
+			// 	val.prependChild(use);
+			// }
 		}
-		this.bind(name, val);
+		this.bind(name, val, this.currentPackageForBinding);
 	}
 
-	bind(name, val) {
+	bind(name, val, inPackage) {
+		let thePackage = inPackage ? inPackage : val.inPackage;
 		val.setBoundName(name);
 		if (this.symbols[name]) {
 			this.symbols[name].val = val;
 			this.symbols[name].closure = val.closure;
+			this.symbols[name].inPackage = thePackage;
 			this.symbols[name].version++;
 		} else {
 			this.symbols[name] = {
 				val: val,
 				closure: val.closure,
+				inPackage: thePackage,
 				version: 0
 			};
 		}
@@ -113,6 +116,7 @@ class Environment {
 		}
 		binding.val = val;
 		binding.closure = val.closure;
+		binding.inPackage = val.inPackage;
 		binding.version++; // I forget what this is for
 	}
 
@@ -123,6 +127,7 @@ class Environment {
 			return UNBOUND;
 		}
 		this.symbols[nm].val.closure = this.symbols[nm].closure;
+		this.symbols[nm].val.inPackage = this.symbols[nm].inPackage;
 		return this.symbols[nm].val;
 	}
 
@@ -174,6 +179,7 @@ class Environment {
 			throw new EError(`undefined symbol: ${name}. Sorry!`);
 		}
 		binding.val.closure = binding.closure;
+		binding.val.inPackage = binding.inPackage;
 		return binding;
 	}
 

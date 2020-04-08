@@ -53,7 +53,8 @@ class Letter extends Nex {
 		super.renderInto(renderNode, renderFlags);
 		domNode.classList.add('letter');
 		domNode.classList.add('data');
-		domNode.innerHTML = (this.value == " " ? "&nbsp;" : this.value) ;
+		let contents = (this.value == " " || this.value == "&nbsp;") ? "\xa0" : this.value;
+		domNode.appendChild(document.createTextNode(contents));
 	}
 
 	getText() {

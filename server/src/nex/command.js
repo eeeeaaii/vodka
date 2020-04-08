@@ -201,9 +201,16 @@ class Command extends NexContainer {
 		// the lambda could be evaluated again if its codepath is covered again.
 		// also a given command can be evaluated multiple times
 		closure = closure.pushEnv();
+		closure.usePackage(lambda.inPackage);
 		let argEvaluator = lambda.getArgEvaluator(argContainer, executionEnv, closure);
 		argEvaluator.evaluateAndBindArgs();
+		if (PERFORMANCE_MONITOR) {
+			perfmon.logMethodCallStart(lambda.getCmdName());
+		}
 		let r = lambda.executor(closure, executionEnv);
+		if (PERFORMANCE_MONITOR) {
+			perfmon.logMethodCallEnd(lambda.getCmdName());
+		}
 		if (CONSOLE_DEBUG) {
 			console.log(`${INDENT()}command returned: ${r.debugString()}`);
 		}
