@@ -181,6 +181,78 @@ function createBasicBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'map-with',
+		[
+			{name: 'list()', type:'NexContainer'},
+			{name: 'lambda&', type:'Lambda'}
+		],
+		function(env, argEnv) {
+			let lam = env.lb('lambda&');
+			let list = env.lb('list()');
+			let resultList = new Word();
+			for (let i = 0; i < list.numChildren(); i++) {
+				let item = list.getChildAt(i);
+				let cmd = new Command('');
+				cmd.appendChild(lam);
+				cmd.appendChild(list.getChildAt(i));				
+				let result = evaluateNexSafely(cmd, argEnv);
+				resultList.appendChild(result);
+
+			}
+			return resultList;				
+		}
+	);
+
+	Builtin.createBuiltin(
+		'reduce-with-starting',
+		[
+			{name: 'list()', type:'NexContainer'},
+			{name: 'lambda&', type:'Lambda'},
+			{name: 'startnex', type:'*'}
+		],
+		function(env, argEnv) {
+			let lam = env.lb('lambda&');
+			let sn = env.lb('startnex');
+			let list = env.lb('list()');
+			let resultList = new Word();
+			let p = sn;
+			for (let i = 0; i < list.numChildren(); i++) {
+				let item = list.getChildAt(i);
+				let cmd = new Command('');
+				cmd.appendChild(lam);
+				cmd.appendChild(list.getChildAt(i));				
+				cmd.appendChild(p);
+				let result = evaluateNexSafely(cmd, argEnv);
+				p = result;
+			}
+			return p;				
+		}
+	);
+
+	Builtin.createBuiltin(
+		'filter-with',
+		[
+			{name: 'list()', type:'NexContainer'},
+			{name: 'lambda&', type:'Lambda'}
+		],
+		function(env, argEnv) {
+			let lam = env.lb('lambda&');
+			let list = env.lb('list()');
+			let resultList = new Word();
+			for (let i = 0; i < list.numChildren(); i++) {
+				let item = list.getChildAt(i);
+				let cmd = new Command('');
+				cmd.appendChild(lam);
+				cmd.appendChild(list.getChildAt(i));				
+				let result = evaluateNexSafely(cmd, argEnv);
+				if (result.getTypedValue()) {
+					resultList.appendChild(list.getChildAt(i));
+				}
+			}
+			return resultList;				
+		}
+	);
+	Builtin.createBuiltin(
 		'eq',
 		[
 			{name: 'lhs', type:'*'},
