@@ -184,10 +184,10 @@ function createBasicBuiltins() {
 		'map-with',
 		[
 			{name: 'list()', type:'NexContainer'},
-			{name: 'lambda&', type:'Lambda'}
+			{name: 'func&', type:'Lambda'}
 		],
 		function(env, argEnv) {
-			let lam = env.lb('lambda&');
+			let lam = env.lb('func&');
 			let list = env.lb('list()');
 			let resultList = new Word();
 			for (let i = 0; i < list.numChildren(); i++) {
@@ -207,12 +207,12 @@ function createBasicBuiltins() {
 		'reduce-with-starting',
 		[
 			{name: 'list()', type:'NexContainer'},
-			{name: 'lambda&', type:'Lambda'},
-			{name: 'startnex', type:'*'}
+			{name: 'func&', type:'Lambda'},
+			{name: 'startval', type:'*'}
 		],
 		function(env, argEnv) {
-			let lam = env.lb('lambda&');
-			let sn = env.lb('startnex');
+			let lam = env.lb('func&');
+			let sn = env.lb('startval');
 			let list = env.lb('list()');
 			let resultList = new Word();
 			let p = sn;
@@ -233,10 +233,10 @@ function createBasicBuiltins() {
 		'filter-with',
 		[
 			{name: 'list()', type:'NexContainer'},
-			{name: 'lambda&', type:'Lambda'}
+			{name: 'func&', type:'Lambda'}
 		],
 		function(env, argEnv) {
-			let lam = env.lb('lambda&');
+			let lam = env.lb('func&');
 			let list = env.lb('list()');
 			let resultList = new Word();
 			for (let i = 0; i < list.numChildren(); i++) {
