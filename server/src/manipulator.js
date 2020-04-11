@@ -251,6 +251,17 @@ class Manipulator {
 		n.setSelected();
 	}
 
+	wrapSelectedInAndSelect(wrapperNex) {
+		let s = selectedNode;
+		let p = selectedNode.getParent();
+		if (!p) return false;
+		let selectedNex = s.getNex();
+		wrapperNex.appendChild(selectedNex);
+		let wrapperNode = new RenderNode(wrapperNex);
+		p.replaceChildWith(s, wrapperNode);
+		wrapperNode.setSelected();
+	}
+
 	appendAndSelect(data) {
 		data = this.conformData(data);
 		let s = selectedNode;
@@ -514,18 +525,7 @@ class Manipulator {
 		}
 	}
 
-	// wrapping
 
-	wrapSelectedInCommand() {
-		let s = (selectedNode);
-		let p = s.getParent(true);
-		if (!p) return false;
-		let c = new Command();
-		p.replaceChildWith(s, c);
-		c.appendChild(s);
-		c.setSelected();
-		return true;
-	}
 
 	// idk
 

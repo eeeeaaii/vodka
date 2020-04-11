@@ -189,7 +189,16 @@ function createBasicBuiltins() {
 		function(env, argEnv) {
 			let lam = env.lb('func&');
 			let list = env.lb('list()');
+			// until we congeal things down to a single list type
+			// I'll try to honor the list type of the starting list
 			let resultList = new Word();
+			if (list.getTypeName() == '-line-') {
+				resultList = new Line();
+			} else if (list.getTypeName() == '-doc-') {
+				resultList = new Doc();
+			} else if (list.getTypeName() == '-zlist-') {
+				resultList = new Zlist();
+			}
 			for (let i = 0; i < list.numChildren(); i++) {
 				let item = list.getChildAt(i);
 				let cmd = new Command('');
@@ -214,7 +223,6 @@ function createBasicBuiltins() {
 			let lam = env.lb('func&');
 			let sn = env.lb('startval');
 			let list = env.lb('list()');
-			let resultList = new Word();
 			let p = sn;
 			for (let i = 0; i < list.numChildren(); i++) {
 				let item = list.getChildAt(i);
@@ -239,6 +247,13 @@ function createBasicBuiltins() {
 			let lam = env.lb('func&');
 			let list = env.lb('list()');
 			let resultList = new Word();
+			if (list.getTypeName() == '-line-') {
+				resultList = new Line();
+			} else if (list.getTypeName() == '-doc-') {
+				resultList = new Doc();
+			} else if (list.getTypeName() == '-zlist-') {
+				resultList = new Zlist();
+			}
 			for (let i = 0; i < list.numChildren(); i++) {
 				let item = list.getChildAt(i);
 				let cmd = new Command('');

@@ -56,6 +56,15 @@ function evaluateAndReplace(s) {
 	}
 }
 
+function evaluateAndKeep(s) {
+	let n = evaluateNexSafely(s.getNex(), BINDINGS);
+	eventQueue.enqueueAlertAnimation(s);
+	if (n.getTypeName() == '-error-' && n.getErrorType() == ERROR_TYPE_FATAL) {
+		beep();
+		manipulator.insertBeforeSelectedAndSelect(n);
+	}
+}
+
 function evaluateAndCopy(s) {
 	let n = evaluateNexSafely(s.getNex(), BINDINGS);
 	if (n) {
@@ -114,6 +123,11 @@ var KeyResponseFunctions = {
 	'evaluate-nex': function(s) {
 //		beep();
 		evaluateAndReplace(s);
+	},
+
+	'evaluate-nex-and-keep': function(s) {
+//		beep();
+		evaluateAndKeep(s);
 	},
 
 	'evaluate-and-copy': function(s) {
@@ -191,6 +205,15 @@ var KeyResponseFunctions = {
 	'insert-line-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Line()); },
 	'insert-doc-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Doc()); },
 	'insert-zlist-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Zlist()); },
+
+
+	'wrap-in-command': function(s) { manipulator.wrapSelectedInAndSelect(new Command()); },
+	'wrap-in-lambda': function(s) { manipulator.wrapSelectedInAndSelect(new Lambda()); },
+	'wrap-in-expectation': function(s) { manipulator.wrapSelectedInAndSelect(new Expectation()); },
+	'wrap-in-word': function(s) { manipulator.wrapSelectedInAndSelect(new Word()); },
+	'wrap-in-line': function(s) { manipulator.wrapSelectedInAndSelect(new Line()); },
+	'wrap-in-doc': function(s) { manipulator.wrapSelectedInAndSelect(new Doc()); },
+
 
 	// WIP
 	'insert-type-as-next-sibling': function(s) {
@@ -412,7 +435,7 @@ var KeyResponseFunctions = {
 }
 
 class KeyDispatcher {
-	dispatch(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
+	dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
 		let keyContext = ContextType.COMMAND;
 		let p = selectedNode.getParent();
 		if (p) {
@@ -420,25 +443,25 @@ class KeyDispatcher {
 				p = p.getParent();
 			}
 		}
-		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasAlt);
+		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
 		// there are a few special cases
 		if (eventName == '|') {
 			// vertical bar is unusable - 'internal use only'
 			return false; // to cancel browser event
-		} else if (eventName == 'Alt-x') {
+		} else if (eventName == 'Meta-x') {
 			manipulator.doCut();
 			return false; // to cancel browser event
-		} else if (eventName == 'Alt-c') {
+		} else if (eventName == 'Meta-c') {
 			manipulator.doCopy();
 			return false; // to cancel browser event
-		} else if (eventName == 'Alt-v') {
+		} else if (eventName == 'Meta-v') {
 			manipulator.doPaste();
 			return false; // to cancel browser event
 		} else if (eventName == 'Escape') {
 			this.doEscape();
 			return false; // to cancel browser event
-		} else if (eventName == 'AltEnter') {
-			this.doAltEnter();
+		} else if (eventName == 'MetaEnter') {
+			this.doMetaEnter();
 			return false; // to cancel browser event
 		} else if (eventName == '`') {
 			// reserved for future use
@@ -467,21 +490,21 @@ class KeyDispatcher {
 									',' + 'whichkey=' + whichkey +
 									',' + 'hasShift=' + hasShift +
 									',' + 'hasCtrl=' + hasCtrl +
-									',' + 'hasAlt=' + hasAlt);
+									',' + 'hasMeta=' + hasMeta);
 					return true;
 				} else throw e;
 			}
 		}
 	}
 
-	getEventName(keycode, hasShift, hasCtrl, hasAlt) {
+	getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichKey) {
 		// maybe I should rewrite this to do something like this:
-		// return `${shiftPrefix}${altPrefix}${keycode}`
+		// return `${shiftPrefix}${MetaPrefix}${keycode}`
 		// the only thing is I don't want it to return 'Shift!' or 'Shift$'
-		if (keycode == 'Enter' && hasAlt && hasShift) {
-			return 'ShiftAltEnter';
-		} else if (keycode == 'Enter' && hasAlt) {
-			return 'AltEnter';
+		if (keycode == 'Enter' && hasMeta && hasShift) {
+			return 'ShiftMetaEnter';
+		} else if (keycode == 'Enter' && hasMeta) {
+			return 'MetaEnter';
 		} else if (keycode == 'Escape' && hasShift) {
 			return 'ShiftEscape';
 		} else if (keycode == 'Enter' && hasShift) {
@@ -492,18 +515,33 @@ class KeyDispatcher {
 			return 'ShiftSpace';
 		} else if (keycode == ' ' && hasCtrl) {
 			return 'CtrlSpace';
-		} else if (keycode == ' ' && hasAlt) {
-			return 'AltSpace';
+		} else if (keycode == ' ' && hasMeta) {
+			return 'MetaSpace';
+
+		// this stuff only works on a mac AFAIK
+		} else if (keycode == '`' && hasAlt) {
+			return 'Alt~';
+		} else if (whichKey == 'Digit7' && hasAlt && hasShift) {
+			return 'Alt&';
+		} else if (whichKey == 'Digit8' && hasAlt && hasShift) {
+			return 'Alt*';
+		} else if (whichKey == 'Digit9' && hasAlt && hasShift) {
+			return 'Alt(';
+		} else if (whichKey == 'BracketLeft' && hasAlt && !hasShift) {
+			return 'Alt[';
+		} else if (whichKey == 'BracketLeft' && hasAlt && hasShift) {
+			return 'Alt{';
+
 		// } else if (keycode == ' ') {
 		// 	return 'Space';
 		} else if (keycode == 'Backspace' && hasShift) {
 			return 'ShiftBackspace';
-		} else if (keycode == 'x' && hasAlt) {
-			return 'Alt-x';
-		} else if (keycode == 'c' && hasAlt) {
-			return 'Alt-c';
-		} else if (keycode == 'v' && hasAlt) {
-			return 'Alt-v';
+		} else if (keycode == 'x' && hasMeta) {
+			return 'Meta-x';
+		} else if (keycode == 'c' && hasMeta) {
+			return 'Meta-c';
+		} else if (keycode == 'v' && hasMeta) {
+			return 'Meta-v';
 		} else {
 			return keycode;
 		}
@@ -591,7 +629,7 @@ class KeyDispatcher {
 		overrideOnNextRender = true;
 	}
 
-	doAltEnter() {
+	doMetaEnter() {
 		isStepEvaluating = true;
 		try {
 			let s = selectedNode.getNex();
@@ -651,7 +689,6 @@ class KeyDispatcher {
 			'ArrowRight': 'move-right-down',
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
 			'Backspace': 'remove-selected-and-select-previous-sibling',
-			'ShiftEnter': 'evaluate-nex',
 			'ShiftEscape': 'toggle-exploded',
 			'~': 'insert-or-append-command',
 			'!': 'insert-or-append-bool',
@@ -665,6 +702,13 @@ class KeyDispatcher {
 			'(': 'insert-or-append-word',
 			'[': 'insert-or-append-line',
 			'{': 'insert-or-append-doc',
+
+			'Alt~': 'wrap-in-command',
+			'Alt&': 'wrap-in-lambda',
+			'Alt*': 'wrap-in-expectation',
+			'Alt(': 'wrap-in-word',
+			'Alt[': 'wrap-in-line',
+			'Alt{': 'wrap-in-doc',
 		};
 	}
 
@@ -678,7 +722,6 @@ class KeyDispatcher {
 			'ArrowRight': 'move-right-down',
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
 			'Backspace': 'remove-selected-and-select-previous-sibling',
-			'ShiftEnter': 'evaluate-nex',
 			'ShiftEscape': 'toggle-exploded',
 			'~': 'insert-command-as-next-sibling',
 			'!': 'insert-bool-as-next-sibling',
@@ -692,6 +735,13 @@ class KeyDispatcher {
 			'(': 'insert-word-as-next-sibling',
 			'[': 'insert-line-as-next-sibling',
 			'{': 'insert-doc-as-next-sibling',
+
+			'Alt~': 'wrap-in-command',
+			'Alt&': 'wrap-in-lambda',
+			'Alt*': 'wrap-in-expectation',
+			'Alt(': 'wrap-in-word',
+			'Alt[': 'wrap-in-line',
+			'Alt{': 'wrap-in-doc',
 		};
 	}
 }

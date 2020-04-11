@@ -29,12 +29,12 @@ class RenderNode {
 
 	setAlertStyle(node, codespan) {
 		let sel = this.selected ? `selected` : `unselected`;
-		let currentNumber = node.classList.contains(`animating-${sel}-lambda-1`) ? "1" : "2"
+		let currentNumber = node.classList.contains(`animating-${sel}-executable-1`) ? "1" : "2"
 		let newNumber = currentNumber == "1" ? "2" : "1";
-		node.classList.remove(`animating-${sel}-lambda-${currentNumber}`);
-		node.classList.add(`animating-${sel}-lambda-${newNumber}`);
-		codespan.classList.remove(`animating-${sel}-bg-lambda-${currentNumber}`);
-		codespan.classList.add(`animating-${sel}-bg-lambda-${newNumber}`);
+		node.classList.remove(`animating-${sel}-executable-${currentNumber}`);
+		node.classList.add(`animating-${sel}-executable-${newNumber}`);
+		codespan.classList.remove(`animating-${sel}-bg-executable-${currentNumber}`);
+		codespan.classList.add(`animating-${sel}-bg-executable-${newNumber}`);
 	}
 
 	getCodespanForAlertAnimation() {
@@ -47,13 +47,13 @@ class RenderNode {
 			}
 		}
 		if (codespan == null) {
-			throw new Error('tried to call doAlertAnimation on something thats not a lambda');
+			throw new Error('tried to call doAlertAnimation on something thats not a lambda or command');
 		}
 		return codespan;
 	}
 
 	doAlertAnimation() {
-		// nex should only be a lambda.
+		// nex should only be a lambda or command.
 		this.setAlertStyle(this.domNode, this.getCodespanForAlertAnimation());
 	}
 

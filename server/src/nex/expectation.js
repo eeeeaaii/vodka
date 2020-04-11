@@ -212,8 +212,7 @@ class Expectation extends NexContainer {
 	getEventTable(context) {
 		// most of these have no tests?
 		return {
-			'ShiftEnter': 'return-exp-child',
-			'Enter': 'do-line-break-always',
+			'Enter': 'return-exp-child',
 			// special stuff for expectations that gets rid of the js timeout
 			'ShiftBackspace': 'call-delete-handler-then-remove-selected-and-select-previous-sibling',
 			'Backspace': 'call-delete-handler-then-remove-selected-and-select-previous-sibling',

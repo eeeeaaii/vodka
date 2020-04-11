@@ -100,7 +100,7 @@ class EventQueue {
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
-	enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
+	enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
 		EVENT_DEBUG ? console.log('enqueueing: DoKeyInput'):null;
 		let item = {
 			action: "doKeyInput",
@@ -108,6 +108,7 @@ class EventQueue {
 			whichkey: whichkey,
 			hasShift: hasShift,
 			hasCtrl: hasCtrl,
+			hasMeta: hasMeta,
 			hasAlt: hasAlt,
 			shouldDedupe: false,
 			equals: function(other) {
@@ -117,10 +118,11 @@ class EventQueue {
 					&& other.whichkey == this.whichkey
 					&& other.hasShift == this.hasShift
 					&& other.hasCtrl == this.hasCtrl
+					&& other.hasMeta == this.hasMeta
 					&& other.hasAlt == this.hasAlt;
 			},
 			do: function() {
-				doRealKeyInput(this.keycode, this.whichkey, this.hasShift, this.hasCtrl, this.hasAlt);
+				doRealKeyInput(this.keycode, this.whichkey, this.hasShift, this.hasCtrl, this.hasMeta, this.hasAlt);
 			}
 		};
 		this.queueSet[USER_EVENT_PRIORITY].push(item);

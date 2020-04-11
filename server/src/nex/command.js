@@ -22,7 +22,9 @@ class Command extends NexContainer {
 		super();
 		this.commandtext = (val ? val : "");
 		this.cachedBuiltin = null;
-		this.cacheGlobalBuiltin();
+		if (val) {
+			this.cacheGlobalBuiltin();
+		}
 		this.symbolversion = -1;
 		this.symbol = null;
 		this.firstLambdaChildHasAlreadyBeenEvaluated = false;
@@ -320,7 +322,8 @@ class Command extends NexContainer {
 
 	getEventTable(context) {
 		return {
-			'Enter': 'do-line-break-always',
+			'ShiftEnter': 'evaluate-nex-and-keep',
+			'Enter': 'evaluate-nex',
 			'Backspace': 'delete-last-command-letter-or-remove-selected-and-select-previous-sibling',
 			'ShiftSpace': 'toggle-dir',
 			'CtrlSpace': 'autocomplete'

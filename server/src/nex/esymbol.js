@@ -86,7 +86,8 @@ class ESymbol extends ValueNex {
 		return {
 			'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
 			'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-leaf',
-			'Enter': 'do-line-break-always'
+			'ShiftEnter': 'evaluate-nex',
+			'Enter': 'evaluate-nex',
 		}
 	}
 }

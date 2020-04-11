@@ -115,8 +115,8 @@ function getAppFlags() {
 }
 
 
-function doRealKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
-	let r = KEY_DISPATCHER.dispatch(keycode, whichkey, hasShift, hasCtrl, hasAlt);
+function doRealKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
+	let r = KEY_DISPATCHER.dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt);
 
 	// if it returns false, it means we handled the keystroke and we are
 	// canceling the browser event - this also means something 'happened' so we render.
@@ -127,15 +127,15 @@ function doRealKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 }
 
 // omgg
-function doKeyInputNotForTests(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
-	eventQueue.enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt);
+function doKeyInputNotForTests(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
+	eventQueue.enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt);
 	return false; // we no longer know if we can honor the browser event?
 }
 
 var testEventQueue = [];
 
 // DO NOT RENAME THIS METHOD OR YOU WILL BREAK ALL THE OLD TESTS
-function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
+function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta) {
 	// in order to make this simulate user activity better I'd need
 	// to go modify all the tests so they don't call this method
 	// synchronously. Instead I will force a full-screen render
@@ -143,7 +143,7 @@ function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt) {
 	// require render node caching to happen in between user
 	// events (which usually happens because people can't
 	// type keys fast enough to beat the js scheduler)
-	eventQueue.enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasAlt);
+	eventQueue.enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, false);
 	eventQueue.enqueueImportantTopLevelRender();
 	return false; // we no longer know if we can honor the browser event?
 }
@@ -213,7 +213,7 @@ function setup() {
 	document.onkeydown = function(e) {
 		checkRecordState(e, 'down');
 		if (key_funnel_active) {
-			return doKeyInputNotForTests(e.key, e.code, e.shiftKey, e.ctrlKey, e.metaKey);
+			return doKeyInputNotForTests(e.key, e.code, e.shiftKey, e.ctrlKey, e.metaKey, e.altKey);
 		} else {
 			return true;
 		}

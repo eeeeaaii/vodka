@@ -42,3 +42,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border-top: 3px solid var(--selected-border);
 	*/
 }
+
+/* TODO: move to symbol.css if it works out 
+.esymbol {
+	width: min-content;
+}
+*/

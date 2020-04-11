@@ -63,7 +63,7 @@ class PerformanceMonitor {
 			return;
 		}
 		if (!methodName) {
-			throw new Error('trying to perf mon but this isn\'t a method.');
+			methodName = "{anonymous}"
 		}
 		if (!this.methods[methodName]) {
 			this.registerMethod(methodName);
@@ -88,6 +88,9 @@ class PerformanceMonitor {
 	logMethodCallEnd(methodName) {
 		if (!this.active) {
 			return;
+		}
+		if (!methodName) {
+			methodName = "{anonymous}"
 		}
 		// this.callstack[this.stacklevel--] = "";
 		let now = window.performance.now();

@@ -98,16 +98,73 @@ function createStringBuiltins() {
 		}
 	);
 
-	// Builtin.createBuiltin(
-	// 	'string-eq',
-	// 	[
-	// 		{name:'str1$', type: 'EString'},
-	// 		{name:'str2$', type: 'EString'}
-	// 	],
-	// 	function(env, argEnv) {
-	// 		let s1 = env.lb('str1$').getFullTypedValue();
-	// 		let s2 = env.lb('str2$').getFullTypedValue();
-	// 		return new Bool(s1 === s2);
-	// 	}
-	// );
-}
+	Builtin.createBuiltin(
+		'string-join-on',
+		[
+			{name:'strs()', type: 'NexContainer'},
+			{name:'on$', type: 'EString'}
+		],
+		function(env, argEnv) {
+			let lst = env.lb('strs()');
+			let on = env.lb('on$').getFullTypedValue();
+			let r = '';
+			for (let i = 0; i < lst.numChildren(); i++) {
+				r = `${r}${i > 0 ? on : ''}${lst.getChildAt(i).getFullTypedValue()}`;
+			}
+			return new EString(r);
+		}
+	);
+
+	Builtin.createBuiltin(
+		'string-split-on',
+		[
+			{name:'str$', type: 'EString'},
+			{name:'on$', type: 'EString'}
+		],
+		function(env, argEnv) {
+			let str = env.lb('str$').getFullTypedValue();
+			let on = env.lb('on$').getFullTypedValue();
+			let lst = new Word();
+			let a = str.split(on);
+			for (let i = 0; i < a.length; i++) {
+				let strnex = new EString(a[i]);
+				lst.appendChild(strnex);
+			}
+			return lst;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'string-split-on',
+		[
+			{name:'str$', type: 'EString'},
+			{name:'on$', type: 'EString'}
+		],
+		function(env, argEnv) {
+			let str = env.lb('str$').getFullTypedValue();
+			let on = env.lb('on$').getFullTypedValue();
+			let lst = new Word();
+			let a = str.split(on);
+			for (let i = 0; i < a.length; i++) {
+				let strnex = new EString(a[i]);
+				lst.appendChild(strnex);
+			}
+			return lst;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'string-substring',
+		[
+			{name:'str$', type: 'EString'},
+			{name:'start#', type: 'Integer'},
+			{name:'len#', type: 'Integer'}
+		],
+		function(env, argEnv) {
+			let str = env.lb('str$').getFullTypedValue();
+			let start = env.lb('start#').getTypedValue();
+			let len = env.lb('len#').getTypedValue();
+			let s = str.substr(start, len);
+			return new EString(s);
+		}
+	);}
