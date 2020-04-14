@@ -150,7 +150,7 @@ function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta) {
 
 function createBuiltins() {
 	createAsyncBuiltins();
-	createCruxBuiltins();
+	createOrgBuiltins();
 	createBasicBuiltins();
 	createEnvironmentBuiltins();
 	createFileBuiltins();
@@ -163,7 +163,7 @@ function createBuiltins() {
 	createTestBuiltins();
 	createTypeConversionBuiltins();
 
-	createNativeCruxes();
+	createNativeOrgs();
 }
 
 function topLevelRender(node) {

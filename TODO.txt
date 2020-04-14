@@ -1,3 +1,38 @@
+here's my type system:
+
+
+a tag is an identifier associated with a program element
+
+a org is a special list
+
+an org can have children that are tagged
+
+at evaluation time, if an expression is tagged, the evaluator will check after evaluation
+to see whether the expression evaluated to an org. If it did, then the evaluator will
+retrieve the child matching the tag.
+
+if an expression has multiple tags, the evaluator will resolve them in the order they are specified,
+and use the first one that works.
+
+It is not an error if the returned org doesn't have that tag (unless strict mode?)
+
+If dereferencing the tag returns another org, the evaluator will dereference again. It will keep dereferencing until:
+1. the dereferencing step stops returning orgs 2. it runs out of matching tags
+
+a kind is a list of tags associated with actual types (lambda, int, org, etc)
+
+a type is a tag that maps to a kind
+
+if an org matches a kind, it means that it has a matching child for each item in the kind
+
+if a type exists, a checker will prevent you from tagging a nex with that type's tag unless it matches that type's kind
+
+function params can have specifiers which limit you to only passing orgs of a certain type
+
+
+
+
+
 TESTS = crucial
 - test for equal
 - some tests for object tags

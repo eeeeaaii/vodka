@@ -15,15 +15,15 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-function createCruxBuiltins() {
+function createOrgBuiltins() {
 	Builtin.createBuiltin(
-		'thing',
+		'org',
 		[
 			{name: 'lst()', type:'NexContainer'}
 		],
 		function(env, argEnv) {
 			let lst = env.lb('lst()');
-			let r = new Crux();
+			let r = new org();
 			for (let i = 0; i < lst.numChildren(); i++) {
 				r.appendChild(lst.getChildAt(i));
 			}
@@ -34,18 +34,18 @@ function createCruxBuiltins() {
 	Builtin.createBuiltin(
 		'do',
 		[
-			{name: 'crux', type:'*'}, // really a crux, need to error check
+			{name: 'org', type:'*'}, // really a org, need to error check
 			{name: 'args...', type:'*', variadic:true}
 		],
 		function(env, argEnv, tags) {
-			let crux = env.lb('crux');
+			let org = env.lb('org');
 			let args = env.lb('args...');
 			if (tags.length != 1) {
 				return new EError('do: this command requires one tag');
 			}
 			let tag = tags[0];
 			try {
-				return crux.doJobWithTag(tag, args);
+				return org.doJobWithTag(tag, args);
 			} catch(e) {
 				if (e instanceof EError) {
 					if (isFatalError(e)) {

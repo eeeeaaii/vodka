@@ -15,21 +15,21 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-class Crux extends NexContainer {
+class Org extends NexContainer {
 	constructor() {
 		super()
 	}
 
 	toString() {
-		return `[CRUX]`;
+		return `[org]`;
 	}
 
 	getTypeName() {
-		return '-crux-';
+		return '-org-';
 	}
 
 	makeCopy() {
-		let r = new Crux();
+		let r = new Org();
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -37,7 +37,7 @@ class Crux extends NexContainer {
 	renderInto(renderNode, renderFlags) {
 		let domNode = renderNode.getDomNode();
 		super.renderInto(renderNode, renderFlags);
-		domNode.classList.add('crux');
+		domNode.classList.add('org');
 		domNode.classList.add('data');
 	}
 
@@ -54,7 +54,7 @@ class Crux extends NexContainer {
 
 		let result = evaluateNexSafely(cmd, argEnv);
 		if (isFatalError(result)) {
-			return wrapError('&szlig;', `crux: error doing job ${jobname}`, result);
+			return wrapError('&szlig;', `org: error doing job ${jobname}`, result);
 		}
 		return result;		
 	}
