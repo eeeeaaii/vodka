@@ -15,25 +15,18 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-
-.tag {
-	display: none;
-}
-
-.tag.exploded {
-	background-color:#6e6e6e;
-	color:#dddddd;
-	padding: 4px 8px 4px 8px;
-	margin: 3px;
-	display: flex;
-	flex-direction: row;
-	align-items: flex-start;
-	font-family: Courier;
-	font-size: 9px;
-}
-
-.tag-editing.exploded {
-	background-color: #dddddd;
-	color: #414141;
+function createNativeCruxes() {
+	NativeCrux.createNativeCrux(
+		'Notification',
+		{},
+		{
+			show: function(str) {
+				Notification.requestPermission().then(function (permission) {
+			      if (permission === "granted") {
+        			var notification = new Notification("test");
+			      }
+			    });
+			}
+		}
+	);
 }

@@ -35,6 +35,12 @@ class Nex {
 		this.inPackage = null; // well here we go with more things in the env I guess.
 	}
 
+	toString() {}
+
+	debugString() {
+		return this.toString();
+	}
+
 	getTypeName() {
 		throw new Error("only leaf types have names");
 	}
@@ -161,6 +167,14 @@ class Nex {
 		}
 	}
 
+	numTags() {
+		return this.tags.length;
+	}
+
+	getTag(n) {
+		return this.tags[n].copy();
+	}
+
 	clearTags() {
 		this.tags = [];		
 	}
@@ -194,12 +208,6 @@ class Nex {
 
 	getCurrentStyle() {
 		return this.currentStyle;
-	}
-
-	toString() {}
-
-	debugString() {
-		return this.toString();
 	}
 
 	getInputFunnel() {

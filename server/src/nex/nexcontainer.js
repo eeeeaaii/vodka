@@ -52,6 +52,16 @@ class NexContainer extends Nex {
 		this.lastChildNex = null;
 	}
 
+	getChildTagged(tag) {
+		for (let i = 0; i < this.numChildren(); i++) {
+			let c = this.getChildAt(i);
+			if (c.hasTag(tag)) {
+				return c;
+			}
+		}
+		return null;
+	}
+
 	getChildrenForStepEval() {
 		if (!isStepEvaluating) {
 			throw new Error("Cannot use unless step evaluating");

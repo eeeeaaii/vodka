@@ -22,6 +22,9 @@ class Command extends NexContainer {
 		super();
 		this.commandtext = (val ? val : "");
 		this.cachedBuiltin = null;
+		// a lot of the builtins and other code generate commands with null command strings
+		// and append a lambda as the first argument - there's no need to attempt
+		// caching in those cases and it's a real performance hit.
 		if (val) {
 			this.cacheGlobalBuiltin();
 		}
@@ -198,6 +201,9 @@ class Command extends NexContainer {
 		}
 		let argContainer = new CopiedArgContainer(this, this.shouldSkipFirstArg());
 		let closure = lambda.closure;
+		if (closure == null) {
+			throw new Error('command: this lambda was never evaluated so has no closure.');
+		}
 		// you need to make a new lexical environment every time you evaluate the lambda
 		// but you ALSO need to make a new one every time you evaluate the command.
 		// the lambda could be evaluated again if its codepath is covered again.
@@ -209,7 +215,7 @@ class Command extends NexContainer {
 		if (PERFORMANCE_MONITOR) {
 			perfmon.logMethodCallStart(lambda.getCmdName());
 		}
-		let r = lambda.executor(closure, executionEnv);
+		let r = lambda.executor(closure, executionEnv, this.tags);
 		if (PERFORMANCE_MONITOR) {
 			perfmon.logMethodCallEnd(lambda.getCmdName());
 		}

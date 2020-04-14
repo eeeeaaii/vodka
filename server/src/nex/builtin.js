@@ -38,6 +38,10 @@ class Builtin extends Lambda {
 				  };
 	}
 
+	toString() {
+		return `[BUILTIN:${this.name}]`;
+	}
+
 	getCmdName() {
 		return this.name;
 	}
@@ -63,10 +67,6 @@ class Builtin extends Lambda {
 		domNode.classList.add('builtin');
 	}
 
-	toString() {
-		return `[BUILTIN:${this.name}]`;
-	}
-
 	setF(f) {
 		this.f = f.bind(this);
 	}
@@ -87,8 +87,8 @@ class Builtin extends Lambda {
 		BUILTINS.bind(name, nex);
 	}
 
-	executor(closure, executionEnv) {
-		return this.f(closure, executionEnv);
+	executor(closure, executionEnv, commandTags) {
+		return this.f(closure, executionEnv, commandTags);
 	}
 
 	getArgEvaluator(args, argEnv, closure) {

@@ -17,23 +17,29 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 
-.tag {
-	display: none;
-}
-
-.tag.exploded {
-	background-color:#6e6e6e;
-	color:#dddddd;
-	padding: 4px 8px 4px 8px;
-	margin: 3px;
+.crux {
+	height:auto;
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
 	align-items: flex-start;
-	font-family: Courier;
-	font-size: 9px;
+	padding: 0px;
 }
 
-.tag-editing.exploded {
-	background-color: #dddddd;
-	color: #414141;
+.crux.exploded {
+	padding: 5px;
+	border: 1px solid #c7c7c7;
+	border-radius: 6px;	
+}
+
+.crux.exploded.selected {
+	padding: 3px;
+	border: 3px solid #a7a7a7;
+}
+
+.nativecrux {
+	background-color: #c7c7c7;
+	font-family: Courier;
+	color: #444444;
+	font-style: italic;
+	font-size: 11px;
 }

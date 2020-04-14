@@ -144,7 +144,7 @@ function createFileBuiltins() {
 			for (let j = 0; j < lst.numChildren(); j++) {
 				let c = lst.getChildAt(j);
 				result = evaluateNexSafely(c, argEnv);
-				if (result.getTypeName() == '-error-' && result.getErrorType() == ERROR_TYPE_FATAL) {
+				if (isFatalError(result)) {
 					result = wrapError('&szlig;', `using: error in expression ${j+1}, cannot continue. Sorry!`);
 					return result;
 				}

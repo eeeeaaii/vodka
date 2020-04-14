@@ -20,6 +20,10 @@ class Tag  {
 		this.name = name;
 	}
 
+	getName() {
+		return this.name;
+	}
+
 	equals(tag) {
 		return this.name == tag.name;
 	}
@@ -37,5 +41,43 @@ class Tag  {
 	copy() {
 		let t = new Tag(this.name);
 		return t;
+	}
+}
+
+class TagEditor {
+	constructor(nex) {
+		this.editorDomNode = document.createElement("div");
+		this.editorDomNode.classList.add('tag');
+		this.editorDomNode.classList.add('tag-editing');
+		this.editorDomNode.classList.add('exploded');
+		this.tagText = '';
+		this._isEditing = false;
+		this.nex = nex;
+	}
+
+	routeKey(text) {
+		if (text == 'Enter') {
+			this.nex.addTag(new Tag(this.tagText));
+			this._isEditing = false;
+		} else if (/^.$/.test(text)) {
+			this.tagText = this.tagText + text;
+			this.editorDomNode.innerHTML = this.tagText;			
+		}
+	}
+
+	startEditing() {
+		this._isEditing = true;
+	}
+
+	isEditing() {
+		return this._isEditing;
+	}
+
+	postNode() {
+		return this.editorDomNode;
+	}
+
+	preNode() {
+		return null;
 	}
 }

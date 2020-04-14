@@ -36,10 +36,6 @@ class Nil extends ValueNex {
 		return true;
 	}
 
-	getKeyFunnel() {
-		return new NilKeyFunnel(this);
-	}
-
 	deleteLastLetter() {
 		return;
 	}

@@ -18,12 +18,28 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 function createEnvironmentBuiltins() {
 	Builtin.createBuiltin(
+		'say',
+		[
+			{name:'_name@', type:'ESymbol',skipeval:true},
+			{name:'nex', type:'*'}
+		],
+		function(env, argEnv) {
+ /////////// *************** THERE IS A DEPRECATED VERSON ************
+			let rhs = env.lb('nex');
+			argEnv.bind(env.lb('_name@').getTypedValue(), rhs);
+			return rhs;
+		}
+	);
+
+	Builtin.createBuiltin(
 		'let',
 		[
 			{name:'_name@', type:'ESymbol',skipeval:true},
 			{name:'nex', type:'*'}
 		],
 		function(env, argEnv) {
+ /////////// *************** DEPRECATED ************
+			console.log('deprecated builtin: let');
 			let rhs = env.lb('nex');
 			argEnv.bind(env.lb('_name@').getTypedValue(), rhs);
 			return rhs;

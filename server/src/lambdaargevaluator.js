@@ -46,7 +46,7 @@ class LambdaArgEvaluator {
 		for (let i = (this.skipFirstArg ? 1 : 0); i < this.argContainer.numArgs(); i++) {
 			let arg = this.argContainer.getArgAt(i)
 			let argval = this.processArgument(arg);
-			if (argval.getTypeName() == '-error-' && argval.getErrorType() == ERROR_TYPE_FATAL) {
+			if (isFatalError(argval)) {
 				throw wrapError('&#8907;', `${this.debugstr}: fatal error in arg ${i + 1}, stopping. Sorry!`, argval);
 			}
 			this.argContainer.setArgAt(

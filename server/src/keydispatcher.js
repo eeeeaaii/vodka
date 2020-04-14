@@ -48,7 +48,7 @@ function insertOrAppend(s, obj) {
 
 function evaluateAndReplace(s) {
 	let n = evaluateNexSafely(s.getNex(), BINDINGS);
-	if (n.getTypeName() == '-error-' && n.getErrorType() == ERROR_TYPE_FATAL) {
+	if (isFatalError(n)) {
 		beep();
 	}
 	if (n) {
@@ -59,7 +59,7 @@ function evaluateAndReplace(s) {
 function evaluateAndKeep(s) {
 	let n = evaluateNexSafely(s.getNex(), BINDINGS);
 	eventQueue.enqueueAlertAnimation(s);
-	if (n.getTypeName() == '-error-' && n.getErrorType() == ERROR_TYPE_FATAL) {
+	if (isFatalError(n)) {
 		beep();
 		manipulator.insertBeforeSelectedAndSelect(n);
 	}
@@ -82,7 +82,7 @@ function isNormallyHandled(key) {
 	if (!(/^.$/.test(key))) {
 		return true;
 	}
-	if (/^[~!@#$%^*&([{]$/.test(key)) {
+	if (/^[~!@#$%`^*&([{]$/.test(key)) {
 		return true;
 	}
 	return false;
@@ -178,6 +178,9 @@ var KeyResponseFunctions = {
 	'replace-selected-with-line': function(s) { manipulator.replaceSelectedWith(new Line()); },
 	'replace-selected-with-doc': function(s) { manipulator.replaceSelectedWith(new Doc()); },
 
+	'add-tag': function(s) { s.addTag(); },
+	'remove-all-tags': function(s) { s.removeAllTags(); },
+
 	'insert-or-append-command': function(s) { insertOrAppend(s, new Command()); },
 	'insert-or-append-bool': function(s) { insertOrAppend(s, new Bool()); },
 	'insert-or-append-symbol': function(s) { insertOrAppend(s, new ESymbol()); },
@@ -190,7 +193,6 @@ var KeyResponseFunctions = {
 	'insert-or-append-word': function(s) { insertOrAppend(s, new Word()); },
 	'insert-or-append-line': function(s) { insertOrAppend(s, new Line()); },
 	'insert-or-append-doc': function(s) { insertOrAppend(s, new Doc()); },
-
 
 	'insert-command-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Command()); },
 	'insert-bool-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Bool()); },
@@ -443,6 +445,10 @@ class KeyDispatcher {
 				p = p.getParent();
 			}
 		}
+		if (selectedNode.usingEditor()) {
+			this.doEditorEvent(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
+			return false;
+		}
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
 		// there are a few special cases
 		if (eventName == '|') {
@@ -462,9 +468,6 @@ class KeyDispatcher {
 			return false; // to cancel browser event
 		} else if (eventName == 'MetaEnter') {
 			this.doMetaEnter();
-			return false; // to cancel browser event
-		} else if (eventName == '`') {
-			// reserved for future use
 			return false; // to cancel browser event
 		} else {
 			// 1. look in override table
@@ -495,6 +498,15 @@ class KeyDispatcher {
 				} else throw e;
 			}
 		}
+	}
+
+	doEditorEvent(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey) {
+		// events are handled differently when an editor is being used
+		// all events are routed to the editor instead of the nex, until the editor
+		// is finished.
+		// right now we just have an editor for tags but we will need editors for
+		// strings, symbols, commands/lambdas.
+		selectedNode.routeKeyToCurrentEditor(keycode);
 	}
 
 	getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichKey) {
@@ -702,6 +714,8 @@ class KeyDispatcher {
 			'(': 'insert-or-append-word',
 			'[': 'insert-or-append-line',
 			'{': 'insert-or-append-doc',
+			'`': 'add-tag',
+			'Shift`': 'remove-all-tags',
 
 			'Alt~': 'wrap-in-command',
 			'Alt&': 'wrap-in-lambda',
@@ -735,6 +749,8 @@ class KeyDispatcher {
 			'(': 'insert-word-as-next-sibling',
 			'[': 'insert-line-as-next-sibling',
 			'{': 'insert-doc-as-next-sibling',
+			'`': 'add-tag',
+			'Shift`': 'remove-all-tags',
 
 			'Alt~': 'wrap-in-command',
 			'Alt&': 'wrap-in-lambda',

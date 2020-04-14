@@ -15,6 +15,16 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+function isError(n) {
+	if (!n) return false;
+	return n.getTypeName() == '-error-';
+}
+
+function isFatalError(n) {
+	if (!n) return false;
+	return n.getTypeName() == '-error-' && n.getErrorType() == ERROR_TYPE_FATAL;
+}
+
 function isInDocContext(n) {
 	let p = n.getParent();
 	return isDocElement(p);
@@ -26,32 +36,38 @@ function isDocElement(n) {
 
 function isExpectation(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	return (n instanceof Expectation);
+if (!n) return false;
+	return n.getTypeName() == '-expectation-';
 }
 
 function isDoc(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	return (n instanceof Doc);
+	if (!n) return false;
+	return n.getTypeName() == '-doc-';
 }
 
 function isLine(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	return (n instanceof Line);
+	if (!n) return false;
+	return n.getTypeName() == '-line-';
 }
 
 function isWord(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	return (n instanceof Word);
+	if (!n) return false;
+	return n.getTypeName() == '-word-';
 }
 
 function isSeparator(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	return (n instanceof Separator);
+	if (!n) return false;
+	return n.getTypeName() == '-separator-';
 }
 
 function isLetter(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	return (n instanceof Letter && !(n instanceof Separator));
+	if (!n) return false;
+	return n.getTypeName() == '-letter-';
 }
 
 function isCodeContainer(n) {
@@ -60,25 +76,30 @@ function isCodeContainer(n) {
 
 function isNexContainer(n) {
 	if (n instanceof RenderNode) n = n.getNex();
+	if (!n) return false;
 	return (n instanceof NexContainer);
 }
 
 function isEString(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	return (n instanceof EString);
+	if (!n) return false;
+	return n.getTypeName() == '-estring-';
 }
 
 function isCommand(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	return (n instanceof Command);
+	if (!n) return false;
+	return n.getTypeName() == '-command-';
 }
 
 function isLambda(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	return (n instanceof Lambda);
+	if (!n) return false;
+	return n.getTypeName() == '-lambda-';
 }
 
 function isInsertionPoint(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	return (n instanceof InsertionPoint);
+	if (!n) return false;
+	return n.getTypeName() == '-insertionpoint-';
 }

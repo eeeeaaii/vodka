@@ -198,7 +198,7 @@ class Lambda extends NexContainer {
 		try {
 			this.doForEachChild(c => {
 				r = evaluateNexSafely(c, closure);
-				if (r.getTypeName() == '-error-' && r.getErrorType() == ERROR_TYPE_FATAL) {
+				if (isFatalError(r)) {
 					r = wrapError('&amp;', (this.boundName ? this.boundName : this.debugString()) + ' error in expr ' + (i+1), r);
 					// because of =>
 					throw r;

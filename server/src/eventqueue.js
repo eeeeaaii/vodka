@@ -111,16 +111,7 @@ class EventQueue {
 			hasMeta: hasMeta,
 			hasAlt: hasAlt,
 			shouldDedupe: false,
-			equals: function(other) {
-				return
-					other.action == this.action
-					&& other.keycode == this.keycode
-					&& other.whichkey == this.whichkey
-					&& other.hasShift == this.hasShift
-					&& other.hasCtrl == this.hasCtrl
-					&& other.hasMeta == this.hasMeta
-					&& other.hasAlt == this.hasAlt;
-			},
+			equals: null, // not needed when shouldDedupe = false
 			do: function() {
 				doRealKeyInput(this.keycode, this.whichkey, this.hasShift, this.hasCtrl, this.hasMeta, this.hasAlt);
 			}
@@ -174,11 +165,7 @@ class EventQueue {
 			shouldDedupe: false,
 			renderNode: renderNode,
 			event: event,
-			equals: function(other) {
-				return other.action == this.action
-						&& other.target.getID() == this.target.getID()
-						&& other.renderNode == this.renderNode;
-			},
+			equals: null, // not needed when shouldDedupe = false
 			do: function() {
 				this.target.doClickHandlerAction(this.renderNode, event);
 			}
@@ -195,10 +182,7 @@ class EventQueue {
 			exp: exp,
 			result: result,
 			shouldDedupe: false,
-			equals: function(other) {
-				return other.action == this.action
-						&& other.exp.getID() == this.exp.getID();
-			},
+			equals: null, // not needed when shouldDedupe = false
 			do: function() {
 				this.exp.fulfill(this.result);
 			}
@@ -207,6 +191,23 @@ class EventQueue {
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
+	// this is actually pretty generic but the point is that it gets put
+	// at exception priority
+	enqueueExpectationCallback(callback, result) {
+		EVENT_DEBUG ? console.log('enqueueing: ExpectationCallback'):null;
+		let item = {
+			action: "expectationCallback",
+			result: result,
+			callback: callback,
+			shouldDedupe: false,
+			equals: null, // not needed when shouldDedupe = false
+			do: function() {
+				this.callback(this.result);
+			}
+		};
+		this.queueSet[EXCEPTION_PRIORITY].push(item);
+		this.setTimeoutForProcessingNextItem(item);
+	}
 
 	enqueueTopLevelRender() {
 		EVENT_DEBUG ? console.log('enqueueing: TopLevelRender'):null;
@@ -246,7 +247,7 @@ class EventQueue {
 		let item = queueToUse.shift();
 		EVENT_DEBUG ? console.log(`processing: ${item.action}`):null;
 		// if a bunch of equivalent actions were enqueued, pop them all and just do one
-		while(queueToUse.length > 0 && queueToUse[0].equals(item) && queueToUse[0].shouldDedupe) {
+		while(queueToUse.length > 0 && queueToUse[0].shouldDedupe && queueToUse[0].equals(item)) {
 			queueToUse.shift();
 		}
 		item.do();

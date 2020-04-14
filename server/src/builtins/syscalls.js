@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
 function createSyscalls() {
 
 	Builtin.createBuiltin(
@@ -28,6 +30,7 @@ function createSyscalls() {
 			return nex;
 		}
 	);
+
 
 	Builtin.createBuiltin(
 		'apply-css-style-to',

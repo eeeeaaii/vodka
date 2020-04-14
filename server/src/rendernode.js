@@ -25,6 +25,31 @@ class RenderNode {
 		this.isCurrentlyExploded = false;
 		this.explodedOverride = -1;
 		this.firstToggleOnNexRender = false;
+		this.currentEditor = null;
+	}
+
+	routeKeyToCurrentEditor(keycode) {
+		this.currentEditor.routeKey(keycode);
+		// the editor will decide when it's finished and will stop editing
+		if (!this.currentEditor.isEditing()) {
+			this.currentEditor = null;
+		}
+	}
+
+	usingEditor() {
+		// there will be other editors I guess
+		return this.currentEditor && this.currentEditor.isEditing();
+	}
+
+	addTag() {
+		if (this.currentEditor) {
+			throw new Error('cannot edit two things at once');
+		}
+		this.currentEditor = new TagEditor(this.nex);
+		this.currentEditor.startEditing();
+	}
+
+	removeAllTags() {
 	}
 
 	setAlertStyle(node, codespan) {
@@ -242,6 +267,12 @@ class RenderNode {
 				}
 			}
 
+		}
+		if (this.currentEditor && this.currentEditor.isEditing()) {
+			let postNode = this.currentEditor.postNode();
+			if (postNode) {
+				this.domNode.appendChild(postNode);
+			}
 		}
 		this.nex.renderTags(this.domNode, renderFlags);
 	}

@@ -156,7 +156,7 @@ class BuiltinArgEvaluator {
 		let arg = this.argContainer.getArgAt(i);
 		if (!param.skipeval) {
 			arg = evaluateNexSafely(arg, this.env);
-			if (arg.getTypeName() == '-error-' && arg.getErrorType() == ERROR_TYPE_FATAL) {
+			if (isFatalError(arg)) {
 				throw wrapError('&szlig;', `${this.name}: fatal error in argument ${i + 1} (expected type ${param.type}), cannot continue. Sorry!`, arg);
 			}
 		}

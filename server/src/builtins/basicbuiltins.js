@@ -33,6 +33,8 @@ function createBasicBuiltins() {
 			{name:'list()', type:'NexContainer'}
 		],
 		function(env, argEnv) {
+			/////////// ***** DEPRECATED ********
+			console.log('deprecated builtin: car')
 			let lst = env.lb('list()');
 			if (lst.numChildren() == 0) {
 				return new EError('car: cannot get first element of empty list. Sorry!');
@@ -42,11 +44,45 @@ function createBasicBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'first',
+		[
+			{name:'list()', type:'NexContainer'}
+		],
+		function(env, argEnv) {
+			/////////// ***** THERE IS A DEPRECATED VERSION ********
+			let lst = env.lb('list()');
+			if (lst.numChildren() == 0) {
+				return new EError('first: cannot get first element of empty list. Sorry!');
+			}
+			return lst.getFirstChild();
+		}
+	);
+
+	Builtin.createBuiltin(
+		'rest',
+		[
+			{name:'list()', type:'NexContainer'}
+		],
+		function(env, argEnv) {
+			/////////// ***** THERE IS A DEPRECATED VERSION ********
+			let c = env.lb('list()');
+			if (c.numChildren() == 0) {
+				return new EError("rest: given an empty list, cannot make a new list with first element removed. Sorry!");
+			}
+			let newOne = c.makeCopy(true);
+			c.getChildrenForCdr(newOne);
+			return newOne;
+		}
+	);
+
+	Builtin.createBuiltin(
 		'cdr',
 		[
 			{name:'list()', type:'NexContainer'}
 		],
 		function(env, argEnv) {
+			/////////// ***** DEPRECATED ********
+			console.log('deprecated builtin: cdr')
 			let c = env.lb('list()');
 			if (c.numChildren() == 0) {
 				return new EError("cdr: given an empty list, cannot make a new list with first element removed. Sorry!");
@@ -138,30 +174,6 @@ function createBasicBuiltins() {
 			} else {
 				return lst.getChildAt(lst.numChildren() - 1);
 			}
-		}
-	);
-
-	// in order to make this variadic so it mirrors begin it has to be a builtin
-	Builtin.createBuiltin(
-		'run',
-		[
-			{name:'_nex...', type:'*', skipeval:true, variadic:true}
-		],
-		function(env, argEnv) {
-			let lst = env.lb('_nex...');
-			let resultRun = new Command('run');
-			resultRun.setVertical();
-			for (let i = 0; i < lst.numChildren(); i++) {
-				let c = lst.getChildAt(i);
-				let result = evaluateNexSafely(c, argEnv);
-				let ccopy = c.makeCopy();
-				resultRun.appendChild(ccopy);
-				if (result.getTypeName() == '-error-') {
-					resultRun.appendChild(result);
-					ccopy.addTag(new Tag("Error follows"));
-				}
-			}
-			return resultRun;
 		}
 	);
 

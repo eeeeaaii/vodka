@@ -22,6 +22,10 @@ class Doc extends NexContainer {
 		super();
 	}
 
+	toString() {
+		return '{' + super.childrenToString() + '}';
+	}
+
 	getTypeName() {
 		return '-doc-';
 	}
@@ -51,10 +55,6 @@ class Doc extends NexContainer {
 			}
 		});
 		return s;
-	}
-
-	toString() {
-		return '{' + super.childrenToString() + '}';
 	}
 
 	getContextType() {
