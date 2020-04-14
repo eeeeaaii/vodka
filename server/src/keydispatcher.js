@@ -22,6 +22,21 @@ function evaluateNexSafely(nex, env) {
 	let result;
 	try {
 		result = nex.evaluate(env);
+		if (result.getTypeName() == '-org-') {
+			// forget multiple dereference for now we will do that soon/someday/sometime
+			// just find a tag
+			for (let i = 0; i < nex.numTags(); i++) {
+				let tag = nex.getTag(i);
+				if (result.hasChildTag(tag)) {
+					let child = result.getChildWithTag(tag);
+					let childResult = evaluateNexSafely(child, env);
+					if (childResult.getTypeName() == '-lambda-') {
+						childResult.closure.bind('org', result)
+					}
+					result = childResult;
+				}
+			}
+		}
 	} catch (e) {
 		if (e instanceof EError) {
 			result = e;
@@ -82,7 +97,7 @@ function isNormallyHandled(key) {
 	if (!(/^.$/.test(key))) {
 		return true;
 	}
-	if (/^[~!@#$%`^*&([{]$/.test(key)) {
+	if (/^[~!@#$%`^*&)([{]$/.test(key)) {
 		return true;
 	}
 	return false;
@@ -177,6 +192,7 @@ var KeyResponseFunctions = {
 	'replace-selected-with-word': function(s) { manipulator.replaceSelectedWith(new Word()); },
 	'replace-selected-with-line': function(s) { manipulator.replaceSelectedWith(new Line()); },
 	'replace-selected-with-doc': function(s) { manipulator.replaceSelectedWith(new Doc()); },
+	'replace-selected-with-org': function(s) { manipulator.replaceSelectedWith(new Org()); },
 
 	'add-tag': function(s) { s.addTag(); },
 	'remove-all-tags': function(s) { s.removeAllTags(); },
@@ -193,6 +209,7 @@ var KeyResponseFunctions = {
 	'insert-or-append-word': function(s) { insertOrAppend(s, new Word()); },
 	'insert-or-append-line': function(s) { insertOrAppend(s, new Line()); },
 	'insert-or-append-doc': function(s) { insertOrAppend(s, new Doc()); },
+	'insert-or-append-org': function(s) { insertOrAppend(s, new Org()); },
 
 	'insert-command-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Command()); },
 	'insert-bool-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Bool()); },
@@ -207,6 +224,7 @@ var KeyResponseFunctions = {
 	'insert-line-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Line()); },
 	'insert-doc-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Doc()); },
 	'insert-zlist-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Zlist()); },
+	'insert-org-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Org()); },
 
 
 	'wrap-in-command': function(s) { manipulator.wrapSelectedInAndSelect(new Command()); },
@@ -215,6 +233,7 @@ var KeyResponseFunctions = {
 	'wrap-in-word': function(s) { manipulator.wrapSelectedInAndSelect(new Word()); },
 	'wrap-in-line': function(s) { manipulator.wrapSelectedInAndSelect(new Line()); },
 	'wrap-in-doc': function(s) { manipulator.wrapSelectedInAndSelect(new Doc()); },
+	'wrap-in-org': function(s) { manipulator.wrapSelectedInAndSelect(new Org()); },
 
 
 	// WIP
@@ -539,13 +558,12 @@ class KeyDispatcher {
 			return 'Alt*';
 		} else if (whichKey == 'Digit9' && hasAlt && hasShift) {
 			return 'Alt(';
+		} else if (whichKey == 'Digit0' && hasAlt && hasShift) {
+			return 'Alt)';
 		} else if (whichKey == 'BracketLeft' && hasAlt && !hasShift) {
 			return 'Alt[';
 		} else if (whichKey == 'BracketLeft' && hasAlt && hasShift) {
 			return 'Alt{';
-
-		// } else if (keycode == ' ') {
-		// 	return 'Space';
 		} else if (keycode == 'Backspace' && hasShift) {
 			return 'ShiftBackspace';
 		} else if (keycode == 'x' && hasMeta) {
@@ -712,6 +730,7 @@ class KeyDispatcher {
 			'&': 'insert-or-append-lambda',
 			'*': 'insert-or-append-expectation',
 			'(': 'insert-or-append-word',
+			')': 'insert-or-append-org',
 			'[': 'insert-or-append-line',
 			'{': 'insert-or-append-doc',
 			'`': 'add-tag',
@@ -747,6 +766,7 @@ class KeyDispatcher {
 			'&': 'insert-lambda-as-next-sibling',
 			'*': 'insert-expectation-as-next-sibling',
 			'(': 'insert-word-as-next-sibling',
+			')': 'insert-org-as-next-sibling',
 			'[': 'insert-line-as-next-sibling',
 			'{': 'insert-doc-as-next-sibling',
 			'`': 'add-tag',

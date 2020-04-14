@@ -16,48 +16,4 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 function createOrgBuiltins() {
-	Builtin.createBuiltin(
-		'org',
-		[
-			{name: 'lst()', type:'NexContainer'}
-		],
-		function(env, argEnv) {
-			let lst = env.lb('lst()');
-			let r = new org();
-			for (let i = 0; i < lst.numChildren(); i++) {
-				r.appendChild(lst.getChildAt(i));
-			}
-			return r;
-		}
-	);
-
-	Builtin.createBuiltin(
-		'do',
-		[
-			{name: 'org', type:'*'}, // really a org, need to error check
-			{name: 'args...', type:'*', variadic:true}
-		],
-		function(env, argEnv, tags) {
-			let org = env.lb('org');
-			let args = env.lb('args...');
-			if (tags.length != 1) {
-				return new EError('do: this command requires one tag');
-			}
-			let tag = tags[0];
-			try {
-				return org.doJobWithTag(tag, args);
-			} catch(e) {
-				if (e instanceof EError) {
-					if (isFatalError(e)) {
-						return wrapError('&szlig;', `do: error doing job ${tag.getName()}`, result);
-					} else {
-						return e;
-					}
-				} else {
-					throw e;
-				}
-
-			}
-		}
-	);
 }

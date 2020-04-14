@@ -304,15 +304,25 @@ function createMathBuiltins() {
 		'square-root',
 		[
 			{name:'a%', type:'Float'},
+		],
+		function(env, argEnv) {
+			let a = env.lb('a%').getTypedValue();
+			return new Float(Math.sqrt(a));
+		}
+	)
+
+	Builtin.createBuiltin(
+		'nth-root',
+		[
+			{name:'a%', type:'Float'},
 			{name:'b%', type:'Float'},
 		],
 		function(env, argEnv) {
 			let a = env.lb('a%').getTypedValue();
 			let b = env.lb('b%').getTypedValue();
-			return new Float(Math.sqrt(a, b));
+			return new Float(Math.pow(a, (1.0/b)));
 		}
 	)
-
 	Builtin.createBuiltin(
 		'=',
 		[

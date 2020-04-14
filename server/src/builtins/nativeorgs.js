@@ -16,7 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 function createNativeOrgs() {
-	Nativeorg.createNativeOrg(
+	NativeOrg.createNativeOrg(
 		'Notification',
 		{},
 		{

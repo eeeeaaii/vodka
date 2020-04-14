@@ -28,10 +28,31 @@ class Org extends NexContainer {
 		return '-org-';
 	}
 
-	makeCopy() {
+	makeCopy(shallow) {
 		let r = new Org();
 		this.copyFieldsTo(r);
+		this.copyChildrenTo(r, shallow);
 		return r;
+	}
+
+	hasChildTag(tag) {
+		// TODO: make more efficient I guess
+		for (let i = 0; i < this.numChildren(); i++) {
+			if (this.getChildAt(i).hasTag(tag)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	getChildWithTag(tag) {
+		// TODO: make more efficient
+		for (let i = 0; i < this.numChildren(); i++) {
+			if (this.getChildAt(i).hasTag(tag)) {
+				return this.getChildAt(i);
+			}
+		}
+		return false;
 	}
 
 	renderInto(renderNode, renderFlags) {

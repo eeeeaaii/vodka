@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-class NativeCrux extends Crux {
+class NativeOrg extends Org {
 	constructor(name, initdata, methods) {
 		super();
 		this.name = name;
@@ -24,15 +24,15 @@ class NativeCrux extends Crux {
 	}
 
 	toString() {
-		return `[NATIVECRUX]`;
+		return `[NATIVEORG]`;
 	}
 
 	getTypeName() {
-		return '-nativecrux-';
+		return '-nativeorg-';
 	}
 
 	makeCopy() {
-		let r = new NativeCrux();
+		let r = new NativeOrg();
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -50,12 +50,12 @@ class NativeCrux extends Crux {
 	renderInto(renderNode, renderFlags) {
 		let domNode = renderNode.getDomNode();
 		super.renderInto(renderNode, renderFlags);
-		domNode.classList.add('nativecrux');
+		domNode.classList.add('nativeorg');
 		domNode.innerHTML = this.name;
 	}
 
-	static createNativeCrux(name, initdata, methods) {
-		let nex = new NativeCrux(name, initdata, methods);
+	static createNativeOrg(name, initdata, methods) {
+		let nex = new NativeOrg(name, initdata, methods);
 		let constructor = new Lambda();
 		constructor = constructor.evaluate(BUILTINS);
 		constructor.appendChild(nex);
