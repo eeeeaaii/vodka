@@ -15,5 +15,41 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-function createOrgBuiltins() {
+class ContractEnforcer {
+	constructor() {
+		this.contracts = {};
+	}
+
+	createContract(fortag, contract) {
+		this.contracts[fortag.getName()] = contract;
+	}
+
+	enforce(tag, nex) {
+		let contract = this.contracts[tag.getName()];
+		if (!contract) {
+			return true;
+		}
+		return contract.isSatisfiedBy(nex);
+	}
 }
+
+class IdentityContract {
+	constructor(id) {
+		this.id = id;
+	}
+
+	isSatisfiedBy(nex) {
+		return (nex.getID() == this.id);
+	}
+}
+
+class SimpleTypeContract {
+	constructor(typeName) {
+		this.typeName = typeName;
+	}
+
+	isSatisfiedBy(nex) {
+		return (nex.getTypeName() == this.typeName);
+	}
+}
+

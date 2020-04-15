@@ -67,6 +67,7 @@ const eventQueue = new EventQueue();
 const KEY_DISPATCHER = new KeyDispatcher();
 const autocomplete = new Autocomplete();
 const perfmon = new PerformanceMonitor();
+const contractEnforcer = new ContractEnforcer(); // someday this will likely be scoped in the environment
 
 function dumpPerf() {
 	perfmon.dump();
@@ -150,8 +151,8 @@ function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta) {
 
 function createBuiltins() {
 	createAsyncBuiltins();
-	createOrgBuiltins();
 	createBasicBuiltins();
+	createContractBuiltins();
 	createEnvironmentBuiltins();
 	createFileBuiltins();
 	createLogicBuiltins();

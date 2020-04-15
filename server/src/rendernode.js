@@ -50,6 +50,7 @@ class RenderNode {
 	}
 
 	removeAllTags() {
+		this.nex.clearTags();
 	}
 
 	setAlertStyle(node, codespan) {

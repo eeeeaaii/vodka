@@ -136,12 +136,10 @@ var KeyResponseFunctions = {
 	},
 
 	'evaluate-nex': function(s) {
-//		beep();
 		evaluateAndReplace(s);
 	},
 
 	'evaluate-nex-and-keep': function(s) {
-//		beep();
 		evaluateAndKeep(s);
 	},
 
@@ -550,8 +548,10 @@ class KeyDispatcher {
 			return 'MetaSpace';
 
 		// this stuff only works on a mac AFAIK
-		} else if (keycode == '`' && hasAlt) {
+		} else if (keycode == '`' && hasAlt && hasShift) {
 			return 'Alt~';
+		} else if (keycode == 'Dead' && whichKey == 'Backquote' && hasAlt && !hasShift) {
+			return 'Alt`';
 		} else if (whichKey == 'Digit7' && hasAlt && hasShift) {
 			return 'Alt&';
 		} else if (whichKey == 'Digit8' && hasAlt && hasShift) {
@@ -734,12 +734,13 @@ class KeyDispatcher {
 			'[': 'insert-or-append-line',
 			'{': 'insert-or-append-doc',
 			'`': 'add-tag',
-			'Shift`': 'remove-all-tags',
+			'Alt`': 'remove-all-tags',
 
 			'Alt~': 'wrap-in-command',
 			'Alt&': 'wrap-in-lambda',
 			'Alt*': 'wrap-in-expectation',
 			'Alt(': 'wrap-in-word',
+			'Alt)': 'wrap-in-org',
 			'Alt[': 'wrap-in-line',
 			'Alt{': 'wrap-in-doc',
 		};
@@ -770,12 +771,13 @@ class KeyDispatcher {
 			'[': 'insert-line-as-next-sibling',
 			'{': 'insert-doc-as-next-sibling',
 			'`': 'add-tag',
-			'Shift`': 'remove-all-tags',
+			'Alt`': 'remove-all-tags',
 
 			'Alt~': 'wrap-in-command',
 			'Alt&': 'wrap-in-lambda',
 			'Alt*': 'wrap-in-expectation',
 			'Alt(': 'wrap-in-word',
+			'Alt)': 'wrap-in-org',
 			'Alt[': 'wrap-in-line',
 			'Alt{': 'wrap-in-doc',
 		};

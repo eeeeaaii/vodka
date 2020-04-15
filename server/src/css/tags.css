@@ -35,5 +35,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 .tag-editing.exploded {
 	background-color: #dddddd;
+	border: 1px solid #6e6e6e;
+	padding: 3px 7px 3px 7px;
 	color: #414141;
 }

@@ -1,35 +1,133 @@
 here's my type system:
 
 
-a tag is an identifier associated with a program element
+DONE - a tag is an identifier associated with a program element
 
-a org is a special list
+DONE - a org is a special list
 
-an org can have children that are tagged
+DONE - an org can have children that are tagged
 
-at evaluation time, if an expression is tagged, the evaluator will check after evaluation
+DONE - at evaluation time, if an expression is tagged, the evaluator will check after evaluation
 to see whether the expression evaluated to an org. If it did, then the evaluator will
-retrieve the child matching the tag.
+retrieve the child matching the tag, and evaluate that
 
 if an expression has multiple tags, the evaluator will resolve them in the order they are specified,
-and use the first one that works.
+and use the first one that works (note: need to think more about this because what if an obj has multiple children with the same tag, what if a nex has two of the same tag, etc)
 
-It is not an error if the returned org doesn't have that tag (unless strict mode?)
+DONE - It is not an error if the returned org doesn't have that tag (unless strict mode?)
 
-If dereferencing the tag returns another org, the evaluator will dereference again. It will keep dereferencing until:
+DONE - If dereferencing the tag returns another org, the evaluator will dereference again. It will keep dereferencing until:
 1. the dereferencing step stops returning orgs 2. it runs out of matching tags
 
-a kind is a list of tags associated with actual types (lambda, int, org, etc)
+types:
+- the type of an integer, string, etc. is just that
+- the type of a lambda is a specifier containing its return value, args, etc
+- the type of an org is an unordered list of tags. an org is of a given type if it contains all the tags
+  in the list
+- a contract is some trustable assertion about a tag, as in "you know that something with this tag is _blank_".
+  - contracts are enforced at the time the tag is assigned to the nex
+  - types of contracts
+    - identity contract: a tag can only be assigned to a specific object
+    - equality contract: a tag can only be assigned to an object that evaluates as equal to a given value
+    - simple type contract: something with tag Foo must be an integer
+    - lambda exclusive type contract: something with tag Foo must be a lambda with the exact type string -# arg# arg#
+    - lambda inclusive type contract: something with tag Foo must be a lambda that could allow arguments that match a given type string
+    - list exclusive tag contents contract: something with tag Foo must be an list containing things with
+      tags Foo, Bar, and Baz and nothing else (note: it doesn't have to be an org, but if it's not an org,
+      it can't be dereferenced)
+    - list inclusive tag contents contract: something with tag Foo must be an list containing things with tags
+      Foo, Bar, and Baz, but it could have other things
+    - list exclusive type contents contract: something with tag Foo must be a list with two integers and nothing else (or whatever)
+    - list inclusive type contents contract: something with tag Foo must be a list with at least two integers, could have other things
+    - something with tag Foo must also have tags Bar, Baz, and Qux (this is how you do 'contract contract', i.e. enforce
+      that a nex satisfies multiple contracts)
+    - custom contract: you implement a function in Vodka that returns true or false, and at contract-check time
+      the framework evaluates your function, passing in the nex that is being checked for whether it satisfies the contract
+      
 
-a type is a tag that maps to a kind
-
-if an org matches a kind, it means that it has a matching child for each item in the kind
-
-if a type exists, a checker will prevent you from tagging a nex with that type's tag unless it matches that type's kind
-
-function params can have specifiers which limit you to only passing orgs of a certain type
+contracts are only checked at tag assignment time for performance reasons, but there can be a primitive that
+re-checks contracts
 
 
+
+- a kind is an restriction that states that a given tag can only be assigned to something with a given type
+- lambda type strings can also include tags, which indicate that the thing passed in must have that tag
+
+examples of lambda type strings:
+
+arg1 arg2
+    two args of any type
+
+arg1# arg2#
+    two integers
+
+arg1! arg2!
+    two booleans
+
+arg1& arg2&
+    two lambdas
+
+arg1* arg2*
+    two expectations
+
+arg1@ arg2@
+    two symbols
+
+_arg1@ arg2@
+    two symbols, but the first one is not evaluated before being passed
+
+arg1% arg2#...
+    a float and then zero or more integers (variadic argument)
+
+arg1% arg2#?
+    a float and then an optional integer
+
+_arg1~ arg2~
+    two commands - the first is unevaluated, but the second needs to be returned by
+    the evaluation step for the second argument
+
+arg1( arg2(
+    two lists
+
+arg1#[Magnitude] arg2#
+    two integers, but the first one has to be tagged with 'Magnitude'
+
+arg1) arg2)
+    two orgs, any type
+
+arg1)[Magnitude] arg2)
+    two orgs, but the first one has to be tagged with 'Magnitude'
+
+-# arg1#
+    this function takes an integer and returns an integer
+
+-)[Magnitude] arg1#
+    this function takes an integer and returns an obj tagged with 'Magnitude'
+
+
+
+
+experimental features regarding return values:
+
+- setting '-' would set the return value
+-#?
+    this function can return an integer but it can also return 'nothing', which means
+    the evaluator removes whatever it returned from the arg list of what it was in.
+-#...
+    this function can return more than one thing
+_-
+    this function is not evaluated, e.g. so if you had:
+    (~bind @do-not-do (&_-# (~+ #3 #3)))
+    we have a function that adds 3 + 3 and returns an integer, but it's not evaluated.
+    this means that if you have this:
+    (~+ #9 (~do-not-do))
+    it fails because the (~do-not-do) is basically treated like it's been quoted, but this:
+    (~+ #9 (~eval (~do-not-do)))
+    would work fine because "skip eval" only applies to the first time basically:
+    that is to say, if a "do not eval" function is evaluated, it loses its "do not eval" status.
+
+
+- make it so that anything inside braces in a tag, i.e. [] is ignored (use this for comments?)
 
 
 

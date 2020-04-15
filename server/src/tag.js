@@ -57,7 +57,12 @@ class TagEditor {
 
 	routeKey(text) {
 		if (text == 'Enter') {
-			this.nex.addTag(new Tag(this.tagText));
+			let tag = new Tag(this.tagText);
+			if (contractEnforcer.enforce(tag, this.nex)) {
+				this.nex.addTag(new Tag(this.tagText));
+			} else {
+				this.nex.addTag(new Tag(`[TAG ERROR: cannot add tag ${tag.getName()} to this nex, does not satisfy contract.]`));
+			}
 			this._isEditing = false;
 		} else if (/^.$/.test(text)) {
 			this.tagText = this.tagText + text;
