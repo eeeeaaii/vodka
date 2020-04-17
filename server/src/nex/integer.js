@@ -22,7 +22,10 @@ class Integer extends ValueNex {
 		if (!val) {
 			val = '0';
 		}
-		super(val, '#', 'integer')
+		super(val, '#', 'integer');
+		if (!this._isValid(this.value)) {
+			this.value = '0';
+		}
 	}
 
 	getTypeName() {
@@ -35,17 +38,12 @@ class Integer extends ValueNex {
 		return r;
 	}
 
-	isValid() {
-		let v = Number(this.value);
+	_isValid(value) {
+		let v = Number(value);
 		return !isNaN(v);
 	}
 
 	evaluate() {
-		if (!this.isValid()) {
-			throw new EError(`Integer format invalid: ${this.value}`);
-		}
-		let n = Number(this.value);
-		this.value = '' + n;
 		return this;
 	}
 
@@ -53,59 +51,44 @@ class Integer extends ValueNex {
 		return '' + this.value;
 	}
 
-	getKeyFunnel() {
-		return new IntegerKeyFunnel(this);
-	}
-
 	getTypedValue() {
-		let v = this.value;
-		if (v == "") {
-			v = "0";
-		}
-		if (isNaN(v)) {
-			throw new Error(`Integer literal incomplete (is "${v}")`);
-		}
-		return Number(v);
-	}
-
-	getRawValue() {
-		return this.value;
+		return Number(this.value);
 	}
 
 	appendWithChecks(txt) {
-		let t = this.getRawValue();
-		if (t == '0') {
-			if (txt == '0') {
-				return;
+		if (txt == '-') {
+			// negate it, unless it's zero
+			if (this.value == '0') return;
+			if (this.value.charAt(0) == '-') {
+				this.value = this.value.substring(1);
 			} else {
-				this.setValue(txt);
+				this.value = '-' + this.value;
 			}
-		} else if (t == '-') {
-			if (txt == '0') {
-				return;
+		} else if (/[0-9]/.test(txt)) {
+			if (this.value == '0') {
+				this.value = txt;
 			} else {
-				this.appendText(txt);
+				this.value = this.value + txt;
 			}
-		} else {
-			if (txt == '-') {
-				return;
-			} else {
-				this.appendText(txt);
-			}
+		};
+	}
+
+	deleteLastLetter() {
+		let v = this.value;
+		if (v == '0') return;
+		if (v.length == 1) {
+			this.value = '0';
+			return;
 		}
+		this.value = v.substr(0, v.length - 1);
 	}
 
 	backspaceHack(sourceNode) {
-		let t = this.getRawValue();
-		if (t == '0') {
+		if (this.value == '0') {
 			KeyResponseFunctions['remove-selected-and-select-previous-leaf'](sourceNode);
 			return;
 		}
 		this.deleteLastLetter();
-		t = this.getRawValue();
-		if (t == '') {
-			this.setValue('0');
-		}
 	}
 
 	defaultHandle(txt, context, sourcenode) {

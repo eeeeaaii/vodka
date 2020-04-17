@@ -1,3 +1,100 @@
+TYPE-RELATED TO DO
+- figure out how to resolve orgs with multiple matching tags (first match?) and do we iterate first thru
+  the tags in the expr being evaluated or first thru the tags on the org?
+- figure out if it's an error if returned org doesn't have tag
+- make type checker for lambdas
+- make builtin type checker operate off strings (i.e. make a type string parser)
+- make equality contract
+- make lambda type contract - exact match
+- make lambda type contract - "invokable" (i.e. matches if less specific than, can be called on same args)
+- make list-must-contain-exclusively contract: must contain given tags (or types) and no other tags (or types)
+- make list-must-contain-nonexclusively contract: must contain given tags (or types), can have others
+- summary contract: something with tag Foo must have tags Bar, Baz, Qux
+- custom contract (runs code to see if nex satisifies)
+- contract adherence check at tag assignment time with the tag builtin
+- builtin that checks contract adherence
+- implement tag checking in function params (single bracket [])
+- implement tag checking WITH contract adherence (double bracket) 
+- return value type checking
+- setting '-' sets the return value
+- functions that return nothing (i.e. -#?) - remove themselves from parent
+- functions that return multiple values - put all in parent
+- "do not eval" functions that always act like they are quoted the first time
+- make it so braces inside tags are ignored [stuff in here]
+
+
+TESTS TO-DO
+- make test for equal
+- make tests for copy and paste
+- make tests for run-js
+- make tests for cram and chop
+- make test for to-word
+- make tests for all async primitives
+- need test for partial-exploded mode ,it doesn't work because esc is integral to my test recording framework
+- I should have a test for each type of error location to make sure error propagation doesn't get broken. so basically any place that evaluateNexSafely is called
+- test for to-float
+- tests for catch, eval
+
+
+BUGFIXES
+- trying to load a file that doesn't exist crashes the server
+- saving a file with an error in it only saves the top-level error not the enclosed errors.
+
+
+CODE CLEANUP = good
+- make a better naming convention for js global variables decide what's a const and what's a singleton and generally what's what.
+- come up with a better naming convention for global objects
+- handle insertion points at the render node level
+- get rid of that carriage return object and use insertion point for that
+- rename getFulfilledThing to fulfill
+- use regexes in the event table to clean up the event tables
+- remove old edit primitive
+- fix render node hacks in estring class coming from the normal/expanded drawing logic
+- remove dead code from eerror class because it can't be drawn in expanded mode anymore
+- figure out what to do in run-js if no DOM object (throw exception? create one?)
+- BuiltinParamManager and BuiltinArgEvaluator do the same thing, merge somehow
+
+
+PERFORMANCE FIXES = recommended
+- use "dirty-only" rendering everywhere it is possible to use it
+- instanceof checks are slow, for nexes instead compare to getTypeName()
+
+
+USABILITY IMPROVEMENTS = nice to have
+- figure out what the naming convention is going to be for packages and whether "-functions" should be appended automatically
+- tags precede rather than follow content
+- start using exclamation points for primitives that set values like in regular lisp, like apply-style-to
+
+CUSTOM NEXES
+- make a new list type actually called list that's equivalent to a word but can be re-oriented vert or horiz, and make doc/line/word into custom nexes, so reduce standard list types to just org, list, lambda, command, expectation
+- make a list type that, when you evaluate it, replaces each of its children with the result of evaluating that child
+
+
+NEW FEATURES = be careful
+- short circuit evaluation for conditionals
+- make it so you can change exploded/normal in code by setting a tag
+
+- implement to-word for lines and docs
+- implement "equal" for list types (needs to be deep equal)
+- make native primitives for some common operations that could be bootstrapped (like iteration)
+- make "type creation" primitives (make-integer, make-float, etc)
+- make the ff primitives use "skip eval" but test arguments to see if they are
+  already expectations and if so just use, otherwise eval argument.
+
+
+EXPERIMENTS TO TRY = be extra careful
+- get rid of insertion points and switch to pre- and post- inserts
+- try voice commands
+- make arithmetic functions use plus, minus words instead of symbols
+- make docs so that !#$ characters add those literal characters and the only ones that work are ~@
+- use a different key for modifying string contents rather than shift-enter
+- try having different ctrl/alt/shift chords for insert/append/prepend/enclose versions of !@#$
+
+
+
+
+
+
 here's my type system:
 
 
@@ -129,86 +226,6 @@ _-
 
 - make it so that anything inside braces in a tag, i.e. [] is ignored (use this for comments?)
 
-
-
-TESTS = crucial
-- test for equal
-- some tests for object tags
-- copy and paste tests (same as 2?)
-- tests for run-js
-- tests for cram and chop
-- test for to-word
-- tests for all async primitives
-- go over all checkins over the past month and figure out what tests are missing
-- need test for partial-exploded mode ,it doesn't work because esc is integral to my test recording framework
-- I should have a test for each type of error location to make sure error propagation doesn't get broken. so basically any place that evaluateNexSafely is called
-- test for to-float
-- tests for catch, eval
-
-
-BUGFIXES = necessary
-- fix bug where you can eval a symbol and then change code that is being executed async by an expectation
-- fix problem with the set-style function where it creates an infinite loop of expectations
-- make it impossible for wrap-expectation to go on forever.
-- step eval is mostly broken, fix (FOR STEP EVAL FIXES SEE CODE CLEANUP SECTION)
-- executing a subexpression when you're in the middle of step evaluating is broken: specifically::: execution_stepeval_bindwithnormal is broken because somehow when you are step evaluating and you click on a subexpression with bound environment and you normal-eval it, if you click on the result of that inner normal-eval inside its expectation, and shift-tab to go to the parent YOU DON'T GO ANYWHERE. why.  (FOR STEP EVAL FIXES SEE CODE CLEANUP SECTION)
-- trying to load a file that doesn't exist crashes the server
-- saving a file with an error in it only saves the top-level error not the enclosed errors.
-
-
-CODE CLEANUP = good
-- make a better naming convention for js global variables decide what's a const and what's a singleton and generally what's what.
-- update ILVL (it's been renamed to stackLevel) in step eval
-- come up with a better naming convention for global objects
-- handle insertion points at the render node level
-- get rid of that carriage return object and use insertion point for that
-- rename getFulfilledThing to fulfill
-- use regexes in the event table to clean up the event tables
-- remove old edit primitive
-- fix render node hacks in estring class coming from the normal/expanded drawing logic
-- remove dead code from eerror class because it can't be drawn in expanded mode anymore
-- figure out what to do in run-js if no DOM object (throw exception? create one?)
-- change the step eval stuff so that alt-enter changes the selected item rather than maintaining a stack (NOTE: this is probably better to do than fix any of the existing step eval stuff)
-- remove makeCopy/js array hack in Environment.lb
-- BuiltinParamManager and BuiltinArgEvaluator do the same thing, merge somehow
-
-
-PERFORMANCE FIXES = recommended
-- use "dirty-only" rendering everywhere it is possible to use it
-- instanceof checks are slow, for nexes instead compare to getTypeName()
-
-
-USABILITY IMPROVEMENTS = nice to have
-- rename *-functions files to *-library
-- rename library functions so that the library name is in the function name - OR implement a package grouping system of some kind
-- make it so you can specify arg type with the codes I use in the builtin param names, and that you can have them in lambdas.
-- tags precede rather than follow content
-- start using exclamation points for primitives that set values like in regular lisp, like apply-style-to
-
-
-NEW FEATURES = be careful
-- short circuit evaluation for conditionals
-- make it so you can change exploded/normal in code by setting a tag
-- make a tag type that is sort of an enum (like radio buttons)
-- make a "toggle" tag type (like a form checkbox)
-- make the thing that changes error types use tags to designate the desired error type
-- make a list type that is just "list" that can be vert/horiz, looks like a command or lambda but without the symbol, and which, when you evaluate it, replaces each of its children with the result of evaluating that child
-- backtick does operations on tags
-- implement to-word for lines and docs
-- implement "equal" for list types (needs to be deep equal)
-- make native primitives for some common operations that could be bootstrapped (like iteration)
-- make "type creation" primitives (make-integer, make-float, etc)
-- make the ff primitives use "skip eval" but test arguments to see if they are
-  already expectations and if so just use, otherwise eval argument.
-
-
-EXPERIMENTS TO TRY = be extra careful
-- get rid of insertion points and switch to pre- and post- inserts
-- try voice commands
-- make arithmetic functions use plus, minus words instead of symbols
-- make docs so that !#$ characters add those literal characters and the only ones that work are ~@
-- use a different key for modifying string contents rather than shift-enter
-- try having different ctrl/alt/shift chords for insert/append/prepend/enclose versions of !@#$
 
 
 

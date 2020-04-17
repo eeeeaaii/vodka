@@ -19,7 +19,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 class Float extends ValueNex {
 	constructor(val) {
-		super((val) ? val : '0.0', '%', 'float')
+		super((val) ? val : '0', '%', 'float')
 	}
 
 	getTypeName() {
@@ -30,13 +30,6 @@ class Float extends ValueNex {
 		let r = new Float(this.value);
 		this.copyFieldsTo(r);
 		return r;
-	}
-
-	makeStringValid(str) {
-		if (!this.isValid(str)) {
-			return "0";
-		}
-		return str;
 	}
 
 	isValid() {
