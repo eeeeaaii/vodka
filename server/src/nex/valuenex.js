@@ -57,16 +57,16 @@ class ValueNex extends Nex {
 		this.value = v;
 	}
 
+	appendText(txt) {
+		let v = this.value;
+		v = v + txt;
+		this.value = v;
+	}
+
 	deleteLastLetter() {
 		let v = this.value;
 		if (v == '') return;
 		v = v.substr(0, v.length - 1);
-		this.value = v;
-	}
-
-	appendText(txt) {
-		let v = this.value;
-		v = v + txt;
 		this.value = v;
 	}
 }

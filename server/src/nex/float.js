@@ -19,7 +19,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 class Float extends ValueNex {
 	constructor(val) {
-		super((val) ? val : '0', '%', 'float')
+		super((val) ? val : '0', '%', 'float');
+		if (!this._isValid(this.value)) {
+			this.value = '0';
+		}
 	}
 
 	getTypeName() {
@@ -32,14 +35,11 @@ class Float extends ValueNex {
 		return r;
 	}
 
-	isValid() {
-		return !isNaN(this.value);
+	_isValid(value) {
+		return !isNaN(Number(value));
 	}
 
 	evaluate() {
-		if (!this.isValid()) {
-			return 0.0;
-		}
 		return this;
 	}
 
@@ -47,22 +47,84 @@ class Float extends ValueNex {
 		return this.value;
 	}
 
-	getKeyFunnel() {
-		return new FloatKeyFunnel(this);
-	}
-
 	getTypedValue() {
 		let v = this.value;
-		if (v == "") {
-			v = "0";
-		}
-		if (isNaN(v)) {
-			return 0.0;
-		}
 		return Number(v);
 	}
 
-	defaultHandle(txt) {
+	appendMinus() {
+		if (this.value == '0') return;
+		if (this.value == '0.') return;
+		if (/0\.0+$/.test(this.value)) return;
+		if (this.value.charAt(0) == '-') {
+			this.value = this.value.substring(1);
+		} else {
+			this.value = '-' + this.value;
+		}
+	}
+
+	appendZero() {
+		if (this.value == '0') return;
+		this.value = this.value + '0';
+	}
+
+	appendDot() {
+		if (this.value.indexOf('.') >= 0) return;
+		this.value = this.value + '.';
+	}
+
+	appendDigit(d) {
+		if (this.value == '0') {
+			this.value = d;
+		} else {
+			this.value = this.value + d;
+		}
+	}
+
+	appendText(text) {
+		if (text == '-') {
+			this.appendMinus();
+		} else if (text == '.') {
+			this.appendDot();
+		} else if (text == '0') {
+			this.appendZero();
+		} else {
+			this.appendDigit(text);
+		}
+	}
+
+	deleteLastLetter() {
+		let v = this.value;
+		if (v == '0') return;
+		if (v.length == 1) {
+			this.value = '0';
+			return;
+		}
+		if (v.length == 2 && v.charAt(0) == '-') {
+			this.value = '0';
+			return;
+		}
+		this.value = v.substr(0, v.length - 1);
+		let isNegative = this.value.charAt(0) == '-';
+		let isZero = /-?0(\.0*)$/.test(this.value);
+		if (isNegative && isZero) {
+			this.value = this.value.substring(1);
+		}
+	}
+
+	backspaceHack(sourceNode) {
+		if (this.value == '0') {
+			KeyResponseFunctions['remove-selected-and-select-previous-leaf'](sourceNode);
+			return;
+		}
+		this.deleteLastLetter();
+	}
+
+	defaultHandle(txt, context, sourcenode) {
+		if (txt == 'Backspace') {
+			this.backspaceHack(sourcenode);
+			return true;
+		}
 		if (isNormallyHandled(txt)) {
 			return false;
 		}

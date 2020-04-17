@@ -55,7 +55,7 @@ class Integer extends ValueNex {
 		return Number(this.value);
 	}
 
-	appendWithChecks(txt) {
+	appendText(txt) {
 		if (txt == '-') {
 			// negate it, unless it's zero
 			if (this.value == '0') return;
@@ -76,7 +76,9 @@ class Integer extends ValueNex {
 	deleteLastLetter() {
 		let v = this.value;
 		if (v == '0') return;
-		if (v.length == 1) {
+		let isNegative = this.value.charAt(0) == '-';
+		let realLength = isNegative ? v.length == 2 : v.length == 1;
+		if (realLength == 1) {
 			this.value = '0';
 			return;
 		}
@@ -103,7 +105,7 @@ class Integer extends ValueNex {
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		if (okRegex.test(txt)) {
-			this.appendWithChecks(txt);
+			this.appendText(txt);
 		} else if (isSeparator) {
 			manipulator.insertAfterSelectedAndSelect(new Separator(txt));
 		} else {
