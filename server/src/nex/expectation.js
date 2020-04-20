@@ -63,6 +63,53 @@ class Expectation extends NexContainer {
 		}
 	}
 
+	/*
+	copying expectations sort of works but still doesn't work.
+	Here's the code for do-on-every:
+
+	(& f nex interval
+		(~let @exp (~cons @nex (* )))
+		(~let @fff (& n
+			(~reset @exp)
+			(~ff-with @exp @fff)
+			(~set-delay @exp @interval)
+			(~f @n)
+		))
+		(~set-delay (~ff-with @exp @fff) @interval)
+	)
+
+	"reset" is not being called on the correct expectation. it has a stale pointer to
+	some other expectation that is not the one that was copied.
+	Which makes sense, because when we copy this expectation, we don't
+	update anything that points to it.
+
+	This is not caused by the fact that we copy the closure when we copy the expectation.
+	Even if we didn't copy the closure, the closure owned by the copied
+	expectation would still point to the wrong thing. In fact, it would be worse,
+	because it would point to the same (original) expectation that was discarded
+	after the copy, which means that that expectation would get ff called on it twice.
+	Worse? Better? IDK, just wrong differently. Maybe better because it wouldn't
+	fail as silently. This fails silently because the copied expectation is distinct
+	but is still not the one on the screen.
+
+	It could be fixed by having ff-with take the expectation as its argument
+	rather than the contents of the expectation. The return value of ff-with
+	would still be the new contents of the expectation. It's just that you'd
+	have to get the car if you didn't want to reset the expectation.
+
+	I could put in some error checking to prevent you from accidentally returning
+	the expectation from ff-with (this would be a common mistake and basically
+	would always be wrong)
+
+	this is a very flexible solution in that you could ostensibly do other things like
+	chain the expectation to other things etc. Also the expectation itself is the
+	"most you know" at fulfill time, i.e. you can't go higher to the parent but
+	you do have a pointer to the expectation that is being fulfilled.
+
+	I'm not sure I can think of a fancier/better solution.
+
+	*/
+
 	copyFieldsTo(nex) {
 		super.copyFieldsTo(nex);
 		if (this.ffClosure) {

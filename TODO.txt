@@ -50,6 +50,7 @@ SERVER/FILES TO DO
 - come up with a file extension for files and automatically add it on the server side
 - make a pretty-printer util for nex files so they can be processed to be easier to look at in a text editor
 - make parser tolerant of whitespace (so it can parse pretty-printed files)
+- now that closures are a nex object we need to make it so it throws an error if you try to save one (because you can't save its memory/environment so it doesn't make sense to save it)
 
 RENDERING TO-DO
 - handle insertion points at the render node level
