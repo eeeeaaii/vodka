@@ -178,6 +178,7 @@ class Command extends NexContainer {
 		if (PERFORMANCE_MONITOR) {
 			perfmon.logMethodCallStart(closure.getCmdName());
 		}
+		this.doAlertAnimation(closure.getLambda());
 		// actually run the code.
 		let r = closure.executor(executionEnv, argEvaluator, cmdname, this.tags);
 		if (PERFORMANCE_MONITOR) {

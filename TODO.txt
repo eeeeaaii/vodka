@@ -58,6 +58,10 @@ RENDERING TO-DO
 - do "in place" rendering rather than deleting innerHTML and re-rendering (needs nexes to have three rendering functions - pre-render for dom nodes that precede children, actual render which draws children, and post-render for dom nodes that come after children)
 - make certain visual things like width/height cachable in the nex itself so that builtins like get-width can just retrieve it rather than having to re-render the nex to find out its width
 - make tags precede content for lists, come after content for atoms
+- make a better look/visual presentation for closures
+
+EVALUATION ENGINE TO-DO:
+- make it so that closures can, depending on flags/options, copy the contents of a lambda when created, so that you can change the contents of any lambda expressions without changing the code that any outstanding closures will run (need to see if this is a performance hit)
 
 CODE CLEANUP TO-DO
 - make a better naming convention for js global variables
