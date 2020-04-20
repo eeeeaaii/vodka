@@ -17,19 +17,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 function createEnvironmentBuiltins() {
-	Builtin.createBuiltin(
-		'say',
-		[
-			{name:'_name@', type:'ESymbol',skipeval:true},
-			{name:'nex', type:'*'}
-		],
-		function(env, argEnv) {
- /////////// *************** THERE IS A DEPRECATED VERSON ************
-			let rhs = env.lb('nex');
-			argEnv.bind(env.lb('_name@').getTypedValue(), rhs);
-			return rhs;
-		}
-	);
 
 	Builtin.createBuiltin(
 		'let',
@@ -37,14 +24,30 @@ function createEnvironmentBuiltins() {
 			{name:'_name@', type:'ESymbol',skipeval:true},
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
- /////////// *************** DEPRECATED ************
-			console.log('deprecated builtin: let');
+		function(env, executionEnvironment) {
 			let rhs = env.lb('nex');
-			argEnv.bind(env.lb('_name@').getTypedValue(), rhs);
+			let symname = env.lb('_name@').getTypedValue();
+			executionEnvironment.bind(symname, rhs);
+			if (rhs.getTypeName() == '-closure-') {
+				// basically let is always "letrec"
+				rhs.getLexicalEnvironment().bind(symname, rhs);
+			}
 			return rhs;
 		}
 	);
+
+	Builtin.createBuiltin(
+		'unclose',
+		[
+			{name:'closure', type:'Closure'}
+		],
+		function(env, executionEnvironment) {
+			// replaces the closure with the dynamic scope of the function we are in
+			let rhs = env.lb('closure');
+			rhs.setLexicalEnvironment(executionEnvironment);
+			return rhs;
+		}
+	);	
 
 	Builtin.createBuiltin(
 		'set',
@@ -52,9 +55,9 @@ function createEnvironmentBuiltins() {
 			{name:'_name@', type:'ESymbol',skipeval:true},
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let rhs = env.lb('nex');
-			argEnv.set(env.lb('_name@').getTypedValue(), rhs);
+			executionEnvironment.set(env.lb('_name@').getTypedValue(), rhs);
 			return rhs;
 		}
 	);
@@ -65,16 +68,22 @@ function createEnvironmentBuiltins() {
 			{name:'_name@', type:'ESymbol',skipeval:true},
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let val = env.lb('nex');
 			let name = env.lb('_name@');
-			let namevalue = name.getTypedValue();
-			if (PERFORMANCE_MONITOR) {
-				if (val.getTypeName() == '-lambda-') {
-					perfmon.registerMethod(namevalue);
+			let namestr = name.getTypedValue();
+			// for closures, I rip out the copied/captured lexical env
+			// and just point it to the global bindings one.
+			// if I don't do this, order matters in bindings and things
+			// bound afterward can't be seen
+			if (val.getTypeName() == '-closure-') {
+				val.setLexicalEnvironment(BINDINGS);
+				val.setBoundName(namestr);
+				if (PERFORMANCE_MONITOR) {
+					perfmon.registerMethod(namestr);
 				}
 			}
-			BINDINGS.bindInPackage(namevalue, val);
+			BINDINGS.bindInPackage(namestr, val);
 			return name;
 		}
 	);
@@ -84,7 +93,7 @@ function createEnvironmentBuiltins() {
 		[
 			{name: '_?search@', type:'ESymbol', skipeval:true, optional:true}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let ssnex = env.lb('_?search@');
 			let ss = "";
 			if (ssnex != UNBOUND) {
@@ -108,7 +117,7 @@ function createEnvironmentBuiltins() {
 		[
 			{name: '_?search@', type:'ESymbol', skipeval:true, optional:true}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let ssnex = env.lb('_?search@');
 			let ss = "";
 			if (ssnex != UNBOUND) {

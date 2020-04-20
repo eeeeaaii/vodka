@@ -18,7 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 class Builtin extends Lambda {
-	constructor(name, params, phaseFactory) {
+	constructor(name, params) {
 		super();
 		this.name = name;
 		this.params = params;
@@ -29,13 +29,6 @@ class Builtin extends Lambda {
 		this.amptext = amp;
 		this.f = null;
 		this.closure = BUILTINS;
-
-		this.phaseFactory =
-			phaseFactory 
-				? phaseFactory
-				: function(phaseExecutor, nex, env, renderNode) {
-					return new BuiltinCommandPhase(phaseExecutor, nex, env, renderNode);
-				  };
 	}
 
 	toString() {
@@ -51,7 +44,7 @@ class Builtin extends Lambda {
 	}
 
 	makeCopy(shallow) {
-		let r = new Builtin(this.name, this.params, this.subPhaseFactory);
+		let r = new Builtin(this.name, this.params);
 		this.copyFieldsTo(r);
 		this.copyChildrenTo(r, shallow);
 		return r;
@@ -71,32 +64,36 @@ class Builtin extends Lambda {
 		this.f = f.bind(this);
 	}
 
-	static createBuiltin(name, params, f, argEvalFactory) {
+	evaluate(executionEnvironment) {
+		let r = super.evaluate(executionEnvironment);
+		r.setCmdName(this.name);
+		return r;
+	}
+
+	static createBuiltin(name, params, f) {
 		for (let i = 0; i < params.length; i++) {
 			params[i].name = BUILTIN_ARG_PREFIX + params[i].name;
 		}
-		let nex = new Builtin(name, params, argEvalFactory ? argEvalFactory : null);
+		let builtin = new Builtin(name, params);
 		if (PERFORMANCE_MONITOR) {
 			perfmon.registerMethod(name);
 		}
-		nex.setF(f);
-		Builtin.bindBuiltinObject(name, nex);
+		builtin.setF(f);
+		let closure = builtin.evaluate(BUILTINS);
+		// rip out the copied closure and replace with global env because
+		// builtins (though they typically do not evaluate each other)
+		// still should be mutally able to see each other, much like
+		// stuff in a package.
+		closure.setLexicalEnvironment(BUILTINS);
+		Builtin.bindBuiltinObject(name, closure);
 	}
 
 	static bindBuiltinObject(name, nex) {
 		BUILTINS.bind(name, nex);
 	}
 
-	executor(closure, executionEnv, commandTags) {
-		return this.f(closure, executionEnv, commandTags);
-	}
-
-	getArgEvaluator(args, argEnv, closure) {
-		if (this.argEvalFactory) {
-			return this.argEvalFactory(this.name, this.params, args, argEnv, closure);
-		} else {
-			return new BuiltinArgEvaluator(this.name, this.params, args, argEnv, closure);
-		}
+	executor(lexicalEnvironment, executionEnv, commandTags) {
+		return this.f(lexicalEnvironment, executionEnv, commandTags);
 	}
 
 	getEventTable(context) {

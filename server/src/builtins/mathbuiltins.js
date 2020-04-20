@@ -21,7 +21,7 @@ function createMathBuiltins() {
 		[
 			{name:'add#%...', type:'Number',variadic:true}, // addends
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let total = 0;
 			let foundFloat = false;
 			let ar = env.lb('add#%...');
@@ -43,7 +43,7 @@ function createMathBuiltins() {
 			{name:'min#%', type:'Number'}, // minuend
 			{name:'?sub#%', type:'Number', optional:true}, // subtrahend
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('min#%');
 			let b = env.lb('?sub#%');
 			if (b == UNBOUND) {
@@ -70,7 +70,7 @@ function createMathBuiltins() {
 		[
 			{name:'fact#%...', type:'Number',variadic:true} // factor???
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let result = 1;
 			let foundFloat = false;
 			let ar = env.lb('fact#%...');
@@ -92,7 +92,7 @@ function createMathBuiltins() {
 			{name:'divid#%', type:'Number'}, // dividend
 			{name:'divis#%', type:'Number'}, // divisor
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('divid#%');
 			let b = env.lb('divis#%');
 			if (b.getTypedValue() == 0) {
@@ -114,7 +114,7 @@ function createMathBuiltins() {
 			{name:'divid#', type:'Integer'}, //?
 			{name:'modulus#', type:'Integer'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('divid#');
 			let b = env.lb('modulus#');
 			let result = a.getTypedValue() % b.getTypedValue();
@@ -127,7 +127,7 @@ function createMathBuiltins() {
 		[
 			{name:'arg%', type:'Float'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('arg%').getTypedValue();
 			a = Math.round(a);
 			return new Float(a);
@@ -139,7 +139,7 @@ function createMathBuiltins() {
 		[
 			{name:'arg%', type:'Float'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('arg%').getTypedValue();
 			let b = Math.sin(a);
 			return new Float(b);
@@ -151,7 +151,7 @@ function createMathBuiltins() {
 		[
 			{name:'arg%', type:'Float'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('arg%').getTypedValue();
 			let b = Math.cos(a);
 			return new Float(b);
@@ -163,7 +163,7 @@ function createMathBuiltins() {
 		[
 			{name:'arg%', type:'Float'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('arg%').getTypedValue();
 			let b = Math.tan(a);
 			return new Float(b);
@@ -175,7 +175,7 @@ function createMathBuiltins() {
 		[
 			{name:'arg%', type:'Float'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('arg%').getTypedValue();
 			let b = Math.asin(a);
 			return new Float(b);
@@ -187,7 +187,7 @@ function createMathBuiltins() {
 		[
 			{name:'arg%', type:'Float'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('arg%').getTypedValue();
 			let b = Math.acos(a);
 			return new Float(b);
@@ -199,7 +199,7 @@ function createMathBuiltins() {
 		[
 			{name:'arg%', type:'Float'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('arg%').getTypedValue();
 			let b = Math.atan(a);
 			return new Float(b);
@@ -212,7 +212,7 @@ function createMathBuiltins() {
 			{name:'y%', type:'Float'},
 			{name:'x%', type:'Float'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let y = env.lb('y%').getTypedValue();
 			let x = env.lb('x%').getTypedValue();
 			return new Float(Math.atan2(y, x));
@@ -224,7 +224,7 @@ function createMathBuiltins() {
 		[
 			{name:'a%', type:'Float'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('a%').getTypedValue();
 			return new Float(Math.exp(a));
 		}
@@ -235,7 +235,7 @@ function createMathBuiltins() {
 		[
 			{name:'a%', type:'Float'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('a%').getTypedValue();
 			return new Float(Math.log(a));
 		}
@@ -246,7 +246,7 @@ function createMathBuiltins() {
 		[
 			{name:'a%', type:'Float'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('a%').getTypedValue();
 			return new Float(Math.log10(a));
 		}
@@ -257,7 +257,7 @@ function createMathBuiltins() {
 		[
 			{name:'a%', type:'Float'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('a%').getTypedValue();
 			return new Float(Math.log2(a));
 		}
@@ -268,7 +268,7 @@ function createMathBuiltins() {
 		[
 			{name:'arg%', type:'Float'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('arg%').getTypedValue();
 			a = Math.ceil(a);
 			return new Float(a);
@@ -280,7 +280,7 @@ function createMathBuiltins() {
 		[
 			{name:'arg%', type:'Float'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('arg%').getTypedValue();
 			a = Math.floor(a);
 			return new Float(a);
@@ -293,7 +293,7 @@ function createMathBuiltins() {
 			{name:'a%', type:'Float'},
 			{name:'b%', type:'Float'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('a%').getTypedValue();
 			let b = env.lb('b%').getTypedValue();
 			return new Float(Math.pow(a, b));
@@ -305,7 +305,7 @@ function createMathBuiltins() {
 		[
 			{name:'a%', type:'Float'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('a%').getTypedValue();
 			return new Float(Math.sqrt(a));
 		}
@@ -317,7 +317,7 @@ function createMathBuiltins() {
 			{name:'a%', type:'Float'},
 			{name:'b%', type:'Float'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('a%').getTypedValue();
 			let b = env.lb('b%').getTypedValue();
 			return new Float(Math.pow(a, (1.0/b)));
@@ -329,7 +329,7 @@ function createMathBuiltins() {
 			{name:'lhs#%', type:'Number'},
 			{name:'rhs#%', type:'Number'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('lhs#%').getTypedValue();
 			let b = env.lb('rhs#%').getTypedValue();
 			let r = (a == b);
@@ -343,7 +343,7 @@ function createMathBuiltins() {
 			{name:'lhs#%', type:'Number'},
 			{name:'rhs#%', type:'Number'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('lhs#%').getTypedValue();
 			let b = env.lb('rhs#%').getTypedValue();
 			let r = (a < b);
@@ -357,7 +357,7 @@ function createMathBuiltins() {
 			{name:'lhs#%', type:'Number'},
 			{name:'rhs#%', type:'Number'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('lhs#%').getTypedValue();
 			let b = env.lb('rhs#%').getTypedValue();
 			let r = (a <= b);
@@ -371,7 +371,7 @@ function createMathBuiltins() {
 			{name:'lhs#%', type:'Number'},
 			{name:'rhs#%', type:'Number'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('lhs#%').getTypedValue();
 			let b = env.lb('rhs#%').getTypedValue();
 			let r = (a > b);
@@ -385,7 +385,7 @@ function createMathBuiltins() {
 			{name:'lhs#%', type:'Number'},
 			{name:'rhs#%', type:'Number'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('lhs#%').getTypedValue();
 			let b = env.lb('rhs#%').getTypedValue();
 			let r = (a >= b);
@@ -399,7 +399,7 @@ function createMathBuiltins() {
 			{name:'lhs#%', type:'Number'},
 			{name:'rhs#%', type:'Number'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let a = env.lb('lhs#%').getTypedValue();
 			let b = env.lb('rhs#%').getTypedValue();
 			let r = (a != b);
@@ -411,7 +411,7 @@ function createMathBuiltins() {
 	Builtin.createBuiltin(
 		'random',
 		[],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let n = Math.random();
 			return new Float(n);
 		}

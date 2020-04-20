@@ -23,7 +23,7 @@ function createFileBuiltins() {
 			{name:'_name@', type:'ESymbol', skipeval:true},
 			{name:'_nex', type:'*', skipeval:true}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let namesym = env.lb('_name@');
 			let nm = namesym.getTypedValue();
 			let val = env.lb('_nex');			
@@ -42,7 +42,7 @@ function createFileBuiltins() {
 	// 		{name:'_name@', type:'ESymbol', skipeval:true},
 	// 		{name:'_nex', type:'*', skipeval:true}
 	// 	],
-	// 	function(env, argEnv) {
+	// 	function(env, executionEnvironment) {
 	// 		let namesym = env.lb('_name@');
 	// 		let nm = namesym.getTypedValue();
 	// 		let val = env.lb('_nex');			
@@ -59,7 +59,7 @@ function createFileBuiltins() {
 		[
 			{name:'_name@', type:'ESymbol', skipeval:true},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let namesym = env.lb('_name@');
 			let nm = namesym.getTypedValue();
 			let exp = new Expectation();
@@ -75,14 +75,14 @@ function createFileBuiltins() {
 			{name:'_name@', type:'ESymbol', skipeval:true},
 			{name:'nex...', type:'*', skipeval:true, variadic:true}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let packageName = env.lb('_name@').getTypedValue();
 			let lst = env.lb('nex...');
 			BINDINGS.setPackageForBinding(packageName);
 			let lastresult = new Nil();
 			for (let i = 0; i < lst.numChildren(); i++) {
 				let c = lst.getChildAt(i);
-				lastresult = evaluateNexSafely(c, argEnv);
+				lastresult = evaluateNexSafely(c, executionEnvironment);
 				// not sure what to do about errors yet?
 			}
 			BINDINGS.setPackageForBinding(null);
@@ -110,12 +110,12 @@ function createFileBuiltins() {
 		[
 			{name:'_name@', type:'ESymbol', skipeval:true},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let packageName = env.lb('_name@').getTypedValue();
 			if (!BINDINGS.isKnownPackageName(packageName)) {
 				return new EError(`use: invalid package name ${packageName}. Sorry!`);
 			}
-			argEnv.usePackage(packageName);
+			env.usePackage(packageName);
 			return new Nil();
 		}
 	);	
@@ -126,7 +126,7 @@ function createFileBuiltins() {
 			{name:'namelist()', type:'NexContainer'},
 			{name:'_nex...', type:'*', skipeval:true, variadic:true}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let packageList = env.lb('namelist()');
 			for (let i = 0; i < packageList.numChildren(); i++) {
 				let c = packageList.getChildAt(i);
@@ -137,13 +137,13 @@ function createFileBuiltins() {
 				if (!BINDINGS.isKnownPackageName(packageName)) {
 					return new EError(`using: invalid package name ${packageName}. Sorry!`);
 				}
-				argEnv.usePackage(packageName);
+				env.usePackage(packageName);
 			}
 			let lst = env.lb('_nex...');
 			let result = new Nil();
 			for (let j = 0; j < lst.numChildren(); j++) {
 				let c = lst.getChildAt(j);
-				result = evaluateNexSafely(c, argEnv);
+				result = evaluateNexSafely(c, executionEnvironment);
 				if (isFatalError(result)) {
 					result = wrapError('&szlig;', `using: error in expression ${j+1}, cannot continue. Sorry!`);
 					return result;
@@ -158,7 +158,7 @@ function createFileBuiltins() {
 		[
 			{name:'_name@', type:'ESymbol', skipeval:true},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let namesym = env.lb('_name@');
 			let nm = namesym.getTypedValue();
 			let exp = new Expectation();
@@ -176,7 +176,7 @@ function createFileBuiltins() {
 			{name:'_name@', type:'ESymbol', skipeval:true},
 			{name:'_nex...', type:'*', skipeval:true, variadic:true}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new EError("not supported anymore TODO:fix");
 			let namesym = env.lb('_name@');
 			let lst = env.lb('_nex...');
@@ -199,7 +199,7 @@ function createFileBuiltins() {
 				resultRun.appendChild(namesym.makeCopy());
 				for (var i = 0; i < toSave.numChildren(); i++) {
 					let c = toSave.getChildAt(i);
-					let result = evaluateNexSafely(c, argEnv);
+					let result = evaluateNexSafely(c, executionEnvironment);
 					let ccopy = c.makeCopy();
 					resultRun.appendChild(ccopy);
 					if (result.getTypeName() == '-error-') {
@@ -220,7 +220,7 @@ function createFileBuiltins() {
 			{name:'_name@', type:'ESymbol', skipeval:true},
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let namesym = env.lb('_name@');
 			let nm = namesym.getTypedValue();
 			let val = env.lb('nex');			
@@ -237,7 +237,7 @@ function createFileBuiltins() {
 			{name:'imports()', type:'NexContainer'},
 			{name:'_nex', type:'*', skipeval:true}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let importList = env.lb('imports()');
 			let nex = env.lb('_nex');
 			let exp = new Expectation();

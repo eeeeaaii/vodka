@@ -17,6 +17,22 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 var FF_GEN = 0;
 
+class CallbackRouter {
+	constructor() {
+		this.waitingExpectations = [];
+	}
+
+	addExpecting(exp) {
+		this.waitingExpectations.push(exp);
+	}
+
+	fulfill(result) {
+		for (let i = 0; i < this.waitingExpectations.length; i++) {
+			this.waitingExpectations[i].fulfill(result);
+		}
+	}
+}
+
 class Expectation extends NexContainer {
 	constructor() {
 		super()
@@ -25,14 +41,17 @@ class Expectation extends NexContainer {
 		// because if we did that, the code in ffWidth couldn't
 		// reset this expectation.
 		this.fulfillCallbacks = [];
+		this.callbackRouter = null;
+		this.ffClosure = null;
+		this.ffExecutionEnvironment = null;
 	}
 
 	reset() {
 		this.isSet = false;
-		this.lambdaClosure = null;
 		this.asyncProcessCompleted = false;
 		this.handle = null;
-		this.fff = null;
+		this.ffClosure = null;
+		this.ffExecutionEnvironment = null;
 	}
 
 	addFulfillCallback(newListener) {
@@ -46,18 +65,26 @@ class Expectation extends NexContainer {
 
 	copyFieldsTo(nex) {
 		super.copyFieldsTo(nex);
-		nex.fff = this.fff;
+		if (this.ffClosure) {
+			nex.ffClosure = this.ffClosure.makeCopy();		
+		}
+		if (this.ffExecutionEnvironment) {
+			nex.ffExecutionEnvironment = this.ffExecutionEnvironment.copy();
+		}
+		if (this.callbackRouter) {
+			nex.callbackRouter = this.callbackRouter;
+			nex.callbackRouter.addExpecting(nex);
+		}
 	}
 
-	ffWith(fff, closure) {
-		if (this.fff) {
+	ffWith(closure, executionEnvironment) {
+		if (this.ffClosure) {
 			throw new EError('Expectation: cannot set ff-with, has already been set (try resetting the expectation)');
-			// throw exception because we are setting fff again?
 		}
-		this.fff = fff;
+		this.ffClosure = closure;
 		this.ffgen = FF_GEN;
-		this.fffClosure = closure;
-		this.lambdaClosure = fff.closure;
+		// I think we also need to close over the execution environment but not sure
+		this.ffExecutionEnvironment = executionEnvironment.copy();
 		if (this.asyncProcessCompleted) {
 			let result = this.callFFWith(this.getResultToProcess());
 		}
@@ -68,15 +95,17 @@ class Expectation extends NexContainer {
 			throw new EError('Expectation: cannot set the expectation, has already been set (try resetting)');
 		}
 		this.isSet = true;
+		this.callbackRouter = new CallbackRouter();
+		this.callbackRouter.addExpecting(this);
 		return (function(result) {
-			eventQueue.enqueueExpectationFulfill(this, result);
+			eventQueue.enqueueExpectationFulfill(this.callbackRouter, result);
 		}).bind(this);
 	}
 
-	// this is used when you want the callback to actually be stored in the exception itself,
-	// i.e., the exception acts as a handle that you can use to fulfill itself.
-	// usually an exception can only be fulfilled by some external process
-	// but this allows the exception to fulfill itself.
+	// this is used when you want the callback to actually be stored in the expectation itself,
+	// i.e., the expectation acts as a handle that you can use to fulfill itself.
+	// usually an expectation can only be fulfilled by some external process
+	// but this allows the expectation to fulfill itself.
 	setHandle(callback) {
 		this.handle = callback;
 	}
@@ -104,31 +133,12 @@ class Expectation extends NexContainer {
 	}
 
 	callFFWith(result) {
-		// the lambda's lexical environment can change (not the symbols stored
-		// in it, but their VALUES) if the code that the lambda appears in
-		// is executed more than once. At the time we set ffWith,
-		// we need to record the lexical environment at that time,
-		// so that if the lexical environment changes again between
-		// now and the time the expectation is fullfilled, because the code
-		// containing the lambda is evaluated again, the expectation
-		// can restore the lexical environment to the way it was
-		// when it is fulfilled.
-
 		if (isFatalError(result)) {
 			return result;
 		}
-		this.fff.closure = this.lambdaClosure;
-		let cmd = new Command('');
-		// also. The way I am doing this is problematic because the lambda has
-		// ALREADY been evaluated and has a lexical environment, but if I
-		// put put it in as the first child of the command,
-		// the machinery inside command will thing that someone did this:
-		// (~ (& ...) a b c)
-		// and will evaluate the lambda AGAIN to grab a new lexical environment.
-		cmd.setFirstLambdaChildHasAlreadyBeenEvaluated(true);
-		cmd.appendChild(this.fff);
-		cmd.appendChild(result);;
-		return evaluateNexSafely(cmd, this.fffClosure);
+		// do I quote result?
+		let cmd = Command.makeCommandWithClosure(this.ffClosure, result);
+		return evaluateNexSafely(cmd, this.ffExecutionEnvironment);
 	}
 
 	getResultToProcess(result) {
@@ -156,7 +166,7 @@ class Expectation extends NexContainer {
 		// because code in ffWith might decide to reset this expectation.
 		this.asyncProcessCompleted = true;
 		this.isSet = false;
-		if (this.fff) {
+		if (this.ffClosure) {
 			result = this.callFFWith(result);
 		}
 		this.drainChildren();
@@ -213,15 +223,9 @@ class Expectation extends NexContainer {
 	}
 
 	getDotSpanHTML() {
-		// if (this.unlimited) {
-		// 	return '...';
-		// }
 		if (this.isSet) {
 			return '*';
 		}
-		// if (this.fff) {
-		// 	return '..';
-		// }
 		return '.';
 	}
 
@@ -231,13 +235,8 @@ class Expectation extends NexContainer {
 	}
 
 	setDotSpanPaddingClass(dotspan) {
-		// if (this.unlimited) {
-		// 	dotspan.classList.add('threedots');
-		// } else
 		if (this.isSet) {
 			dotspan.classList.add('fulfilled');
-		// } else if (this.fff) {
-		// 	dotspan.classList.add('twodots');
 		}
 	}
 

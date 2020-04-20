@@ -22,7 +22,7 @@ function createTagBuiltins() {
 			{name: '_nex', type:'*', skipeval:true},
 			{name: 'tag$', type:'EString'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let n = env.lb('_nex');
 			let tagname = env.lb('tag$').getFullTypedValue();
 			n.addTag(new Tag(tagname));
@@ -36,7 +36,7 @@ function createTagBuiltins() {
 			{name: '_nex', type:'*', skipeval:true},
 			{name: 'tag$', type:'EString'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let n = env.lb('_nex');
 			let tagname = env.lb('tag$').getFullTypedValue();
 			let tag = new Tag(tagname);
@@ -50,7 +50,7 @@ function createTagBuiltins() {
 		[
 			{name: '_nex', type:'*', skipeval:true},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let n = env.lb('_nex');
 			let tagname = env.lb('tag$').getFullTypedValue();
 			let tag = new Tag(tagname);
@@ -65,7 +65,7 @@ function createTagBuiltins() {
 			{name: '_nex', type:'*', skipeval:true},
 			{name: 'tag$', type:'EString'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let n = env.lb('_nex');
 			let tagname = env.lb('tag$').getFullTypedValue();
 			let tag = new Tag(tagname);

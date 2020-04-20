@@ -116,7 +116,8 @@ class NexContainer extends Nex {
 	}
 
 	copyChildrenTo(n, shallow) {
-		// shallow is already only used for cdr/cons
+		// shallow copy is impt so you can copy a list with the style etc.
+		// used by map, reduce, filter builtins.
 		if (shallow) {
 			return;
 		} else {

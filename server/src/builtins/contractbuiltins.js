@@ -22,7 +22,7 @@ function createContractBuiltins() {
 			{name:'tag^', type:'Nil'},
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			// enforces that the tag can only be applied to
 			// nexes that have the same type as the passed-in arg
 			let nil = env.lb('tag^');
@@ -43,7 +43,7 @@ function createContractBuiltins() {
 			{name:'tag^', type:'Nil'},
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			// enforces that the tag can only be applied to
 			// nexes that have the same type as the passed-in arg
 			let nil = env.lb('tag^');

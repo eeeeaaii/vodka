@@ -2,15 +2,8 @@ TYPE-RELATED TO DO
 - figure out how to resolve orgs with multiple matching tags (first match?) and do we iterate first thru
   the tags in the expr being evaluated or first thru the tags on the org?
 - figure out if it's an error if returned org doesn't have tag
-- make type checker for lambdas
 - make builtin type checker operate off strings (i.e. make a type string parser)
-- make equality contract
-- make lambda type contract - exact match
-- make lambda type contract - "invokable" (i.e. matches if less specific than, can be called on same args)
-- make list-must-contain-exclusively contract: must contain given tags (or types) and no other tags (or types)
-- make list-must-contain-nonexclusively contract: must contain given tags (or types), can have others
-- summary contract: something with tag Foo must have tags Bar, Baz, Qux
-- custom contract (runs code to see if nex satisifies)
+- use the builtin argument type checker for lambdas also
 - contract adherence check at tag assignment time with the tag builtin
 - builtin that checks contract adherence
 - implement tag checking in function params (single bracket [])
@@ -21,210 +14,89 @@ TYPE-RELATED TO DO
 - functions that return multiple values - put all in parent
 - "do not eval" functions that always act like they are quoted the first time
 - make it so braces inside tags are ignored [stuff in here]
-
+- contracts that need to be implemented
+- - equality
+- - lambda type - exact match
+- - lambda type - "invokable" (i.e. matches if less specific than, can be called on same args)
+- - list-must-contain-exclusively: must contain given tags (or types) and no other tags (or types)
+- - list-must-contain-nonexclusively: must contain given tags (or types), can have others
+- - summary: something with tag Foo must have tags Bar, Baz, Qux
+- - custom (runs code to see if nex satisifies)
+(see TYPE_SYSTEM_NOTES.txt for more info)
 
 TESTS TO-DO
-- make test for equal
-- make tests for copy and paste
-- make tests for run-js
-- make tests for cram and chop
-- make test for to-word
-- make tests for all async primitives
+- all tests may need to be re-recorded
+- set up a unit testing framework that's not screenshot based
+- make it so that async code can be screenshot tested (i.e. so the browser doesn't exit too early)
+- re-do tests for builtins using unit testing framework
+- make tests for copy and paste actions (cmd-c, cmd-v)
 - need test for partial-exploded mode ,it doesn't work because esc is integral to my test recording framework
 - I should have a test for each type of error location to make sure error propagation doesn't get broken. so basically any place that evaluateNexSafely is called
-- test for to-float
-- tests for catch, eval
+- builtins that need tests
+- - run-js
+- - equal
+- - cram/chop
+- - all async primitives
+- - to-word/to-float
+- - eval
+- - others?
 
-
-BUGFIXES
-- trying to load a file that doesn't exist crashes the server
+SERVER/FILES TO DO
+- (fixed?) trying to load a file that doesn't exist crashes the server
 - saving a file with an error in it only saves the top-level error not the enclosed errors.
+- implement authentication/usernames/something and make it so each user saves/loads files from their private location
+- make it so library files like util-functions, etc., are loaded from a global place that can't be modified, but that if you've done git pull and are modifying the source, there's a way you can pass a flag or something so that those files CAN be modified
+- change the import builtin so it's like "import util" instead of "import util-functions"
+- come up with a file extension for files and automatically add it on the server side
+- make a pretty-printer util for nex files so they can be processed to be easier to look at in a text editor
+- make parser tolerant of whitespace (so it can parse pretty-printed files)
 
-
-CODE CLEANUP = good
-- make a better naming convention for js global variables decide what's a const and what's a singleton and generally what's what.
-- come up with a better naming convention for global objects
+RENDERING TO-DO
 - handle insertion points at the render node level
 - get rid of that carriage return object and use insertion point for that
-- rename getFulfilledThing to fulfill
-- use regexes in the event table to clean up the event tables
-- remove old edit primitive
+- implement the thing where instead of having various types of renders, you just mark whatever is dirty as dirty, then call a function that renders whatever's dirty
+- do "in place" rendering rather than deleting innerHTML and re-rendering (needs nexes to have three rendering functions - pre-render for dom nodes that precede children, actual render which draws children, and post-render for dom nodes that come after children)
+- make certain visual things like width/height cachable in the nex itself so that builtins like get-width can just retrieve it rather than having to re-render the nex to find out its width
+- make tags precede content for lists, come after content for atoms
+
+CODE CLEANUP TO-DO
+- make a better naming convention for js global variables
 - fix render node hacks in estring class coming from the normal/expanded drawing logic
 - remove dead code from eerror class because it can't be drawn in expanded mode anymore
-- figure out what to do in run-js if no DOM object (throw exception? create one?)
 - BuiltinParamManager and BuiltinArgEvaluator do the same thing, merge somehow
 
-
-PERFORMANCE FIXES = recommended
-- use "dirty-only" rendering everywhere it is possible to use it
-- instanceof checks are slow, for nexes instead compare to getTypeName()
-
-
-USABILITY IMPROVEMENTS = nice to have
-- figure out what the naming convention is going to be for packages and whether "-functions" should be appended automatically
-- tags precede rather than follow content
-- start using exclamation points for primitives that set values like in regular lisp, like apply-style-to
-
-CUSTOM NEXES
-- make a new list type actually called list that's equivalent to a word but can be re-oriented vert or horiz, and make doc/line/word into custom nexes, so reduce standard list types to just org, list, lambda, command, expectation
-- make a list type that, when you evaluate it, replaces each of its children with the result of evaluating that child
-
-
-NEW FEATURES = be careful
+BUILTIN TO-DO
+- figure out what to do in run-js if no DOM object (throw exception? create one?)
+- figure out whether I should use exclamation point for primitives that change the value of things (like set!) as in regular lisp
 - short circuit evaluation for conditionals
-- make it so you can change exploded/normal in code by setting a tag
-
+- implement cond
 - implement to-word for lines and docs
 - implement "equal" for list types (needs to be deep equal)
-- make native primitives for some common operations that could be bootstrapped (like iteration)
 - make "type creation" primitives (make-integer, make-float, etc)
-- make the ff primitives use "skip eval" but test arguments to see if they are
-  already expectations and if so just use, otherwise eval argument.
 
+USER INPUT TO DO
+- use regexes in the event table
+- make "editor" classes for symbol, string, etc., similar to tags
+- figure out key combination for "reopening editor"
 
-EXPERIMENTS TO TRY = be extra careful
-- get rid of insertion points and switch to pre- and post- inserts
+PERFORMANCE TO DO
+- instanceof checks are slow, for nexes instead compare to getTypeName()
+- var is slow, use const or let
+
+CUSTOM NEXES
+- make a new list type actually called list that's equivalent to a word but can be re-oriented vert or horiz
+- make doc/line/word into custom nexes
+- - for doc type, make it so that you can type things like an exclaimation point without it inserting a boolean
+- make custom nexes to implement sound/audio
+
+EXPERIMENTAL
+- make a list type that, when you evaluate it, replaces each of its children with the result of evaluating that child
+- hook up playstation controller and try coding with it
 - try voice commands
-- make arithmetic functions use plus, minus words instead of symbols
-- make docs so that !#$ characters add those literal characters and the only ones that work are ~@
-- use a different key for modifying string contents rather than shift-enter
+- make arithmetic functions use plus, minus words instead of +/- symbols
 - try having different ctrl/alt/shift chords for insert/append/prepend/enclose versions of !@#$
+- get rid of insertion points
 
-
-
-
-
-
-here's my type system:
-
-
-DONE - a tag is an identifier associated with a program element
-
-DONE - a org is a special list
-
-DONE - an org can have children that are tagged
-
-DONE - at evaluation time, if an expression is tagged, the evaluator will check after evaluation
-to see whether the expression evaluated to an org. If it did, then the evaluator will
-retrieve the child matching the tag, and evaluate that
-
-if an expression has multiple tags, the evaluator will resolve them in the order they are specified,
-and use the first one that works (note: need to think more about this because what if an obj has multiple children with the same tag, what if a nex has two of the same tag, etc)
-
-DONE - It is not an error if the returned org doesn't have that tag (unless strict mode?)
-
-DONE - If dereferencing the tag returns another org, the evaluator will dereference again. It will keep dereferencing until:
-1. the dereferencing step stops returning orgs 2. it runs out of matching tags
-
-types:
-- the type of an integer, string, etc. is just that
-- the type of a lambda is a specifier containing its return value, args, etc
-- the type of an org is an unordered list of tags. an org is of a given type if it contains all the tags
-  in the list
-- a contract is some trustable assertion about a tag, as in "you know that something with this tag is _blank_".
-  - contracts are enforced at the time the tag is assigned to the nex
-  - types of contracts
-    - identity contract: a tag can only be assigned to a specific object
-    - equality contract: a tag can only be assigned to an object that evaluates as equal to a given value
-    - simple type contract: something with tag Foo must be an integer
-    - lambda exclusive type contract: something with tag Foo must be a lambda with the exact type string -# arg# arg#
-    - lambda inclusive type contract: something with tag Foo must be a lambda that could allow arguments that match a given type string
-    - list exclusive tag contents contract: something with tag Foo must be an list containing things with
-      tags Foo, Bar, and Baz and nothing else (note: it doesn't have to be an org, but if it's not an org,
-      it can't be dereferenced)
-    - list inclusive tag contents contract: something with tag Foo must be an list containing things with tags
-      Foo, Bar, and Baz, but it could have other things
-    - list exclusive type contents contract: something with tag Foo must be a list with two integers and nothing else (or whatever)
-    - list inclusive type contents contract: something with tag Foo must be a list with at least two integers, could have other things
-    - something with tag Foo must also have tags Bar, Baz, and Qux (this is how you do 'contract contract', i.e. enforce
-      that a nex satisfies multiple contracts)
-    - custom contract: you implement a function in Vodka that returns true or false, and at contract-check time
-      the framework evaluates your function, passing in the nex that is being checked for whether it satisfies the contract
-      
-
-contracts are only checked at tag assignment time for performance reasons, but there can be a primitive that
-re-checks contracts
-
-
-
-- a kind is an restriction that states that a given tag can only be assigned to something with a given type
-- lambda type strings can also include tags, which indicate that the thing passed in must have that tag
-
-examples of lambda type strings:
-
-arg1 arg2
-    two args of any type
-
-arg1# arg2#
-    two integers
-
-arg1! arg2!
-    two booleans
-
-arg1& arg2&
-    two lambdas
-
-arg1* arg2*
-    two expectations
-
-arg1@ arg2@
-    two symbols
-
-_arg1@ arg2@
-    two symbols, but the first one is not evaluated before being passed
-
-arg1% arg2#...
-    a float and then zero or more integers (variadic argument)
-
-arg1% arg2#?
-    a float and then an optional integer
-
-_arg1~ arg2~
-    two commands - the first is unevaluated, but the second needs to be returned by
-    the evaluation step for the second argument
-
-arg1( arg2(
-    two lists
-
-arg1#[Magnitude] arg2#
-    two integers, but the first one has to be tagged with 'Magnitude'
-
-arg1) arg2)
-    two orgs, any type
-
-arg1)[Magnitude] arg2)
-    two orgs, but the first one has to be tagged with 'Magnitude'
-
--# arg1#
-    this function takes an integer and returns an integer
-
--)[Magnitude] arg1#
-    this function takes an integer and returns an obj tagged with 'Magnitude'
-
-
-
-
-experimental features regarding return values:
-
-- setting '-' would set the return value
--#?
-    this function can return an integer but it can also return 'nothing', which means
-    the evaluator removes whatever it returned from the arg list of what it was in.
--#...
-    this function can return more than one thing
-_-
-    this function is not evaluated, e.g. so if you had:
-    (~bind @do-not-do (&_-# (~+ #3 #3)))
-    we have a function that adds 3 + 3 and returns an integer, but it's not evaluated.
-    this means that if you have this:
-    (~+ #9 (~do-not-do))
-    it fails because the (~do-not-do) is basically treated like it's been quoted, but this:
-    (~+ #9 (~eval (~do-not-do)))
-    would work fine because "skip eval" only applies to the first time basically:
-    that is to say, if a "do not eval" function is evaluated, it loses its "do not eval" status.
-
-
-- make it so that anything inside braces in a tag, i.e. [] is ignored (use this for comments?)
 
 
 

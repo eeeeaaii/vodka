@@ -23,7 +23,7 @@ function createAsyncBuiltins() {
 		[
 			{name: 'exp,', type:'Expectation', optional:true}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let exp = env.lb('exp,');
 			if (exp == UNBOUND) {
 				FF_GEN++;
@@ -40,7 +40,7 @@ function createAsyncBuiltins() {
 		[
 			{name: 'exp,', type:'Expectation'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let exp = env.lb('exp,');
 			exp.reset();
 			return exp;
@@ -51,12 +51,12 @@ function createAsyncBuiltins() {
 		'ff-with',
 		[
 			{name: 'exp,', type:'Expectation'},
-			{name: 'func&', type:'Lambda'}
+			{name: 'func&', type:'Closure'}
 		],
-		function(env, argEnv) {
-			let lambda = env.lb('func&');
+		function(env, executionEnvironment) {
+			let closure = env.lb('func&');
 			let exp = env.lb('exp,');
-			exp.ffWith(lambda, argEnv);
+			exp.ffWith(closure, executionEnvironment);
 			return exp;
 		}
 	);
@@ -67,7 +67,7 @@ function createAsyncBuiltins() {
 			{name: 'exp,', type:'Expectation'},
 			{name: 'expother,', type:'Expectation'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			// makes the first one pending the second basically
 			let exp = env.lb('exp,');
 			let expother = env.lb('expother,');
@@ -81,7 +81,7 @@ function createAsyncBuiltins() {
 		[
 			{name: 'expother,', type:'Expectation'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			// makes the first one pending the second basically
 			let exp = new Expectation();
 			let expother = env.lb('expother,');
@@ -95,7 +95,7 @@ function createAsyncBuiltins() {
 		[
 			{name: 'exp,', type:'Expectation'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let exp = env.lb('exp,');
 			exp.setHandle(exp.getCallbackForSet());;
 			return exp;
@@ -107,7 +107,7 @@ function createAsyncBuiltins() {
 		[
 			{name: 'exp,', type:'Expectation'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let exp = env.lb('exp,');
 			if (!exp.hasHandle()) {
 				return new EError('exp: cannot handle because this expectation was not set to fulfill on handle. Sorry!');
@@ -124,7 +124,7 @@ function createAsyncBuiltins() {
 			{name: 'exp,', type:'Expectation'},
 			{name: 'time#', type:'Integer'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let time = env.lb('time#').getTypedValue();
 			let exp = env.lb('exp,');
 			let callback = exp.getCallbackForSet();
@@ -140,7 +140,7 @@ function createAsyncBuiltins() {
 		[
 			{name: 'exp,', type:'Expectation'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let exp = env.lb('exp,');
 			let callback = exp.getCallbackForSet();
 			exp.extraClickHandler = function() {

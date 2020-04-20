@@ -21,7 +21,7 @@ function createMakeBuiltins() {
 		[
 			{name: 'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let exp = new Expectation();
 			exp.appendChild(env.lb('nex'));
 			return exp;
@@ -32,7 +32,7 @@ function createMakeBuiltins() {
 		'make-zlist',
 		[
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Zlist();
 		}
 	);

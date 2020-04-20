@@ -26,10 +26,8 @@ class Nex {
 		this.selected = false;
 		this.keyfunnel = null;
 		this.currentStyle = "";
-		this.enclosingClosure = null; // DO NOT COPY
 		this.tags = [];
 		this.id = NEXT_NEX_ID++;
-		this.boundName = "";
 		this.extraClickHandler = null;
 		this.closure = null; // only lambdas have closures but just copying is prob cheaper than testing?
 		this.inPackage = null; // well here we go with more things in the env I guess.
@@ -43,11 +41,6 @@ class Nex {
 
 	getTypeName() {
 		throw new Error("only leaf types have names");
-	}
-
-	setBoundName(str) {
-		// I mean it's not perfect, it will get overwritten each time, but...
-		this.boundName = str;
 	}
 
 	doRenderSequencing(renderNode) {

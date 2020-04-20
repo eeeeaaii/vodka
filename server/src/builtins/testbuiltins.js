@@ -21,7 +21,7 @@ function createTestBuiltins() {
 		[
 			{name:'list()', type:'NexContainer'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let lst = env.lb('list()');
 			let rb = !lst.hasChildren();
 			return new Bool(rb);
@@ -33,7 +33,7 @@ function createTestBuiltins() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof EError);
 		}
 	);
@@ -43,7 +43,7 @@ function createTestBuiltins() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof Bool);
 		}
 	);
@@ -53,7 +53,7 @@ function createTestBuiltins() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof Command);
 		}
 	);
@@ -63,7 +63,7 @@ function createTestBuiltins() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof Doc);
 		}
 	);
@@ -73,7 +73,7 @@ function createTestBuiltins() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof EString);
 		}
 	);
@@ -83,7 +83,7 @@ function createTestBuiltins() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof ESymbol);
 		}
 	);
@@ -93,7 +93,7 @@ function createTestBuiltins() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof Expectation);
 		}
 	);
@@ -103,7 +103,7 @@ function createTestBuiltins() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof Float);
 		}
 	);
@@ -113,7 +113,7 @@ function createTestBuiltins() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof Integer);
 		}
 	);
@@ -123,7 +123,7 @@ function createTestBuiltins() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof Lambda);
 		}
 	);
@@ -133,7 +133,7 @@ function createTestBuiltins() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof Letter);
 		}
 	);
@@ -143,7 +143,7 @@ function createTestBuiltins() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof Line);
 		}
 	);
@@ -153,7 +153,7 @@ function createTestBuiltins() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof Nil);
 		}
 	);
@@ -162,7 +162,7 @@ function createTestBuiltins() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof Separator
 				&& !(env.lb('nex') instanceof Letter));
 		}
@@ -172,7 +172,7 @@ function createTestBuiltins() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof Word);
 		}
 	);
@@ -181,7 +181,7 @@ function createTestBuiltins() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof NexContainer);
 		}
 	);
@@ -190,7 +190,7 @@ function createTestBuiltins() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof Zlist);
 		}
 	);

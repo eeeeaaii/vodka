@@ -22,11 +22,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 // world unless I have two notions: the node, and the nex.
 
 class LambdaArgEvaluator {
-	constructor(params, argContainer, bindEnv, argEnv, debugstr) {
+	constructor(params, argContainer, executionEnvironment, debugstr) {
 		this.params = params;
 		this.argContainer = argContainer;
-		this.bindEnv = bindEnv;
-		this.argEnv = argEnv;
+		this.executionEnvironment = executionEnvironment;
 		this.numRequiredParams = params.length;
 		this.debugstr = debugstr;
 	}
@@ -38,7 +37,7 @@ class LambdaArgEvaluator {
 	}	
 
 	processArgument(arg) {
-		let r = evaluateNexSafely(arg, this.argEnv);
+		let r = evaluateNexSafely(arg, this.executionEnvironment);
 		return r;
 	}
 
@@ -55,15 +54,14 @@ class LambdaArgEvaluator {
 		}
 	}
 
-	bindArgs() {
+	bindArgs(scope) {
 		for (let i = 0; i < this.params.length; i++) {
-			this.bindEnv.bind(this.params[i], this.argContainer.getArgAt(i));
+			scope.bind(this.params[i], this.argContainer.getArgAt(i));
 		}
 	}
 
-	evaluateAndBindArgs() {
+	evaluateArgs() {
 		this.checkNumParams();
 		this.processAllArgs();
-		this.bindArgs();
 	}	
 }

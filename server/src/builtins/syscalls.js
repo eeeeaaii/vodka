@@ -24,7 +24,7 @@ function createSyscalls() {
 		[
 			{name: 'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let nex = env.lb('nex');
 			console.log(nex.debugString());
 			return nex;
@@ -38,7 +38,7 @@ function createSyscalls() {
 			{name:'style$', type:'EString'},
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let s = env.lb('style$').getFullTypedValue();
 			let n = env.lb('nex');
 			n = n.makeCopy();
@@ -52,7 +52,7 @@ function createSyscalls() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let n = env.lb('nex');
 			let s = n.getCurrentStyle();
 			return new EString(s);
@@ -64,7 +64,7 @@ function createSyscalls() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let n = env.lb('nex');
 			let rn = new RenderNode(n);
 			hiddenroot.appendChild(rn);
@@ -81,7 +81,7 @@ function createSyscalls() {
 		[
 			{name:'nex', type:'*'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let n = env.lb('nex');
 			let rn = new RenderNode(n);
 			hiddenroot.appendChild(rn);
@@ -99,7 +99,7 @@ function createSyscalls() {
 			{name:'expr$', type:'EString'},
 			{name:'nex...', type:'*', variadic:true}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let strn = env.lb('expr$');
 			let str = strn.getFullTypedValue();
 			let lst = env.lb('nex...');

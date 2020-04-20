@@ -21,32 +21,27 @@ class Command extends NexContainer {
 	constructor(val) {
 		super();
 		this.commandtext = (val ? val : "");
-		this.cachedBuiltin = null;
+		this.cachedClosure = null;
 		// a lot of the builtins and other code generate commands with null command strings
 		// and append a lambda as the first argument - there's no need to attempt
 		// caching in those cases and it's a real performance hit.
-		if (val) {
-			this.cacheGlobalBuiltin();
+		if (this.commandtext) {
+			this.cacheClosureIfCommandTextIsBound();
 		}
-		this.symbolversion = -1;
-		this.symbol = null;
-		this.firstLambdaChildHasAlreadyBeenEvaluated = false;
 	}
 
 	getTypeName() {
 		return '-command-';
 	}
 
-	setFirstLambdaChildHasAlreadyBeenEvaluated(val) {
-		this.firstLambdaChildHasAlreadyBeenEvaluated = val;
-	}
-
-	cacheGlobalBuiltin() {
-		this.cachedBuiltin = null;
+	// this method also invalidates/deletes the existing cached closure,
+	// and is meant to be called when the command text changes.
+	cacheClosureIfCommandTextIsBound() {
+		this.cachedClosure = null;
 		try {
-			let binding = BUILTINS.lookupBinding(this.commandtext);
-			if (binding) {
-				this.cachedBuiltin = binding;
+			let closure = BUILTINS.lookupBinding(this.commandtext);
+			if (closure) {
+				this.cachedClosure = closure;
 			}
 		} catch (e) {
 			if (!(e instanceof EError)) {
@@ -69,7 +64,7 @@ class Command extends NexContainer {
 	copyFieldsTo(nex) {
 		super.copyFieldsTo(nex);
 		nex.commandtext = this.commandtext;
-		nex.cacheGlobalBuiltin();
+		nex.cacheClosureIfCommandTextIsBound();
 	}
 
 	debugString() {
@@ -80,107 +75,34 @@ class Command extends NexContainer {
 		return new CommandKeyFunnel(this);
 	}
 
-	pushNexPhase(phaseExecutor, env, renderNode) {
-		let lambda = this.getLambda(env);
-		phaseExecutor.pushPhase(lambda.phaseFactory(phaseExecutor, this, env, renderNode))
-	}
-
 	isLambdaCommand(env) {
-		let lambda = this.getLambda(env);
-		return !(lambda instanceof Builtin);
+		let closure = this.getClosure(env);
+		return !(closure.getLambda() instanceof Builtin);
 	}
 
-	// UNUSED BUT AT SOME POINT CONSIDER DOING IT THIS WAY INSTEAD
-	getSymbol() {
-		if (this.symbolversion >= 0) {
-			return this.symbol;
-		};
-		let cmdtxt = this.getCommandText();
-		if (cmdtxt) {
-			return cmdtxt;
-		} else if (this.numChildren() == 0) {
-			throw new EError(`COMMAND: command with no name and no children has nothing to execute. Sorry!`);
-		} else if (this.getChildAt(0).getTypeName() == '-symbol-') {
-			return this.getChildAt(0).getTypedValue();
-		} else {
-			return null; // no symbol, first arg must just *be* a lambda.
-		}
-	}
-
-	shouldSkipFirstArg() {
-		return !this.getCommandText();
-	}
-
-	// UNUSED BUT AT SOME POINT CONSIDER DOING IT THIS WAY INSTEAD
-	getLambda2(executionEnv) {
-		// the last time the name of this command was modified, it mapped
-		// to a builtin, so we just return that... we know the definition
-		// of a builtin will not change.
-		if (this.cachedBuiltin) {
-			return this.cachedBuiltin;
-		}
-		// this may have a symbol mapping. if so, we need to get its binding,
-		// check the version to make sure the version we have cached is correct
-		// (unless we don't have it cached)
-		let symbol = this.getSymbol();
-		if (symbol) {
-			let binding = executionEnv.lookupFullBinding(symbol);
-			if (this.symbolversion < 0 || (this.symbolversion != binding.version)) {
-				this.cachedLambda = binding.val;
-				this.cachedLambda.setCmdName(symbol); // this is for debugging
-				this.symbolversion = binding.version;
-			}
-			return this.cachedLambda;
-		} else if (this.numChildren() > 0) {
-			// we don't make a copy because we have to re-evaluate every time anyway
-			let c = this.getChildAt(0);
-			if (!this.firstLambdaChildHasAlreadyBeenEvaluated) {
-				let lambda = evaluateNexSafely(c, executionEnv);
-			}
-			if (!(lambda instanceof Lambda)) {
-				throw new EError(`COMMAND: stopping because first child of unnamed command is not a lambda. Sorry! Debug string for object of type ${lambda.getTypeName()} follows: ${lambda.debugString()}`)
-			}
-			return lambda;
-		} else {
-			throw new EError(`COMMAND: command with no name and no children has nothing to execute. Sorry!`)
-		}
-	}
-
-	getLambda(executionEnv) {
-		if (this.cachedBuiltin) {
-			return this.cachedBuiltin;
-		}
-		let cmdname = this.getCommandText();
-		let lambda = null;
-//		this.skipFirstArg = false;
-		if (cmdname) {
-			lambda = executionEnv.lookupBinding(cmdname);
-			if (!(lambda instanceof Lambda)) {
-				throw new EError(`${cmdname}: stopping because command name not bound to lambda, so cannot execute. Sorry! Debug string for object bound to ${cmdname} of type ${lambda.getTypeName()} follows: ${lambda.debugString()}`)
-			}
+	getCommandName() {
+		let r = this.getCommandText();
+		if (r) {
+			return r;
 		} else if (this.numChildren() > 0) {
 			let c = this.getChildAt(0);
-//			this.skipFirstArg = true;
-			lambda = evaluateNexSafely(c, executionEnv);
-			if (!(lambda instanceof Lambda)) {
-				throw new EError(`COMMAND: stopping because first child of unnamed command is not a lambda. Sorry! Debug string for object of type ${lambda.getTypeName()} follows: ${lambda.debugString()}`)
+			if (c.getTypeName() == '-symbol-') {
+				return c.getTypedValue();
 			}
 		} else {
-			throw new EError(`COMMAND: command with no name and no children has nothing to execute. Sorry!`)
+			return null;
 		}
-		if (lambda == null) {
-			throw new Error("this shouldn't happen");
-		}
-		lambda.setCmdName(cmdname);
-		this.doAlertAnimation(lambda);
-		return lambda;
 	}
 
+	hasCachedClosure() {
+		return !!this.cachedClosure;
+	}
+
+	// maybe deprecated
 	doAlertAnimation(lambda) {
 		let rn = lambda.getRenderNodes();
 		for (let i = 0; i < rn.length; i++) {
 			eventQueue.enqueueAlertAnimation(rn[i]);
-//			rn[i].doAlertAnimation();
 		}
 	}
 
@@ -188,36 +110,78 @@ class Command extends NexContainer {
 		return true;
 	}
 
+	// the executionEnv is captured and becomes the lexical environment of any closures that are
+	//   created by evaluating lambdas.
+	// it is also used for special forms that have skipeval = true
+	// it is also used to look up symbol bindings
+
 	evaluate(executionEnv) {
 		pushStackLevel();
 		stackCheck(); // not for step eval, this is to prevent call stack overflow.
-		if (this.enclosingClosure) {
-			executionEnv = this.enclosingClosure;
+
+		// we need a closure, we need a name to use for error messages, and we need to know if skip first arg.
+		let closure = null;
+		let cmdname = null;
+		let skipFirstArg = false;
+		if (this.cachedClosure) {
+			// it's cached, great. This is a builtin, so not skipping first arg.
+			closure = this.cachedClosure;
+			cmdname = this.getCommandText();
+		} else if (!!this.getCommandText()) {
+			// there is command text -- look this up and see if it's bound to something.
+			cmdname = this.getCommandText();
+			// environment will throw an exception if unbound
+			closure = executionEnv.lookupBinding(this.getCommandText());
+			// but we also have to make sure it's bound to a closure
+			if (!(closure.getTypeName() == '-closure-')) {
+				throw new EError(`command: stopping because "${cmdname}" not bound to closure, so cannot execute. Sorry! Debug string for object bound to ${cmdname} of type ${closure.getTypeName()} follows: ${closure.debugString()}`)
+			}
+		} else if (this.numChildren() > 0) {
+			// okay alternate plan, we look at the first child of the command
+			let c = this.getChildAt(0);
+			// if it's a symbol we can incidentally get the command name
+			if (c.getTypeName() == '-symbol-') {
+				cmdname = c.getTypedValue();
+			}
+			// evaluate the first arg, could be a symbol bound to a closure, a lamba, a command that returns a closure, etc.
+			closure = evaluateNexSafely(c, executionEnv);
+			if (!(closure instanceof Closure)) {
+				// oops it's not a closure.
+				throw new EError(`command: stopping because first child "${c.debugString()}" of unnamed command does not evaluate to a closure. Sorry! Debug string for evaluted value of type ${closure.getTypeName()} follows: ${closure.debugString()}`)
+			}				
+			// we already evaluated the first arg, we don't pass it to the arg evaluator
+			skipFirstArg = true;
+		} else {
+			// someone tried to evaluate (~ )
+			throw new EError(`command: command with no name and no children has nothing to execute. Sorry!`)			
 		}
-		let lambda = this.getLambda(executionEnv);
+		if (cmdname == null) {
+			// last ditch attempt to figure out command name, using boundName hack
+			cmdname = closure.getBoundName();
+		}
+		if (cmdname == null) {
+			// we have to give them something
+			cmdname = `<br>*** unnamed function, function body follows **** <br>${closure.getLambda().debugString()}<br>*** end function body ***<br>`;
+		}
+
 		if (CONSOLE_DEBUG) {
 			console.log(`${INDENT()}evaluating command: ${this.debugString()}`);
-			console.log(`${INDENT()}lambda is: ${lambda.debugString()}`);
+			console.log(`${INDENT()}closure is: ${closure.debugString()}`);
 		}
-		let argContainer = new CopiedArgContainer(this, this.shouldSkipFirstArg());
-		let closure = lambda.closure;
-		if (closure == null) {
-			throw new Error('command: this lambda was never evaluated so has no closure.');
-		}
-		// you need to make a new lexical environment every time you evaluate the lambda
-		// but you ALSO need to make a new one every time you evaluate the command.
-		// the lambda could be evaluated again if its codepath is covered again.
-		// also a given command can be evaluated multiple times
-		closure = closure.pushEnv();
-		closure.usePackage(lambda.inPackage);
-		let argEvaluator = lambda.getArgEvaluator(argContainer, executionEnv, closure);
-		argEvaluator.evaluateAndBindArgs();
+		// the arg container holds onto the args and is used by the arg evaluator.
+		// I think this is useful for step eval but I can't remember
+		let argContainer = new CopiedArgContainer(this, skipFirstArg);
+		// in the future there will be one arg evaluator used by both builtins and lambdas.
+		// the job of the evaluator is to evaluate the args AND bind them to variables in the new scope.
+		let argEvaluator = closure.getArgEvaluator(cmdname, argContainer, executionEnv);
+		argEvaluator.evaluateArgs();
 		if (PERFORMANCE_MONITOR) {
-			perfmon.logMethodCallStart(lambda.getCmdName());
+			perfmon.logMethodCallStart(closure.getCmdName());
 		}
-		let r = lambda.executor(closure, executionEnv, this.tags);
+		// actually run the code.
+		let r = closure.executor(executionEnv, argEvaluator, cmdname, this.tags);
 		if (PERFORMANCE_MONITOR) {
-			perfmon.logMethodCallEnd(lambda.getCmdName());
+			perfmon.logMethodCallEnd(closure.getCmdName());
 		}
 		if (CONSOLE_DEBUG) {
 			console.log(`${INDENT()}command returned: ${r.debugString()}`);
@@ -257,11 +221,9 @@ class Command extends NexContainer {
 
 	setCommandText(t) {
 		this.commandtext = t;
-		this.cacheGlobalBuiltin();
+		this.cacheClosureIfCommandTextIsBound();
 		this.searchingOn = null;
 		this.previousMatch = null;
-//		this.symbolversion = -1;
-
 	}
 
 	isEmpty() {
@@ -270,14 +232,14 @@ class Command extends NexContainer {
 
 	deleteLastCommandLetter() {
 		this.commandtext = this.commandtext.substr(0, this.commandtext.length - 1);
-		this.cacheGlobalBuiltin();
+		this.cacheClosureIfCommandTextIsBound();
 		this.searchingOn = null;
 		this.previousMatch = null;
 	}
 
 	appendCommandText(txt) {
 		this.commandtext = this.commandtext + txt;
-		this.cacheGlobalBuiltin();
+		this.cacheClosureIfCommandTextIsBound();
 		this.searchingOn = null;
 		this.previousMatch = null;
 	}
@@ -306,6 +268,21 @@ class Command extends NexContainer {
 		this.setCommandText(match);
 		this.searchingOn = searchText;
 		this.previousMatch = match;
+	}
+
+	static quote(item) {
+		let q = new Command('quote');
+		q.appendChild(item);
+		return q;
+	}
+
+	static makeCommandWithClosure(closure) {
+		let cmd = new Command();
+		cmd.appendChild(Command.quote(closure));
+		for (let i = 1; i < arguments.length; i++) {
+			cmd.appendChild(arguments[i]);
+		}
+		return cmd;
 	}
 
 	defaultHandle(txt) {

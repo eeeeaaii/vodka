@@ -21,7 +21,7 @@ function createStringBuiltins() {
 		[
 			{name:'str$', type:'EString'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let r = new Word();
 			let s = env.lb('str$').getFullTypedValue();
 			for (let i = 0; i < s.length; i++) {
@@ -39,7 +39,7 @@ function createStringBuiltins() {
 			{name:'str$', type:'EString'},
 			{name:'pos#', type:'Integer'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let s = env.lb('str$').getFullTypedValue();
 			let n = env.lb('pos#').getTypedValue();
 			if (n < 0 || n >= s.length) {
@@ -62,7 +62,7 @@ function createStringBuiltins() {
 			{name:'str$', type:'EString'},
 			{name:'tofind$', type:'EString'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let s = env.lb('str$').getFullTypedValue();
 			let tofind = env.lb('tofind$').getFullTypedValue();
 			let i = s.indexOf(tofind);
@@ -75,7 +75,7 @@ function createStringBuiltins() {
 		[
 			{name:'str$', type:'EString'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let s = env.lb('str$').getFullTypedValue();
 			let len = s.length;
 			return new Integer(len);
@@ -87,7 +87,7 @@ function createStringBuiltins() {
 		[
 			{name:'strs$...', type: 'EString', variadic:true}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let r = '';
 			let ar = env.lb('strs$...');
 			for (let i = 0; i < ar.numChildren(); i++) {
@@ -104,7 +104,7 @@ function createStringBuiltins() {
 			{name:'strs()', type: 'NexContainer'},
 			{name:'on$', type: 'EString'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let lst = env.lb('strs()');
 			let on = env.lb('on$').getFullTypedValue();
 			let r = '';
@@ -121,7 +121,7 @@ function createStringBuiltins() {
 			{name:'str$', type: 'EString'},
 			{name:'on$', type: 'EString'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let str = env.lb('str$').getFullTypedValue();
 			let on = env.lb('on$').getFullTypedValue();
 			let lst = new Word();
@@ -140,7 +140,7 @@ function createStringBuiltins() {
 			{name:'str$', type: 'EString'},
 			{name:'on$', type: 'EString'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let str = env.lb('str$').getFullTypedValue();
 			let on = env.lb('on$').getFullTypedValue();
 			let lst = new Word();
@@ -160,7 +160,7 @@ function createStringBuiltins() {
 			{name:'start#', type: 'Integer'},
 			{name:'len#', type: 'Integer'}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let str = env.lb('str$').getFullTypedValue();
 			let start = env.lb('start#').getTypedValue();
 			let len = env.lb('len#').getTypedValue();

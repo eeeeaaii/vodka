@@ -57,8 +57,8 @@ class NativeOrg extends Org {
 	static createNativeOrg(name, initdata, methods) {
 		let nex = new NativeOrg(name, initdata, methods);
 		let constructor = new Lambda();
-		constructor = constructor.evaluate(BUILTINS);
 		constructor.appendChild(nex);
+		constructor = constructor.evaluate(BUILTINS);
 		BUILTINS.bind("new-" + name, constructor);
 	}
 }

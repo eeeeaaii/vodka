@@ -28,6 +28,32 @@ class Environment {
 		this.listOfPackagesUsed = null;
 	}
 
+	// see NOTES_ON_CLOSURES
+	copy() {
+		let newEnv = new Environment(null);
+		for (let sym in this.symbols) {
+			let rec = this.symbols[sym];
+			newEnv.symbols[sym] = this.copyBindingRecord(rec);
+		}
+		newEnv.currentPackageForBinding = this.currentPackageForBinding;
+		if (this.packages) {
+			newEnv.packages = [];
+			for (let i = 0; i < this.packages.length; i++) {
+				newEnv.packages[i] = this.packages[i];
+			}
+		}
+		if (this.listOfPackagesUsed) {
+			newEnv.listOfPackagesUsed = [];
+			for (let i = 0; i < this.listOfPackagesUsed.length; i++) {
+				newEnv.listOfPackagesUsed[i] = this.listOfPackagesUsed[i];
+			}
+		}
+		if (this.parentEnv) {
+			newEnv.parentEnv = this.parentEnv.copy();
+		}
+		return newEnv;
+	}
+
 	debug(lvl) {
 		if (!lvl) {
 			lvl = '';
@@ -82,30 +108,33 @@ class Environment {
 		}
 		if (this.currentPackageForBinding) {
 			name = this.currentPackageForBinding + ':' + name;
-			// if (val.getTypeName() == '-lambda-') {
-			// 	let use = new Command('use');
-			// 	use.appendChild(new ESymbol(this.currentPackageForBinding));
-			// 	val.prependChild(use);
-			// }
+		}
+		if (val.getTypeName() == '-closure-') {
+			val.getLexicalEnvironment().usePackage(this.currentPackageForBinding);
 		}
 		this.bind(name, val, this.currentPackageForBinding);
 	}
 
-	bind(name, val, inPackage) {
-		let thePackage = inPackage ? inPackage : val.inPackage;
-		val.setBoundName(name);
+	makeBindingRecord(value, packageName) {
+		return {
+			val: value,
+			packageName: packageName
+		}
+	}
+
+	copyBindingRecord(record) {
+		return {
+			val: record.val,
+			packageName: record.packageName
+		}
+	}
+
+	bind(name, val, packageName) {
 		if (this.symbols[name]) {
 			this.symbols[name].val = val;
-			this.symbols[name].closure = val.closure;
-			this.symbols[name].inPackage = thePackage;
-			this.symbols[name].version++;
+			this.symbols[name].packageName = packageName; // I guess it's totally unnecessary because you could parse the name.
 		} else {
-			this.symbols[name] = {
-				val: val,
-				closure: val.closure,
-				inPackage: thePackage,
-				version: 0
-			};
+			this.symbols[name] = this.makeBindingRecord(val, packageName);
 		}
 	}
 
@@ -115,9 +144,6 @@ class Environment {
 			throw new EError(`undefined symbol ${name}, cannot set. Sorry!`)
 		}
 		binding.val = val;
-		binding.closure = val.closure;
-		binding.inPackage = val.inPackage;
-		binding.version++; // I forget what this is for
 	}
 
 	// only used by builtins to retrieve args, we can just directly access this env
@@ -126,18 +152,20 @@ class Environment {
 		if (!this.symbols[nm]) {
 			return UNBOUND;
 		}
-		this.symbols[nm].val.closure = this.symbols[nm].closure;
-		this.symbols[nm].val.inPackage = this.symbols[nm].inPackage;
 		return this.symbols[nm].val;
 	}
 
 	getAllBoundSymbolsAtThisLevel() {
-		var r = [];
+		let r = [];
 		let nm = null;
 		for (nm in this.symbols) {
 			r.push(nm);
 		}
 		return r;
+	}
+
+	hasSymbolItself(name) {
+		return !!this.symbols[name];
 	}
 
 	// private
@@ -178,8 +206,7 @@ class Environment {
 		if (!binding) {
 			throw new EError(`undefined symbol: ${name}. Sorry!`);
 		}
-		binding.val.closure = binding.closure;
-		binding.val.inPackage = binding.inPackage;
+		binding.val.packageName = binding.packageName;
 		return binding;
 	}
 

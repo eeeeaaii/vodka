@@ -88,12 +88,11 @@ class BuiltinParamManager {
 
 
 class BuiltinArgEvaluator {
-	constructor(name, params, argContainer, env, bindEnv) {
+	constructor(name, params, argContainer, executionEnvironment) {
 		this.name = name;
 		this.params = params;
 		this.argContainer = argContainer;
-		this.env = env;
-		this.bindEnv = bindEnv;
+		this.executionEnvironment = executionEnvironment;
 //		this.paramManager = new BuiltinParamManager(params, argContainer);
 		this.verifyParameterCorrectness();
 	}
@@ -155,7 +154,7 @@ class BuiltinArgEvaluator {
 		let expectedType = param.type;
 		let arg = this.argContainer.getArgAt(i);
 		if (!param.skipeval) {
-			arg = evaluateNexSafely(arg, this.env);
+			arg = evaluateNexSafely(arg, this.executionEnvironment);
 			if (isFatalError(arg)) {
 				throw wrapError('&szlig;', `${this.name}: fatal error in argument ${i + 1} (expected type ${param.type}), cannot continue. Sorry!`, arg);
 			}
@@ -178,7 +177,7 @@ class BuiltinArgEvaluator {
 		}
 	}
 
-	bindArgs() {
+	bindArgs(scope) {
 		for (let i = 0; i < this.params.length; i++) {
 			let param = this.params[i];
 			if (param.variadic) {
@@ -186,23 +185,22 @@ class BuiltinArgEvaluator {
 				for (let j = i; j < this.argContainer.numArgs(); j++) {
 					w.appendChild(this.argContainer.getArgAt(j));
 				}
-				this.bindEnv.bind(param.name, w);
+				scope.bind(param.name, w);
 			} else if (param.optional) {
 				if (i < this.argContainer.numArgs()) {
-					this.bindEnv.bind(param.name, this.argContainer.getArgAt(i));
+					scope.bind(param.name, this.argContainer.getArgAt(i));
 				}
 			} else {
-				this.bindEnv.bind(param.name, this.argContainer.getArgAt(i));
+				scope.bind(param.name, this.argContainer.getArgAt(i));
 			}
 		}
 	}
 
-	evaluateAndBindArgs() {
+	evaluateArgs() {
 		this.checkMinNumArgs();
 		this.padEffectiveParams();
 		this.checkMaxNumArgs();
 		this.processArgs();
-		this.bindArgs();
 	}
 }
 
@@ -228,4 +226,5 @@ BuiltinArgEvaluator.ARG_VALIDATORS = {
 	'Nil': arg => (arg.getTypeName() == '-nil-'),
 	'Word': arg => (arg.getTypeName() == '-word-'),
 	'Lambda': arg => (arg.getTypeName() == '-lambda-'),
+	'Closure': arg => (arg.getTypeName() == '-closure-'),
 };

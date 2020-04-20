@@ -22,7 +22,7 @@ function createTypeConversionBuiltins() {
 		[
 			{name: 'nex', type:'*'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let v = env.lb('nex');
 
 			let jsStringToDoc = (function(str) {
@@ -60,7 +60,7 @@ function createTypeConversionBuiltins() {
 		[
 			{name: 'nex', type:'*'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let v = env.lb('nex');
 			if (v instanceof Float) {
 				return v;
@@ -123,7 +123,7 @@ function createTypeConversionBuiltins() {
 		[
 			{name: 'nex', type:'*'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let v = env.lb('nex');
 			if (v instanceof Integer) {
 				return v;
@@ -180,7 +180,7 @@ function createTypeConversionBuiltins() {
 		[
 			{name:'nex', type:'*'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let v = env.lb('nex');
 			if (v instanceof EString) {
 				return new EString(v.getFullTypedValue());
@@ -216,9 +216,9 @@ function createTypeConversionBuiltins() {
 			{name:'errtype$', type:'EString'},
 			{name: 'nex', type:'*', skipeval:true}
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let expr = env.lb('nex');
-			let newresult = evaluateNexSafely(expr, argEnv);
+			let newresult = evaluateNexSafely(expr, executionEnvironment);
 			if (newresult.getTypeName() != '-error-') {
 				// you might think this function would throw an
 				// error if you tried to pass it something that's

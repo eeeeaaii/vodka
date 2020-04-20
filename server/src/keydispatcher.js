@@ -18,10 +18,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 // use this wrapper to handle exceptions correctly, this
 // saves us from having to put exception handling in every
 // type of nex that can be evaluated.
-function evaluateNexSafely(nex, env) {
+function evaluateNexSafely(nex, executionEnvironment) {
 	let result;
 	try {
-		result = nex.evaluate(env);
+		result = nex.evaluate(executionEnvironment);
 		if (result.getTypeName() == '-org-') {
 			// forget multiple dereference for now we will do that soon/someday/sometime
 			// just find a tag
@@ -29,7 +29,7 @@ function evaluateNexSafely(nex, env) {
 				let tag = nex.getTag(i);
 				if (result.hasChildTag(tag)) {
 					let child = result.getChildWithTag(tag);
-					let childResult = evaluateNexSafely(child, env);
+					let childResult = evaluateNexSafely(child, executionEnvironment);
 					if (childResult.getTypeName() == '-lambda-') {
 						childResult.closure.bind('org', result)
 					}

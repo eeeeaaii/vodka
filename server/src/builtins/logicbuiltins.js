@@ -21,7 +21,7 @@ function createLogicBuiltins() {
 		[
 			{name:'exp!', type:'Bool'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(!env.lb('exp!').getTypedValue());
 		}
 	)
@@ -33,7 +33,7 @@ function createLogicBuiltins() {
 			{name:'exp1!', type:'Bool'},
 			{name:'exp2!', type:'Bool'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('exp1!').getTypedValue() && env.lb('exp2!').getTypedValue());
 		}
 	)
@@ -44,7 +44,7 @@ function createLogicBuiltins() {
 			{name:'exp1!', type:'Bool'},
 			{name:'exp2!', type:'Bool'},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			return new Bool(env.lb('exp1!').getTypedValue() || env.lb('exp2!').getTypedValue());
 		}
 	)
@@ -56,24 +56,21 @@ function createLogicBuiltins() {
 			{name:'{true}', type:'*', skipeval:true},
 			{name:'{false}', type:'*', skipeval:true},
 		],
-		function(env, argEnv) {
+		function(env, executionEnvironment) {
 			let b = env.lb('cond!').getTypedValue();
 			if (b) {
-				let iftrue = evaluateNexSafely(env.lb('{true}'), argEnv);
+				let iftrue = evaluateNexSafely(env.lb('{true}'), executionEnvironment);
 				if (isFatalError(iftrue)) {
 					iftrue = wrapError('&szlig;', 'if: error in argument 2', iftrue);
 				}
 				return iftrue;
 			} else {
-				let iffalse = evaluateNexSafely(env.lb('{false}'), argEnv);
+				let iffalse = evaluateNexSafely(env.lb('{false}'), executionEnvironment);
 				if (isFatalError(iffalse)) {
 					iffalse = wrapError('&szlig;', 'if: error in argument 3', iffalse);
 				}
 				return iffalse;
 			}
-		},
-		function(phaseExecutor, nex, env) {
-			return new IfCommandPhase(phaseExecutor, nex, env);
 		}
 	)
 }

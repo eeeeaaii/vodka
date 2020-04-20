@@ -35,7 +35,7 @@ var overrideOnNextRender = false;
 var isStepEvaluating = false; // allows some performance-heavy operations while step evaluating
 const CONSOLE_DEBUG = false;
 const EVENT_DEBUG = false;
-const PERFORMANCE_MONITOR = true;
+const PERFORMANCE_MONITOR = false;
 var appFlags = {};
 var selectWhenYouFindIt = null;
 
