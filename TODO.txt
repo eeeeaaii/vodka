@@ -1,3 +1,10 @@
+*  means blocking bug/needs to be fixed before next livecoding set
+
+ASYNC/EXPECTATION TO DO:
+* make expectation ffClosure take the expectation as argument (this is making animation expectations die when they get copied)
+- figure out what happens if ffClosure throws an error
+- implement reference counting and make it so that if an expectation has zero references it won't fulfill
+
 TYPE-RELATED TO DO
 - figure out how to resolve orgs with multiple matching tags (first match?) and do we iterate first thru
   the tags in the expr being evaluated or first thru the tags on the org?
