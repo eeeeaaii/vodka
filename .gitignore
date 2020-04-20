@@ -3,5 +3,6 @@ ACTUAL_LIVECODING_IDEAS.txt
 testing/____tmpfile.txt
 server/packages/poem*
 server/packages/perf*
+server/packages/ig*
 server/src/favicon.ico
 
