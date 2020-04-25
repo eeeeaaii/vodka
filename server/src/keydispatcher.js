@@ -22,6 +22,9 @@ function evaluateNexSafely(nex, executionEnvironment) {
 	let result;
 	try {
 		result = nex.evaluate(executionEnvironment);
+		if (result.getTypeName() == '-expectation-') {
+			result.activateOrMakePending();
+		}
 		if (result.getTypeName() == '-org-') {
 			// forget multiple dereference for now we will do that soon/someday/sometime
 			// just find a tag

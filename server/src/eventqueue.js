@@ -1,3 +1,19 @@
+/*
+This file is part of Vodka.
+
+Vodka is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Vodka is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
 
 // javascript timeouts and events are already queued,
@@ -20,7 +36,8 @@
 const USER_EVENT_PRIORITY = 0;
 const EXCEPTION_PRIORITY = 1;
 const RENDER_PRIORITY = 2;
-const LOW_PRIORITY = 3;
+const ALERT_ANIMATION_PRORITY = 3;
+const GC_PRIORITY = 4;
 
 class EventQueue {
 	constructor() {
@@ -28,7 +45,8 @@ class EventQueue {
 		this.queueSet[USER_EVENT_PRIORITY] = [];
 		this.queueSet[EXCEPTION_PRIORITY] = [];
 		this.queueSet[RENDER_PRIORITY] = [];
-		this.queueSet[LOW_PRIORITY] = [];
+		this.queueSet[ALERT_ANIMATION_PRORITY] = [];
+		this.queueSet[GC_PRIORITY] = [];
 	}
 
 	enqueueAlertAnimation(renderNode) {
@@ -47,7 +65,7 @@ class EventQueue {
 				this.renderNode.doAlertAnimation();
 			}
 		};
-		this.queueSet[LOW_PRIORITY].push(item);
+		this.queueSet[ALERT_ANIMATION_PRORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
@@ -222,6 +240,22 @@ class EventQueue {
 			}
 		};
 		this.queueSet[RENDER_PRIORITY].push(item);
+		this.setTimeoutForProcessingNextItem(item);
+	}
+
+	enqueueGC() {
+		EVENT_DEBUG ? console.log('enqueueing: GC'):null;
+		let item = {
+			action: "gc",
+			shouldDedupe: true,
+			equals: function(other) {
+				return other.action == this.action;
+			},
+			do: function() {
+				gc.markAndSweep();
+			}
+		};
+		this.queueSet[GC_PRIORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 

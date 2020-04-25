@@ -16,15 +16,62 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 function createMakeBuiltins() {
+    // I don't think I need "make" functions for atom types. It
+    // would be difficult, because "make-integer" would just
+    // create the number zero, it's hard to see how that would be useful.
+    // (copy #0) would do the same thing.
+
+	Builtin.createBuiltin(
+		'make-word',
+		[
+		],
+		function(env, executionEnvironment) {
+			return new Word();
+		}
+	);
+
+	Builtin.createBuiltin(
+		'make-doc',
+		[
+		],
+		function(env, executionEnvironment) {
+			return new Doc();
+		}
+	);
+
+	Builtin.createBuiltin(
+		'make-line',
+		[
+		],
+		function(env, executionEnvironment) {
+			return new Line();
+		}
+	);
+
 	Builtin.createBuiltin(
 		'make-expectation',
 		[
-			{name: 'nex', type:'*'}
 		],
 		function(env, executionEnvironment) {
-			let exp = new Expectation();
-			exp.appendChild(env.lb('nex'));
-			return exp;
+			return new Expectation();
+		}
+	);
+
+	Builtin.createBuiltin(
+		'make-command',
+		[
+		],
+		function(env, executionEnvironment) {
+			return new Command();
+		}
+	);
+
+	Builtin.createBuiltin(
+		'make-lambda',
+		[
+		],
+		function(env, executionEnvironment) {
+			return new Lambda();
 		}
 	);
 

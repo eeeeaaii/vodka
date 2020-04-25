@@ -84,7 +84,7 @@ class NexParser {
 		    || this.testToken(/^\>/, st['ENDZLIST'])
 		    || this.testToken(/^\*\(/, st['STARTEXPECTATION'])
 		    || this.testToken(/^\*\)/, st['ENDEXPECTATION'])
-		    || this.testToken(/^~"([a-zA-Z_=<>:+*/-]*)"([vh]*)\(/, st['STARTCOMMAND'])
+		    || this.testToken(/^~"([a-zA-Z0-9_=<>:+*/-]*)"([vh]*)\(/, st['STARTCOMMAND'])
 		    || this.testToken(/^~\)/, st['ENDCOMMAND'])
 		    || this.testToken(/^&"([a-zA-Z0-9 |_-]*)"([vh]*)\(/, st['STARTLAMBDA'])
 		    || this.testToken(/^&\)/, st['ENDLAMBDA'])

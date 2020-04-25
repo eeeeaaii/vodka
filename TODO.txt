@@ -1,9 +1,13 @@
 *  means blocking bug/needs to be fixed before next livecoding set
 
 ASYNC/EXPECTATION TO DO:
-* make expectation ffClosure take the expectation as argument (this is making animation expectations die when they get copied)
 - figure out what happens if ffClosure throws an error
-- implement reference counting and make it so that if an expectation has zero references it won't fulfill
+- make it so expectations can have any number of children
+- make it so that expectations have an "activate" method that actually starts the async process, whatever it is
+- make it so that expectations, when created, do not automatically call activate, but activate is called at the end of every evaluate cycle if the thing returned by the evaluation is an expectation (similar to what happens with objs) - this allows you to use quote to make an expectation not activate right away
+- make it so that each time activate is called on an expectation it processes or handles one of its arguments
+- make it so that expectations re-activate themselves if there are unhandled arguments
+
 
 TYPE-RELATED TO DO
 - figure out how to resolve orgs with multiple matching tags (first match?) and do we iterate first thru
@@ -76,6 +80,8 @@ CODE CLEANUP TO-DO
 - fix render node hacks in estring class coming from the normal/expanded drawing logic
 - remove dead code from eerror class because it can't be drawn in expanded mode anymore
 - BuiltinParamManager and BuiltinArgEvaluator do the same thing, merge somehow
+- when I made the render node class I just copied all the methods from NexContainer, but because js isn't type safe, these should be renamed to something different so I can at least grep for them
+- port to typescript?
 
 BUILTIN TO-DO
 - figure out what to do in run-js if no DOM object (throw exception? create one?)

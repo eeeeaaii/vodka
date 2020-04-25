@@ -86,9 +86,6 @@ class NexContainer extends Nex {
 	// because we don't know what type it is.
 	// all this does is set the child pointers
 	setChildrenForCons(nex, newContainer) {
-		// because of the expectation parent hack
-		// and the fact that this is a "back door" way of
-		// giving a new a new parent, we have to do some things.
 		let newP = new ChildNex(nex);
 		newP.next = this.firstChildNex;
 		newContainer.firstChildNex = newP;
@@ -98,11 +95,14 @@ class NexContainer extends Nex {
 			newContainer.lastChildNex = this.lastChildNex;
 		}
 		newContainer.numChildNexes = this.numChildNexes + 1;
-		// expectation hack
-		for (let p = newP; p != null; p = p.next) {
-			if (p.n.addParent) {
-				p.n.addParent(newContainer);
-			}
+		// because of reference counting we still have to iterate over the children
+		// and tell them that we've added a new reference to them.
+		// 'nex' and all the children of this object are now going to
+		// be referenced by 'newContainer' in addition to being referenced
+		// by this object.
+		nex.addReference();
+		for (let p = this.firstChildNex; p; p = p.next) {
+			p.n.addReference();
 		}
 	}
 
@@ -239,6 +239,7 @@ class NexContainer extends Nex {
 			}
 		}
 		this.numChildNexes--;
+		r.removeReference();
 		return r;
 	}
 
@@ -263,6 +264,7 @@ class NexContainer extends Nex {
 			newP.next = pred.next;
 			pred.next = newP;
 		}
+		c.addReference();
 		this.numChildNexes++;
 	}
 

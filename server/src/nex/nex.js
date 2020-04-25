@@ -22,6 +22,7 @@ class Nex {
 		this.lastRenderPassNumber = null;
 		this.firstRenderNode = null;
 		this.rendernodes = [];
+		this.references = 0;
 
 		this.selected = false;
 		this.keyfunnel = null;
@@ -41,6 +42,18 @@ class Nex {
 
 	getTypeName() {
 		throw new Error("only leaf types have names");
+	}
+
+	addReference() {
+		this.references++;
+	}
+
+	removeReference() {
+		this.references--;
+	}
+
+	numReferences() {
+		return this.references;
 	}
 
 	doRenderSequencing(renderNode) {

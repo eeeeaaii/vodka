@@ -25,6 +25,10 @@ class Root extends NexContainer {
 		return '-root-';
 	}
 
+	numReferences() {
+		return 1;
+	}
+
 	// makeCopy intentionally unimplemented
 
 	// dead code?

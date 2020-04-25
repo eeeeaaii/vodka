@@ -40,10 +40,12 @@ class Expectation extends NexContainer {
 		// we don't reset callbacks when we reset this exp,
 		// because if we did that, the code in ffWidth couldn't
 		// reset this expectation.
-		this.fulfillCallbacks = [];
+		this.pendingExpectations = [];
 		this.callbackRouter = null;
 		this.ffClosure = null;
 		this.ffExecutionEnvironment = null;
+		this.activationFunction = null;
+		gc.register(this);
 	}
 
 	reset() {
@@ -54,12 +56,13 @@ class Expectation extends NexContainer {
 		this.ffExecutionEnvironment = null;
 	}
 
-	addFulfillCallback(newListener) {
+	addPendingExpectation(pendingExp) {
 		if (this.asyncProcessCompleted) {
+			pendingExp.activateIfAllComplete();
 			// should this be put on the event queue?
-			eventQueue.enqueueExpectationCallback(newListener, this.getResultToProcess());
+//			eventQueue.enqueueExpectationCallback(newListener, this.getResultToProcess());
 		} else {
-			this.fulfillCallbacks.push(newListener);
+			this.pendingExpectations.push(pendingExp);
 		}
 	}
 
@@ -75,6 +78,10 @@ class Expectation extends NexContainer {
 			nex.callbackRouter = this.callbackRouter;
 			nex.callbackRouter.addExpecting(nex);
 		}
+		// do I do this?
+//		if (this.activationFunction) {
+//			nex.activationFunction = this.activationFunction;
+//		}
 	}
 
 	ffWith(closure, executionEnvironment) {
@@ -83,12 +90,12 @@ class Expectation extends NexContainer {
 		}
 		this.ffClosure = closure;
 		this.ffgen = FF_GEN;
-		// I think we also need to close over the execution environment but not sure
-		this.ffExecutionEnvironment = executionEnvironment.copy();
+		this.ffExecutionEnvironment = executionEnvironment;// do I need to copy this?
 		if (this.asyncProcessCompleted) {
 			let result = this.callFFWith(this.getResultToProcess());
 		}
 	}
+
 
 	getCallbackForSet() {
 		if (this.isSet) {
@@ -126,32 +133,21 @@ class Expectation extends NexContainer {
 		}
 	}
 
-	callCallbacks(result) {
-		for (let i = 0; i < this.fulfillCallbacks.length; i++) {
-			eventQueue.enqueueExpectationCallback(this.fulfillCallbacks[i], this.getResultToProcess());
+	notifyPending() {
+		for (let i = 0; i < this.pendingExpectations.length; i++) {
+			this.pendingExpectations[i].activateIfAllComplete();
+//			eventQueue.enqueueExpectationCallback(this.fulfillCallbacks[i], this.getResultToProcess());
 		}
 	}
 
-	callFFWith(result) {
+	callFFWith() {
+		let result = this.getChildAt(0);
 		if (isFatalError(result)) {
-			return result;
+			throw result;
 		}
-		// do I quote result?
 		let cmd = Command.makeCommandWithClosure(this.ffClosure, result);
-		return evaluateNexSafely(cmd, this.ffExecutionEnvironment);
-	}
-
-	getResultToProcess(result) {
-		if (result) {
-			return result;
-		} else {
-			if (this.numChildren() != 1) {
-				return new EError("expectation needs one child to be fulfilled")
-			} else {
-				return this.getChildAt(0);
-			}
-		}
-
+		let newResult = evaluateNexSafely(cmd, this.ffExecutionEnvironment);
+		this.replaceChildAt(newResult, 0)
 	}
 
 	fulfill(result) {
@@ -161,23 +157,65 @@ class Expectation extends NexContainer {
 			// we don't call the callbacks either.
 			return;
 		}
-		result = this.getResultToProcess(result);
+		if (result) {
+			this.replaceChildAt(result, 0)
+		}
 		// it's important that we set state of this expectation before calling ffwith,
 		// because code in ffWith might decide to reset this expectation.
 		this.asyncProcessCompleted = true;
 		this.isSet = false;
 		if (this.ffClosure) {
-			result = this.callFFWith(result);
+			this.callFFWith();
 		}
-		this.drainChildren();
-		this.appendChild(result);
+//		this.drainChildren();
+//		this.appendChild(getC);
 		this.renderOnlyThisNex(null);
-		this.callCallbacks(result);
+		this.notifyPending();
 	}
 
 	cancel() {
 		this.ffgen--;
 	}
+
+	set(activationFunction) {
+		this.activationFunction = activationFunction;
+	}
+
+	activate() {
+		this.activationFunction();
+		this.activationFunction = null;
+	}
+
+	activateIfAllComplete() {
+		if (this.activationFunction != null && this.numChildren() > 0) {
+			let isComplete = true;
+			for (let i = 0; i < this.numChildren(); i++) {
+				let c = this.getChildAt(0);
+				if (c.getTypeName() == '-expectation-' && !c.asyncProcessCompleted) {
+					isComplete == false;
+				}
+			}
+			if (isComplete) {
+				this.activate();
+			}
+		}
+	}
+
+	activateOrMakePending() {
+		if (this.activationFunction != null && this.numChildren() > 0) {
+			let isPending = false;
+			for (let i = 0; i < this.numChildren(); i++) {
+				let c = this.getChildAt(0);
+				if (c.getTypeName() == '-expectation-') {
+					c.addPendingExpectation(this);
+					isPending = true;
+				}
+			}
+			if (!isPending) {
+				this.activate();
+			}
+		}
+	}	
 
 	// standard nex stuff below
 

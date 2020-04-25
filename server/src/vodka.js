@@ -67,6 +67,7 @@ const eventQueue = new EventQueue();
 const KEY_DISPATCHER = new KeyDispatcher();
 const autocomplete = new Autocomplete();
 const perfmon = new PerformanceMonitor();
+const gc = new GarbageCollector();
 const contractEnforcer = new ContractEnforcer(); // someday this will likely be scoped in the environment
 
 function dumpPerf() {

@@ -1,1 +1,1 @@
-~"bind"h( @try-until-you-find-letter &" desired-letter"v( ~"let"h( @allletters ( |(a)| |(b)| |(c)|)~) ~"jslog"v( ~"string-cat"h( $"desiredletter" ~"to-string"h( @desired-letter~)~)~) ~"animation:do-on-every"v( &" previous"v( ~"if"v( ~"equal"h( @previous @desired-letter~) @previous ~"begin"v( ~"jslog"v( ~"string-cat"h( $"desiredletterISNOW" ~"to-string"h( @desired-letter~)~)~) ~"animation:random-item-from"h( @allletters~)~)~)&) ~"animation:random-item-from"h( @allletters~) #200~)&)~)
+( |(h)| |(e)| |(l)| |(l)| |(o)|)

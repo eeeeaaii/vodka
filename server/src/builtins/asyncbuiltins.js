@@ -26,7 +26,7 @@ function createAsyncBuiltins() {
 		function(env, executionEnvironment) {
 			let exp = env.lb('exp,');
 			if (exp == UNBOUND) {
-				FF_GEN++;
+				eventQueue.enqueueGC();
 				return new Nil();
 			} else {
 				exp.cancel();
@@ -61,6 +61,22 @@ function createAsyncBuiltins() {
 		}
 	);
 
+/*
+	Builtin.createBuiltin(
+		'wrap-in-pending',
+		[
+			{name: 'exp,', type:'Expectation'},
+		],
+		function(env, executionEnvironment) {
+			let exp = env.lb('exp,');
+			let pendingexp = new Expectation();
+			exp.addFulfillCallback(pendingexp.getCallbackForSet());
+			pendingexp.appendChild(exp);
+			return pendingexp;
+		}
+	);
+
+
 	Builtin.createBuiltin(
 		'set-pending',
 		[
@@ -71,39 +87,32 @@ function createAsyncBuiltins() {
 			// makes the first one pending the second basically
 			let exp = env.lb('exp,');
 			let expother = env.lb('expother,');
+			let callback = exp.getCallbackForSet();
+
 			expother.addFulfillCallback(exp.getCallbackForSet());
+
 			return exp;
 		}
 	);
-
+*/
+    // set-self-fulfillable
 	Builtin.createBuiltin(
-		'make-pending',
-		[
-			{name: 'expother,', type:'Expectation'}
-		],
-		function(env, executionEnvironment) {
-			// makes the first one pending the second basically
-			let exp = new Expectation();
-			let expother = env.lb('expother,');
-			expother.addFulfillCallback(exp.getCallbackForSet());
-			return exp;
-		}
-	);
-
-	Builtin.createBuiltin(
-		'set-handle',
+		'set-self-fulfillable',
 		[
 			{name: 'exp,', type:'Expectation'}
 		],
 		function(env, executionEnvironment) {
 			let exp = env.lb('exp,');
-			exp.setHandle(exp.getCallbackForSet());;
+			exp.set(function() {
+				exp.setHandle(callback);
+			})
 			return exp;
 		}
 	);
 
+	// 
 	Builtin.createBuiltin(
-		'handle',
+		'self-fulfill',
 		[
 			{name: 'exp,', type:'Expectation'}
 		],
@@ -128,9 +137,11 @@ function createAsyncBuiltins() {
 			let time = env.lb('time#').getTypedValue();
 			let exp = env.lb('exp,');
 			let callback = exp.getCallbackForSet();
-			setTimeout(function() {
-				callback(null /* do not set a value, the default is whatever the child is of the exp */);
-			}, time);
+			exp.set(function() {
+				setTimeout(function() {
+					callback(null /* do not set a value, the default is whatever the child is of the exp */);
+				}, time);				
+			});
 			return exp;
 		}
 	);
@@ -143,10 +154,12 @@ function createAsyncBuiltins() {
 		function(env, executionEnvironment) {
 			let exp = env.lb('exp,');
 			let callback = exp.getCallbackForSet();
-			exp.extraClickHandler = function() {
-				// should be passing an event object I think?
-				callback();
-			}
+			exp.set(function() {
+				exp.extraClickHandler = function() {
+					// should be passing an event object I think?
+					callback();
+				}
+			})
 			return exp;
 		}
 	);
