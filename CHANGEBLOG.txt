@@ -1,3 +1,9 @@
+April 25, 2020
+expectations are either activated when they are evaluated, or not. Every param to a function
+is evaluated of course but what if I had an equivalent to "skipeval"
+but just for expectations, like "skip activate"
+so it would be indicated by a comma instead of a * in the type signature.
+
 ----------------------------------------------------------------------------------------
 April 20, 2020
 

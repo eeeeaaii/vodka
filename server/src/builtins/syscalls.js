@@ -21,9 +21,7 @@ function createSyscalls() {
 
 	Builtin.createBuiltin(
 		'jslog',
-		[
-			{name: 'nex', type:'*'}
-		],
+		[ 'nex' ],
 		function(env, executionEnvironment) {
 			let nex = env.lb('nex');
 			console.log(nex.debugString());
@@ -34,12 +32,9 @@ function createSyscalls() {
 
 	Builtin.createBuiltin(
 		'apply-css-style-to',
-		[
-			{name:'style$', type:'EString'},
-			{name:'nex', type:'*'}
-		],
+		[ 'style$', 'nex' ],
 		function(env, executionEnvironment) {
-			let s = env.lb('style$').getFullTypedValue();
+			let s = env.lb('style').getFullTypedValue();
 			let n = env.lb('nex');
 			n = n.makeCopy();
 			n.setCurrentStyle(s);
@@ -49,9 +44,7 @@ function createSyscalls() {
 
 	Builtin.createBuiltin(
 		'get-css-style-from',
-		[
-			{name:'nex', type:'*'}
-		],
+		[ 'nex' ],
 		function(env, executionEnvironment) {
 			let n = env.lb('nex');
 			let s = n.getCurrentStyle();
@@ -61,9 +54,7 @@ function createSyscalls() {
 
 	Builtin.createBuiltin(
 		'get-pixel-width',
-		[
-			{name:'nex', type:'*'}
-		],
+		[ 'nex' ],
 		function(env, executionEnvironment) {
 			let n = env.lb('nex');
 			let rn = new RenderNode(n);
@@ -78,9 +69,7 @@ function createSyscalls() {
 
 	Builtin.createBuiltin(
 		'get-pixel-height',
-		[
-			{name:'nex', type:'*'}
-		],
+		[ 'nex' ],
 		function(env, executionEnvironment) {
 			let n = env.lb('nex');
 			let rn = new RenderNode(n);
@@ -95,14 +84,11 @@ function createSyscalls() {
 
 	Builtin.createBuiltin(
 		'run-js',
-		[
-			{name:'expr$', type:'EString'},
-			{name:'nex...', type:'*', variadic:true}
-		],
+		[ 'expr$', 'nex...' ],
 		function(env, executionEnvironment) {
-			let strn = env.lb('expr$');
+			let strn = env.lb('expr');
 			let str = strn.getFullTypedValue();
-			let lst = env.lb('nex...');
+			let lst = env.lb('nex');
 			var $dom = [];
 			var $nex = [];
 			var $node = [];

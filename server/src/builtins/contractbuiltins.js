@@ -18,14 +18,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 function createContractBuiltins() {
 	Builtin.createBuiltin(
 		'must-be',
-		[
-			{name:'tag^', type:'Nil'},
-			{name:'nex', type:'*'}
-		],
+		[ 'tag^', 'nex' ],
 		function(env, executionEnvironment) {
 			// enforces that the tag can only be applied to
 			// nexes that have the same type as the passed-in arg
-			let nil = env.lb('tag^');
+			let nil = env.lb('tag');
 			let nex = env.lb('nex');
 			if (nil.numTags() != 1) {
 				return new EError('tag-must-be: cannot set up contract, first arg needs exactly one tag')
@@ -39,14 +36,11 @@ function createContractBuiltins() {
 
 	Builtin.createBuiltin(
 		'must-have-type-of',
-		[
-			{name:'tag^', type:'Nil'},
-			{name:'nex', type:'*'}
-		],
+		[ 'tag^', 'nex' ],
 		function(env, executionEnvironment) {
 			// enforces that the tag can only be applied to
 			// nexes that have the same type as the passed-in arg
-			let nil = env.lb('tag^');
+			let nil = env.lb('tag');
 			let nex = env.lb('nex');
 			if (nil.numTags() != 1) {
 				return new EError('tag-must-be: cannot set up contract, first arg needs exactly one tag')

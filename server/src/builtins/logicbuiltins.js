@@ -18,54 +18,42 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 function createLogicBuiltins() {
 	Builtin.createBuiltin(
 		'not',
-		[
-			{name:'exp!', type:'Bool'},
-		],
+		[ 'val!' ],
 		function(env, executionEnvironment) {
-			return new Bool(!env.lb('exp!').getTypedValue());
+			return new Bool(!env.lb('val').getTypedValue());
 		}
 	)
 
 
 	Builtin.createBuiltin(
 		'and',
-		[
-			{name:'exp1!', type:'Bool'},
-			{name:'exp2!', type:'Bool'},
-		],
+		[ 'val1!', 'val2!' ],
 		function(env, executionEnvironment) {
-			return new Bool(env.lb('exp1!').getTypedValue() && env.lb('exp2!').getTypedValue());
+			return new Bool(env.lb('val1').getTypedValue() && env.lb('val2').getTypedValue());
 		}
 	)
 
 	Builtin.createBuiltin(
 		'or',
-		[
-			{name:'exp1!', type:'Bool'},
-			{name:'exp2!', type:'Bool'},
-		],
+		[ 'val1!', 'val2!' ],
 		function(env, executionEnvironment) {
-			return new Bool(env.lb('exp1!').getTypedValue() || env.lb('exp2!').getTypedValue());
+			return new Bool(env.lb('val1').getTypedValue() || env.lb('val2').getTypedValue());
 		}
 	)
 
 	Builtin.createBuiltin(
 		'if',
-		[
-			{name:'cond!', type:'Bool'},
-			{name:'{true}', type:'*', skipeval:true},
-			{name:'{false}', type:'*', skipeval:true},
-		],
+		[ 'cond!', '_iftrue', '_iffalse' ],
 		function(env, executionEnvironment) {
-			let b = env.lb('cond!').getTypedValue();
+			let b = env.lb('cond').getTypedValue();
 			if (b) {
-				let iftrue = evaluateNexSafely(env.lb('{true}'), executionEnvironment);
+				let iftrue = evaluateNexSafely(env.lb('iftrue'), executionEnvironment);
 				if (isFatalError(iftrue)) {
 					iftrue = wrapError('&szlig;', 'if: error in argument 2', iftrue);
 				}
 				return iftrue;
 			} else {
-				let iffalse = evaluateNexSafely(env.lb('{false}'), executionEnvironment);
+				let iffalse = evaluateNexSafely(env.lb('iffalse'), executionEnvironment);
 				if (isFatalError(iffalse)) {
 					iffalse = wrapError('&szlig;', 'if: error in argument 3', iffalse);
 				}

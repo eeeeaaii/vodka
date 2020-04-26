@@ -18,13 +18,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 function createTagBuiltins() {
 	Builtin.createBuiltin(
 		'add-tag',
-		[
-			{name: '_nex', type:'*', skipeval:true},
-			{name: 'tag$', type:'EString'}
-		],
+		[ '_nex', 'tag$' ],
 		function(env, executionEnvironment) {
-			let n = env.lb('_nex');
-			let tagname = env.lb('tag$').getFullTypedValue();
+			let n = env.lb('nex');
+			let tagname = env.lb('tag').getFullTypedValue();
 			n.addTag(new Tag(tagname));
 			return n;
 		}
@@ -32,13 +29,10 @@ function createTagBuiltins() {
 
 	Builtin.createBuiltin(
 		'remove-tag',
-		[
-			{name: '_nex', type:'*', skipeval:true},
-			{name: 'tag$', type:'EString'}
-		],
+		[ '_nex', 'tag$' ],
 		function(env, executionEnvironment) {
-			let n = env.lb('_nex');
-			let tagname = env.lb('tag$').getFullTypedValue();
+			let n = env.lb('nex');
+			let tagname = env.lb('tag').getFullTypedValue();
 			let tag = new Tag(tagname);
 			n.removeTag(tag);
 			return n;
@@ -47,13 +41,9 @@ function createTagBuiltins() {
 
 	Builtin.createBuiltin(
 		'clear-tags',
-		[
-			{name: '_nex', type:'*', skipeval:true},
-		],
+		[ '_nex' ],
 		function(env, executionEnvironment) {
 			let n = env.lb('_nex');
-			let tagname = env.lb('tag$').getFullTypedValue();
-			let tag = new Tag(tagname);
 			n.clearTags();
 			return n;
 		}
@@ -61,13 +51,10 @@ function createTagBuiltins() {
 
 	Builtin.createBuiltin(
 		'has-tag',
-		[
-			{name: '_nex', type:'*', skipeval:true},
-			{name: 'tag$', type:'EString'}
-		],
+		[ '_nex', 'tag$' ],
 		function(env, executionEnvironment) {
-			let n = env.lb('_nex');
-			let tagname = env.lb('tag$').getFullTypedValue();
+			let n = env.lb('nex');
+			let tagname = env.lb('tag').getFullTypedValue();
 			let tag = new Tag(tagname);
 			if (n.hasTag(tag)) {
 				return new Bool(true);

@@ -56,12 +56,16 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	padding: 7px 6px 2px 6px;
 }
 
-.dotspan.exploded.threedots {
+.dotspan.exploded.activated {
 	padding: 0px 4px 8px 4px;
 }
 
-.dotspan.exploded.twodots {
-	padding: 0px 8px 8px 4px;
+.dotspan.exploded.set {
+	padding: 0px 8px 8px 8px;
+}
+
+.dotspan.exploded.unset {
+	padding: 3px 7px 5px 8px;
 }
 
 .expectation.exploded.selected > .dotspan {

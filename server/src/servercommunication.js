@@ -28,83 +28,52 @@ function sendToServer(payload, cb) {
   	}
 }
 
-function saveNex(name, nex, expectation) {
+function saveNex(name, nex, exp) {
 	let payload = `save\t${name}\t${nex.toString()}`;
 
-	let callback = expectation.getCallbackForSet();
-	sendToServer(payload, function(data) {
-		let e = new EError("success");
-		e.setErrorType(ERROR_TYPE_INFO);
-		callback(e);
-	});
-}
-
-function saveFileNex(name, nex, expectation) {
-	let payload = `save\t${name}\t${nex.toString()}`;
-
-	let callback = expectation.getCallbackForSet();
-	sendToServer(payload, function(data) {
-		let a = new Command("save-file");
-		a.setVertical();
-		a.appendChild(new ESymbol(name));
-		a.appendChild(nex);
-		callback(a);
-	});
-}
-
-function saveNexWithCallback(name, nex, expectation, callback) {
-	let payload = `save\t${name}\t${nex.toString()}`;
-
-	sendToServer(payload, function(data) {
-		callback(data);
-	});
-}
-
-function loadNex(name, expectation) {
-	let payload = `load\t${name}`;
-
-	let callback = expectation.getCallbackForSet();
-	sendToServer(payload, function(data) {
-		document.title = name;
-		let nex = new NexParser(data).parse();
-		callback(nex);
-	});
-}
-
-function importNex(name, expectation) {
-	let payload = `load\t${name}`;
-
-	sendToServer(payload, function(data) {
-		let nex = new NexParser(data).parse();
-		let result = evaluateNexSafely(nex, BINDINGS);
-		let r = null;
-		if (result.getTypeName() != '-error-') {
-			r = new EError("Import successful.");
-			r.setErrorType(ERROR_TYPE_INFO);
-		} else {
-			r = new EError("Import failed.");
-			r.setErrorType(ERROR_TYPE_WARN);
-			r.appendChild(result);
-		}
-		expectation.fulfill(r);
-	});
-}
-
-function importChain(importList, nex, expectation) {
-	if (importList.numChildren() == 0) {
-		let result = evaluateNexSafely(nex, BINDINGS);
-		expectation.fulfill(result);
-		// idk
-	} else {
-		let name = importList.removeChildAt(0).getTypedValue();
-		let payload = `load\t${name}`;
-
+	let callback = exp.getCallbackForSet();
+	exp.set(function() {
 		sendToServer(payload, function(data) {
-			let imported = new NexParser(data).parse();
-			evaluateNexSafely(imported, BINDINGS);
-			// discard result of evaluation.
-			importChain(importList, nex, expectation);
+			let e = new EError("success");
+			e.setErrorType(ERROR_TYPE_INFO);
+			callback(e);
 		});
-	}
+	});
+}
 
+
+function loadNex(name, exp) {
+	let payload = `load\t${name}`;
+
+	let callback = exp.getCallbackForSet();
+	exp.set(function() {
+		sendToServer(payload, function(data) {
+			document.title = name;
+			let nex = new NexParser(data).parse();
+			callback(nex);
+		});
+	});
+}
+
+
+function importNex(name, exp) {
+	let payload = `load\t${name}`;
+
+	let callback = exp.getCallbackForSet();
+	exp.set(function() {
+		sendToServer(payload, function(data) {
+			let nex = new NexParser(data).parse();
+			let result = evaluateNexSafely(nex, BINDINGS);
+			let r = null;
+			if (result.getTypeName() != '-error-') {
+				r = new EError("Import successful.");
+				r.setErrorType(ERROR_TYPE_INFO);
+			} else {
+				r = new EError("Import failed.");
+				r.setErrorType(ERROR_TYPE_WARN);
+				r.appendChild(result);
+			}
+			callback(nex);
+		});
+	});
 }

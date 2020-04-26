@@ -20,13 +20,10 @@ function createEnvironmentBuiltins() {
 
 	Builtin.createBuiltin(
 		'let',
-		[
-			{name:'_name@', type:'ESymbol',skipeval:true},
-			{name:'nex', type:'*'}
-		],
+		[ '_name@', 'nex' ],
 		function(env, executionEnvironment) {
 			let rhs = env.lb('nex');
-			let symname = env.lb('_name@').getTypedValue();
+			let symname = env.lb('name').getTypedValue();
 			executionEnvironment.bind(symname, rhs);
 			if (rhs.getTypeName() == '-closure-') {
 				// basically let is always "letrec"
@@ -38,9 +35,7 @@ function createEnvironmentBuiltins() {
 
 	Builtin.createBuiltin(
 		'unclose',
-		[
-			{name:'closure', type:'Closure'}
-		],
+		[ 'closure&' ],
 		function(env, executionEnvironment) {
 			// replaces the closure with the dynamic scope of the function we are in
 			let rhs = env.lb('closure');
@@ -51,26 +46,20 @@ function createEnvironmentBuiltins() {
 
 	Builtin.createBuiltin(
 		'set',
-		[
-			{name:'_name@', type:'ESymbol',skipeval:true},
-			{name:'nex', type:'*'}
-		],
+		[ '_name@', 'nex' ],
 		function(env, executionEnvironment) {
 			let rhs = env.lb('nex');
-			executionEnvironment.set(env.lb('_name@').getTypedValue(), rhs);
+			executionEnvironment.set(env.lb('name').getTypedValue(), rhs);
 			return rhs;
 		}
 	);
 
 	Builtin.createBuiltin(
 		'bind',
-		[
-			{name:'_name@', type:'ESymbol',skipeval:true},
-			{name:'nex', type:'*'}
-		],
+		[ '_name@', 'nex' ],
 		function(env, executionEnvironment) {
 			let val = env.lb('nex');
-			let name = env.lb('_name@');
+			let name = env.lb('name');
 			let namestr = name.getTypedValue();
 			// for closures, I rip out the copied/captured lexical env
 			// and just point it to the global bindings one.
@@ -90,11 +79,9 @@ function createEnvironmentBuiltins() {
 
 	Builtin.createBuiltin(
 		'bindings',
-		[
-			{name: '_?search@', type:'ESymbol', skipeval:true, optional:true}
-		],
+		[ '_search@?' ],
 		function(env, executionEnvironment) {
-			let ssnex = env.lb('_?search@');
+			let ssnex = env.lb('search');
 			let ss = "";
 			if (ssnex != UNBOUND) {
 				ss = ssnex.getTypedValue();
@@ -114,11 +101,9 @@ function createEnvironmentBuiltins() {
 
 	Builtin.createBuiltin(
 		'builtins',
-		[
-			{name: '_?search@', type:'ESymbol', skipeval:true, optional:true}
-		],
+		[ '_search@?' ],
 		function(env, executionEnvironment) {
-			let ssnex = env.lb('_?search@');
+			let ssnex = env.lb('search');
 			let ss = "";
 			if (ssnex != UNBOUND) {
 				ss = ssnex.getTypedValue();

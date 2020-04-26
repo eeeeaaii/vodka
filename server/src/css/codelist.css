@@ -74,6 +74,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	margin: 0px 2px 0px 0px;
 }
 
+.codespan.exploded.editing {
+	font-weight: bold;
+	background-color: #ffbfbe
+}
+
 .codelist.exploded.vdir > .codespan {
 	border-radius: 0px 0px 6px 6px;	
 	margin: 0px 0px 2px 0px;

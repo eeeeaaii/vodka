@@ -41,6 +41,14 @@ class RenderNode {
 		return this.currentEditor && this.currentEditor.isEditing();
 	}
 
+	startLambdaEditor() {
+		if (this.currentEditor) {
+			throw new Error('cannot edit two things at once');
+		}
+		this.currentEditor = new LambdaEditor(this.nex);
+		this.currentEditor.startEditing();
+	}
+
 	addTag() {
 		if (this.currentEditor) {
 			throw new Error('cannot edit two things at once');

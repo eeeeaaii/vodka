@@ -20,8 +20,10 @@ class Lambda extends NexContainer {
 		super();
 		this.amptext = val ? val : '';
 		this.cachedParamNames = [];
+		this.paramsArray = [];
 		this.cacheParamNames();
 		this.cmdname = null;
+		this.isEditing = false;
 	}
 
 	getTypeName() {
@@ -84,6 +86,11 @@ class Lambda extends NexContainer {
 			} else {
 				codespan.classList.remove('exploded');
 			}
+			if (this.isEditing) {
+				codespan.classList.add('editing');
+			} else {
+				codespan.classList.remove('editing');
+			}
 			codespan.innerHTML = '<span class="lambdasign">' + this.getSymbolForCodespan() + '</span>' + this.amptext.replace(/ /g, '&nbsp;');
 		}
 	}
@@ -105,6 +112,7 @@ class Lambda extends NexContainer {
 			}
 		}
 		this.cachedParamNames = p;
+		this.paramsArray = new ParamParser().parse(p);
 	}
 
 	getParamNames() {
@@ -145,31 +153,87 @@ class Lambda extends NexContainer {
 		this.cacheParamNames();
 	}
 
+	doNotProcess(key) {
+		if (!(/^.$/.test(key))) {
+			return true;
+		}
+		return false;
+	}
+
+
 	defaultHandle(txt) {
 		if (isNormallyHandled(txt)) {
 			return false;
 		}
-		let allowedKeyRegex = /^[a-zA-Z0-9-_ ]$/;
-		if (allowedKeyRegex.test(txt)) {
-			this.appendAmpText(txt);
+		let letterRegex = /^[a-zA-Z0-9']$/;
+		let isSeparator = !letterRegex.test(txt);
+		if (isSeparator) {
+			manipulator.appendAndSelect(new Separator(txt))
 		} else {
-			if (this.hasChildren()) {
-				manipulator.insertAfterSelectedAndSelect(new Letter(txt))
-			} else {
-				manipulator.appendAndSelect(new Letter(txt));
-			}
+			manipulator.appendAndSelect(new Letter(txt))
 		}
 		return true;
 	}
 
+	// defaultHandle(txt) {
+	// 	if (this.doNotProcess(txt)) {
+	// 		return false;
+	// 	}
+	// 	let allowedKeyRegex = /^[a-zA-Z0-9-_ ]$/;
+	// 	if (allowedKeyRegex.test(txt)) {
+	// 		this.appendAmpText(txt);
+	// 	} else {
+	// 		if (this.hasChildren()) {
+	// 			manipulator.insertAfterSelectedAndSelect(new Letter(txt))
+	// 		} else {
+	// 			manipulator.appendAndSelect(new Letter(txt));
+	// 		}
+	// 	}
+	// 	return true;
+	// }
+
 	getEventTable(context) {
 		return {
-			'Enter': 'do-line-break-always',
-			'Backspace': 'delete-last-amp-letter-or-remove-selected-and-select-previous-sibling',
+			'Enter': 'start-lambda-editor',
+			'Backspace': 'no-op',
 			'ShiftSpace': 'toggle-dir',
 		};
 	}
 }
 
+class LambdaEditor {
+	constructor(lambda) {
+		this._isEditing = false;
+		this.lambda = lambda;
+	}
+
+	routeKey(text) {
+		if (text == 'Enter') {
+			this._isEditing = false;
+			this.lambda.isEditing = false;
+		} else if (text == 'Backspace') {
+			this.lambda.deleteLastAmpLetter();
+		} else if (/^.$/.test(text)) {
+			this.lambda.appendAmpText(text);
+		}
+	}
+
+	startEditing() {
+		this._isEditing = true;
+		this.lambda.isEditing = true;
+	}
+
+	isEditing() {
+		return this._isEditing;
+	}
+
+	postNode() {
+		return null;
+	}
+
+	preNode() {
+		return null;
+	}
+}
 
 

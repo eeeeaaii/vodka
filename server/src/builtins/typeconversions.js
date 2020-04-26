@@ -19,9 +19,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 function createTypeConversionBuiltins() {
 	Builtin.createBuiltin(
 		'to-word',
-		[
-			{name: 'nex', type:'*'},
-		],
+		[ 'nex' ],
 		function(env, executionEnvironment) {
 			let v = env.lb('nex');
 
@@ -57,9 +55,7 @@ function createTypeConversionBuiltins() {
 
 	Builtin.createBuiltin(
 		'to-float',
-		[
-			{name: 'nex', type:'*'},
-		],
+		[ 'nex' ],
 		function(env, executionEnvironment) {
 			let v = env.lb('nex');
 			if (v instanceof Float) {
@@ -120,9 +116,7 @@ function createTypeConversionBuiltins() {
 
 	Builtin.createBuiltin(
 		'to-integer',
-		[
-			{name: 'nex', type:'*'},
-		],
+		[ 'nex' ],
 		function(env, executionEnvironment) {
 			let v = env.lb('nex');
 			if (v instanceof Integer) {
@@ -177,9 +171,7 @@ function createTypeConversionBuiltins() {
 
 	Builtin.createBuiltin(
 		'to-string',
-		[
-			{name:'nex', type:'*'},
-		],
+		[ 'nex' ],
 		function(env, executionEnvironment) {
 			let v = env.lb('nex');
 			if (v instanceof EString) {
@@ -212,10 +204,7 @@ function createTypeConversionBuiltins() {
 	// TODO: actually what I should do is tag it with something like "not fatal"
 	Builtin.createBuiltin(
 		'convert-type-if-error',
-		[
-			{name:'errtype$', type:'EString'},
-			{name: 'nex', type:'*', skipeval:true}
-		],
+		[ 'errtype$', '_nex' ],
 		function(env, executionEnvironment) {
 			let expr = env.lb('nex');
 			let newresult = evaluateNexSafely(expr, executionEnvironment);
@@ -229,7 +218,7 @@ function createTypeConversionBuiltins() {
 				return newresult;
 			}
 
-			let etstring = env.lb('errtype$').getFullTypedValue();
+			let etstring = env.lb('errtype').getFullTypedValue();
 			let errtype = ERROR_TYPE_FATAL;
 			switch(etstring) {
 				case "warn":

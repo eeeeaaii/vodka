@@ -68,13 +68,13 @@ class Closure extends ValueNex {
 	}
 
 	getArgEvaluator(cmdname, argContainer, executionEnvironment) {
-		if (this.lambda instanceof Builtin) {
-			return new BuiltinArgEvaluator(cmdname, this.lambda.params, argContainer, executionEnvironment);
-		} else {
-			return new LambdaArgEvaluator(
-				this.lambda.getParamNames(),
-				argContainer, executionEnvironment, cmdname);
-		}
+//		if (this.lambda instanceof Builtin) {
+			return new BuiltinArgEvaluator(cmdname, this.lambda.paramsArray, argContainer, executionEnvironment);
+		// } else {
+		// 	return new LambdaArgEvaluator(
+		// 		this.lambda.getParamNames(),
+		// 		argContainer, executionEnvironment, cmdname);
+		// }
 	}
 
 	executor(executionEnvironment, argEvaluator, cmdname, commandTags) {

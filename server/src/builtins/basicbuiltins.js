@@ -18,9 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'copy',
-		[
-			{name:'nex', type:'*'}
-		],
+		[ 'nex' ],
 		function(env, executionEnvironment) {
 			return env.lb('nex').makeCopy();
 		}
@@ -29,13 +27,9 @@ function createBasicBuiltins() {
 
 	Builtin.createBuiltin(
 		'car',
-		[
-			{name:'list()', type:'NexContainer'}
-		],
+		[ 'list()' ],
 		function(env, executionEnvironment) {
-			/////////// ***** DEPRECATED ********
-//			console.log('deprecated builtin: car')
-			let lst = env.lb('list()');
+			let lst = env.lb('list');
 			if (lst.numChildren() == 0) {
 				return new EError('car: cannot get first element of empty list. Sorry!');
 			}
@@ -44,46 +38,10 @@ function createBasicBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'first',
-		[
-			{name:'list()', type:'NexContainer'}
-		],
-		function(env, executionEnvironment) {
-			/////////// ***** THERE IS A DEPRECATED VERSION ********
-			let lst = env.lb('list()');
-			if (lst.numChildren() == 0) {
-				return new EError('first: cannot get first element of empty list. Sorry!');
-			}
-			return lst.getFirstChild();
-		}
-	);
-
-	Builtin.createBuiltin(
-		'rest',
-		[
-			{name:'list()', type:'NexContainer'}
-		],
-		function(env, executionEnvironment) {
-			/////////// ***** THERE IS A DEPRECATED VERSION ********
-			let c = env.lb('list()');
-			if (c.numChildren() == 0) {
-				return new EError("rest: given an empty list, cannot make a new list with first element removed. Sorry!");
-			}
-			let newOne = c.makeCopy(true);
-			c.getChildrenForCdr(newOne);
-			return newOne;
-		}
-	);
-
-	Builtin.createBuiltin(
 		'cdr',
-		[
-			{name:'list()', type:'NexContainer'}
-		],
+		[ 'list()' ],
 		function(env, executionEnvironment) {
-			/////////// ***** DEPRECATED ********
-//			console.log('deprecated builtin: cdr')
-			let c = env.lb('list()');
+			let c = env.lb('list');
 			if (c.numChildren() == 0) {
 				return new EError("cdr: given an empty list, cannot make a new list with first element removed. Sorry!");
 			}
@@ -95,13 +53,10 @@ function createBasicBuiltins() {
 
 	Builtin.createBuiltin(
 		'cons',
-		[
-			{name:'nex', type:'*'},
-			{name:'list()', type:'NexContainer'},
-		],
+		[ 'nex', 'list()' ],
 		function(env, executionEnvironment) {
-			let lst = env.lb('list()');
 			let nex = env.lb('nex');
+			let lst = env.lb('list');
 			let newOne = lst.makeCopy(true);
 			lst.setChildrenForCons(nex, newOne);
 			return newOne;
@@ -110,11 +65,9 @@ function createBasicBuiltins() {
 
 	Builtin.createBuiltin(
 		'cap',
-		[
-			{name:'list()', type:'NexContainer'}
-		],
+		[ 'list()' ],
 		function(env, executionEnvironment) {
-			let c = env.lb('list()');
+			let c = env.lb('list');
 			if (c.numChildren() == 0) {
 				return new EError("chop: cannot get first element of empty list. Sorry!");
 			}
@@ -126,11 +79,9 @@ function createBasicBuiltins() {
 
 	Builtin.createBuiltin(
 		'chop',
-		[
-			{name:'list()', type:'NexContainer'}
-		],
+		[ 'list()' ],
 		function(env, executionEnvironment) {
-			let c = env.lb('list()');
+			let c = env.lb('list');
 			if (c.numChildren() == 0) {
 				return new EError("chop: cannot remove first element of empty list. Sorry!");
 			}
@@ -141,12 +92,9 @@ function createBasicBuiltins() {
 
 	Builtin.createBuiltin(
 		'cram',
-		[
-			{name:'nex', type:'*'},
-			{name:'list()', type:'NexContainer'},
-		],
+		[ 'nex', 'list()' ],
 		function(env, executionEnvironment) {
-			let lst = env.lb('list()');
+			let lst = env.lb('list');
 			lst.prependChild(env.lb('nex'));
 			return lst;
 		}
@@ -154,21 +102,17 @@ function createBasicBuiltins() {
 
 	Builtin.createBuiltin(
 		'quote',
-		[
-			{name:'_nex', type:'*', skipeval:true},
-		],
+		[ '_nex' ],
 		function(env, executionEnvironment) {
-			return env.lb('_nex');
+			return env.lb('nex');
 		}
 	);
 
 	Builtin.createBuiltin(
 		'begin',
-		[
-			{name:'nex...', type:'*', variadic:true}
-		],
+		[ 'nex...' ],
 		function(env, executionEnvironment) {
-			let lst = env.lb('nex...');
+			let lst = env.lb('nex');
 			if (lst.numChildren() == 0) {
 				return new Nil();
 			} else {
@@ -180,9 +124,7 @@ function createBasicBuiltins() {
 	// 'eval' is really eval again because args to functions are evaled
 	Builtin.createBuiltin(
 		'eval',
-		[
-			{name: 'nex', type:'*'}
-		],
+		[ 'nex' ],
 		function(env, executionEnvironment) {
 			let expr = env.lb('nex');
 			let newresult = evaluateNexSafely(expr, executionEnvironment);
@@ -194,13 +136,10 @@ function createBasicBuiltins() {
 
 	Builtin.createBuiltin(
 		'map-with',
-		[
-			{name: 'list()', type:'NexContainer'},
-			{name: 'func&', type:'Closure'}
-		],
+		[ 'list()', 'func&' ],
 		function(env, executionEnvironment) {
-			let closure = env.lb('func&');
-			let list = env.lb('list()');
+			let closure = env.lb('func');
+			let list = env.lb('list');
 			// until we congeal things down to a single list type
 			// I'll try to honor the list type of the starting list
 			let resultList = list.makeCopy(true /* shallow */);
@@ -220,15 +159,11 @@ function createBasicBuiltins() {
 
 	Builtin.createBuiltin(
 		'reduce-with-starting',
-		[
-			{name: 'list()', type:'NexContainer'},
-			{name: 'func&', type:'Closure'},
-			{name: 'startval', type:'*'}
-		],
+		[ 'list()', 'func&', 'startval' ],
 		function(env, executionEnvironment) {
-			let closure = env.lb('func&');
+			let list = env.lb('list');
+			let closure = env.lb('func');
 			let sn = env.lb('startval');
-			let list = env.lb('list()');
 			let p = sn;
 			for (let i = 0; i < list.numChildren(); i++) {
 				let item = list.getChildAt(i);
@@ -245,13 +180,10 @@ function createBasicBuiltins() {
 
 	Builtin.createBuiltin(
 		'filter-with',
-		[
-			{name: 'list()', type:'NexContainer'},
-			{name: 'func&', type:'Closure'}
-		],
+		[ 'list()', 'func&' ],
 		function(env, executionEnvironment) {
-			let closure = env.lb('func&');
-			let list = env.lb('list()');
+			let list = env.lb('list');
+			let closure = env.lb('func');
 			let resultList = list.makeCopy(true /* shallow */);
 			for (let i = 0; i < list.numChildren(); i++) {
 				let item = list.getChildAt(i);
@@ -269,10 +201,7 @@ function createBasicBuiltins() {
 	);
 	Builtin.createBuiltin(
 		'eq',
-		[
-			{name: 'lhs', type:'*'},
-			{name: 'rhs', type:'*'}
-		],
+		[ 'lhs', 'rhs' ],
 		function(env, executionEnvironment) {
 			let lhs = env.lb('lhs');
 			let rhs = env.lb('rhs');
@@ -282,10 +211,7 @@ function createBasicBuiltins() {
 
 	Builtin.createBuiltin(
 		'equal',
-		[
-			{name: 'lhs', type:'*'},
-			{name: 'rhs', type:'*'}
-		],
+		[ 'lhs', 'rhs' ],
 		function(env, executionEnvironment) {
 			let lhs = env.lb('lhs');
 			let rhs = env.lb('rhs');

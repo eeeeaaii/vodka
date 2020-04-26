@@ -20,11 +20,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 function createAsyncBuiltins() {
 	Builtin.createBuiltin(
 		'cancel-ff',
-		[
-			{name: 'exp,', type:'Expectation', optional:true}
-		],
+		[ 'exp,?' ],
 		function(env, executionEnvironment) {
-			let exp = env.lb('exp,');
+			let exp = env.lb('exp');
 			if (exp == UNBOUND) {
 				eventQueue.enqueueGC();
 				return new Nil();
@@ -37,11 +35,9 @@ function createAsyncBuiltins() {
 
 	Builtin.createBuiltin(
 		'reset',
-		[
-			{name: 'exp,', type:'Expectation'}
-		],
+		[ 'exp,' ],
 		function(env, executionEnvironment) {
-			let exp = env.lb('exp,');
+			let exp = env.lb('exp');
 			exp.reset();
 			return exp;
 		}
@@ -49,93 +45,48 @@ function createAsyncBuiltins() {
 
 	Builtin.createBuiltin(
 		'ff-with',
-		[
-			{name: 'exp,', type:'Expectation'},
-			{name: 'func&', type:'Closure'}
-		],
+		[ 'exp,', 'func&' ],
 		function(env, executionEnvironment) {
-			let closure = env.lb('func&');
-			let exp = env.lb('exp,');
+			let closure = env.lb('func');
+			let exp = env.lb('exp');
 			exp.ffWith(closure, executionEnvironment);
 			return exp;
 		}
 	);
 
-/*
 	Builtin.createBuiltin(
-		'wrap-in-pending',
-		[
-			{name: 'exp,', type:'Expectation'},
-		],
+		'ff-with',
+		[ 'exp,', 'func&' ],
 		function(env, executionEnvironment) {
-			let exp = env.lb('exp,');
-			let pendingexp = new Expectation();
-			exp.addFulfillCallback(pendingexp.getCallbackForSet());
-			pendingexp.appendChild(exp);
-			return pendingexp;
-		}
-	);
-
-
-	Builtin.createBuiltin(
-		'set-pending',
-		[
-			{name: 'exp,', type:'Expectation'},
-			{name: 'expother,', type:'Expectation'}
-		],
-		function(env, executionEnvironment) {
-			// makes the first one pending the second basically
-			let exp = env.lb('exp,');
-			let expother = env.lb('expother,');
-			let callback = exp.getCallbackForSet();
-
-			expother.addFulfillCallback(exp.getCallbackForSet());
-
-			return exp;
-		}
-	);
-*/
-    // set-self-fulfillable
-	Builtin.createBuiltin(
-		'set-self-fulfillable',
-		[
-			{name: 'exp,', type:'Expectation'}
-		],
-		function(env, executionEnvironment) {
-			let exp = env.lb('exp,');
-			exp.set(function() {
-				exp.setHandle(callback);
-			})
+			let closure = env.lb('func');
+			let exp = env.lb('exp');
+			exp.ffWith(closure, executionEnvironment);
 			return exp;
 		}
 	);
 
-	// 
 	Builtin.createBuiltin(
-		'self-fulfill',
-		[
-			{name: 'exp,', type:'Expectation'}
-		],
+		'activate-after',
+		[ 'exp1,', 'exp2,' ],
 		function(env, executionEnvironment) {
-			let exp = env.lb('exp,');
-			if (!exp.hasHandle()) {
-				return new EError('exp: cannot handle because this expectation was not set to fulfill on handle. Sorry!');
-			}
-			exp.getHandle()();
-			return exp;
+			// the one we want to make sure ISN'T activated
+			// is the one we want to set to be pending ON the other one.
+			// this means though that the other one could have been
+			// activated, it doesn't matter. So we return the one
+			// that we just set to not activate until the other thing.
+			let exp1 = env.lb('exp1');
+			let exp2 = env.lb('exp2');
+			exp1.addVirtualChild(exp2);
+			return exp1; // or 2?
 		}
 	);
 
-	// make-delay?
 	Builtin.createBuiltin(
 		'set-delay',
-		[
-			{name: 'exp,', type:'Expectation'},
-			{name: 'time#', type:'Integer'},
-		],
+		[ 'exp,', 'time#' ],
 		function(env, executionEnvironment) {
-			let time = env.lb('time#').getTypedValue();
-			let exp = env.lb('exp,');
+			let time = env.lb('time').getTypedValue();
+			let exp = env.lb('exp');
 			let callback = exp.getCallbackForSet();
 			exp.set(function() {
 				setTimeout(function() {
@@ -148,11 +99,9 @@ function createAsyncBuiltins() {
 
 	Builtin.createBuiltin(
 		'set-click',
-		[
-			{name: 'exp,', type:'Expectation'}
-		],
+		[ 'exp,' ],
 		function(env, executionEnvironment) {
-			let exp = env.lb('exp,');
+			let exp = env.lb('exp');
 			let callback = exp.getCallbackForSet();
 			exp.set(function() {
 				exp.extraClickHandler = function() {

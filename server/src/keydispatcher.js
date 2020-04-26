@@ -18,12 +18,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 // use this wrapper to handle exceptions correctly, this
 // saves us from having to put exception handling in every
 // type of nex that can be evaluated.
-function evaluateNexSafely(nex, executionEnvironment) {
+function evaluateNexSafely(nex, executionEnvironment, skipActivation) {
 	let result;
 	try {
 		result = nex.evaluate(executionEnvironment);
-		if (result.getTypeName() == '-expectation-') {
-			result.activateOrMakePending();
+		if (result.getTypeName() == '-expectation-' && !skipActivation) {
+			result.activate();
 		}
 		if (result.getTypeName() == '-org-') {
 			// forget multiple dereference for now we will do that soon/someday/sometime
@@ -58,9 +58,9 @@ function wrapError(prefix, message, inner) {
 
 function insertOrAppend(s, obj) {
 	if (s.hasChildren()) {
-		manipulator.insertAfterSelectedAndSelect(obj);
+		return manipulator.insertAfterSelectedAndSelect(obj);
 	} else {
-		manipulator.appendAndSelect(obj);
+		return manipulator.appendAndSelect(obj);
 	}
 }
 
@@ -181,6 +181,11 @@ var KeyResponseFunctions = {
 		s.getNex().autocomplete();
 	},
 
+	'no-op': function(s) {},
+
+	'start-lambda-editor': function(s) { s.startLambdaEditor(); },
+
+
 	'replace-selected-with-command': function(s) { manipulator.replaceSelectedWith(new Command()); },
 	'replace-selected-with-bool': function(s) { manipulator.replaceSelectedWith(new Bool()); },
 	'replace-selected-with-symbol': function(s) { manipulator.replaceSelectedWith(new ESymbol()); },
@@ -188,7 +193,7 @@ var KeyResponseFunctions = {
 	'replace-selected-with-string': function(s) { manipulator.replaceSelectedWith(new EString()); },
 	'replace-selected-with-float': function(s) { manipulator.replaceSelectedWith(new Float()); },
 	'replace-selected-with-nil': function(s) { manipulator.replaceSelectedWith(new Nil()); },
-	'replace-selected-with-lambda': function(s) { manipulator.replaceSelectedWith(new Lambda()); },
+	'replace-selected-with-lambda': function(s) { manipulator.replaceSelectedWith(new Lambda()) && selectedNode.startLambdaEditor(); },
 	'replace-selected-with-expectation': function(s) { manipulator.replaceSelectedWith(new Expectation()); },
 	'replace-selected-with-word': function(s) { manipulator.replaceSelectedWith(new Word()); },
 	'replace-selected-with-line': function(s) { manipulator.replaceSelectedWith(new Line()); },
@@ -205,7 +210,10 @@ var KeyResponseFunctions = {
 	'insert-or-append-string': function(s) { insertOrAppend(s, new EString()); },
 	'insert-or-append-float': function(s) { insertOrAppend(s, new Float()); },
 	'insert-or-append-nil': function(s) { insertOrAppend(s, new Nil()); },
-	'insert-or-append-lambda': function(s) { insertOrAppend(s, new Lambda()); },
+	'insert-or-append-lambda': function(s) {
+		insertOrAppend(s, new Lambda())
+		&& selectedNode.startLambdaEditor();
+	},
 	'insert-or-append-expectation': function(s) { insertOrAppend(s, new Expectation()); },
 	'insert-or-append-word': function(s) { insertOrAppend(s, new Word()); },
 	'insert-or-append-line': function(s) { insertOrAppend(s, new Line()); },
@@ -219,7 +227,7 @@ var KeyResponseFunctions = {
 	'insert-string-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new EString()); },
 	'insert-float-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Float()); },
 	'insert-nil-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Nil()); },
-	'insert-lambda-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Lambda()); },
+	'insert-lambda-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Lambda())  && selectedNode.startLambdaEditor(); },
 	'insert-expectation-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Expectation()); },
 	'insert-word-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Word()); },
 	'insert-line-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Line()); },
@@ -229,7 +237,7 @@ var KeyResponseFunctions = {
 
 
 	'wrap-in-command': function(s) { manipulator.wrapSelectedInAndSelect(new Command()); },
-	'wrap-in-lambda': function(s) { manipulator.wrapSelectedInAndSelect(new Lambda()); },
+	'wrap-in-lambda': function(s) { manipulator.wrapSelectedInAndSelect(new Lambda())  && selectedNode.startLambdaEditor(); },
 	'wrap-in-expectation': function(s) { manipulator.wrapSelectedInAndSelect(new Expectation()); },
 	'wrap-in-word': function(s) { manipulator.wrapSelectedInAndSelect(new Word()); },
 	'wrap-in-line': function(s) { manipulator.wrapSelectedInAndSelect(new Line()); },
@@ -264,7 +272,7 @@ var KeyResponseFunctions = {
 	'legacy-insert-string-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new EString()); },
 	'legacy-insert-float-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Float()); },
 	'legacy-insert-nil-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Nil()); },
-	'legacy-insert-lambda-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Lambda()); },
+	'legacy-insert-lambda-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Lambda())  && selectedNode.startLambdaEditor(); },
 	'legacy-insert-expectation-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Expectation()); },
 
 

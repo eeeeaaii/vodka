@@ -7,6 +7,7 @@ ASYNC/EXPECTATION TO DO:
 - make it so that expectations, when created, do not automatically call activate, but activate is called at the end of every evaluate cycle if the thing returned by the evaluation is an expectation (similar to what happens with objs) - this allows you to use quote to make an expectation not activate right away
 - make it so that each time activate is called on an expectation it processes or handles one of its arguments
 - make it so that expectations re-activate themselves if there are unhandled arguments
+- reference counting doesn't work in the sense that if you delete an expectation containing other ones, it keeps firing...? because of the stale reference in the pendingExpectations, probably...
 
 
 TYPE-RELATED TO DO

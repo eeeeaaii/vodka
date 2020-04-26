@@ -21,7 +21,7 @@ class Builtin extends Lambda {
 	constructor(name, params) {
 		super();
 		this.name = name;
-		this.params = params;
+		this.paramsArray = params;
 		let amp = ' ' + name;
 		for (let i = 0; i < params.length; i++) {
 			amp += ' ' + params[i].name;
@@ -44,7 +44,7 @@ class Builtin extends Lambda {
 	}
 
 	makeCopy(shallow) {
-		let r = new Builtin(this.name, this.params);
+		let r = new Builtin(this.name, this.paramsArray);
 		this.copyFieldsTo(r);
 		this.copyChildrenTo(r, shallow);
 		return r;
@@ -70,10 +70,9 @@ class Builtin extends Lambda {
 		return r;
 	}
 
-	static createBuiltin(name, params, f) {
-		for (let i = 0; i < params.length; i++) {
-			params[i].name = BUILTIN_ARG_PREFIX + params[i].name;
-		}
+	static createBuiltin(name, paramsArray, f) {
+		let parser = new ParamParser(true /* isBuiltin */);
+		let params = parser.parse(paramsArray);
 		let builtin = new Builtin(name, params);
 		if (PERFORMANCE_MONITOR) {
 			perfmon.registerMethod(name);

@@ -26,66 +26,97 @@ a set of required args then some optional ones (could be zero A's)
 variadics are packaged up inside a list of some type (maybe a word)
 */
 
-class BuiltinParamManager {
-	constructor(params, args) {
-		this.params = params;
-		this.args = args;
-		this.effectiveParams = [];
+class ParamParser {
+	constructor(isBuiltin) {
+		this.isBuiltin = isBuiltin;
 	}
 
-	reconcile() {
-		this.verifyParameterCorrectness();
-		this.checkNumArgs();
-		this.padEffectiveParams();
+	parse(paramList) {
+		let rParams = [];
+		for (let i = 0; i < paramList.length; i++) {
+			rParams.push(this.parseParam(paramList[i]))
+		}
+		return rParams;
 	}
 
-	verifyParameterCorrectness() {
-		this.hasoptionals = false;
-		this.hasvariadics = false;
-		this.numRequiredParams = 0;
-		for (let i = 0; i < this.params.length; i++) {
-			let param = this.params[i];
-			if (param.optional) {
-				if (this.hasvariadics) {
-					throw new Error("Sorry, but you can't mix variadics and also optionals in the same param list!");
-				}
-				this.hasoptionals = true;
-				continue;
-			}
-			if (param.variadic) {
-				if (this.hasoptionals) {
-					throw new Error("Sorry, but you can't mix variadics and also optionals in the same param list!");
-				}
-				if (this.hasvariadics) {
-					throw new Error("Sorry, but you can't have multiple variadics in a single param list!");
-				}
-				this.hasvariadics = true;
-				continue;
-			}
-			this.numRequiredParams++;
+	parseParam(s) {
+		let originals = s;
+		let skipeval = false;
+		let variadic = false;
+		let optional = false;
+		let skipactivate = false;
+		// we re-parse every time the user changes the args
+		// when they are editing the args -- this means that there are transition states
+		// while they are typing when the args may not make sense and it's just okay.
+		if (s.charAt(0) == '_') {
+			skipeval = true;
+			s = s.substring(1);
+			if (s == '') return null;
+		}
+
+		if (s.length >= 3 && s.substring(s.length - 3, s.length) == '...') {
+			variadic = true;
+			s = s.substring(0, s.length - 3);
+			if (s == '') return null;
+		}
+		if (s.charAt(s.length - 1) == '?') {
+			optional = true;
+			s = s.substring(0, s.length - 1);
+			if (s == '') return null;
+		}
+		let typeString = this.getTypeCode(s);
+		let typeValidator = this.getTypeValidator(typeString);
+		if (typeString == ',') {
+			skipactivate = true;
+		}
+		if (typeValidator != '*') {
+			s = s.substring(0, s.length - typeString.length);
+			if (s == '') return null;
+		}
+		if (this.isBuiltin) {
+			name = BUILTIN_ARG_PREFIX + name;
+		}
+		return {
+			name: s,
+			debugName: originals,
+			type: typeValidator,
+			skipeval: skipeval,
+			skipactivate: skipactivate,
+			variadic: variadic,
+			optional: optional
 		}
 	}
 
-	checkNumArgs() {
-		if (this.args.length < this.numRequiredParams) {
-			let v = this.params[this.params.length - 1].variadic ? '(at least) ' : '';
-			throw new EError(`${this.name}: stopping because ${v}${this.numRequiredParams} arguments expected but there were only ${this.args.length}. Sorry!`)
+	getTypeCode(s) {
+		let end = s.charAt(s.length - 1);
+		let other = s.charAt(s.length - 2);
+		if (other == '(' || other == '%' || other == '#') {
+			return other + end;
+		} else {
+			return end;
 		}
 	}
 
-	padEffectiveParams() {
-		let i = 0;
-		for (; i < this.params.length; i++) {
-			this.effectiveParams[i] = this.params[i];
+	getTypeValidator(typechar) {
+		switch(typechar) {
+			case '!': return 'Bool';
+			case '~': return 'Command';
+			case '*': return 'Expectation';
+			case ',': return 'Expectation';
+			case '()': return 'NexContainer';
+			case '$': return 'EString';
+			case '@': return 'ESymbol';
+			case '?': return 'EError';
+			case '%': return 'Float';
+			case '#%': return 'Number';
+			case '%#': return 'Number';
+			case '#': return 'Integer';
+			case '^': return 'Nil';
+			case '&': return 'Closure';
 		}
-		if (this.hasvariadics) {
-			for(let lasti = i - 1; i < this.args.length; i++) {
-				this.effectiveParams[i] = this.params[lasti];
-			}
-		}
+		return '*';
 	}
 }
-
 
 class BuiltinArgEvaluator {
 	constructor(name, params, argContainer, executionEnvironment) {
@@ -93,8 +124,22 @@ class BuiltinArgEvaluator {
 		this.params = params;
 		this.argContainer = argContainer;
 		this.executionEnvironment = executionEnvironment;
-//		this.paramManager = new BuiltinParamManager(params, argContainer);
 		this.verifyParameterCorrectness();
+	}
+
+	debugString() {
+		let s = '';
+		s += "arg evaluator\n";
+		s += "   args:\n";
+		for (let i = 0; i < this.params.length; i++) {
+			let p = this.params[i];
+			s += `      ${p.name}${p.debugName ? ` (${p.debugName})` : ``}\n`;
+		}
+		s += "   values:\n";
+		for (let i = 0; i < this.argContainer.numArgs(); i++) {
+			s += "      " + this.argContainer.getArgAt(i).debugString() + '\n';
+		}
+		return s;
 	}
 
 	verifyParameterCorrectness() {
@@ -154,7 +199,7 @@ class BuiltinArgEvaluator {
 		let expectedType = param.type;
 		let arg = this.argContainer.getArgAt(i);
 		if (!param.skipeval) {
-			arg = evaluateNexSafely(arg, this.executionEnvironment);
+			arg = evaluateNexSafely(arg, this.executionEnvironment, param.skipactivate);
 			if (isFatalError(arg)) {
 				throw wrapError('&szlig;', `${this.name}: fatal error in argument ${i + 1} (expected type ${param.type}), cannot continue. Sorry!`, arg);
 			}

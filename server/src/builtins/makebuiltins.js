@@ -23,8 +23,7 @@ function createMakeBuiltins() {
 
 	Builtin.createBuiltin(
 		'make-word',
-		[
-		],
+		[],
 		function(env, executionEnvironment) {
 			return new Word();
 		}
@@ -32,8 +31,7 @@ function createMakeBuiltins() {
 
 	Builtin.createBuiltin(
 		'make-doc',
-		[
-		],
+		[],
 		function(env, executionEnvironment) {
 			return new Doc();
 		}
@@ -41,8 +39,7 @@ function createMakeBuiltins() {
 
 	Builtin.createBuiltin(
 		'make-line',
-		[
-		],
+		[],
 		function(env, executionEnvironment) {
 			return new Line();
 		}
@@ -50,17 +47,21 @@ function createMakeBuiltins() {
 
 	Builtin.createBuiltin(
 		'make-expectation',
-		[
-		],
+		[ 'nex...' ],
 		function(env, executionEnvironment) {
-			return new Expectation();
+			let exps = env.lb('nex');
+			let r = new Expectation();
+			for (let i = exps.numChildren() - 1; i >= 0; i--) {
+				let c = exps.getChildAt(i);
+				r.appendChild(c);
+			}
+			return r;
 		}
 	);
 
 	Builtin.createBuiltin(
 		'make-command',
-		[
-		],
+		[],
 		function(env, executionEnvironment) {
 			return new Command();
 		}
@@ -68,8 +69,7 @@ function createMakeBuiltins() {
 
 	Builtin.createBuiltin(
 		'make-lambda',
-		[
-		],
+		[],
 		function(env, executionEnvironment) {
 			return new Lambda();
 		}
@@ -77,8 +77,7 @@ function createMakeBuiltins() {
 
 	Builtin.createBuiltin(
 		'make-zlist',
-		[
-		],
+		[],
 		function(env, executionEnvironment) {
 			return new Zlist();
 		}

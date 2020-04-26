@@ -18,12 +18,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 function createStringBuiltins() {
 	Builtin.createBuiltin(
 		'string-listify',
-		[
-			{name:'str$', type:'EString'}
-		],
+		[ 'str$' ],
 		function(env, executionEnvironment) {
 			let r = new Word();
-			let s = env.lb('str$').getFullTypedValue();
+			let s = env.lb('str').getFullTypedValue();
 			for (let i = 0; i < s.length; i++) {
 				let c = s.charAt(i);
 				let cc = new EString(c);
@@ -35,13 +33,10 @@ function createStringBuiltins() {
 
 	Builtin.createBuiltin(
 		'string-char-at',
-		[
-			{name:'str$', type:'EString'},
-			{name:'pos#', type:'Integer'}
-		],
+		[ 'str$', 'pos#' ],
 		function(env, executionEnvironment) {
-			let s = env.lb('str$').getFullTypedValue();
-			let n = env.lb('pos#').getTypedValue();
+			let s = env.lb('str').getFullTypedValue();
+			let n = env.lb('pos').getTypedValue();
 			if (n < 0 || n >= s.length) {
 				return new EError(`So the function string-char-at`
 					+ ` needs you to pass in the index of`
@@ -58,13 +53,10 @@ function createStringBuiltins() {
 
 	Builtin.createBuiltin(
 		'string-index-of',
-		[
-			{name:'str$', type:'EString'},
-			{name:'tofind$', type:'EString'}
-		],
+		[ 'str$', 'tofind$' ],
 		function(env, executionEnvironment) {
-			let s = env.lb('str$').getFullTypedValue();
-			let tofind = env.lb('tofind$').getFullTypedValue();
+			let s = env.lb('str').getFullTypedValue();
+			let tofind = env.lb('tofind').getFullTypedValue();
 			let i = s.indexOf(tofind);
 			return new Integer(i);
 		}
@@ -72,11 +64,9 @@ function createStringBuiltins() {
 
 	Builtin.createBuiltin(
 		'string-length',
-		[
-			{name:'str$', type:'EString'}
-		],
+		[ 'str$' ],
 		function(env, executionEnvironment) {
-			let s = env.lb('str$').getFullTypedValue();
+			let s = env.lb('str').getFullTypedValue();
 			let len = s.length;
 			return new Integer(len);
 		}
@@ -84,12 +74,10 @@ function createStringBuiltins() {
 
 	Builtin.createBuiltin(
 		'string-cat',
-		[
-			{name:'strs$...', type: 'EString', variadic:true}
-		],
+		[ 'str$...' ],
 		function(env, executionEnvironment) {
 			let r = '';
-			let ar = env.lb('strs$...');
+			let ar = env.lb('str');
 			for (let i = 0; i < ar.numChildren(); i++) {
 				let s = ar.getChildAt(i).getFullTypedValue();
 				r += s;
@@ -100,13 +88,10 @@ function createStringBuiltins() {
 
 	Builtin.createBuiltin(
 		'string-join-on',
-		[
-			{name:'strs()', type: 'NexContainer'},
-			{name:'on$', type: 'EString'}
-		],
+		[ 'strs()', 'on$' ],
 		function(env, executionEnvironment) {
-			let lst = env.lb('strs()');
-			let on = env.lb('on$').getFullTypedValue();
+			let lst = env.lb('strs');
+			let on = env.lb('on').getFullTypedValue();
 			let r = '';
 			for (let i = 0; i < lst.numChildren(); i++) {
 				r = `${r}${i > 0 ? on : ''}${lst.getChildAt(i).getFullTypedValue()}`;
@@ -117,13 +102,10 @@ function createStringBuiltins() {
 
 	Builtin.createBuiltin(
 		'string-split-on',
-		[
-			{name:'str$', type: 'EString'},
-			{name:'on$', type: 'EString'}
-		],
+		[ 'str$', 'on$' ],
 		function(env, executionEnvironment) {
-			let str = env.lb('str$').getFullTypedValue();
-			let on = env.lb('on$').getFullTypedValue();
+			let str = env.lb('str').getFullTypedValue();
+			let on = env.lb('on').getFullTypedValue();
 			let lst = new Word();
 			let a = str.split(on);
 			for (let i = 0; i < a.length; i++) {
@@ -136,13 +118,10 @@ function createStringBuiltins() {
 
 	Builtin.createBuiltin(
 		'string-split-on',
-		[
-			{name:'str$', type: 'EString'},
-			{name:'on$', type: 'EString'}
-		],
+		[ 'str$', 'on$' ],
 		function(env, executionEnvironment) {
-			let str = env.lb('str$').getFullTypedValue();
-			let on = env.lb('on$').getFullTypedValue();
+			let str = env.lb('str').getFullTypedValue();
+			let on = env.lb('on').getFullTypedValue();
 			let lst = new Word();
 			let a = str.split(on);
 			for (let i = 0; i < a.length; i++) {
@@ -155,15 +134,11 @@ function createStringBuiltins() {
 
 	Builtin.createBuiltin(
 		'string-substring',
-		[
-			{name:'str$', type: 'EString'},
-			{name:'start#', type: 'Integer'},
-			{name:'len#', type: 'Integer'}
-		],
+		[ 'str$', 'start#', 'len#' ],
 		function(env, executionEnvironment) {
-			let str = env.lb('str$').getFullTypedValue();
-			let start = env.lb('start#').getTypedValue();
-			let len = env.lb('len#').getTypedValue();
+			let str = env.lb('str').getFullTypedValue();
+			let start = env.lb('start').getTypedValue();
+			let len = env.lb('len').getTypedValue();
 			let s = str.substr(start, len);
 			return new EString(s);
 		}
