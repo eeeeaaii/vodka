@@ -85,13 +85,25 @@ class Closure extends ValueNex {
 		}
 		let r = new Nil();
 		let i = 0;
-		for (let i = 0; i < this.lambda.numChildren(); i++) {
+		let rvp = this.lambda.getReturnValueParam();
+		let numc = this.lambda.numChildren();
+		for (let i = 0; i < numc; i++) {
+			let isReturnValue = (i == numc - 1);
 			let c = this.lambda.getChildAt(i);
-			r = evaluateNexSafely(c, newScope);
+			r = evaluateNexSafely(c, newScope, (!!rvp && isReturnValue && rvp.skipactivate));
 			if (isFatalError(r)) {
 				r = wrapError('&amp;', `${cmdname}: error in expr ${i+1}`, r);
 				return r;
 			}			
+			if (rvp && isReturnValue) {
+				let typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[rvp.type](r);
+				if (!typeChecksOut) {
+					return wrapError('&amp;', `${cmdname}: should return ${rvp.type} but returned ${r.getTypeName()}`, r);
+					// if (arg.getTypeName() == '-error-') {
+					// 	throw wrapError('&szlig;', `${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, arg);
+					// }
+				}
+			}
 		}
 		return r;
 	}

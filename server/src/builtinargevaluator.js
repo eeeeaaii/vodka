@@ -34,9 +34,23 @@ class ParamParser {
 	parse(paramList) {
 		let rParams = [];
 		for (let i = 0; i < paramList.length; i++) {
-			rParams.push(this.parseParam(paramList[i]))
+			let p = paramList[i];
+			if (p.indexOf('\\') >= 0) {
+				continue;
+			}
+			rParams.push(this.parseParam(p))
 		}
 		return rParams;
+	}
+
+	parseReturnValue(paramList) {
+		for (let i = 0; i < paramList.length; i++) {
+			let p = paramList[i];
+			if (p.indexOf('\\') >= 0) {
+				return this.parseParam(p);
+			}
+		}
+		return null;
 	}
 
 	parseParam(s) {
@@ -74,7 +88,7 @@ class ParamParser {
 			if (s == '') return null;
 		}
 		if (this.isBuiltin) {
-			name = BUILTIN_ARG_PREFIX + name;
+			s = BUILTIN_ARG_PREFIX + s;
 		}
 		return {
 			name: s,

@@ -79,7 +79,7 @@ function createFileBuiltins() {
 
 	Builtin.createBuiltin(
 		'use',
-		[ '_name@ ' ],
+		[ '_name@' ],
 		function(env, executionEnvironment) {
 			let packageName = env.lb('name').getTypedValue();
 			if (!BINDINGS.isKnownPackageName(packageName)) {

@@ -40,7 +40,7 @@ function createMathBuiltins() {
 		[
 			'min#%', // minuend
 			'sub#%?' // subtrahend
-		]
+		],
 		function(env, executionEnvironment) {
 			let a = env.lb('min');
 			let b = env.lb('sub');

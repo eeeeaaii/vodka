@@ -24,6 +24,7 @@ class Lambda extends NexContainer {
 		this.cacheParamNames();
 		this.cmdname = null;
 		this.isEditing = false;
+		this.returnValueParam = null;
 	}
 
 	getTypeName() {
@@ -112,7 +113,13 @@ class Lambda extends NexContainer {
 			}
 		}
 		this.cachedParamNames = p;
-		this.paramsArray = new ParamParser().parse(p);
+		let paramParser = new ParamParser();
+		this.paramsArray = paramParser.parse(p);
+		this.returnValueParam = paramParser.parseReturnValue(p);
+	}
+
+	getReturnValueParam() {
+		return this.returnValueParam;
 	}
 
 	getParamNames() {

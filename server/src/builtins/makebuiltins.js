@@ -60,6 +60,20 @@ function createMakeBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'nest-in-expectation',
+		[ 'exp,...' ],
+		function(env, executionEnvironment) {
+			let exps = env.lb('exp');
+			let r = new Expectation();
+			for (let i = exps.numChildren() - 1; i >= 0; i--) {
+				let c = exps.getChildAt(i);
+				r.appendChild(c);
+			}
+			return r;
+		}
+	);
+
+	Builtin.createBuiltin(
 		'make-command',
 		[],
 		function(env, executionEnvironment) {

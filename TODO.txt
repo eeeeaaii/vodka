@@ -11,6 +11,7 @@ ASYNC/EXPECTATION TO DO:
 
 
 TYPE-RELATED TO DO
+- return values from lambdas - the backslash notation is hard to read, instead just make it so the first thing you type is the return value and it will look like it's appended to the lambda itself.
 - figure out how to resolve orgs with multiple matching tags (first match?) and do we iterate first thru
   the tags in the expr being evaluated or first thru the tags on the org?
 - figure out if it's an error if returned org doesn't have tag
