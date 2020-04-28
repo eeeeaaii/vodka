@@ -1,5 +1,58 @@
 ----------------------------------------------------------------------------------------
 
+April 28, 2020 (entry 2)
+
+When we copy an environment, we don't copy the environments of closures in the environment.
+
+When we create a closure, we copy its environment, because we want that closure to have its
+own private copy of all those variables. However we don't copy the environments of the closures
+referred to in the environment being copied, because then those closures wouldn't have their
+own memory space that can vary independently.
+
+Right? This is how we are able to have "lexical" environment. Each closure is generated
+from a different place in the source code.
+
+But when we copy expectations we can have subtle bugs. Currently, in animation-functions,
+when you call fade-in-for-seconds, do-on-every-for creates a closure with a local environment
+that captures a "val" variable which is supposed to encode the value to set the opacity to.
+That closure gets passed into do-on-every-for, and it's called 'f'.
+
+do-on-every-for creates an expectation. That expectation has an ff-with closure.
+The ff-with closure has a local environment with a reference to 'f'.
+
+when the expectation returned by do-on-every-for is copied, its closure is copied,
+and that environment is copied. But the environment in the closure pointed to
+by 'f' is NOT copied, so the next time it's called, it still has the final value
+that it had the last time the animation ran through from 0 to 1. So it will
+run through again, from 1 to 2.
+
+I'm not sure why this causes problems with async code but not with normal lisp.
+I'll have to think about that. It seems like it would be infeasible to copy
+the environment differently when copying the closures inside expectations.
+it is a different use case for sure (copying because you're creating a closure
+vs. copying because you're copying an expectation) so it seems logically
+justifiable. However the problem is that it's not just symbols in the environment
+pointing to closures -- you could store a closure in a list, or in a list inside
+a list, etc. So I'll have to think about it.
+
+I'll also have to do an experiment in js or real lisp to verify my original assumption, i.e.
+the first sentence of this entry: When we copy an environment, we don't copy the environments
+of closures in the environment.
+
+I mean in both cases we are copying environments, but for different reasons:
+
+1. we are copying environments so each closure has its own copy of the values of
+things in the lexical part of the code where the closure was created
+
+2. we are copying environments so the copied expectation has a snapshot in time
+of the entire memory space of the program at the time it was copied, so when it is
+activated or fulfilled later the program hasn't changed unexpectedly
+
+
+
+
+----------------------------------------------------------------------------------------
+
 April 28, 2020
 
 Here's how I was going to deal with bridging between actual asyncronous javascript functions

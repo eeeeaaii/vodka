@@ -28,12 +28,15 @@ class Environment {
 		this.listOfPackagesUsed = null;
 	}
 
-	// see NOTES_ON_CLOSURES
 	copy() {
 		let newEnv = new Environment(null);
 		for (let sym in this.symbols) {
 			let rec = this.symbols[sym];
-			newEnv.symbols[sym] = this.copyBindingRecord(rec);
+			let copiedRecord = {
+				val: rec.val;
+				packagename: rec.packageName;
+			}
+			newEnv.symbols[sym] = copiedRecord;
 		}
 		newEnv.currentPackageForBinding = this.currentPackageForBinding;
 		if (this.packages) {
@@ -119,13 +122,6 @@ class Environment {
 		return {
 			val: value,
 			packageName: packageName
-		}
-	}
-
-	copyBindingRecord(record) {
-		return {
-			val: record.val,
-			packageName: record.packageName
 		}
 	}
 

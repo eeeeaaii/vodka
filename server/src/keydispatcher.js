@@ -35,7 +35,7 @@ function evaluateNexSafely(nex, executionEnvironment, skipActivation) {
 			// }
 
 //		if (result.getTypeName() == '-expectation-' && nex.shouldActivateReturnedExpectations() && !skipActivation) {
-		if (result.getTypeName() == '-expectation-' && !skipActivation) {
+		if (result.getTypeName() == '-expectation-' && nex.getTypeName() == '-command-' && !skipActivation) {
 			result.activate();
 		}
 		if (result.getTypeName() == '-org-') {

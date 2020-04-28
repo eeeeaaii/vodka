@@ -105,7 +105,7 @@ class Expectation extends NexContainer {
 		}
 		this.ffClosure = closure;
 		this.ffgen = FF_GEN;
-		this.ffExecutionEnvironment = executionEnvironment;// do I need to copy this?
+		this.ffExecutionEnvironment = executionEnvironment.copy();// do I need to copy this?
 	}
 
 	ffAll() {

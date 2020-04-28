@@ -26,6 +26,20 @@ function createAsyncBuiltins() {
 		}
 	);
 
+	Builtin.createBuiltin(
+		'let-exp',
+		[ '_name@', 'nex,' ],
+		function(env, executionEnvironment) {
+			let rhs = env.lb('nex');
+			let symname = env.lb('name').getTypedValue();
+			executionEnvironment.bind(symname, rhs);
+			if (rhs.getTypeName() == '-closure-') {
+				// basically let is always "letrec"
+				rhs.getLexicalEnvironment().bind(symname, rhs);
+			}
+			return rhs;
+		}
+	);
 
 	Builtin.createBuiltin(
 		'let-exp',
