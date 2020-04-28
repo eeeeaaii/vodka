@@ -55,7 +55,6 @@ TESTS TO-DO
 - - others?
 
 SERVER/FILES TO DO
-- (fixed?) trying to load a file that doesn't exist crashes the server
 - saving a file with an error in it only saves the top-level error not the enclosed errors.
 - implement authentication/usernames/something and make it so each user saves/loads files from their private location
 - make it so library files like util-functions, etc., are loaded from a global place that can't be modified, but that if you've done git pull and are modifying the source, there's a way you can pass a flag or something so that those files CAN be modified
@@ -64,6 +63,7 @@ SERVER/FILES TO DO
 - make a pretty-printer util for nex files so they can be processed to be easier to look at in a text editor
 - make parser tolerant of whitespace (so it can parse pretty-printed files)
 - now that closures are a nex object we need to make it so it throws an error if you try to save one (because you can't save its memory/environment so it doesn't make sense to save it)
+- server doesn't crash anymore when you load a file that isn't there but still need to improve error reporting.
 
 RENDERING TO-DO
 - handle insertion points at the render node level

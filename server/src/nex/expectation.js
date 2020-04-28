@@ -40,7 +40,7 @@ class Expectation extends NexContainer {
 		// we don't reset callbacks when we reset this exp,
 		// because if we did that, the code in ffWidth couldn't
 		// reset this expectation.
-		this.pendingExpectations = [];
+		this.pendingCallbacks = [];
 		this.callbackRouter = null;
 		this.ffClosure = null;
 		this.ffExecutionEnvironment = null;
@@ -57,12 +57,21 @@ class Expectation extends NexContainer {
 		this.ffExecutionEnvironment = null;
 	}
 
-	addPendingExpectation(pendingExp) {
+	addPendingCallback(pendingCallback) {
 		if (this.isFulfilled()) {
-			pendingExp.exp.notify(pendingExp.index);
+			pendingCallback();
 		} else {
-			this.pendingExpectations.push(pendingExp);
+			this.pendingCallbacks.push(pendingCallback);
 		}
+	}
+
+
+	notifyPending() {
+		for (let i = 0; i < this.pendingCallbacks.length; i++) {
+			let cb = this.pendingCallbacks[i];
+			cb();
+		}
+		this.pendingCallbacks = [];
 	}
 
 	copyFieldsTo(nex) {
@@ -77,10 +86,10 @@ class Expectation extends NexContainer {
 			nex.callbackRouter = this.callbackRouter;
 			nex.callbackRouter.addExpecting(nex);
 		}
-		// do I do this?
-//		if (this.activationFunction) {
-//			nex.activationFunction = this.activationFunction;
-//		}
+		if (this.hasBeenSet) {
+			// generate a new activation function for my new baby expectation.
+			nex.set(this.activationFunctionGenerator);
+		}
 	}
 
 	ffWith(closure, executionEnvironment) {
@@ -98,21 +107,6 @@ class Expectation extends NexContainer {
 		this.ffgen = FF_GEN;
 		this.ffExecutionEnvironment = executionEnvironment;// do I need to copy this?
 	}
-
-	getCallbackForSet() {
-		return (function(result) {
-			eventQueue.enqueueExpectationFulfill(this.callbackRouter, result);
-		}).bind(this);
-	}
-
-	notifyPending() {
-		for (let i = 0; i < this.pendingExpectations.length; i++) {
-			let rec = this.pendingExpectations[i];
-			rec.exp.notify(rec.index);
-		}
-		this.pendingExpectations = [];
-	}
-
 
 	ffAll() {
 		let allSucceeded = true;
@@ -133,14 +127,16 @@ class Expectation extends NexContainer {
 		let cmd = Command.makeCommandWithClosure(this.ffClosure, result);
 		let newResult = evaluateNexSafely(cmd, this.ffExecutionEnvironment);
 		if (newResult.getTypeName() == '-expectation-' && !newResult.isFulfilled()) {
-			newResult.addPendingExpectation({exp:this, index:childIndex});
+			newResult.addPendingCallback(function() {
+				this.recallFFWith(childIndex);
+			}.bind(this))
 			success = false;
 		}
 		this.replaceChildAt(newResult, childIndex);
 		return success;
 	}
 
-	notify(forChild) {
+	recallFFWith(forChild) {
 		// try again to call FFWith.
 		this.callFFOnChild(forChild);
 		if (this.shouldMarkFulfilled()) {
@@ -153,9 +149,34 @@ class Expectation extends NexContainer {
 	shouldMarkFulfilled() {
 		for (let i = 0; i < this.numChildren(); i++) {
 			let c = this.getChildAt(i);
-			if (c.getTypeName() == '-expectation-' && !c.isFulfilled()) return false;
+			if (!this.childIsFulfilled(c)) {
+				return false;
+			}
 		}
 		return true;
+	}
+
+	childIsFulfilled(c) {
+		if (c.getTypeName() == '-expectation-' && !c.isFulfilled()) return false;
+		return true;
+	}
+
+	tryToFulfill() {
+		let isFulfilled = true;
+		for (let i = 0; i < this.numChildren(); i++) {
+			let c = this.getChildAt(i);
+			if (!this.childIsFulfilled(c)) {
+				isFulfilled = false;
+				c.addPendingCallback(function() {
+					this.tryToFulfill();
+				}.bind(this));
+			}
+		}
+		if (isFulfilled) {
+			this.fulfilled = true;
+			this.notifyPending();
+		}
+		this.renderOnlyThisNex(null);
 	}
 
 	fulfill(result) {
@@ -171,19 +192,31 @@ class Expectation extends NexContainer {
 		if (this.ffClosure) {
 			this.fulfilled = this.ffAll();
 		} else {
-			this.fulfilled = true;
+			// if there is no fff, we still want to wait until all children are 
+			// fulfilled before we fulfill.
+			if (this.shouldMarkFulfilled()) {
+				this.fulfilled = true;
+			} else {
+				this.tryToFulfill();
+			}
 		}
-		this.renderOnlyThisNex(null);
 		if (this.fulfilled) {
 			this.notifyPending();
 		}
+		this.renderOnlyThisNex(null);
 	}
 
 	cancel() {
 		this.ffgen--;
 	}
 
-	set(activationFunction) {
+	getCallbackForSet() {
+		return (function(result) {
+			eventQueue.enqueueExpectationFulfill(this.callbackRouter, result);
+		}).bind(this);
+	}
+
+	set(activationFunctionGenerator) {
 		if (this.fulfilled) {
 			throw new EError('Expectation: cannot set the expectation, has already been fulfilled');			
 		}
@@ -193,7 +226,8 @@ class Expectation extends NexContainer {
 		this.hasBeenSet = true;
 		this.callbackRouter = new CallbackRouter();
 		this.callbackRouter.addExpecting(this);
-		this.activationFunction = activationFunction;
+		this.activationFunctionGenerator = activationFunctionGenerator;
+		this.activationFunction = activationFunctionGenerator(this.getCallbackForSet(), this);
 	}
 
 	activate() {
@@ -205,7 +239,7 @@ class Expectation extends NexContainer {
 			this.activationFunction();
 			this.activationFunction = null;
 		} else {
-			// directly fulfill
+			// if no activation function, then we don't wait, we fulfill immediately.
 			this.fulfill();
 		}
 	}

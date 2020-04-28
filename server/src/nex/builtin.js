@@ -18,10 +18,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 class Builtin extends Lambda {
-	constructor(name, params) {
+	constructor(name, params, retval) {
 		super();
 		this.name = name;
 		this.paramsArray = params;
+		this.returnValueParam = retval;
 		let amp = ' ' + name;
 		for (let i = 0; i < params.length; i++) {
 			amp += ' ' + params[i].name;
@@ -72,8 +73,10 @@ class Builtin extends Lambda {
 
 	static createBuiltin(name, paramsArray, f) {
 		let parser = new ParamParser(true /* isBuiltin */);
-		let params = parser.parse(paramsArray);
-		let builtin = new Builtin(name, params);
+		parser.parse(paramsArray);
+		let params = parser.getParams();
+		let retval = parser.getReturnValue();
+		let builtin = new Builtin(name, params, retval);
 		if (PERFORMANCE_MONITOR) {
 			perfmon.registerMethod(name);
 		}

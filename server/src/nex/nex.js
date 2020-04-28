@@ -56,6 +56,10 @@ class Nex {
 		return this.references;
 	}
 
+	shouldActivateReturnedExpectations() {
+		return false;
+	}
+
 	doRenderSequencing(renderNode) {
 		if (appFlags['otags'] || this.lastRenderPassNumber == renderPassNumber) {
 			// this node has been rendered before in this pass!

@@ -19,6 +19,30 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 function createAsyncBuiltins() {
 	Builtin.createBuiltin(
+		'copy-exp',
+		[ 'nex,' ],
+		function(env, executionEnvironment) {
+			return env.lb('nex').makeCopy();
+		}
+	);
+
+
+	Builtin.createBuiltin(
+		'let-exp',
+		[ '_name@', 'nex,' ],
+		function(env, executionEnvironment) {
+			let rhs = env.lb('nex');
+			let symname = env.lb('name').getTypedValue();
+			executionEnvironment.bind(symname, rhs);
+			if (rhs.getTypeName() == '-closure-') {
+				// basically let is always "letrec"
+				rhs.getLexicalEnvironment().bind(symname, rhs);
+			}
+			return rhs;
+		}
+	);
+
+	Builtin.createBuiltin(
 		'cancel-ff',
 		[ 'exp,?' ],
 		function(env, executionEnvironment) {
@@ -82,16 +106,31 @@ function createAsyncBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'nest-in-expectation',
+		[ 'exp,...' ],
+		function(env, executionEnvironment) {
+			let exps = env.lb('exp');
+			let r = new Expectation();
+			for (let i = exps.numChildren() - 1; i >= 0; i--) {
+				let c = exps.getChildAt(i);
+				r.appendChild(c);
+			}
+			return r;
+		}
+	);	
+
+	Builtin.createBuiltin(
 		'set-delay',
 		[ 'exp,', 'time#' ],
 		function(env, executionEnvironment) {
 			let time = env.lb('time').getTypedValue();
 			let exp = env.lb('exp');
-			let callback = exp.getCallbackForSet();
-			exp.set(function() {
-				setTimeout(function() {
-					callback(null /* do not set a value, the default is whatever the child is of the exp */);
-				}, time);				
+			exp.set(function(callback) {
+				return function() {
+					setTimeout(function() {
+						callback(null /* do not set a value, the default is whatever the child is of the exp */);
+					}, time)
+				}
 			});
 			return exp;
 		}
@@ -102,13 +141,13 @@ function createAsyncBuiltins() {
 		[ 'exp,' ],
 		function(env, executionEnvironment) {
 			let exp = env.lb('exp');
-			let callback = exp.getCallbackForSet();
-			exp.set(function() {
-				exp.extraClickHandler = function() {
-					// should be passing an event object I think?
-					callback();
+			exp.set(function(callback, ex) {
+				return function() {
+					ex.extraClickHandler = function() {
+						callback();
+					}
 				}
-			})
+			});
 			return exp;
 		}
 	);

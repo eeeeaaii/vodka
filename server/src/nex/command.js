@@ -22,6 +22,7 @@ class Command extends NexContainer {
 		super();
 		this.commandtext = (val ? val : "");
 		this.cachedClosure = null;
+		this.notReallyCachedClosure = null; // a wonderful hack
 		// a lot of the builtins and other code generate commands with null command strings
 		// and append a lambda as the first argument - there's no need to attempt
 		// caching in those cases and it's a real performance hit.
@@ -180,6 +181,7 @@ class Command extends NexContainer {
 		}
 		this.doAlertAnimation(closure.getLambda());
 		// actually run the code.
+		this.notReallyCachedClosure = closure;
 		let r = closure.executor(executionEnv, argEvaluator, cmdname, this.tags);
 		if (PERFORMANCE_MONITOR) {
 			perfmon.logMethodCallEnd(closure.getCmdName());
@@ -189,6 +191,10 @@ class Command extends NexContainer {
 		}
 		popStackLevel();
 		return r;
+	}
+
+	shouldActivateReturnedExpectations() {
+		return this.notReallyCachedClosure.shouldActivateReturnedExpectations();
 	}
 
 	renderInto(renderNode, renderFlags) {
@@ -284,6 +290,21 @@ class Command extends NexContainer {
 			cmd.appendChild(arguments[i]);
 		}
 		return cmd;
+	}
+
+	static makeCommandWithArgs(cmdname, args) {
+		let cmd = new Command(cmdname);
+		for (let i = 0; i < args.length; i++) {
+			cmd.appendChild(args[i]);
+		}
+		return cmd;
+	}
+
+	// used by above static helper functions
+	static pushListContentsIntoArray(array, list) {
+		for (let i = 0; i < list.numChildren(); i++) {
+			array.push(list.getChildAt(i));
+		}
 	}
 
 	defaultHandle(txt) {

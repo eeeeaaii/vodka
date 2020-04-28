@@ -21,10 +21,10 @@ class Lambda extends NexContainer {
 		this.amptext = val ? val : '';
 		this.cachedParamNames = [];
 		this.paramsArray = [];
-		this.cacheParamNames();
+		this.returnValueParam = null;
 		this.cmdname = null;
 		this.isEditing = false;
-		this.returnValueParam = null;
+		this.cacheParamNames();
 	}
 
 	getTypeName() {
@@ -105,7 +105,8 @@ class Lambda extends NexContainer {
 	}
 
 	cacheParamNames() {
-		let s = this.amptext.trim().split(' ');
+		let trimmed = this.amptext.trim();
+		let s = trimmed.split(' ');
 		let p = [];
 		for (let i = 0; i < s.length; i++) {
 			if (s[i] != "") {
@@ -114,8 +115,9 @@ class Lambda extends NexContainer {
 		}
 		this.cachedParamNames = p;
 		let paramParser = new ParamParser();
-		this.paramsArray = paramParser.parse(p);
-		this.returnValueParam = paramParser.parseReturnValue(p);
+		paramParser.parseString(trimmed);
+		this.paramsArray = paramParser.getParams();
+		this.returnValueParam = paramParser.getReturnValue();
 	}
 
 	getReturnValueParam() {

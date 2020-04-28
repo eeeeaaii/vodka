@@ -25,10 +25,16 @@ function createFileBuiltins() {
 			let nm = namesym.getTypedValue();
 			let val = env.lb('nex');			
 			let exp = new Expectation();
-			let savingMessage = new EError("saving...");
+			exp.set(function(callback) {
+				return function() {
+					saveNex(nm, val, function(saveResult) {
+						callback(saveResult);
+					})
+				}
+			});
+			let savingMessage = new EError(`saving (in the file ${nm}) this data: ${val.debugString()}`);
 			savingMessage.setErrorType(ERROR_TYPE_INFO);
 			exp.appendChild(savingMessage)
-			saveNex(nm, val, exp);
 			return exp;
 		}
 	);
@@ -40,8 +46,16 @@ function createFileBuiltins() {
 			let namesym = env.lb('name');
 			let nm = namesym.getTypedValue();
 			let exp = new Expectation();
-			exp.appendChild(namesym)
-			loadNex(nm, exp);
+			exp.set(function(callback) {
+				return function() {
+					loadNex(nm, function(loadResult) {
+						callback(loadResult);
+					})
+				}
+			})
+			let loadingMessage = new EError(`loading the file ${nm}`);
+			loadingMessage.setErrorType(ERROR_TYPE_INFO);
+			exp.appendChild(loadingMessage)
 			return exp;
 		}
 	);
@@ -53,8 +67,56 @@ function createFileBuiltins() {
 			let namesym = env.lb('name');
 			let nm = namesym.getTypedValue();
 			let exp = new Expectation();
-			exp.appendChild(namesym)
-			importNex(nm, exp);
+			exp.set(function(callback) {
+				return function() {
+					importNex(nm, function(importResult) {
+						callback(importResult);
+					})
+				}
+			})
+			let importMessage = new EError(`importing the package ${nm}`);
+			importMessage.setErrorType(ERROR_TYPE_INFO);
+			exp.appendChild(importMessage)
+			return exp;
+		}
+	);
+
+	// run it AND save it *mind=blown*
+	// need to make it so that if it fails you don't lose all your work.
+	Builtin.createBuiltin(
+		'package-edit',
+		[ '_name@', '_nex...' ],
+		function(env, executionEnvironment) {
+			// run part
+			let packageName = env.lb('name').getTypedValue();
+			let lst = env.lb('nex');
+			BINDINGS.setPackageForBinding(packageName);
+			let lastresult = new Nil();
+			for (let i = 0; i < lst.numChildren(); i++) {
+				let c = lst.getChildAt(i);
+				lastresult = evaluateNexSafely(c, executionEnvironment);
+				// not sure what to do about errors yet?
+			}
+			BINDINGS.setPackageForBinding(null);
+
+			// save part
+			// package file name is the name plus "-functions"
+			let nm = packageName + '-functions';
+			// in the file, we have to, of course, include the package itself.
+			let args = [ new ESymbol(packageName) ];
+			Command.pushListContentsIntoArray(lst);
+			let val = Command.makeCommandWithArgs('package', args);
+			let exp = new Expectation();
+			exp.set(function(callback) {
+				return function() {
+					saveNex(nm, val, function(saveResult) {
+						callback(saveResult);
+					})
+				}
+			});
+			let savingMessage = new EError(`editing package (in the file ${nm}) this data: ${val.debugString()}`);
+			savingMessage.setErrorType(ERROR_TYPE_INFO);
+			exp.appendChild(savingMessage)
 			return exp;
 		}
 	);

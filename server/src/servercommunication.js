@@ -28,6 +28,47 @@ function sendToServer(payload, cb) {
   	}
 }
 
+function saveNex(name, nex, callback) {
+	let payload = `save\t${name}\t${nex.toString()}`;
+
+	sendToServer(payload, function(data) {
+		let e = new EError("success");
+		e.setErrorType(ERROR_TYPE_INFO);
+		callback(e);
+	});
+}
+
+
+function loadNex(name, callback) {
+	let payload = `load\t${name}`;
+
+	sendToServer(payload, function(data) {
+		document.title = name;
+		let nex = new NexParser(data).parse();
+		callback(nex);
+	});
+}
+
+function importNex(name, callback) {
+	let payload = `load\t${name}`;
+
+	sendToServer(payload, function(data) {
+		let nex = new NexParser(data).parse();
+		let result = evaluateNexSafely(nex, BINDINGS);
+		let r = null;
+		if (result.getTypeName() != '-error-') {
+			r = new EError("Import successful.");
+			r.setErrorType(ERROR_TYPE_INFO);
+		} else {
+			r = new EError("Import failed.");
+			r.setErrorType(ERROR_TYPE_WARN);
+			r.appendChild(result);
+		}
+		callback(nex);
+	});
+}
+
+/*
 function saveNex(name, nex, exp) {
 	let payload = `save\t${name}\t${nex.toString()}`;
 
@@ -77,3 +118,4 @@ function importNex(name, exp) {
 		});
 	});
 }
+*/

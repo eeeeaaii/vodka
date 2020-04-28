@@ -1,8 +1,62 @@
+----------------------------------------------------------------------------------------
+
+April 28, 2020
+
+Here's how I was going to deal with bridging between actual asyncronous javascript functions
+(like loading files, timeouts, etc) and expectations:
+
+- builtin calls getCallbackForSet, which returns a callback that fulfills the expectation
+- builtin makes its own javascript closure capturing necessary lexical environment which
+  does something asyncronous (like load or save a file), then calls the callback
+- builtin makes a call to "set" passing the javascript closure it just made. That closure
+  is the "activation function". When activate is called, the activation function is called
+  and the asyncronous process is kicked off.
+
+however this won't work because if the expectation is copied, it's expected that
+both copies will still be able to be activated. But if they both get the same activation
+function they will fulfill the same expectation (the original one) because there's no
+way to copy a function in js.
+
+What I need the builtin to do is give this expectation an activation function generator.
+
+The builtin would call it like this:
+let e = new Expectation();
+e.set(function(callback) {
+  return function() {
+    let f = loadFile(function(loadedFile) {
+      callback(loadedFile);
+    });
+  }
+})
+
+So it's, annoyingly, three nested closures, but there's no way around it.
+Outer closure generates an activation function.
+Middle closure is the activation function, which gets called when the exp gets activated
+Inner closure is the callback from whatever async operation is being actually done.
+
+Also: Yesterday  I was dealing with trying to suppress activation of expectations in different places.
+I made a way to indicate suppressing activation in the param list of a function,
+but then I also made a way to suppress activation from the return value of a function.
+However I think this is bad.  It seems like you might get in a fight where a certain call site
+has a return value set to skip activation but it's an arg that doesn't skip activation,
+and it's hard to debug - precedence rules -- blah blah annoying and complicated.
+I think we might need to pick where we want to suppress activation.
+
+The current situation: the loop primitive doesn't work with fade-in (thought it might work with other ones).
+It's looping alright, but something about the way fade-in works is storing
+the opacity value in a closure somewhere so that every time it loops
+it keeps incrementing past one (I debugged after 20 iterations
+and it was setting the opacity to 20.183333)
+
+----------------------------------------------------------------------------------------
+
 April 25, 2020
+
 expectations are either activated when they are evaluated, or not. Every param to a function
 is evaluated of course but what if I had an equivalent to "skipeval"
 but just for expectations, like "skip activate"
 so it would be indicated by a comma instead of a * in the type signature.
+
 
 ----------------------------------------------------------------------------------------
 April 20, 2020
