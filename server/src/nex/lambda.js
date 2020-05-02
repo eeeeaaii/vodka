@@ -33,8 +33,8 @@ class Lambda extends NexContainer {
 
 	makeCopy(shallow) {
 		let r = new Lambda();
-		this.copyFieldsTo(r);
 		this.copyChildrenTo(r, shallow);
+		this.copyFieldsTo(r);
 		return r;
 	}
 

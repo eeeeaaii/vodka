@@ -30,8 +30,8 @@ class Org extends NexContainer {
 
 	makeCopy(shallow) {
 		let r = new Org();
-		this.copyFieldsTo(r);
 		this.copyChildrenTo(r, shallow);
+		this.copyFieldsTo(r);
 		return r;
 	}
 

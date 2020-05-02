@@ -26,8 +26,8 @@ class Word extends NexContainer {
 
 	makeCopy(shallow) {
 		let r = new Word();
-		this.copyFieldsTo(r);
 		this.copyChildrenTo(r, shallow);
+		this.copyFieldsTo(r);
 		return r;
 	}
 

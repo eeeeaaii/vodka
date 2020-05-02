@@ -33,8 +33,8 @@ class Environment {
 		for (let sym in this.symbols) {
 			let rec = this.symbols[sym];
 			let copiedRecord = {
-				val: rec.val;
-				packagename: rec.packageName;
+				val: rec.val,
+				packagename: rec.packageName,
 			}
 			newEnv.symbols[sym] = copiedRecord;
 		}

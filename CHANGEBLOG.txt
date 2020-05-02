@@ -1,5 +1,39 @@
 ----------------------------------------------------------------------------------------
 
+April 29, 2020
+
+I thought about it and I decided I'm willing to say that the problem with the stale closure
+from fade-in-for-seconds is the fault of the lisp programmer Jason, not the javascript programmer
+Jason. Closures really aren't a great place to store data. I'm just doing it this way
+because it's the only thing I have implemented, other than lists. I think it highlights for
+me the importance of getting orgs working. However I did have one thought: if it's possible
+to store data in a closure, then in some sense they are like structs or objects.
+So we can't we have accessor methods that look up data in a closure, if you have a
+reference to one? Or that even allow you to modify it. Might be helpful for debugging.
+Could we erase the distinction between closures and objects/orgs?
+
+In other news, copying expectations failed because I wasn't activating the newly
+copied expectation if the old one was already activated. This is a bit questionable
+anyway because maybe you don't want to do that, right? Let's say you have a long
+running process/animation that takes 20 minutes and you are 19 minutes through it.
+When you copy it, it resets the clock for the copied one. Here's the thing though,
+if I don't do that, then if I copy a list that contains an animation,
+like I do whenever I apply styles, the animations in the newly copied list will
+not be activated.
+
+What to do.
+
+Oh also, I would have to make sure I copy the children of a list before copying the
+fields of the list because activating does different things depending on whether
+an exp has children or not.
+
+I guess I could write a function that reactivates any nodes that are not activated.
+
+I am getting to the part of the development process where the right thing to do is
+not always obvious -- which is, I guess, why I'm writing this stuff down.
+
+----------------------------------------------------------------------------------------
+
 April 28, 2020 (entry 2)
 
 When we copy an environment, we don't copy the environments of closures in the environment.

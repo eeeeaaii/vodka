@@ -33,6 +33,7 @@ class NativeOrg extends Org {
 
 	makeCopy() {
 		let r = new NativeOrg();
+		// shouldn't have children but
 		this.copyFieldsTo(r);
 		return r;
 	}

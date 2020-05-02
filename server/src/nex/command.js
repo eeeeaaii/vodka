@@ -53,8 +53,8 @@ class Command extends NexContainer {
 
 	makeCopy(shallow) {
 		let r = new Command();
-		this.copyFieldsTo(r);
 		this.copyChildrenTo(r, shallow);
+		this.copyFieldsTo(r);
 		return r;
 	}
 

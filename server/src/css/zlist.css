@@ -18,16 +18,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 .zlist {
-	height:0px;
-	width:0px;
 	align-self:flex-start;
-	display: inline-block;
+	display: grid;
 	padding: 0px;
 }
 
 .zlist.exploded {
-	height:10px; /* overridden by javascript */
-	width:20px;
 	padding-left: 5px;
 	padding-top: 5px;
 	border-left: 5px dotted #ffc4f5;
@@ -54,8 +50,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border: 3px solid #ffc4f5;
 }
 
+
 .zlist > .nex {
-	position: absolute;
+	grid-column: 1;
+	grid-row: 1;
 }
 
 .zlist.exploded > .nex:nth-child(1) { margin-top:0px; }

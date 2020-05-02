@@ -26,8 +26,8 @@ class Zlist extends NexContainer {
 
 	makeCopy(shallow) {
 		let r = new Zlist();
-		this.copyFieldsTo(r);
 		this.copyChildrenTo(r, shallow);
+		this.copyFieldsTo(r);
 		return r;
 	}
 

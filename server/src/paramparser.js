@@ -45,7 +45,7 @@ class ParamParser {
 	}
 
 	parseString(str) {
-		let hasReturnVal = /^[~!@#$%^&*?()_,.]/.test(str);
+		let hasReturnVal = /^[~!@#$%^&*?()_,.]+ /.test(str);
 		let a = str.split(' ');
 		if (hasReturnVal) {
 			a[0] = '\\' + a[0];

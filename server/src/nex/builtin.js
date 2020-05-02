@@ -46,8 +46,8 @@ class Builtin extends Lambda {
 
 	makeCopy(shallow) {
 		let r = new Builtin(this.name, this.paramsArray);
-		this.copyFieldsTo(r);
 		this.copyChildrenTo(r, shallow);
+		this.copyFieldsTo(r);
 		return r;
 	}
 

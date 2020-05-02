@@ -98,6 +98,8 @@ USER INPUT TO DO
 - use regexes in the event table
 - make "editor" classes for symbol, string, etc., similar to tags
 - figure out key combination for "reopening editor"
+- make one level of undo at least
+- editor for command is especially impt because it's diff from lambda now
 
 PERFORMANCE TO DO
 - instanceof checks are slow, for nexes instead compare to getTypeName()

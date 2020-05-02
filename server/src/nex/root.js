@@ -21,6 +21,11 @@ class Root extends NexContainer {
 		this.attached = attached;
 	}
 
+	makeCopy(shallow) {
+		throw new Error('Copying the root? Really?');
+	}
+
+
 	getTypeName() {
 		return '-root-';
 	}

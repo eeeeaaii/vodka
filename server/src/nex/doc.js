@@ -32,8 +32,8 @@ class Doc extends NexContainer {
 
 	makeCopy(shallow) {
 		let r = new Doc();
-		this.copyFieldsTo(r);
 		this.copyChildrenTo(r, shallow);
+		this.copyFieldsTo(r);
 		return r;
 	}
 

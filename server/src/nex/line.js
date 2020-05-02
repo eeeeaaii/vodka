@@ -28,8 +28,8 @@ class Line extends NexContainer {
 
 	makeCopy(shallow) {
 		let r = new Line();
-		this.copyFieldsTo(r);
 		this.copyChildrenTo(r, shallow);
+		this.copyFieldsTo(r);
 		return r;
 	}
 

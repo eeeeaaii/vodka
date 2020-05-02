@@ -65,7 +65,6 @@ class Expectation extends NexContainer {
 		}
 	}
 
-
 	notifyPending() {
 		for (let i = 0; i < this.pendingCallbacks.length; i++) {
 			let cb = this.pendingCallbacks[i];
@@ -90,6 +89,8 @@ class Expectation extends NexContainer {
 			// generate a new activation function for my new baby expectation.
 			nex.set(this.activationFunctionGenerator);
 		}
+		// We explicitly DON'T activate when copying
+		// because it might mess up the timing.
 	}
 
 	ffWith(closure, executionEnvironment) {
@@ -237,7 +238,10 @@ class Expectation extends NexContainer {
 		this.activated = true;
 		if (this.activationFunction != null) {
 			this.activationFunction();
-			this.activationFunction = null;
+			// I was going to set the activation function to null after activating,
+			// but the thing is you might want to copy an exp after it's been
+			// activated, and I guess you want the copy to also be activated,
+			// so you need to leave the activation function here so you can copy it.
 		} else {
 			// if no activation function, then we don't wait, we fulfill immediately.
 			this.fulfill();
@@ -274,8 +278,8 @@ class Expectation extends NexContainer {
 
 	makeCopy(shallow) {
 		let r = new Expectation();
-		this.copyFieldsTo(r);
 		this.copyChildrenTo(r, shallow);
+		this.copyFieldsTo(r);
 		return r;
 	}
 
@@ -311,9 +315,9 @@ class Expectation extends NexContainer {
 		} else if (this.isActivated()) {
 			return '...';
 		} else if (this.isSet()) {
-			return '.';
+			return '..';
 		} else {
-			return '-';
+			return '.';
 		}
 	}
 
