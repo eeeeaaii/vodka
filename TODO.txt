@@ -1,19 +1,12 @@
-*  means blocking bug/needs to be fixed before next livecoding set
 
 ASYNC/EXPECTATION TO DO:
 - figure out what happens if ffClosure throws an error
-- make it so expectations can have any number of children
-- make it so that expectations have an "activate" method that actually starts the async process, whatever it is
-- make it so that expectations, when created, do not automatically call activate, but activate is called at the end of every evaluate cycle if the thing returned by the evaluation is an expectation (similar to what happens with objs) - this allows you to use quote to make an expectation not activate right away
-- make it so that each time activate is called on an expectation it processes or handles one of its arguments
-- make it so that expectations re-activate themselves if there are unhandled arguments
 - reference counting doesn't work in the sense that if you delete an expectation containing other ones, it keeps firing...? because of the stale reference in the pendingExpectations, probably...
 
 
 TYPE-RELATED TO DO
-- return values from lambdas - the backslash notation is hard to read, instead just make it so the first thing you type is the return value and it will look like it's appended to the lambda itself.
-- figure out how to resolve orgs with multiple matching tags (first match?) and do we iterate first thru
-  the tags in the expr being evaluated or first thru the tags on the org?
+- actually check types for return values of lambdas, but disallow/ignore,
+- figure out how to resolve orgs with multiple matching tags (first match?) and do we iterate first thru the tags in the expr being evaluated or first thru the tags on the org?
 - figure out if it's an error if returned org doesn't have tag
 - make builtin type checker operate off strings (i.e. make a type string parser)
 - use the builtin argument type checker for lambdas also
@@ -22,8 +15,7 @@ TYPE-RELATED TO DO
 - implement tag checking in function params (single bracket [])
 - implement tag checking WITH contract adherence (double bracket) 
 - return value type checking
-- setting '-' sets the return value
-- functions that return nothing (i.e. -#?) - remove themselves from parent
+- functions that return nothing (i.e. \?) - remove themselves from parent
 - functions that return multiple values - put all in parent
 - "do not eval" functions that always act like they are quoted the first time
 - make it so braces inside tags are ignored [stuff in here]
@@ -35,7 +27,7 @@ TYPE-RELATED TO DO
 - - list-must-contain-nonexclusively: must contain given tags (or types), can have others
 - - summary: something with tag Foo must have tags Bar, Baz, Qux
 - - custom (runs code to see if nex satisifies)
-(see TYPE_SYSTEM_NOTES.txt for more info)
+(see CHANGEBLOG.txt for more info)
 
 TESTS TO-DO
 - all tests may need to be re-recorded
@@ -64,6 +56,7 @@ SERVER/FILES TO DO
 - make parser tolerant of whitespace (so it can parse pretty-printed files)
 - now that closures are a nex object we need to make it so it throws an error if you try to save one (because you can't save its memory/environment so it doesn't make sense to save it)
 - server doesn't crash anymore when you load a file that isn't there but still need to improve error reporting.
+- make it so that there is a globally recognized delimiter for each nexes "private data" and so when a nex is serialized its private data can be formatted however it wants, provided it doesn't use the delimiter
 
 RENDERING TO-DO
 - handle insertion points at the render node level
@@ -76,6 +69,9 @@ RENDERING TO-DO
 
 EVALUATION ENGINE TO-DO:
 - make it so that closures can, depending on flags/options, copy the contents of a lambda when created, so that you can change the contents of any lambda expressions without changing the code that any outstanding closures will run (need to see if this is a performance hit)
+- make certain nexes like integers etc automatically copy themselves when evaluated so that when
+  an integer is returned by a function you can't modify it and modify the function that returned
+  it
 
 CODE CLEANUP TO-DO
 - make a better naming convention for js global variables
@@ -100,10 +96,12 @@ USER INPUT TO DO
 - figure out key combination for "reopening editor"
 - make one level of undo at least
 - editor for command is especially impt because it's diff from lambda now
+- figure out what actually happens with lambdas that have incorrectly specified args (make it so the editor will not allow you to input incorrect args?)
 
 PERFORMANCE TO DO
 - instanceof checks are slow, for nexes instead compare to getTypeName()
 - var is slow, use const or let
+- rendering is slow (see rendering section)
 
 CUSTOM NEXES
 - make a new list type actually called list that's equivalent to a word but can be re-oriented vert or horiz
@@ -115,7 +113,7 @@ EXPERIMENTAL
 - make a list type that, when you evaluate it, replaces each of its children with the result of evaluating that child
 - hook up playstation controller and try coding with it
 - try voice commands
-- make arithmetic functions use plus, minus words instead of +/- symbols
+- make arithmetic functions use the typed words 'plus', 'minus' instead of +/- symbols
 - try having different ctrl/alt/shift chords for insert/append/prepend/enclose versions of !@#$
 - get rid of insertion points
 
