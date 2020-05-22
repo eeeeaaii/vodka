@@ -18,6 +18,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 // test: actions_funnel_float_validandinvalidfloats
 /*
 just types in some float values, some valid and some invalid, and evalutes them to verify that good floats do nothing/return themselves and bad floats throw errors
+
+UPDATE: you can no longer put in invalid float values, they get automatically corrected to valid values.
+will keep the test though.
 */
 
 	// |Shift|%|1|2|3|.|3|2|Shift|%|3|e|3|Shift|%|2|3|.|.|.|3|2|.|Shift|%|0|0|0|.|0|3|Shift|ArrowDown|ArrowUp|ArrowUp|ArrowUp|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Shift|Enter

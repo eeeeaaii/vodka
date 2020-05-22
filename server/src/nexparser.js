@@ -244,3 +244,5 @@ class NexParser {
 		}
 	}
 }
+export { NexParser }
+

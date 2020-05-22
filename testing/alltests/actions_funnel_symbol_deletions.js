@@ -15,6 +15,10 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+/*
+This test had a mistake in it but accidentally is now testing orgs,
+even tho this was created before orgs.
+*/
 
 var harness = require('../testharness');
 

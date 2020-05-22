@@ -181,9 +181,5 @@ class PerformanceMonitor {
 	}
 }
 
-
-
-
-
-
+export { PerformanceMonitor }
 

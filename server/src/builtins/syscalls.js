@@ -15,7 +15,13 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+import { Builtin } from '/nex/builtin.js'
+import { ForeignLambda } from '/nex/foreignlambda.js'
+import { EError } from '/nex/eerror.js'
+import { EString } from '/nex/estring.js'
+import { Float } from '/nex/float.js'
+import { Integer } from '/nex/integer.js'
+import { RenderNode } from '/rendernode.js'
 
 function createSyscalls() {
 
@@ -26,6 +32,17 @@ function createSyscalls() {
 			let nex = env.lb('nex');
 			console.log(nex.debugString());
 			return nex;
+		}
+	);
+
+	// this is basically just for testing foreign function interface
+	Builtin.createBuiltin(
+		'get-alerter',
+		[],
+		function(env, executionEnvironment) {
+			return new ForeignLambda('^ a$', function(txt) {
+				alert(txt);
+			})
 		}
 	);
 
@@ -87,8 +104,12 @@ function createSyscalls() {
 		[ 'expr$', 'nex...' ],
 		function(env, executionEnvironment) {
 			let strn = env.lb('expr');
-			let str = strn.getFullTypedValue();
 			let lst = env.lb('nex');
+			if (strn.hasAttachedJS) {
+				// used by nativeorg
+				return strn.getAttachedJS()(env.lb('nex'));
+			}
+			let str = strn.getFullTypedValue();
 			var $dom = [];
 			var $nex = [];
 			var $node = [];
@@ -118,3 +139,6 @@ function createSyscalls() {
 		}
 	);
 }
+
+export { createSyscalls }
+

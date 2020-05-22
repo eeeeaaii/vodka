@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { ERROR_TYPE_WARN, ERROR_TYPE_INFO } from '/nex/eerror.js'
+
 
 function sendToServer(payload, cb) {
 	let xhr = new XMLHttpRequest();
@@ -39,12 +41,33 @@ function saveNex(name, nex, callback) {
 }
 
 
+function saveNexV2(name, nex, callback) {
+	let payload = `save\t${name}\t${nex.toString('v2')}`;
+
+	sendToServer(payload, function(data) {
+		let e = new EError("success");
+		e.setErrorType(ERROR_TYPE_INFO);
+		callback(e);
+	});
+}
+
+
 function loadNex(name, callback) {
 	let payload = `load\t${name}`;
 
 	sendToServer(payload, function(data) {
 		document.title = name;
 		let nex = new NexParser(data).parse();
+		callback(nex);
+	});
+}
+
+function loadNexV2(name, callback) {
+	let payload = `load\t${name}`;
+
+	sendToServer(payload, function(data) {
+		document.title = name;
+		NexParserV2.parse(data);
 		callback(nex);
 	});
 }

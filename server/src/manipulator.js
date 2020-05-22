@@ -17,6 +17,20 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 var CLIPBOARD = null;
 
+import * as Vodka from '/vodka.js'
+import * as Utils from '/utils.js'
+
+import { Nex } from '/nex/nex.js' 
+import { Root } from '/nex/root.js' 
+import { InsertionPoint } from '/nex/insertionpoint.js' 
+import { RenderNode } from '/rendernode.js' 
+import { Word } from '/nex/word.js' 
+import { EString } from '/nex/estring.js' 
+import { Command } from '/nex/command.js' 
+import { Line } from '/nex/line.js' 
+import { Newline } from '/nex/newline.js' 
+
+
 class Manipulator {
 
 	conformData(data) {
@@ -26,18 +40,18 @@ class Manipulator {
 	}
 
 	doCut() {
-		CLIPBOARD = selectedNode.getNex();
-		let x = selectedNode;
+		CLIPBOARD = Vodka.getGlobalSelectedNode().getNex();
+		let x = Vodka.getGlobalSelectedNode();
 		this.selectPreviousSibling() || this.selectParent();		
 		this.removeNex(x);
 	}
 
 	doCopy() {
-		CLIPBOARD = selectedNode.getNex();
+		CLIPBOARD = Vodka.getGlobalSelectedNode().getNex();
 	}
 
 	doPaste() {
-		if (isInsertionPoint(selectedNode)) {
+		if (Utils.isInsertionPoint(Vodka.getGlobalSelectedNode())) {
 			this.replaceSelectedWith(CLIPBOARD.makeCopy())
 		} else {
 			this.insertAfterSelectedAndSelect(CLIPBOARD.makeCopy())
@@ -46,7 +60,7 @@ class Manipulator {
 
 	findNextSiblingThatSatisfies(f) {
 		while (this.selectNextSibling()) {
-			if (f(selectedNode)) {
+			if (f(Vodka.getGlobalSelectedNode())) {
 				return true;
 			}
 		}
@@ -57,30 +71,30 @@ class Manipulator {
 
 	selectCorrespondingLetterInPreviousLine() {
 		// get the current line and the previous line.
-		let enclosingLine = this.getEnclosingLine(selectedNode);
+		let enclosingLine = this.getEnclosingLine(Vodka.getGlobalSelectedNode());
 		if (!enclosingLine) return false;
 		let doc = enclosingLine.getParent();
 		if (!doc) return false;
 		let previousLine = doc.getChildBefore(enclosingLine);
 		if (!previousLine) return false;
 
-		let original = (selectedNode);
+		let original = (Vodka.getGlobalSelectedNode());
 		let targetX = original.getLeftX();
 		let c;
 
 		previousLine.setSelected();
 		this.selectFirstLeaf();
-		let lastX = (selectedNode).getLeftX();
+		let lastX = (Vodka.getGlobalSelectedNode()).getLeftX();
 		if (targetX <= lastX) {
 			return true;
 		}
 
 		do {
-			if (this.getEnclosingLine((selectedNode)) != previousLine) {
+			if (this.getEnclosingLine((Vodka.getGlobalSelectedNode())) != previousLine) {
 				this.selectPreviousLeaf();
 				break;
 			}
-			let x = (selectedNode).getLeftX();
+			let x = (Vodka.getGlobalSelectedNode()).getLeftX();
 			if (x > targetX) {
 				// this is the one
 				break;
@@ -92,30 +106,30 @@ class Manipulator {
 
 	selectCorrespondingLetterInNextLine() {
 		// get the current line and the previous line.
-		let enclosingLine = this.getEnclosingLine((selectedNode));
+		let enclosingLine = this.getEnclosingLine((Vodka.getGlobalSelectedNode()));
 		if (!enclosingLine) return false;
 		let doc = enclosingLine.getParent();
 		if (!doc) return false;
 		let nextLine = doc.getChildAfter(enclosingLine);
 		if (!nextLine) return false;
 
-		let original = (selectedNode);
+		let original = (Vodka.getGlobalSelectedNode());
 		let targetX = original.getLeftX();
 		let c;
 
 		nextLine.setSelected();
 		this.selectFirstLeaf();
-		let lastX = (selectedNode).getLeftX();
+		let lastX = (Vodka.getGlobalSelectedNode()).getLeftX();
 		if (targetX <= lastX) {
 			return true;
 		}
 
 		do {
-			if (this.getEnclosingLine((selectedNode)) != nextLine) {
+			if (this.getEnclosingLine((Vodka.getGlobalSelectedNode())) != nextLine) {
 				this.selectPreviousLeaf();
 				break;
 			}
-			let x = (selectedNode).getLeftX();
+			let x = (Vodka.getGlobalSelectedNode()).getLeftX();
 			if (x > targetX) {
 				// this is the one
 				break;
@@ -127,7 +141,7 @@ class Manipulator {
 
 	getEnclosingLine(s) {
 		while(s = s.getParent()) {
-			if (isLine(s)) {
+			if (Utils.isLine(s)) {
 				return s;
 			}
 		}
@@ -137,34 +151,34 @@ class Manipulator {
 	// traversal
 
 	selectPreviousLeaf() {
-		let first = (selectedNode);
+		let first = (Vodka.getGlobalSelectedNode());
 		while(!this.selectPreviousSibling()) {
 			let p = this.selectParent();
-			if (!p || isCodeContainer((selectedNode))) {
+			if (!p || Utils.isCodeContainer((Vodka.getGlobalSelectedNode()))) {
 				first.setSelected();
 				return false;
 			}
 		}
-		while(!isCodeContainer((selectedNode)) && this.selectLastChild());
+		while(!Utils.isCodeContainer((Vodka.getGlobalSelectedNode())) && this.selectLastChild());
 		return true;
 	}
 
 	selectNextLeaf() {
-		let first = (selectedNode);
+		let first = (Vodka.getGlobalSelectedNode());
 		while(!this.selectNextSibling()) {
 			let p = this.selectParent();
-			if (!p || isCodeContainer((selectedNode))) {
+			if (!p || Utils.isCodeContainer((Vodka.getGlobalSelectedNode()))) {
 				first.setSelected();
 				return false;
 			}
 		}
-		while(!isCodeContainer((selectedNode)) && this.selectFirstChild());
+		while(!Utils.isCodeContainer((Vodka.getGlobalSelectedNode())) && this.selectFirstChild());
 		return true;
 	}
 
 	selectFirstLeaf() {
-		let c = (selectedNode);
-		while(isNexContainer(c) && c.hasChildren()) {
+		let c = (Vodka.getGlobalSelectedNode());
+		while(Utils.isNexContainer(c) && c.hasChildren()) {
 			c = c.getFirstChild();
 		}
 		c.setSelected();
@@ -174,8 +188,8 @@ class Manipulator {
 	// generic selection stuff
 
 	selectLastChild() {
-		let s = (selectedNode);
-		if (!isNexContainer(s)) return false;
+		let s = (Vodka.getGlobalSelectedNode());
+		if (!Utils.isNexContainer(s)) return false;
 		let c = s.getLastChild();
 		if (c) {
 			c.setSelected();
@@ -185,8 +199,8 @@ class Manipulator {
 	}
 
 	selectFirstChild() {
-		let s = (selectedNode);
-		if (!isNexContainer(s)) return false;
+		let s = (Vodka.getGlobalSelectedNode());
+		if (!Utils.isNexContainer(s)) return false;
 		let c = s.getFirstChild();
 		if (c) {
 			c.setSelected();
@@ -196,7 +210,7 @@ class Manipulator {
 	}
 
 	selectNthChild(n) {
-		let s = (selectedNode);
+		let s = (Vodka.getGlobalSelectedNode());
 		if (n >= s.numChildren()) return false;
 		if (n < 0) return false;
 		let c = s.getChildAt(n);
@@ -206,7 +220,7 @@ class Manipulator {
 	}
 
 	selectNextSibling() {
-		let s = (selectedNode);
+		let s = (Vodka.getGlobalSelectedNode());
 		let p = s.getParent();
 		if (!p) return false;
 		let nextSib = p.getNextSibling(s);
@@ -218,7 +232,7 @@ class Manipulator {
 	}
 
 	selectPreviousSibling() {
-		let s = (selectedNode);
+		let s = (Vodka.getGlobalSelectedNode());
 		let p = s.getParent();
 		if (!p) return false;
 		let sib = p.getPreviousSibling(s);
@@ -230,7 +244,7 @@ class Manipulator {
 	}
 
 	selectParent() {
-		let s = (selectedNode);
+		let s = (Vodka.getGlobalSelectedNode());
 		let p = s.getParent();
 		if (!p) return false;
 		p.setSelected();
@@ -240,10 +254,10 @@ class Manipulator {
 	// CRUD operations
 
 	appendNewEString() {
-		let s = (selectedNode);
+		let s = (Vodka.getGlobalSelectedNode());
 		let i = 0;
 		for(i = 0;
-			s.getChildAt(i) && isEString(s.getChildAt(i));
+			s.getChildAt(i) && Utils.isEString(s.getChildAt(i));
 			i++);
 		// i is the insertion point
 		let n = new EString();
@@ -252,8 +266,8 @@ class Manipulator {
 	}
 
 	wrapSelectedInAndSelect(wrapperNex) {
-		let s = selectedNode;
-		let p = selectedNode.getParent();
+		let s = Vodka.getGlobalSelectedNode();
+		let p = Vodka.getGlobalSelectedNode().getParent();
 		if (!p) return false;
 		let selectedNex = s.getNex();
 		wrapperNex.appendChild(selectedNex);
@@ -264,7 +278,7 @@ class Manipulator {
 
 	appendAndSelect(data) {
 		data = this.conformData(data);
-		let s = selectedNode;
+		let s = Vodka.getGlobalSelectedNode();
 		let newNode = s.appendChild(data);
 		newNode.setSelected();
 		return true;		
@@ -272,7 +286,7 @@ class Manipulator {
 
 	insertAfterSelected(data) {
 		data = this.conformData(data);
-		let s = (selectedNode);
+		let s = (Vodka.getGlobalSelectedNode());
 		let p = s.getParent();
 		if (!p) return false;
 		p.insertChildAfter(data, s);
@@ -287,7 +301,7 @@ class Manipulator {
 
 	insertBeforeSelected(data) {
 		data = this.conformData(data);
-		let s = (selectedNode);
+		let s = (Vodka.getGlobalSelectedNode());
 		let p = s.getParent();
 		if (!p) return false;
 		p.insertChildBefore(data, s);
@@ -300,10 +314,10 @@ class Manipulator {
 	}
 
 	attemptToRemoveLastItemInCommand() {
-		let p = (selectedNode).getParent();
+		let p = (Vodka.getGlobalSelectedNode()).getParent();
 		if (!p) return false;
-		if (p.numChildren() == 1 && isCodeContainer(p)) {
-			if (!this.removeNex((selectedNode))) return false;
+		if (p.numChildren() == 1 && Utils.isCodeContainer(p)) {
+			if (!this.removeNex((Vodka.getGlobalSelectedNode()))) return false;
 			p.setSelected();
 			this.appendAndSelect(new InsertionPoint());
 			return true;
@@ -312,7 +326,7 @@ class Manipulator {
 	}
 
 	removeSelectedAndSelectPreviousSibling() {
-		let toDel = (selectedNode);
+		let toDel = (Vodka.getGlobalSelectedNode());
 		return (
 			this.attemptToRemoveLastItemInCommand()
 			||
@@ -323,7 +337,7 @@ class Manipulator {
 	}
 
 	removeSelectedAndSelectPreviousLeaf() {
-		let toDel = (selectedNode);
+		let toDel = (Vodka.getGlobalSelectedNode());
 		return (
 			this.attemptToRemoveLastItemInCommand()
 			||
@@ -357,7 +371,7 @@ class Manipulator {
 
 	replaceSelectedWith(nex) {
 		nex = this.conformData(nex);
-		let s = (selectedNode);
+		let s = (Vodka.getGlobalSelectedNode());
 		if (s === nex) return true; // trivially true
 		let p = s.getParent(true);
 		if (!p) return false;
@@ -367,7 +381,7 @@ class Manipulator {
 	}
 
 	replaceSelectedWithFirstChildOfSelected() {
-		let s = selectedNode;
+		let s = Vodka.getGlobalSelectedNode();
 		let p = s.getParent(true);
 		if (!p) return false;
 		if (!(s.numChildren() == 1)) return false;
@@ -378,7 +392,7 @@ class Manipulator {
 	}
 
 	replaceSelectedWithNewCommand() {
-		let s = (selectedNode);
+		let s = (Vodka.getGlobalSelectedNode());
 		let p = s.getParent(true);
 		if (!p) return false;
 		let nex = new Command();
@@ -390,15 +404,15 @@ class Manipulator {
 	// split/join
 
 	selectTopmostEnclosingLine() {
-		let p = (selectedNode).getParent();
+		let p = (Vodka.getGlobalSelectedNode()).getParent();
 		if (!p) return false;
-		while(!isLine(p)) {
+		while(!Utils.isLine(p)) {
 			p = p.getParent();
 			if (!p) return false;
 		}
-		while(isLine(p)) {
+		while(Utils.isLine(p)) {
 			let p2 = p.getParent();
-			if (p2 && isLine(p2)) {
+			if (p2 && Utils.isLine(p2)) {
 				p = p2;
 			} else {
 				break;
@@ -417,7 +431,7 @@ class Manipulator {
 
 	moveRemainingSiblingsInto(nex) {
 		nex = this.conformData(nex);
-		let s = (selectedNode);
+		let s = (Vodka.getGlobalSelectedNode());
 		let p = s.getParent();
 		if (!p) return false;
 		if (p.getLastChild() == s) {
@@ -432,7 +446,7 @@ class Manipulator {
 
 	split(nex) {
 		nex = this.conformData(nex);
-		let s = (selectedNode);
+		let s = (Vodka.getGlobalSelectedNode());
 		let p = s.getParent();
 		if (!p) return false;
 		if (p.getLastChild() == s) {
@@ -461,7 +475,7 @@ class Manipulator {
 		// to select is the last thing in
 		// the first of the two
 		// things being joined.
-		let s = (selectedNode);
+		let s = (Vodka.getGlobalSelectedNode());
 		let toSelect = s.getLastChild();
 		if (!toSelect) {
 			return false;
@@ -494,19 +508,19 @@ class Manipulator {
 	}
 
 	joinSelectedToNextSiblingIfSameType() {
-		let s = (selectedNode);
+		let s = (Vodka.getGlobalSelectedNode());
 		let p = s.getParent();
 		if (!p) return false;
 		let c = p.getChildAfter(s);
-		if ((isLine(s) && isLine(c))
-				|| (isWord(s) && isWord(c))
-				|| (isDoc(s) && isDoc(c))) {
+		if ((Utils.isLine(s) && Utils.isLine(c))
+				|| (Utils.isWord(s) && Utils.isWord(c))
+				|| (Utils.isDoc(s) && Utils.isDoc(c))) {
 			return this.joinSelectedWithNextSibling();
 		}
 	}
 
 	joinParentOfSelectedToNextSiblingIfSameType() {
-		let s = (selectedNode);
+		let s = (Vodka.getGlobalSelectedNode());
 		let p = s.getParent();
 		if (!p) return false;
 		p.setSelected();
@@ -518,20 +532,20 @@ class Manipulator {
 		let p = s.getParent();
 		if (!p) return false;
 		let c = p.getChildAfter(s);
-		if ((isLine(s) && isLine(c))
-				|| (isWord(s) && isWord(c))
-				|| (isDoc(s) && isDoc(c))) {
+		if ((Utils.isLine(s) && Utils.isLine(c))
+				|| (Utils.isWord(s) && Utils.isWord(c))
+				|| (Utils.isDoc(s) && Utils.isDoc(c))) {
 			return this.join(p, s, c);
 		}
 	}
 
-
-
-	// idk
-
+	// deprecated
 	startNewEString() {
-		(selectedNode).createNewEString();
+		(Vodka.getGlobalSelectedNode()).createNewEString();
 		return true;
 	}
 
 }
+
+export { Manipulator }
+

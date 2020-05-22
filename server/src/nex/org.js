@@ -15,13 +15,32 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+
+
+import { NexContainer } from './nexcontainer.js'
+import * as Utils from '/utils.js'
+import { manipulator } from '/vodka.js'
+import { isNormallyHandled } from '/keyresponsefunctions.js'
+import { ContextType } from '/contexttype.js'
+
+// remove with deprecated defaultHandle
+import { Letter } from './letter.js'
+import { Separator } from './separator.js'
+
 class Org extends NexContainer {
 	constructor() {
 		super()
 	}
 
-	toString() {
+	toString(version) {
+		if (version == 'v2') {
+			return this.toStringV2();
+		}
 		return `[org]`;
+	}
+
+	toStringV2() {
+		return '(' + super.childrenToString('v2') + ')';
 	}
 
 	getTypeName() {
@@ -104,3 +123,8 @@ class Org extends NexContainer {
 		return true;
 	}
 }
+
+
+
+export { Org }
+

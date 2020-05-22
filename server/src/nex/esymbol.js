@@ -17,6 +17,17 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 
+import { ValueNex } from './valuenex.js'
+import { manipulator } from '/vodka.js'
+import { isNormallyHandled } from '/keyresponsefunctions.js'
+
+// remove with deprecated defaultHandle
+import { Separator } from './separator.js'
+import { Word } from './word.js'
+import { Letter } from './letter.js'
+import * as Vodka from '/vodka.js'
+
+
 class ESymbol extends ValueNex {
 	constructor(val) {
 		super((val) ? val : '', '@', 'esymbol')
@@ -49,12 +60,12 @@ class ESymbol extends ValueNex {
 	}
 
 	evaluate(env) {
-		pushStackLevel();
+		Vodka.pushStackLevel();
 		let b = env.lookupBinding(this.getTypedValue());
-		if (CONSOLE_DEBUG) {
-			console.log(`${INDENT()}symbol ${this.value} bound to ${b.debugString()}`);
+		if (Vodka.CONSOLE_DEBUG) {
+			console.log(`${Vodka.INDENT()}symbol ${this.value} bound to ${b.debugString()}`);
 		}
-		popStackLevel();
+		Vodka.popStackLevel();
 		return b;
 	}
 
@@ -88,4 +99,9 @@ class ESymbol extends ValueNex {
 		}
 	}
 }
+
+
+
+
+export { ESymbol }
 

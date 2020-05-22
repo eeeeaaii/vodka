@@ -53,3 +53,5 @@ class SimpleTypeContract {
 	}
 }
 
+export { ContractEnforcer, IdentityContract, SimpleTypeContract }
+

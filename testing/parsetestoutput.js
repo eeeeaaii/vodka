@@ -25,15 +25,19 @@ var failing_tests = [];
 var passing_tests = [];
 jsonfiles.forEach((jsonfile) => {
 	let rawjson = fs.readFileSync(jsonfile);
-	let json = JSON.parse(rawjson);
-	if (json.node_success
-			&& json.diffs[0].diff_succeeded
-			&& json.diffs[1].diff_succeeded) {
-		passing_tests.push(json.test);
-	} else {
-		failing_tests.push(json.test);
+	try {
+		let json = JSON.parse(rawjson);
+		if (json.node_success
+				&& json.diffs[0].diff_succeeded
+				&& json.diffs[1].diff_succeeded) {
+			passing_tests.push(json.test);
+		} else {
+			failing_tests.push(json.test);
+		}
+		alljson.push(json);
+	} catch (e) {
+		console.log(`broken json file ${jsonfile}, continuing`)
 	}
-	alljson.push(json);
 })
 
 var summary = {

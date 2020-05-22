@@ -15,13 +15,33 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { ValueNex } from './valuenex.js'
+import * as Utils from '/utils.js'
+import { BuiltinArgEvaluator } from '/builtinargevaluator.js'
+import { Nil } from './nil.js'
+import { evaluateNexSafely } from '/evaluator.js'
+
+
 class Closure extends ValueNex {
-	constructor(lambda, lexicalEnvironment) {
-		super('', '&', 'closure')
+	constructor(lambda, lexicalEnvironment, name) {
+		super('', '&', name ? name : 'closure')
 		this.lambda = lambda;
 		this.cmdname = '*** not set ***';
 		this.lexicalEnvironment = lexicalEnvironment;
 		this.boundName = null;
+	}
+
+	makeCopy() {
+		let r = new Closure();
+		this.copyFieldsTo(r);
+		return r;
+	}
+
+	copyFieldsTo(nex) {
+		super.copyFieldsTo(nex);
+		nex.lambda = this.lambda;
+		nex.lexicalEnvironment = this.lexicalEnvironment.copy();
+		nex.boundName = this.boundName;
 	}
 
 	setBoundName(name) {
@@ -46,19 +66,6 @@ class Closure extends ValueNex {
 		return this.lambda;
 	}
 
-	makeCopy() {
-		let r = new Closure();
-		this.copyFieldsTo(r);
-		return r;
-	}
-
-	copyFieldsTo(nex) {
-		super.copyFieldsTo(nex);
-		nex.lambda = this.lambda;
-		nex.lexicalEnvironment = this.lexicalEnvironment.copy();
-		nex.boundName = this.boundName;
-	}
-
 	setCmdName(nm) {
 		this.cmdname = nm;
 	}
@@ -68,13 +75,7 @@ class Closure extends ValueNex {
 	}
 
 	getArgEvaluator(cmdname, argContainer, executionEnvironment) {
-//		if (this.lambda instanceof Builtin) {
-			return new BuiltinArgEvaluator(cmdname, this.lambda.paramsArray, argContainer, executionEnvironment);
-		// } else {
-		// 	return new LambdaArgEvaluator(
-		// 		this.lambda.getParamNames(),
-		// 		argContainer, executionEnvironment, cmdname);
-		// }
+		return new BuiltinArgEvaluator(cmdname, this.lambda.paramsArray, argContainer, executionEnvironment);
 	}
 
 	shouldActivateReturnedExpectations() {
@@ -88,7 +89,7 @@ class Closure extends ValueNex {
 	executor(executionEnvironment, argEvaluator, cmdname, commandTags) {
 		let newScope = this.lexicalEnvironment.pushEnv();
 		argEvaluator.bindArgs(newScope);
-		if (this.lambda instanceof Builtin) {
+		if (this.lambda.getTypeName() == '-builtin-') {
 			return this.lambda.executor(newScope, executionEnvironment, commandTags);
 		}
 		let r = new Nil();
@@ -100,7 +101,7 @@ class Closure extends ValueNex {
 			// lambda's result will always be returned as an arg somewhere, or at the
 			// top level.
 			r = evaluateNexSafely(c, newScope, true /* skipactivate */);
-			if (isFatalError(r)) {
+			if (Utils.isFatalError(r)) {
 				r = wrapError('&amp;', `${cmdname}: error in expr ${i+1}`, r);
 				return r;
 			}
@@ -122,4 +123,7 @@ class Closure extends ValueNex {
 	}
 }
 
+
+
+export { Closure }
 

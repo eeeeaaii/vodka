@@ -15,6 +15,12 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Builtin } from '../nex/builtin.js'
+import { EError } from '../nex/eerror.js'
+import { Float } from '../nex/float.js'
+import { Integer } from '../nex/integer.js'
+import { Bool } from '../nex/bool.js'
+
 function createMathBuiltins() {
 	Builtin.createBuiltin(
 		'+',
@@ -353,3 +359,6 @@ function createMathBuiltins() {
 	);
 
 }
+
+export { createMathBuiltins }
+

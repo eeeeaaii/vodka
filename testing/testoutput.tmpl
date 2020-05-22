@@ -58,8 +58,10 @@
 	</div>
 {{#each testresults}}
 	<div class="testout">
-		<!--div class="testname" onclick="showhide('testvariants{{test}}')"><a name="a_{{test}}">{{test}}</a></div-->
+		<!--
 		<div class="testname" onclick="showhide('testvariants{{test}}')"><a name="a_{{test}}">{{test}}</a></div>
+	    -->
+		<div class="testname"><a name="a_{{test}}">{{test}}</a></div>
 		<div id="testvariants{{test}}">
 			{{#if node_success}}
 				{{#each diffs}}

@@ -15,7 +15,9 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
+import { NexContainer } from './nexcontainer.js'
+import { EError } from './eerror.js'
+import { ContextType } from '/contexttype.js'
 
 class Doc extends NexContainer {
 	constructor() {
@@ -42,7 +44,7 @@ class Doc extends NexContainer {
 		let index = 0;
 		this.doForEachChild(c => {
 			index++;
-			if (c instanceof Line) {
+			if (c.getTypeName() == '-line-') {
 				s += c.getValueAsString();
 			} else {
 				throw new EError(`We are trying to convert this document`
@@ -61,10 +63,6 @@ class Doc extends NexContainer {
 		return ContextType.DOC;
 	}
 
-	getKeyFunnel() {
-		return new DocKeyFunnel(this);
-	}
-
 	renderInto(renderNode, renderFlags) {
 		let domNode = renderNode.getDomNode();
 		super.renderInto(renderNode, renderFlags);
@@ -72,18 +70,8 @@ class Doc extends NexContainer {
 		domNode.classList.add('data');
 	}
 
-	defaultHandle(txt) {
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-		if (isSeparator) {
-			KeyResponseFunctions['append-separator-to-doc'](txt);
-		} else {
-			KeyResponseFunctions['append-letter-to-doc'](txt);
-		}
-		return true;
+	getDefaultHandler() {
+		return 'docHandle';
 	}
 
 	getEventTable(context) {
@@ -96,3 +84,6 @@ class Doc extends NexContainer {
 		}
 	}
 }
+
+export { Doc }
+

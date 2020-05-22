@@ -15,6 +15,11 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from '/utils.js'
+import * as Vodka from '/vodka.js'
+import { LambdaEditor } from '/nex/lambda.js'
+import { TagEditor } from '/tag.js'
+
 class RenderNode {
 	constructor(forNex) {
 		this.selected = false;
@@ -29,11 +34,12 @@ class RenderNode {
 	}
 
 	routeKeyToCurrentEditor(keycode) {
-		this.currentEditor.routeKey(keycode);
+		let reroute = this.currentEditor.routeKey(keycode);
 		// the editor will decide when it's finished and will stop editing
 		if (!this.currentEditor.isEditing()) {
 			this.currentEditor = null;
 		}
+		return reroute;
 	}
 
 	usingEditor() {
@@ -100,7 +106,7 @@ class RenderNode {
 	}
 
 	createChildRenderNodes(nex) {
-		if (!(nex instanceof NexContainer)) return;
+		if (!(nex.isNexContainer())) return;
 		for (let i = 0; i < nex.numChildren(); i++) {
 			let child = nex.getChildAt(i);
 			let childRenderNode = new RenderNode(child);
@@ -170,7 +176,7 @@ class RenderNode {
 		// 	}
 		// }
 		this.domNode.setAttribute("style", "");
-		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+		if (!(renderFlags & Vodka.RENDER_FLAG_SHALLOW)) {
 			this.domNode.innerHTML = "";		
 		}
 	}
@@ -185,22 +191,22 @@ class RenderNode {
 	}
 
 	applyExplodedOverride(renderFlags) {
-		if (renderFlags & RENDER_FLAG_REMOVE_OVERRIDES) {
+		if (renderFlags & Vodka.RENDER_FLAG_REMOVE_OVERRIDES) {
 			this.firstToggleOnNexRender = false;
 			this.explodedOverride = -1;
 			return renderFlags;
 		}
 		if (this.firstToggleOnNexRender) {
 			this.firstToggleOnNexRender = false;
-			if (renderFlags & RENDER_FLAG_NORMAL) {
-				this.explodedOverride = RENDER_FLAG_EXPLODED;
-			} else if (renderFlags & RENDER_FLAG_EXPLODED) {
-				this.explodedOverride = RENDER_FLAG_NORMAL;
+			if (renderFlags & Vodka.RENDER_FLAG_NORMAL) {
+				this.explodedOverride = Vodka.RENDER_FLAG_EXPLODED;
+			} else if (renderFlags & Vodka.RENDER_FLAG_EXPLODED) {
+				this.explodedOverride = Vodka.RENDER_FLAG_NORMAL;
 			}
 		}
 		if (this.explodedOverride != -1) {
-			renderFlags &= (~RENDER_FLAG_NORMAL);
-			renderFlags &= (~RENDER_FLAG_EXPLODED);
+			renderFlags &= (~Vodka.RENDER_FLAG_NORMAL);
+			renderFlags &= (~Vodka.RENDER_FLAG_EXPLODED);
 			renderFlags |= this.explodedOverride;
 		}
 		return renderFlags;
@@ -215,27 +221,27 @@ class RenderNode {
 	render(renderFlags) {
 		renderFlags = this.applyExplodedOverride(renderFlags);
 		this.clearDomNode(renderFlags);
-		if (selectWhenYouFindIt && this.getNex().getID() == selectWhenYouFindIt.getID()) {
+		if (Vodka.getGlobalSelectWhenYouFindIt() && this.getNex().getID() == Vodka.getGlobalSelectWhenYouFindIt().getID()) {
 			this.setSelected(false);
-			selectWhenYouFindIt = null;
+			setGlobalSelectWhenYouFindIt(null);
 		}
 		let useFlags = this.selected
-				? renderFlags | RENDER_FLAG_SELECTED
+				? renderFlags | Vodka.RENDER_FLAG_SELECTED
 				: renderFlags;
-		if (this.renderDepth > MAX_RENDER_DEPTH) {
+		if (this.renderDepth > Vodka.MAX_RENDER_DEPTH) {
 			this.renderDepthExceeded();
 			return;
 		}
 		this.nex.renderInto(this, useFlags);
 		this.nex.doRenderSequencing(this);
-		this.isCurrentlyExploded = !!(renderFlags & RENDER_FLAG_EXPLODED);
+		this.isCurrentlyExploded = !!(renderFlags & Vodka.RENDER_FLAG_EXPLODED);
 
-		if (!(renderFlags & RENDER_FLAG_EXPLODED)
-				&& isNexContainer(this.nex)
+		if (!(renderFlags & Vodka.RENDER_FLAG_EXPLODED)
+				&& this.nex.isNexContainer()
 				&& !this.nex.renderChildrenIfNormal()) {
 			return;
 		}
-		if (this.getNex() instanceof NexContainer && !(renderFlags & RENDER_FLAG_SHALLOW)) {
+		if (this.getNex().isNexContainer() && this.getNex().getTypeName() != '-nativeorg-' && !(renderFlags & Vodka.RENDER_FLAG_SHALLOW)) {
 			let i = 0;
 			for (i = 0; i < this.childnodes.length; i++) {
 				if (i >= this.getNex().numChildren()) {
@@ -287,18 +293,20 @@ class RenderNode {
 	}
 
 	setSelected(rerender) {
+		let selectedNode = Vodka.getGlobalSelectedNode();
 		if (selectedNode == this) return;
 		if (selectedNode) {
 			selectedNode.setUnselected();
 			if (rerender) {
-				eventQueue.renderNodeRender(selectedNode, RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | current_default_render_flags);
+				eventQueue.renderNodeRender(selectedNode, Vodka.RENDER_FLAG_RERENDER | Vodka.RENDER_FLAG_SHALLOW | current_default_Vodka.render_flags);
 			}
 		}
 		selectedNode = this;
 		this.selected = true;
 		if (rerender) {
-			eventQueue.renderNodeRender(this, RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | current_default_render_flags);
+			eventQueue.renderNodeRender(this, Vodka.RENDER_FLAG_RERENDER | Vodka.RENDER_FLAG_SHALLOW | current_default_Vodka.render_flags);
 		}
+		Vodka.setGlobalSelectedNode(selectedNode);
 	}
 
 	setUnselected() {
@@ -448,7 +456,7 @@ class RenderNode {
 	}
 
 	appendChild(c) {
-		if (c instanceof Nex) {
+		if (!(c instanceof RenderNode)) {
 			c = this.getRenderNodeFor(c);
 		}
 		this.insertChildAt(c, this.childnodes.length);
@@ -456,7 +464,7 @@ class RenderNode {
 	}
 
 	prependChild(c) {
-		if (c instanceof Nex) {
+		if (!(c instanceof RenderNode)) {
 			c = this.getRenderNodeFor(c);
 		}
 		this.insertChildAt(c, 0);
@@ -464,7 +472,7 @@ class RenderNode {
 	}
 
 	insertChildAfter(c, sib) {
-		if (c instanceof Nex) {
+		if (!(c instanceof RenderNode)) {
 			c = this.getRenderNodeFor(c);
 		}
 		this.insertChildAt(c, this.getIndexOfChild(sib) + 1);
@@ -472,7 +480,7 @@ class RenderNode {
 	}
 
 	insertChildBefore(c, sib) {
-		if (c instanceof Nex) {
+		if (!(c instanceof RenderNode)) {
 			c = this.getRenderNodeFor(c);
 		}
 		this.insertChildAt(c, this.getIndexOfChild(sib));
@@ -480,10 +488,12 @@ class RenderNode {
 	}
 
 	replaceChildWith(child, newchild) {
-		if (newchild instanceof Nex) {
+		if (!(newchild instanceof RenderNode)) {
 			newchild = this.getRenderNodeFor(newchild);
 		}
 		this.replaceChildAt(newchild, this.getIndexOfChild(child));
 		return newchild;
 	}    
 }
+export { RenderNode }
+

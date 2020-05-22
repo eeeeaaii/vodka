@@ -15,6 +15,11 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Builtin } from '../nex/builtin.js'
+import { EError } from '../nex/eerror.js'
+import { IdentityContract } from '/contract.js'
+import { SimpleTypeContract } from '/contract.js'
+
 function createContractBuiltins() {
 	Builtin.createBuiltin(
 		'must-be',
@@ -52,3 +57,6 @@ function createContractBuiltins() {
 		}
 	);
 }
+
+export { createContractBuiltins }
+

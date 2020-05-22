@@ -35,4 +35,5 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 .newline.exploded.selected {
 	width:1px;
 	animation-name: none;
+	margin-right:0px;
 }

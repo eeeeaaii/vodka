@@ -15,6 +15,11 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { NexContainer } from './nexcontainer.js'
+import { manipulator } from '/vodka.js'
+import { isNormallyHandled } from '/keyresponsefunctions.js'
+import { ContextType } from '/contexttype.js'
+
 class Word extends NexContainer {
 	constructor() {
 		super();
@@ -35,16 +40,14 @@ class Word extends NexContainer {
 		return '(' + super.childrenToString() + ')';
 	}
 
-	// deprecated, words should not create a doc context,
-	// but it's needed for legacy behavior.
 	getContextType() {
-		return ContextType.DOC;
+		return ContextType.WORD;
 	}
 
 	getValueAsString() {
 		let s = '';
 		this.doForEachChild(function(c) {
-			if (!(c instanceof Letter)) {
+			if (!(c.getTypeName() == '-letter-')) {
 				throw new EError('cannot convert word to string, invalid format');
 			}
 			s += c.getText();
@@ -70,28 +73,15 @@ class Word extends NexContainer {
 		}
 	}
 
-	defaultHandle(txt) {
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-		if (isSeparator) {
-			manipulator.insertAfterSelectedAndSelect(new Separator(txt));
-		} else {
-			if (manipulator.selectLastChild()) {
-				manipulator.insertAfterSelectedAndSelect(new Letter(txt));
-			} else {
-				manipulator.appendAndSelect(new Letter(txt))
-			}
-		}
-		return true;
+	getDefaultHandler() {
+		return 'insertAtWordLevel';
 	}
 
 	getEventTable(context) {
 		return {
 			'Enter': 'do-line-break-always',
-			// weird and wrong?
+			'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
+			'ArrowDown': 'move-to-corresponding-letter-in-next-line',
 			'~': 'insert-command-as-next-sibling',
 			'!': 'insert-bool-as-next-sibling',
 			'@': 'insert-symbol-as-next-sibling',
@@ -108,3 +98,6 @@ class Word extends NexContainer {
 		}
 	}
 }
+
+export { Word }
+

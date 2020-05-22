@@ -45,7 +45,7 @@ class GarbageCollector {
 			if (nex.getTypeName() == '-expectation-') {
 				this.expectations[nex.getID()].isReachable = true;
 			}
-			if (nex instanceof NexContainer) {
+			if (nex.isNexContainer()) {
 				for (let i = 0; i < node.numChildren(); i++) {
 					let c = node.getChildAt(i);
 					nodesToProcess.push(c);
@@ -60,3 +60,5 @@ class GarbageCollector {
 		}
 	}
 }
+export { GarbageCollector }
+

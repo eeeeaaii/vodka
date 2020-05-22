@@ -26,59 +26,74 @@ function delay(timeout) {
 	});
 }
 
-module.exports = {
-	runTest: function(testinput, method) {
-		(async() => {
-			let normal_out = process.argv[2];
-			let exploded_out = process.argv[3];
+function runTest(testinput, method) { // legacy
+	runTestImpl(testinput, method, true /* legacy */);
+}
+
+function runTestNew(testinput, method) {
+	runTest(testinput, method, false /* legacy */);
+}
+
+function runTestImpl(testinput, method, legacy) {
+	(async() => {
+		let normal_out = process.argv[2];
+		let exploded_out = process.argv[3];
 //			const browser = await puppeteer.launch({headless:false, slowMo:250});
-			const browser = await puppeteer.launch();
-			const page = await browser.newPage();
-			page.on('console', msg => {
-				for (let i = 0; i < msg.args().length; ++i) {
-				    console.log(`${i}: ${msg.args()[i]}`);
-				}
-   			})
-			await page.goto('http://localhost:3000', {waitUntil: 'networkidle2'});
-			if (method == 'direct') {
-				await page.evaluate(function() {
-					doKeyInput('Escape', 'Escape', false, false, false);
-				})
-				// we have logged all browser interactions directly, the new way.
-				for (let i = 0; i < testinput.length; i++) {
-					let t = testinput[i];
-					switch(t.type) {
-						case 'click':
-							await page.mouse.click(Number(t.x), Number(t.y));
-							break;
-						case 'keydown':
-							await page.keyboard.down(t.code);
-							break;
-						case 'keyup':
-							await page.keyboard.up(t.code);
-							break;
-					}
-					await delay(2);
-				}
-			} else {
-				// legacy mode, where we call the javascript 'doKeyInput' method
-				await page.evaluate(testinput);
-				// wait for the event queue to finish I guess
-				await delay(150);
+		const browser = await puppeteer.launch();
+		const page = await browser.newPage();
+		page.on('console', msg => {
+			for (let i = 0; i < msg.args().length; ++i) {
+			    console.log(`${i}: ${msg.args()[i]}`);
 			}
-			await page.screenshot({path: exploded_out});
+			})
+		await page.goto('http://localhost:3000', {waitUntil: 'networkidle2'});
+		// I recorded a bunch of tests that used shift-enter to mean "execute and replace"
+		// before I changed the meaning of shift-enter to "execute and leave"
+		if (legacy) {
+			await page.evaluate(function() {
+				window.legacyEnterBehaviorForTests = true;
+			})
+		}
+		if (method == 'direct') {
 			await page.evaluate(function() {
 				doKeyInput('Escape', 'Escape', false, false, false);
 			})
-			
-			await page.screenshot({path: normal_out});
-			await browser.close();
-		})().catch((error) => {
-			console.log("TEST FAILED");
-			console.error(error);
+			// we have logged all browser interactions directly, the new way.
+			for (let i = 0; i < testinput.length; i++) {
+				let t = testinput[i];
+				switch(t.type) {
+					case 'click':
+						await page.mouse.click(Number(t.x), Number(t.y));
+						break;
+					case 'keydown':
+						await page.keyboard.down(t.code);
+						break;
+					case 'keyup':
+						await page.keyboard.up(t.code);
+						break;
+				}
+				await delay(2);
+			}
+		} else {
+			// legacy mode, where we call the javascript 'doKeyInput' method
+			await page.evaluate(testinput);
+			// wait for the event queue to finish I guess
+			await delay(150);
+		}
+		await page.screenshot({path: exploded_out});
+		await page.evaluate(function() {
+			doKeyInput('Escape', 'Escape', false, false, false);
+		})
+		
+		await page.screenshot({path: normal_out});
+		await browser.close();
+	})().catch((error) => {
+		console.log("TEST FAILED");
+		console.error(error);
 //			await browser.close();
-			process.exit(1);
-		});
-	}
+		process.exit(1);
+	});
 }
+
+module.exports = { runTest, runTestNew }
 

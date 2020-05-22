@@ -15,6 +15,13 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Builtin } from '../nex/builtin.js'
+import { EError } from '../nex/eerror.js'
+import { Nil } from '../nex/nil.js'
+import { Bool } from '../nex/bool.js'
+import { manipulator } from '/vodka.js'
+import * as Utils from '/utils.js'
+
 function createBasicBuiltins() {
 	Builtin.createBuiltin(
 		'copy',
@@ -227,6 +234,14 @@ function createBasicBuiltins() {
 				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
 			} else if (lhs instanceof Integer && rhs instanceof Integer) {
 				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
+
+			// mixing numeric types should work though
+			} else if (lhs instanceof Float && rhs instanceof Integer) {
+				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
+			} else if (lhs instanceof Integer && rhs instanceof Float) {
+				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
+
+
 			} else if (lhs instanceof Letter && rhs instanceof Letter) {
 				return new Bool(lhs.getText() == rhs.getText());
 			} else if (lhs instanceof Separator && rhs instanceof Separator) {
@@ -255,3 +270,6 @@ function createBasicBuiltins() {
 		}
 	);
 }
+
+export { createBasicBuiltins }
+

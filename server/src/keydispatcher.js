@@ -15,480 +15,55 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// use this wrapper to handle exceptions correctly, this
-// saves us from having to put exception handling in every
-// location where we evaluate nexes.
-function evaluateNexSafely(nex, executionEnvironment, skipActivation) {
-	let result;
-	try {
-		result = nex.evaluate(executionEnvironment);
+// import { Bool } from '/nex/bool.js' 
+// import { Builtin } from '/nex/builtin.js' 
+// import { Closure } from '/nex/closure.js' 
+// import { Command } from '/nex/command.js' 
+// import { Doc } from '/nex/doc.js' 
+// import { EError } from '/nex/eerror.js' 
+// import { EString } from '/nex/estring.js' 
+// import { ESymbol } from '/nex/esymbol.js' 
+// import { Expectation } from '/nex/expectation.js' 
+// import { Float } from '/nex/float.js' 
+// import { InsertionPoint } from '/nex/insertionpoint.js' 
+// import { Integer } from '/nex/integer.js' 
+// import { Lambda } from '/nex/lambda.js' 
+// import { Letter } from '/nex/letter.js' 
+// import { Line } from '/nex/line.js' 
+// import { NativeOrg } from '/nex/nativeorg.js' 
+// import { Newline } from '/nex/newline.js' 
+// import { Nex } from '/nex/nex.js' 
+// import { NexContainer } from '/nex/nexcontainer.js' 
+// import { Nil } from '/nex/nil.js' 
+// import { Org } from '/nex/org.js' 
+// import { Root } from '/nex/root.js' 
+// import { Separator } from '/nex/separator.js' 
+// import { ValueNex } from '/nex/valuenex.js' 
+// import { Word } from '/nex/word.js' 
+// import { Zlist } from '/nex/zlist.js' 
 
-		// TODO: put in return type checking, here's the code, just need to fix up
-			// if (rvp && isReturnValue) {
-			// 	let typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[rvp.type](r);
-			// 	if (!typeChecksOut) {
-			// 		return wrapError('&amp;', `${cmdname}: should return ${rvp.type} but returned ${r.getTypeName()}`, r);
-			// 		// if (arg.getTypeName() == '-error-') {
-			// 		// 	throw wrapError('&szlig;', `${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, arg);
-			// 		// }
-			// 	}
-			// }
+import * as Vodka from '/vodka.js'
 
-//		if (result.getTypeName() == '-expectation-' && nex.shouldActivateReturnedExpectations() && !skipActivation) {
-		if (result.getTypeName() == '-expectation-' && nex.getTypeName() == '-command-' && !skipActivation) {
-			result.activate();
-		}
-		if (result.getTypeName() == '-org-') {
-			// forget multiple dereference for now we will do that soon/someday/sometime
-			// just find a tag
-			for (let i = 0; i < nex.numTags(); i++) {
-				let tag = nex.getTag(i);
-				if (result.hasChildTag(tag)) {
-					let child = result.getChildWithTag(tag);
-					let childResult = evaluateNexSafely(child, executionEnvironment);
-					if (childResult.getTypeName() == '-lambda-') {
-						childResult.closure.bind('org', result)
-					}
-					result = childResult;
-				}
-			}
-		}
-	} catch (e) {
-		if (e instanceof EError) {
-			result = e;
-		} else {
-			throw e;
-		}
-	}
-	return result;
-}
-
-function wrapError(prefix, message, inner) {
-	let e = new EError(message, prefix);
-	e.appendChild(inner);
-	return e;
-}
-
-function insertOrAppend(s, obj) {
-	if (s.hasChildren()) {
-		return manipulator.insertAfterSelectedAndSelect(obj);
-	} else {
-		return manipulator.appendAndSelect(obj);
-	}
-}
-
-function evaluateAndReplace(s) {
-	let n = evaluateNexSafely(s.getNex(), BINDINGS);
-	if (isFatalError(n)) {
-		beep();
-	}
-	if (n) {
-		manipulator.replaceSelectedWith(new RenderNode(n));
-	}
-}
-
-function evaluateAndKeep(s) {
-	let n = evaluateNexSafely(s.getNex(), BINDINGS);
-	eventQueue.enqueueAlertAnimation(s);
-	if (isFatalError(n)) {
-		beep();
-		manipulator.insertBeforeSelectedAndSelect(n);
-	}
-}
-
-function evaluateAndCopy(s) {
-	let n = evaluateNexSafely(s.getNex(), BINDINGS);
-	if (n) {
-		manipulator.replaceSelectedWith(new RenderNode(n));
-	}
-}
-
-var UNHANDLED_KEY = 'unhandled_key'
-var ContextType = {};
-ContextType.PASSTHROUGH = 0;
-ContextType.COMMAND = 1;
-ContextType.DOC = 2;
-
-function isNormallyHandled(key) {
-	if (!(/^.$/.test(key))) {
-		return true;
-	}
-	if (/^[~!@#$%`^*&)([{]$/.test(key)) {
-		return true;
-	}
-	return false;
-}
-
-// These KeyResponseFunctions are all untested and not integrated. Need to integrate
-// one at a time and test.
-
-var KeyResponseFunctions = {
-	// if we make generator functions, like insert-or-append(thing) instead of
-	// insert-or-append-command, we have to make it so that we don't accidentally
-	// end up constructing the object once and trying to reinsert it.
-	// Currently the nexes recreate their key funnel vector every time a key is pressed,
-	// but that's obviously inefficient and user created nexes might not do that.
-
-	// movement
-	'move-left-up': function(s) {
-		manipulator.selectPreviousSibling()
-			||  manipulator.insertBeforeSelectedAndSelect(new InsertionPoint());
-	},
-	'move-right-down': function(s) {
-		manipulator.selectNextSibling()
-			|| manipulator.insertAfterSelectedAndSelect(new InsertionPoint());
-	},
-	'move-to-previous-leaf': function(s) {		
-		manipulator.selectPreviousLeaf()
-			||  manipulator.insertBeforeSelectedAndSelect(new InsertionPoint());
-	},
-	'move-to-next-leaf': function(s) {		
-		manipulator.selectNextLeaf()
-			||  manipulator.insertAfterSelectedAndSelect(new InsertionPoint());
-	},
-
-	'select-next-sibling': function(s) {
-		manipulator.selectNextSibling();
-	},
-
-	'evaluate-nex': function(s) {
-		evaluateAndReplace(s);
-	},
-
-	'evaluate-nex-and-keep': function(s) {
-		evaluateAndKeep(s);
-	},
-
-	'evaluate-and-copy': function(s) {
-		evaluateAndCopy(s);
-	},
-
-	'toggle-dir': function(s) {
-		s.getNex().toggleDir();
-	},
-
-	'toggle-exploded': function(s) {
-		s.toggleExplodedOverride();
-	},
-
-	'select-parent': function(s) { manipulator.selectParent(); },
-	'select-first-child-or-create-insertion-point': function(s) {
-		if (!manipulator.selectFirstChild()) {
-			return manipulator.appendAndSelect(new InsertionPoint());
-		} else return true;
-	},
-	// 'select-next-sibling': function(s) { manipulator.selectNextSibling(); },
-	'select-first-child-or-fail': function(s) { manipulator.selectFirstChild(); },
-
-	'select-parent-and-remove-self': function(s) { manipulator.selectParent() && manipulator.removeNex(s); },
-
-	'start-modal-editing': function(s) {
-		s.getNex().startModalEditing();
-	},
-
-	'return-exp-child': function(s) {
-		manipulator.replaceSelectedWithFirstChildOfSelected();
-	},
-
-	'autocomplete': function(s) {
-		s.getNex().autocomplete();
-	},
-
-	'no-op': function(s) {},
-
-	'start-lambda-editor': function(s) { s.startLambdaEditor(); },
-
-
-	'replace-selected-with-command': function(s) { manipulator.replaceSelectedWith(new Command()); },
-	'replace-selected-with-bool': function(s) { manipulator.replaceSelectedWith(new Bool()); },
-	'replace-selected-with-symbol': function(s) { manipulator.replaceSelectedWith(new ESymbol()); },
-	'replace-selected-with-integer': function(s) { manipulator.replaceSelectedWith(new Integer()); },
-	'replace-selected-with-string': function(s) { manipulator.replaceSelectedWith(new EString()); },
-	'replace-selected-with-float': function(s) { manipulator.replaceSelectedWith(new Float()); },
-	'replace-selected-with-nil': function(s) { manipulator.replaceSelectedWith(new Nil()); },
-	'replace-selected-with-lambda': function(s) { manipulator.replaceSelectedWith(new Lambda()) && selectedNode.startLambdaEditor(); },
-	'replace-selected-with-expectation': function(s) { manipulator.replaceSelectedWith(new Expectation()); },
-	'replace-selected-with-word': function(s) { manipulator.replaceSelectedWith(new Word()); },
-	'replace-selected-with-line': function(s) { manipulator.replaceSelectedWith(new Line()); },
-	'replace-selected-with-doc': function(s) { manipulator.replaceSelectedWith(new Doc()); },
-	'replace-selected-with-org': function(s) { manipulator.replaceSelectedWith(new Org()); },
-
-	'add-tag': function(s) { s.addTag(); },
-	'remove-all-tags': function(s) { s.removeAllTags(); },
-
-	'insert-or-append-command': function(s) { insertOrAppend(s, new Command()); },
-	'insert-or-append-bool': function(s) { insertOrAppend(s, new Bool()); },
-	'insert-or-append-symbol': function(s) { insertOrAppend(s, new ESymbol()); },
-	'insert-or-append-integer': function(s) { insertOrAppend(s, new Integer()); },
-	'insert-or-append-string': function(s) { insertOrAppend(s, new EString()); },
-	'insert-or-append-float': function(s) { insertOrAppend(s, new Float()); },
-	'insert-or-append-nil': function(s) { insertOrAppend(s, new Nil()); },
-	'insert-or-append-lambda': function(s) {
-		insertOrAppend(s, new Lambda())
-		&& selectedNode.startLambdaEditor();
-	},
-	'insert-or-append-expectation': function(s) { insertOrAppend(s, new Expectation()); },
-	'insert-or-append-word': function(s) { insertOrAppend(s, new Word()); },
-	'insert-or-append-line': function(s) { insertOrAppend(s, new Line()); },
-	'insert-or-append-doc': function(s) { insertOrAppend(s, new Doc()); },
-	'insert-or-append-org': function(s) { insertOrAppend(s, new Org()); },
-
-	'insert-command-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Command()); },
-	'insert-bool-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Bool()); },
-	'insert-symbol-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new ESymbol()); },
-	'insert-integer-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Integer()); },
-	'insert-string-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new EString()); },
-	'insert-float-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Float()); },
-	'insert-nil-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Nil()); },
-	'insert-lambda-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Lambda())  && selectedNode.startLambdaEditor(); },
-	'insert-expectation-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Expectation()); },
-	'insert-word-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Word()); },
-	'insert-line-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Line()); },
-	'insert-doc-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Doc()); },
-	'insert-zlist-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Zlist()); },
-	'insert-org-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Org()); },
-
-
-	'wrap-in-command': function(s) { manipulator.wrapSelectedInAndSelect(new Command()); },
-	'wrap-in-lambda': function(s) { manipulator.wrapSelectedInAndSelect(new Lambda())  && selectedNode.startLambdaEditor(); },
-	'wrap-in-expectation': function(s) { manipulator.wrapSelectedInAndSelect(new Expectation()); },
-	'wrap-in-word': function(s) { manipulator.wrapSelectedInAndSelect(new Word()); },
-	'wrap-in-line': function(s) { manipulator.wrapSelectedInAndSelect(new Line()); },
-	'wrap-in-doc': function(s) { manipulator.wrapSelectedInAndSelect(new Doc()); },
-	'wrap-in-org': function(s) { manipulator.wrapSelectedInAndSelect(new Org()); },
-
-
-	// WIP
-	'insert-type-as-next-sibling': function(s) {
-		manipulator.insertAfterSelectedAndSelect(new Type());
-	},
-
-	'split-word-and-insert-separator': function(s) {
-		manipulator.splitCurrentWordIntoTwo()
-			&& manipulator.selectParent()
-			&& manipulator.insertAfterSelectedAndSelect(new Separator(s));
-	},
-
-	'remove-separator-and-possibly-join-words': function(s) {
-		manipulator.removeSelectedAndSelectPreviousLeaf();
-		let p = selectedNode.getParent();
-		manipulator.joinToSiblingIfSame(p);
-	},
-
-	// previously, inserting code objects in doc mode from a letter would append them to
-	// the parent in a weird way.
-	// all deprecated
-	'legacy-insert-command-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Command()); },
-	'legacy-insert-bool-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Bool()); },
-	'legacy-insert-symbol-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new ESymbol()); },
-	'legacy-insert-integer-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Integer()); },
-	'legacy-insert-string-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new EString()); },
-	'legacy-insert-float-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Float()); },
-	'legacy-insert-nil-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Nil()); },
-	'legacy-insert-lambda-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Lambda())  && selectedNode.startLambdaEditor(); },
-	'legacy-insert-expectation-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Expectation()); },
-
-
-	'insert-letter-after-separator': function(s) {
-		let newword = new Word();
-		newword = new RenderNode(newword);
-		let newletter = new Letter(s);
-		newletter = new RenderNode(newletter);
-		newword.appendChild(newletter);
-		manipulator.insertAfterSelectedAndSelect(newword);
-		manipulator.joinToSiblingIfSame(newword);
-		newletter.setSelected();
-	},
-
-	'move-to-previous-leaf-and-remove-self': function(s) {		
-		manipulator.selectPreviousLeaf()
-		&& manipulator.removeNex(s);
-	},
-	'move-to-next-leaf-and-remove-self': function(s) {		
-		manipulator.selectNextLeaf()
-		&& manipulator.removeNex(s);
-	},
-	'move-to-corresponding-letter-in-previous-line': function(s) {
-		manipulator.selectCorrespondingLetterInPreviousLine()
-			 || manipulator.selectPreviousSibling()
-			 ||  manipulator.insertBeforeSelectedAndSelect(new InsertionPoint())
-			;
-	},
-	'move-to-corresponding-letter-in-next-line': function(s) {
-		manipulator.selectCorrespondingLetterInNextLine()
-			 || manipulator.selectNextSibling()
-			 ||  manipulator.insertAfterSelectedAndSelect(new InsertionPoint())
-			;
-	},
-
-
-	// this is doc-specific, will go away once we have classes
-	'append-letter-to-doc': function(s) {
-		manipulator.selectLastChild()
-			|| manipulator.appendAndSelect(new Line());
-		manipulator.selectLastChild()
-			|| manipulator.appendAndSelect(new Word());
-		if (manipulator.selectLastChild()) {
-			manipulator.insertAfterSelectedAndSelect(new Letter(s));
-		} else {
-			manipulator.appendAndSelect(new Letter(s))
-		}
-	},
-
-	'append-separator-to-doc': function(s) {
-		manipulator.selectLastChild()
-			|| manipulator.appendAndSelect(new Line());
-		manipulator.appendAndSelect(new Separator(s));
-	},
-
-	'call-delete-handler-then-remove-selected-and-select-previous-sibling': function(s) {
-		s.getNex().callDeleteHandler();
-		manipulator.removeSelectedAndSelectPreviousSibling();
-	},
-
-	'remove-selected-and-select-previous-sibling': function(s) {
-		manipulator.removeSelectedAndSelectPreviousSibling();
-	},
-
-	'delete-last-command-letter-or-remove-selected-and-select-previous-sibling': function(s) {
-		if (!s.getNex().isEmpty()) {
-			s.getNex().deleteLastCommandLetter();
-		} else {
-			manipulator.removeSelectedAndSelectPreviousSibling();
-		}
-	},
-
-	'delete-last-amp-letter-or-remove-selected-and-select-previous-sibling': function(s) {
-		if (!s.getNex().isEmpty()) {
-			s.getNex().deleteLastAmpLetter();
-		} else {
-			manipulator.removeSelectedAndSelectPreviousSibling();
-		}
-	},
-
-	'delete-last-letter-or-remove-selected-and-select-previous-leaf': function(s) {
-		if (!s.getNex().isEmpty()) {
-			s.getNex().deleteLastLetter();
-		} else {
-			manipulator.removeSelectedAndSelectPreviousLeaf();
-		}
-	},
-
-	'remove-selected-and-select-previous-leaf': function(s) {
-		let p = s.getParent();
-		manipulator.removeSelectedAndSelectPreviousLeaf();
-		if (!p.hasChildren()) {
-			manipulator.removeNex(p);
-		}
-	},
-
-	'legacy-unchecked-remove-selected-and-select-previous-leaf': function(s) {
-		manipulator.selectPreviousLeaf() || manipulator.selectParent();
-		manipulator.removeNex(s);
-	},
-
-	'do-line-break-always': function(s) {
-		let newline = new RenderNode(new Newline());
-		manipulator.insertAfterSelected(newline)
-			&& manipulator.putAllNextSiblingsInNewLine()
-			&& newline.setSelected();
-	},
-
-	'do-line-break-from-line': function(s) {
-		if (isDoc(s.getParent())) {
-			manipulator.insertAfterSelectedAndSelect(new Line())
-				&& manipulator.appendAndSelect(new Newline());
-		} else {
-			let newline = new RenderNode(new Newline());
-			manipulator.insertAfterSelected(newline)
-				&& manipulator.putAllNextSiblingsInNewLine()
-				&& newline.setSelected();
-		}		
-	},
-
-	'replace-selected-with-word-correctly': function(s) {
-		let selected = selectedNode;
-		let obj = new RenderNode(new Word());
-		if (isDoc(selected.getParent())) {
-			let ln = new RenderNode(new Line());
-			ln.appendChild(obj);
-			manipulator.replaceSelectedWith(ln);
-			obj.setSelected();
-		} else {
-			manipulator.replaceSelectedWith(obj);
-		}
-	},
-
-
-	'do-line-break-after-letter': function(s) {
-		let newline = new RenderNode(new Newline());
-		if (isWord(s.getParent())) {
-			manipulator.splitCurrentWordIntoTwo()
-				&& manipulator.selectParent()
-				&& manipulator.insertAfterSelected(newline)
-				&& manipulator.putAllNextSiblingsInNewLine()
-				&& newline.setSelected();			
-		} else {
-			// treat as separator.
-			manipulator.insertAfterSelected(newline)
-				&& manipulator.putAllNextSiblingsInNewLine()
-				&& newline.setSelected();
-
-		}
-	},
-
-	'delete-newline': function(s) {
-		if (manipulator.selectPreviousLeaf()) {
-			let oldParent = s.getParent(); // may need later
-			manipulator.removeNex(s);
-			s = selectedNode;
-			let line;
-			let word;
-			// when we selected the previous sibling, we may be:
-			// 1. in a word that's inside a line
-			// 2. in a line
-			// 3. neither
-			let parent = s.getParent();
-			if (parent.getNex() instanceof Line) {
-				manipulator.joinToSiblingIfSame(parent);
-				return true;
-			}
-			let parent2 = parent.getParent();
-			if (parent2 != null) {
-				if (parent2.getNex() instanceof Line) {
-					manipulator.joinToSiblingIfSame(parent2);
-					// not done yet -- we also need to join words if applicable
-					if (parent.getNex() instanceof Word) {
-						manipulator.joinToSiblingIfSame(parent);
-					}
-					return true;
-				}
-			}
-			// if we aren't joining lines up, we at least need to delete the
-			// line we are *coming from* *if it's empty*
-			if (!oldParent.hasChildren()) {
-				manipulator.removeNex(oldParent);
-			}
-		}		
-	},
-
-
-	// I hate commas
-	'':''
-}
+import { ContextType } from '/contexttype.js';
+import { KeyResponseFunctions, DefaultHandlers } from '/keyresponsefunctions.js';
 
 class KeyDispatcher {
 	dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
 		let keyContext = ContextType.COMMAND;
-		let p = selectedNode.getParent();
+		let p = Vodka.getGlobalSelectedNode().getParent();
 		if (p) {
 			while((keyContext = p.getNex().getContextType()) == ContextType.PASSTHROUGH) {
 				p = p.getParent();
 			}
 		}
-		if (selectedNode.usingEditor()) {
-			this.doEditorEvent(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
-			return false;
+		if (Vodka.getGlobalSelectedNode().usingEditor()) {
+			// will return whether or not to "reroute"
+			// rerouting means the editor didn't handle the key AND wants keydispatcher
+			// to handle it instead
+			let reroute = this.doEditorEvent(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
+			if (!reroute) {
+				return false;
+			}
 		}
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
 		// there are a few special cases
@@ -496,13 +71,13 @@ class KeyDispatcher {
 			// vertical bar is unusable - 'internal use only'
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-x') {
-			manipulator.doCut();
+			Vodka.manipulator.doCut();
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-c') {
-			manipulator.doCopy();
+			Vodka.manipulator.doCopy();
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-v') {
-			manipulator.doPaste();
+			Vodka.manipulator.doPaste();
 			return false; // to cancel browser event
 		} else if (eventName == 'Escape') {
 			this.doEscape();
@@ -515,20 +90,28 @@ class KeyDispatcher {
 			// 2. look in regular table
 			// 3. call defaultHandle
 			// otherwise try the table first, then the keyfunnel
+			if (window.legacyEnterBehaviorForTests
+					&& eventName == 'ShiftEnter'
+					&& (
+						Vodka.getGlobalSelectedNode().getNex().getTypeName() == '-command-'
+						|| Vodka.getGlobalSelectedNode().getNex().getTypeName() == '-symbol-'
+					)) {
+				eventName = 'Enter';
+			}
 			try {
-				let sourceNex = (selectedNode.getNex());
+				let sourceNex = (Vodka.getGlobalSelectedNode().getNex());
 				let parentNex = null;
-				if (selectedNode.getParent()) {
-					parentNex = selectedNode.getParent().getNex();
+				if (Vodka.getGlobalSelectedNode().getParent()) {
+					parentNex = Vodka.getGlobalSelectedNode().getParent().getNex();
 				}
 				// returning false here means we tell the browser not to process the event.
-				if (this.runDefaultHandle(sourceNex, eventName, keyContext, selectedNode)) return false;
+				if (this.runDefaultHandle(sourceNex, eventName, keyContext, Vodka.getGlobalSelectedNode())) return false;
 				if (this.runFunctionFromOverrideTable(sourceNex, parentNex, eventName)) return false;
-				if (this.runFunctionFromRegularTable(sourceNex, eventName)) return false;
+				if (this.runFunctionFromRegularTable(sourceNex, eventName, keyContext)) return false;
 				if (this.runFunctionFromGenericTable(sourceNex, eventName)) return false;
 				return true; // didn't handle it.
 			} catch (e) {
-				if (e == UNHANDLED_KEY) {
+				if (e == Vodka.UNHANDLED_KEY) {
 					console.log("UNHANDLED KEY " +
 									':' + 'keycode=' + keycode +
 									',' + 'whichkey=' + whichkey +
@@ -547,7 +130,7 @@ class KeyDispatcher {
 		// is finished.
 		// right now we just have an editor for tags but we will need editors for
 		// strings, symbols, commands/lambdas.
-		selectedNode.routeKeyToCurrentEditor(keycode);
+		return Vodka.getGlobalSelectedNode().routeKeyToCurrentEditor(keycode);
 	}
 
 	getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichKey) {
@@ -602,12 +185,21 @@ class KeyDispatcher {
 	}
 
 	runDefaultHandle(sourceNex, eventName, context, sourceNode) {
-		return sourceNex.defaultHandle(eventName, context, sourceNode);
+		if (sourceNex.getDefaultHandler) {
+			let handleFunction = sourceNex.getDefaultHandler();
+			if (handleFunction) {
+				return DefaultHandlers[handleFunction](sourceNex, eventName, context, sourceNode);
+			}
+		}
+		if (sourceNex.defaultHandle) {
+			return sourceNex.defaultHandle(eventName, context, sourceNode);
+		}
+		return false;
 	}
 
 	runFunctionFromGenericTable(sourceNex, eventName) {
 		let table = null;
-		if (sourceNex instanceof NexContainer) {
+		if (sourceNex.isNexContainer()) {
 			table = this.getNexContainerGenericTable();
 		} else {
 			table = this.getNexGenericTable();
@@ -619,13 +211,13 @@ class KeyDispatcher {
 		return false;
 	}
 
-	runFunctionFromRegularTable(sourceNex, eventName) {
+	runFunctionFromRegularTable(sourceNex, eventName, context) {
 		let table = sourceNex.getEventTable();
 		if (!table) {
 			return false;
 		}
 		let f = table[eventName];
-		if (f && this.actOnFunction(f)) {
+		if (f && this.actOnFunction(f, context)) {
 			return true;
 		}
 		return false;
@@ -660,13 +252,24 @@ class KeyDispatcher {
 	}
 
 	// returns true if it was a valid function that could be run
-	actOnFunction(f) {
+	actOnFunction(f, context) {
 		if ((typeof f) == 'string') {
-			KeyResponseFunctions[f](selectedNode);
+			KeyResponseFunctions[f](Vodka.getGlobalSelectedNode());
 			return true;
 		} else if ((typeof f) == 'function') {
-			f(selectedNode);
+			f(Vodka.getGlobalSelectedNode());
 			return true;
+		} else if ((typeof f) == 'object') {
+			// contains different functions for different contexts
+			let f2 = f[context];
+			if (!f2) {
+				f2 = f[ContextType.DEFAULT];
+				if (!f2) {
+					throw new Error('must specify a default context if associating a key with a map')
+				}
+			}
+			KeyResponseFunctions[f2](Vodka.getGlobalSelectedNode());
+ 			return true;
 		} else if (f instanceof Nex) {
 			evaluateNexSafely(f, BINDINGS)
 			return true;
@@ -675,28 +278,30 @@ class KeyDispatcher {
 	}
 
 	doEscape() {
-		if (current_default_render_flags & RENDER_FLAG_EXPLODED) {
-			current_default_render_flags &= (~RENDER_FLAG_EXPLODED);
+		let current_default_render_flags = Vodka.getGlobalCurrentDefaultRenderFlags();
+		if (current_default_render_flags & Vodka.RENDER_FLAG_EXPLODED) {
+			current_default_render_flags &= (~Vodka.RENDER_FLAG_EXPLODED);
 		} else {
-			current_default_render_flags |= RENDER_FLAG_EXPLODED;
+			current_default_render_flags |= Vodka.RENDER_FLAG_EXPLODED;
 		}
-		overrideOnNextRender = true;
+		Vodka.setGlobalOverrideOnNextRender(true);
+		Vodka.setGlobalCurrentDefaultRenderFlags(current_default_render_flags);
 	}
 
 	doMetaEnter() {
 		isStepEvaluating = true;
 		try {
-			let s = selectedNode.getNex();
+			let s = Vodka.getGlobalSelectedNode().getNex();
 			let phaseExecutor = s.phaseExecutor;
 			let firstStep = false;
 			if (!phaseExecutor) {
 				firstStep = true;
 				phaseExecutor = new PhaseExecutor();
 				// need to copy the selected nex, replace it in the parent, and discard!
-				let copiedNex = selectedNode.getNex().makeCopy();
-				let parentNode = selectedNode.getParent();
+				let copiedNex = Vodka.getGlobalSelectedNode().getNex().makeCopy();
+				let parentNode = Vodka.getGlobalSelectedNode().getParent();
 				let parentNex = parentNode.getNex();
-				parentNex.replaceChildWith(selectedNode.getNex(), copiedNex);
+				parentNex.replaceChildWith(Vodka.getGlobalSelectedNode().getNex(), copiedNex);
 				parentNode.childnodes = []; // wtf
 				// hack: rerender the parent to refresh/fix the cached childnodes in it
 				// we cannot use eventqueue because this thread needs this data later on :(
@@ -706,7 +311,7 @@ class KeyDispatcher {
 				newSelectedNode.setSelected();
 				// gross
 				topLevelRender();
-				s = selectedNode.getNex();
+				s = Vodka.getGlobalSelectedNode().getNex();
 				s.pushNexPhase(phaseExecutor, BINDINGS);
 			}
 			phaseExecutor.doNextStep();
@@ -807,3 +412,7 @@ class KeyDispatcher {
 		};
 	}
 }
+export {
+	KeyDispatcher
+}
+

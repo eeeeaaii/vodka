@@ -17,6 +17,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 
+import { ValueNex } from './valuenex.js'
+import { isNormallyHandled } from '/keyresponsefunctions.js'
+
 class Bool extends ValueNex {
 	constructor(val) {
 		if (val === 'true') {
@@ -53,37 +56,12 @@ class Bool extends ValueNex {
 		return true;
 	}
 
-	getKeyFunnel() {
-		return new BoolKeyFunnel(this);
-	}
-
 	renderValue() {
 		return this.value;
 	}
 
-	defaultHandle(txt) {
-		// old behavior is that you can't put a boolean inside a word,
-		// so it automatically makes a new word -- except you can, with things
-		// like cut and paste, and it should be possible anyway.
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-
-		if (isSeparator) {
-			manipulator.insertAfterSelectedAndSelect(new Separator(txt));
-		} else if (txt == 'y' || txt == 'Y') {
-			this.setValue('yes');
-		} else if (txt == 'n' || txt == 'N') {
-			this.setValue('no');
-		} else {
-			let letter = new Letter(txt);
-			manipulator.insertAfterSelectedAndSelect(new Word())
-				&& manipulator.appendAndSelect(letter);
-
-		}
-		return true;
+	getDefaultHandler() {
+		return 'modifyBoolOrInsert';
 	}
 
 	getEventTable(context) {
@@ -95,3 +73,8 @@ class Bool extends ValueNex {
 		}
 	}
 }
+
+
+
+export { Bool }
+

@@ -45,8 +45,10 @@ TESTS TO-DO
 - - to-word/to-float
 - - eval
 - - others?
+- - error propagation (for example, error in args to a method)
 
 SERVER/FILES TO DO
+- I need to be able to save and load tags!!!
 - saving a file with an error in it only saves the top-level error not the enclosed errors.
 - implement authentication/usernames/something and make it so each user saves/loads files from their private location
 - make it so library files like util-functions, etc., are loaded from a global place that can't be modified, but that if you've done git pull and are modifying the source, there's a way you can pass a flag or something so that those files CAN be modified
@@ -97,6 +99,9 @@ USER INPUT TO DO
 - make one level of undo at least
 - editor for command is especially impt because it's diff from lambda now
 - figure out what actually happens with lambdas that have incorrectly specified args (make it so the editor will not allow you to input incorrect args?)
+- make it so that the "package" command SAVES the package file and runs it. However when you use "import" it looks to see if the top level element in the loaded file is a package. If it's not,
+it's an error, otherwise it runs the package but suppresses the part where it saves it
+(maybe by just appending an optional param or something before evaluating it)
 
 PERFORMANCE TO DO
 - instanceof checks are slow, for nexes instead compare to getTypeName()

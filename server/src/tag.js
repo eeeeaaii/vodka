@@ -86,3 +86,6 @@ class TagEditor {
 		return null;
 	}
 }
+
+export { Tag, TagEditor  }
+

@@ -39,6 +39,8 @@ const RENDER_PRIORITY = 2;
 const ALERT_ANIMATION_PRORITY = 3;
 const GC_PRIORITY = 4;
 
+import * as Vodka from '/vodka.js'
+
 class EventQueue {
 	constructor() {
 		this.queueSet = [];
@@ -50,7 +52,7 @@ class EventQueue {
 	}
 
 	enqueueAlertAnimation(renderNode) {
-		EVENT_DEBUG ? console.log('enqueueing: AlertAnimation'):null;
+		Vodka.EVENT_DEBUG ? console.log('enqueueing: AlertAnimation'):null;
 		let item = {
 			action: "doAlertAnimation",
 			shouldDedupe: true,
@@ -70,7 +72,7 @@ class EventQueue {
 	}
 
 	enqueueRenderNodeRenderSelecting(renderNode, flags, selectThisNode) {
-		EVENT_DEBUG ? console.log('enqueueing: RenderNodeRenderSelecting'):null;
+		Vodka.EVENT_DEBUG ? console.log('enqueueing: RenderNodeRenderSelecting'):null;
 		let item = {
 			action: "renderNodeRenderSelecting",
 			shouldDedupe: true,
@@ -96,7 +98,7 @@ class EventQueue {
 	}
 
 	enqueueRenderNodeRender(renderNode, flags) {
-		EVENT_DEBUG ? console.log('enqueueing: RenderNodeRender'):null;
+		Vodka.EVENT_DEBUG ? console.log('enqueueing: RenderNodeRender'):null;
 		let item = {
 			action: "renderNodeRender",
 			renderNode: renderNode,
@@ -110,7 +112,7 @@ class EventQueue {
 					&& other.flags == this.flags;
 			},
 			do: function() {
-				renderPassNumber++;
+				Vodka.setGlobalRenderPassNumber(Vodka.getGlobalRenderPassNumber() + 1);
 				this.renderNode.render(this.flags);
 			}
 		};
@@ -119,7 +121,7 @@ class EventQueue {
 	}
 
 	enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
-		EVENT_DEBUG ? console.log('enqueueing: DoKeyInput'):null;
+		Vodka.EVENT_DEBUG ? console.log('enqueueing: DoKeyInput'):null;
 		let item = {
 			action: "doKeyInput",
 			keycode: keycode,
@@ -131,7 +133,7 @@ class EventQueue {
 			shouldDedupe: false,
 			equals: null, // not needed when shouldDedupe = false
 			do: function() {
-				doRealKeyInput(this.keycode, this.whichkey, this.hasShift, this.hasCtrl, this.hasMeta, this.hasAlt);
+				Vodka.doRealKeyInput(this.keycode, this.whichkey, this.hasShift, this.hasCtrl, this.hasMeta, this.hasAlt);
 			}
 		};
 		this.queueSet[USER_EVENT_PRIORITY].push(item);
@@ -139,7 +141,7 @@ class EventQueue {
 	}
 
 	enqueueTopLevelRenderSelectingNode(nex) {
-		EVENT_DEBUG ? console.log('enqueueing: TopLevelRenderSelectingNode'):null;
+		Vodka.EVENT_DEBUG ? console.log('enqueueing: TopLevelRenderSelectingNode'):null;
 		let item = {
 			action: "topLevelRenderSelectingNode",
 			nex: nex,
@@ -150,7 +152,7 @@ class EventQueue {
 					&& other.nex.getID() == this.nex.getID();
 			},
 			do: function() {
-				topLevelRenderSelectingNode(this.nex);
+				Vodka.topLevelRenderSelectingNode(this.nex);
 			}
 		};
 		this.queueSet[RENDER_PRIORITY].push(item);
@@ -158,7 +160,7 @@ class EventQueue {
 	}
 
 	enqueueImportantTopLevelRender() {
-		EVENT_DEBUG ? console.log('enqueueing: ImportantTopLevelRender'):null;
+		Vodka.EVENT_DEBUG ? console.log('enqueueing: ImportantTopLevelRender'):null;
 		let item = {
 			action: "topLevelRender",
 			shouldDedupe: true,
@@ -167,7 +169,7 @@ class EventQueue {
 				other.action == this.action;
 			},
 			do: function() {
-				topLevelRender();
+				Vodka.topLevelRender();
 			}
 		};
 		// push to the user event queue because higher priority
@@ -176,7 +178,7 @@ class EventQueue {
 	}
 
 	enqueueDoClickHandlerAction(target, renderNode, event) {
-		EVENT_DEBUG ? console.log('enqueueing: DoClickHandlerAction'):null;
+		Vodka.EVENT_DEBUG ? console.log('enqueueing: DoClickHandlerAction'):null;
 		let item = {
 			action: "doClickHandlerAction",
 			target: target,
@@ -194,7 +196,7 @@ class EventQueue {
 	}
 
 	enqueueExpectationFulfill(exp, result) {
-		EVENT_DEBUG ? console.log('enqueueing: ExpectationFulfill'):null;
+		Vodka.EVENT_DEBUG ? console.log('enqueueing: ExpectationFulfill'):null;
 		let item = {
 			action: "expectationFulfill",
 			exp: exp,
@@ -212,7 +214,7 @@ class EventQueue {
 	// this is actually pretty generic but the point is that it gets put
 	// at exception priority
 	enqueueExpectationCallback(callback, result) {
-		EVENT_DEBUG ? console.log('enqueueing: ExpectationCallback'):null;
+		Vodka.EVENT_DEBUG ? console.log('enqueueing: ExpectationCallback'):null;
 		let item = {
 			action: "expectationCallback",
 			result: result,
@@ -228,7 +230,7 @@ class EventQueue {
 	}
 
 	enqueueTopLevelRender() {
-		EVENT_DEBUG ? console.log('enqueueing: TopLevelRender'):null;
+		Vodka.EVENT_DEBUG ? console.log('enqueueing: TopLevelRender'):null;
 		let item = {
 			action: "topLevelRender",
 			shouldDedupe: true,
@@ -236,7 +238,7 @@ class EventQueue {
 				return other.action == this.action;
 			},
 			do: function() {
-				topLevelRender();
+				Vodka.topLevelRender();
 			}
 		};
 		this.queueSet[RENDER_PRIORITY].push(item);
@@ -244,7 +246,7 @@ class EventQueue {
 	}
 
 	enqueueGC() {
-		EVENT_DEBUG ? console.log('enqueueing: GC'):null;
+		Vodka.EVENT_DEBUG ? console.log('enqueueing: GC'):null;
 		let item = {
 			action: "gc",
 			shouldDedupe: true,
@@ -279,7 +281,7 @@ class EventQueue {
 		let queueToUse = this.selectQueue();
 		if (!queueToUse) return;
 		let item = queueToUse.shift();
-		EVENT_DEBUG ? console.log(`processing: ${item.action}`):null;
+		Vodka.EVENT_DEBUG ? console.log(`processing: ${item.action}`):null;
 		// if a bunch of equivalent actions were enqueued, pop them all and just do one
 		while(queueToUse.length > 0 && queueToUse[0].shouldDedupe && queueToUse[0].equals(item)) {
 			queueToUse.shift();
@@ -288,3 +290,6 @@ class EventQueue {
 		this.setTimeoutForProcessingNextItem();
 	}
 }
+
+export { EventQueue }
+

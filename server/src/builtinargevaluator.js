@@ -15,6 +15,13 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { evaluateNexSafely } from '/evaluator.js'
+import { manipulator } from '/vodka.js'
+import { Word } from '/nex/word.js'
+import { EError } from '/nex/eerror.js'
+import * as Utils from '/utils.js'
+import { ERROR_TYPE_FATAL} from '/nex/eerror.js'
+
 
 
 class BuiltinArgEvaluator {
@@ -99,7 +106,7 @@ class BuiltinArgEvaluator {
 		let arg = this.argContainer.getArgAt(i);
 		if (!param.skipeval) {
 			arg = evaluateNexSafely(arg, this.executionEnvironment, param.skipactivate);
-			if (isFatalError(arg)) {
+			if (Utils.isFatalError(arg)) {
 				throw wrapError('&szlig;', `${this.name}: fatal error in argument ${i + 1} (expected type ${param.type}), cannot continue. Sorry!`, arg);
 			}
 		}
@@ -119,6 +126,27 @@ class BuiltinArgEvaluator {
 		for (let i = 0; i < this.argContainer.numArgs(); i++) {
 			this.processSingleArg(i);
 		}
+	}
+
+	putArgsInJSArray() {
+		let r = [];
+		for (let i = 0; i < this.params.length; i++) {
+			let param = this.params[i];
+			if (param.variadic) {
+				let r2 = [];
+				for (let j = i; j < this.argContainer.numArgs(); j++) {
+					r2.push(this.argContainer.getArgAt(j));
+				}
+				r.push(r2);
+			} else if (param.optional) {
+				if (i < this.argContainer.numArgs()) {
+					r.push(this.argContainer.getArgAt(i));
+				}
+			} else {
+				r.push(this.argContainer.getArgAt(i));
+			}
+		}
+		return r;
 	}
 
 	bindArgs(scope) {
@@ -151,7 +179,7 @@ class BuiltinArgEvaluator {
 
 BuiltinArgEvaluator.ARG_VALIDATORS = {
 	'*': arg => true,
-	'NexContainer': arg => (arg instanceof NexContainer),
+	'NexContainer': arg => (arg.isNexContainer()),
 	'Bool': arg => (arg.getTypeName() == '-bool-'),
 	'Command': arg => (arg.getTypeName() == '-command-'),
 	'Expectation': arg => (arg.getTypeName() == '-expectation-'),
@@ -172,3 +200,6 @@ BuiltinArgEvaluator.ARG_VALIDATORS = {
 	'Lambda': arg => (arg.getTypeName() == '-lambda-'),
 	'Closure': arg => (arg.getTypeName() == '-closure-'),
 };
+
+export { BuiltinArgEvaluator }
+

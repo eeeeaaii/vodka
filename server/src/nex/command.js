@@ -15,6 +15,19 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { NexContainer } from './nexcontainer.js'
+import { manipulator } from '/vodka.js'
+import { isNormallyHandled } from '/keyresponsefunctions.js'
+import { BUILTINS, PERFORMANCE_MONITOR } from '/vodka.js'
+import { EError } from './eerror.js'
+import { CopiedArgContainer } from '/argcontainer.js'
+import { Closure } from './closure.js'
+import { ContextType } from '/contexttype.js'
+import { evaluateNexSafely } from '/evaluator.js'
+import * as Vodka from '/vodka.js'
+
+// remove with deprecated defaultHandle
+import { Letter } from './letter.js'
 
 
 class Command extends NexContainer {
@@ -58,8 +71,50 @@ class Command extends NexContainer {
 		return r;
 	}
 
-	toString() {
+	toString(version) {
+		if (version == 'v2') {
+			return this.toStringV2();
+		}
 		return `~"${this.commandtext}"${this.vdir ? 'v' : 'h'}(${super.childrenToString()}~)`;
+	}
+
+	convertMathToV2String(val) {
+		switch(val) {
+			case '*': return '::ti::';
+			case '/': return '::ov::';
+			case '+': return '::pl::';
+			case '=': return '::eq::';
+			case '<': return '::lt::';
+			case '>': return '::gt::';
+			case '<=': return '::lte::';
+			case '>=': return '::gte::';
+			case '<>': return '::ne::';
+			default: return val;
+		}
+	}
+
+	static convertV2StringToMath(val) {
+		switch(val) {
+			case '::ti::': return '*' ;
+			case '::ov::': return '/' ;
+			case '::pl::': return '+' ;
+			case '::eq::': return '=' ;
+			case '::lt::': return '<' ;
+			case '::gt::': return '>' ;
+			case '::lte::': return '<=' ;
+			case '::gte::': return '>=' ;
+			case '::ne::': return '<>' ;
+			default: return val;
+		}
+	}
+
+	serializeV2PrivateData() {
+		return `${this.vdir ? 'v' : 'h'}`;
+	}
+
+
+	toStringV2() {
+		return `~(${this.convertMathToV2String(this.commandtext)}${this.numChildren() ? ' ' : ''}${super.childrenToString('v2')})`;		
 	}
 
 	copyFieldsTo(nex) {
@@ -70,10 +125,6 @@ class Command extends NexContainer {
 
 	debugString() {
 		return `(~${this.commandtext} ${super.childrenDebugString()})`;
-	}
-
-	getKeyFunnel() {
-		return new CommandKeyFunnel(this);
 	}
 
 	isLambdaCommand(env) {
@@ -103,7 +154,7 @@ class Command extends NexContainer {
 	doAlertAnimation(lambda) {
 		let rn = lambda.getRenderNodes();
 		for (let i = 0; i < rn.length; i++) {
-			eventQueue.enqueueAlertAnimation(rn[i]);
+			Vodka.eventQueue.enqueueAlertAnimation(rn[i]);
 		}
 	}
 
@@ -117,8 +168,8 @@ class Command extends NexContainer {
 	// it is also used to look up symbol bindings
 
 	evaluate(executionEnv) {
-		pushStackLevel();
-		stackCheck(); // not for step eval, this is to prevent call stack overflow.
+		Vodka.pushStackLevel();
+		Vodka.stackCheck(); // not for step eval, this is to prevent call stack overflow.
 
 		// we need a closure, we need a name to use for error messages, and we need to know if skip first arg.
 		let closure = null;
@@ -165,9 +216,9 @@ class Command extends NexContainer {
 			cmdname = `<br>*** unnamed function, function body follows **** <br>${closure.getLambda().debugString()}<br>*** end function body ***<br>`;
 		}
 
-		if (CONSOLE_DEBUG) {
-			console.log(`${INDENT()}evaluating command: ${this.debugString()}`);
-			console.log(`${INDENT()}closure is: ${closure.debugString()}`);
+		if (Vodka.CONSOLE_DEBUG) {
+			console.log(`${Vodka.INDENT()}evaluating command: ${this.debugString()}`);
+			console.log(`${Vodka.INDENT()}closure is: ${closure.debugString()}`);
 		}
 		// the arg container holds onto the args and is used by the arg evaluator.
 		// I think this is useful for step eval but I can't remember
@@ -176,20 +227,20 @@ class Command extends NexContainer {
 		// the job of the evaluator is to evaluate the args AND bind them to variables in the new scope.
 		let argEvaluator = closure.getArgEvaluator(cmdname, argContainer, executionEnv);
 		argEvaluator.evaluateArgs();
-		if (PERFORMANCE_MONITOR) {
-			perfmon.logMethodCallStart(closure.getCmdName());
+		if (Vodka.PERFORMANCE_MONITOR) {
+			Vodka.perfmon.logMethodCallStart(closure.getCmdName());
 		}
 		this.doAlertAnimation(closure.getLambda());
 		// actually run the code.
 		this.notReallyCachedClosure = closure;
 		let r = closure.executor(executionEnv, argEvaluator, cmdname, this.tags);
-		if (PERFORMANCE_MONITOR) {
-			perfmon.logMethodCallEnd(closure.getCmdName());
+		if (Vodka.PERFORMANCE_MONITOR) {
+			Vodka.perfmon.logMethodCallEnd(closure.getCmdName());
 		}
-		if (CONSOLE_DEBUG) {
-			console.log(`${INDENT()}command returned: ${r.debugString()}`);
+		if (Vodka.CONSOLE_DEBUG) {
+			console.log(`${Vodka.INDENT()}command returned: ${r.debugString()}`);
 		}
-		popStackLevel();
+		Vodka.popStackLevel();
 		return r;
 	}
 
@@ -200,7 +251,7 @@ class Command extends NexContainer {
 	renderInto(renderNode, renderFlags) {
 		let domNode = renderNode.getDomNode();
 		let codespan = null;
-		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+		if (!(renderFlags & Vodka.RENDER_FLAG_SHALLOW)) {
 			codespan = document.createElement("span");
 			codespan.classList.add('codespan');
 			domNode.appendChild(codespan);
@@ -208,8 +259,8 @@ class Command extends NexContainer {
 		super.renderInto(renderNode, renderFlags); // will create children
 		domNode.classList.add('command');
 		domNode.classList.add('codelist');
-		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-			if (renderFlags & RENDER_FLAG_EXPLODED) {
+		if (!(renderFlags & Vodka.RENDER_FLAG_SHALLOW)) {
+			if (renderFlags & Vodka.RENDER_FLAG_EXPLODED) {
 				codespan.classList.add('exploded');
 			} else {
 				codespan.classList.remove('exploded');
@@ -335,3 +386,5 @@ class Command extends NexContainer {
 		};
 	}
 }
+
+export { Command }

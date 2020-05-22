@@ -15,6 +15,9 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { NexContainer } from './nexcontainer.js'
+import { ContextType } from '/contexttype.js'
+
 class Root extends NexContainer {
 	constructor(attached) {
 		super();
@@ -47,10 +50,6 @@ class Root extends NexContainer {
 		return ContextType.COMMAND;
 	}
 
-	getKeyFunnel() {
-		return new RootKeyFunnel(this);
-	}
-
 	renderInto(renderNode, renderFlags) {
 		let domNode = renderNode.getDomNode();
 		super.renderInto(renderNode, renderFlags);
@@ -58,3 +57,6 @@ class Root extends NexContainer {
 	}
 
 }
+
+export { Root }
+

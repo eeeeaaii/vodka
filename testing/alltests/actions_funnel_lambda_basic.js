@@ -20,125 +20,37 @@ var harness = require('../testharness');
 
 var testactions = [];
 
-testactions.push({
-		type:'keydown',
-		code:'ShiftLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyH'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ShiftLeft'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyH'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyE'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyL'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyE'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyL'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyL'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyL'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyO'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyO'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ShiftLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Digit7'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Digit7'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ShiftLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Space'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Space'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyA'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyA'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyN'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyD'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyN'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Space'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyD'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Space'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyS'
-	});
-testactions.push({
-		type:'keydown',
-		code:'KeyO'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyS'
-	});
-testactions.push({
-		type:'keyup',
-		code:'KeyO'
-	});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'KeyH'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keyup',code:'KeyH'});
+testactions.push({type:'keydown',code:'KeyE'});
+testactions.push({type:'keydown',code:'KeyL'});
+testactions.push({type:'keyup',code:'KeyE'});
+testactions.push({type:'keyup',code:'KeyL'});
+testactions.push({type:'keydown',code:'KeyL'});
+testactions.push({type:'keyup',code:'KeyL'});
+testactions.push({type:'keydown',code:'KeyO'});
+testactions.push({type:'keyup',code:'KeyO'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Digit7'});
+testactions.push({type:'keyup',code:'Digit7'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Space'});
+testactions.push({type:'keyup',code:'Space'});
+testactions.push({type:'keydown',code:'KeyA'});
+testactions.push({type:'keyup',code:'KeyA'});
+testactions.push({type:'keydown',code:'KeyN'});
+testactions.push({type:'keydown',code:'KeyD'});
+testactions.push({type:'keyup',code:'KeyN'});
+testactions.push({type:'keydown',code:'Space'});
+testactions.push({type:'keyup',code:'KeyD'});
+testactions.push({type:'keyup',code:'Space'});
+testactions.push({type:'keydown',code:'KeyS'});
+testactions.push({type:'keydown',code:'KeyO'});
+testactions.push({type:'keyup',code:'KeyS'});
+testactions.push({type:'keyup',code:'KeyO'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
 
 harness.runTest(testactions, 'direct');

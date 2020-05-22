@@ -18,7 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 const hb = require("handlebars");
 const fs = require('fs');
 
-console.log("hi");
+// is this used?
 
 var data = fs.readFileSync("./testoutput.tmpl");
 var tmpl = hb.compile('' + data);

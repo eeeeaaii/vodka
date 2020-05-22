@@ -15,7 +15,10 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-NEXT_NEX_ID = 0;
+let NEXT_NEX_ID = 0;
+
+import * as Vodka from '/vodka.js'
+import { manipulator } from '/vodka.js'
 
 class Nex {
 	constructor() {
@@ -40,6 +43,18 @@ class Nex {
 		return this.toString();
 	}
 
+	writeV2PrivateData() {
+		let s = this.serializeV2PrivateData();
+		if (s) {
+			return '|SP|' + s + '|EP|'
+		}
+		return '';
+	}
+
+	serializeV2PrivateData() {
+		return '';
+	}
+
 	getTypeName() {
 		throw new Error("only leaf types have names");
 	}
@@ -60,19 +75,23 @@ class Nex {
 		return false;
 	}
 
+	isNexContainer() {
+		return false;
+	}
+
 	doRenderSequencing(renderNode) {
-		if (appFlags['otags'] || this.lastRenderPassNumber == renderPassNumber) {
+		if (Vodka.getGlobalAppFlag('otags') || this.lastRenderPassNumber == Vodka.getGlobalRenderPassNumber()) {
 			// this node has been rendered before in this pass!
 			// if this is the first dupe, we go back to the first one
 			// and prepend the object tag.
-			if (appFlags['otags'] || this.rendernodes.length == 1) {
+			if (Vodka.getGlobalAppFlag('otags') || this.rendernodes.length == 1) {
 				this.prependObjectTag(this.rendernodes[0]);
 			}
 			this.rendernodes.push(renderNode);
 			this.prependObjectTag(renderNode);
 		} else {
 			this.rendernodes = [ renderNode ];
-			this.lastRenderPassNumber = renderPassNumber;
+			this.lastRenderPassNumber = Vodka.getGlobalRenderPassNumber();
 			// for now we assume there will be only one render,
 			// do not prepend.
 		}
@@ -80,22 +99,22 @@ class Nex {
 
 	renderOnlyThisNex(selectThisNode) {
 		for (let i = 0; i < this.rendernodes.length; i++) {
-			let flags = current_default_render_flags;
-			flags &= (~RENDER_FLAG_NORMAL);
-			flags &= (~RENDER_FLAG_EXPLODED);
+			let flags = current_default_Vodka.render_flags;
+			flags &= (~Vodka.RENDER_FLAG_NORMAL);
+			flags &= (~Vodka.RENDER_FLAG_EXPLODED);
 
 			if (selectThisNode) {
-				eventQueue.enqueueRenderNodeRenderSelecting(
+				Vodka.eventQueue.enqueueRenderNodeRenderSelecting(
 						this.rendernodes[i],
 						flags
-						| (this.rendernodes[i].isExploded() ? RENDER_FLAG_EXPLODED : RENDER_FLAG_NORMAL)
+						| (this.rendernodes[i].isExploded() ? Vodka.RENDER_FLAG_EXPLODED : Vodka.RENDER_FLAG_NORMAL)
 						,
 						selectThisNode);
 			} else {
-				eventQueue.enqueueRenderNodeRender(
+				Vodka.eventQueue.enqueueRenderNodeRender(
 						this.rendernodes[i],
 						flags
-						| (this.rendernodes[i].isExploded() ? RENDER_FLAG_EXPLODED : RENDER_FLAG_NORMAL)
+						| (this.rendernodes[i].isExploded() ? Vodka.RENDER_FLAG_EXPLODED : Vodka.RENDER_FLAG_NORMAL)
 						);
 			}
 		}
@@ -220,14 +239,9 @@ class Nex {
 		return this.currentStyle;
 	}
 
-	getInputFunnel() {
-		if (!this.keyfunnel) {
-			this.keyfunnel = this.getKeyFunnel();
-		}
-		return this.keyfunnel;
+	getDefaultHandler() {
+		return null;
 	}
-
-	getKeyFunnel() {}
 
 	// can return null if user clicks on some other thing
 	getParentNexOfDomElement(elt) {
@@ -239,7 +253,7 @@ class Nex {
 
 	_setClickHandler(renderNode) {
 		renderNode.getDomNode().onmousedown = (event) => {
-			eventQueue.enqueueDoClickHandlerAction(this, renderNode, event)
+			Vodka.eventQueue.enqueueDoClickHandlerAction(this, renderNode, event)
 			event.stopPropagation();
 		};
 	}
@@ -250,43 +264,43 @@ class Nex {
 			return;
 		}
 		let parentNexDomElt = this.getParentNexOfDomElement(e.target);
-		if (selectedNode.getDomNode() == parentNexDomElt) {
+		if (Vodka.getGlobalSelectedNode().getDomNode() == parentNexDomElt) {
 			return;
 		}
 		let insertAfterRemove = false;
-		let oldSelectedNode = selectedNode;
-		if ((selectedNode.getNex() instanceof EString
-			|| selectedNode.getNex() instanceof EError)
-				&& selectedNode.getNex().getMode() == MODE_EXPANDED) {
-			selectedNode.getNex().finishInput();
-		} else if (selectedNode.getNex() instanceof InsertionPoint) {
+		let oldSelectedNode = Vodka.getGlobalSelectedNode();
+		if ((Vodka.getGlobalSelectedNode().getNex().getTypeName() == '-estring-'
+			|| Vodka.getGlobalSelectedNode().getNex().getTypeName() == '-eerror-')
+				&& Vodka.getGlobalSelectedNode().getNex().getMode() == MODE_EXPANDED) {
+			Vodka.getGlobalSelectedNode().getNex().finishInput();
+		} else if (Vodka.getGlobalSelectedNode().getNex().getTypeName() == '-insertionpoint-') {
 			insertAfterRemove = true;
 		}
 
 		e.stopPropagation();
 		renderNode.setSelected(false /*shallow-rerender*/);
-		if (insertAfterRemove && selectedNode != oldSelectedNode) {
+		if (insertAfterRemove && Vodka.getGlobalSelectedNode() != oldSelectedNode) {
 			manipulator.removeNex(oldSelectedNode);
 		}
-		eventQueue.enqueueImportantTopLevelRender();
+		Vodka.eventQueue.enqueueImportantTopLevelRender();
 	}
 
 	renderInto(renderNode, renderFlags) {
 		let domNode = renderNode.getDomNode();
-		if (!(renderFlags & RENDER_FLAG_RERENDER)) {
+		if (!(renderFlags & Vodka.RENDER_FLAG_RERENDER)) {
 			this._setClickHandler(renderNode);
 		}
 		domNode.classList.add('nex');
 
-		if (renderFlags & RENDER_FLAG_SELECTED) {
+		if (renderFlags & Vodka.RENDER_FLAG_SELECTED) {
 			domNode.classList.add('selected');		
 		}
-		let isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
+		let isExploded = (renderFlags & Vodka.RENDER_FLAG_EXPLODED);
 		if (isExploded) {
 			domNode.classList.add('exploded');
 		}
 		domNode.setAttribute("style", this.currentStyle);
-		if (renderFlags & RENDER_FLAG_DEPTH_EXCEEDED) {
+		if (renderFlags & Vodka.RENDER_FLAG_DEPTH_EXCEEDED) {
 			this.clearDomNode(domNode);
 		}
 	}
@@ -294,11 +308,11 @@ class Nex {
 	// actually is a domNode, not a renderNode
 	renderTags(domNode, renderFlags) {
 		if (
-			(renderFlags & RENDER_FLAG_SHALLOW)
-			&& (renderFlags & RENDER_FLAG_RERENDER)) {
+			(renderFlags & Vodka.RENDER_FLAG_SHALLOW)
+			&& (renderFlags & Vodka.RENDER_FLAG_RERENDER)) {
 			return;
 		}
-		let isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
+		let isExploded = (renderFlags & Vodka.RENDER_FLAG_EXPLODED);
 		for (let i = 0; i < this.tags.length; i++) {
 			this.tags[i].draw(domNode, isExploded);
 		}		
@@ -323,7 +337,10 @@ class Nex {
 	getEventOverride() {
 		return null;
 	}
-
 }
 
+if (typeof module !== 'undefined' && module.exports) module.exports = { Nex: Nex }
+
+
+export { Nex }
 

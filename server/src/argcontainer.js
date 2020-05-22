@@ -90,3 +90,5 @@ class NexChildArgContainer {
 	}
 }
 
+export { CopiedArgContainer }
+

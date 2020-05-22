@@ -38,3 +38,6 @@ class StepEvaluator {
 		selectedNode.doStep();
 	}
 }
+
+export { StepEvaluator }
+

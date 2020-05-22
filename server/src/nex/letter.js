@@ -15,7 +15,14 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { ContextType, ContextMapBuilder } from '/contexttype.js'
+import { Nex } from './nex.js'
+import { isNormallyHandled } from '/keyresponsefunctions.js'
+import { manipulator } from '/vodka.js'
 
+// remove with deprecated defaultHandle
+import { Separator } from './separator.js'
+import { KeyResponseFunctions } from '/keyresponsefunctions.js'
 
 class Letter extends Nex {
 	constructor(letter) {
@@ -71,14 +78,14 @@ class Letter extends Nex {
 		if (txt == '<') {
 			return false;
 		}
-		let isCommand = (context == ContextType.COMMAND);
+		let inWord = (context == ContextType.WORD);
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		if (isSeparator) {
-			if (isCommand) {
-				manipulator.insertAfterSelectedAndSelect(new Separator(txt));
+			if (inWord) {
+				KeyResponseFunctions['split-word-and-insert-separator'](txt);				
 			} else {
-				KeyResponseFunctions['split-word-and-insert-separator'](txt);
+				manipulator.insertAfterSelectedAndSelect(new Separator(txt));				
 			}
 		} else {
 			manipulator.insertAfterSelectedAndSelect(new Letter(txt));
@@ -93,8 +100,14 @@ class Letter extends Nex {
 			'ArrowDown': 'move-to-corresponding-letter-in-next-line',
 			'ArrowLeft': 'move-to-previous-leaf',
 			'ArrowRight': 'move-to-next-leaf',
-			'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
-			'Backspace': 'remove-selected-and-select-previous-leaf',
+			'ShiftBackspace' : new ContextMapBuilder()
+					.add(ContextType.DEFAULT, 'remove-selected-and-select-previous-sibling')
+					.add(ContextType.WORD, 'remove-selected-and-select-previous-leaf')
+					.build(),
+			'Backspace' : new ContextMapBuilder()
+					.add(ContextType.DEFAULT, 'remove-selected-and-select-previous-sibling')
+					.add(ContextType.WORD, 'remove-selected-and-select-previous-leaf')
+					.build(),
 			'Enter': 'do-line-break-after-letter',
 			// deprecated, change to insert-command-as-next-sibling
 			'~': 'legacy-insert-command-as-next-sibling-of-parent',
@@ -119,3 +132,6 @@ class Letter extends Nex {
 		}
 	}
 }
+
+export { Letter }
+

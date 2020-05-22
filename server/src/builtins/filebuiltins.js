@@ -15,6 +15,14 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Builtin } from '/nex/builtin.js'
+import { EError } from '/nex/eerror.js'
+import { Expectation } from '/nex/expectation.js'
+import { Nil } from '/nex/nil.js'
+import { ESymbol } from '/nex/esymbol.js'
+import * as Utils from '/utils.js'
+import { ERROR_TYPE_INFO } from '/nex/eerror.js'
+
 function createFileBuiltins() {
 
 	Builtin.createBuiltin(
@@ -39,6 +47,29 @@ function createFileBuiltins() {
 		}
 	);
 
+
+	Builtin.createBuiltin(
+		'save-v2',
+		[ '_name@', '_nex' ],
+		function(env, executionEnvironment) {
+			let namesym = env.lb('name');
+			let nm = namesym.getTypedValue();
+			let val = env.lb('nex');			
+			let exp = new Expectation();
+			exp.set(function(callback) {
+				return function() {
+					saveNexV2(nm, val, function(saveResult) {
+						callback(saveResult);
+					})
+				}
+			});
+			let savingMessage = new EError(`saving (in the file ${nm}) this data: ${val.debugString()}`);
+			savingMessage.setErrorType(ERROR_TYPE_INFO);
+			exp.appendChild(savingMessage)
+			return exp;
+		}
+	);
+
 	Builtin.createBuiltin(
 		'load',
 		[ '_name@' ],
@@ -49,6 +80,27 @@ function createFileBuiltins() {
 			exp.set(function(callback) {
 				return function() {
 					loadNex(nm, function(loadResult) {
+						callback(loadResult);
+					})
+				}
+			})
+			let loadingMessage = new EError(`loading the file ${nm}`);
+			loadingMessage.setErrorType(ERROR_TYPE_INFO);
+			exp.appendChild(loadingMessage)
+			return exp;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'load-v2',
+		[ '_name@' ],
+		function(env, executionEnvironment) {
+			let namesym = env.lb('name');
+			let nm = namesym.getTypedValue();
+			let exp = new Expectation();
+			exp.set(function(callback) {
+				return function() {
+					loadNexV2(nm, function(loadResult) {
 						callback(loadResult);
 					})
 				}
@@ -184,3 +236,6 @@ function createFileBuiltins() {
 
 
 }
+
+export { createFileBuiltins }
+

@@ -17,6 +17,17 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 
+
+import { ValueNex } from './valuenex.js'
+import { manipulator } from '/vodka.js'
+import { isNormallyHandled } from '/keyresponsefunctions.js'
+
+// remove with deprecated defaultHandle
+import { Word } from './word.js'
+import { Letter } from './letter.js'
+import { Separator } from './separator.js'
+
+
 class Nil extends ValueNex {
 	constructor() {
 		super('', '^', 'nil')
@@ -68,3 +79,8 @@ class Nil extends ValueNex {
 		}
 	}
 }
+
+
+
+export { Nil }
+

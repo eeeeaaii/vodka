@@ -15,9 +15,27 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-var ERROR_TYPE_FATAL = 0;
-var ERROR_TYPE_WARN = 1;
-var ERROR_TYPE_INFO = 2
+const ERROR_TYPE_FATAL = 0;
+const ERROR_TYPE_WARN = 1;
+const ERROR_TYPE_INFO = 2
+
+// deprecated
+const ESTRING_LIMIT = 20;
+// deprecated
+const MODE_NORMAL = 1;
+// deprecated
+const MODE_EXPANDED = 2;
+// deprecated
+const QUOTE_ESCAPE = 'QQQQ'
+
+
+import { NexContainer } from './nexcontainer.js'
+import { manipulator } from '/vodka.js'
+import { isNormallyHandled } from '/keyresponsefunctions.js'
+
+// remove with deprecated defaultHandle
+import { Separator } from './separator.js'
+import { Word } from './word.js'
 
 class EError extends NexContainer {
 	constructor(val, prefix) {
@@ -101,11 +119,6 @@ class EError extends NexContainer {
 
 	debugString() {
 		return '?"' + this.getFullTypedValue() + '"';
-	}
-
-
-	getKeyFunnel() {
-		return new EErrorKeyFunnel(this);
 	}
 
 	drawButton() {
@@ -223,3 +236,9 @@ class EError extends NexContainer {
 		};
 	}
 }
+
+
+
+
+export { EError, ERROR_TYPE_FATAL, ERROR_TYPE_INFO, ERROR_TYPE_WARN }
+

@@ -34,7 +34,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border-top: 1px solid black;
 	border-right: 1px solid black;
 	border-bottom: 1px solid black;
-	margin-right: -1px;
+	margin-right: -1px; /* why did I do this */
 }
 
 .line > .separator.exploded.selected {

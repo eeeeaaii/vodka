@@ -17,6 +17,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 
+//
+
+import { Nex } from './nex.js'
+
 class ValueNex extends Nex {
 	constructor(val, prefix, className) {
 		super();
@@ -70,3 +74,9 @@ class ValueNex extends Nex {
 		this.value = v;
 	}
 }
+
+
+
+
+export { ValueNex }
+

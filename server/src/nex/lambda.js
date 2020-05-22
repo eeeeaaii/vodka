@@ -15,6 +15,12 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { ContextType } from '/contexttype.js';
+import { NexContainer } from './nexcontainer.js';
+import { ParamParser } from '../paramparser.js';
+import { Closure } from './closure.js';
+import * as Vodka from '/vodka.js';
+
 class Lambda extends NexContainer {
 	constructor(val) {
 		super();
@@ -50,8 +56,15 @@ class Lambda extends NexContainer {
 		return false;
 	}
 
-	toString() {
+	toString(version) {
+		if (version == 'v2') {
+			return this.toStringV2();
+		}
 		return `&"${this.amptext}"${this.vdir ? 'v' : 'h'}(${super.childrenToString()}&)`;
+	}
+
+	toStringV2() {
+		return `&(${super.childrenToString()})`;
 	}
 
 	debugString() {
@@ -73,7 +86,7 @@ class Lambda extends NexContainer {
 	renderInto(renderNode, renderFlags) {
 		let domNode = renderNode.getDomNode();
 		let codespan = null;
-		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+		if (!(renderFlags & Vodka.RENDER_FLAG_SHALLOW)) {
 			codespan = document.createElement("span");
 			codespan.classList.add('codespan');
 			domNode.appendChild(codespan);
@@ -81,8 +94,8 @@ class Lambda extends NexContainer {
 		super.renderInto(renderNode, renderFlags);
 		domNode.classList.add('lambda');
 		domNode.classList.add('codelist');
-		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-			if (renderFlags & RENDER_FLAG_EXPLODED) {
+		if (!(renderFlags & Vodka.RENDER_FLAG_SHALLOW)) {
+			if (renderFlags & Vodka.RENDER_FLAG_EXPLODED) {
 				codespan.classList.add('exploded');
 			} else {
 				codespan.classList.remove('exploded');
@@ -140,10 +153,6 @@ class Lambda extends NexContainer {
 		}
 	}
 
-	getStepEvaluator(stepContainer, env) {
-		return new StepEvaluator(stepContainer, env);
-	}
-
 	getAmpText() {
 		return this.amptext;
 	}
@@ -169,37 +178,9 @@ class Lambda extends NexContainer {
 		return false;
 	}
 
-
-	defaultHandle(txt) {
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-		if (isSeparator) {
-			manipulator.appendAndSelect(new Separator(txt))
-		} else {
-			manipulator.appendAndSelect(new Letter(txt))
-		}
-		return true;
+	getDefaultHandler() {
+		return 'justAppendLetterOrSeparator';
 	}
-
-	// defaultHandle(txt) {
-	// 	if (this.doNotProcess(txt)) {
-	// 		return false;
-	// 	}
-	// 	let allowedKeyRegex = /^[a-zA-Z0-9-_ ]$/;
-	// 	if (allowedKeyRegex.test(txt)) {
-	// 		this.appendAmpText(txt);
-	// 	} else {
-	// 		if (this.hasChildren()) {
-	// 			manipulator.insertAfterSelectedAndSelect(new Letter(txt))
-	// 		} else {
-	// 			manipulator.appendAndSelect(new Letter(txt));
-	// 		}
-	// 	}
-	// 	return true;
-	// }
 
 	getEventTable(context) {
 		return {
@@ -219,12 +200,17 @@ class LambdaEditor {
 	routeKey(text) {
 		if (text == 'Enter') {
 			this._isEditing = false;
+			this.lambda.isEditing = false;			
+		} else if (text == 'Tab') {
+			this._isEditing = false;
 			this.lambda.isEditing = false;
+			return true; // reroute
 		} else if (text == 'Backspace') {
 			this.lambda.deleteLastAmpLetter();
 		} else if (/^.$/.test(text)) {
 			this.lambda.appendAmpText(text);
 		}
+		return false;
 	}
 
 	startEditing() {
@@ -245,4 +231,8 @@ class LambdaEditor {
 	}
 }
 
+
+
+
+export { Lambda, LambdaEditor }
 

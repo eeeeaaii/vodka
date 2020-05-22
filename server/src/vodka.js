@@ -15,6 +15,182 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Environment } from './environment.js'
+import { Manipulator } from './manipulator.js'
+import { StepEvaluator } from './stepevaluator.js'
+import { EventQueue } from './eventqueue.js'
+import { PerformanceMonitor } from './perfmon.js'
+import { GarbageCollector } from './gc.js'
+import { ContractEnforcer } from './contract.js'
+import { KeyDispatcher } from './keydispatcher.js'
+import { Autocomplete } from './autocomplete.js'
+import { createAsyncBuiltins } from './builtins/asyncbuiltins.js'
+import { createBasicBuiltins } from './builtins/basicbuiltins.js'
+import { createContractBuiltins } from './builtins/contractbuiltins.js'
+import { createEnvironmentBuiltins } from './builtins/environmentbuiltins.js'
+import { createFileBuiltins } from './builtins/filebuiltins.js'
+import { createLogicBuiltins } from './builtins/logicbuiltins.js'
+import { createMakeBuiltins } from './builtins/makebuiltins.js'
+import { createMathBuiltins } from './builtins/mathbuiltins.js'
+import { createNativeOrgs } from './builtins/nativeorgs.js'
+import { createStringBuiltins } from './builtins/stringbuiltins.js'
+import { createSyscalls } from './builtins/syscalls.js'
+import { createTagBuiltins } from './builtins/tagbuiltins.js'
+import { createTestBuiltins } from './builtins/testbuiltins.js'
+import { createTypeConversionBuiltins } from './builtins/typeconversions.js'
+import { RenderNode } from '/rendernode.js'
+import { Root } from '/nex/root.js'
+import { Doc } from '/nex/doc.js'
+
+var recording = false;
+var firstKeyUp = true; // ignore first key up of recorded session because it's the esc key
+var recorded_session = `
+var harness = require('../testharness');
+
+var testactions = [];
+
+`
+
+var session_end = `
+harness.runTestNew(testactions, 'direct');
+`
+var shorthand = '';
+
+function captureRecording() {
+	let session_output = `
+	// ${shorthand}
+	` + recorded_session + session_end;
+	navigator.clipboard.writeText(session_output);
+}
+
+var key_funnel_active = true;
+
+function deactivateKeyFunnel() {
+	key_funnel_active = false;
+}
+
+function activateKeyFunnel() {
+	key_funnel_active = true;
+}
+
+const UNHANDLED_KEY = 'unhandled_key'
+
+const EXPECTING_FIRST_DOWN  = 0;
+const EXPECTING_FIRST_UP    = 1;
+const EXPECTING_SECOND_DOWN = 2;
+const EXPECTING_SECOND_UP   = 3;
+const EXPECTING_THIRD_DOWN  = 4;
+const EXPECTING_THIRD_UP    = 5;
+const WILL_NOT_RECORD       = 6;
+const RECORDING             = 7;
+const RECORDING_DONE_EXPECTING_UP    = 8;
+const RECORDING_DONE    = 9;
+
+var state = EXPECTING_FIRST_DOWN;
+
+function checkRecordState(event, type) {
+	let kc = event.code;
+	switch(state) {
+		case EXPECTING_FIRST_DOWN:
+			if (kc == 'Escape' && type == 'down') {
+				state = EXPECTING_FIRST_UP;
+			} else {
+				state = WILL_NOT_RECORD;
+			}
+			break;
+		case EXPECTING_FIRST_UP:
+			if (kc == 'Escape' && type == 'up') {
+				state = EXPECTING_SECOND_DOWN;
+			} else {
+				state = WILL_NOT_RECORD;
+			}
+			break;
+		case EXPECTING_SECOND_DOWN:
+			if (kc == 'Escape' && type == 'down') {
+				state = EXPECTING_SECOND_UP;
+			} else {
+				state = WILL_NOT_RECORD;
+			}
+			break;
+		case EXPECTING_SECOND_UP:
+			if (kc == 'Escape' && type == 'up') {
+				state = EXPECTING_THIRD_DOWN;
+			} else {
+				state = WILL_NOT_RECORD;
+			}
+			break;
+		case EXPECTING_THIRD_DOWN:
+			if (kc == 'Escape' && type == 'down') {
+				state = EXPECTING_THIRD_UP;
+			} else {
+				state = WILL_NOT_RECORD;
+			}
+			break;
+		case EXPECTING_THIRD_UP:
+			if (kc == 'Escape' && type == 'up') {
+				state = RECORDING;
+			} else {
+				state = WILL_NOT_RECORD;
+			}
+			break;
+		case WILL_NOT_RECORD:
+			break;
+		case RECORDING:
+			if (kc == 'Escape' && type == 'down') {
+				state = RECORDING_DONE_EXPECTING_UP;
+				break;
+			}
+			switch(type) {
+			case 'up':
+				logKeyUpEvent(event);
+				break;
+			case 'down':
+				logKeyDownEvent(event);
+				break;
+			case 'mouse':
+				logMouseEvent(event);
+				break;
+			}
+			break;
+		case RECORDING_DONE_EXPECTING_UP:
+			if (kc == 'Escape' && type == 'up') {
+				state = RECORDING_DONE;
+				captureRecording();
+			} else {
+				state = WILL_NOT_RECORD;
+			}
+			break;
+		case RECORDING_DONE:
+			break;
+	}
+}
+
+
+function logMouseEvent(e) {
+	recorded_session += `testactions.push({
+		type:'click',
+		x:'${e.x}',
+		y:'${e.y}'
+	});
+`;	
+}
+function logKeyDownEvent(e) {
+	shorthand += '|' + e.key;
+	recorded_session += `testactions.push({
+		type:'keydown',
+		code:'${e.code}'
+	});
+`;	
+}
+function logKeyUpEvent(e) {
+	recorded_session += `testactions.push({
+		type:'keyup',
+		code:'${e.code}'
+	});
+`;	
+}
+
+
 // EXPERIMENTS
 
 // CONSTANTS
@@ -60,7 +236,7 @@ const BUILTINS = new Environment(null);
 const BINDINGS = BUILTINS.pushEnv();
 
 
-// global modules
+// global objects/singletons
 const manipulator = new Manipulator();
 const stepEvaluator = new StepEvaluator();
 const eventQueue = new EventQueue();
@@ -77,8 +253,6 @@ function dumpPerf() {
 function startPerf() {
 	perfmon.activate();
 }
-
-
 
 // GLOBAL FUNCTIONS
 // (not all of them)
@@ -115,7 +289,6 @@ function getAppFlags() {
 		appFlags[key] = value;
 	})
 }
-
 
 function doRealKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
 	let r = KEY_DISPATCHER.dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt);
@@ -190,10 +363,51 @@ function topLevelRenderSelectingNode(node) {
 	root.render(flags);
 }
 
+function getGlobalCurrentDefaultRenderFlags() {
+	return current_default_render_flags;
+}
+
+function setGlobalCurrentDefaultRenderFlags(f) {
+	current_default_render_flags = f;
+}
+
+function setGlobalSelectWhenYouFindIt(node) {
+	selectWhenYouFindIt = node;
+}
+
+function getGlobalSelectWhenYouFindIt() {
+	return selectWhenYouFindIt;
+}
+
+function setGlobalSelectedNode(newNode) {
+	selectedNode = newNode;
+}
+
+function getGlobalSelectedNode() {
+	return selectedNode;
+}
+
+function getGlobalAppFlag(flagname) {
+	return appFlags[flagname];
+}
+
+function setGlobalOverrideOnNextRender(t) {
+	overrideOnNextRender = t;
+}
+
+function setGlobalRenderPassNumber(n) {
+	renderPassNumber = n;
+}
+
+function getGlobalRenderPassNumber() {
+	return renderPassNumber;
+}
+
 // app main entry point
 
 function setup() {
-	// createBuiltins is defined in executors.js
+	// testharness.js needs this
+	window.doKeyInput = doKeyInput;
 	createBuiltins();
 	getAppFlags();
 	hiddenroot = new RenderNode(new Root(true));
@@ -231,3 +445,58 @@ function beep() {
     snd.play();
 }
 
+export {
+	setup,
+
+	dumpPerf,
+	startPerf,
+	resetStack,
+	pushStackLevel,
+	popStackLevel,
+	stackCheck,
+	INDENT,
+	getAppFlags,
+	setGlobalSelectedNode,
+	getGlobalSelectedNode,
+	topLevelRender,
+	nodeLevelRender,
+	topLevelRenderSelectingNode,
+	getGlobalSelectWhenYouFindIt,
+	setGlobalSelectWhenYouFindIt,
+	getGlobalAppFlag,
+	doRealKeyInput,
+	getGlobalCurrentDefaultRenderFlags,
+	setGlobalOverrideOnNextRender,
+	setGlobalCurrentDefaultRenderFlags,
+	getGlobalRenderPassNumber,
+	setGlobalRenderPassNumber,
+	deactivateKeyFunnel,
+	activateKeyFunnel,
+
+	doKeyInput,
+
+	// consts
+	UNHANDLED_KEY,
+	RENDER_FLAG_NORMAL,
+	RENDER_FLAG_SHALLOW,
+	RENDER_FLAG_EXPLODED,
+	RENDER_FLAG_RERENDER,
+	RENDER_FLAG_SELECTED,
+	RENDER_FLAG_REMOVE_OVERRIDES,
+	RENDER_FLAG_DEPTH_EXCEEDED,
+	CONSOLE_DEBUG,
+	EVENT_DEBUG,
+	PERFORMANCE_MONITOR,
+	MAX_RENDER_DEPTH,
+	BUILTINS,
+	BINDINGS,
+	manipulator,
+	stepEvaluator,
+	eventQueue,
+	KEY_DISPATCHER,
+	autocomplete,
+	perfmon,
+	gc,
+	beep
+
+}

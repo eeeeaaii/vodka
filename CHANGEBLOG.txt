@@ -1,9 +1,143 @@
-----------------------------------------------------------------------------------------
 
-April 29, 2020
+
+================================ closure-memory-problems-again ====================================
+
+
+---
+title: More Closure Memory Problems
+date: "2020-05-10T00:04:00.000Z"
+description: In which I realize I'm not out of the woods when it comes to copying closure memory...
+---
+
+Just hit what looks like a bad bug/oopsie. Again.
+
+This javascript code:
+
+```
+(function() {
+    let a = 10;
+    let b = function() {
+        a = 100;
+    };
+    b();
+    return a;
+})();
+```
+
+returns 100. The inner function gets its own scope, but the next-level-up scope refers to the
+scope in the parent, so running the inner function can change the value of this variable
+in the parent scope.
+
+This is how I remember this was supposed to work, from SICP.
+
+There is a Vodka test that runs equivalent code -- it's `functions_basic_set`, and the Vodka code is this:
+
+```
+~(
+  &(
+    ~(let @a #10)
+    ~(let @b &(
+      ~(set @a #100)
+    ))
+    ~(b)
+    @a
+  )
+)
+```
+
+This code returns 10. Dang. I changed ALL of this recently
+because of something else (also documented in previous entries in the blog). And I guess I broke this
+behavior.
+
+
+
+================================ moving-defaulthandler ====================================
+
+
+---
+title: Moving around defaultHandler
+date: "2020-05-10T00:00:00.000Z"
+description: In which I ramble about some refactoring I'm doing...
+---
+
+I've moved `defaultHandler` stuff into the new `keyresponsefunctions.js` file. The reason
+I did this is that I want to see all these functions together -- there's a lot of similarity
+and I think they can be boiled down into something that makes more sense. However
+it's not entirely clear what yet. Also it has to do with deps: if I don't do this,
+then practically every nex will have to depend on `Letter` and `Separator`, which doesn't
+really make sense from a logical standpoint. `keyresponsefunctions.js` already depends on
+ALL the nex types so this makes more sense.
+
+The `defaultHandler` code is really deprecated anyway. I think the best way to do this
+would be that each nex specifies, for keystrokes that don't fit into the category
+of "control keys" (like arrow, esc, tab, etc):
+- a regex indicating the keys it intercepts/responds directly to (e.g. for bools, that's 'y' and 'n')
+- an insertion strategy for keys it doesn't intercept (i.e. word-level, letter-level, etc - the
+  stuff I implemented to preserve doc structure)
+
+EXCEPT WAIT.
+- the `Doc` insertion stuff will eventually be handled by custom nexes implemented with orgs
+- when I start implementing accessibility features in earnest, we will need to think about what
+  'keystrokes' even mean, and in fact all editing of nexes will happen via editors (where the
+  editor type depends on input mode, so for strings there would a voice input mode and a
+  keyboard input mode)
+
+so - that said -- it's all deprecated. It's just all deprecated.
+
+SO MAYBE it would just be better to put in comments to that effect, PUT IN the unnecessary
+dependencies (mark THEM also as deprecated) and not bother spending a bunch of time fussing
+about it. Why refactor these methods when I'm going to be deleting them all hopefully soon?
+
+ALSO. Let's talk about editors for a second. I like that you don't have to press "enter"
+after editing a bool. How can I fix that? (The editor situation is garbage right now - for
+example, the string editor) I wonder if I can/should refactor the editor code so that
+certain editors just take ONE keystroke and then exit.
+
+
+
+====================== difference-between-builtin-foreign ===================================
+
+
+---
+title: The Difference Between Builtins and Foreign Lambdas
+date: "2020-05-09T00:00:00.000Z"
+description: In which I explain why I have two different ways to do the same thing...
+---
+
+Why did I create two different subtypes of `Lambda` that run javascript code? i.e.
+`Builtin` and `ForeignLambda`/`ForeignClosure`?
+
+`Builtin`s are meant to be part of the core language. They are bound at the root environment
+and are always in scope. They have full access to their args and can conditionally
+evaluate some or not evaluate some depending on whatever they want to do (c.f. conditional
+evaluation in `if` and, in the future, in `or`, `and`). They can return any Vodka
+data type, initialized in any way.
+
+Foreign functions have their function arguments automatically converted back and
+forth between js data types and Vodka data types. For this reason, some data types
+won't really translate. The same goes for their return values. They are not bound
+to anything globally and are meant to be used inside `NativeOrg`s, so not directly
+seen by the programmer. They can't return `EError`s (however I do have to think about
+how error handling will work with foreign functions, maybe they can return a specific
+error string or something).
+
+In a future world, I might open things up so that people could plug in their own
+extensions to Vodka by just dropping a JS file somewhere with functions in it. This
+would work via foreign functions rather than builtins.
+
+
+
+============================ storing-data-in-closures ===================================
+
+
+---
+title: Storing Data in Closures
+date: "2020-04-29T00:00:00.000Z"
+description: In which I decide that a JS bug was a Vodka bug...
+---
 
 I thought about it and I decided I'm willing to say that the problem with the stale closure
-from fade-in-for-seconds is the fault of the lisp programmer Jason, not the javascript programmer
+from `fade-in-for-seconds` is the fault of the Lisp programmer Jason, not the javascript programmer
 Jason. Closures really aren't a great place to store data. I'm just doing it this way
 because it's the only thing I have implemented, other than lists. I think it highlights for
 me the importance of getting orgs working. However I did have one thought: if it's possible
@@ -32,9 +166,15 @@ I guess I could write a function that reactivates any nodes that are not activat
 I am getting to the part of the development process where the right thing to do is
 not always obvious -- which is, I guess, why I'm writing this stuff down.
 
-----------------------------------------------------------------------------------------
 
-April 28, 2020 (entry 2)
+============================= copy-environment ======================================
+
+
+---
+title: Copying Environments
+date: "2020-04-28T00:00:06.000Z"
+description: More wrestling around copying environments.
+---
 
 When we copy an environment, we don't copy the environments of closures in the environment.
 
@@ -46,17 +186,17 @@ own memory space that can vary independently.
 Right? This is how we are able to have "lexical" environment. Each closure is generated
 from a different place in the source code.
 
-But when we copy expectations we can have subtle bugs. Currently, in animation-functions,
-when you call fade-in-for-seconds, do-on-every-for creates a closure with a local environment
-that captures a "val" variable which is supposed to encode the value to set the opacity to.
-That closure gets passed into do-on-every-for, and it's called 'f'.
+But when we copy expectations we can have subtle bugs. Currently, in `animation-functions`,
+when you call `fade-in-for-seconds`, `do-on-every-for` creates a closure with a local environment
+that captures a `val` variable which is supposed to encode the value to set the opacity to.
+That closure gets passed into `do-on-every-for`, and it's called `f`.
 
-do-on-every-for creates an expectation. That expectation has an ff-with closure.
-The ff-with closure has a local environment with a reference to 'f'.
+`do-on-every-for` creates an expectation. That expectation has an `ff-with` closure.
+The `ff-with` closure has a local environment with a reference to `f`.
 
-when the expectation returned by do-on-every-for is copied, its closure is copied,
+When the expectation returned by `do-on-every-for` is copied, its closure is copied,
 and that environment is copied. But the environment in the closure pointed to
-by 'f' is NOT copied, so the next time it's called, it still has the final value
+by `f` is NOT copied, so the next time it's called, it still has the final value
 that it had the last time the animation ran through from 0 to 1. So it will
 run through again, from 1 to 2.
 
@@ -69,9 +209,9 @@ justifiable. However the problem is that it's not just symbols in the environmen
 pointing to closures -- you could store a closure in a list, or in a list inside
 a list, etc. So I'll have to think about it.
 
-I'll also have to do an experiment in js or real lisp to verify my original assumption, i.e.
-the first sentence of this entry: When we copy an environment, we don't copy the environments
-of closures in the environment.
+I'll also have to do an experiment in JS or real Lisp to verify my original assumption, i.e.
+the first sentence of this entry: "when we copy an environment, we don't copy the environments
+of closures in the environment."
 
 I mean in both cases we are copying environments, but for different reasons:
 
@@ -84,18 +224,22 @@ activated or fulfilled later the program hasn't changed unexpectedly
 
 
 
+=========================== activation-function-generator ================================
 
-----------------------------------------------------------------------------------------
 
-April 28, 2020
+---
+title: Activation Function Generator
+date: "2020-04-28T00:00:00.000Z"
+description: Wrestling with some bugs around copied expectations that call async js functions.
+---
 
 Here's how I was going to deal with bridging between actual asyncronous javascript functions
 (like loading files, timeouts, etc) and expectations:
 
-- builtin calls getCallbackForSet, which returns a callback that fulfills the expectation
+- builtin calls `getCallbackForSet`, which returns a callback that fulfills the expectation
 - builtin makes its own javascript closure capturing necessary lexical environment which
   does something asyncronous (like load or save a file), then calls the callback
-- builtin makes a call to "set" passing the javascript closure it just made. That closure
+- builtin makes a call to `set` passing the javascript closure it just made. That closure
   is the "activation function". When activate is called, the activation function is called
   and the asyncronous process is kicked off.
 
@@ -107,6 +251,8 @@ way to copy a function in js.
 What I need the builtin to do is give this expectation an activation function generator.
 
 The builtin would call it like this:
+
+```
 let e = new Expectation();
 e.set(function(callback) {
   return function() {
@@ -115,13 +261,14 @@ e.set(function(callback) {
     });
   }
 })
+```
 
 So it's, annoyingly, three nested closures, but there's no way around it.
-Outer closure generates an activation function.
-Middle closure is the activation function, which gets called when the exp gets activated
-Inner closure is the callback from whatever async operation is being actually done.
+- Outer closure generates an activation function.
+- Middle closure is the activation function, which gets called when the exp gets activated
+- Inner closure is the callback from whatever async operation is being actually done.
 
-Also: Yesterday  I was dealing with trying to suppress activation of expectations in different places.
+Also: yesterday  I was dealing with trying to suppress activation of expectations in different places.
 I made a way to indicate suppressing activation in the param list of a function,
 but then I also made a way to suppress activation from the return value of a function.
 However I think this is bad.  It seems like you might get in a fight where a certain call site
@@ -129,40 +276,57 @@ has a return value set to skip activation but it's an arg that doesn't skip acti
 and it's hard to debug - precedence rules -- blah blah annoying and complicated.
 I think we might need to pick where we want to suppress activation.
 
-The current situation: the loop primitive doesn't work with fade-in (thought it might work with other ones).
-It's looping alright, but something about the way fade-in works is storing
+The current situation: the loop primitive doesn't work with `fade-in` (thought it might work with other ones).
+It's looping alright, but something about the way `fade-in` works is storing
 the opacity value in a closure somewhere so that every time it loops
 it keeps incrementing past one (I debugged after 20 iterations
 and it was setting the opacity to 20.183333)
 
-----------------------------------------------------------------------------------------
-
-April 25, 2020
-
-expectations are either activated when they are evaluated, or not. Every param to a function
-is evaluated of course but what if I had an equivalent to "skipeval"
-but just for expectations, like "skip activate"
-so it would be indicated by a comma instead of a * in the type signature.
 
 
-----------------------------------------------------------------------------------------
-April 20, 2020
 
-copying expectations sort of works but still doesn't work.
-Here's the code for do-on-every:
+================================= skip-activate ================================================
 
+
+---
+title: Skipping Activation
+date: "2020-04-25T00:00:00.000Z"
+description: A short post with some ideas around skipping activation of expectations.
+---
+
+Expectations are either activated when they are evaluated, or not. Every param to a function
+is evaluated of course, but what if I had an equivalent to "skipeval"
+but just for expectations, like "skip activate"?
+So it would be indicated by a comma instead of a * in the type signature.
+
+
+============================== copying-expectations ==========================================
+
+
+---
+title: Copying Expectations
+date: "2020-04-20T00:00:00.000Z"
+description: A continued analysis of the bug I was wrestling with in the previous blog entry.
+---
+
+Copying expectations sort of works but still doesn't work.
+
+Here's the code for `do-on-every`:
+
+```
 (& f nex interval
-	(~let @exp (~cons @nex (* )))
-	(~let @fff (& n
-		(~reset @exp)
-		(~ff-with @exp @fff)
-		(~set-delay @exp @interval)
-		(~f @n)
-	))
-	(~set-delay (~ff-with @exp @fff) @interval)
+  (~let @exp (~cons @nex (* )))
+  (~let @fff (& n
+    (~reset @exp)
+    (~ff-with @exp @fff)
+    (~set-delay @exp @interval)
+    (~f @n)
+  ))
+  (~set-delay (~ff-with @exp @fff) @interval)
 )
+```
 
-"reset" is not being called on the correct expectation. it has a stale pointer to
+"Reset" is not being called on the correct expectation. it has a stale pointer to
 some other expectation that is not the one that was copied.
 Which makes sense, because when we copy this expectation, we don't
 update anything that points to it.
@@ -176,32 +340,41 @@ Worse? Better? IDK, just wrong differently. Maybe better because it wouldn't
 fail as silently. This fails silently because the copied expectation is distinct
 but is still not the one on the screen.
 
-It could be fixed by having ff-with take the expectation as its argument
-rather than the contents of the expectation. The return value of ff-with
+It could be fixed by having `ff-with` take the expectation as its argument
+rather than the contents of the expectation. The return value of `ff-with`
 would still be the new contents of the expectation. It's just that you'd
 have to get the car if you didn't want to reset the expectation.
 
 I could put in some error checking to prevent you from accidentally returning
-the expectation from ff-with (this would be a common mistake and basically
-would always be wrong)
+the expectation from `ff-with` (this would be a common mistake and basically
+would always be wrong).
 
-this is a very flexible solution in that you could ostensibly do other things like
+This is a very flexible solution in that you could ostensibly do other things like
 chain the expectation to other things etc. Also the expectation itself is the
 "most you know" at fulfill time, i.e. you can't go higher to the parent but
-you do have a pointer to the expectation that is being fulfille	d.
+you do have a pointer to the expectation that is being fulfilled.
 
 I'm not sure I can think of a fancier/better solution.
 
 
-----------------------------------------------------------------------------------------
-April 19, 2020
+
+
+================================= multiple-closures ===========================================
+
+
+---
+title: Multiple Closures
+date: "2020-04-19T00:00:00.000Z"
+description: An analysis of a bug I ran into. Another blog entry that started life as a code comment.
+---
 
 When a function creates multiple closures, each one needs its own set of symbols
 that can vary independently.
 
+```
 let f = function() {
     let a = [];
-    for (let i = 0;i < 10; i++) {
+    for (let i = 0; i < 10; i++) {
         let r = Math.random();
         a.push(function() {
             console.log(r);
@@ -213,9 +386,11 @@ let m = f();
 m[0](); // prints 0.4358334282486591
 m[1](); // prints 0.8695053811494855
 m[0](); // prints 0.4358334282486591
+```
 
 When we do copy, we can make shallow copies - example:
 
+```
 let f = function() {
    let a = [1, 2, 3];
    let funcs = [];
@@ -232,11 +407,11 @@ let fs = f();
 fs[0](); // prints 1
 fs[3](); // prints 0
 fs[0](); // prints 3
+```
 
 Each function gets its own private copy of a that it can modify, but the contents of a are shared.
 
-
-/*
+```
 let f = function() {
     let a = [];
     for (let i = 0;i < 10; i++) {
@@ -254,19 +429,27 @@ m[1]();
  // prints 0.8695053811494855
 m[0]();
  // prints 0.4358334282486591
+```
 
-the lambda needs to return a closure when it is evaluated
-a closure needs to be a separate object
-a closure has a pointer to an environment
-the environment that it points to is a copy, going ALL THE WAY UP THE STACK TO THE ROOT
+- the lambda needs to return a closure when it is evaluated
+- a closure needs to be a separate object
+- a closure has a pointer to an environment
+- the environment that it points to is a copy, going ALL THE WAY UP THE STACK TO THE ROOT
 of the environment that existed at the time the lambda was evaluated
 
-----------------------------------------------------------------------------------------
-April 15, 2020
 
 
-here's my type system:
 
+====================================== type-system ===========================================
+
+
+---
+title: Type System Ideas
+date: "2020-04-15T12:00:00.0Z"
+description: More of a checklist than a blog entry. This blog entry started out as a comment in the code.
+---
+
+Here's my type system:
 
 DONE - a tag is an identifier associated with a program element
 
@@ -283,8 +466,7 @@ and use the first one that works (note: need to think more about this because wh
 
 DONE - It is not an error if the returned org doesn't have that tag (unless strict mode?)
 
-DONE - If dereferencing the tag returns another org, the evaluator will dereference again. It will keep dereferencing until:
-1. the dereferencing step stops returning orgs 2. it runs out of matching tags
+DONE - If dereferencing the tag returns another org, the evaluator will dereference again. It will keep dereferencing until: 1. the dereferencing step stops returning orgs or 2. it runs out of matching tags
 
 types:
 - the type of an integer, string, etc. is just that
@@ -311,87 +493,59 @@ types:
     - custom contract: you implement a function in Vodka that returns true or false, and at contract-check time
       the framework evaluates your function, passing in the nex that is being checked for whether it satisfies the contract
       
-
-contracts are only checked at tag assignment time for performance reasons, but there can be a primitive that
-re-checks contracts
-
-
+Contracts are only checked at tag assignment time for performance reasons, but there can be a primitive that re-checks contracts
 
 - a kind is an restriction that states that a given tag can only be assigned to something with a given type
 - lambda type strings can also include tags, which indicate that the thing passed in must have that tag
 
-examples of lambda type strings:
+Examples of lambda type strings:
 
-arg1 arg2
-    two args of any type
 
-arg1# arg2#
-    two integers
-
-arg1! arg2!
-    two booleans
-
-arg1& arg2&
-    two lambdas
-
-arg1* arg2*
-    two expectations
-
-arg1@ arg2@
-    two symbols
-
-_arg1@ arg2@
-    two symbols, but the first one is not evaluated before being passed
-
-arg1% arg2#...
-    a float and then zero or more integers (variadic argument)
-
-arg1% arg2#?
-    a float and then an optional integer
-
-_arg1~ arg2~
-    two commands - the first is unevaluated, but the second needs to be returned by
-    the evaluation step for the second argument
-
-arg1( arg2(
-    two lists
-
-arg1#[Magnitude] arg2#
-    two integers, but the first one has to be tagged with 'Magnitude'
-
-arg1) arg2)
-    two orgs, any type
-
-arg1)[Magnitude] arg2)
-    two orgs, but the first one has to be tagged with 'Magnitude'
-
--# arg1#
-    this function takes an integer and returns an integer
-
--)[Magnitude] arg1#
-    this function takes an integer and returns an obj tagged with 'Magnitude'
+expression | meaning
+--- | ---
+`arg1`&nbsp;`arg2` | two args of any type
+`arg1# arg2#` |   two integers
+`arg1! arg2!` |   two booleans
+`arg1& arg2&` |  two lambdas
+`arg1* arg2*` |  two expectations
+`arg1@ arg2@` | two symbols
+`_arg1@ arg2@` | two symbols, but the first one is not evaluated before being passed
+`arg1% arg2#...` | a float and then zero or more integers (variadic argument)
+`arg1% arg2#?` | a float and then an optional integer
+`_arg1~ arg2~` | two commands - the first is unevaluated, but the second needs to be returned by the evaluation step for the second argument
+`arg1( arg2(` | two lists
+`arg1#`&#8288;`[Magnitude]`&nbsp;`arg2#` | two integers, but the first one has to be tagged with 'Magnitude'
+`arg1) arg2)` | two orgs, any type
+`arg1)[Magnitude]`&nbsp;`arg2)` | two orgs, but the first one has to be tagged with 'Magnitude'
+`-# arg1#` | this function takes an integer and returns an integer
+`-)[Magnitude]`&nbsp;`arg1#` | this function takes an integer and returns an obj tagged with 'Magnitude'
 
 
 
 
-experimental features regarding return values:
+Experimental features regarding return values:
 
-- setting '-' would set the return value
--#?
-    this function can return an integer but it can also return 'nothing', which means
-    the evaluator removes whatever it returned from the arg list of what it was in.
--#...
-    this function can return more than one thing
-_-
-    this function is not evaluated, e.g. so if you had:
-    (~bind @do-not-do (&_-# (~+ #3 #3)))
-    we have a function that adds 3 + 3 and returns an integer, but it's not evaluated.
-    this means that if you have this:
+expression | meaning
+--- | ---
+`-` | setting '-' would set the return value
+`-#?` |    this function can return an integer but it can also return 'nothing', which means the evaluator removes whatever it returned from the arg list of what it was in.
+`-#...` |     this function can return more than one thing
+`_-` |     this function is not evaluated, see below.
+
+Unevaluated functions:
+
+So if you had:
+
+    `(~bind @do-not-do (&_-# (~+ #3 #3)))`
+
+we have a function that adds 3 + 3 and returns an integer, but it's not evaluated. This means that if you have this:
+
     (~+ #9 (~do-not-do))
-    it fails because the (~do-not-do) is basically treated like it's been quoted, but this:
-    (~+ #9 (~eval (~do-not-do)))
-    would work fine because "skip eval" only applies to the first time basically:
-    that is to say, if a "do not eval" function is evaluated, it loses its "do not eval" status.
 
+It fails because the `(~do-not-do)` is basically treated like it's been quoted, but this:
+
+    (~+ #9 (~eval (~do-not-do)))
+
+Would work fine because "skip eval" only applies to the first time basically, that is to say, if a "do not eval" function is evaluated, it loses its "do not eval" status.
 
 - make it so that anything inside braces in a tag, i.e. [] is ignored (use this for comments?)

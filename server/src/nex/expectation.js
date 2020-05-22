@@ -17,6 +17,16 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 var FF_GEN = 0;
 
+import { ContextType } from '/contexttype.js'
+import * as Utils from '/utils.js'
+import { manipulator } from '/vodka.js'
+import { isNormallyHandled } from '/keyresponsefunctions.js'
+
+// remove with deprecated defaultHandle
+import { Separator } from './separator.js'
+import { Letter } from './letter.js'
+
+
 class CallbackRouter {
 	constructor() {
 		this.waitingExpectations = [];
@@ -32,6 +42,8 @@ class CallbackRouter {
 		}
 	}
 }
+
+import { NexContainer } from './nexcontainer.js'
 
 class Expectation extends NexContainer {
 	constructor() {
@@ -268,8 +280,15 @@ class Expectation extends NexContainer {
 
 	// standard nex stuff below
 
-	toString() {
+	toString(version) {
+		if (version == 'v2') {
+			return this.toStringV2();
+		}
 		return `*(${super.childrenToString()}*)`;
+	}
+
+	toStringV2() {
+		return `*(${super.childrenToString('v2')})`;		
 	}
 
 	getTypeName() {
@@ -387,3 +406,8 @@ class Expectation extends NexContainer {
 		}
 	}
 }
+
+
+
+export { Expectation }
+

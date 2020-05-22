@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Nex } from './nex.js';
+import { ContextType } from '/contexttype.js'
 
 class ChildNex {
 	// lol
@@ -41,7 +43,6 @@ class Iterator {
 		return this.current.n;
 	}
 }
-
 
 class NexContainer extends Nex {
 	constructor() {
@@ -75,6 +76,10 @@ class NexContainer extends Nex {
 
 	iterator() {
 		return new Iterator(this.firstChildNex);
+	}
+
+	isNexContainer() {
+		return true;
 	}
 
 	copyFieldsTo(n) {
@@ -127,7 +132,21 @@ class NexContainer extends Nex {
 		}
 	}
 
-	childrenToString() {
+	childrenToStringV2() {
+		let r = '';
+		for (let p = this.firstChildNex; p != null; p = p.next) {
+			if (r != '') {
+				r += ' ';
+			}
+			r += p.n.toString('v2');
+		}
+		return r;		
+	}
+
+	childrenToString(version) {
+		if (version == 'v2') {
+			return this.childrenToStringV2();
+		}
 		let r = "";
 		let i = 0;
 		for (let p = this.firstChildNex; p != null; p = p.next) {
@@ -346,3 +365,6 @@ class NexContainer extends Nex {
 		this.replaceChildAt(newchild, this.getIndexOfChild(child));
 	}
 }
+
+export { NexContainer }
+

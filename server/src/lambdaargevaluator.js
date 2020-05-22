@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from '/utils.js'
+import { manipulator } from '/vodka.js'
 
 // DEPRECATED
 class LambdaArgEvaluator {
@@ -41,7 +43,7 @@ class LambdaArgEvaluator {
 		for (let i = (this.skipFirstArg ? 1 : 0); i < this.argContainer.numArgs(); i++) {
 			let arg = this.argContainer.getArgAt(i)
 			let argval = this.processArgument(arg);
-			if (isFatalError(argval)) {
+			if (Utils.isFatalError(argval)) {
 				throw wrapError('&#8907;', `${this.debugstr}: fatal error in arg ${i + 1}, stopping. Sorry!`, argval);
 			}
 			this.argContainer.setArgAt(
@@ -61,3 +63,5 @@ class LambdaArgEvaluator {
 		this.processAllArgs();
 	}	
 }
+export { LambdaArgEvaluator }
+

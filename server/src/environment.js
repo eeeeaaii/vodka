@@ -19,6 +19,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 const BUILTIN_ARG_PREFIX = '|';
 const UNBOUND = "****UNBOUND****"
 
+import { EError } from '/nex/eerror.js'
+
 class Environment {
 	constructor(parentEnv) {
 		this.parentEnv = parentEnv;
@@ -211,4 +213,6 @@ class Environment {
 		return this.lookupFullBinding(name).val;
 	}
 }
+
+export { Environment, BUILTIN_ARG_PREFIX }
 

@@ -15,6 +15,12 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Builtin } from '../nex/builtin.js'
+import { EError } from '/nex/eerror.js'
+import { Word } from '/nex/word.js'
+import { EString } from '/nex/estring.js'
+import { Integer } from '/nex/integer.js'
+
 function createStringBuiltins() {
 	Builtin.createBuiltin(
 		'string-listify',
@@ -143,3 +149,6 @@ function createStringBuiltins() {
 			return new EString(s);
 		}
 	);}
+
+export { createStringBuiltins }
+

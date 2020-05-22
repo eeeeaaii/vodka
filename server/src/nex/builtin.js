@@ -15,7 +15,9 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
+import { Lambda } from './lambda.js'
+import { ParamParser } from '../paramparser.js'
+import { BUILTINS, PERFORMANCE_MONITOR } from '/vodka.js'
 
 class Builtin extends Lambda {
 	constructor(name, params, retval) {
@@ -23,6 +25,7 @@ class Builtin extends Lambda {
 		this.name = name;
 		this.paramsArray = params;
 		this.returnValueParam = retval;
+		this.internaljs = null;
 		let amp = ' ' + name;
 		for (let i = 0; i < params.length; i++) {
 			amp += ' ' + params[i].name;
@@ -42,6 +45,10 @@ class Builtin extends Lambda {
 
 	getTypeName() {
 		return '-builtin-';
+	}
+
+	setInternalJs(js) {
+		this.internaljs = js;
 	}
 
 	makeCopy(shallow) {
@@ -102,4 +109,7 @@ class Builtin extends Lambda {
 		return null;
 	}
 }
+
+
+export { Builtin }
 

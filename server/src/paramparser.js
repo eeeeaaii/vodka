@@ -29,6 +29,8 @@ a set of required args then some optional ones (could be zero A's)
 variadics are packaged up inside a list of some type (maybe a word)
 */
 
+import { BUILTIN_ARG_PREFIX } from './environment.js'
+
 class ParamParser {
 	constructor(isBuiltin) {
 		this.isBuiltin = isBuiltin;
@@ -113,6 +115,7 @@ class ParamParser {
 		return {
 			name: s,
 			debugName: originals,
+			typeString: typeString,
 			type: typeValidator,
 			skipeval: skipeval,
 			skipactivate: skipactivate,
@@ -151,3 +154,6 @@ class ParamParser {
 		return '*';
 	}
 }
+
+export { ParamParser }
+

@@ -31,10 +31,10 @@ harness.runTest(function() {
 		doKeyInput('0', 'Digit0', false, false, false);
 		doKeyInput('0', 'Digit0', false, false, false);
 		doKeyInput('0', 'Digit0', false, false, false);
-		doKeyInput('-', 'Minus', false, false, false);
 		doKeyInput('1', 'Digit1', false, false, false);
 		doKeyInput('2', 'Digit2', false, false, false);
 		doKeyInput('3', 'Digit3', false, false, false);
+		doKeyInput('-', 'Minus', false, false, false);
 		doKeyInput('Shift', 'ShiftRight', true, false, false);
 		doKeyInput('#', 'Digit3', true, false, false);
 		doKeyInput('-', 'Minus', false, false, false);

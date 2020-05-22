@@ -17,6 +17,21 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 
+import { ValueNex } from './valuenex.js'
+import { manipulator } from '/vodka.js'
+import { isNormallyHandled } from '/keyresponsefunctions.js'
+
+// remove with deprecated defaultHandle
+import { Separator } from './separator.js'
+import { Letter } from './letter.js'
+import { Word } from './word.js'
+import { Line } from './line.js'
+import { RenderNode } from '/rendernode.js'
+import * as Utils from '/utils.js'
+
+
+// this class is deprecated, insertion points should be handled
+// in renderNode
 class InsertionPoint extends ValueNex {
 	constructor() {
 		super('&nbsp;', '', 'insertionpoint')
@@ -59,7 +74,7 @@ class InsertionPoint extends ValueNex {
 		let parent = sourceNode.getParent();
 
 		if (isSeparator) {
-			if (isWord(parent)) {
+			if (Utils.isWord(parent)) {
 				manipulator.selectParent()
 					&& manipulator.insertAfterSelectedAndSelect(new Separator(txt))
 					&& manipulator.removeNex(sourceNode);
@@ -67,7 +82,7 @@ class InsertionPoint extends ValueNex {
 				manipulator.replaceSelectedWith(new Separator(txt));		
 			}
 		} else {
-			if (isDoc(parent)) {
+			if (Utils.isDoc(parent)) {
 				let ln = new RenderNode(new Line());
 				let w = new RenderNode(new Word());
 				let lt = new RenderNode(new Letter(txt));
@@ -75,7 +90,7 @@ class InsertionPoint extends ValueNex {
 				w.appendChild(lt);
 				manipulator.replaceSelectedWith(ln);
 				lt.setSelected();
-			} else if (isLine(parent)) {
+			} else if (Utils.isLine(parent)) {
 				let w = new RenderNode(new Word());
 				let lt = new RenderNode(new Letter(txt));
 				w.appendChild(lt);
@@ -113,3 +128,6 @@ class InsertionPoint extends ValueNex {
 		};
 	}
 }
+
+export { InsertionPoint }
+

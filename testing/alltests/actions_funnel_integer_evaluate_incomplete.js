@@ -18,6 +18,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 // test: actions_funnel_integer_evaluate_incomplete
 /*
 evaluating an incomplete integer (i.e. one where the user hasn't finished typing it out yet) should give an error when shift-enter evaluated in the main repl. there is only one way to get this config currently and that's if it is an integer that's just a negative sign.t his test verifies that the right error is shown
+
+UPDATE: we can no longer enter invalid integers - keeping test
 */
 
 	// |Shift|#|-|Shift|Enter

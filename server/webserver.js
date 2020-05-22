@@ -36,7 +36,12 @@ const server = http.createServer((message, res) => {
 			let qs = path.substring(i);
 			path = "/host.html" + qs;
 		}
-		path = "./src" + path;
+		// uh
+		if (path.indexOf('/sounds') == 0) {
+			path = "." + path;
+		} else {
+			path = "./src" + path;
+		}
 		doFileRequest(path, res);
 	}
 });
@@ -94,6 +99,26 @@ function doLoad(data, cb) {
 	})	
 }
 
+function getAudioFileIncludes() {
+	let includeString = '';
+	let files = fs.readdirSync("./sounds");
+
+	// <audio src="myCoolTrack.mp3" type="audio/mpeg"></audio>
+	for (let i = 0; i < files.length; i++) {
+		let fileName = files[i];
+		includeString += `<audio src="./sounds/${fileName}" type="audio/mpeg"></audio>
+		`;
+	}
+	return includeString;
+
+}
+
+function transformHost(data) {
+	let audio = getAudioFileIncludes();
+	return ('' + data).replace('<!-- AUDIO FILES HERE -->', audio);
+
+}
+
 function doFileRequest(path, res) {
 	// chop off query string
 	let z = path.indexOf('?');
@@ -108,6 +133,9 @@ function doFileRequest(path, res) {
 			res.write("Rather than a beep<br>Or a rude error message,<br>These words: \"File not found.\"");
 			res.end();			
 		} else {
+			if (path == './src/host.html') {
+				data = transformHost(data);
+			}
 			console.log('200: ' + path + ' (' + mimetype + ')');
 			res.writeHead(200, {'Content-Type': mimetype});
 			res.write(data);
@@ -125,6 +153,8 @@ function getMimeTypeFromExt(fname) {
 			return 'text/html';
 		case '.css':
 			return 'text/css';
+		case '.mp3':
+			return 'audio/mpeg';
 	}
 	return 'text/plain';
 }

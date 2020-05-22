@@ -21,6 +21,20 @@ const MODE_NORMAL = 1;
 const MODE_EXPANDED = 2;
 const QUOTE_ESCAPE = 'QQQQ'
 
+
+
+import { ValueNex } from './valuenex.js'
+import { RenderNode } from '/rendernode.js'
+import { manipulator } from '/vodka.js'
+import { isNormallyHandled } from '/keyresponsefunctions.js'
+import * as Vodka from '/vodka.js'
+
+// remove with deprecated defaultHandle
+import { Separator } from './separator.js'
+import { Word } from './word.js'
+import { Letter } from './letter.js'
+
+
 class EString extends ValueNex {
 	constructor(val, ch, t) {
 		if (typeof val === 'undefined') {
@@ -33,6 +47,22 @@ class EString extends ValueNex {
 		}
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val);// will call render
+		this.attachedJS = null;
+	}
+
+	setAttachedJS(js) {
+		// when vodka wants to call native js from a nex, we attach a js
+		// function to an estring and then pass that estring as the first
+		// parameter of a call to the run-js function.
+		this.attachedJS = js;
+	}
+
+	getAttachedJS() {
+		return this.attachedJS;
+	}
+
+	hasAttachedJS() {
+		return !!this.attachedJS;
 	}
 
 	getTypeName() {
@@ -45,8 +75,22 @@ class EString extends ValueNex {
 		return r;
 	}
 
-	toString() {
+	toString(version) {
+		if (version == 'v2') {
+			return this.toStringV2();
+		}
 		return '$"' + this.escapeContents() + '"';
+	}
+
+	toStringV2() {
+		// if this string contains \r, \t, or |, we do it the other way.
+		let v = this.getFullTypedValue();
+		if (v.indexOf('\n') >= 0 || v.indexOf('\t') >= 0 || v.indexOf('"') >= 0|| v.indexOf('|') >= 0) {
+			v = v.replace('|', '||');
+			return '$|SP|' + v + '|EP|';
+		} else {
+			return '$"' + v + '"';
+		}
 	}
 
 	debugString() {
@@ -155,7 +199,7 @@ class EString extends ValueNex {
 
 	startModalEditing() {
 		this.mode = MODE_EXPANDED;
-		deactivateKeyFunnel();
+		Vodka.deactivateKeyFunnel();
 	}
 
 	finishInput(renderNode) {
@@ -163,14 +207,14 @@ class EString extends ValueNex {
 			renderNode = this.cachedRenderNodeHack;
 		}
 		let val = this.inputfield.value;
-		activateKeyFunnel();
+		Vodka.activateKeyFunnel();
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val);
-		eventQueue.enqueueRenderNodeRender(
+		Vodka.eventQueue.enqueueRenderNodeRender(
 				renderNode,
-				current_default_render_flags
-					| RENDER_FLAG_RERENDER
-					| RENDER_FLAG_SHALLOW);
+				Vodka.getGlobalCurrentDefaultRenderFlags()
+					| Vodka.RENDER_FLAG_RERENDER
+					| Vodka.RENDER_FLAG_SHALLOW);
 	}
 
 	defaultHandle(txt) {
@@ -198,3 +242,8 @@ class EString extends ValueNex {
 		};
 	}
 }
+
+
+
+export { EString }
+

@@ -16,6 +16,16 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
+import { ContextType } from '/contexttype.js'
+import { manipulator } from '/vodka.js'
+import { NexContainer } from './nexcontainer.js'
+import { isNormallyHandled } from '/keyresponsefunctions.js'
+
+// remove with deprecated defaultHandle
+import { Word } from './word.js'
+import { Separator } from './separator.js'
+import { Letter } from './letter.js'
+import { EError } from './eerror.js'
 
 class Line extends NexContainer {
 	constructor() {
@@ -40,9 +50,13 @@ class Line extends NexContainer {
 	getValueAsString() {
 		let s = '';
 		this.doForEachChild(c => {
-			if (c instanceof Letter) { // erm the space character is a letter ugh
+			if (c.getTypeName() == '-letter-') {
 				s += c.getText();
-			} else if (c instanceof Word) {
+			} else if (c.getTypeName() == '-separator-') {
+				s += c.getText();
+			} else if (c.getTypeName() == '-newline-') {
+				s += '\n';
+			} else if (c.getTypeName() == '-word-') {
 				s += c.getValueAsString();
 			} else {
 				throw new EError('cannot convert line to string, invalid format');
@@ -59,7 +73,7 @@ class Line extends NexContainer {
 	}
 
 	getContextType() {
-		return ContextType.DOC;
+		return ContextType.LINE;
 	}
 
 	// deprecated
@@ -130,3 +144,6 @@ class Line extends NexContainer {
 		}
 	}
 }
+
+export { Line }
+
