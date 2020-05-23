@@ -1,7 +1,7 @@
 =========================== nothing-to-see-here ====================================
 ---
 title: Nothing to See Here
-date: "2020-05-22T00:17:10.000-04"
+date: "2020-05-23T00:08:50.000-04"
 description: In which I realized it was a trivial fix...
 ---
 Ah.
