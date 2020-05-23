@@ -15,13 +15,13 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
+import * as Utils from '/utils.js'
 
 import { NexContainer } from './nexcontainer.js'
-import * as Utils from '/utils.js'
 import { manipulator } from '/vodka.js'
 import { isNormallyHandled } from '/keyresponsefunctions.js'
 import { ContextType } from '/contexttype.js'
+import { wrapError } from '../evaluator.js'
 
 // remove with deprecated defaultHandle
 import { Letter } from './letter.js'
@@ -93,7 +93,7 @@ class Org extends NexContainer {
 		}
 
 		let result = evaluateNexSafely(cmd, argEnv);
-		if (isFatalError(result)) {
+		if (Utils.isFatalError(result)) {
 			return wrapError('&szlig;', `org: error doing job ${jobname}`, result);
 		}
 		return result;		

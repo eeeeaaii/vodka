@@ -30,7 +30,7 @@ class Environment {
 		this.listOfPackagesUsed = null;
 	}
 
-	copy() {
+	copy(shareParent) {
 		let newEnv = new Environment(null);
 		for (let sym in this.symbols) {
 			let rec = this.symbols[sym];
@@ -54,9 +54,17 @@ class Environment {
 			}
 		}
 		if (this.parentEnv) {
-			newEnv.parentEnv = this.parentEnv.copy();
+			if (shareParent) {
+				newEnv.parentEnv = this.parentEnv;
+			} else {
+				newEnv.parentEnv = this.parentEnv.copy();
+			}
 		}
 		return newEnv;
+	}
+
+	copyJustThisScope() {
+		return this.copy(true /* share parent */)
 	}
 
 	debug(lvl) {
@@ -214,5 +222,5 @@ class Environment {
 	}
 }
 
-export { Environment, BUILTIN_ARG_PREFIX }
+export { Environment, BUILTIN_ARG_PREFIX, UNBOUND }
 

@@ -15,12 +15,14 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Vodka from '/vodka.js'
 
 import { Builtin } from '../nex/builtin.js'
 import { EError } from '../nex/eerror.js'
 import { ESymbol } from '../nex/esymbol.js'
 import { Doc } from '../nex/doc.js'
 import { PERFORMANCE_MONITOR, BINDINGS } from '/vodka.js'
+import { UNBOUND } from '/environment.js'
 
 function createEnvironmentBuiltins() {
 
@@ -71,13 +73,13 @@ function createEnvironmentBuiltins() {
 			// and just point it to the global bindings one.
 			// if I don't do this, order matters in bindings and things
 			// bound afterward can't be seen
-			if (val.getTypeName() == '-closure-') {
-				val.setLexicalEnvironment(BINDINGS);
-				val.setBoundName(namestr);
-				if (PERFORMANCE_MONITOR) {
-					perfmon.registerMethod(namestr);
-				}
-			}
+			// if (val.getTypeName() == '-closure-') {
+			// 	val.setLexicalEnvironment(BINDINGS);
+			// 	val.setBoundName(namestr);
+			// 	if (PERFORMANCE_MONITOR) {
+			// 		perfmon.registerMethod(namestr);
+			// 	}
+			// }
 			BINDINGS.bindInPackage(namestr, val);
 			return name;
 		}
@@ -92,7 +94,7 @@ function createEnvironmentBuiltins() {
 			if (ssnex != UNBOUND) {
 				ss = ssnex.getTypedValue();
 			}
-			let matches = autocomplete.findAllBindingsMatching(ss);
+			let matches = Vodka.autocomplete.findAllBindingsMatching(ss);
 			if (matches.length == 1) {
 				return new ESymbol(matches[0]);
 			} else {
@@ -114,7 +116,7 @@ function createEnvironmentBuiltins() {
 			if (ssnex != UNBOUND) {
 				ss = ssnex.getTypedValue();
 			}
-			let matches = autocomplete.findAllBuiltinsMatching(ss);
+			let matches = Vodka.autocomplete.findAllBuiltinsMatching(ss);
 			if (matches.length == 1) {
 				return new ESymbol(matches[0]);
 			} else {

@@ -15,12 +15,38 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { Builtin } from '../nex/builtin.js'
-import { EError } from '../nex/eerror.js'
-import { Nil } from '../nex/nil.js'
-import { Bool } from '../nex/bool.js'
-import { manipulator } from '/vodka.js'
 import * as Utils from '/utils.js'
+
+import { Bool } from '/nex/bool.js'; 
+import { Builtin } from '/nex/builtin.js'; 
+import { Closure } from '/nex/closure.js'; 
+import { Command } from '/nex/command.js'; 
+import { Doc } from '/nex/doc.js'; 
+import { EError } from '/nex/eerror.js'; 
+import { EString } from '/nex/estring.js'; 
+import { ESymbol } from '/nex/esymbol.js'; 
+import { Expectation } from '/nex/expectation.js'; 
+import { Float } from '/nex/float.js'; 
+import { InsertionPoint } from '/nex/insertionpoint.js'; 
+import { Integer } from '/nex/integer.js'; 
+import { Lambda } from '/nex/lambda.js'; 
+import { Letter } from '/nex/letter.js'; 
+import { Line } from '/nex/line.js'; 
+import { NativeOrg } from '/nex/nativeorg.js'; 
+import { Newline } from '/nex/newline.js'; 
+import { Nex } from '/nex/nex.js'; 
+import { NexContainer } from '/nex/nexcontainer.js'; 
+import { Nil } from '/nex/nil.js'; 
+import { Org } from '/nex/org.js'; 
+import { Root } from '/nex/root.js'; 
+import { Separator } from '/nex/separator.js'; 
+import { ValueNex } from '/nex/valuenex.js'; 
+import { Word } from '/nex/word.js'; 
+import { Zlist } from '/nex/zlist.js'; 
+
+import { manipulator } from '/vodka.js'
+import { evaluateNexSafely, wrapError } from '../evaluator.js'
+
 
 function createBasicBuiltins() {
 	Builtin.createBuiltin(
@@ -154,7 +180,7 @@ function createBasicBuiltins() {
 				let item = list.getChildAt(i);
 				let cmd = Command.makeCommandWithClosure(closure, Command.quote(item))
 				let result = evaluateNexSafely(cmd, executionEnvironment);
-				if (isFatalError(result)) {
+				if (Utils.isFatalError(result)) {
 					return wrapError('&szlig;', `map-with: error returned from item ${i+1}`, result);
 				}
 				resultList.appendChild(result);
@@ -176,7 +202,7 @@ function createBasicBuiltins() {
 				let item = list.getChildAt(i);
 				let cmd = Command.makeCommandWithClosure(closure, Command.quote(item), Command.quote(p));
 				let result = evaluateNexSafely(cmd, executionEnvironment);
-				if (isFatalError(result)) {
+				if (Utils.isFatalError(result)) {
 					return wrapError('&szlig;', `reduce-with-starting: error returned from item ${i+1}`, result);
 				}
 				p = result;
@@ -196,7 +222,7 @@ function createBasicBuiltins() {
 				let item = list.getChildAt(i);
 				let cmd = Command.makeCommandWithClosure(closure, Command.quote(list.getChildAt(i)));
 				let result = evaluateNexSafely(cmd, executionEnvironment);
-				if (isFatalError(result)) {
+				if (Utils.isFatalError(result)) {
 					return wrapError('&szlig;', `filter-with: error returned from item ${i+1}`, result);
 				}
 				if (result.getTypedValue()) {

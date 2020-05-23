@@ -298,13 +298,13 @@ class RenderNode {
 		if (selectedNode) {
 			selectedNode.setUnselected();
 			if (rerender) {
-				eventQueue.renderNodeRender(selectedNode, Vodka.RENDER_FLAG_RERENDER | Vodka.RENDER_FLAG_SHALLOW | current_default_Vodka.render_flags);
+				Vodka.eventQueue.renderNodeRender(selectedNode, Vodka.RENDER_FLAG_RERENDER | Vodka.RENDER_FLAG_SHALLOW | current_default_Vodka.render_flags);
 			}
 		}
 		selectedNode = this;
 		this.selected = true;
 		if (rerender) {
-			eventQueue.renderNodeRender(this, Vodka.RENDER_FLAG_RERENDER | Vodka.RENDER_FLAG_SHALLOW | current_default_Vodka.render_flags);
+			Vodka.eventQueue.renderNodeRender(this, Vodka.RENDER_FLAG_RERENDER | Vodka.RENDER_FLAG_SHALLOW | current_default_Vodka.render_flags);
 		}
 		Vodka.setGlobalSelectedNode(selectedNode);
 	}

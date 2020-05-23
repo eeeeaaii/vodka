@@ -15,11 +15,13 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from '/utils.js'
+
 import { Builtin } from '/nex/builtin.js'
 import { EError } from '/nex/eerror.js'
 import { Bool } from '/nex/bool.js'
 import { manipulator } from '/vodka.js'
-import * as Utils from '/utils.js'
+import { evaluateNexSafely, wrapError } from '../evaluator.js'
 
 function createLogicBuiltins() {
 	Builtin.createBuiltin(
@@ -54,13 +56,13 @@ function createLogicBuiltins() {
 			let b = env.lb('cond').getTypedValue();
 			if (b) {
 				let iftrue = evaluateNexSafely(env.lb('iftrue'), executionEnvironment);
-				if (isFatalError(iftrue)) {
+				if (Utils.isFatalError(iftrue)) {
 					iftrue = wrapError('&szlig;', 'if: error in argument 2', iftrue);
 				}
 				return iftrue;
 			} else {
 				let iffalse = evaluateNexSafely(env.lb('iffalse'), executionEnvironment);
-				if (isFatalError(iffalse)) {
+				if (Utils.isFatalError(iffalse)) {
 					iffalse = wrapError('&szlig;', 'if: error in argument 3', iffalse);
 				}
 				return iffalse;

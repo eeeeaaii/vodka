@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { evaluateNexSafely } from '/evaluator.js'
+import { evaluateNexSafely, wrapError } from '/evaluator.js'
 import { manipulator } from '/vodka.js'
 import { Word } from '/nex/word.js'
 import { EError } from '/nex/eerror.js'

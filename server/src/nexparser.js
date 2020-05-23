@@ -15,6 +15,35 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Vodka from '/vodka.js'
+import { Bool } from '/nex/bool.js'; 
+import { Builtin } from '/nex/builtin.js'; 
+import { Closure } from '/nex/closure.js'; 
+import { Command } from '/nex/command.js'; 
+import { Doc } from '/nex/doc.js'; 
+import { EError } from '/nex/eerror.js'; 
+import { EString } from '/nex/estring.js'; 
+import { ESymbol } from '/nex/esymbol.js'; 
+import { Expectation } from '/nex/expectation.js'; 
+import { Float } from '/nex/float.js'; 
+import { InsertionPoint } from '/nex/insertionpoint.js'; 
+import { Integer } from '/nex/integer.js'; 
+import { Lambda } from '/nex/lambda.js'; 
+import { Letter } from '/nex/letter.js'; 
+import { Line } from '/nex/line.js'; 
+import { NativeOrg } from '/nex/nativeorg.js'; 
+import { Newline } from '/nex/newline.js'; 
+import { Nex } from '/nex/nex.js'; 
+import { NexContainer } from '/nex/nexcontainer.js'; 
+import { Nil } from '/nex/nil.js'; 
+import { Org } from '/nex/org.js'; 
+import { Root } from '/nex/root.js'; 
+import { Separator } from '/nex/separator.js'; 
+import { ValueNex } from '/nex/valuenex.js'; 
+import { Word } from '/nex/word.js'; 
+import { Zlist } from '/nex/zlist.js'; 
+
+
 var st = {};
 var parserStack = [];
 
@@ -105,7 +134,7 @@ class NexParser {
 		let token;
 		this.push(new Root());
 		while (token = this.getNextToken()) {
-			if (CONSOLE_DEBUG) {
+			if (Vodka.CONSOLE_DEBUG) {
 				console.log(`token: ${st['-' + token]} data: ${this.data[0]} remaining: ${this.s}`);
 			}
 			this.doParse(token);

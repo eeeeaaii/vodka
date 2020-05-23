@@ -15,6 +15,9 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { evaluateNexSafely } from '../evaluator.js'
+
+
 class BuiltinCommandPhase extends ExpectationPhase {
 	constructor(phaseExecutor, nex, env) {
 		super(nex);

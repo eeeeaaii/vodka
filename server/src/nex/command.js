@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Vodka from '/vodka.js'
+
 import { NexContainer } from './nexcontainer.js'
 import { manipulator } from '/vodka.js'
 import { isNormallyHandled } from '/keyresponsefunctions.js'
@@ -24,7 +26,6 @@ import { CopiedArgContainer } from '/argcontainer.js'
 import { Closure } from './closure.js'
 import { ContextType } from '/contexttype.js'
 import { evaluateNexSafely } from '/evaluator.js'
-import * as Vodka from '/vodka.js'
 
 // remove with deprecated defaultHandle
 import { Letter } from './letter.js'
@@ -322,7 +323,7 @@ class Command extends NexContainer {
 
 	autocomplete() {
 		let searchText = this.searchingOn ? this.searchingOn : this.getCommandText();
-		let match = autocomplete.findNextMatchAfter(searchText, this.previousMatch);
+		let match = Vodka.autocomplete.findNextMatchAfter(searchText, this.previousMatch);
 		this.setCommandText(match);
 		this.searchingOn = searchText;
 		this.previousMatch = match;

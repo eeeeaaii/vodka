@@ -15,8 +15,11 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { ERROR_TYPE_WARN, ERROR_TYPE_INFO } from '/nex/eerror.js'
+import * as Vodka from '/vodka.js'
 
+import { EError, ERROR_TYPE_WARN, ERROR_TYPE_INFO } from '/nex/eerror.js'
+import { evaluateNexSafely } from '../evaluator.js'
+import { NexParser } from '/nexparser.js'
 
 function sendToServer(payload, cb) {
 	let xhr = new XMLHttpRequest();
@@ -77,7 +80,7 @@ function importNex(name, callback) {
 
 	sendToServer(payload, function(data) {
 		let nex = new NexParser(data).parse();
-		let result = evaluateNexSafely(nex, BINDINGS);
+		let result = evaluateNexSafely(nex, Vodka.BINDINGS);
 		let r = null;
 		if (result.getTypeName() != '-error-') {
 			r = new EError("Import successful.");
@@ -91,54 +94,4 @@ function importNex(name, callback) {
 	});
 }
 
-/*
-function saveNex(name, nex, exp) {
-	let payload = `save\t${name}\t${nex.toString()}`;
-
-	let callback = exp.getCallbackForSet();
-	exp.set(function() {
-		sendToServer(payload, function(data) {
-			let e = new EError("success");
-			e.setErrorType(ERROR_TYPE_INFO);
-			callback(e);
-		});
-	});
-}
-
-
-function loadNex(name, exp) {
-	let payload = `load\t${name}`;
-
-	let callback = exp.getCallbackForSet();
-	exp.set(function() {
-		sendToServer(payload, function(data) {
-			document.title = name;
-			let nex = new NexParser(data).parse();
-			callback(nex);
-		});
-	});
-}
-
-
-function importNex(name, exp) {
-	let payload = `load\t${name}`;
-
-	let callback = exp.getCallbackForSet();
-	exp.set(function() {
-		sendToServer(payload, function(data) {
-			let nex = new NexParser(data).parse();
-			let result = evaluateNexSafely(nex, BINDINGS);
-			let r = null;
-			if (result.getTypeName() != '-error-') {
-				r = new EError("Import successful.");
-				r.setErrorType(ERROR_TYPE_INFO);
-			} else {
-				r = new EError("Import failed.");
-				r.setErrorType(ERROR_TYPE_WARN);
-				r.appendChild(result);
-			}
-			callback(nex);
-		});
-	});
-}
-*/
+export { saveNex, importNex, loadNex, loadNexV2, saveNexV2 }

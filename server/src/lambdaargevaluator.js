@@ -17,6 +17,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as Utils from '/utils.js'
 import { manipulator } from '/vodka.js'
+import { wrapError } from '/evaluator.js'
+import { evaluateNexSafely } from '../evaluator.js'
+
 
 // DEPRECATED
 class LambdaArgEvaluator {

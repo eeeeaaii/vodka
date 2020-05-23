@@ -42,6 +42,8 @@ import { Separator } from '/nex/separator.js'
 import { ValueNex } from '/nex/valuenex.js' 
 import { Word } from '/nex/word.js' 
 import { Zlist } from '/nex/zlist.js' 
+import { evaluateNexSafely } from '../evaluator.js'
+
 
 import { ERROR_TYPE_WARN, ERROR_TYPE_FATAL, ERROR_TYPE_INFO } from '/nex/eerror.js'
 

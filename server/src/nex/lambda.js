@@ -114,7 +114,8 @@ class Lambda extends NexContainer {
 	}
 
 	evaluate(env) {
-		return new Closure(this, env.copy());
+//		return new Closure(this, env.copyJustThisScope());
+		return new Closure(this, env);
 	}
 
 	cacheParamNames() {

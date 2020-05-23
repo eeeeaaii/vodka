@@ -29,6 +29,8 @@ const MODE_EXPANDED = 2;
 const QUOTE_ESCAPE = 'QQQQ'
 
 
+import * as Vodka from '/vodka.js'
+
 import { NexContainer } from './nexcontainer.js'
 import { manipulator } from '/vodka.js'
 import { isNormallyHandled } from '/keyresponsefunctions.js'
@@ -161,11 +163,11 @@ class EError extends NexContainer {
 		activateKeyFunnel();
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val);
-		eventQueue.enqueueRenderNodeRender(
+		Vodka.eventQueue.enqueueRenderNodeRender(
 				renderNode,
 				current_default_render_flags
-					| RENDER_FLAG_RERENDER
-					| RENDER_FLAG_SHALLOW);
+					| Vodka.RENDER_FLAG_RERENDER
+					| Vodka.RENDER_FLAG_SHALLOW);
 	}
 
 	drawExpanded(renderNode) {

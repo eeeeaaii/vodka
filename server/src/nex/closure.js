@@ -19,7 +19,7 @@ import { ValueNex } from './valuenex.js'
 import * as Utils from '/utils.js'
 import { BuiltinArgEvaluator } from '/builtinargevaluator.js'
 import { Nil } from './nil.js'
-import { evaluateNexSafely } from '/evaluator.js'
+import { wrapError, evaluateNexSafely } from '/evaluator.js'
 
 
 class Closure extends ValueNex {
@@ -87,10 +87,11 @@ class Closure extends ValueNex {
 	}
 
 	executor(executionEnvironment, argEvaluator, cmdname, commandTags) {
-		let newScope = this.lexicalEnvironment.pushEnv();
-		argEvaluator.bindArgs(newScope);
+//		let newScope = this.lexicalEnvironment.pushEnv();
+		let scope = this.lexicalEnvironment.pushEnv();
+		argEvaluator.bindArgs(scope);
 		if (this.lambda.getTypeName() == '-builtin-') {
-			return this.lambda.executor(newScope, executionEnvironment, commandTags);
+			return this.lambda.executor(scope, executionEnvironment, commandTags);
 		}
 		let r = new Nil();
 		let i = 0;
@@ -100,7 +101,7 @@ class Closure extends ValueNex {
 			// for now we just don't activate in lambdas. I think this is fine because the
 			// lambda's result will always be returned as an arg somewhere, or at the
 			// top level.
-			r = evaluateNexSafely(c, newScope, true /* skipactivate */);
+			r = evaluateNexSafely(c, scope, true /* skipactivate */);
 			if (Utils.isFatalError(r)) {
 				r = wrapError('&amp;', `${cmdname}: error in expr ${i+1}`, r);
 				return r;

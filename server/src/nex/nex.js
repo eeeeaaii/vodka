@@ -99,7 +99,7 @@ class Nex {
 
 	renderOnlyThisNex(selectThisNode) {
 		for (let i = 0; i < this.rendernodes.length; i++) {
-			let flags = current_default_Vodka.render_flags;
+			let flags = Vodka.getGlobalCurrentDefaultRenderFlags();
 			flags &= (~Vodka.RENDER_FLAG_NORMAL);
 			flags &= (~Vodka.RENDER_FLAG_EXPLODED);
 

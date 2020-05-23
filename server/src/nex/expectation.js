@@ -17,14 +17,21 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 var FF_GEN = 0;
 
-import { ContextType } from '/contexttype.js'
+import * as Vodka from '/vodka.js'
 import * as Utils from '/utils.js'
-import { manipulator } from '/vodka.js'
+
+import { ContextType } from '/contexttype.js'
+import { manipulator, gc } from '/vodka.js'
 import { isNormallyHandled } from '/keyresponsefunctions.js'
+import { evaluateNexSafely } from '../evaluator.js'
+
+import { EError } from './eerror.js'
+import { NexContainer } from './nexcontainer.js'
 
 // remove with deprecated defaultHandle
 import { Separator } from './separator.js'
 import { Letter } from './letter.js'
+import { Command } from './command.js'
 
 
 class CallbackRouter {
@@ -42,8 +49,6 @@ class CallbackRouter {
 		}
 	}
 }
-
-import { NexContainer } from './nexcontainer.js'
 
 class Expectation extends NexContainer {
 	constructor() {
@@ -134,7 +139,7 @@ class Expectation extends NexContainer {
 	callFFOnChild(childIndex) {
 		let success = true;
 		let result = this.getChildAt(childIndex);
-		if (isFatalError(result)) {
+		if (Utils.isFatalError(result)) {
 			throw result;
 		}
 		let cmd = Command.makeCommandWithClosure(this.ffClosure, result);
@@ -225,7 +230,7 @@ class Expectation extends NexContainer {
 
 	getCallbackForSet() {
 		return (function(result) {
-			eventQueue.enqueueExpectationFulfill(this.callbackRouter, result);
+			Vodka.eventQueue.enqueueExpectationFulfill(this.callbackRouter, result);
 		}).bind(this);
 	}
 
@@ -309,15 +314,15 @@ class Expectation extends NexContainer {
 	renderInto(renderNode, renderFlags) {
 		let domNode = renderNode.getDomNode();
 		let dotspan = null;
-		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+		if (!(renderFlags & Vodka.RENDER_FLAG_SHALLOW)) {
 			dotspan = document.createElement("span");
 			dotspan.classList.add('dotspan');
 			domNode.appendChild(dotspan);
 		}
 		super.renderInto(renderNode, renderFlags);
 		domNode.classList.add('expectation');
-		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-			if (renderFlags & RENDER_FLAG_EXPLODED) {
+		if (!(renderFlags & Vodka.RENDER_FLAG_SHALLOW)) {
+			if (renderFlags & Vodka.RENDER_FLAG_EXPLODED) {
 				dotspan.classList.add('exploded');
 			} else {
 				dotspan.classList.remove('exploded');

@@ -46,6 +46,8 @@ import * as Vodka from '/vodka.js'
 
 import { ContextType } from '/contexttype.js';
 import { KeyResponseFunctions, DefaultHandlers } from '/keyresponsefunctions.js';
+import { evaluateNexSafely } from '../evaluator.js'
+
 
 class KeyDispatcher {
 	dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
@@ -271,7 +273,7 @@ class KeyDispatcher {
 			KeyResponseFunctions[f2](Vodka.getGlobalSelectedNode());
  			return true;
 		} else if (f instanceof Nex) {
-			evaluateNexSafely(f, BINDINGS)
+			evaluateNexSafely(f, Vodka.BINDINGS)
 			return true;
 		}
 		return false;
@@ -312,7 +314,7 @@ class KeyDispatcher {
 				// gross
 				topLevelRender();
 				s = Vodka.getGlobalSelectedNode().getNex();
-				s.pushNexPhase(phaseExecutor, BINDINGS);
+				s.pushNexPhase(phaseExecutor, Vodka.BINDINGS);
 			}
 			phaseExecutor.doNextStep();
 			topLevelRender();

@@ -1,6 +1,146 @@
+=========================== nothing-to-see-here ====================================
+---
+title: Nothing to See Here
+date: "2020-05-22T00:17:10.000-04"
+description: In which I realized it was a trivial fix...
+---
+Ah.
+
+I was creating a new scope when a closure was created (when its lambda was evaluated.)
+
+Why would I do that?
+
+You make a new scope when you evaluate the command containing the closure as its
+first argument. Of course.
+
+Fixing this fixed the animation issue. I really hope this is now put to bed, and this
+misadventure with copying values in the environment object is over.
+
+=========================== where-to-from-here ====================================
+---
+title: Where to From Here With Expectations...
+date: "2020-05-22T00:17:10.000-04"
+description: Two potential plans made.
+---
+Okay so I've repaired some of the damage made by me not using my brain. SICP-style
+encapsulation of closure scopes works.
+
+This is the problem though: I have to decide what to do about expectations.
+The current implementation of `fade-in-for-seconds` now has a bug where
+every new animation you start replaces all the info from the old animation.
+In other words, if you fade in something for 60 seconds, then 30 seconds into
+the animation you try to do this again on another nex, the new animation will
+start as you expect, but the old animation (which was halfway through)
+will restart (because all the temporary variables get replaced by new values)
+
+I can possibly fix this by having a producer function that makes a new scope/closure,
+and then runs it, every time you do an animation.
+
+I tried initially just doing this when assigning an expectation a new ff-with:
+
+```
+    this.ffClosure = closure.makeCopy();
+```
+
+This would make a totally separate memory space for each expectation. This caused
+some other weird problem and I'm not sure it makes sense.
+
+=========================== mistakes-were-made ====================================
+---
+title: Mistakes Were Made
+date: "2020-05-22T00:10:40.000-04"
+description: In which I self-reflect on how I was super wrong in a previous decision.
+---
+
+In a previous investigation, I looked at the following code fragment:
+
+```
+let f = function() {
+    let a = [];
+    for (let i = 0; i < 10; i++) {
+        let r = Math.random();
+        a.push(function() {
+            console.log(r);
+        });
+    }
+    return a;
+}
+let m = f();
+m[0](); // prints 0.4358334282486591
+m[1](); // prints 0.8695053811494855
+m[0](); // prints 0.4358334282486591
+```
+
+And used this as evidence or justification for the fact that, when you create a closure,
+it should contain a copy of the entire environment which would vary independently from any
+other closures -- i.e. copy all the scopes all the way up
+to the root. The reason I thought that is that I was reading this
+JavaScript code wrong. The way I was seeing it was that
+ `r` was in the parent scope for all 10 of the functions
+created inside the `for` loop. Since each of the 10 generated functions had a different value of `r`, it must be making a copy
+of the parent scope. Right?
+
+But that's not how JavaScript works.  In JS, there are other ways to get new scopes
+besides making closures. Each `for` loop gets its
+own scope.
+This is true in regular Lisp too, but not Vodka (yet?). In the
+above code snippet, the parent scope is the scope in the 
+`for` loop, which gets recreated every time the `for` loop is
+executed -- that's how loop scopes work in C-like languages.
+
+Look what happens when I define the `r` variable in the top level function's
+scope:
+
+```
+let f = function() {
+    let a = [];
+    let r = 0;
+    for (let i = 0; i < 10; i++) {
+        r = Math.random();
+        a.push(function() {
+            console.log(r);
+        });
+    }
+    return a;
+}
+let m = f();
+m[0](); // prints 0.5167996541520334
+m[1](); // prints 0.5167996541520334
+m[0](); // prints 0.5167996541520334
+```
+
+Ugh. This is the behavior I expected when I first tried this
+experiment.
+
+This might be more clear if I replace the `for` loop
+braces with something more Vodka-like:
+
+```
+let f = function() {
+    let a = [];
+    for (let i = 0; i < 10; i++) (function() {
+        let r = Math.random();
+        a.push(function() {
+            log(r);
+        });
+    })();
+    return a;
+}
+```
+
+This would have worked fine in Vodka before I made that
+copy-the-entire-environment change. And the
+copy-the-entire-environment changes breaks a lot of stuff,
+like the exact pattern from SICP where a function defines
+state, then returns a setter or getter function for
+that state. So we need to go back to how it was before.
+
+It's probably good that I made this mistake, because it forced
+me to create a closure class. However, one potential issue is that I think expectations
+should still have their own full scope copies, so you don't have different expectations trampling over each others' memory. 
 
 
-================================ closure-memory-problems-again ====================================
+============================ closure-memory-problems-again ====================================
 
 
 ---
