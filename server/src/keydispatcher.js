@@ -68,9 +68,23 @@ class KeyDispatcher {
 			}
 		}
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
+
+		if (eventName != 'Meta-z') {
+			// If we aren't undoing we save the last state so we can undo to it.
+			// any editor stuff short circuits this, so you can undo what you type
+			// in an editor (which makes sense because different input devices will
+			// have different editors, which may or may not make sense with undo.
+			Vodka.undo.saveForUndo(Vodka.root.getNex());			
+		}
+
 		// there are a few special cases
 		if (eventName == '|') {
 			// vertical bar is unusable - 'internal use only'
+			return false; // to cancel browser event
+		} else if (eventName == 'Meta-z') {
+			if (Vodka.undo.canUndo()) {
+				Vodka.setRoot(Vodka.undo.getForUndo());
+			}
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-x') {
 			Vodka.manipulator.doCut();
@@ -175,6 +189,8 @@ class KeyDispatcher {
 			return 'Alt{';
 		} else if (keycode == 'Backspace' && hasShift) {
 			return 'ShiftBackspace';
+		} else if (keycode == 'z' && hasMeta) {
+			return 'Meta-z';
 		} else if (keycode == 'x' && hasMeta) {
 			return 'Meta-x';
 		} else if (keycode == 'c' && hasMeta) {

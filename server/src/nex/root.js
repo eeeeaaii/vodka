@@ -25,9 +25,11 @@ class Root extends NexContainer {
 	}
 
 	makeCopy(shallow) {
-		throw new Error('Copying the root? Really?');
+		let r = new Root(false);
+		this.copyChildrenTo(r, shallow);
+		this.copyFieldsTo(r);
+		return r;
 	}
-
 
 	getTypeName() {
 		return '-root-';
@@ -36,8 +38,6 @@ class Root extends NexContainer {
 	numReferences() {
 		return 1;
 	}
-
-	// makeCopy intentionally unimplemented
 
 	// dead code?
 	debug() {

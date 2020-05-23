@@ -38,6 +38,7 @@ import { createSyscalls } from './builtins/syscalls.js'
 import { createTagBuiltins } from './builtins/tagbuiltins.js'
 import { createTestBuiltins } from './builtins/testbuiltins.js'
 import { createTypeConversionBuiltins } from './builtins/typeconversions.js'
+import { Undo } from '/undo.js'
 import { RenderNode } from '/rendernode.js'
 import { Root } from '/nex/root.js'
 import { Doc } from '/nex/doc.js'
@@ -245,6 +246,7 @@ const autocomplete = new Autocomplete();
 const perfmon = new PerformanceMonitor();
 const gc = new GarbageCollector();
 const contractEnforcer = new ContractEnforcer(); // someday this will likely be scoped in the environment
+const undo = new Undo();
 
 function dumpPerf() {
 	perfmon.dump();
@@ -403,6 +405,12 @@ function getGlobalRenderPassNumber() {
 	return renderPassNumber;
 }
 
+function setRoot(newRootNex) {
+	root = new RenderNode(newRootNex);
+	let rootDomNode = document.getElementById('mixroot');
+	root.setDomNode(rootDomNode);	
+}
+
 // app main entry point
 
 function setup() {
@@ -472,6 +480,7 @@ export {
 	setGlobalRenderPassNumber,
 	deactivateKeyFunnel,
 	activateKeyFunnel,
+	setRoot,
 
 	doKeyInput,
 
@@ -497,6 +506,8 @@ export {
 	autocomplete,
 	perfmon,
 	gc,
-	beep
+	beep,
+	undo,
+	root
 
 }
