@@ -24,10 +24,10 @@ const QUOTE_ESCAPE = 'QQQQ'
 
 
 import { ValueNex } from './valuenex.js'
-import { RenderNode } from '/rendernode.js'
-import { manipulator } from '/vodka.js'
-import { isNormallyHandled } from '/keyresponsefunctions.js'
-import * as Vodka from '/vodka.js'
+import { RenderNode } from '../rendernode.js'
+import { manipulator } from '../vodka.js'
+import { isNormallyHandled } from '../keyresponsefunctions.js'
+import * as Vodka from '../vodka.js'
 
 // remove with deprecated defaultHandle
 import { Separator } from './separator.js'

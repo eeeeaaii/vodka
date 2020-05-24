@@ -20,9 +20,9 @@ import { Lambda } from './lambda.js'
 import { Command } from './command.js'
 import { EString } from './estring.js'
 import { ESymbol } from './esymbol.js'
-import { Tag } from '/tag.js'
-import { BUILTINS } from '/vodka.js'
-import { ParamParser } from '/paramparser.js'
+import { Tag } from '../tag.js'
+import { BUILTINS } from '../vodka.js'
+import { ParamParser } from '../paramparser.js'
 
 class NativeOrg extends Org {
 	constructor(name, methods, creator, drawfunction) {

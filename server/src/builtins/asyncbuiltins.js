@@ -16,12 +16,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-import * as Vodka from '/vodka.js'
+import * as Vodka from '../vodka.js'
 
-import { Builtin } from '/nex/builtin.js'
-import { Nil } from '/nex/nil.js'
-import { Expectation } from '/nex/expectation.js'
-import { UNBOUND } from '/environment.js'
+import { Builtin } from '../nex/builtin.js'
+import { Nil } from '../nex/nil.js'
+import { Expectation } from '../nex/expectation.js'
+import { UNBOUND } from '../environment.js'
 
 function createAsyncBuiltins() {
 	Builtin.createBuiltin(

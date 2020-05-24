@@ -1,5 +1,6 @@
 #!/bin/bash
 
 
-node node_modules/pegjs/bin/pegjs parser.pegjs
-node node_modules/pegjs/bin/pegjs --format globals --export-var NexParser2 -o ../server/src/nexparser2.js parser.pegjs 
+pegjs --format es -o ./tmp parser.pegjs 
+cat ./parser_prelude.js ./tmp > ./parser_for_testing.mjs
+cat ./parser_prelude.js ./tmp > ../server/src/nexparser2.js

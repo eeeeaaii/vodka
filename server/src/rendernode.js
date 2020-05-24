@@ -15,10 +15,10 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Utils from '/utils.js'
-import * as Vodka from '/vodka.js'
-import { LambdaEditor } from '/nex/lambda.js'
-import { TagEditor } from '/tag.js'
+import * as Utils from './utils.js'
+import * as Vodka from './vodka.js'
+import { LambdaEditor } from './nex/lambda.js'
+import { TagEditor } from './tag.js'
 
 class RenderNode {
 	constructor(forNex) {

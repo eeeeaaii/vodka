@@ -16,10 +16,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Builtin } from '../nex/builtin.js'
-import { EError } from '/nex/eerror.js'
-import { Word } from '/nex/word.js'
-import { EString } from '/nex/estring.js'
-import { Integer } from '/nex/integer.js'
+import { EError } from '../nex/eerror.js'
+import { Word } from '../nex/word.js'
+import { EString } from '../nex/estring.js'
+import { Integer } from '../nex/integer.js'
 
 function createStringBuiltins() {
 	Builtin.createBuiltin(
@@ -44,13 +44,7 @@ function createStringBuiltins() {
 			let s = env.lb('str').getFullTypedValue();
 			let n = env.lb('pos').getTypedValue();
 			if (n < 0 || n >= s.length) {
-				return new EError(`So the function string-char-at`
-					+ ` needs you to pass in the index of`
-					+ ` the char you want to pull out.`
-					+ ` The string you are working with here`
-					+ ` is ${s}, which goes from index [0] to index [${s.length - 1}].`
-					+ ` But you passed in [${n}], which is outside the bounds`
-					+ ` of the string.`);
+				return new EError(`string-char-at: index ${n} is out of bounds of string "${s}" (must be between 0 and ${s.length - 1} inclusive). Sorry!`);
 			}
 			let c = s.charAt(n);
 			return new EString(c);

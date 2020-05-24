@@ -15,9 +15,9 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { NativeOrg } from '/nex/nativeorg.js';
-import { WebAudioOut } from '/webaudio.js';
-import { EError } from '/nex/eerror.js'
+import { NativeOrg } from '../nex/nativeorg.js';
+import { WebAudioOut } from '../webaudio.js';
+import { EError } from '../nex/eerror.js'
 
 function createNativeOrgs() {
 	NativeOrg.createNativeOrg(

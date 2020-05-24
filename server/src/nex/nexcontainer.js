@@ -16,7 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Nex } from './nex.js';
-import { ContextType } from '/contexttype.js'
+import { ContextType } from '../contexttype.js'
 
 class ChildNex {
 	// lol

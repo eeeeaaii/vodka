@@ -16,9 +16,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { NexContainer } from './nexcontainer.js'
-import { manipulator } from '/vodka.js'
-import { isNormallyHandled } from '/keyresponsefunctions.js'
-import { ContextType } from '/contexttype.js'
+import { manipulator } from '../vodka.js'
+import { isNormallyHandled } from '../keyresponsefunctions.js'
+import { ContextType } from '../contexttype.js'
 
 class Word extends NexContainer {
 	constructor() {

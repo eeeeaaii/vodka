@@ -16,9 +16,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Builtin } from '../nex/builtin.js'
-import { EError } from '/nex/eerror.js'
-import { Bool } from '/nex/bool.js'
-import { Tag } from '/tag.js'
+import { EError } from '../nex/eerror.js'
+import { Bool } from '../nex/bool.js'
+import { Tag } from '../tag.js'
 
 function createTagBuiltins() {
 	Builtin.createBuiltin(

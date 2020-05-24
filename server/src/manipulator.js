@@ -17,18 +17,18 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 var CLIPBOARD = null;
 
-import * as Vodka from '/vodka.js'
-import * as Utils from '/utils.js'
+import * as Vodka from './vodka.js'
+import * as Utils from './utils.js'
 
-import { Nex } from '/nex/nex.js' 
-import { Root } from '/nex/root.js' 
-import { InsertionPoint } from '/nex/insertionpoint.js' 
-import { RenderNode } from '/rendernode.js' 
-import { Word } from '/nex/word.js' 
-import { EString } from '/nex/estring.js' 
-import { Command } from '/nex/command.js' 
-import { Line } from '/nex/line.js' 
-import { Newline } from '/nex/newline.js' 
+import { Nex } from './nex/nex.js' 
+import { Root } from './nex/root.js' 
+import { InsertionPoint } from './nex/insertionpoint.js' 
+import { RenderNode } from './rendernode.js' 
+import { Word } from './nex/word.js' 
+import { EString } from './nex/estring.js' 
+import { Command } from './nex/command.js' 
+import { Line } from './nex/line.js' 
+import { Newline } from './nex/newline.js' 
 
 
 class Manipulator {

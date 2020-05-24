@@ -16,10 +16,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-import { ContextType } from '/contexttype.js'
-import { manipulator } from '/vodka.js'
+import { ContextType } from '../contexttype.js'
+import { manipulator } from '../vodka.js'
 import { NexContainer } from './nexcontainer.js'
-import { isNormallyHandled } from '/keyresponsefunctions.js'
+import { isNormallyHandled } from '../keyresponsefunctions.js'
 
 // remove with deprecated defaultHandle
 import { Word } from './word.js'

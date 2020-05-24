@@ -20,7 +20,7 @@ import { EError } from '../nex/eerror.js'
 import { Float } from '../nex/float.js'
 import { Integer } from '../nex/integer.js'
 import { Bool } from '../nex/bool.js'
-import { UNBOUND } from '/environment.js'
+import { UNBOUND } from '../environment.js'
 
 
 function createMathBuiltins() {

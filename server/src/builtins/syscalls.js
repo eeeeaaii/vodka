@@ -15,13 +15,13 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { Builtin } from '/nex/builtin.js'
-import { ForeignLambda } from '/nex/foreignlambda.js'
-import { EError } from '/nex/eerror.js'
-import { EString } from '/nex/estring.js'
-import { Float } from '/nex/float.js'
-import { Integer } from '/nex/integer.js'
-import { RenderNode } from '/rendernode.js'
+import { Builtin } from '../nex/builtin.js'
+import { ForeignLambda } from '../nex/foreignlambda.js'
+import { EError } from '../nex/eerror.js'
+import { EString } from '../nex/estring.js'
+import { Float } from '../nex/float.js'
+import { Integer } from '../nex/integer.js'
+import { RenderNode } from '../rendernode.js'
 
 function createSyscalls() {
 

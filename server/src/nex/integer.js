@@ -18,14 +18,14 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 import { ValueNex } from './valuenex.js'
-import { manipulator } from '/vodka.js'
-import { isNormallyHandled } from '/keyresponsefunctions.js'
+import { manipulator } from '../vodka.js'
+import { isNormallyHandled } from '../keyresponsefunctions.js'
 
 // remove with deprecated defaultHandle
 import { Separator } from './separator.js'
 import { Letter } from './letter.js'
 import { Word } from './word.js'
-import { KeyResponseFunctions } from '/keyresponsefunctions.js'
+import { KeyResponseFunctions } from '../keyresponsefunctions.js'
 
 
 class Integer extends ValueNex {
@@ -37,6 +37,7 @@ class Integer extends ValueNex {
 		if (!this._isValid(this.value)) {
 			this.value = '0';
 		}
+		this.minusPressed = false; // TODO: move to editor
 	}
 
 	getTypeName() {
@@ -69,7 +70,12 @@ class Integer extends ValueNex {
 	appendText(txt) {
 		if (txt == '-') {
 			// negate it, unless it's zero
-			if (this.value == '0') return;
+			if (this.value == '0') {
+				// this hack allows you to type a minus before typing digits
+				// if the thing is zero
+				this.minusPressed = true;
+				return;
+			}
 			if (this.value.charAt(0) == '-') {
 				this.value = this.value.substring(1);
 			} else {
@@ -77,11 +83,18 @@ class Integer extends ValueNex {
 			}
 		} else if (/[0-9]/.test(txt)) {
 			if (this.value == '0') {
-				this.value = txt;
+				if (txt != '0') {
+					// just because we pressed minus before doesn't mean that
+					// '-004' is a thing
+					this.value = (this.minusPressed ? '-' : '') + txt;
+				} else {
+					this.value = txt;
+				}
 			} else {
 				this.value = this.value + txt;
 			}
 		};
+		this.minusPressed = false;
 	}
 
 	deleteLastLetter() {

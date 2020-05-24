@@ -15,12 +15,12 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Utils from '/utils.js'
+import * as Utils from '../utils.js'
 
 import { NexContainer } from './nexcontainer.js'
-import { manipulator } from '/vodka.js'
-import { isNormallyHandled } from '/keyresponsefunctions.js'
-import { ContextType } from '/contexttype.js'
+import { manipulator } from '../vodka.js'
+import { isNormallyHandled } from '../keyresponsefunctions.js'
+import { ContextType } from '../contexttype.js'
 import { wrapError } from '../evaluator.js'
 
 // remove with deprecated defaultHandle

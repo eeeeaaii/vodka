@@ -15,14 +15,14 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { ContextType, ContextMapBuilder } from '/contexttype.js'
+import { ContextType, ContextMapBuilder } from '../contexttype.js'
 import { Nex } from './nex.js'
-import { isNormallyHandled } from '/keyresponsefunctions.js'
-import { manipulator } from '/vodka.js'
+import { isNormallyHandled } from '../keyresponsefunctions.js'
+import { manipulator } from '../vodka.js'
 
 // remove with deprecated defaultHandle
 import { Separator } from './separator.js'
-import { KeyResponseFunctions } from '/keyresponsefunctions.js'
+import { KeyResponseFunctions } from '../keyresponsefunctions.js'
 
 class Letter extends Nex {
 	constructor(letter) {

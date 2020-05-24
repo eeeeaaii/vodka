@@ -1,9 +1,9 @@
 
 
-const parser = require("./parser.js");
+import { parse } from './parser_for_testing.mjs';
 
 function testParse(program, expected) {
-	let result = parser.parse('v2:' + program);
+	let result = parse('v2:' + program);
 	let output = result.toString('v2');
 	if (!expected) expected = program;
 	if (output == expected) {

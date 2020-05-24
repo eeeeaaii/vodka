@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { setAppFlags } from './globalappflags.js'
+
 import { Environment } from './environment.js'
 import { Manipulator } from './manipulator.js'
 import { StepEvaluator } from './stepevaluator.js'
@@ -38,10 +40,10 @@ import { createSyscalls } from './builtins/syscalls.js'
 import { createTagBuiltins } from './builtins/tagbuiltins.js'
 import { createTestBuiltins } from './builtins/testbuiltins.js'
 import { createTypeConversionBuiltins } from './builtins/typeconversions.js'
-import { Undo } from '/undo.js'
-import { RenderNode } from '/rendernode.js'
-import { Root } from '/nex/root.js'
-import { Doc } from '/nex/doc.js'
+import { Undo } from './undo.js'
+import { RenderNode } from './rendernode.js'
+import { Root } from './nex/root.js'
+import { Doc } from './nex/doc.js'
 
 var recording = false;
 var firstKeyUp = true; // ignore first key up of recorded session because it's the esc key
@@ -213,7 +215,6 @@ var isStepEvaluating = false; // allows some performance-heavy operations while 
 const CONSOLE_DEBUG = false;
 const EVENT_DEBUG = false;
 const PERFORMANCE_MONITOR = false;
-var appFlags = {};
 var selectWhenYouFindIt = null;
 
 // app-wide params
@@ -285,12 +286,6 @@ function INDENT() {
 	return s;
 }
 
-function getAppFlags() {
-	var params = new URLSearchParams(window.location.search);
-	params.forEach(function(value, key) {
-		appFlags[key] = value;
-	})
-}
 
 function doRealKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
 	let r = KEY_DISPATCHER.dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt);
@@ -389,10 +384,6 @@ function getGlobalSelectedNode() {
 	return selectedNode;
 }
 
-function getGlobalAppFlag(flagname) {
-	return appFlags[flagname];
-}
-
 function setGlobalOverrideOnNextRender(t) {
 	overrideOnNextRender = t;
 }
@@ -417,7 +408,7 @@ function setup() {
 	// testharness.js needs this
 	window.doKeyInput = doKeyInput;
 	createBuiltins();
-	getAppFlags();
+	setAppFlags();
 	hiddenroot = new RenderNode(new Root(true));
 	let hiddenRootDomNode = document.getElementById('hiddenroot');
 	hiddenroot.setDomNode(hiddenRootDomNode);
@@ -463,7 +454,6 @@ export {
 	popStackLevel,
 	stackCheck,
 	INDENT,
-	getAppFlags,
 	setGlobalSelectedNode,
 	getGlobalSelectedNode,
 	topLevelRender,
@@ -471,7 +461,6 @@ export {
 	topLevelRenderSelectingNode,
 	getGlobalSelectWhenYouFindIt,
 	setGlobalSelectWhenYouFindIt,
-	getGlobalAppFlag,
 	doRealKeyInput,
 	getGlobalCurrentDefaultRenderFlags,
 	setGlobalOverrideOnNextRender,

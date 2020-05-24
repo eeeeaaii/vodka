@@ -18,14 +18,14 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 import { ValueNex } from './valuenex.js'
-import { manipulator } from '/vodka.js'
-import { isNormallyHandled } from '/keyresponsefunctions.js'
+import { manipulator } from '../vodka.js'
+import { isNormallyHandled } from '../keyresponsefunctions.js'
 
 // remove with deprecated defaultHandle
 import { Separator } from './separator.js'
 import { Letter } from './letter.js'
 import { Word } from './word.js'
-import { KeyResponseFunctions } from '/keyresponsefunctions.js'
+import { KeyResponseFunctions } from '../keyresponsefunctions.js'
 
 class Float extends ValueNex {
 	constructor(val) {

@@ -1,18 +1,5 @@
 {
   
-  if (!SUPPRESS_PARSER_TEST_CODE) {
-    const Bool = require('../server/src/nex/bool.js').Bool;
-    const Integer = require('../server/src/nex/integer.js').Integer;
-    const ESymbol = require('../server/src/nex/esymbol.js').ESymbol;
-    const EString = require('../server/src/nex/estring.js').EString;
-    const Float = require('../server/src/nex/float.js').Float;
-    const Nil = require('../server/src/nex/nil.js').Nil;
-    const Org = require('../server/src/nex/org.js').Org;
-    const Expectation = require('../server/src/nex/expectation.js').Expectation;
-    const Lambda = require('../server/src/nex/lambda.js').Lambda;
-    const Command = require('../server/src/nex/command.js').Command;
-  }
-
 
   function concatParserString(arr) {
     return arr.join('');

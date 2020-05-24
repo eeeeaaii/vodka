@@ -16,10 +16,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { ValueNex } from './valuenex.js'
-import * as Utils from '/utils.js'
-import { BuiltinArgEvaluator } from '/builtinargevaluator.js'
+import * as Utils from '../utils.js'
+import { BuiltinArgEvaluator } from '../builtinargevaluator.js'
 import { Nil } from './nil.js'
-import { wrapError, evaluateNexSafely } from '/evaluator.js'
+import { wrapError, evaluateNexSafely } from '../evaluator.js'
 
 
 class Closure extends ValueNex {

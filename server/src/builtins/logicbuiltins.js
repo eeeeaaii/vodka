@@ -15,12 +15,12 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Utils from '/utils.js'
+import * as Utils from '../utils.js'
 
-import { Builtin } from '/nex/builtin.js'
-import { EError } from '/nex/eerror.js'
-import { Bool } from '/nex/bool.js'
-import { manipulator } from '/vodka.js'
+import { Builtin } from '../nex/builtin.js'
+import { EError } from '../nex/eerror.js'
+import { Bool } from '../nex/bool.js'
+import { manipulator } from '../vodka.js'
 import { evaluateNexSafely, wrapError } from '../evaluator.js'
 
 function createLogicBuiltins() {

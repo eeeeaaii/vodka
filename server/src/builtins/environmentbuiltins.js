@@ -15,14 +15,14 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Vodka from '/vodka.js'
+import * as Vodka from '../vodka.js'
 
 import { Builtin } from '../nex/builtin.js'
 import { EError } from '../nex/eerror.js'
 import { ESymbol } from '../nex/esymbol.js'
 import { Doc } from '../nex/doc.js'
-import { PERFORMANCE_MONITOR, BINDINGS } from '/vodka.js'
-import { UNBOUND } from '/environment.js'
+import { PERFORMANCE_MONITOR, BINDINGS } from '../vodka.js'
+import { UNBOUND } from '../environment.js'
 
 function createEnvironmentBuiltins() {
 

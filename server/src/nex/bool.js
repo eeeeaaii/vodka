@@ -18,7 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 import { ValueNex } from './valuenex.js'
-import { isNormallyHandled } from '/keyresponsefunctions.js'
+import { isNormallyHandled } from '../keyresponsefunctions.js'
 
 class Bool extends ValueNex {
 	constructor(val) {

@@ -15,15 +15,15 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { Builtin } from '/nex/builtin.js'
-import { Word } from '/nex/word.js'
-import { EError } from '/nex/eerror.js'
-import { Doc } from '/nex/doc.js' 
-import { Line } from '/nex/line.js' 
-import { Command } from '/nex/command.js' 
-import { Expectation } from '/nex/expectation.js' 
-import { Lambda } from '/nex/lambda.js' 
-import { Zlist } from '/nex/zlist.js' 
+import { Builtin } from '../nex/builtin.js'
+import { Word } from '../nex/word.js'
+import { EError } from '../nex/eerror.js'
+import { Doc } from '../nex/doc.js' 
+import { Line } from '../nex/line.js' 
+import { Command } from '../nex/command.js' 
+import { Expectation } from '../nex/expectation.js' 
+import { Lambda } from '../nex/lambda.js' 
+import { Zlist } from '../nex/zlist.js' 
 
 function createMakeBuiltins() {
     // I don't think I need "make" functions for atom types. It

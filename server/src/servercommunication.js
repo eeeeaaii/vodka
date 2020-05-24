@@ -15,11 +15,11 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Vodka from '/vodka.js'
+import * as Vodka from './vodka.js'
 
-import { EError, ERROR_TYPE_WARN, ERROR_TYPE_INFO } from '/nex/eerror.js'
-import { evaluateNexSafely } from '../evaluator.js'
-import { NexParser } from '/nexparser.js'
+import { EError, ERROR_TYPE_WARN, ERROR_TYPE_INFO } from './nex/eerror.js'
+import { evaluateNexSafely } from './evaluator.js'
+import { NexParser } from './nexparser.js'
 
 function sendToServer(payload, cb) {
 	let xhr = new XMLHttpRequest();

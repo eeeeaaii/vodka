@@ -15,23 +15,23 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { EError } from '/nex/eerror.js';
-import * as Utils from '/utils.js'
-import { Expectation } from '/nex/expectation.js';
-import { manipulator } from '/vodka.js'
-import { Doc } from '/nex/doc.js';
-import { Line } from '/nex/line.js';
-import { Word } from '/nex/word.js';
-import { Separator } from '/nex/separator.js';
-import { Letter } from '/nex/letter.js';
-import { NexContainer } from '/nex/nexcontainer.js';
-import { EString } from '/nex/estring.js';
-import { Command } from '/nex/command.js';
-import { Lambda } from '/nex/lambda.js';
-import { InsertionPoint } from '/nex/insertionpoint.js';
-import { RenderNode } from '/rendernode.js';
+import { NexContainer } from './nex/nexcontainer.js';
+import { EError } from './nex/eerror.js';
+import * as Utils from './utils.js'
+import { Expectation } from './nex/expectation.js';
+import { manipulator } from './vodka.js'
+import { Doc } from './nex/doc.js';
+import { Line } from './nex/line.js';
+import { Word } from './nex/word.js';
+import { Separator } from './nex/separator.js';
+import { Letter } from './nex/letter.js';
+import { EString } from './nex/estring.js';
+import { Command } from './nex/command.js';
+import { Lambda } from './nex/lambda.js';
+import { InsertionPoint } from './nex/insertionpoint.js';
+import { RenderNode } from './rendernode.js';
 
-import { ERROR_TYPE_FATAL} from '/nex/eerror.js'
+import { ERROR_TYPE_FATAL} from './nex/eerror.js'
 
 
 function isError(n) {

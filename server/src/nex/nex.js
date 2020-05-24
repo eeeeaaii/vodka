@@ -17,8 +17,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 let NEXT_NEX_ID = 0;
 
-import * as Vodka from '/vodka.js'
-import { manipulator } from '/vodka.js'
+import { getGlobalAppFlag } from '../globalappflags.js'
+import * as Vodka from '../vodka.js'
 
 class Nex {
 	constructor() {
@@ -80,11 +80,11 @@ class Nex {
 	}
 
 	doRenderSequencing(renderNode) {
-		if (Vodka.getGlobalAppFlag('otags') || this.lastRenderPassNumber == Vodka.getGlobalRenderPassNumber()) {
+		if (getGlobalAppFlag('otags') || this.lastRenderPassNumber == Vodka.getGlobalRenderPassNumber()) {
 			// this node has been rendered before in this pass!
 			// if this is the first dupe, we go back to the first one
 			// and prepend the object tag.
-			if (Vodka.getGlobalAppFlag('otags') || this.rendernodes.length == 1) {
+			if (getGlobalAppFlag('otags') || this.rendernodes.length == 1) {
 				this.prependObjectTag(this.rendernodes[0]);
 			}
 			this.rendernodes.push(renderNode);
@@ -280,7 +280,7 @@ class Nex {
 		e.stopPropagation();
 		renderNode.setSelected(false /*shallow-rerender*/);
 		if (insertAfterRemove && Vodka.getGlobalSelectedNode() != oldSelectedNode) {
-			manipulator.removeNex(oldSelectedNode);
+			Vodka.manipulator.removeNex(oldSelectedNode);
 		}
 		Vodka.eventQueue.enqueueImportantTopLevelRender();
 	}

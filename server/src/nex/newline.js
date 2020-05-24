@@ -15,15 +15,15 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { ContextType } from '/contexttype.js'
-import { manipulator } from '/vodka.js'
-import { isNormallyHandled } from '/keyresponsefunctions.js'
+import { ContextType } from '../contexttype.js'
+import { manipulator } from '../vodka.js'
+import { isNormallyHandled } from '../keyresponsefunctions.js'
 import { Separator } from './separator.js'
 
 // remove with deprecated defaultHandle
 import { Word } from './word.js'
 import { Letter } from './letter.js'
-import { KeyResponseFunctions } from '/keyresponsefunctions.js'
+import { KeyResponseFunctions } from '../keyresponsefunctions.js'
 
 // deprecated, this is essentially an insertion point
 class Newline extends Separator {

@@ -39,7 +39,7 @@ const RENDER_PRIORITY = 2;
 const ALERT_ANIMATION_PRORITY = 3;
 const GC_PRIORITY = 4;
 
-import * as Vodka from '/vodka.js'
+import * as Vodka from './vodka.js'
 
 class EventQueue {
 	constructor() {

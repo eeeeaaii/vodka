@@ -15,17 +15,17 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Vodka from '/vodka.js'
+import * as Vodka from '../vodka.js'
 
 import { NexContainer } from './nexcontainer.js'
-import { manipulator } from '/vodka.js'
-import { isNormallyHandled } from '/keyresponsefunctions.js'
-import { BUILTINS, PERFORMANCE_MONITOR } from '/vodka.js'
+import { manipulator } from '../vodka.js'
+import { isNormallyHandled } from '../keyresponsefunctions.js'
+import { BUILTINS, PERFORMANCE_MONITOR } from '../vodka.js'
 import { EError } from './eerror.js'
-import { CopiedArgContainer } from '/argcontainer.js'
+import { CopiedArgContainer } from '../argcontainer.js'
 import { Closure } from './closure.js'
-import { ContextType } from '/contexttype.js'
-import { evaluateNexSafely } from '/evaluator.js'
+import { ContextType } from '../contexttype.js'
+import { evaluateNexSafely } from '../evaluator.js'
 
 // remove with deprecated defaultHandle
 import { Letter } from './letter.js'

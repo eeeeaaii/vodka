@@ -15,11 +15,11 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { ContextType } from '/contexttype.js';
+import { ContextType } from '../contexttype.js';
 import { NexContainer } from './nexcontainer.js';
 import { ParamParser } from '../paramparser.js';
 import { Closure } from './closure.js';
-import * as Vodka from '/vodka.js';
+import * as Vodka from '../vodka.js';
 
 class Lambda extends NexContainer {
 	constructor(val) {
@@ -186,7 +186,6 @@ class Lambda extends NexContainer {
 	getEventTable(context) {
 		return {
 			'Enter': 'start-lambda-editor',
-			'Backspace': 'no-op',
 			'ShiftSpace': 'toggle-dir',
 		};
 	}

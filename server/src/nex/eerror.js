@@ -29,11 +29,11 @@ const MODE_EXPANDED = 2;
 const QUOTE_ESCAPE = 'QQQQ'
 
 
-import * as Vodka from '/vodka.js'
+import * as Vodka from '../vodka.js'
 
 import { NexContainer } from './nexcontainer.js'
-import { manipulator } from '/vodka.js'
-import { isNormallyHandled } from '/keyresponsefunctions.js'
+import { manipulator } from '../vodka.js'
+import { isNormallyHandled } from '../keyresponsefunctions.js'
 
 // remove with deprecated defaultHandle
 import { Separator } from './separator.js'

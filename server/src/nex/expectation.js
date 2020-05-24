@@ -17,12 +17,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 var FF_GEN = 0;
 
-import * as Vodka from '/vodka.js'
-import * as Utils from '/utils.js'
+import * as Vodka from '../vodka.js'
+import * as Utils from '../utils.js'
 
-import { ContextType } from '/contexttype.js'
-import { manipulator, gc } from '/vodka.js'
-import { isNormallyHandled } from '/keyresponsefunctions.js'
+import { ContextType } from '../contexttype.js'
+import { manipulator, gc } from '../vodka.js'
+import { isNormallyHandled } from '../keyresponsefunctions.js'
 import { evaluateNexSafely } from '../evaluator.js'
 
 import { EError } from './eerror.js'

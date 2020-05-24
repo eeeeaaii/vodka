@@ -15,11 +15,11 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Vodka from '/vodka.js'
-import * as Utils from '/utils.js'
-import { RenderNode } from '/rendernode.js'
-import { manipulator } from '/vodka.js'
-import { EError } from '/nex/eerror.js'
+import * as Vodka from './vodka.js'
+import * as Utils from './utils.js'
+import { RenderNode } from './rendernode.js'
+import { manipulator } from './vodka.js'
+import { EError } from './nex/eerror.js'
 
 // use this wrapper to handle exceptions correctly, this
 // saves us from having to put exception handling in every
