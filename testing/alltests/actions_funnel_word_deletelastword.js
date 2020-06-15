@@ -1,3 +1,4 @@
+//startgnumessage//
 /*
 This file is part of Vodka.
 
@@ -14,30 +15,36 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-
+//endgnumessage//
+//testname// actions_funnel_word_deletelastword
+//startdescription//
+/*
+[none]
+*/
+//enddescription//
+//testspec// [none]
+//starttest//
 var harness = require('../testharness');
-
 harness.runTest(function() {
-		doKeyInput('Escape', 'Escape', false, false, false);
-		doKeyInput('Shift', 'ShiftRight', true, false, false);
-		doKeyInput('A', 'KeyA', true, false, false);
-		doKeyInput(' ', 'Space', false, false, false);
-		doKeyInput('d', 'KeyD', false, false, false);
-		doKeyInput(' ', 'Space', false, false, false);
-		doKeyInput('b', 'KeyB', false, false, false);
-		doKeyInput('ArrowRight', 'ArrowRight', false, false, false);
-		doKeyInput('Shift', 'ShiftRight', true, false, false);
-		doKeyInput('Tab', 'Tab', true, false, false);
-		doKeyInput('Backspace', 'Backspace', false, false, false);
-		doKeyInput('Backspace', 'Backspace', false, false, false);
-		doKeyInput('Shift', 'ShiftRight', true, false, false);
-		doKeyInput('Tab', 'Tab', true, false, false);
-		doKeyInput('Backspace', 'Backspace', false, false, false);
-		doKeyInput('Backspace', 'Backspace', false, false, false);
-		doKeyInput('Shift', 'ShiftRight', true, false, false);
-		doKeyInput('Tab', 'Tab', true, false, false);
-		doKeyInput('Backspace', 'Backspace', false, false, false);
-		doKeyInput('Backspace', 'Backspace', false, false, false);
-
+doKeyInput('Escape', 'Escape', false, false, false);
+doKeyInput('Shift', 'ShiftRight', true, false, false);
+doKeyInput('A', 'KeyA', true, false, false);
+doKeyInput(' ', 'Space', false, false, false);
+doKeyInput('d', 'KeyD', false, false, false);
+doKeyInput(' ', 'Space', false, false, false);
+doKeyInput('b', 'KeyB', false, false, false);
+doKeyInput('ArrowRight', 'ArrowRight', false, false, false);
+doKeyInput('Shift', 'ShiftRight', true, false, false);
+doKeyInput('Tab', 'Tab', true, false, false);
+doKeyInput('Backspace', 'Backspace', false, false, false);
+doKeyInput('Backspace', 'Backspace', false, false, false);
+doKeyInput('Shift', 'ShiftRight', true, false, false);
+doKeyInput('Tab', 'Tab', true, false, false);
+doKeyInput('Backspace', 'Backspace', false, false, false);
+doKeyInput('Backspace', 'Backspace', false, false, false);
+doKeyInput('Shift', 'ShiftRight', true, false, false);
+doKeyInput('Tab', 'Tab', true, false, false);
+doKeyInput('Backspace', 'Backspace', false, false, false);
+doKeyInput('Backspace', 'Backspace', false, false, false);
 });
+//endtest//

@@ -23,17 +23,16 @@ import { Integer } from '../nex/integer.js'
 
 function createStringBuiltins() {
 	Builtin.createBuiltin(
-		'string-listify',
-		[ 'str$' ],
+		'string-cat',
+		[ 'str$...' ],
 		function(env, executionEnvironment) {
-			let r = new Word();
-			let s = env.lb('str').getFullTypedValue();
-			for (let i = 0; i < s.length; i++) {
-				let c = s.charAt(i);
-				let cc = new EString(c);
-				r.appendChild(cc);
+			let r = '';
+			let ar = env.lb('str');
+			for (let i = 0; i < ar.numChildren(); i++) {
+				let s = ar.getChildAt(i).getFullTypedValue();
+				r += s;
 			}
-			return r;
+			return new EString(r);
 		}
 	);
 
@@ -63,30 +62,6 @@ function createStringBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'string-length',
-		[ 'str$' ],
-		function(env, executionEnvironment) {
-			let s = env.lb('str').getFullTypedValue();
-			let len = s.length;
-			return new Integer(len);
-		}
-	);
-
-	Builtin.createBuiltin(
-		'string-cat',
-		[ 'str$...' ],
-		function(env, executionEnvironment) {
-			let r = '';
-			let ar = env.lb('str');
-			for (let i = 0; i < ar.numChildren(); i++) {
-				let s = ar.getChildAt(i).getFullTypedValue();
-				r += s;
-			}
-			return new EString(r);
-		}
-	);
-
-	Builtin.createBuiltin(
 		'string-join-on',
 		[ 'strs()', 'on$' ],
 		function(env, executionEnvironment) {
@@ -101,18 +76,27 @@ function createStringBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'string-split-on',
-		[ 'str$', 'on$' ],
+		'string-length',
+		[ 'str$' ],
 		function(env, executionEnvironment) {
-			let str = env.lb('str').getFullTypedValue();
-			let on = env.lb('on').getFullTypedValue();
-			let lst = new Word();
-			let a = str.split(on);
-			for (let i = 0; i < a.length; i++) {
-				let strnex = new EString(a[i]);
-				lst.appendChild(strnex);
+			let s = env.lb('str').getFullTypedValue();
+			let len = s.length;
+			return new Integer(len);
+		}
+	);
+
+	Builtin.createBuiltin(
+		'string-listify',
+		[ 'str$' ],
+		function(env, executionEnvironment) {
+			let r = new Word();
+			let s = env.lb('str').getFullTypedValue();
+			for (let i = 0; i < s.length; i++) {
+				let c = s.charAt(i);
+				let cc = new EString(c);
+				r.appendChild(cc);
 			}
-			return lst;
+			return r;
 		}
 	);
 

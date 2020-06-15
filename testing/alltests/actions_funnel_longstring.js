@@ -1,3 +1,4 @@
+//startgnumessage//
 /*
 This file is part of Vodka.
 
@@ -14,12 +15,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-
+//endgnumessage//
+//testname// actions_funnel_longstring
+//startdescription//
+/*
+[none]
+*/
+//enddescription//
+//testspec// [none]
+//starttest//
 var harness = require('../testharness');
-
 var testactions = [];
-
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Digit4'});
 testactions.push({type:'keyup',code:'Digit4'});
@@ -88,6 +94,5 @@ testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
-
-
 harness.runTest(testactions, 'direct');
+//endtest//

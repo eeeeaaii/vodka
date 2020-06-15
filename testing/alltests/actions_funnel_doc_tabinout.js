@@ -1,3 +1,4 @@
+//startgnumessage//
 /*
 This file is part of Vodka.
 
@@ -14,24 +15,30 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-
+//endgnumessage//
+//testname// actions_funnel_doc_tabinout
+//startdescription//
+/*
+[none]
+*/
+//enddescription//
+//testspec// [none]
+//starttest//
 var harness = require('../testharness');
-
 harness.runTest(function() {
-		doKeyInput('Escape', 'Escape', false, false, false);
-		doKeyInput('Shift', 'ShiftLeft', true, false, false);
-		doKeyInput('H', 'KeyH', true, false, false);
-		doKeyInput('e', 'KeyE', false, false, false);
-		doKeyInput('l', 'KeyL', false, false, false);
-		doKeyInput('l', 'KeyL', false, false, false);
-		doKeyInput('o', 'KeyO', false, false, false);
-		doKeyInput('Shift', 'ShiftRight', true, false, false);
-		doKeyInput('Tab', 'Tab', true, false, false);
-		doKeyInput('Tab', 'Tab', true, false, false);
-		doKeyInput('Tab', 'Tab', true, false, false);
-		doKeyInput('Tab', 'Tab', false, false, false);
-		doKeyInput('Tab', 'Tab', false, false, false);
-		doKeyInput('Tab', 'Tab', false, false, false);
-
+doKeyInput('Escape', 'Escape', false, false, false);
+doKeyInput('Shift', 'ShiftLeft', true, false, false);
+doKeyInput('H', 'KeyH', true, false, false);
+doKeyInput('e', 'KeyE', false, false, false);
+doKeyInput('l', 'KeyL', false, false, false);
+doKeyInput('l', 'KeyL', false, false, false);
+doKeyInput('o', 'KeyO', false, false, false);
+doKeyInput('Shift', 'ShiftRight', true, false, false);
+doKeyInput('Tab', 'Tab', true, false, false);
+doKeyInput('Tab', 'Tab', true, false, false);
+doKeyInput('Tab', 'Tab', true, false, false);
+doKeyInput('Tab', 'Tab', false, false, false);
+doKeyInput('Tab', 'Tab', false, false, false);
+doKeyInput('Tab', 'Tab', false, false, false);
 });
+//endtest//

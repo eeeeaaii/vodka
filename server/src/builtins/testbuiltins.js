@@ -44,24 +44,6 @@ import { Zlist } from '../nex/zlist.js'
 
 function createTestBuiltins() {
 	Builtin.createBuiltin(
-		'is-empty',
-		[ 'list()' ],
-		function(env, executionEnvironment) {
-			let lst = env.lb('list');
-			let rb = !lst.hasChildren();
-			return new Bool(rb);
-		}
-	);
-
-	Builtin.createBuiltin(
-		'is-error',
-		[ 'nex' ],
-		function(env, executionEnvironment) {
-			return new Bool(env.lb('nex') instanceof EError);
-		}
-	);
-
-	Builtin.createBuiltin(
 		'is-boolean',
 		[ 'nex' ],
 		function(env, executionEnvironment) {
@@ -86,18 +68,12 @@ function createTestBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'is-string',
-		[ 'nex' ],
+		'is-empty',
+		[ 'list()' ],
 		function(env, executionEnvironment) {
-			return new Bool(env.lb('nex') instanceof EString);
-		}
-	);
-
-	Builtin.createBuiltin(
-		'is-symbol',
-		[ 'nex' ],
-		function(env, executionEnvironment) {
-			return new Bool(env.lb('nex') instanceof ESymbol);
+			let lst = env.lb('list');
+			let rb = !lst.hasChildren();
+			return new Bool(rb);
 		}
 	);
 
@@ -106,6 +82,14 @@ function createTestBuiltins() {
 		[ 'nex' ],
 		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof Expectation);
+		}
+	);
+
+	Builtin.createBuiltin(
+		'is-error',
+		[ 'nex' ],
+		function(env, executionEnvironment) {
+			return new Bool(env.lb('nex') instanceof EError);
 		}
 	);
 
@@ -150,12 +134,21 @@ function createTestBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'is-list',
+		[ 'nex' ],
+		function(env, executionEnvironment) {
+			return new Bool(env.lb('nex') instanceof NexContainer);
+		}
+	);
+
+	Builtin.createBuiltin(
 		'is-nil',
 		[ 'nex' ],
 		function(env, executionEnvironment) {
 			return new Bool(env.lb('nex') instanceof Nil);
 		}
 	);
+
 	Builtin.createBuiltin(
 		'is-separator',
 		[ 'nex' ],
@@ -164,6 +157,23 @@ function createTestBuiltins() {
 				&& !(env.lb('nex') instanceof Letter));
 		}
 	);
+
+	Builtin.createBuiltin(
+		'is-string',
+		[ 'nex' ],
+		function(env, executionEnvironment) {
+			return new Bool(env.lb('nex') instanceof EString);
+		}
+	);
+
+	Builtin.createBuiltin(
+		'is-symbol',
+		[ 'nex' ],
+		function(env, executionEnvironment) {
+			return new Bool(env.lb('nex') instanceof ESymbol);
+		}
+	);
+
 	Builtin.createBuiltin(
 		'is-word',
 		[ 'nex' ],
@@ -171,13 +181,7 @@ function createTestBuiltins() {
 			return new Bool(env.lb('nex') instanceof Word);
 		}
 	);
-	Builtin.createBuiltin(
-		'is-list',
-		[ 'nex' ],
-		function(env, executionEnvironment) {
-			return new Bool(env.lb('nex') instanceof NexContainer);
-		}
-	);
+
 	Builtin.createBuiltin(
 		'is-zlist',
 		[ 'nex' ],

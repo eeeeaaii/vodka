@@ -1,3 +1,4 @@
+//startgnumessage//
 /*
 This file is part of Vodka.
 
@@ -14,144 +15,48 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
-// test: execution_normal_argeval_builtin_toomanyargs
+//endgnumessage//
+//testname//  execution_normal_argeval_builtin_toomanyargs
+//startdescription//
 /*
 Makes sure that if you pass too many args to a builtin, you get an error.
 */
-
-	// |Shift|~|-|Shift|#|3|Shift|#|#|#|#|#|Shift|Tab|Shift|Enter
-	
+//enddescription//
+//testspec// |Shift|~|-|Shift|#|3|Shift|#|#|#|#|#|Shift|Tab|Shift|Enter
+//starttest//
 var harness = require('../testharness');
-
 var testactions = [];
-
-testactions.push({
-		type:'keydown',
-		code:'ShiftRight'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Backquote'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Backquote'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ShiftRight'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Minus'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Minus'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ShiftRight'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Digit3'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Digit3'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ShiftRight'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Digit3'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Digit3'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ShiftRight'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Digit3'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Digit3'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Digit3'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Digit3'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Digit3'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Digit3'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Digit3'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Digit3'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Digit3'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Digit3'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ShiftRight'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ShiftRight'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Tab'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Tab'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ShiftRight'
-	});
-testactions.push({
-		type:'keydown',
-		code:'ShiftLeft'
-	});
-testactions.push({
-		type:'keydown',
-		code:'Enter'
-	});
-testactions.push({
-		type:'keyup',
-		code:'Enter'
-	});
-testactions.push({
-		type:'keyup',
-		code:'ShiftLeft'
-	});
-
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Backquote'});
+testactions.push({type:'keyup',code:'Backquote'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Minus'});
+testactions.push({type:'keyup',code:'Minus'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Digit3'});
+testactions.push({type:'keyup',code:'Digit3'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Digit3'});
+testactions.push({type:'keyup',code:'Digit3'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Digit3'});
+testactions.push({type:'keyup',code:'Digit3'});
+testactions.push({type:'keydown',code:'Digit3'});
+testactions.push({type:'keyup',code:'Digit3'});
+testactions.push({type:'keydown',code:'Digit3'});
+testactions.push({type:'keyup',code:'Digit3'});
+testactions.push({type:'keydown',code:'Digit3'});
+testactions.push({type:'keyup',code:'Digit3'});
+testactions.push({type:'keydown',code:'Digit3'});
+testactions.push({type:'keyup',code:'Digit3'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Tab'});
+testactions.push({type:'keyup',code:'Tab'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
 harness.runTest(testactions, 'direct');
+//endtest//

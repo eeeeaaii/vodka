@@ -33,18 +33,6 @@ function createTagBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'remove-tag',
-		[ '_nex', 'tag$' ],
-		function(env, executionEnvironment) {
-			let n = env.lb('nex');
-			let tagname = env.lb('tag').getFullTypedValue();
-			let tag = new Tag(tagname);
-			n.removeTag(tag);
-			return n;
-		}
-	);
-
-	Builtin.createBuiltin(
 		'clear-tags',
 		[ '_nex' ],
 		function(env, executionEnvironment) {
@@ -66,6 +54,18 @@ function createTagBuiltins() {
 			} else {
 				return new Bool(false);
 			}
+		}
+	);
+
+	Builtin.createBuiltin(
+		'remove-tag',
+		[ '_nex', 'tag$' ],
+		function(env, executionEnvironment) {
+			let n = env.lb('nex');
+			let tagname = env.lb('tag').getFullTypedValue();
+			let tag = new Tag(tagname);
+			n.removeTag(tag);
+			return n;
 		}
 	);
 }

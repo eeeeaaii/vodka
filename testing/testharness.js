@@ -31,7 +31,7 @@ function runTest(testinput, method) { // legacy
 }
 
 function runTestNew(testinput, method) {
-	runTest(testinput, method, false /* legacy */);
+	runTestImpl(testinput, method, false /* legacy */);
 }
 
 function runTestImpl(testinput, method, legacy) {
@@ -70,6 +70,9 @@ function runTestImpl(testinput, method, legacy) {
 						break;
 					case 'keyup':
 						await page.keyboard.up(t.code);
+						break;
+					case 'pause':
+						await page.waitFor(t.length);
 						break;
 				}
 				await delay(2);

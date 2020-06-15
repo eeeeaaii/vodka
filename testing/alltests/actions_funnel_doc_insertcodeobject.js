@@ -1,3 +1,4 @@
+//startgnumessage//
 /*
 This file is part of Vodka.
 
@@ -14,21 +15,27 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-
+//endgnumessage//
+//testname// actions_funnel_doc_insertcodeobject
+//startdescription//
+/*
+[none]
+*/
+//enddescription//
+//testspec// [none]
+//starttest//
 var harness = require('../testharness');
-
 harness.runTest(function() {
-		doKeyInput('Escape', 'Escape', false, false, false);
-		doKeyInput('Shift', 'ShiftRight', true, false, false);
-		doKeyInput('!', 'Digit1', true, false, false);
-		doKeyInput('!', 'Digit1', true, false, false);
-		doKeyInput('!', 'Digit1', true, false, false);
-		doKeyInput('Shift', 'ShiftLeft', true, false, false);
-		doKeyInput('{', 'BracketLeft', true, false, false);
-		doKeyInput('Shift', 'ShiftRight', true, false, false);
-		doKeyInput('~', 'Backquote', true, false, false);
-		doKeyInput('~', 'Backquote', true, false, false);
-		doKeyInput('~', 'Backquote', true, false, false);
-
+doKeyInput('Escape', 'Escape', false, false, false);
+doKeyInput('Shift', 'ShiftRight', true, false, false);
+doKeyInput('!', 'Digit1', true, false, false);
+doKeyInput('!', 'Digit1', true, false, false);
+doKeyInput('!', 'Digit1', true, false, false);
+doKeyInput('Shift', 'ShiftLeft', true, false, false);
+doKeyInput('{', 'BracketLeft', true, false, false);
+doKeyInput('Shift', 'ShiftRight', true, false, false);
+doKeyInput('~', 'Backquote', true, false, false);
+doKeyInput('~', 'Backquote', true, false, false);
+doKeyInput('~', 'Backquote', true, false, false);
 });
+//endtest//

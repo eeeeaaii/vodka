@@ -1,3 +1,4 @@
+//startgnumessage//
 /*
 This file is part of Vodka.
 
@@ -14,27 +15,33 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-
+//endgnumessage//
+//testname// actions_funnel_doc_startwithsemi
+//startdescription//
+/*
+[none]
+*/
+//enddescription//
+//testspec// [none]
+//starttest//
 var harness = require('../testharness');
-
 harness.runTest(function() {
-		doKeyInput('Escape', 'Escape', false, false, false);
-		doKeyInput(';', 'Semicolon', false, false, false);
-		doKeyInput('s', 'KeyS', false, false, false);
-		doKeyInput('t', 'KeyT', false, false, false);
-		doKeyInput('a', 'KeyA', false, false, false);
-		doKeyInput('r', 'KeyR', false, false, false);
-		doKeyInput('t', 'KeyT', false, false, false);
-		doKeyInput(' ', 'Space', false, false, false);
-		doKeyInput('w', 'KeyW', false, false, false);
-		doKeyInput('i', 'KeyI', false, false, false);
-		doKeyInput('t', 'KeyT', false, false, false);
-		doKeyInput('h', 'KeyH', false, false, false);
-		doKeyInput(' ', 'Space', false, false, false);
-		doKeyInput('s', 'KeyS', false, false, false);
-		doKeyInput('e', 'KeyE', false, false, false);
-		doKeyInput('m', 'KeyM', false, false, false);
-		doKeyInput('i', 'KeyI', false, false, false);
-
+doKeyInput('Escape', 'Escape', false, false, false);
+doKeyInput(';', 'Semicolon', false, false, false);
+doKeyInput('s', 'KeyS', false, false, false);
+doKeyInput('t', 'KeyT', false, false, false);
+doKeyInput('a', 'KeyA', false, false, false);
+doKeyInput('r', 'KeyR', false, false, false);
+doKeyInput('t', 'KeyT', false, false, false);
+doKeyInput(' ', 'Space', false, false, false);
+doKeyInput('w', 'KeyW', false, false, false);
+doKeyInput('i', 'KeyI', false, false, false);
+doKeyInput('t', 'KeyT', false, false, false);
+doKeyInput('h', 'KeyH', false, false, false);
+doKeyInput(' ', 'Space', false, false, false);
+doKeyInput('s', 'KeyS', false, false, false);
+doKeyInput('e', 'KeyE', false, false, false);
+doKeyInput('m', 'KeyM', false, false, false);
+doKeyInput('i', 'KeyI', false, false, false);
 });
+//endtest//

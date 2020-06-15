@@ -27,59 +27,12 @@ import { UNBOUND } from '../environment.js'
 function createEnvironmentBuiltins() {
 
 	Builtin.createBuiltin(
-		'let',
-		[ '_name@', 'nex' ],
-		function(env, executionEnvironment) {
-			let rhs = env.lb('nex');
-			let symname = env.lb('name').getTypedValue();
-			executionEnvironment.bind(symname, rhs);
-			if (rhs.getTypeName() == '-closure-') {
-				// basically let is always "letrec"
-				rhs.getLexicalEnvironment().bind(symname, rhs);
-			}
-			return rhs;
-		}
-	);
-
-	Builtin.createBuiltin(
-		'unclose',
-		[ 'closure&' ],
-		function(env, executionEnvironment) {
-			// replaces the closure with the dynamic scope of the function we are in
-			let rhs = env.lb('closure');
-			rhs.setLexicalEnvironment(executionEnvironment);
-			return rhs;
-		}
-	);	
-
-	Builtin.createBuiltin(
-		'set',
-		[ '_name@', 'nex' ],
-		function(env, executionEnvironment) {
-			let rhs = env.lb('nex');
-			executionEnvironment.set(env.lb('name').getTypedValue(), rhs);
-			return rhs;
-		}
-	);
-
-	Builtin.createBuiltin(
 		'bind',
 		[ '_name@', 'nex' ],
 		function(env, executionEnvironment) {
 			let val = env.lb('nex');
 			let name = env.lb('name');
 			let namestr = name.getTypedValue();
-			// for closures, I rip out the copied/captured lexical env
-			// and just point it to the global bindings one.
-			// if I don't do this, order matters in bindings and things
-			// bound afterward can't be seen
-			// if (val.getTypeName() == '-closure-') {
-			// 	val.setLexicalEnvironment(BINDINGS);
-			// 	val.setBoundName(namestr);
-			// 	if (PERFORMANCE_MONITOR) {
-			// 		perfmon.registerMethod(namestr);
-			// 	}
-			// }
 			BINDINGS.bindInPackage(namestr, val);
 			return name;
 		}
@@ -128,6 +81,43 @@ function createEnvironmentBuiltins() {
 			}
 		}
 	);
+
+	Builtin.createBuiltin(
+		'let',
+		[ '_name@', 'nex' ],
+		function(env, executionEnvironment) {
+			let rhs = env.lb('nex');
+			let symname = env.lb('name').getTypedValue();
+			executionEnvironment.bind(symname, rhs);
+			if (rhs.getTypeName() == '-closure-') {
+				// basically let is always "letrec"
+				rhs.getLexicalEnvironment().bind(symname, rhs);
+			}
+			return rhs;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'set',
+		[ '_name@', 'nex' ],
+		function(env, executionEnvironment) {
+			let rhs = env.lb('nex');
+			executionEnvironment.set(env.lb('name').getTypedValue(), rhs);
+			return rhs;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'unclose',
+		[ 'closure&' ],
+		function(env, executionEnvironment) {
+			// replaces the closure with the dynamic scope of the function we are in
+			let rhs = env.lb('closure');
+			rhs.setLexicalEnvironment(executionEnvironment);
+			return rhs;
+		}
+	);	
+
 }
 
 export { createEnvironmentBuiltins }

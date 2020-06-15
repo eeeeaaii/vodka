@@ -57,38 +57,5 @@ class CopiedArgContainer {
 	}
 }
 
-
-class NexChildArgContainer {
-	constructor(nex, skipFirstArg) {
-		this.nex = nex;
-		this.needsEval = [];
-		this.offset = skipFirstArg ? 1 : 0;
-	}
-
-	setNeedsEvalForArgAt(needsEval, i) {
-		this.needsEval[i] = needsEval;
-	}
-
-	getNeedsEvalForArgAt(i) {
-		return this.needsEval[i];
-	}
-
-	numArgs() {
-		return this.nex.numChildren() - this.offset;
-	}
-
-	getArgAt(i) {
-		return this.nex.getChildAt(i + this.offset);
-	}
-
-	setArgAt(newarg, i) {
-		this.nex.replaceChildAt(newarg, i + this.offset);
-	}
-
-	removeArgAt(i) {
-		this.nex.removeChildAt(i + this.offset);
-	}
-}
-
 export { CopiedArgContainer }
 

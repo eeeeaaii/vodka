@@ -170,26 +170,16 @@ function checkRecordState(event, type) {
 
 
 function logMouseEvent(e) {
-	recorded_session += `testactions.push({
-		type:'click',
-		x:'${e.x}',
-		y:'${e.y}'
-	});
+	recorded_session += `testactions.push({type:'click',x:'${e.x}',y:'${e.y}'});
 `;	
 }
 function logKeyDownEvent(e) {
 	shorthand += '|' + e.key;
-	recorded_session += `testactions.push({
-		type:'keydown',
-		code:'${e.code}'
-	});
+	recorded_session += `testactions.push({type:'keydown',code:'${e.code}'});
 `;	
 }
 function logKeyUpEvent(e) {
-	recorded_session += `testactions.push({
-		type:'keyup',
-		code:'${e.code}'
-	});
+	recorded_session += `testactions.push({type:'keyup',code:'${e.code}'});
 `;	
 }
 

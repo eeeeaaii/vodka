@@ -1,3 +1,4 @@
+//startgnumessage//
 /*
 This file is part of Vodka.
 
@@ -14,15 +15,21 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-
+//endgnumessage//
+//testname// actions_funnel_letter_backspace
+//startdescription//
+/*
+[none]
+*/
+//enddescription//
+//testspec// [none]
+//starttest//
 var harness = require('../testharness');
-
 harness.runTest(function() {
-	doKeyInput('Escape', 'Escape', false, false, false);
-	doKeyInput('a', 'KeyA', false, false, false);
-	doKeyInput('b', 'KeyB', false, false, false);
-	doKeyInput('c', 'KeyC', false, false, false);
-	doKeyInput('Backspace', 'Backspace', false, false, false);
-
+doKeyInput('Escape', 'Escape', false, false, false);
+doKeyInput('a', 'KeyA', false, false, false);
+doKeyInput('b', 'KeyB', false, false, false);
+doKeyInput('c', 'KeyC', false, false, false);
+doKeyInput('Backspace', 'Backspace', false, false, false);
 });
+//endtest//

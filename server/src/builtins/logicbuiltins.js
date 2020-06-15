@@ -25,27 +25,10 @@ import { evaluateNexSafely, wrapError } from '../evaluator.js'
 
 function createLogicBuiltins() {
 	Builtin.createBuiltin(
-		'not',
-		[ 'val!' ],
-		function(env, executionEnvironment) {
-			return new Bool(!env.lb('val').getTypedValue());
-		}
-	)
-
-
-	Builtin.createBuiltin(
 		'and',
 		[ 'val1!', 'val2!' ],
 		function(env, executionEnvironment) {
 			return new Bool(env.lb('val1').getTypedValue() && env.lb('val2').getTypedValue());
-		}
-	)
-
-	Builtin.createBuiltin(
-		'or',
-		[ 'val1!', 'val2!' ],
-		function(env, executionEnvironment) {
-			return new Bool(env.lb('val1').getTypedValue() || env.lb('val2').getTypedValue());
 		}
 	)
 
@@ -69,6 +52,25 @@ function createLogicBuiltins() {
 			}
 		}
 	)
+
+	Builtin.createBuiltin(
+		'not',
+		[ 'val!' ],
+		function(env, executionEnvironment) {
+			return new Bool(!env.lb('val').getTypedValue());
+		}
+	)
+
+
+	Builtin.createBuiltin(
+		'or',
+		[ 'val1!', 'val2!' ],
+		function(env, executionEnvironment) {
+			return new Bool(env.lb('val1').getTypedValue() || env.lb('val2').getTypedValue());
+		}
+	)
+
+
 }
 
 export { createLogicBuiltins }

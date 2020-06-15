@@ -31,46 +31,22 @@ import { evaluateNexSafely } from '../evaluator.js'
 function createFileBuiltins() {
 
 	Builtin.createBuiltin(
-		'save',
-		[ '_name@', '_nex' ],
+		'import',
+		[ '_name@' ],
 		function(env, executionEnvironment) {
 			let namesym = env.lb('name');
 			let nm = namesym.getTypedValue();
-			let val = env.lb('nex');			
 			let exp = new Expectation();
 			exp.set(function(callback) {
 				return function() {
-					saveNex(nm, val, function(saveResult) {
-						callback(saveResult);
+					importNex(nm, function(importResult) {
+						callback(importResult);
 					})
 				}
-			});
-			let savingMessage = new EError(`saving (in the file ${nm}) this data: ${val.debugString()}`);
-			savingMessage.setErrorType(ERROR_TYPE_INFO);
-			exp.appendChild(savingMessage)
-			return exp;
-		}
-	);
-
-
-	Builtin.createBuiltin(
-		'save-v2',
-		[ '_name@', '_nex' ],
-		function(env, executionEnvironment) {
-			let namesym = env.lb('name');
-			let nm = namesym.getTypedValue();
-			let val = env.lb('nex');			
-			let exp = new Expectation();
-			exp.set(function(callback) {
-				return function() {
-					saveNexV2(nm, val, function(saveResult) {
-						callback(saveResult);
-					})
-				}
-			});
-			let savingMessage = new EError(`saving (in the file ${nm}) this data: ${val.debugString()}`);
-			savingMessage.setErrorType(ERROR_TYPE_INFO);
-			exp.appendChild(savingMessage)
+			})
+			let importMessage = new EError(`importing the package ${nm}`);
+			importMessage.setErrorType(ERROR_TYPE_INFO);
+			exp.appendChild(importMessage)
 			return exp;
 		}
 	);
@@ -118,23 +94,20 @@ function createFileBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'import',
-		[ '_name@' ],
+		'package',
+		[ '_name@', '_nex...' ],
 		function(env, executionEnvironment) {
-			let namesym = env.lb('name');
-			let nm = namesym.getTypedValue();
-			let exp = new Expectation();
-			exp.set(function(callback) {
-				return function() {
-					importNex(nm, function(importResult) {
-						callback(importResult);
-					})
-				}
-			})
-			let importMessage = new EError(`importing the package ${nm}`);
-			importMessage.setErrorType(ERROR_TYPE_INFO);
-			exp.appendChild(importMessage)
-			return exp;
+			let packageName = env.lb('name').getTypedValue();
+			let lst = env.lb('nex');
+			Vodka.BINDINGS.setPackageForBinding(packageName);
+			let lastresult = new Nil();
+			for (let i = 0; i < lst.numChildren(); i++) {
+				let c = lst.getChildAt(i);
+				lastresult = evaluateNexSafely(c, executionEnvironment);
+				// not sure what to do about errors yet?
+			}
+			Vodka.BINDINGS.setPackageForBinding(null);
+			return new Nil();
 		}
 	);
 
@@ -178,23 +151,53 @@ function createFileBuiltins() {
 		}
 	);
 
+	
+
 	Builtin.createBuiltin(
-		'package',
-		[ '_name@', '_nex...' ],
+		'save',
+		[ '_name@', '_nex' ],
 		function(env, executionEnvironment) {
-			let packageName = env.lb('name').getTypedValue();
-			let lst = env.lb('nex');
-			Vodka.BINDINGS.setPackageForBinding(packageName);
-			let lastresult = new Nil();
-			for (let i = 0; i < lst.numChildren(); i++) {
-				let c = lst.getChildAt(i);
-				lastresult = evaluateNexSafely(c, executionEnvironment);
-				// not sure what to do about errors yet?
-			}
-			Vodka.BINDINGS.setPackageForBinding(null);
-			return new Nil();
+			let namesym = env.lb('name');
+			let nm = namesym.getTypedValue();
+			let val = env.lb('nex');			
+			let exp = new Expectation();
+			exp.set(function(callback) {
+				return function() {
+					saveNex(nm, val, function(saveResult) {
+						callback(saveResult);
+					})
+				}
+			});
+			let savingMessage = new EError(`saving (in the file ${nm}) this data: ${val.debugString()}`);
+			savingMessage.setErrorType(ERROR_TYPE_INFO);
+			exp.appendChild(savingMessage)
+			return exp;
 		}
 	);
+
+
+	Builtin.createBuiltin(
+		'save-v2',
+		[ '_name@', '_nex' ],
+		function(env, executionEnvironment) {
+			let namesym = env.lb('name');
+			let nm = namesym.getTypedValue();
+			let val = env.lb('nex');			
+			let exp = new Expectation();
+			exp.set(function(callback) {
+				return function() {
+					saveNexV2(nm, val, function(saveResult) {
+						callback(saveResult);
+					})
+				}
+			});
+			let savingMessage = new EError(`saving (in the file ${nm}) this data: ${val.debugString()}`);
+			savingMessage.setErrorType(ERROR_TYPE_INFO);
+			exp.appendChild(savingMessage)
+			return exp;
+		}
+	);
+
 
 	Builtin.createBuiltin(
 		'use',

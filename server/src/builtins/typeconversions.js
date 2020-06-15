@@ -48,41 +48,43 @@ import { evaluateNexSafely } from '../evaluator.js'
 import { ERROR_TYPE_WARN, ERROR_TYPE_FATAL, ERROR_TYPE_INFO } from '../nex/eerror.js'
 
 function createTypeConversionBuiltins() {
+
+	// TODO: actually what I should do is tag it with something like "not fatal"
 	Builtin.createBuiltin(
-		'to-word',
-		[ 'nex' ],
+		'convert-type-if-error',
+		[ 'errtype$', '_nex' ],
 		function(env, executionEnvironment) {
-			let v = env.lb('nex');
-
-			let jsStringToDoc = (function(str) {
-				var w = new Word();
-				for (let i = 0; i < str.length; i++) {
-					let lt = new Letter(str.charAt(i));
-					w.appendChild(lt);
-				}
-				return w;
-			});
-			if (v instanceof Integer
-				|| v instanceof Float
-				|| v instanceof Bool
-				) {
-				return jsStringToDoc('' + v.getTypedValue())
-			} else if (v instanceof EString) {
-				return jsStringToDoc('' + v.getFullTypedValue())
-			} else if (v instanceof Letter) {
-				let w = new Word();
-				w.appendChild(v.makeCopy());
-				return w;
-			} else if (v instanceof Line || v instanceof Doc) {
-				return new EError('Sorry, our bad - calling to-work on a Line or Doc is not yet implemented :(')
-			} else {
-				return new EError('Okay, so to-word was called on an object of'
-					+ `type "${v.getTypeName()}". This is not supported -- sorry about that.`);
+			let expr = env.lb('nex');
+			let newresult = evaluateNexSafely(expr, executionEnvironment);
+			if (newresult.getTypeName() != '-error-') {
+				// you might think this function would throw an
+				// error if you tried to pass it something that's
+				// not an error, but the problem with doing that
+				// is that you can't test for whether something is
+				// an error WITHOUT using this function. So non-errors
+				// are passed unchanged.
+				return newresult;
 			}
+
+			let etstring = env.lb('errtype').getFullTypedValue();
+			let errtype = ERROR_TYPE_FATAL;
+			switch(etstring) {
+				case "warn":
+					errtype = ERROR_TYPE_WARN;
+					break;
+				case "info":
+					errtype = ERROR_TYPE_INFO;
+					break;
+				case "fatal":
+					break;
+				default:
+					return new EError(`convert-type-if-error: cannot continue because unrecognized type ${etstring} (valid types are 'info', 'warn', and 'fatal'). Sorry!`);
+			}
+
+			newresult.setErrorType(errtype);
+			return newresult;
 		}
-	)
-
-
+	);
 
 	Builtin.createBuiltin(
 		'to-float',
@@ -143,7 +145,8 @@ function createTypeConversionBuiltins() {
 					+ ` any conversion logic for that type yet. Sorry about that!`);
 			}
 		}
-	)
+	);
+
 
 	Builtin.createBuiltin(
 		'to-integer',
@@ -198,7 +201,8 @@ function createTypeConversionBuiltins() {
 					+ ` any conversion logic for that type yet. Sorry about that!`);
 			}
 		}
-	)
+	);
+
 
 	Builtin.createBuiltin(
 		'to-string',
@@ -232,42 +236,40 @@ function createTypeConversionBuiltins() {
 	);
 
 
-	// TODO: actually what I should do is tag it with something like "not fatal"
 	Builtin.createBuiltin(
-		'convert-type-if-error',
-		[ 'errtype$', '_nex' ],
+		'to-word',
+		[ 'nex' ],
 		function(env, executionEnvironment) {
-			let expr = env.lb('nex');
-			let newresult = evaluateNexSafely(expr, executionEnvironment);
-			if (newresult.getTypeName() != '-error-') {
-				// you might think this function would throw an
-				// error if you tried to pass it something that's
-				// not an error, but the problem with doing that
-				// is that you can't test for whether something is
-				// an error WITHOUT using this function. So non-errors
-				// are passed unchanged.
-				return newresult;
-			}
+			let v = env.lb('nex');
 
-			let etstring = env.lb('errtype').getFullTypedValue();
-			let errtype = ERROR_TYPE_FATAL;
-			switch(etstring) {
-				case "warn":
-					errtype = ERROR_TYPE_WARN;
-					break;
-				case "info":
-					errtype = ERROR_TYPE_INFO;
-					break;
-				case "fatal":
-					break;
-				default:
-					return new EError(`convert-type-if-error: cannot continue because unrecognized type ${etstring} (valid types are 'info', 'warn', and 'fatal'). Sorry!`);
+			let jsStringToDoc = (function(str) {
+				var w = new Word();
+				for (let i = 0; i < str.length; i++) {
+					let lt = new Letter(str.charAt(i));
+					w.appendChild(lt);
+				}
+				return w;
+			});
+			if (v instanceof Integer
+				|| v instanceof Float
+				|| v instanceof Bool
+				) {
+				return jsStringToDoc('' + v.getTypedValue())
+			} else if (v instanceof EString) {
+				return jsStringToDoc('' + v.getFullTypedValue())
+			} else if (v instanceof Letter) {
+				let w = new Word();
+				w.appendChild(v.makeCopy());
+				return w;
+			} else if (v instanceof Line || v instanceof Doc) {
+				return new EError('Sorry, our bad - calling to-work on a Line or Doc is not yet implemented :(')
+			} else {
+				return new EError('Okay, so to-word was called on an object of'
+					+ `type "${v.getTypeName()}". This is not supported -- sorry about that.`);
 			}
-
-			newresult.setErrorType(errtype);
-			return newresult;
 		}
-	);	
+	);
+
 }
 
 export { createTypeConversionBuiltins }

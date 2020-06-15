@@ -50,13 +50,31 @@ import { evaluateNexSafely, wrapError } from '../evaluator.js'
 
 function createBasicBuiltins() {
 	Builtin.createBuiltin(
-		'copy',
-		[ 'nex' ],
+		'begin',
+		[ 'nex...' ],
 		function(env, executionEnvironment) {
-			return env.lb('nex').makeCopy();
+			let lst = env.lb('nex');
+			if (lst.numChildren() == 0) {
+				return new Nil();
+			} else {
+				return lst.getChildAt(lst.numChildren() - 1);
+			}
 		}
 	);
 
+	Builtin.createBuiltin(
+		'cap',
+		[ 'list()' ],
+		function(env, executionEnvironment) {
+			let c = env.lb('list');
+			if (c.numChildren() == 0) {
+				return new EError("chop: cannot get first element of empty list. Sorry!");
+			}
+			let r = c.getChildAt(0);
+			c.removeChild(c.getChildAt(0));
+			return r;
+		}
+	);
 
 	Builtin.createBuiltin(
 		'car',
@@ -85,32 +103,6 @@ function createBasicBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'cons',
-		[ 'nex', 'list()' ],
-		function(env, executionEnvironment) {
-			let nex = env.lb('nex');
-			let lst = env.lb('list');
-			let newOne = lst.makeCopy(true);
-			lst.setChildrenForCons(nex, newOne);
-			return newOne;
-		}
-	);
-
-	Builtin.createBuiltin(
-		'cap',
-		[ 'list()' ],
-		function(env, executionEnvironment) {
-			let c = env.lb('list');
-			if (c.numChildren() == 0) {
-				return new EError("chop: cannot get first element of empty list. Sorry!");
-			}
-			let r = c.getChildAt(0);
-			c.removeChild(c.getChildAt(0));
-			return r;
-		}
-	);
-
-	Builtin.createBuiltin(
 		'chop',
 		[ 'list()' ],
 		function(env, executionEnvironment) {
@@ -124,6 +116,27 @@ function createBasicBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'cons',
+		[ 'nex', 'list()' ],
+		function(env, executionEnvironment) {
+			let nex = env.lb('nex');
+			let lst = env.lb('list');
+			let newOne = lst.makeCopy(true);
+			lst.setChildrenForCons(nex, newOne);
+			return newOne;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'copy',
+		[ 'nex' ],
+		function(env, executionEnvironment) {
+			return env.lb('nex').makeCopy();
+		}
+	);
+
+
+	Builtin.createBuiltin(
 		'cram',
 		[ 'nex', 'list()' ],
 		function(env, executionEnvironment) {
@@ -133,105 +146,6 @@ function createBasicBuiltins() {
 		}
 	);
 
-	Builtin.createBuiltin(
-		'quote',
-		[ '_nex' ],
-		function(env, executionEnvironment) {
-			return env.lb('nex');
-		}
-	);
-
-	Builtin.createBuiltin(
-		'begin',
-		[ 'nex...' ],
-		function(env, executionEnvironment) {
-			let lst = env.lb('nex');
-			if (lst.numChildren() == 0) {
-				return new Nil();
-			} else {
-				return lst.getChildAt(lst.numChildren() - 1);
-			}
-		}
-	);
-
-	// 'eval' is really eval again because args to functions are evaled
-	Builtin.createBuiltin(
-		'eval',
-		[ 'nex' ],
-		function(env, executionEnvironment) {
-			let expr = env.lb('nex');
-			let newresult = evaluateNexSafely(expr, executionEnvironment);
-			// we do not wrap errors for eval - we let
-			// the caller deal with it
-			return newresult;				
-		}
-	);
-
-	Builtin.createBuiltin(
-		'map-with',
-		[ 'list()', 'func&' ],
-		function(env, executionEnvironment) {
-			let closure = env.lb('func');
-			let list = env.lb('list');
-			// until we congeal things down to a single list type
-			// I'll try to honor the list type of the starting list
-			let resultList = list.makeCopy(true /* shallow */);
-			for (let i = 0; i < list.numChildren(); i++) {
-				let item = list.getChildAt(i);
-				let cmd = Command.makeCommandWithClosure(closure, Command.quote(item))
-				let result = evaluateNexSafely(cmd, executionEnvironment);
-				if (Utils.isFatalError(result)) {
-					return wrapError('&szlig;', `map-with: error returned from item ${i+1}`, result);
-				}
-				resultList.appendChild(result);
-
-			}
-			return resultList;				
-		}
-	);
-
-	Builtin.createBuiltin(
-		'reduce-with-starting',
-		[ 'list()', 'func&', 'startval' ],
-		function(env, executionEnvironment) {
-			let list = env.lb('list');
-			let closure = env.lb('func');
-			let sn = env.lb('startval');
-			let p = sn;
-			for (let i = 0; i < list.numChildren(); i++) {
-				let item = list.getChildAt(i);
-				let cmd = Command.makeCommandWithClosure(closure, Command.quote(item), Command.quote(p));
-				let result = evaluateNexSafely(cmd, executionEnvironment);
-				if (Utils.isFatalError(result)) {
-					return wrapError('&szlig;', `reduce-with-starting: error returned from item ${i+1}`, result);
-				}
-				p = result;
-			}
-			return p;				
-		}
-	);
-
-	Builtin.createBuiltin(
-		'filter-with',
-		[ 'list()', 'func&' ],
-		function(env, executionEnvironment) {
-			let list = env.lb('list');
-			let closure = env.lb('func');
-			let resultList = list.makeCopy(true /* shallow */);
-			for (let i = 0; i < list.numChildren(); i++) {
-				let item = list.getChildAt(i);
-				let cmd = Command.makeCommandWithClosure(closure, Command.quote(list.getChildAt(i)));
-				let result = evaluateNexSafely(cmd, executionEnvironment);
-				if (Utils.isFatalError(result)) {
-					return wrapError('&szlig;', `filter-with: error returned from item ${i+1}`, result);
-				}
-				if (result.getTypedValue()) {
-					resultList.appendChild(list.getChildAt(i));
-				}
-			}
-			return resultList;				
-		}
-	);
 	Builtin.createBuiltin(
 		'eq',
 		[ 'lhs', 'rhs' ],
@@ -295,6 +209,96 @@ function createBasicBuiltins() {
 			}
 		}
 	);
+
+	// 'eval' is really eval again because args to functions are evaled
+	Builtin.createBuiltin(
+		'eval',
+		[ 'nex' ],
+		function(env, executionEnvironment) {
+			let expr = env.lb('nex');
+			let newresult = evaluateNexSafely(expr, executionEnvironment);
+			// we do not wrap errors for eval - we let
+			// the caller deal with it
+			return newresult;				
+		}
+	);
+
+	Builtin.createBuiltin(
+		'filter-with',
+		[ 'list()', 'func&' ],
+		function(env, executionEnvironment) {
+			let list = env.lb('list');
+			let closure = env.lb('func');
+			let resultList = list.makeCopy(true /* shallow */);
+			for (let i = 0; i < list.numChildren(); i++) {
+				let item = list.getChildAt(i);
+				let cmd = Command.makeCommandWithClosure(closure, Command.quote(list.getChildAt(i)));
+				let result = evaluateNexSafely(cmd, executionEnvironment);
+				if (Utils.isFatalError(result)) {
+					return wrapError('&szlig;', `filter-with: error returned from item ${i+1}`, result);
+				}
+				if (result.getTypedValue()) {
+					resultList.appendChild(list.getChildAt(i));
+				}
+			}
+			return resultList;				
+		}
+	);
+
+	Builtin.createBuiltin(
+		'map-with',
+		[ 'list()', 'func&' ],
+		function(env, executionEnvironment) {
+			let closure = env.lb('func');
+			let list = env.lb('list');
+			// until we congeal things down to a single list type
+			// I'll try to honor the list type of the starting list
+			let resultList = list.makeCopy(true /* shallow */);
+			for (let i = 0; i < list.numChildren(); i++) {
+				let item = list.getChildAt(i);
+				let cmd = Command.makeCommandWithClosure(closure, Command.quote(item))
+				let result = evaluateNexSafely(cmd, executionEnvironment);
+				if (Utils.isFatalError(result)) {
+					return wrapError('&szlig;', `map-with: error returned from item ${i+1}`, result);
+				}
+				resultList.appendChild(result);
+
+			}
+			return resultList;				
+		}
+	);
+
+	Builtin.createBuiltin(
+		'quote',
+		[ '_nex' ],
+		function(env, executionEnvironment) {
+			return env.lb('nex');
+		}
+	);
+
+	Builtin.createBuiltin(
+		'reduce-with-starting',
+		[ 'list()', 'func&', 'startval' ],
+		function(env, executionEnvironment) {
+			let list = env.lb('list');
+			let closure = env.lb('func');
+			let sn = env.lb('startval');
+			let p = sn;
+			for (let i = 0; i < list.numChildren(); i++) {
+				let item = list.getChildAt(i);
+				let cmd = Command.makeCommandWithClosure(closure, Command.quote(item), Command.quote(p));
+				let result = evaluateNexSafely(cmd, executionEnvironment);
+				if (Utils.isFatalError(result)) {
+					return wrapError('&szlig;', `reduce-with-starting: error returned from item ${i+1}`, result);
+				}
+				p = result;
+			}
+			return p;				
+		}
+	);
+
+
+
 }
 
 export { createBasicBuiltins }

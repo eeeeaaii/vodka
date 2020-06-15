@@ -24,14 +24,15 @@ import { Integer } from '../nex/integer.js'
 import { RenderNode } from '../rendernode.js'
 
 function createSyscalls() {
-
 	Builtin.createBuiltin(
-		'jslog',
-		[ 'nex' ],
+		'apply-css-style-to',
+		[ 'style$', 'nex' ],
 		function(env, executionEnvironment) {
-			let nex = env.lb('nex');
-			console.log(nex.debugString());
-			return nex;
+			let s = env.lb('style').getFullTypedValue();
+			let n = env.lb('nex');
+			n = n.makeCopy();
+			n.setCurrentStyle(s);
+			return n;
 		}
 	);
 
@@ -46,19 +47,6 @@ function createSyscalls() {
 		}
 	);
 
-
-	Builtin.createBuiltin(
-		'apply-css-style-to',
-		[ 'style$', 'nex' ],
-		function(env, executionEnvironment) {
-			let s = env.lb('style').getFullTypedValue();
-			let n = env.lb('nex');
-			n = n.makeCopy();
-			n.setCurrentStyle(s);
-			return n;
-		}
-	);
-
 	Builtin.createBuiltin(
 		'get-css-style-from',
 		[ 'nex' ],
@@ -66,6 +54,21 @@ function createSyscalls() {
 			let n = env.lb('nex');
 			let s = n.getCurrentStyle();
 			return new EString(s);
+		}
+	);
+
+	Builtin.createBuiltin(
+		'get-pixel-height',
+		[ 'nex' ],
+		function(env, executionEnvironment) {
+			let n = env.lb('nex');
+			let rn = new RenderNode(n);
+			hiddenroot.appendChild(rn);
+			// has to be synchronous so we can measure
+			hiddenroot.render(0);
+			let w = rn.getDomNode().getBoundingClientRect().height;
+			hiddenroot.removeChildAt(0);
+			return new Float(w);
 		}
 	);
 
@@ -85,17 +88,12 @@ function createSyscalls() {
 	);
 
 	Builtin.createBuiltin(
-		'get-pixel-height',
+		'jslog',
 		[ 'nex' ],
 		function(env, executionEnvironment) {
-			let n = env.lb('nex');
-			let rn = new RenderNode(n);
-			hiddenroot.appendChild(rn);
-			// has to be synchronous so we can measure
-			hiddenroot.render(0);
-			let w = rn.getDomNode().getBoundingClientRect().height;
-			hiddenroot.removeChildAt(0);
-			return new Float(w);
+			let nex = env.lb('nex');
+			console.log(nex.debugString());
+			return nex;
 		}
 	);
 

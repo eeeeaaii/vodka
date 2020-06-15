@@ -32,10 +32,10 @@ function createMakeBuiltins() {
     // (copy #0) would do the same thing.
 
 	Builtin.createBuiltin(
-		'make-word',
+		'make-command',
 		[],
 		function(env, executionEnvironment) {
-			return new Word();
+			return new Command();
 		}
 	);
 
@@ -44,14 +44,6 @@ function createMakeBuiltins() {
 		[],
 		function(env, executionEnvironment) {
 			return new Doc();
-		}
-	);
-
-	Builtin.createBuiltin(
-		'make-line',
-		[],
-		function(env, executionEnvironment) {
-			return new Line();
 		}
 	);
 
@@ -70,18 +62,26 @@ function createMakeBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'make-command',
-		[],
-		function(env, executionEnvironment) {
-			return new Command();
-		}
-	);
-
-	Builtin.createBuiltin(
 		'make-lambda',
 		[],
 		function(env, executionEnvironment) {
 			return new Lambda();
+		}
+	);
+
+	Builtin.createBuiltin(
+		'make-line',
+		[],
+		function(env, executionEnvironment) {
+			return new Line();
+		}
+	);
+
+	Builtin.createBuiltin(
+		'make-word',
+		[],
+		function(env, executionEnvironment) {
+			return new Word();
 		}
 	);
 

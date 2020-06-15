@@ -1,3 +1,4 @@
+//startgnumessage//
 /*
 This file is part of Vodka.
 
@@ -14,19 +15,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-// test: actions_funnel_command_typingletters
+//endgnumessage//
+//testname//  actions_funnel_command_typingletters
+//startdescription//
 /*
 this verifies that if you type raw letters inside a command or a lambda, it will show you them normally without weird spacing, and will not insert words for you. inside a command context, you will have to manually create words, or make a line (or doc) and then type inside the line (or doc) and have it create words for you.
 */
-
-	// |Shift|~|Tab|t|y|p|i|n|g| |w|o|r|s|;|s|d|f|;|s|d|f| |;|;|d|f|Shift|Tab|Shift|&|Tab|t|y|p|i| |s|;|s|f|d| |;|s|f|d| |Shift|(|s|d|f| |s|d|Shift|Tab|ArrowUp|Tab|Shift|(|d|f|d|f| |d|d
-	
+//enddescription//
+//testspec// |Shift|~|Tab|t|y|p|i|n|g| |w|o|r|s|;|s|d|f|;|s|d|f| |;|;|d|f|Shift|Tab|Shift|&|Tab|t|y|p|i| |s|;|s|f|d| |;|s|f|d| |Shift|(|s|d|f| |s|d|Shift|Tab|ArrowUp|Tab|Shift|(|d|f|d|f| |d|d
+//starttest//
 var harness = require('../testharness');
-
 var testactions = [];
-
-
 testactions.push({type:'keydown', code:'ShiftRight'});
 testactions.push({type:'keydown', code:'Backquote'});
 testactions.push({type:'keyup', code:'Backquote'});
@@ -165,5 +164,5 @@ testactions.push({type:'keydown', code:'KeyD'});
 testactions.push({type:'keyup', code:'KeyD'});
 testactions.push({type:'keydown', code:'KeyD'});
 testactions.push({type:'keyup', code:'KeyD'});
-
 harness.runTest(testactions, 'direct');
+//endtest//

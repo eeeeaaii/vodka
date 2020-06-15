@@ -35,6 +35,7 @@ TO=$1
 echo "Renaming ${FROM} to ${TO}, are you sure?"
 read INP
 if [ "$INP" == "y" ]; then
+	sed -e "s/${FROM}/${TO}/g" -i "" ./alltests/${FROM}.js
 	mv ./alltests/${FROM}.js ./alltests/${TO}.js
 	rm -rf ./alltests/${FROM}/
 	./runtests.sh ${TO}

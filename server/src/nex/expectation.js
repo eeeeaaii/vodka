@@ -248,6 +248,7 @@ class Expectation extends NexContainer {
 		this.activationFunction = activationFunctionGenerator(this.getCallbackForSet(), this);
 	}
 
+	// coverage: functions_async_copy_ffwith (for immediately fulfilling when no activation function)
 	activate() {
 		if (this.activated) {
 			return;

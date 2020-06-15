@@ -1,3 +1,4 @@
+//startgnumessage//
 /*
 This file is part of Vodka.
 
@@ -14,42 +15,48 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-
+//endgnumessage//
+//testname// actions_funnel_downarrow
+//startdescription//
+/*
+[none]
+*/
+//enddescription//
+//testspec// [none]
+//starttest//
 var harness = require('../testharness');
-
 harness.runTest(function() {
-		doKeyInput('Escape', 'Escape', false, false, false);
-		doKeyInput('h', 'KeyH', false, false, false);
-		doKeyInput('CapsLock', 'CapsLock', false, false, false);
-		doKeyInput('E', 'KeyE', false, false, false);
-		doKeyInput('L', 'KeyL', false, false, false);
-		doKeyInput('L', 'KeyL', false, false, false);
-		doKeyInput('O', 'KeyO', false, false, false);
-		doKeyInput('Enter', 'Enter', false, false, false);
-		doKeyInput('W', 'KeyW', false, false, false);
-		doKeyInput('O', 'KeyO', false, false, false);
-		doKeyInput('R', 'KeyR', false, false, false);
-		doKeyInput('L', 'KeyL', false, false, false);
-		doKeyInput('D', 'KeyD', false, false, false);
-		doKeyInput(' ', 'Space', false, false, false);
-		doKeyInput('H', 'KeyH', false, false, false);
-		doKeyInput('O', 'KeyO', false, false, false);
-		doKeyInput('W', 'KeyW', false, false, false);
-		doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
-		doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
-		doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
-		doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
-		doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
-		doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
-		doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
-		doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
-		doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
-		doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
-		doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
-		doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
-		doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
-		doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
-		doKeyInput('ArrowDown', 'ArrowDown', false, false, false);
-
+doKeyInput('Escape', 'Escape', false, false, false);
+doKeyInput('h', 'KeyH', false, false, false);
+doKeyInput('CapsLock', 'CapsLock', false, false, false);
+doKeyInput('E', 'KeyE', false, false, false);
+doKeyInput('L', 'KeyL', false, false, false);
+doKeyInput('L', 'KeyL', false, false, false);
+doKeyInput('O', 'KeyO', false, false, false);
+doKeyInput('Enter', 'Enter', false, false, false);
+doKeyInput('W', 'KeyW', false, false, false);
+doKeyInput('O', 'KeyO', false, false, false);
+doKeyInput('R', 'KeyR', false, false, false);
+doKeyInput('L', 'KeyL', false, false, false);
+doKeyInput('D', 'KeyD', false, false, false);
+doKeyInput(' ', 'Space', false, false, false);
+doKeyInput('H', 'KeyH', false, false, false);
+doKeyInput('O', 'KeyO', false, false, false);
+doKeyInput('W', 'KeyW', false, false, false);
+doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
+doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
+doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
+doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
+doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
+doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
+doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
+doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
+doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
+doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
+doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
+doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
+doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
+doKeyInput('ArrowLeft', 'ArrowLeft', false, false, false);
+doKeyInput('ArrowDown', 'ArrowDown', false, false, false);
 });
+//endtest//

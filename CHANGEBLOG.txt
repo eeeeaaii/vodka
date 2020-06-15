@@ -1,3 +1,33 @@
+=========================== cursor-command-type ====================================
+---
+title: A Cursor Command Type?
+date: "2020-05-31T00:08:52.000-04"
+description: Brief sketch for an idea to replace KeyResponseFunctions
+---
+Previously I was thinking that custom nexes would tell the IDE/REPL how to treat them
+by returning a map from strings representing an input name (for example, 'ShiftEnter') to strings, where each
+string is a type of response function (for example, 'MoveToNextSibling'). However I
+think I've come up with a better idea.
+
+What if I created a "cursor command" primitive data type? Maybe it's a custom org
+or something. So maybe not a primitive. But some complex data type that encodes information
+about what the IDE should do in response to a given input. Where to put the cursor/selection,
+whether to evaluate the nex, where to put the evaluted nex, etc. Then, each
+nex can implement a function that is passed the actual key input (like 'ShiftEnter')
+and it will return a "CursorCommand" object.
+
+Then, I can set up a bubbling algorithm of some kind. So when an IDE event, like a click
+or keystroke, happens, we first try the selected nex. If it returns Nil from
+getCursorCommand, we try its parent, and then its parent, on and on up the tree.
+We can do this because it's the IDE doing this, not code, thus we are in RenderNode
+world, not plain-old-nex world.
+
+If we bubble all the way up, then we'll have some kind of default handler at the root.
+Which would implement, you guessed it, the default algorithms I already have
+implemented.
+
+This is, of course, another huge refactor. But worth thinking about.
+
 =========================== nothing-to-see-here ====================================
 ---
 title: Nothing to See Here
