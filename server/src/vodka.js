@@ -45,6 +45,8 @@ import { RenderNode } from './rendernode.js'
 import { Root } from './nex/root.js'
 import { Doc } from './nex/doc.js'
 
+import * as EventQueueTests from './tests/eventqueuetests.js';
+
 var recording = false;
 var firstKeyUp = true; // ignore first key up of recorded session because it's the esc key
 var recorded_session = `
@@ -60,9 +62,9 @@ harness.runTestNew(testactions, 'direct');
 var shorthand = '';
 
 function captureRecording() {
-	let session_output = `
-	// ${shorthand}
-	` + recorded_session + session_end;
+	let session_output = `//testspec// ${shorthand}
+//starttest//` + recorded_session + session_end + `//endtest//
+`;
 	navigator.clipboard.writeText(session_output);
 }
 
@@ -392,11 +394,16 @@ function setRoot(newRootNex) {
 	root.setDomNode(rootDomNode);	
 }
 
+function runTest(testname) {
+	eval('EventQueueTests.TEST_' + testname + '();');
+}
+
 // app main entry point
 
 function setup() {
 	// testharness.js needs this
 	window.doKeyInput = doKeyInput;
+	window.runTest = runTest;
 	createBuiltins();
 	setAppFlags();
 	hiddenroot = new RenderNode(new Root(true));

@@ -30,7 +30,9 @@ class Lambda extends NexContainer {
 		this.returnValueParam = null;
 		this.cmdname = null;
 		this.isEditing = false;
-		this.cacheParamNames();
+		if (this.amptext) {
+			this.cacheParamNames();
+		}
 	}
 
 	getTypeName() {
@@ -47,9 +49,16 @@ class Lambda extends NexContainer {
 	copyFieldsTo(r) {
 		super.copyFieldsTo(r);
 		r.amptext = this.amptext;
-		r.cacheParamNames();
+		// The params array is supposed to be immutable.
+		// Can't really enforce that because it's javscript but
+		// we will treat it as such for efficiency. Therefore
+		// we can just copy the reference to it. The reference
+		// changes every time the params are re-parsed.
+		r.paramsArray = this.paramsArray
+		r.returnValueParam = this.returnValueParam;
 		r.cmdname = this.cmdname;
 		r.needsEval = this.needsEval;
+		r.cachedParamNames = this.cachedParamNames;
 	}
 
 	renderChildrenIfNormal() {
@@ -114,7 +123,6 @@ class Lambda extends NexContainer {
 	}
 
 	evaluate(env) {
-//		return new Closure(this, env.copyJustThisScope());
 		return new Closure(this, env);
 	}
 
@@ -142,6 +150,10 @@ class Lambda extends NexContainer {
 		return this.cachedParamNames;
 	}
 
+	// is this dead code?
+	// if this is dead code, then so is this.getParamNames
+	// and this.cachedParamNames.
+	// TODO: put in "throw Error" and run the test suite
 	bind(args, closure) {
 		let paramNames = this.getParamNames();
 		// omfg please fix this fix binding

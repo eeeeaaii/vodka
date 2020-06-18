@@ -1,5 +1,6 @@
 
 ASYNC/EXPECTATION TO DO:
+- make "Activate" function and make it so that the comma in function params just checks to make sure that the function is activated
 - figure out what happens if ffClosure throws an error
 - reference counting doesn't work in the sense that if you delete an expectation containing other ones, it keeps firing...? because of the stale reference in the pendingExpectations, probably...
 

@@ -59,9 +59,9 @@ class EventQueue {
 			renderNode: renderNode,
 			equals: function(other) {
 				 // ref equals is okay?
-				return
+				return (
 					other.action == this.action
-					&& other.renderNode == this.renderNode;
+					&& other.renderNode == this.renderNode);
 			},
 			do: function() {
 				this.renderNode.doAlertAnimation();
@@ -81,11 +81,11 @@ class EventQueue {
 			flags: flags,
 			equals: function(other) {
 				 // ref equals is okay?
-				return
+				return (
 					other.action == this.action
 					&& other.selectThisNode == this.selectThisNode
 					&& other.renderNode == this.renderNode
-					&& other.flags == this.flags;
+					&& other.flags == this.flags);
 			},
 			do: function() {
 				selectWhenYouFindIt = this.selectThisNode;
@@ -106,10 +106,10 @@ class EventQueue {
 			flags: flags,
 			equals: function(other) {
 				 // ref equals is okay?
-				return
+				return (
 					other.action == this.action
 					&& other.renderNode == this.renderNode
-					&& other.flags == this.flags;
+					&& other.flags == this.flags);
 			},
 			do: function() {
 				Vodka.setGlobalRenderPassNumber(Vodka.getGlobalRenderPassNumber() + 1);
@@ -147,9 +147,9 @@ class EventQueue {
 			nex: nex,
 			shouldDedupe: true,
 			equals: function(other) {
-				return
+				return (
 					other.action == this.action
-					&& other.nex.getID() == this.nex.getID();
+					&& other.nex.getID() == this.nex.getID());
 			},
 			do: function() {
 				Vodka.topLevelRenderSelectingNode(this.nex);
@@ -165,8 +165,8 @@ class EventQueue {
 			action: "topLevelRender",
 			shouldDedupe: true,
 			equals: function(other) {
-				return
-				other.action == this.action;
+				return (
+					other.action == this.action);
 			},
 			do: function() {
 				Vodka.topLevelRender();
@@ -235,7 +235,7 @@ class EventQueue {
 			action: "topLevelRender",
 			shouldDedupe: true,
 			equals: function(other) {
-				return other.action == this.action;
+				return (other.action == this.action);
 			},
 			do: function() {
 				Vodka.topLevelRender();
@@ -251,7 +251,7 @@ class EventQueue {
 			action: "gc",
 			shouldDedupe: true,
 			equals: function(other) {
-				return other.action == this.action;
+				return (other.action == this.action);
 			},
 			do: function() {
 				gc.markAndSweep();
@@ -277,14 +277,22 @@ class EventQueue {
 		return null;
 	}
 
-	processNextItem() {
+	retrieveNextItem() {
 		let queueToUse = this.selectQueue();
-		if (!queueToUse) return;
+		if (!queueToUse) return null;
 		let item = queueToUse.shift();
 		Vodka.EVENT_DEBUG ? console.log(`processing: ${item.action}`):null;
 		// if a bunch of equivalent actions were enqueued, pop them all and just do one
 		while(queueToUse.length > 0 && queueToUse[0].shouldDedupe && queueToUse[0].equals(item)) {
 			queueToUse.shift();
+		}
+		return item;
+	}
+
+	processNextItem() {
+		let item = this.retrieveNextItem();
+		if (!item) {
+			return;
 		}
 		item.do();
 		this.setTimeoutForProcessingNextItem();

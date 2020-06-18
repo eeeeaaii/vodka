@@ -31,6 +31,7 @@ if [ "$CONFIRM" == "y" ]; then
 	read READABLE
 	FILENAME="alltests/${NAME}.js"
 	cat > ${FILENAME} <<HERE
+//startgnumessage//
 /*
 This file is part of Vodka.
 
@@ -47,11 +48,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
+//endgnumessage//
 HERE
-	echo "// test: ${NAME}" >> ${FILENAME}
+	echo "//testname// ${NAME}" >> ${FILENAME}
+	echo "//startdescription//" >> ${FILENAME}
 	echo "/*" >> ${FILENAME}
 	echo "${READABLE}" >> ${FILENAME}
 	echo "*/" >> ${FILENAME}
+	echo "//enddescription//" >> ${FILENAME}
 	cat "____tmpfile.txt" >> ${FILENAME}
 	# run once to get golden
 	runtests.sh ${NAME}

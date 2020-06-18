@@ -34,6 +34,10 @@ function runTestNew(testinput, method) {
 	runTestImpl(testinput, method, false /* legacy */);
 }
 
+function runUnitTest(testinput) {
+	runTest(testinput, 'indirect', false);
+}
+
 function runTestImpl(testinput, method, legacy) {
 	(async() => {
 		let normal_out = process.argv[2];
@@ -98,5 +102,5 @@ function runTestImpl(testinput, method, legacy) {
 	});
 }
 
-module.exports = { runTest, runTestNew }
+module.exports = { runTest, runTestNew, runUnitTest }
 
