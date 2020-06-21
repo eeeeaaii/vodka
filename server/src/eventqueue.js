@@ -25,7 +25,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 // we have:
 // - user events, which preempt everything because responsiveness
-// - exception fulfill, which should preempt rendering because they affect how things get rendered
+// - expectation fulfill, which should preempt rendering because they affect how things get rendered
 // - rendering
 // - true low priority things, like alert animation
 // additionally, in certain contexts we need to enqueue render events at an equal priority
@@ -34,7 +34,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 // do not do the thing where you have multiple names for a queue
 const USER_EVENT_PRIORITY = 0;
-const EXCEPTION_PRIORITY = 1;
+const EXPECTATION_PRIORITY = 1;
 const RENDER_PRIORITY = 2;
 const ALERT_ANIMATION_PRORITY = 3;
 const GC_PRIORITY = 4;
@@ -45,7 +45,7 @@ class EventQueue {
 	constructor() {
 		this.queueSet = [];
 		this.queueSet[USER_EVENT_PRIORITY] = [];
-		this.queueSet[EXCEPTION_PRIORITY] = [];
+		this.queueSet[EXPECTATION_PRIORITY] = [];
 		this.queueSet[RENDER_PRIORITY] = [];
 		this.queueSet[ALERT_ANIMATION_PRORITY] = [];
 		this.queueSet[GC_PRIORITY] = [];
@@ -68,32 +68,6 @@ class EventQueue {
 			}
 		};
 		this.queueSet[ALERT_ANIMATION_PRORITY].push(item);
-		this.setTimeoutForProcessingNextItem(item);
-	}
-
-	enqueueRenderNodeRenderSelecting(renderNode, flags, selectThisNode) {
-		Vodka.EVENT_DEBUG ? console.log('enqueueing: RenderNodeRenderSelecting'):null;
-		let item = {
-			action: "renderNodeRenderSelecting",
-			shouldDedupe: true,
-			renderNode: renderNode,
-			selectThisNode: selectThisNode,
-			flags: flags,
-			equals: function(other) {
-				 // ref equals is okay?
-				return (
-					other.action == this.action
-					&& other.selectThisNode == this.selectThisNode
-					&& other.renderNode == this.renderNode
-					&& other.flags == this.flags);
-			},
-			do: function() {
-				selectWhenYouFindIt = this.selectThisNode;
-				renderPassNumber++;
-				this.renderNode.render(this.flags);
-			}
-		};
-		this.queueSet[RENDER_PRIORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
@@ -137,25 +111,6 @@ class EventQueue {
 			}
 		};
 		this.queueSet[USER_EVENT_PRIORITY].push(item);
-		this.setTimeoutForProcessingNextItem(item);
-	}
-
-	enqueueTopLevelRenderSelectingNode(nex) {
-		Vodka.EVENT_DEBUG ? console.log('enqueueing: TopLevelRenderSelectingNode'):null;
-		let item = {
-			action: "topLevelRenderSelectingNode",
-			nex: nex,
-			shouldDedupe: true,
-			equals: function(other) {
-				return (
-					other.action == this.action
-					&& other.nex.getID() == this.nex.getID());
-			},
-			do: function() {
-				Vodka.topLevelRenderSelectingNode(this.nex);
-			}
-		};
-		this.queueSet[RENDER_PRIORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
@@ -207,12 +162,12 @@ class EventQueue {
 				this.exp.fulfill(this.result);
 			}
 		};
-		this.queueSet[EXCEPTION_PRIORITY].push(item);
+		this.queueSet[EXPECTATION_PRIORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
 	// this is actually pretty generic but the point is that it gets put
-	// at exception priority
+	// at expectation priority
 	enqueueExpectationCallback(callback, result) {
 		Vodka.EVENT_DEBUG ? console.log('enqueueing: ExpectationCallback'):null;
 		let item = {
@@ -225,7 +180,7 @@ class EventQueue {
 				this.callback(this.result);
 			}
 		};
-		this.queueSet[EXCEPTION_PRIORITY].push(item);
+		this.queueSet[EXPECTATION_PRIORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 

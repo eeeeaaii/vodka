@@ -221,10 +221,6 @@ class RenderNode {
 	render(renderFlags) {
 		renderFlags = this.applyExplodedOverride(renderFlags);
 		this.clearDomNode(renderFlags);
-		if (Vodka.getGlobalSelectWhenYouFindIt() && this.getNex().getID() == Vodka.getGlobalSelectWhenYouFindIt().getID()) {
-			this.setSelected(false);
-			setGlobalSelectWhenYouFindIt(null);
-		}
 		let useFlags = this.selected
 				? renderFlags | Vodka.RENDER_FLAG_SELECTED
 				: renderFlags;

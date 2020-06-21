@@ -207,7 +207,6 @@ var isStepEvaluating = false; // allows some performance-heavy operations while 
 const CONSOLE_DEBUG = false;
 const EVENT_DEBUG = false;
 const PERFORMANCE_MONITOR = false;
-var selectWhenYouFindIt = null;
 
 // app-wide params
 const MAX_RENDER_DEPTH = 500;
@@ -330,18 +329,13 @@ function createBuiltins() {
 	createNativeOrgs();
 }
 
-function topLevelRender(node) {
-	topLevelRenderSelectingNode(null);
-}
-
 function nodeLevelRender(node) {
 	renderPassNumber++;
 	let flags = current_default_render_flags;
 	node.render(flags);
 }
 
-function topLevelRenderSelectingNode(node) {
-	selectWhenYouFindIt = node;
+function topLevelRender() {
 	renderPassNumber++;
 	let flags = current_default_render_flags;
 	if (overrideOnNextRender) {
@@ -455,9 +449,6 @@ export {
 	getGlobalSelectedNode,
 	topLevelRender,
 	nodeLevelRender,
-	topLevelRenderSelectingNode,
-	getGlobalSelectWhenYouFindIt,
-	setGlobalSelectWhenYouFindIt,
 	doRealKeyInput,
 	getGlobalCurrentDefaultRenderFlags,
 	setGlobalOverrideOnNextRender,

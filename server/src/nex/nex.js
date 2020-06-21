@@ -97,26 +97,17 @@ class Nex {
 		}
 	}
 
-	renderOnlyThisNex(selectThisNode) {
+	renderOnlyThisNex() {
 		for (let i = 0; i < this.rendernodes.length; i++) {
 			let flags = Vodka.getGlobalCurrentDefaultRenderFlags();
 			flags &= (~Vodka.RENDER_FLAG_NORMAL);
 			flags &= (~Vodka.RENDER_FLAG_EXPLODED);
 
-			if (selectThisNode) {
-				Vodka.eventQueue.enqueueRenderNodeRenderSelecting(
-						this.rendernodes[i],
-						flags
-						| (this.rendernodes[i].isExploded() ? Vodka.RENDER_FLAG_EXPLODED : Vodka.RENDER_FLAG_NORMAL)
-						,
-						selectThisNode);
-			} else {
-				Vodka.eventQueue.enqueueRenderNodeRender(
-						this.rendernodes[i],
-						flags
-						| (this.rendernodes[i].isExploded() ? Vodka.RENDER_FLAG_EXPLODED : Vodka.RENDER_FLAG_NORMAL)
-						);
-			}
+			Vodka.eventQueue.enqueueRenderNodeRender(
+					this.rendernodes[i],
+					flags
+					| (this.rendernodes[i].isExploded() ? Vodka.RENDER_FLAG_EXPLODED : Vodka.RENDER_FLAG_NORMAL)
+					);
 		}
 	}
 
