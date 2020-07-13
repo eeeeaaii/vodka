@@ -20,6 +20,7 @@ import * as Utils from './utils.js'
 import { RenderNode } from './rendernode.js'
 import { manipulator } from './vodka.js'
 import { EError } from './nex/eerror.js'
+import { BuiltinArgEvaluator } from '../builtinargevaluator.js'
 
 // use this wrapper to handle exceptions correctly, this
 // saves us from having to put exception handling in every
@@ -27,18 +28,20 @@ import { EError } from './nex/eerror.js'
 function evaluateNexSafely(nex, executionEnvironment, skipActivation) {
 	let result;
 	try {
+		nex.evalSetup(executionEnvironment);
+		let returnValueParam = nex.getExpectedReturnType();
+		let cmdname = nex.maybeGetCommandName();
 		result = nex.evaluate(executionEnvironment);
 
-		// TODO: put in return type checking, here's the code, just need to fix up
-			// if (rvp && isReturnValue) {
-			// 	let typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[rvp.type](r);
-			// 	if (!typeChecksOut) {
-			// 		return wrapError('&amp;', `${cmdname}: should return ${rvp.type} but returned ${r.getTypeName()}`, r);
-			// 		// if (arg.getTypeName() == '-error-') {
-			// 		// 	throw wrapError('&szlig;', `${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, arg);
-			// 		// }
-			// 	}
-			// }
+		if (returnValueParam != null) {
+			let typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[returnValueParam.type](result);
+			if (!typeChecksOut) {
+				return wrapError('&amp;', `${cmdname}: should return ${returnValueParam.type} but returned ${result.getTypeName()}`, result);
+				// if (arg.getTypeName() == '-error-') {
+				// 	throw wrapError('&szlig;', `${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, arg);
+				// }
+			}
+		}
 
 		if (result.getTypeName() == '-expectation-' && nex.getTypeName() == '-command-' && !skipActivation) {
 			result.activate();

@@ -201,9 +201,28 @@ class Nex {
 		this.tags = [];		
 	}
 
+	// evaluation flow
+
+	evalSetup(executionEnv) {
+
+	}
+
+	getExpectedReturnType() {
+		return null;
+	}
+
+	maybeGetCommandName() {
+		return null;
+	}
+
 	evaluate(env) {
 		return this;
 	}
+
+	evalCleanup() {
+	}
+
+	// end evaluation flow
 
 	pushNexPhase(phaseExecutor, env) {
 		// no op

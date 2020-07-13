@@ -43,6 +43,8 @@ class Command extends NexContainer {
 		if (this.commandtext) {
 			this.cacheClosureIfCommandTextIsBound();
 		}
+
+		this.evalState = null;
 	}
 
 	getTypeName() {
@@ -163,15 +165,10 @@ class Command extends NexContainer {
 		return true;
 	}
 
-	// the executionEnv is captured and becomes the lexical environment of any closures that are
-	//   created by evaluating lambdas.
-	// it is also used for special forms that have skipeval = true
-	// it is also used to look up symbol bindings
-
-	evaluate(executionEnv) {
-		Vodka.pushStackLevel();
-		Vodka.stackCheck(); // not for step eval, this is to prevent call stack overflow.
-
+	evalSetup(executionEnv) {
+		if (this.evalState != null) {
+			return;
+		}
 		// we need a closure, we need a name to use for error messages, and we need to know if skip first arg.
 		let closure = null;
 		let cmdname = null;
@@ -217,26 +214,54 @@ class Command extends NexContainer {
 			cmdname = `<br>*** unnamed function, function body follows **** <br>${closure.getLambda().debugString()}<br>*** end function body ***<br>`;
 		}
 
+		this.evalState = {
+			closure: closure,
+			cmdname: cmdname,
+			skipFirstArg: skipFirstArg
+		}
+	}
+
+	getExpectedReturnType() {
+		return this.evalState.closure.getLambda().getReturnValueParam();
+	}
+
+	maybeGetCommandName() {
+		return this.evalState.cmdname;
+	}
+
+	evalCleanup() {
+		this.evalState = null;
+	}
+
+	// the executionEnv is captured and becomes the lexical environment of any closures that are
+	//   created by evaluating lambdas.
+	// it is also used for special forms that have skipeval = true
+	// it is also used to look up symbol bindings
+
+	evaluate(executionEnv) {
+		Vodka.pushStackLevel();
+		Vodka.stackCheck(); // not for step eval, this is to prevent call stack overflow.
+
 		if (Vodka.CONSOLE_DEBUG) {
 			console.log(`${Vodka.INDENT()}evaluating command: ${this.debugString()}`);
-			console.log(`${Vodka.INDENT()}closure is: ${closure.debugString()}`);
+			console.log(`${Vodka.INDENT()}closure is: ${this.evalState.closure.debugString()}`);
 		}
 		// the arg container holds onto the args and is used by the arg evaluator.
 		// I think this is useful for step eval but I can't remember
-		let argContainer = new CopiedArgContainer(this, skipFirstArg);
+		let argContainer = new CopiedArgContainer(this, this.evalState.skipFirstArg);
 		// in the future there will be one arg evaluator used by both builtins and lambdas.
 		// the job of the evaluator is to evaluate the args AND bind them to variables in the new scope.
-		let argEvaluator = closure.getArgEvaluator(cmdname, argContainer, executionEnv);
+		let argEvaluator = this.evalState.closure.getArgEvaluator(this.evalState.cmdname, argContainer, executionEnv);
 		argEvaluator.evaluateArgs();
 		if (Vodka.PERFORMANCE_MONITOR) {
-			Vodka.perfmon.logMethodCallStart(closure.getCmdName());
+			Vodka.perfmon.logMethodCallStart(this.evalState.closure.getCmdName());
 		}
-		this.doAlertAnimation(closure.getLambda());
+		this.doAlertAnimation(this.evalState.closure.getLambda());
 		// actually run the code.
-		this.notReallyCachedClosure = closure;
-		let r = closure.executor(executionEnv, argEvaluator, cmdname, this.tags);
+		this.notReallyCachedClosure = this.evalState.closure;
+		let r = this.evalState.closure.executor(executionEnv, argEvaluator, this.evalState.cmdname, this.tags);
 		if (Vodka.PERFORMANCE_MONITOR) {
-			Vodka.perfmon.logMethodCallEnd(closure.getCmdName());
+			Vodka.perfmon.logMethodCallEnd(this.evalState.closure.getCmdName());
 		}
 		if (Vodka.CONSOLE_DEBUG) {
 			console.log(`${Vodka.INDENT()}command returned: ${r.debugString()}`);
