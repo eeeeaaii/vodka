@@ -45,7 +45,7 @@ import { RenderNode } from './rendernode.js'
 import { Root } from './nex/root.js'
 import { Doc } from './nex/doc.js'
 
-import * as EventQueueTests from './tests/eventqueuetests.js';
+import { runTest } from './tests/unittests.js';
 
 var recording = false;
 var firstKeyUp = true; // ignore first key up of recorded session because it's the esc key
@@ -386,10 +386,6 @@ function setRoot(newRootNex) {
 	root = new RenderNode(newRootNex);
 	let rootDomNode = document.getElementById('mixroot');
 	root.setDomNode(rootDomNode);	
-}
-
-function runTest(testname) {
-	eval('EventQueueTests.TEST_' + testname + '();');
 }
 
 // app main entry point

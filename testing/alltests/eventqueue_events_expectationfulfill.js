@@ -16,16 +16,15 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 //endgnumessage//
-//testname// eventqueue_alertanimation
+//testname// eventqueue_events_expectationfulfill
 //startdescription//
 /*
-Tests alert animations in event queue.
+tests expectation fulfill event
 */
 //enddescription//
-//testspec// [none]
 //starttest//
 var harness = require('../testharness');
 harness.runUnitTest(function() {
-	runTest('eventqueue');
+	runTest('eventqueue_events_expectationfulfill');
 });
 //endtest//

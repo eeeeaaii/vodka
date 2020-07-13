@@ -117,7 +117,7 @@ class EventQueue {
 	enqueueImportantTopLevelRender() {
 		Vodka.EVENT_DEBUG ? console.log('enqueueing: ImportantTopLevelRender'):null;
 		let item = {
-			action: "topLevelRender",
+			action: "importantTopLevelRender",
 			shouldDedupe: true,
 			equals: function(other) {
 				return (
