@@ -32,6 +32,7 @@ class Nex {
 		this.currentStyle = "";
 		this.tags = [];
 		this.id = NEXT_NEX_ID++;
+		this.copiedFromID = -1;
 		this.extraClickHandler = null;
 		this.closure = null; // only lambdas have closures but just copying is prob cheaper than testing?
 		this.inPackage = null; // well here we go with more things in the env I guess.
@@ -158,6 +159,7 @@ class Nex {
 
 	copyFieldsTo(nex) {
 		nex.currentStyle = this.currentStyle;
+		nex.copiedFromID = this.id;
 		for (let i = 0; i < this.tags.length; i++) {
 			nex.tags[i] = this.tags[i].copy();
 		}

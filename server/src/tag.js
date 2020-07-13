@@ -55,19 +55,34 @@ class TagEditor {
 		this.nex = nex;
 	}
 
+	finish() {
+		let tag = new Tag(this.tagText);
+		// TODO: implement contract enforcing.
+		// if (contractEnforcer.enforce(tag, this.nex)) {
+			this.nex.addTag(new Tag(this.tagText));
+		// } else {
+		// 	this.nex.addTag(new Tag(`[TAG ERROR: cannot add tag ${tag.getName()} to this nex, does not satisfy contract.]`));
+		// }
+
+		this._isEditing = false;
+
+	}
+
 	routeKey(text) {
 		if (text == 'Enter') {
-			let tag = new Tag(this.tagText);
-			if (contractEnforcer.enforce(tag, this.nex)) {
-				this.nex.addTag(new Tag(this.tagText));
-			} else {
-				this.nex.addTag(new Tag(`[TAG ERROR: cannot add tag ${tag.getName()} to this nex, does not satisfy contract.]`));
-			}
-			this._isEditing = false;
+			this.finish();
+			return false;
+		} else if (text == 'Tab') {
+			this.finish();
+			return true;
+		} else if (text == 'Backspace') {
+			this.tagText = this.tagText.substr(0, this.tagText.length - 1);
+			this.editorDomNode.innerHTML = this.tagText;			
 		} else if (/^.$/.test(text)) {
 			this.tagText = this.tagText + text;
 			this.editorDomNode.innerHTML = this.tagText;			
 		}
+		return false;
 	}
 
 	startEditing() {

@@ -388,6 +388,10 @@ function setRoot(newRootNex) {
 	root.setDomNode(rootDomNode);	
 }
 
+function getRoot() {
+	return root;
+}
+
 // app main entry point
 
 function setup() {
@@ -454,6 +458,7 @@ export {
 	deactivateKeyFunnel,
 	activateKeyFunnel,
 	setRoot,
+	getRoot,
 
 	doKeyInput,
 

@@ -43,39 +43,47 @@ class KeyDispatcher {
 		}
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
 
-		if (eventName != 'Meta-z') {
-			// If we aren't undoing we save the last state so we can undo to it.
-			// any editor stuff short circuits this, so you can undo what you type
-			// in an editor (which makes sense because different input devices will
-			// have different editors, which may or may not make sense with undo.
-			Vodka.undo.saveForUndo(Vodka.root.getNex());			
-		}
+		// if (eventName != 'Meta-z') {
+		// 	// If we aren't undoing we save the last state so we can undo to it.
+		// 	// any editor stuff short circuits this, so you can undo what you type
+		// 	// in an editor (which makes sense because different input devices will
+		// 	// have different editors, which may or may not make sense with undo.
+		// 	Vodka.undo.saveForUndo(Vodka.root.getNex());			
+		// }
 
 		// there are a few special cases
 		if (eventName == '|') {
 			// vertical bar is unusable - 'internal use only'
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-z') {
+			// do not save state for undo obv
 			if (Vodka.undo.canUndo()) {
-				Vodka.setRoot(Vodka.undo.getForUndo());
+				Vodka.undo.performUndo();
 			}
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-x') {
+			this.saveForUndo();
 			Vodka.manipulator.doCut();
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-c') {
+			this.saveForUndo();
 			Vodka.manipulator.doCopy();
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-v') {
+			this.saveForUndo();
 			Vodka.manipulator.doPaste();
 			return false; // to cancel browser event
 		} else if (eventName == 'Escape') {
+			// do not save state for undo as esc is non-destructive
 			this.doEscape();
 			return false; // to cancel browser event
 		} else if (eventName == 'MetaEnter') {
+			// TODO: only save state for undo first time we hit meta-enter (step execute)
+			this.saveForUndo();
 			this.doMetaEnter();
 			return false; // to cancel browser event
 		} else {
+			this.saveForUndo();
 			// 1. look in override table
 			// 2. look in regular table
 			// 3. call defaultHandle
@@ -99,8 +107,10 @@ class KeyDispatcher {
 				if (this.runFunctionFromOverrideTable(sourceNex, parentNex, eventName)) return false;
 				if (this.runFunctionFromRegularTable(sourceNex, eventName, keyContext)) return false;
 				if (this.runFunctionFromGenericTable(sourceNex, eventName)) return false;
+				this.eraseLastUndo();
 				return true; // didn't handle it.
 			} catch (e) {
+				this.eraseLastUndo();
 				if (e == Vodka.UNHANDLED_KEY) {
 					console.log("UNHANDLED KEY " +
 									':' + 'keycode=' + keycode +
@@ -112,6 +122,14 @@ class KeyDispatcher {
 				} else throw e;
 			}
 		}
+	}
+
+	saveForUndo() {
+		Vodka.undo.saveStateForUndo(Vodka.root.getNex());
+	}
+
+	eraseLastUndo() {
+		Vodka.undo.eraseLastSavedState();
 	}
 
 	doEditorEvent(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey) {

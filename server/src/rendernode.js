@@ -116,6 +116,21 @@ class RenderNode {
 		}
 	}
 
+	doOnRenderNodeTree(f) {
+		let stopNow = f(this);
+		if (stopNow) {
+			return true;
+		} else {
+			for (let i = 0; i < this.childnodes.length; i++) {
+				let childRenderNode = this.childnodes[i];
+				if (childRenderNode.doOnRenderNodeTree(f)) {
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+
 	getNex() {
 		return this.nex;
 	}
