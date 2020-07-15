@@ -51,6 +51,12 @@ class CallbackRouter {
 }
 
 class Expectation extends NexContainer {
+	//THESE TESTS ARE BROKEN
+	//saveload_bool
+	//saveload_commands_basic
+
+	//BUT I MISTAKENLY UPDATED THE GOLDEN
+
 	constructor() {
 		super()
 		this.reset();
@@ -64,6 +70,10 @@ class Expectation extends NexContainer {
 		this.activationFunction = null; // this starts the async process, whatever it is
 		this.virtualChildren = [];
 		gc.register(this);
+	}
+
+	getFFClosure() {
+		return this.ffClosure;
 	}
 
 	reset() {
@@ -330,39 +340,87 @@ class Expectation extends NexContainer {
 			}
 			this.unsetDotSpanPaddingClasses(dotspan);
 			this.setDotSpanPaddingClass(dotspan);
+			this.unsetDotSpanParentPaddingClasses(domNode);
+			this.setDotSpanParentPaddingClass(domNode);
 			dotspan.innerHTML = this.getDotSpanHTML();
 		}
 	}
 
-	getDotSpanHTML() {
-		if (this.fulfilled) {
-			return '*';
-		} else if (this.isActivated()) {
-			return '...';
-		} else if (this.isSet()) {
-			return '..';
-		} else {
-			return '.';
+	setDotSpanPaddingClass(dotspan) {
+		let s = 'dsstate';
+		if (this.isSet()) {
+			s += '-set';
 		}
+		if (this.hasFFF()) {
+			s += '-fff';
+		}
+		if (this.isActivated()) {
+			s += '-activated';
+		}
+		if (this.isFulfilled()) {
+			s += '-fulfilled';
+		}
+		dotspan.classList.add(s);
+	}
+
+	setDotSpanParentPaddingClass(dotspanParent) {
+		let s = 'parentdsstate';
+		if (this.isSet()) {
+			s += '-set';
+		}
+		if (this.hasFFF()) {
+			s += '-fff';
+		}
+		if (this.isActivated()) {
+			s += '-activated';
+		}
+		if (this.isFulfilled()) {
+			s += '-fulfilled';
+		}
+		dotspanParent.classList.add(s);
+	}
+
+	getDotSpanHTML() {
+		let s = '';
+		if (this.isSet()) {
+			s += '.';
+		}
+		if (this.hasFFF()) {
+			s += ',';
+		}
+		if (this.isActivated()) {
+			s += '&bull;';
+		}
+		if (this.isFulfilled()) {
+			s += '*';
+		}
+		return s;
 	}
 
 	unsetDotSpanPaddingClasses(dotspan) {
-		dotspan.classList.remove('fulfilled');
- 		dotspan.classList.remove('activated');
- 		dotspan.classList.remove('set');
- 		dotspan.classList.remove('unset');
+		dotspan.classList.remove('dsstate');
+		dotspan.classList.remove('dsstate-set');
+		dotspan.classList.remove('dsstate-set-fff');
+		dotspan.classList.remove('dsstate-set-fff-activated');
+		dotspan.classList.remove('dsstate-set-fff-activated-fulfilled');
+		dotspan.classList.remove('dsstate-fff');
+		dotspan.classList.remove('dsstate-set-activated');
+		dotspan.classList.remove('dsstate-set-activated-fulfilled');
+		dotspan.classList.remove('dsstate-fff-activated-fulfilled');
+		dotspan.classList.remove('dsstate-activated-fulfilled');
 	}
 
-	setDotSpanPaddingClass(dotspan) {
-		if (this.fulfilled) {
-			dotspan.classList.add('fulfilled');
-		} else if (this.isActivated()) {
-			dotspan.classList.add('activated');
-		} else if (this.set) {
-			dotspan.classList.add('set');
-		} else {
-			dotspan.classList.add('unset');
-		}
+	unsetDotSpanParentPaddingClasses(dotspanParent) {
+		dotspanParent.classList.remove('parentdsstate');
+		dotspanParent.classList.remove('parentdsstate-set');
+		dotspanParent.classList.remove('parentdsstate-set-fff');
+		dotspanParent.classList.remove('parentdsstate-set-fff-activated');
+		dotspanParent.classList.remove('parentdsstate-set-fff-activated-fulfilled');
+		dotspanParent.classList.remove('parentdsstate-fff');
+		dotspanParent.classList.remove('parentdsstate-set-activated');
+		dotspanParent.classList.remove('parentdsstate-set-activated-fulfilled');
+		dotspanParent.classList.remove('parentdsstate-fff-activated-fulfilled');
+		dotspanParent.classList.remove('parentdsstate-activated-fulfilled');
 	}
 
 	callDeleteHandler() {

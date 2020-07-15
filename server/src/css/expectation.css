@@ -35,7 +35,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	align-items: flex-start;
 	padding: 5px;
 	border-radius: 6px 6px 6px 6px;
-	margin-left:21px !important;
 	border: 1px solid var(--unselected-border);
 }
 
@@ -45,13 +44,140 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 .dotspan.exploded {
 	border: 1px solid var(--unselected-border);
-	margin: 0px 12px 0px -27px;
-	padding: 0px 12px 8px 4px;
+	margin: 0px 0px 0px 0px;
 	display: inline-block;
 	line-height: .6;
+	padding: 0px 4px 8px 4px;
 	border-radius:6px 0px 0px 6px;
 }
 
+/* -- dotspan ----- */
+
+.expectation.parentdsstate.exploded {
+	margin-left: 9px;
+}
+
+.dotspan.dsstate.exploded {
+	margin-left: -15px;
+	margin-right: 5px;
+}
+
+/* ------- */
+
+
+.expectation.parentdsstate-set.exploded {
+	margin-left: 14px;
+}
+
+.dotspan.dsstate-set.exploded {
+	margin-left: -19px;
+	margin-right: 5px;
+}
+
+/* ------- */
+
+.expectation.parentdsstate-fff.exploded {
+	margin-left: 14px;
+}
+
+.dotspan.dsstate-fff.exploded {
+	margin-left: -19px;
+	margin-right: 5px;
+}
+
+/* ------- */
+
+.expectation.parentdsstate-set-fff.exploded {
+	margin-left: 17px;
+}
+
+.dotspan.dsstate-set-fff.exploded {
+	margin-left: -23px;
+	margin-right: 5px;
+}
+
+/* ------- */
+
+.expectation.parentdsstate-set-fff-activated.exploded {
+	margin-left: 24px;
+}
+
+.dotspan.dsstate-set-fff-activated.exploded {
+	margin-left: -29px;
+	margin-right: 5px;
+	line-height: 1.1;
+	padding-bottom: 5px;
+}
+
+/* ------- */
+
+
+.expectation.parentdsstate-set-fff-activated-fulfilled.exploded {
+	margin-left: 32px;
+}
+
+.dotspan.dsstate-set-fff-activated-fulfilled.exploded {
+	margin-left: -37px;
+	margin-right: 5px;
+	line-height: 1.4;
+	padding-bottom: 3px;
+}
+
+/* ------- */
+
+.expectation.parentdsstate-set-activated.exploded {
+	margin-left: 20px;
+}
+
+.dotspan.dsstate-set-activated.exploded {
+	margin-left: -25px;
+	margin-right: 5px;
+	line-height: 1.1;
+	padding-bottom: 5px;
+}
+
+/* ------- */
+
+.expectation.parentdsstate-set-activated-fulfilled.exploded {
+	margin-left: 28px;
+}
+
+.dotspan.dsstate-set-activated-fulfilled.exploded {
+	margin-left: -33px;
+	margin-right: 5px;
+	line-height: 1.4;
+	padding-bottom: 3px;
+}
+
+/* ------- */
+
+.expectation.parentdsstate-fff-activated-fulfilled.exploded {
+	margin-left: 27px;
+}
+
+.dotspan.dsstate-fff-activated-fulfilled.exploded {
+	margin-left: -33px;
+	margin-right: 5px;
+	line-height: 1.4;
+	padding-bottom: 3px;
+}
+
+/* ------- */
+
+.expectation.parentdsstate-activated-fulfilled.exploded {
+	margin-left: 23px;
+}
+
+.dotspan.dsstate-activated-fulfilled.exploded {
+	margin-left: -29px;
+	margin-right: 5px;
+	line-height: 1.3;
+	padding-bottom: 0px;
+	padding-top: 1px;
+}
+
+
+/*
 .dotspan.exploded.fulfilled {
 	padding: 7px 6px 2px 6px;
 }
@@ -67,6 +193,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 .dotspan.exploded.unset {
 	padding: 3px 7px 5px 8px;
 }
+*/
 
 .expectation.exploded.selected > .dotspan {
 	border-color: var(--selected-border);

@@ -43,9 +43,9 @@ function evaluateNexSafely(nex, executionEnvironment, skipActivation) {
 			}
 		}
 
-		if (result.getTypeName() == '-expectation-' && nex.getTypeName() == '-command-' && !skipActivation) {
-			result.activate();
-		}
+		// if (result.getTypeName() == '-expectation-' && nex.getTypeName() == '-command-' && !skipActivation) {
+		// 	result.activate();
+		// }
 		let tn = result.getTypeName();
 		if (tn == '-org-' || tn == '-nativeorg-') {
 			// forget multiple dereference for now we will do that soon/someday/sometime
@@ -78,6 +78,11 @@ function wrapError(prefix, message, inner) {
 
 function evaluateAndReplace(s) {
 	let n = evaluateNexSafely(s.getNex(), Vodka.BINDINGS);
+	// ONLY AT TOP LEVEL we activate expectations.
+	if (n.getTypeName() == '-expectation-' && !n.isActivated()) {
+		n.activate();
+	}
+
 	if (Utils.isFatalError(n)) {
 		Vodka.beep();
 	}

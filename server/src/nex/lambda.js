@@ -201,6 +201,14 @@ class Lambda extends NexContainer {
 			'ShiftSpace': 'toggle-dir',
 		};
 	}
+
+	static makeLambda(argstring, args) {
+		let lambda = new Lambda(argstring);
+		for (let i = 0; i < args.length; i++) {
+			lambda.appendChild(args[i]);
+		}
+		return lambda;
+	}
 }
 
 class LambdaEditor {

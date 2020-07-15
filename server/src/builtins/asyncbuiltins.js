@@ -22,6 +22,9 @@ import { Builtin } from '../nex/builtin.js'
 import { Nil } from '../nex/nil.js'
 import { Expectation } from '../nex/expectation.js'
 import { UNBOUND } from '../environment.js'
+import { Lambda } from '../nex/lambda.js'
+import { evaluateNexSafely } from '../evaluator.js'
+
 
 function createAsyncBuiltins() {
 	Builtin.createBuiltin(
@@ -36,6 +39,16 @@ function createAsyncBuiltins() {
 			let exp1 = env.lb('exp1');
 			let exp2 = env.lb('exp2');
 			exp1.addVirtualChild(exp2);
+			return exp1; // or 2?
+		}
+	);
+
+	Builtin.createBuiltin(
+		'ff',
+		[ 'exp1,'],
+		function(env, executionEnvironment) {
+			let exp1 = env.lb('exp1');
+			exp1.activate();
 			return exp1; // or 2?
 		}
 	);
@@ -64,12 +77,33 @@ function createAsyncBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'ff-with',
-		[ 'exp,', 'func&' ],
+		'ff-of',
+		[ 'exp,'],
 		function(env, executionEnvironment) {
-			let closure = env.lb('func');
 			let exp = env.lb('exp');
-			exp.ffWith(closure, executionEnvironment);
+			let c = exp.getFFClosure();
+			if (!c) {
+				return new Nil();
+			} else {
+				return c;
+			}
+		}
+	);
+
+
+	Builtin.createBuiltin(
+		'ff-with',
+		[ 'exp,', 'any' ],
+		function(env, executionEnvironment) {
+			let ff = env.lb('any');
+			if (ff.getTypeName() != '-closure-') {
+				let argstring = ' a';
+				let children = [ ff ];
+				let lambda = Lambda.makeLambda(argstring, children);
+				ff = evaluateNexSafely(lambda, executionEnvironment);
+			}
+			let exp = env.lb('exp');
+			exp.ffWith(ff, executionEnvironment);
 			return exp;
 		}
 	);
