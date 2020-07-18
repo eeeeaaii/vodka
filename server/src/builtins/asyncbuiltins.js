@@ -20,32 +20,34 @@ import * as Vodka from '../vodka.js'
 
 import { Builtin } from '../nex/builtin.js'
 import { Nil } from '../nex/nil.js'
-import { Expectation } from '../nex/expectation.js'
+import { Expectation, incFFGen } from '../nex/expectation.js'
 import { UNBOUND } from '../environment.js'
 import { Lambda } from '../nex/lambda.js'
 import { evaluateNexSafely } from '../evaluator.js'
 
 
 function createAsyncBuiltins() {
-	Builtin.createBuiltin(
-		'activate-after',
-		[ 'exp1,', 'exp2,' ],
-		function(env, executionEnvironment) {
-			// the one we want to make sure ISN'T activated
-			// is the one we want to set to be pending ON the other one.
-			// this means though that the other one could have been
-			// activated, it doesn't matter. So we return the one
-			// that we just set to not activate until the other thing.
-			let exp1 = env.lb('exp1');
-			let exp2 = env.lb('exp2');
-			exp1.addVirtualChild(exp2);
-			return exp1; // or 2?
-		}
-	);
+	// is this something we will even have?
+	// addVirtualChild isn't a thing anymore
+	// Builtin.createBuiltin(
+	// 	'activate-after',
+	// 	[ 'exp1*', 'exp2*' ],
+	// 	function(env, executionEnvironment) {
+	// 		// the one we want to make sure ISN'T activated
+	// 		// is the one we want to set to be pending ON the other one.
+	// 		// this means though that the other one could have been
+	// 		// activated, it doesn't matter. So we return the one
+	// 		// that we just set to not activate until the other thing.
+	// 		let exp1 = env.lb('exp1');
+	// 		let exp2 = env.lb('exp2');
+	// 		exp1.addVirtualChild(exp2);
+	// 		return exp1; // or 2?
+	// 	}
+	// );
 
 	Builtin.createBuiltin(
 		'ff',
-		[ 'exp1,'],
+		[ 'exp1*'],
 		function(env, executionEnvironment) {
 			let exp1 = env.lb('exp1');
 			exp1.activate();
@@ -53,13 +55,14 @@ function createAsyncBuiltins() {
 		}
 	);
 
+
 	Builtin.createBuiltin(
 		'cancel-ff',
-		[ 'exp,?' ],
+		[ 'exp*?' ],
 		function(env, executionEnvironment) {
 			let exp = env.lb('exp');
 			if (exp == UNBOUND) {
-				Vodka.eventQueue.enqueueGC();
+				incFFGen();
 				return new Nil();
 			} else {
 				exp.cancel();
@@ -69,8 +72,18 @@ function createAsyncBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'exp-gc',
+		[],
+		function(env, executionEnvironment) {
+			Vodka.eventQueue.enqueueGC();
+			return new Nil();
+		}
+	);
+
+
+	Builtin.createBuiltin(
 		'copy-exp',
-		[ 'nex,' ],
+		[ 'nex*' ],
 		function(env, executionEnvironment) {
 			return env.lb('nex').makeCopy();
 		}
@@ -78,7 +91,7 @@ function createAsyncBuiltins() {
 
 	Builtin.createBuiltin(
 		'ff-of',
-		[ 'exp,'],
+		[ 'exp*'],
 		function(env, executionEnvironment) {
 			let exp = env.lb('exp');
 			let c = exp.getFFClosure();
@@ -93,7 +106,7 @@ function createAsyncBuiltins() {
 
 	Builtin.createBuiltin(
 		'ff-with',
-		[ 'exp,', 'any' ],
+		[ 'exp*', 'any' ],
 		function(env, executionEnvironment) {
 			let ff = env.lb('any');
 			if (ff.getTypeName() != '-closure-') {
@@ -110,7 +123,7 @@ function createAsyncBuiltins() {
 
 	Builtin.createBuiltin(
 		'let-exp',
-		[ '_name@', 'nex,' ],
+		[ '_name@', 'nex*' ],
 		function(env, executionEnvironment) {
 			let rhs = env.lb('nex');
 			let symname = env.lb('name').getTypedValue();
@@ -139,7 +152,7 @@ function createAsyncBuiltins() {
 
 	Builtin.createBuiltin(
 		'reset',
-		[ 'exp,' ],
+		[ 'exp*' ],
 		function(env, executionEnvironment) {
 			let exp = env.lb('exp');
 			exp.reset();
@@ -149,7 +162,7 @@ function createAsyncBuiltins() {
 
 	Builtin.createBuiltin(
 		'set-click',
-		[ 'exp,' ],
+		[ 'exp*' ],
 		function(env, executionEnvironment) {
 			let exp = env.lb('exp');
 			exp.set(function(callback, ex) {
@@ -165,7 +178,7 @@ function createAsyncBuiltins() {
 
 	Builtin.createBuiltin(
 		'set-delay',
-		[ 'exp,', 'time#' ],
+		[ 'exp*', 'time#' ],
 		function(env, executionEnvironment) {
 			let time = env.lb('time').getTypedValue();
 			let exp = env.lb('exp');

@@ -15,7 +15,11 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-var FF_GEN = 0;
+let FF_GEN = 0;
+
+function incFFGen() {
+	FF_GEN++;
+}
 
 import * as Vodka from '../vodka.js'
 import * as Utils from '../utils.js'
@@ -132,7 +136,6 @@ class Expectation extends NexContainer {
 			throw new EError('Expectation: cannot set ff-with, has already been fulfilled');
 		}
 		this.ffClosure = closure;
-		this.ffgen = FF_GEN;
 		this.ffExecutionEnvironment = executionEnvironment.copy();// do I need to copy this?
 	}
 
@@ -252,6 +255,7 @@ class Expectation extends NexContainer {
 			throw new EError('Expectation: cannot set the expectation, has already been activated');
 		}
 		this.hasBeenSet = true;
+		this.ffgen = FF_GEN;
 		this.callbackRouter = new CallbackRouter();
 		this.callbackRouter.addExpecting(this);
 		this.activationFunctionGenerator = activationFunctionGenerator;
@@ -473,5 +477,5 @@ class Expectation extends NexContainer {
 
 
 
-export { Expectation }
+export { Expectation, incFFGen }
 

@@ -7,6 +7,7 @@ ASYNC/EXPECTATION TO DO:
 
 TYPE-RELATED TO DO
 - actually check types for return values of lambdas, but disallow/ignore,
+- get rid of the "comma" type and just have a single expectation type since we now just explicitly activate with the activate command
 - figure out how to resolve orgs with multiple matching tags (first match?) and do we iterate first thru the tags in the expr being evaluated or first thru the tags on the org?
 - figure out if it's an error if returned org doesn't have tag
 - make builtin type checker operate off strings (i.e. make a type string parser)
@@ -62,6 +63,7 @@ SERVER/FILES TO DO
 - make it so that there is a globally recognized delimiter for each nexes "private data" and so when a nex is serialized its private data can be formatted however it wants, provided it doesn't use the delimiter
 
 RENDERING TO-DO
+- make closures render in a more intelligible way (similar to how lambdas used to render) so you can see the args, name, etc.
 - handle insertion points at the render node level
 - get rid of that carriage return object and use insertion point for that
 - implement the thing where instead of having various types of renders, you just mark whatever is dirty as dirty, then call a function that renders whatever's dirty
