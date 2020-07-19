@@ -176,6 +176,19 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	padding-top: 1px;
 }
 
+/* ------- */
+
+.expectation.parentdsstate-activated.exploded {
+	margin-left: 15px;
+}
+
+.dotspan.dsstate-activated.exploded {
+	margin-left: -21px;
+	margin-right: 5px;
+	line-height: 1.3;
+	padding-bottom: 0px;
+	padding-top: 1px;
+}
 
 /*
 .dotspan.exploded.fulfilled {

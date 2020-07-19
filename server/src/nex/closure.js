@@ -78,6 +78,12 @@ class Closure extends ValueNex {
 		return new BuiltinArgEvaluator(cmdname, this.lambda.paramsArray, argContainer, executionEnvironment);
 	}
 
+	renderValue() {
+		return `<br>NAME: ${this.cmdname}<br>LAMBDA: ${this.lambda.toString()}<br>LEXENV: ${this.lexicalEnvironment.toString()}`;
+
+	}
+
+
 	shouldActivateReturnedExpectations() {
 		let rvp = this.lambda.getReturnValueParam();
 		if (rvp && rvp.skipactivate) {

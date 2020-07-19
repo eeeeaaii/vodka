@@ -67,6 +67,17 @@ class Environment {
 		return this.copy(true /* share parent */)
 	}
 
+	toString() {
+		let r = '';
+		for (let name in this.symbols) {
+			if (r != '') {
+				r += ',';
+			}
+			r += `${name}=${this.symbols[name]}`;
+		}
+		return r;
+	}
+
 	debug(lvl) {
 		if (!lvl) {
 			lvl = '';

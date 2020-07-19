@@ -80,15 +80,6 @@ function createAsyncBuiltins() {
 		}
 	);
 
-
-	Builtin.createBuiltin(
-		'copy-exp',
-		[ 'nex*' ],
-		function(env, executionEnvironment) {
-			return env.lb('nex').makeCopy();
-		}
-	);
-
 	Builtin.createBuiltin(
 		'ff-of',
 		[ 'exp*'],
@@ -187,6 +178,20 @@ function createAsyncBuiltins() {
 					setTimeout(function() {
 						callback(null /* do not set a value, the default is whatever the child is of the exp */);
 					}, time)
+				}
+			});
+			return exp;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'set-immediate',
+		[ 'exp*'],
+		function(env, executionEnvironment) {
+			let exp = env.lb('exp');
+			exp.set(function(callback) {
+				return function() {
+					callback(null);
 				}
 			});
 			return exp;

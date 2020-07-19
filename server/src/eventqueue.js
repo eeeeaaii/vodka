@@ -209,7 +209,7 @@ class EventQueue {
 				return (other.action == this.action);
 			},
 			do: function() {
-				gc.markAndSweep();
+				Vodka.gc.markAndSweep();
 			}
 		};
 		this.queueSet[GC_PRIORITY].push(item);
