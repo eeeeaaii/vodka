@@ -459,6 +459,7 @@ export {
 	activateKeyFunnel,
 	setRoot,
 	getRoot,
+	checkRecordState,
 
 	doKeyInput,
 

@@ -63,7 +63,11 @@ class Expectation extends NexContainer {
 
 	constructor() {
 		super()
-		this.reset();
+		this.hasBeenSet = false;
+		this.fulfilled = false;
+		this.activated = false;
+		this.ffClosure = null;
+		this.ffExecutionEnvironment = null;
 		// we don't reset callbacks when we reset this exp,
 		// because if we did that, the code in ffWidth couldn't
 		// reset this expectation.
@@ -81,11 +85,8 @@ class Expectation extends NexContainer {
 	}
 
 	reset() {
-		this.hasBeenSet = false; // it's annoying that set the verb and set the adj are the same
 		this.fulfilled = false;
 		this.activated = false;
-		this.ffClosure = null;
-		this.ffExecutionEnvironment = null;
 	}
 
 	addPendingCallback(pendingCallback) {

@@ -265,6 +265,7 @@ class Nex {
 
 	_setClickHandler(renderNode) {
 		renderNode.getDomNode().onmousedown = (event) => {
+			Vodka.checkRecordState(event, 'mouse');
 			Vodka.eventQueue.enqueueDoClickHandlerAction(this, renderNode, event)
 			event.stopPropagation();
 		};

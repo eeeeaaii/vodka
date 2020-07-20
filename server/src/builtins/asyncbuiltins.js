@@ -113,35 +113,6 @@ function createAsyncBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'let-exp',
-		[ '_name@', 'nex*' ],
-		function(env, executionEnvironment) {
-			let rhs = env.lb('nex');
-			let symname = env.lb('name').getTypedValue();
-			executionEnvironment.bind(symname, rhs);
-			if (rhs.getTypeName() == '-closure-') {
-				// basically let is always "letrec"
-				rhs.getLexicalEnvironment().bind(symname, rhs);
-			}
-			return rhs;
-		}
-	);
-
-	Builtin.createBuiltin(
-		'nest-in-expectation',
-		[ 'exp,...' ],
-		function(env, executionEnvironment) {
-			let exps = env.lb('exp');
-			let r = new Expectation();
-			for (let i = exps.numChildren() - 1; i >= 0; i--) {
-				let c = exps.getChildAt(i);
-				r.appendChild(c);
-			}
-			return r;
-		}
-	);
-
-	Builtin.createBuiltin(
 		'reset',
 		[ 'exp*' ],
 		function(env, executionEnvironment) {
@@ -156,9 +127,15 @@ function createAsyncBuiltins() {
 		[ 'exp*' ],
 		function(env, executionEnvironment) {
 			let exp = env.lb('exp');
+			if (exp.numChildren() > 1) {
+				return new EError('set-click: more than one clickable object unsupported');
+			}
+			if (exp.numChildren() == 0) {
+				return new EError('set-click: must have at least one clickable object');
+			}
 			exp.set(function(callback, ex) {
 				return function() {
-					ex.extraClickHandler = function() {
+					ex.getChildAt(0).extraClickHandler = function() {
 						callback();
 					}
 				}
