@@ -126,18 +126,21 @@ class Expectation extends NexContainer {
 	}
 
 	ffWith(closure, executionEnvironment) {
-		if (this.hasFFF()) {
-			throw new EError('Expectation: cannot set ff-with, has already been set');
+		// I was going to call ffwith directly if ff-with was called on an already-fulfilled
+		// expectation, similar to what happens with promises,
+		// but the problem with that is that the pending expectations
+		// have already been notified so it's really too late -- too many weird possibilities
+		// for order of fulfillment changing or race conditions.
+		if (this.fulfilled) {
+			throw new EError('Expectation: cannot call ff-with on the expectation, has already been fulfilled');			
 		}
-		// I was going to call ffwith directly if it was set on an already-fulfilled
-		// expectation but the problem with that is that the pending expectations
-		// have already been notified so it's really too late. The new thing of
-		// deferring activation will probably be better/help with this/make it so I don't need to.
-		if (this.isFulfilled()) {
-			throw new EError('Expectation: cannot set ff-with, has already been fulfilled');
+		if (this.activated) {
+			throw new EError('Expectation: cannot call ff-with on the expectation, has already been activated');
 		}
 		this.ffClosure = closure;
-		this.ffExecutionEnvironment = executionEnvironment.copy();// do I need to copy this?
+		// TODO: think of a bug that is fixed by copying the execution env,
+		// or remove the copy.
+		this.ffExecutionEnvironment = executionEnvironment.copy();
 	}
 
 	ffAll() {
