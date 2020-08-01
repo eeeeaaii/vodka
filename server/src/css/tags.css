@@ -39,3 +39,36 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	padding: 3px 7px 3px 7px;
 	color: #414141;
 }
+
+/*
+
+for "ask tags" (switch colors?)
+
+change tag styles:
+
+padding: 0px 8px 0px 0px;
+align-items: center;
+
+
+.tag.exploded:before {
+  content: ' ';
+  border-top: 8px solid transparent;
+  border-left: 10px solid #e2e21d;
+  border-bottom: 8px solid transparent;
+  border-right: 4px solid transparent;
+}
+
+for "answer" tags:
+padding: 0px 0px 0px 8px;
+align-items: center;
+
+.tag.exploded:after {
+  content: ' ';
+  border-top: 8px solid transparent;
+  border-right: 10px solid #1de2ca;
+  border-bottom: 8px solid transparent;
+  border-left: 4px solid transparent;
+}
+
+
+*/

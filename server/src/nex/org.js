@@ -122,6 +122,14 @@ class Org extends NexContainer {
 		}
 		return true;
 	}
+
+	getEventTable(context) {
+		return {
+			'ShiftEnter': 'evaluate-nex-and-keep',
+			'Enter': 'evaluate-nex',
+			'ShiftSpace': 'toggle-dir', // doesn't work
+		};
+	}
 }
 
 
