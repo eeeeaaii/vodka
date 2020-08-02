@@ -139,11 +139,10 @@ class ParamParser {
 			case '!': return 'Bool';
 			case '~': return 'Command';
 			case '*': return 'Expectation';
-			case ',': return 'Expectation';
+			case ',': return 'Expectation'; // TODO: remove support for this version
 			case '()': return 'NexContainer';
 			case '$': return 'EString';
 			case '@': return 'ESymbol';
-			case '?': return 'EError';
 			case '%': return 'Float';
 			case '#%': return 'Number';
 			case '%#': return 'Number';

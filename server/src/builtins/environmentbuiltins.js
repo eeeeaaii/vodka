@@ -19,6 +19,7 @@ import * as Vodka from '../vodka.js'
 
 import { Builtin } from '../nex/builtin.js'
 import { EError } from '../nex/eerror.js'
+import { Bool } from '../nex/bool.js'
 import { ESymbol } from '../nex/esymbol.js'
 import { Doc } from '../nex/doc.js'
 import { PERFORMANCE_MONITOR, BINDINGS } from '../vodka.js'
@@ -78,6 +79,27 @@ function createEnvironmentBuiltins() {
 					r.appendChild(new ESymbol(matches[j]))
 				}
 				return r;
+			}
+		}
+	);
+
+	Builtin.createBuiltin(
+		'is-bound',
+		[ '_name@'],
+		function(env, executionEnvironment) {
+			let name = env.lb('name');
+			try {
+				let binding = executionEnvironment.lookupBinding(name.getTypedValue());
+				return new Bool(true);
+			} catch (e) {
+				// don't swallow real errors
+				if (e.getTypeName
+						&& e.getTypeName() == '-error-'
+						&& e.getFullTypedValue().substr(0, 16) == 'undefined symbol') {
+					return new Bool(false);
+				} else {
+					throw e;
+				}
 			}
 		}
 	);

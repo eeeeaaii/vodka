@@ -35,6 +35,7 @@ import { createLogicBuiltins } from './builtins/logicbuiltins.js'
 import { createMakeBuiltins } from './builtins/makebuiltins.js'
 import { createMathBuiltins } from './builtins/mathbuiltins.js'
 import { createNativeOrgs } from './builtins/nativeorgs.js'
+import { createOrgBuiltins } from './builtins/orgbuiltins.js'
 import { createStringBuiltins } from './builtins/stringbuiltins.js'
 import { createSyscalls } from './builtins/syscalls.js'
 import { createTagBuiltins } from './builtins/tagbuiltins.js'
@@ -320,6 +321,7 @@ function createBuiltins() {
 	createLogicBuiltins();
 	createMakeBuiltins();
 	createMathBuiltins();
+	createOrgBuiltins();
 	createStringBuiltins();
 	createSyscalls();
 	createTagBuiltins();
