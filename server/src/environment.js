@@ -20,6 +20,7 @@ const BUILTIN_ARG_PREFIX = '|';
 const UNBOUND = "****UNBOUND****"
 
 import { EError } from './nex/eerror.js'
+import { systemState } from './systemstate.js'
 
 class Environment {
 	constructor(parentEnv) {
@@ -233,5 +234,12 @@ class Environment {
 	}
 }
 
-export { Environment, BUILTIN_ARG_PREFIX, UNBOUND }
+// global lexical environment.
+// BUILTINS are implemented in javascript.
+// anything bound with (bind ...) goes in BINDINGS.
+// any environments nested under that are closures.
+const BUILTINS = new Environment(null);
+const BINDINGS = BUILTINS.pushEnv();
+
+export { Environment, BUILTINS, BINDINGS, BUILTIN_ARG_PREFIX, UNBOUND }
 

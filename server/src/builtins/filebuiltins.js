@@ -16,7 +16,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import * as Utils from '../utils.js'
-import * as Vodka from '../vodka.js'
 
 import { Builtin } from '../nex/builtin.js'
 import { EError } from '../nex/eerror.js'
@@ -27,6 +26,7 @@ import { ERROR_TYPE_INFO } from '../nex/eerror.js'
 import { wrapError } from '../evaluator.js'
 import { saveNex, saveNexV2, loadNex, loadNexV2, importNex } from '../servercommunication.js'
 import { evaluateNexSafely } from '../evaluator.js'
+import { BINDINGS } from '../environment.js'
 
 function createFileBuiltins() {
 
@@ -99,14 +99,14 @@ function createFileBuiltins() {
 		function(env, executionEnvironment) {
 			let packageName = env.lb('name').getTypedValue();
 			let lst = env.lb('nex');
-			Vodka.BINDINGS.setPackageForBinding(packageName);
+			BINDINGS.setPackageForBinding(packageName);
 			let lastresult = new Nil();
 			for (let i = 0; i < lst.numChildren(); i++) {
 				let c = lst.getChildAt(i);
 				lastresult = evaluateNexSafely(c, executionEnvironment);
 				// not sure what to do about errors yet?
 			}
-			Vodka.BINDINGS.setPackageForBinding(null);
+			BINDINGS.setPackageForBinding(null);
 			return new Nil();
 		}
 	);
@@ -120,14 +120,14 @@ function createFileBuiltins() {
 			// run part
 			let packageName = env.lb('name').getTypedValue();
 			let lst = env.lb('nex');
-			Vodka.BINDINGS.setPackageForBinding(packageName);
+			BINDINGS.setPackageForBinding(packageName);
 			let lastresult = new Nil();
 			for (let i = 0; i < lst.numChildren(); i++) {
 				let c = lst.getChildAt(i);
 				lastresult = evaluateNexSafely(c, executionEnvironment);
 				// not sure what to do about errors yet?
 			}
-			Vodka.BINDINGS.setPackageForBinding(null);
+			BINDINGS.setPackageForBinding(null);
 
 			// save part
 			// package file name is the name plus "-functions"
@@ -204,7 +204,7 @@ function createFileBuiltins() {
 		[ '_name@' ],
 		function(env, executionEnvironment) {
 			let packageName = env.lb('name').getTypedValue();
-			if (!Vodka.BINDINGS.isKnownPackageName(packageName)) {
+			if (!BINDINGS.isKnownPackageName(packageName)) {
 				return new EError(`use: invalid package name ${packageName}. Sorry!`);
 			}
 			executionEnvironment.usePackage(packageName);
@@ -223,7 +223,7 @@ function createFileBuiltins() {
 					return new EError(`using: first arg must be a list of symbols that denote package names, but ${c.debugString()} is not a symbol. Sorry!`);
 				}
 				let packageName = c.getTypedValue();
-				if (!Vodka.BINDINGS.isKnownPackageName(packageName)) {
+				if (!BINDINGS.isKnownPackageName(packageName)) {
 					return new EError(`using: invalid package name ${packageName}. Sorry!`);
 				}
 				env.usePackage(packageName);

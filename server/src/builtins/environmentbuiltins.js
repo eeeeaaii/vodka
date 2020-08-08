@@ -21,7 +21,8 @@ import { EError } from '../nex/eerror.js'
 import { Bool } from '../nex/bool.js'
 import { ESymbol } from '../nex/esymbol.js'
 import { Doc } from '../nex/doc.js'
-import { PERFORMANCE_MONITOR, BINDINGS } from '../vodka.js'
+import { BINDINGS } from '../environment.js'
+import { PERFORMANCE_MONITOR } from '../perfmon.js'
 import { UNBOUND } from '../environment.js'
 
 function createEnvironmentBuiltins() {

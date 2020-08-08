@@ -19,6 +19,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Vodka from './vodka.js'
 
 import { systemState } from './systemstate.js'
+import { BINDINGS } from './environment.js'
 import { manipulator } from './manipulator.js'
 import { undo } from './undo.js'
 import { ContextType } from './contexttype.js';
@@ -283,7 +284,7 @@ class KeyDispatcher {
 			KeyResponseFunctions[f2](systemState.getGlobalSelectedNode());
  			return true;
 		} else if (f instanceof Nex) {
-			evaluateNexSafely(f, Vodka.BINDINGS)
+			evaluateNexSafely(f, BINDINGS)
 			return true;
 		}
 		return false;
@@ -324,7 +325,7 @@ class KeyDispatcher {
 				// gross
 				topLevelRender();
 				s = systemState.getGlobalSelectedNode().getNex();
-				s.pushNexPhase(phaseExecutor, Vodka.BINDINGS);
+				s.pushNexPhase(phaseExecutor, BINDINGS);
 			}
 			phaseExecutor.doNextStep();
 			topLevelRender();

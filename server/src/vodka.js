@@ -204,7 +204,6 @@ const RENDER_FLAG_DEPTH_EXCEEDED = 32;
 
 // flags and temporaries
 const CONSOLE_DEBUG = false;
-const PERFORMANCE_MONITOR = false;
 
 // app-wide params
 const MAX_RENDER_DEPTH = 100;
@@ -217,13 +216,6 @@ var isStepEvaluating = false; // allows some performance-heavy operations while 
 var root = null;
 var hiddenroot = null;
 let stackLevel = 0;
-
-// global lexical environment.
-// BUILTINS are implemented in javascript.
-// anything bound with (bind ...) goes in BINDINGS.
-// any environments nested under that are closures.
-const BUILTINS = new Environment(null);
-const BINDINGS = BUILTINS.pushEnv();
 
 function dumpPerf() {
 	perfmon.dump();
@@ -412,10 +404,7 @@ export {
 	RENDER_FLAG_REMOVE_OVERRIDES,
 	RENDER_FLAG_DEPTH_EXCEEDED,
 	CONSOLE_DEBUG,
-	PERFORMANCE_MONITOR,
 	MAX_RENDER_DEPTH,
-	BUILTINS,
-	BINDINGS,
 	root
 
 }

@@ -17,11 +17,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Closure } from './closure.js';
 import { Nil } from './nil.js';
-import * as Vodka from '../vodka.js';
+import { BUILTINS } from '../environment.js'
 
 class ForeignClosure extends Closure {
 	constructor(lambda, foreignfunction) {
-		super(lambda, Vodka.BUILTINS, 'foreignclosure')
+		super(lambda, BUILTINS, 'foreignclosure')
 		this.foreignfunction = foreignfunction;
 	}
 

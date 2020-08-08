@@ -15,13 +15,13 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Vodka from './vodka.js'
 import * as Utils from './utils.js'
 import { eventQueue } from '../eventqueue.js'
 import { RenderNode } from './rendernode.js'
 import { manipulator } from './manipulator.js'
 import { EError } from './nex/eerror.js'
 import { BuiltinArgEvaluator } from '../builtinargevaluator.js'
+import { BINDINGS } from '../environment.js'
 
 // use this wrapper to handle exceptions correctly, this
 // saves us from having to put exception handling in every
@@ -78,7 +78,7 @@ function wrapError(prefix, message, inner) {
 
 
 function evaluateAndReplace(s) {
-	let n = evaluateNexSafely(s.getNex(), Vodka.BINDINGS);
+	let n = evaluateNexSafely(s.getNex(), BINDINGS);
 	// ONLY AT TOP LEVEL we activate expectations.
 	if (n.getTypeName() == '-expectation-' && !n.isActivated()) {
 		n.activate();
@@ -93,7 +93,7 @@ function evaluateAndReplace(s) {
 }
 
 function evaluateAndKeep(s) {
-	let n = evaluateNexSafely(s.getNex(), Vodka.BINDINGS);
+	let n = evaluateNexSafely(s.getNex(), BINDINGS);
 	eventQueue.enqueueAlertAnimation(s);
 	if (Utils.isFatalError(n)) {
 		beep();
@@ -102,7 +102,7 @@ function evaluateAndKeep(s) {
 }
 
 function evaluateAndCopy(s) {
-	let n = evaluateNexSafely(s.getNex(), Vodka.BINDINGS);
+	let n = evaluateNexSafely(s.getNex(), BINDINGS);
 	if (n) {
 		manipulator.replaceSelectedWith(new RenderNode(n));
 	}

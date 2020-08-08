@@ -15,13 +15,13 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// for RENDER_FLAG_NORMAL
-import * as Vodka from './vodka.js'
+// any system state that isn't in BINDINGS or BUILTINS,
+// i.e. intrinsic engine state that is non-user-visible
 
 class SystemState {
-	SystemState() {
+	constructor() {
 		this.selectedNode = null;
-		this.current_default_render_flags = Vodka.RENDER_FLAG_NORMAL;
+		this.current_default_render_flags = 0; // should be Vodka.RENDER_FLAG_NORMAL;
 		this.renderPassNumber = 0;
 		this.overrideOnNextRender = false;
 		this.selectWhenYouFindIt = null;

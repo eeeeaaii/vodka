@@ -17,12 +17,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as Vodka from '../vodka.js'
 
-import { perfmon } from '../perfmon.js'
 import { eventQueue } from '../eventqueue.js'
 import { autocomplete } from '../autocomplete.js'
 import { NexContainer } from './nexcontainer.js'
 import { isNormallyHandled } from '../keyresponsefunctions.js'
-import { BUILTINS, PERFORMANCE_MONITOR } from '../vodka.js'
+import { BUILTINS } from '../environment.js'
+import { perfmon, PERFORMANCE_MONITOR } from '../perfmon.js'
 import { EError } from './eerror.js'
 import { CopiedArgContainer } from '../argcontainer.js'
 import { Closure } from './closure.js'

@@ -17,7 +17,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Lambda } from './lambda.js'
 import { ParamParser } from '../paramparser.js'
-import { BUILTINS, PERFORMANCE_MONITOR } from '../vodka.js'
+import { BUILTINS } from '../environment.js'
+import { PERFORMANCE_MONITOR, perfmon } from '../perfmon.js'
 
 class Builtin extends Lambda {
 	constructor(name, params, retval) {

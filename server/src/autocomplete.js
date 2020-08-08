@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { BUILTINS, BINDINGS } from './vodka.js'
+import { BUILTINS, BINDINGS } from './environment.js'
 
 class Autocomplete {
 	findAllBindingsMatching(substring) {

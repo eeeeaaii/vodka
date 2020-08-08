@@ -181,5 +181,8 @@ class PerformanceMonitor {
 
 const perfmon = new PerformanceMonitor();
 
-export { perfmon }
+// indicates whether we should or should not monitor performance
+const PERFORMANCE_MONITOR = false;
+
+export { perfmon, PERFORMANCE_MONITOR }
 

@@ -22,7 +22,7 @@ import { EString } from './estring.js'
 import { Nil } from './nil.js'
 import { ESymbol } from './esymbol.js'
 import { Tag } from '../tag.js'
-import { BUILTINS } from '../vodka.js'
+import { BUILTINS } from '../environment.js'
 import { ParamParser } from '../paramparser.js'
 
 class NativeOrg extends Org {
