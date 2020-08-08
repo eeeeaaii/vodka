@@ -17,7 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { NexContainer } from './nexcontainer.js'
 import { ContextType } from '../contexttype.js'
-import * as Vodka from '../vodka.js';
+import { RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 
 class Zlist extends NexContainer {
 	constructor() {
@@ -51,7 +51,7 @@ class Zlist extends NexContainer {
 		let domNode = renderNode.getDomNode();
 		// set the height before calling super.renderInto so that the height
 		// can be overridden by apply-css-style-to
-		if (renderFlags & Vodka.RENDER_FLAG_EXPLODED) {
+		if (renderFlags & RENDER_FLAG_EXPLODED) {
 			domNode.style.height = '' + (this.numChildren() * 10) + 'px'; 
 		} else {
 			domNode.style.height = '0px';

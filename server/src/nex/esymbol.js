@@ -15,8 +15,10 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { ValueNex } from './valuenex.js'
 import * as Vodka from '../vodka.js'
+
+import { ValueNex } from './valuenex.js'
+import { CONSOLE_DEBUG } from '../globalconstants.js'
 
 class ESymbol extends ValueNex {
 	constructor(val) {
@@ -52,7 +54,7 @@ class ESymbol extends ValueNex {
 	evaluate(env) {
 		Vodka.pushStackLevel();
 		let b = env.lookupBinding(this.getTypedValue());
-		if (Vodka.CONSOLE_DEBUG) {
+		if (CONSOLE_DEBUG) {
 			console.log(`${Vodka.INDENT()}symbol ${this.value} bound to ${b.debugString()}`);
 		}
 		Vodka.popStackLevel();

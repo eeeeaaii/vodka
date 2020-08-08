@@ -29,8 +29,7 @@ const MODE_EXPANDED = 2;
 const QUOTE_ESCAPE = 'QQQQ'
 
 
-import * as Vodka from '../vodka.js'
-
+import { RENDER_FLAG_RERENDER, RENDER_FLAG_SHALLOW } from '../globalconstants.js'
 import { eventQueue } from '../eventqueue.js'
 import { NexContainer } from './nexcontainer.js'
 
@@ -161,8 +160,8 @@ class EError extends NexContainer {
 		eventQueue.enqueueRenderNodeRender(
 				renderNode,
 				current_default_render_flags
-					| Vodka.RENDER_FLAG_RERENDER
-					| Vodka.RENDER_FLAG_SHALLOW);
+					| RENDER_FLAG_RERENDER
+					| RENDER_FLAG_SHALLOW);
 	}
 
 	drawExpanded(renderNode) {

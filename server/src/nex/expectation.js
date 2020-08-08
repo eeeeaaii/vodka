@@ -21,9 +21,9 @@ function incFFGen() {
 	FF_GEN++;
 }
 
-import * as Vodka from '../vodka.js'
 import * as Utils from '../utils.js'
 
+import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 import { eventQueue } from '../eventqueue.js'
 import { gc } from '../gc.js'
 import { ContextType } from '../contexttype.js'
@@ -330,15 +330,15 @@ class Expectation extends NexContainer {
 	renderInto(renderNode, renderFlags) {
 		let domNode = renderNode.getDomNode();
 		let dotspan = null;
-		if (!(renderFlags & Vodka.RENDER_FLAG_SHALLOW)) {
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
 			dotspan = document.createElement("span");
 			dotspan.classList.add('dotspan');
 			domNode.appendChild(dotspan);
 		}
 		super.renderInto(renderNode, renderFlags);
 		domNode.classList.add('expectation');
-		if (!(renderFlags & Vodka.RENDER_FLAG_SHALLOW)) {
-			if (renderFlags & Vodka.RENDER_FLAG_EXPLODED) {
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+			if (renderFlags & RENDER_FLAG_EXPLODED) {
 				dotspan.classList.add('exploded');
 			} else {
 				dotspan.classList.remove('exploded');

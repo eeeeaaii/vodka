@@ -15,7 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Vodka from './vodka.js'
+import { CONSOLE_DEBUG } from './globalconstants.js'
+
 import { Bool } from './nex/bool.js'; 
 import { Builtin } from './nex/builtin.js'; 
 import { Closure } from './nex/closure.js'; 
@@ -134,7 +135,7 @@ class NexParser {
 		let token;
 		this.push(new Root());
 		while (token = this.getNextToken()) {
-			if (Vodka.CONSOLE_DEBUG) {
+			if (CONSOLE_DEBUG) {
 				console.log(`token: ${st['-' + token]} data: ${this.data[0]} remaining: ${this.s}`);
 			}
 			this.doParse(token);

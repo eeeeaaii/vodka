@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Vodka from './vodka.js'
+import { systemState } from './systemstate.js';
 
 class GarbageCollector {
 	// right now I only do expectations, and I kill any expectations
@@ -40,7 +40,7 @@ class GarbageCollector {
 			rec.isReachable = false;
 		}
 		let nodesToProcess = [];
-		nodesToProcess.push(Vodka.root);
+		nodesToProcess.push(systemState.getRoot());
 		while(nodesToProcess.length > 0) {
 			let node = nodesToProcess.pop();
 			let nex = node.getNex();

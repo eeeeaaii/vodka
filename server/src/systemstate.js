@@ -18,13 +18,16 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 // any system state that isn't in BINDINGS or BUILTINS,
 // i.e. intrinsic engine state that is non-user-visible
 
+import { RENDER_FLAG_NORMAL } from './globalconstants.js'
+
 class SystemState {
 	constructor() {
 		this.selectedNode = null;
-		this.current_default_render_flags = 0; // should be Vodka.RENDER_FLAG_NORMAL;
+		this.current_default_render_flags = RENDER_FLAG_NORMAL;
 		this.renderPassNumber = 0;
 		this.overrideOnNextRender = false;
 		this.selectWhenYouFindIt = null;
+		this.root = null;
 	}
 
 	setGlobalSelectedNode(newNode) {
@@ -65,6 +68,14 @@ class SystemState {
 
 	getGlobalRenderPassNumber() {
 		return this.renderPassNumber;
+	}
+
+	getRoot() {
+		return this.root;
+	}
+
+	setRoot(r) {
+		this.root = r;
 	}
 
 }

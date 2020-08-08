@@ -16,15 +16,14 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-import * as Vodka from './vodka.js'
-
-import { systemState } from './systemstate.js'
-import { BINDINGS } from './environment.js'
-import { manipulator } from './manipulator.js'
-import { undo } from './undo.js'
+import { UNHANDLED_KEY, RENDER_FLAG_EXPLODED } from './globalconstants.js';
+import { systemState } from './systemstate.js';
+import { BINDINGS } from './environment.js';
+import { manipulator } from './manipulator.js';
+import { undo } from './undo.js';
 import { ContextType } from './contexttype.js';
 import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
-import { evaluateNexSafely } from './evaluator.js'
+import { evaluateNexSafely } from './evaluator.js';
 
 class KeyDispatcher {
 	dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
@@ -114,7 +113,7 @@ class KeyDispatcher {
 				return true; // didn't handle it.
 			} catch (e) {
 				this.eraseLastUndo();
-				if (e == Vodka.UNHANDLED_KEY) {
+				if (e == UNHANDLED_KEY) {
 					console.log("UNHANDLED KEY " +
 									':' + 'keycode=' + keycode +
 									',' + 'whichkey=' + whichkey +
@@ -128,7 +127,7 @@ class KeyDispatcher {
 	}
 
 	saveForUndo() {
-		undo.saveStateForUndo(Vodka.root.getNex());
+		undo.saveStateForUndo(systemState.getRoot().getNex());
 	}
 
 	eraseLastUndo() {
@@ -292,10 +291,10 @@ class KeyDispatcher {
 
 	doEscape() {
 		let current_default_render_flags = systemState.getGlobalCurrentDefaultRenderFlags();
-		if (current_default_render_flags & Vodka.RENDER_FLAG_EXPLODED) {
-			current_default_render_flags &= (~Vodka.RENDER_FLAG_EXPLODED);
+		if (current_default_render_flags & RENDER_FLAG_EXPLODED) {
+			current_default_render_flags &= (~RENDER_FLAG_EXPLODED);
 		} else {
-			current_default_render_flags |= Vodka.RENDER_FLAG_EXPLODED;
+			current_default_render_flags |= RENDER_FLAG_EXPLODED;
 		}
 		systemState.setGlobalOverrideOnNextRender(true);
 		systemState.setGlobalCurrentDefaultRenderFlags(current_default_render_flags);

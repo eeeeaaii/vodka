@@ -19,7 +19,8 @@ import { ContextType } from '../contexttype.js';
 import { NexContainer } from './nexcontainer.js';
 import { ParamParser } from '../paramparser.js';
 import { Closure } from './closure.js';
-import * as Vodka from '../vodka.js';
+import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
+
 
 class Lambda extends NexContainer {
 	constructor(val) {
@@ -95,7 +96,7 @@ class Lambda extends NexContainer {
 	renderInto(renderNode, renderFlags) {
 		let domNode = renderNode.getDomNode();
 		let codespan = null;
-		if (!(renderFlags & Vodka.RENDER_FLAG_SHALLOW)) {
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
 			codespan = document.createElement("span");
 			codespan.classList.add('codespan');
 			domNode.appendChild(codespan);
@@ -103,8 +104,8 @@ class Lambda extends NexContainer {
 		super.renderInto(renderNode, renderFlags);
 		domNode.classList.add('lambda');
 		domNode.classList.add('codelist');
-		if (!(renderFlags & Vodka.RENDER_FLAG_SHALLOW)) {
-			if (renderFlags & Vodka.RENDER_FLAG_EXPLODED) {
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+			if (renderFlags & RENDER_FLAG_EXPLODED) {
 				codespan.classList.add('exploded');
 			} else {
 				codespan.classList.remove('exploded');

@@ -17,10 +17,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 let NEXT_NEX_ID = 0;
 
-import { getGlobalAppFlag } from '../globalappflags.js'
 import * as Vodka from '../vodka.js'
+
+import { getGlobalAppFlag } from '../globalappflags.js'
 import { systemState } from '../systemstate.js'
 import { eventQueue } from '../eventqueue.js'
+import { RENDER_FLAG_SELECTED, RENDER_FLAG_SHALLOW, RENDER_FLAG_NORMAL, RENDER_FLAG_RERENDER, RENDER_FLAG_EXPLODED, RENDER_FLAG_DEPTH_EXCEEDED } from '../globalconstants.js'
 
 class Nex {
 	constructor() {
@@ -103,13 +105,13 @@ class Nex {
 	renderOnlyThisNex() {
 		for (let i = 0; i < this.rendernodes.length; i++) {
 			let flags = systemState.getGlobalCurrentDefaultRenderFlags();
-			flags &= (~Vodka.RENDER_FLAG_NORMAL);
-			flags &= (~Vodka.RENDER_FLAG_EXPLODED);
+			flags &= (~RENDER_FLAG_NORMAL);
+			flags &= (~RENDER_FLAG_EXPLODED);
 
 			eventQueue.enqueueRenderNodeRender(
 					this.rendernodes[i],
 					flags
-					| (this.rendernodes[i].isExploded() ? Vodka.RENDER_FLAG_EXPLODED : Vodka.RENDER_FLAG_NORMAL)
+					| (this.rendernodes[i].isExploded() ? RENDER_FLAG_EXPLODED : RENDER_FLAG_NORMAL)
 					);
 		}
 	}
@@ -267,20 +269,20 @@ class Nex {
 
 	renderInto(renderNode, renderFlags) {
 		let domNode = renderNode.getDomNode();
-		if (!(renderFlags & Vodka.RENDER_FLAG_RERENDER)) {
+		if (!(renderFlags & RENDER_FLAG_RERENDER)) {
 			this._setClickHandler(renderNode);
 		}
 		domNode.classList.add('nex');
 
-		if (renderFlags & Vodka.RENDER_FLAG_SELECTED) {
+		if (renderFlags & RENDER_FLAG_SELECTED) {
 			domNode.classList.add('selected');		
 		}
-		let isExploded = (renderFlags & Vodka.RENDER_FLAG_EXPLODED);
+		let isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
 		if (isExploded) {
 			domNode.classList.add('exploded');
 		}
 		domNode.setAttribute("style", this.currentStyle);
-		if (renderFlags & Vodka.RENDER_FLAG_DEPTH_EXCEEDED) {
+		if (renderFlags & RENDER_FLAG_DEPTH_EXCEEDED) {
 			this.clearDomNode(domNode);
 		}
 	}
@@ -288,11 +290,11 @@ class Nex {
 	// actually is a domNode, not a renderNode
 	renderTags(domNode, renderFlags) {
 		if (
-			(renderFlags & Vodka.RENDER_FLAG_SHALLOW)
-			&& (renderFlags & Vodka.RENDER_FLAG_RERENDER)) {
+			(renderFlags & RENDER_FLAG_SHALLOW)
+			&& (renderFlags & RENDER_FLAG_RERENDER)) {
 			return;
 		}
-		let isExploded = (renderFlags & Vodka.RENDER_FLAG_EXPLODED);
+		let isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
 		for (let i = 0; i < this.tags.length; i++) {
 			this.tags[i].draw(domNode, isExploded);
 		}		

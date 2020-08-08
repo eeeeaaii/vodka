@@ -15,8 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Vodka from './vodka.js'
-
+import { BINDINGS } from './environment.js'
 import { EError, ERROR_TYPE_WARN, ERROR_TYPE_INFO } from './nex/eerror.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { NexParser } from './nexparser.js'
@@ -80,7 +79,7 @@ function importNex(name, callback) {
 
 	sendToServer(payload, function(data) {
 		let nex = new NexParser(data).parse();
-		let result = evaluateNexSafely(nex, Vodka.BINDINGS);
+		let result = evaluateNexSafely(nex, BINDINGS);
 		let r = null;
 		if (result.getTypeName() != '-error-') {
 			r = new EError("Import successful.");

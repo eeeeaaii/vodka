@@ -76,8 +76,6 @@ function activateKeyFunnel() {
 	key_funnel_active = true;
 }
 
-const UNHANDLED_KEY = 'unhandled_key'
-
 const EXPECTING_FIRST_DOWN  = 0;
 const EXPECTING_FIRST_UP    = 1;
 const EXPECTING_SECOND_DOWN = 2;
@@ -189,31 +187,14 @@ function logKeyUpEvent(e) {
 
 // EXPERIMENTS
 
-// CONSTANTS
 
-// render flags
-const RENDER_FLAG_NORMAL = 0;
-const RENDER_FLAG_SHALLOW = 1;
-const RENDER_FLAG_EXPLODED = 2;
-const RENDER_FLAG_RERENDER = 4;
-const RENDER_FLAG_SELECTED = 8;
-const RENDER_FLAG_REMOVE_OVERRIDES = 16; // get rid of normal/exploded overrides
-const RENDER_FLAG_DEPTH_EXCEEDED = 32;
 
-// GLOBAL VARIABLES
-
-// flags and temporaries
-const CONSOLE_DEBUG = false;
-
-// app-wide params
-const MAX_RENDER_DEPTH = 100;
 
 
 // all these should go into SystemState
 // possibly some of them would be moved into Render-specific
 // SystemState objects (for example, screen rendering vs. audio rendering)
 var isStepEvaluating = false; // allows some performance-heavy operations while step evaluating
-var root = null;
 var hiddenroot = null;
 let stackLevel = 0;
 
@@ -320,18 +301,8 @@ function topLevelRender() {
 		systemState.setGlobalOverrideOnNextRender(false);
 		flags |= RENDER_FLAG_REMOVE_OVERRIDES;
 	}
-	root.setRenderDepth(0);
-	root.render(flags);
-}
-
-function setRoot(newRootNex) {
-	root = new RenderNode(newRootNex);
-	let rootDomNode = document.getElementById('mixroot');
-	root.setDomNode(rootDomNode);	
-}
-
-function getRoot() {
-	return root;
+	systemState.getRoot().setRenderDepth(0);
+	systemState.getRoot().render(flags);
 }
 
 // app main entry point
@@ -346,10 +317,14 @@ function setup() {
 	let hiddenRootDomNode = document.getElementById('hiddenroot');
 	hiddenroot.setDomNode(hiddenRootDomNode);
 
+	// this code for attaching a render node to a root will expand
+	// when there are different render node types.
+	// note this is duplicated in undo.js
 	let rootnex = new Root(true /* attached */);
-	root = new RenderNode(rootnex);
+	var root = new RenderNode(rootnex);
 	let rootDomNode = document.getElementById('mixroot');
 	root.setDomNode(rootDomNode);
+	systemState.setRoot(root);
 
 	let docNode = root.appendChild(new Doc());
 	docNode.setSelected(false /* don't render yet */);
@@ -375,7 +350,6 @@ function setup() {
 
 export {
 	setup,
-
 	dumpPerf,
 	startPerf,
 	resetStack,
@@ -388,23 +362,6 @@ export {
 	doRealKeyInput,
 	deactivateKeyFunnel,
 	activateKeyFunnel,
-	setRoot,
-	getRoot,
 	checkRecordState,
-
 	doKeyInput,
-
-	// consts
-	UNHANDLED_KEY,
-	RENDER_FLAG_NORMAL,
-	RENDER_FLAG_SHALLOW,
-	RENDER_FLAG_EXPLODED,
-	RENDER_FLAG_RERENDER,
-	RENDER_FLAG_SELECTED,
-	RENDER_FLAG_REMOVE_OVERRIDES,
-	RENDER_FLAG_DEPTH_EXCEEDED,
-	CONSOLE_DEBUG,
-	MAX_RENDER_DEPTH,
-	root
-
 }

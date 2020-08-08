@@ -28,6 +28,7 @@ import { CopiedArgContainer } from '../argcontainer.js'
 import { Closure } from './closure.js'
 import { ContextType } from '../contexttype.js'
 import { evaluateNexSafely } from '../evaluator.js'
+import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED, CONSOLE_DEBUG } from '../globalconstants.js'
 
 // remove with deprecated defaultHandle
 import { Letter } from './letter.js'
@@ -244,7 +245,7 @@ class Command extends NexContainer {
 		Vodka.pushStackLevel();
 		Vodka.stackCheck(); // not for step eval, this is to prevent call stack overflow.
 
-		if (Vodka.CONSOLE_DEBUG) {
+		if (CONSOLE_DEBUG) {
 			console.log(`${Vodka.INDENT()}evaluating command: ${this.debugString()}`);
 			console.log(`${Vodka.INDENT()}closure is: ${this.evalState.closure.debugString()}`);
 		}
@@ -265,7 +266,7 @@ class Command extends NexContainer {
 		if (Vodka.PERFORMANCE_MONITOR) {
 			perfmon.logMethodCallEnd(this.evalState.closure.getCmdName());
 		}
-		if (Vodka.CONSOLE_DEBUG) {
+		if (CONSOLE_DEBUG) {
 			console.log(`${Vodka.INDENT()}command returned: ${r.debugString()}`);
 		}
 		Vodka.popStackLevel();
@@ -279,7 +280,7 @@ class Command extends NexContainer {
 	renderInto(renderNode, renderFlags) {
 		let domNode = renderNode.getDomNode();
 		let codespan = null;
-		if (!(renderFlags & Vodka.RENDER_FLAG_SHALLOW)) {
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
 			codespan = document.createElement("span");
 			codespan.classList.add('codespan');
 			domNode.appendChild(codespan);
@@ -287,8 +288,8 @@ class Command extends NexContainer {
 		super.renderInto(renderNode, renderFlags); // will create children
 		domNode.classList.add('command');
 		domNode.classList.add('codelist');
-		if (!(renderFlags & Vodka.RENDER_FLAG_SHALLOW)) {
-			if (renderFlags & Vodka.RENDER_FLAG_EXPLODED) {
+		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+			if (renderFlags & RENDER_FLAG_EXPLODED) {
 				codespan.classList.add('exploded');
 			} else {
 				codespan.classList.remove('exploded');

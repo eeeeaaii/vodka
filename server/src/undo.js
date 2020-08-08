@@ -15,8 +15,6 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Vodka from './vodka.js'
-
 import { systemState } from './systemstate.js'
 
 const UNDO_LIMIT = 10;
@@ -48,9 +46,14 @@ class Undo {
 	performUndo() {
 		let r = this.undobuffer.shift();
 		let idToSelect = this.selectedNodeIdBuffer.shift();
-		Vodka.setRoot(r);
+
+		var newRoot = new RenderNode(r);
+		let rootDomNode = document.getElementById('mixroot');
+		newRoot.setDomNode(rootDomNode);	
+		systemState.setRoot(newRoot);
+
 		// the id will actually be in copiedFromID
-		Vodka.getRoot().doOnRenderNodeTree(function(node) {
+		newRoot.doOnRenderNodeTree(function(node) {
 			if (node.getNex().copiedFromID == idToSelect) {
 				node.setSelected();
 				return true; // stops processing
