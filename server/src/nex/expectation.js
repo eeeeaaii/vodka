@@ -24,6 +24,7 @@ function incFFGen() {
 import * as Vodka from '../vodka.js'
 import * as Utils from '../utils.js'
 
+import { eventQueue } from '../eventqueue.js'
 import { gc } from '../gc.js'
 import { ContextType } from '../contexttype.js'
 import { evaluateNexSafely } from '../evaluator.js'
@@ -243,7 +244,7 @@ class Expectation extends NexContainer {
 
 	getCallbackForSet() {
 		return (function(result) {
-			Vodka.eventQueue.enqueueExpectationFulfill(this.callbackRouter, result);
+			eventQueue.enqueueExpectationFulfill(this.callbackRouter, result);
 		}).bind(this);
 	}
 

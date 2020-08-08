@@ -19,6 +19,7 @@ let NEXT_NEX_ID = 0;
 
 import { getGlobalAppFlag } from '../globalappflags.js'
 import * as Vodka from '../vodka.js'
+import { eventQueue } from '../eventqueue.js'
 
 class Nex {
 	constructor() {
@@ -104,7 +105,7 @@ class Nex {
 			flags &= (~Vodka.RENDER_FLAG_NORMAL);
 			flags &= (~Vodka.RENDER_FLAG_EXPLODED);
 
-			Vodka.eventQueue.enqueueRenderNodeRender(
+			eventQueue.enqueueRenderNodeRender(
 					this.rendernodes[i],
 					flags
 					| (this.rendernodes[i].isExploded() ? Vodka.RENDER_FLAG_EXPLODED : Vodka.RENDER_FLAG_NORMAL)
@@ -258,7 +259,7 @@ class Nex {
 	_setClickHandler(renderNode) {
 		renderNode.getDomNode().onmousedown = (event) => {
 			Vodka.checkRecordState(event, 'mouse');
-			Vodka.eventQueue.enqueueDoClickHandlerAction(this, renderNode, event)
+			eventQueue.enqueueDoClickHandlerAction(this, renderNode, event)
 			event.stopPropagation();
 		};
 	}

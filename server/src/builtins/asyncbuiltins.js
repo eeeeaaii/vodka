@@ -16,8 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-import * as Vodka from '../vodka.js'
-
+import { eventQueue } from '../eventqueue.js'
 import { Builtin } from '../nex/builtin.js'
 import { Nil } from '../nex/nil.js'
 import { Expectation, incFFGen } from '../nex/expectation.js'
@@ -75,7 +74,7 @@ function createAsyncBuiltins() {
 		'exp-gc',
 		[],
 		function(env, executionEnvironment) {
-			Vodka.eventQueue.enqueueGC();
+			eventQueue.enqueueGC();
 			return new Nil();
 		}
 	);

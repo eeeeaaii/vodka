@@ -17,6 +17,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as Vodka from '../vodka.js'
 
+import { eventQueue } from '../eventqueue.js'
+import { autocomplete } from '../autocomplete.js'
 import { NexContainer } from './nexcontainer.js'
 import { isNormallyHandled } from '../keyresponsefunctions.js'
 import { BUILTINS, PERFORMANCE_MONITOR } from '../vodka.js'
@@ -156,7 +158,7 @@ class Command extends NexContainer {
 	doAlertAnimation(lambda) {
 		let rn = lambda.getRenderNodes();
 		for (let i = 0; i < rn.length; i++) {
-			Vodka.eventQueue.enqueueAlertAnimation(rn[i]);
+			eventQueue.enqueueAlertAnimation(rn[i]);
 		}
 	}
 
@@ -347,7 +349,7 @@ class Command extends NexContainer {
 
 	autocomplete() {
 		let searchText = this.searchingOn ? this.searchingOn : this.getCommandText();
-		let match = Vodka.autocomplete.findNextMatchAfter(searchText, this.previousMatch);
+		let match = autocomplete.findNextMatchAfter(searchText, this.previousMatch);
 		this.setCommandText(match);
 		this.searchingOn = searchText;
 		this.previousMatch = match;

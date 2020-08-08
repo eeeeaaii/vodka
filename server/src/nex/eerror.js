@@ -31,6 +31,7 @@ const QUOTE_ESCAPE = 'QQQQ'
 
 import * as Vodka from '../vodka.js'
 
+import { eventQueue } from '../eventqueue.js'
 import { NexContainer } from './nexcontainer.js'
 
 class EError extends NexContainer {
@@ -157,7 +158,7 @@ class EError extends NexContainer {
 		activateKeyFunnel();
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val);
-		Vodka.eventQueue.enqueueRenderNodeRender(
+		eventQueue.enqueueRenderNodeRender(
 				renderNode,
 				current_default_render_flags
 					| Vodka.RENDER_FLAG_RERENDER

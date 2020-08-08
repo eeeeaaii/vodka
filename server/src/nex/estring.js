@@ -21,6 +21,7 @@ const MODE_NORMAL = 1;
 const MODE_EXPANDED = 2;
 const QUOTE_ESCAPE = 'QQQQ'
 
+import { eventQueue } from '../eventqueue.js'
 import { ValueNex } from './valuenex.js'
 import * as Vodka from '../vodka.js'
 
@@ -199,7 +200,7 @@ class EString extends ValueNex {
 		Vodka.activateKeyFunnel();
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val);
-		Vodka.eventQueue.enqueueRenderNodeRender(
+		eventQueue.enqueueRenderNodeRender(
 				renderNode,
 				Vodka.getGlobalCurrentDefaultRenderFlags()
 					| Vodka.RENDER_FLAG_RERENDER

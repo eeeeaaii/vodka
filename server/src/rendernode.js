@@ -19,6 +19,7 @@ import * as Utils from './utils.js'
 import * as Vodka from './vodka.js'
 import { LambdaEditor } from './nex/lambda.js'
 import { TagEditor } from './tag.js'
+import { eventQueue } from './eventqueue.js'
 
 class RenderNode {
 	constructor(forNex) {
@@ -309,13 +310,13 @@ class RenderNode {
 		if (selectedNode) {
 			selectedNode.setUnselected();
 			if (rerender) {
-				Vodka.eventQueue.renderNodeRender(selectedNode, Vodka.RENDER_FLAG_RERENDER | Vodka.RENDER_FLAG_SHALLOW | current_default_Vodka.render_flags);
+				eventQueue.renderNodeRender(selectedNode, Vodka.RENDER_FLAG_RERENDER | Vodka.RENDER_FLAG_SHALLOW | current_default_Vodka.render_flags);
 			}
 		}
 		selectedNode = this;
 		this.selected = true;
 		if (rerender) {
-			Vodka.eventQueue.renderNodeRender(this, Vodka.RENDER_FLAG_RERENDER | Vodka.RENDER_FLAG_SHALLOW | current_default_Vodka.render_flags);
+			eventQueue.renderNodeRender(this, Vodka.RENDER_FLAG_RERENDER | Vodka.RENDER_FLAG_SHALLOW | current_default_Vodka.render_flags);
 		}
 		Vodka.setGlobalSelectedNode(selectedNode);
 	}

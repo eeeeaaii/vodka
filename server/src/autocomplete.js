@@ -66,5 +66,7 @@ class Autocomplete {
 	}
 }
 
-export { Autocomplete }
+const autocomplete = new Autocomplete();
+
+export { autocomplete }
 

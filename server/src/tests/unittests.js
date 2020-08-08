@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Vodka from "../vodka.js"
+import { eventQueue } from '../eventqueue.js'
 
 export function runTest(testname) {
 	eval('TEST_' + testname + '();');
@@ -41,8 +41,8 @@ function assertFalsy(a) {
 
 function TEST_eventqueue_events_alertanimation() {
 	let fakeRenderNode = new Object();
-	Vodka.eventQueue.enqueueAlertAnimation(fakeRenderNode);
-	let item = Vodka.eventQueue.retrieveNextItem();
+	eventQueue.enqueueAlertAnimation(fakeRenderNode);
+	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'doAlertAnimation',
 		shouldDedupe: true,
@@ -59,8 +59,8 @@ function TEST_eventqueue_events_doclickhandleraction() {
 	let fakeTarget = new Object();
 	let fakeRenderNode = new Object();
 	let fakeEvent = new Object();
-	Vodka.eventQueue.enqueueDoClickHandlerAction(fakeTarget, fakeRenderNode, fakeEvent);
-	let item = Vodka.eventQueue.retrieveNextItem();
+	eventQueue.enqueueDoClickHandlerAction(fakeTarget, fakeRenderNode, fakeEvent);
+	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'doClickHandlerAction',
 		target: fakeTarget,
@@ -83,8 +83,8 @@ function TEST_eventqueue_events_dokeyinput() {
 	let hasCtrl = true;
 	let hasMeta = true;
 	let hasAlt = true;
-	Vodka.eventQueue.enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt);
-	let item = Vodka.eventQueue.retrieveNextItem();
+	eventQueue.enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt);
+	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'doKeyInput',
 		shouldDedupe: false,
@@ -109,8 +109,8 @@ function TEST_eventqueue_events_dokeyinput() {
 function TEST_eventqueue_events_expectationcallback() {
 	let result = new Object();
 	let callback = new Object();
-	Vodka.eventQueue.enqueueExpectationCallback(callback, result);
-	let item = Vodka.eventQueue.retrieveNextItem();
+	eventQueue.enqueueExpectationCallback(callback, result);
+	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'expectationCallback',
 		shouldDedupe: false,
@@ -128,8 +128,8 @@ function TEST_eventqueue_events_expectationcallback() {
 function TEST_eventqueue_events_expectationfulfill() {
 	let exp = new Object();
 	let result = new Object();
-	Vodka.eventQueue.enqueueExpectationFulfill(exp, result);
-	let item = Vodka.eventQueue.retrieveNextItem();
+	eventQueue.enqueueExpectationFulfill(exp, result);
+	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'expectationFulfill',
 		shouldDedupe: false,
@@ -144,8 +144,8 @@ function TEST_eventqueue_events_expectationfulfill() {
 }
 
 function TEST_eventqueue_events_gc() {
-	Vodka.eventQueue.enqueueGC();
-	let item = Vodka.eventQueue.retrieveNextItem();
+	eventQueue.enqueueGC();
+	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'gc',
 		shouldDedupe: true,
@@ -157,8 +157,8 @@ function TEST_eventqueue_events_gc() {
 }
 
 function TEST_eventqueue_events_importanttoplevelrender() {
-	Vodka.eventQueue.enqueueImportantTopLevelRender();
-	let item = Vodka.eventQueue.retrieveNextItem();
+	eventQueue.enqueueImportantTopLevelRender();
+	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'importantTopLevelRender',
 		shouldDedupe: true,
@@ -173,8 +173,8 @@ function TEST_eventqueue_events_importanttoplevelrender() {
 function TEST_eventqueue_events_rendernoderender() {
 	let fakeRenderNode = new Object();
 	let flags = 3249;
-	Vodka.eventQueue.enqueueRenderNodeRender(fakeRenderNode, flags);
-	let item = Vodka.eventQueue.retrieveNextItem();
+	eventQueue.enqueueRenderNodeRender(fakeRenderNode, flags);
+	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'renderNodeRender',
 		renderNode: fakeRenderNode,
@@ -190,8 +190,8 @@ function TEST_eventqueue_events_rendernoderender() {
 }
 
 function TEST_eventqueue_events_toplevelrender() {
-	Vodka.eventQueue.enqueueTopLevelRender();
-	let item = Vodka.eventQueue.retrieveNextItem();
+	eventQueue.enqueueTopLevelRender();
+	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'topLevelRender',
 		shouldDedupe: true,
@@ -204,90 +204,90 @@ function TEST_eventqueue_events_toplevelrender() {
 
 function TEST_eventqueue_priority_inverseordering() {
 	let obj = new Object();
-	Vodka.eventQueue.enqueueGC();
-	Vodka.eventQueue.enqueueAlertAnimation(obj);
-	Vodka.eventQueue.enqueueRenderNodeRender(obj, obj);
-	Vodka.eventQueue.enqueueExpectationFulfill(obj, obj)
-	Vodka.eventQueue.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'doKeyInput');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'expectationFulfill');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'renderNodeRender');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'doAlertAnimation');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'gc');
+	eventQueue.enqueueGC();
+	eventQueue.enqueueAlertAnimation(obj);
+	eventQueue.enqueueRenderNodeRender(obj, obj);
+	eventQueue.enqueueExpectationFulfill(obj, obj)
+	eventQueue.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
+	assertEqual(eventQueue.retrieveNextItem().action, 'doKeyInput');
+	assertEqual(eventQueue.retrieveNextItem().action, 'expectationFulfill');
+	assertEqual(eventQueue.retrieveNextItem().action, 'renderNodeRender');
+	assertEqual(eventQueue.retrieveNextItem().action, 'doAlertAnimation');
+	assertEqual(eventQueue.retrieveNextItem().action, 'gc');
 }
 
 
 function TEST_eventqueue_priority_addedwhiledequeueing() {
 	let obj = new Object();
-	Vodka.eventQueue.enqueueGC();
-	Vodka.eventQueue.enqueueAlertAnimation(obj);
-	Vodka.eventQueue.enqueueRenderNodeRender(obj, obj);
-	Vodka.eventQueue.enqueueExpectationFulfill(obj, obj)
-	Vodka.eventQueue.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'doKeyInput');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'expectationFulfill');
-	Vodka.eventQueue.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'doKeyInput');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'renderNodeRender');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'doAlertAnimation');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'gc');
+	eventQueue.enqueueGC();
+	eventQueue.enqueueAlertAnimation(obj);
+	eventQueue.enqueueRenderNodeRender(obj, obj);
+	eventQueue.enqueueExpectationFulfill(obj, obj)
+	eventQueue.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
+	assertEqual(eventQueue.retrieveNextItem().action, 'doKeyInput');
+	assertEqual(eventQueue.retrieveNextItem().action, 'expectationFulfill');
+	eventQueue.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
+	assertEqual(eventQueue.retrieveNextItem().action, 'doKeyInput');
+	assertEqual(eventQueue.retrieveNextItem().action, 'renderNodeRender');
+	assertEqual(eventQueue.retrieveNextItem().action, 'doAlertAnimation');
+	assertEqual(eventQueue.retrieveNextItem().action, 'gc');
 }
 
 function TEST_eventqueue_priority_inverseordering2() {
 	let obj = new Object();
-	Vodka.eventQueue.enqueueGC();
-	Vodka.eventQueue.enqueueAlertAnimation(obj);
-	Vodka.eventQueue.enqueueTopLevelRender();
-	Vodka.eventQueue.enqueueExpectationCallback(obj, obj)
-	Vodka.eventQueue.enqueueDoClickHandlerAction(obj, obj, obj);
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'doClickHandlerAction');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'expectationCallback');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'topLevelRender');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'doAlertAnimation');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'gc');
+	eventQueue.enqueueGC();
+	eventQueue.enqueueAlertAnimation(obj);
+	eventQueue.enqueueTopLevelRender();
+	eventQueue.enqueueExpectationCallback(obj, obj)
+	eventQueue.enqueueDoClickHandlerAction(obj, obj, obj);
+	assertEqual(eventQueue.retrieveNextItem().action, 'doClickHandlerAction');
+	assertEqual(eventQueue.retrieveNextItem().action, 'expectationCallback');
+	assertEqual(eventQueue.retrieveNextItem().action, 'topLevelRender');
+	assertEqual(eventQueue.retrieveNextItem().action, 'doAlertAnimation');
+	assertEqual(eventQueue.retrieveNextItem().action, 'gc');
 }
 
 function TEST_eventqueue_priority_normalandimportantrender() {
 	let obj = new Object();
-	Vodka.eventQueue.enqueueTopLevelRender();
-	Vodka.eventQueue.enqueueImportantTopLevelRender();
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'importantTopLevelRender');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'topLevelRender');
+	eventQueue.enqueueTopLevelRender();
+	eventQueue.enqueueImportantTopLevelRender();
+	assertEqual(eventQueue.retrieveNextItem().action, 'importantTopLevelRender');
+	assertEqual(eventQueue.retrieveNextItem().action, 'topLevelRender');
 }
 
 function TEST_eventqueue_deduping() {
 	let obj = new Object();
-	Vodka.eventQueue.enqueueGC();
-	Vodka.eventQueue.enqueueGC();
-	Vodka.eventQueue.enqueueGC();
-	Vodka.eventQueue.enqueueGC();
-	Vodka.eventQueue.enqueueAlertAnimation(obj);
-	Vodka.eventQueue.enqueueAlertAnimation(obj);
-	Vodka.eventQueue.enqueueAlertAnimation(obj);
-	Vodka.eventQueue.enqueueAlertAnimation(obj);
-	Vodka.eventQueue.enqueueRenderNodeRender();
-	Vodka.eventQueue.enqueueRenderNodeRender();
-	Vodka.eventQueue.enqueueRenderNodeRender();
-	Vodka.eventQueue.enqueueRenderNodeRender();
-	Vodka.eventQueue.enqueueTopLevelRender();
-	Vodka.eventQueue.enqueueTopLevelRender();
-	Vodka.eventQueue.enqueueTopLevelRender();
-	Vodka.eventQueue.enqueueTopLevelRender();
-	Vodka.eventQueue.enqueueTopLevelRender();
-	Vodka.eventQueue.enqueueRenderNodeRender();
-	Vodka.eventQueue.enqueueTopLevelRender();
-	Vodka.eventQueue.enqueueImportantTopLevelRender();
-	Vodka.eventQueue.enqueueImportantTopLevelRender();
-	Vodka.eventQueue.enqueueImportantTopLevelRender();
-	Vodka.eventQueue.enqueueImportantTopLevelRender();
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'importantTopLevelRender');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'renderNodeRender');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'topLevelRender');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'renderNodeRender');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'topLevelRender');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'doAlertAnimation');
-	assertEqual(Vodka.eventQueue.retrieveNextItem().action, 'gc');
-	assertFalsy(Vodka.eventQueue.retrieveNextItem());
+	eventQueue.enqueueGC();
+	eventQueue.enqueueGC();
+	eventQueue.enqueueGC();
+	eventQueue.enqueueGC();
+	eventQueue.enqueueAlertAnimation(obj);
+	eventQueue.enqueueAlertAnimation(obj);
+	eventQueue.enqueueAlertAnimation(obj);
+	eventQueue.enqueueAlertAnimation(obj);
+	eventQueue.enqueueRenderNodeRender();
+	eventQueue.enqueueRenderNodeRender();
+	eventQueue.enqueueRenderNodeRender();
+	eventQueue.enqueueRenderNodeRender();
+	eventQueue.enqueueTopLevelRender();
+	eventQueue.enqueueTopLevelRender();
+	eventQueue.enqueueTopLevelRender();
+	eventQueue.enqueueTopLevelRender();
+	eventQueue.enqueueTopLevelRender();
+	eventQueue.enqueueRenderNodeRender();
+	eventQueue.enqueueTopLevelRender();
+	eventQueue.enqueueImportantTopLevelRender();
+	eventQueue.enqueueImportantTopLevelRender();
+	eventQueue.enqueueImportantTopLevelRender();
+	eventQueue.enqueueImportantTopLevelRender();
+	assertEqual(eventQueue.retrieveNextItem().action, 'importantTopLevelRender');
+	assertEqual(eventQueue.retrieveNextItem().action, 'renderNodeRender');
+	assertEqual(eventQueue.retrieveNextItem().action, 'topLevelRender');
+	assertEqual(eventQueue.retrieveNextItem().action, 'renderNodeRender');
+	assertEqual(eventQueue.retrieveNextItem().action, 'topLevelRender');
+	assertEqual(eventQueue.retrieveNextItem().action, 'doAlertAnimation');
+	assertEqual(eventQueue.retrieveNextItem().action, 'gc');
+	assertFalsy(eventQueue.retrieveNextItem());
 }
 
 

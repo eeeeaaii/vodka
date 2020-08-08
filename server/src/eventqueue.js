@@ -43,6 +43,8 @@ import * as Vodka from './vodka.js'
 import { gc } from './gc.js'
 import { respondToClickEvent } from './browsereventresponsefunctions.js'
 
+const EVENT_DEBUG = false;
+
 class EventQueue {
 	constructor() {
 		this.queueSet = [];
@@ -54,7 +56,7 @@ class EventQueue {
 	}
 
 	enqueueAlertAnimation(renderNode) {
-		Vodka.EVENT_DEBUG ? console.log('enqueueing: AlertAnimation'):null;
+		EVENT_DEBUG ? console.log('enqueueing: AlertAnimation'):null;
 		let item = {
 			action: "doAlertAnimation",
 			shouldDedupe: true,
@@ -74,7 +76,7 @@ class EventQueue {
 	}
 
 	enqueueRenderNodeRender(renderNode, flags) {
-		Vodka.EVENT_DEBUG ? console.log('enqueueing: RenderNodeRender'):null;
+		EVENT_DEBUG ? console.log('enqueueing: RenderNodeRender'):null;
 		let item = {
 			action: "renderNodeRender",
 			renderNode: renderNode,
@@ -97,7 +99,7 @@ class EventQueue {
 	}
 
 	enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
-		Vodka.EVENT_DEBUG ? console.log('enqueueing: DoKeyInput'):null;
+		EVENT_DEBUG ? console.log('enqueueing: DoKeyInput'):null;
 		let item = {
 			action: "doKeyInput",
 			keycode: keycode,
@@ -117,7 +119,7 @@ class EventQueue {
 	}
 
 	enqueueImportantTopLevelRender() {
-		Vodka.EVENT_DEBUG ? console.log('enqueueing: ImportantTopLevelRender'):null;
+		EVENT_DEBUG ? console.log('enqueueing: ImportantTopLevelRender'):null;
 		let item = {
 			action: "importantTopLevelRender",
 			shouldDedupe: true,
@@ -135,7 +137,7 @@ class EventQueue {
 	}
 
 	enqueueDoClickHandlerAction(target, renderNode, event) {
-		Vodka.EVENT_DEBUG ? console.log('enqueueing: DoClickHandlerAction'):null;
+		EVENT_DEBUG ? console.log('enqueueing: DoClickHandlerAction'):null;
 		let item = {
 			action: "doClickHandlerAction",
 			target: target,
@@ -153,7 +155,7 @@ class EventQueue {
 	}
 
 	enqueueExpectationFulfill(exp, result) {
-		Vodka.EVENT_DEBUG ? console.log('enqueueing: ExpectationFulfill'):null;
+		EVENT_DEBUG ? console.log('enqueueing: ExpectationFulfill'):null;
 		let item = {
 			action: "expectationFulfill",
 			exp: exp,
@@ -171,7 +173,7 @@ class EventQueue {
 	// this is actually pretty generic but the point is that it gets put
 	// at expectation priority
 	enqueueExpectationCallback(callback, result) {
-		Vodka.EVENT_DEBUG ? console.log('enqueueing: ExpectationCallback'):null;
+		EVENT_DEBUG ? console.log('enqueueing: ExpectationCallback'):null;
 		let item = {
 			action: "expectationCallback",
 			result: result,
@@ -187,7 +189,7 @@ class EventQueue {
 	}
 
 	enqueueTopLevelRender() {
-		Vodka.EVENT_DEBUG ? console.log('enqueueing: TopLevelRender'):null;
+		EVENT_DEBUG ? console.log('enqueueing: TopLevelRender'):null;
 		let item = {
 			action: "topLevelRender",
 			shouldDedupe: true,
@@ -203,7 +205,7 @@ class EventQueue {
 	}
 
 	enqueueGC() {
-		Vodka.EVENT_DEBUG ? console.log('enqueueing: GC'):null;
+		EVENT_DEBUG ? console.log('enqueueing: GC'):null;
 		let item = {
 			action: "gc",
 			shouldDedupe: true,
@@ -238,7 +240,7 @@ class EventQueue {
 		let queueToUse = this.selectQueue();
 		if (!queueToUse) return null;
 		let item = queueToUse.shift();
-		Vodka.EVENT_DEBUG ? console.log(`processing: ${item.action}`):null;
+		EVENT_DEBUG ? console.log(`processing: ${item.action}`):null;
 		// if a bunch of equivalent actions were enqueued, pop them all and just do one
 		while(queueToUse.length > 0 && queueToUse[0].shouldDedupe && queueToUse[0].equals(item)) {
 			queueToUse.shift();
@@ -256,5 +258,7 @@ class EventQueue {
 	}
 }
 
-export { EventQueue }
+const eventQueue = new EventQueue();
+
+export { eventQueue }
 

@@ -23,7 +23,6 @@ import { ContextType } from './contexttype.js';
 import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
 import { evaluateNexSafely } from './evaluator.js'
 
-
 class KeyDispatcher {
 	dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
 		let keyContext = ContextType.COMMAND;
@@ -423,7 +422,10 @@ class KeyDispatcher {
 		};
 	}
 }
+
+const keyDispatcher = new KeyDispatcher();
+
 export {
-	KeyDispatcher
+	keyDispatcher
 }
 

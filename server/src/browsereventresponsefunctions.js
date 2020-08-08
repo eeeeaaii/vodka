@@ -16,6 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import * as Vodka from '../vodka.js'
+import { eventQueue } from '../eventqueue.js'
 
 
 // can return null if user clicks on some other thing
@@ -50,7 +51,7 @@ function respondToClickEvent(nex, renderNode, browserEvent) {
 	if (insertAfterRemove && Vodka.getGlobalSelectedNode() != oldSelectedNode) {
 		manipulator.removeNex(oldSelectedNode);
 	}
-	Vodka.eventQueue.enqueueImportantTopLevelRender();
+	eventQueue.enqueueImportantTopLevelRender();
 }
 
 export { respondToClickEvent }

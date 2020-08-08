@@ -15,8 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Vodka from '../vodka.js'
-
+import { autocomplete } from '../autocomplete.js'
 import { Builtin } from '../nex/builtin.js'
 import { EError } from '../nex/eerror.js'
 import { Bool } from '../nex/bool.js'
@@ -48,7 +47,7 @@ function createEnvironmentBuiltins() {
 			if (ssnex != UNBOUND) {
 				ss = ssnex.getTypedValue();
 			}
-			let matches = Vodka.autocomplete.findAllBindingsMatching(ss);
+			let matches = autocomplete.findAllBindingsMatching(ss);
 			if (matches.length == 1) {
 				return new ESymbol(matches[0]);
 			} else {
@@ -70,7 +69,7 @@ function createEnvironmentBuiltins() {
 			if (ssnex != UNBOUND) {
 				ss = ssnex.getTypedValue();
 			}
-			let matches = Vodka.autocomplete.findAllBuiltinsMatching(ss);
+			let matches = autocomplete.findAllBuiltinsMatching(ss);
 			if (matches.length == 1) {
 				return new ESymbol(matches[0]);
 			} else {
