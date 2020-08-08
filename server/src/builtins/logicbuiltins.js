@@ -20,7 +20,6 @@ import * as Utils from '../utils.js'
 import { Builtin } from '../nex/builtin.js'
 import { EError } from '../nex/eerror.js'
 import { Bool } from '../nex/bool.js'
-import { manipulator } from '../vodka.js'
 import { evaluateNexSafely, wrapError } from '../evaluator.js'
 
 function createLogicBuiltins() {

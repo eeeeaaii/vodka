@@ -18,7 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Vodka from './vodka.js'
 import * as Utils from './utils.js'
 import { RenderNode } from './rendernode.js'
-import { manipulator } from './vodka.js'
+import { manipulator } from './manipulator.js'
 import { EError } from './nex/eerror.js'
 import { BuiltinArgEvaluator } from '../builtinargevaluator.js'
 
@@ -87,7 +87,7 @@ function evaluateAndReplace(s) {
 		Vodka.beep();
 	}
 	if (n) {
-		Vodka.manipulator.replaceSelectedWith(new RenderNode(n));
+		manipulator.replaceSelectedWith(new RenderNode(n));
 	}
 }
 
@@ -96,14 +96,14 @@ function evaluateAndKeep(s) {
 	Vodka.eventQueue.enqueueAlertAnimation(s);
 	if (Utils.isFatalError(n)) {
 		Vodka.beep();
-		Vodka.manipulator.insertBeforeSelectedAndSelect(n);
+		manipulator.insertBeforeSelectedAndSelect(n);
 	}
 }
 
 function evaluateAndCopy(s) {
 	let n = evaluateNexSafely(s.getNex(), Vodka.BINDINGS);
 	if (n) {
-		Vodka.manipulator.replaceSelectedWith(new RenderNode(n));
+		manipulator.replaceSelectedWith(new RenderNode(n));
 	}
 }
 

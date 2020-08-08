@@ -255,47 +255,12 @@ class Nex {
 		return null;
 	}
 
-	// can return null if user clicks on some other thing
-	getParentNexOfDomElement(elt) {
-		while(elt && !elt.classList.contains('nex')) {
-			elt = elt.parentNode;
-		}
-		return elt;
-	}
-
 	_setClickHandler(renderNode) {
 		renderNode.getDomNode().onmousedown = (event) => {
 			Vodka.checkRecordState(event, 'mouse');
 			Vodka.eventQueue.enqueueDoClickHandlerAction(this, renderNode, event)
 			event.stopPropagation();
 		};
-	}
-
-	doClickHandlerAction(renderNode, e) {
-		if (this.extraClickHandler) {
-			this.extraClickHandler();
-			return;
-		}
-		let parentNexDomElt = this.getParentNexOfDomElement(e.target);
-		if (Vodka.getGlobalSelectedNode().getDomNode() == parentNexDomElt) {
-			return;
-		}
-		let insertAfterRemove = false;
-		let oldSelectedNode = Vodka.getGlobalSelectedNode();
-		if ((Vodka.getGlobalSelectedNode().getNex().getTypeName() == '-estring-'
-			|| Vodka.getGlobalSelectedNode().getNex().getTypeName() == '-eerror-')
-				&& Vodka.getGlobalSelectedNode().getNex().getMode() == MODE_EXPANDED) {
-			Vodka.getGlobalSelectedNode().getNex().finishInput();
-		} else if (Vodka.getGlobalSelectedNode().getNex().getTypeName() == '-insertionpoint-') {
-			insertAfterRemove = true;
-		}
-
-		e.stopPropagation();
-		renderNode.setSelected(false /*shallow-rerender*/);
-		if (insertAfterRemove && Vodka.getGlobalSelectedNode() != oldSelectedNode) {
-			Vodka.manipulator.removeNex(oldSelectedNode);
-		}
-		Vodka.eventQueue.enqueueImportantTopLevelRender();
 	}
 
 	renderInto(renderNode, renderFlags) {

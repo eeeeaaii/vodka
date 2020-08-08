@@ -15,18 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-
-
 import { ValueNex } from './valuenex.js'
-import { manipulator } from '../vodka.js'
-import { isNormallyHandled } from '../keyresponsefunctions.js'
-
-// remove with deprecated defaultHandle
-import { Word } from './word.js'
-import { Letter } from './letter.js'
-import { Separator } from './separator.js'
-
 
 class Nil extends ValueNex {
 	constructor() {
@@ -55,22 +44,8 @@ class Nil extends ValueNex {
 		return;
 	}
 
-	defaultHandle(txt) {
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-
-		if (isSeparator) {
-			manipulator.insertAfterSelectedAndSelect(new Separator(txt))
-		} else {
-			let w = new Word();
-			w.appendChild(new Letter(txt));
-			manipulator.insertAfterSelectedAndSelect(w);
-			w.setSelected();
-		}
-		return true;
+	getDefaultHandler() {
+		return 'nilDefault';
 	}
 
 	getEventTable(context) {

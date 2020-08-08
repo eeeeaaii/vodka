@@ -24,17 +24,13 @@ function incFFGen() {
 import * as Vodka from '../vodka.js'
 import * as Utils from '../utils.js'
 
+import { gc } from '../gc.js'
 import { ContextType } from '../contexttype.js'
-import { manipulator, gc } from '../vodka.js'
-import { isNormallyHandled } from '../keyresponsefunctions.js'
 import { evaluateNexSafely } from '../evaluator.js'
 
 import { EError } from './eerror.js'
 import { NexContainer } from './nexcontainer.js'
 
-// remove with deprecated defaultHandle
-import { Separator } from './separator.js'
-import { Letter } from './letter.js'
 import { Command } from './command.js'
 
 
@@ -447,25 +443,8 @@ class Expectation extends NexContainer {
 
 	appendText(txt) {}
 
-	defaultHandle(txt) {
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-
-		let toInsert = null;
-		if (isSeparator) {
-			toInsert = new Separator(txt);
-		} else {
-			toInsert = new Letter(txt);
-		}
-		if (this.hasChildren()) {
-			manipulator.insertAfterSelectedAndSelect(toInsert)
-		} else {
-			manipulator.appendAndSelect(toInsert);
-		}
-		return true;
+	getDefaultHandler() {
+		return 'expectationDefault';
 	}
 
 	getEventTable(context) {

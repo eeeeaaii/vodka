@@ -36,6 +36,7 @@ jsonfiles.forEach((jsonfile) => {
 		}
 		alljson.push(json);
 	} catch (e) {
+		console.log('' + e);
 		console.log(`broken json file ${jsonfile}, continuing`)
 	}
 })

@@ -16,14 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { ContextType } from '../contexttype.js'
-import { manipulator } from '../vodka.js'
-import { isNormallyHandled } from '../keyresponsefunctions.js'
 import { Separator } from './separator.js'
-
-// remove with deprecated defaultHandle
-import { Word } from './word.js'
-import { Letter } from './letter.js'
-import { KeyResponseFunctions } from '../keyresponsefunctions.js'
 
 // deprecated, this is essentially an insertion point
 class Newline extends Separator {
@@ -56,23 +49,8 @@ class Newline extends Separator {
 		domNode.classList.add('data');
 	}
 
-	defaultHandle(txt, context) {
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let isCommand = (context == ContextType.COMMAND);
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-		if (isSeparator) {
-			manipulator.insertAfterSelectedAndSelect(new Separator(txt));
-		} else {
-			if (isCommand) {
-				manipulator.insertAfterSelectedAndSelect(new Letter(txt));
-			} else {
-				KeyResponseFunctions['insert-letter-after-separator'](txt);
-			}
-		}
-		return true;
+	getDefaultHandler() {
+		return 'newlineDefault';
 	}
 
 	getEventTable(context) {

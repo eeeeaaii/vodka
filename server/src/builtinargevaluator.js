@@ -16,7 +16,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { evaluateNexSafely, wrapError } from './evaluator.js'
-import { manipulator } from './vodka.js'
 import { Word } from './nex/word.js'
 import { EError } from './nex/eerror.js'
 import * as Utils from './utils.js'

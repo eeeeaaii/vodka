@@ -18,14 +18,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 import { ValueNex } from './valuenex.js'
-import { manipulator } from '../vodka.js'
-import { isNormallyHandled } from '../keyresponsefunctions.js'
-
-// remove with deprecated defaultHandle
-import { Separator } from './separator.js'
-import { Letter } from './letter.js'
-import { Word } from './word.js'
-import { KeyResponseFunctions } from '../keyresponsefunctions.js'
 
 class Float extends ValueNex {
 	constructor(val) {
@@ -122,34 +114,8 @@ class Float extends ValueNex {
 		}
 	}
 
-	backspaceHack(sourceNode) {
-		if (this.value == '0') {
-			KeyResponseFunctions['remove-selected-and-select-previous-leaf'](sourceNode);
-			return;
-		}
-		this.deleteLastLetter();
-	}
-
-	defaultHandle(txt, context, sourcenode) {
-		if (txt == 'Backspace') {
-			this.backspaceHack(sourcenode);
-			return true;
-		}
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let okRegex = /^[e0-9.-]$/;
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-		if (okRegex.test(txt)) {
-			this.appendText(txt);
-		} else if (isSeparator) {
-			manipulator.insertAfterSelectedAndSelect(new Separator(txt));
-		} else {
-			manipulator.insertAfterSelectedAndSelect(new Word())
-				&& manipulator.appendAndSelect(new Letter(txt));
-		}
-		return true;
+	getDefaultHandler() {
+		return 'floatDefault';
 	}
 
 	getEventTable(context) {

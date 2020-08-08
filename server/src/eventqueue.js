@@ -40,6 +40,8 @@ const ALERT_ANIMATION_PRORITY = 3;
 const GC_PRIORITY = 4;
 
 import * as Vodka from './vodka.js'
+import { gc } from './gc.js'
+import { respondToClickEvent } from './browsereventresponsefunctions.js'
 
 class EventQueue {
 	constructor() {
@@ -142,7 +144,7 @@ class EventQueue {
 			event: event,
 			equals: null, // not needed when shouldDedupe = false
 			do: function() {
-				this.target.doClickHandlerAction(this.renderNode, event);
+				respondToClickEvent(this.target, this.renderNode, event);
 			}
 		};
 		// TODO: test this and see if it works at render priority
@@ -209,7 +211,7 @@ class EventQueue {
 				return (other.action == this.action);
 			},
 			do: function() {
-				Vodka.gc.markAndSweep();
+				gc.markAndSweep();
 			}
 		};
 		this.queueSet[GC_PRIORITY].push(item);

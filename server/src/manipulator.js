@@ -547,5 +547,7 @@ class Manipulator {
 
 }
 
-export { Manipulator }
+const manipulator = new Manipulator();
+
+export { manipulator }
 

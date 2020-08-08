@@ -21,19 +21,8 @@ const MODE_NORMAL = 1;
 const MODE_EXPANDED = 2;
 const QUOTE_ESCAPE = 'QQQQ'
 
-
-
 import { ValueNex } from './valuenex.js'
-import { RenderNode } from '../rendernode.js'
-import { manipulator } from '../vodka.js'
-import { isNormallyHandled } from '../keyresponsefunctions.js'
 import * as Vodka from '../vodka.js'
-
-// remove with deprecated defaultHandle
-import { Separator } from './separator.js'
-import { Word } from './word.js'
-import { Letter } from './letter.js'
-
 
 class EString extends ValueNex {
 	constructor(val, ch, t) {
@@ -217,22 +206,8 @@ class EString extends ValueNex {
 					| Vodka.RENDER_FLAG_SHALLOW);
 	}
 
-	defaultHandle(txt) {
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-
-		if (isSeparator) {
-			manipulator.insertAfterSelectedAndSelect(new Separator(txt))
-		} else {
-			let l = new RenderNode(new Letter(txt));
-			let w = new RenderNode(new Word());
-			w.appendChild(l);
-			manipulator.insertAfterSelectedAndSelect(w);
-			l.setSelected();
-		}
+	getDefaultHandler() {
+		return 'insertAfterEString';
 	}
 
 	getEventTable(context) {

@@ -32,12 +32,6 @@ const QUOTE_ESCAPE = 'QQQQ'
 import * as Vodka from '../vodka.js'
 
 import { NexContainer } from './nexcontainer.js'
-import { manipulator } from '../vodka.js'
-import { isNormallyHandled } from '../keyresponsefunctions.js'
-
-// remove with deprecated defaultHandle
-import { Separator } from './separator.js'
-import { Word } from './word.js'
 
 class EError extends NexContainer {
 	constructor(val, prefix) {
@@ -202,20 +196,8 @@ class EError extends NexContainer {
 		}
 	}
 
-	defaultHandle(txt) {
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-
-		if (isSeparator) {
-			manipulator.insertAfterSelectedAndSelect(new Separator(txt))
-		} else {
-			manipulator.insertAfterSelectedAndSelect(new Word())
-				&& selectedNex.getKeyFunnel().appendText(txt);
-		}
-		return true;
+	getDefaultHandler() {
+		return 'insertAfterEError';
 	}
 
 	getEventTable(context) {

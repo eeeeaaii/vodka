@@ -18,7 +18,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Vodka from '../vodka.js'
 
 import { NexContainer } from './nexcontainer.js'
-import { manipulator } from '../vodka.js'
 import { isNormallyHandled } from '../keyresponsefunctions.js'
 import { BUILTINS, PERFORMANCE_MONITOR } from '../vodka.js'
 import { EError } from './eerror.js'
@@ -384,22 +383,8 @@ class Command extends NexContainer {
 		}
 	}
 
-	defaultHandle(txt) {
-		if (txt != '*' && isNormallyHandled(txt)) {
-			return false;
-		}
-		let allowedKeyRegex = /^[a-zA-Z0-9-_=+/*<>:]$/;
-		let isLetterRegex = /^.$/;
-		if (allowedKeyRegex.test(txt)) {
-			this.appendCommandText(txt);
-		} else if (isLetterRegex.test(txt)) {
-			if (this.hasChildren()) {
-				manipulator.insertAfterSelectedAndSelect(new Letter(txt))
-			} else {
-				manipulator.appendAndSelect(new Letter(txt));
-			}
-		}
-		return true;
+	getDefaultHandler() {
+		return 'insertAfterCommand';
 	}
 
 	getEventTable(context) {

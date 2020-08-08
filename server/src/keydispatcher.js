@@ -18,6 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as Vodka from './vodka.js'
 
+import { manipulator } from './manipulator.js'
 import { ContextType } from './contexttype.js';
 import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
 import { evaluateNexSafely } from './evaluator.js'
@@ -63,15 +64,15 @@ class KeyDispatcher {
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-x') {
 			this.saveForUndo();
-			Vodka.manipulator.doCut();
+			manipulator.doCut();
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-c') {
 			this.saveForUndo();
-			Vodka.manipulator.doCopy();
+			manipulator.doCopy();
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-v') {
 			this.saveForUndo();
-			Vodka.manipulator.doPaste();
+			manipulator.doPaste();
 			return false; // to cancel browser event
 		} else if (eventName == 'Escape') {
 			// do not save state for undo as esc is non-destructive

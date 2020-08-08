@@ -136,12 +136,32 @@ testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
+
+// original test used Alt-~ which doesn't work in puppeteer
+// this hack where you cut, insert a command, tab in, and paste
+// isn't ideal but gets the test working.
+// there is now an alert if you try to type
+// the option key in a test recording session.
+testactions.push({type:'keydown',code:'MetaRight'});
+testactions.push({type:'keydown',code:'KeyX'});
+testactions.push({type:'keyup',code:'MetaRight'});
 testactions.push({type:'keydown',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'AltRight'});
 testactions.push({type:'keydown',code:'Backquote'});
 testactions.push({type:'keyup',code:'Backquote'});
-testactions.push({type:'keyup',code:'AltRight'});
 testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Tab'});
+testactions.push({type:'keyup',code:'Tab'});
+testactions.push({type:'keydown',code:'MetaRight'});
+testactions.push({type:'keydown',code:'KeyV'});
+testactions.push({type:'keyup',code:'MetaRight'});
+testactions.push({type:'keyup',code:'KeyV'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Tab'});
+testactions.push({type:'keyup',code:'Tab'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+
+
+
 testactions.push({type:'keydown',code:'KeyF'});
 testactions.push({type:'keyup',code:'KeyF'});
 testactions.push({type:'keydown',code:'KeyF'});

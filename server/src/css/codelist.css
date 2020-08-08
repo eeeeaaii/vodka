@@ -39,18 +39,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	padding: 0px 5px 2px 5px;
 }
 
-.codelist.exploded > .nex.exploded {
-	/*
-	ok so it's hard to read when there are a lot of commands inside commands,
-	but this isn't the solution because it breaks actions_funnel_command_typingletters,
-	plus a bunch of other tests.
-	Maybe just this?
-	.codelist.exploded > .codelist.exploded
-
-	margin: 0px 2px 0px 2px;
-	*/
-}
-
 .codelist.exploded.vdir > .nex.exploded {
 	margin: 2px 21px 2px 21px;
 }

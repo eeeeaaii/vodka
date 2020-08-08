@@ -44,7 +44,6 @@ import { Separator } from '../nex/separator.js';
 import { Word } from '../nex/word.js'; 
 import { Zlist } from '../nex/zlist.js'; 
 
-import { manipulator } from '../vodka.js'
 import { evaluateNexSafely, wrapError } from '../evaluator.js'
 
 

@@ -62,5 +62,8 @@ class GarbageCollector {
 		}
 	}
 }
-export { GarbageCollector }
+
+const gc = new GarbageCollector();
+
+export { gc }
 

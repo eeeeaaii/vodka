@@ -17,14 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 import { ContextType } from '../contexttype.js'
-import { manipulator } from '../vodka.js'
 import { NexContainer } from './nexcontainer.js'
-import { isNormallyHandled } from '../keyresponsefunctions.js'
-
-// remove with deprecated defaultHandle
-import { Word } from './word.js'
-import { Separator } from './separator.js'
-import { Letter } from './letter.js'
 import { EError } from './eerror.js'
 
 class Line extends NexContainer {
@@ -104,24 +97,8 @@ class Line extends NexContainer {
 		}
 	}
 
-	defaultHandle(txt) {
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-		if (isSeparator) {
-			manipulator.appendAndSelect(new Separator(txt));
-		} else {
-			if (manipulator.selectLastChild()) {
-				selectedNex.appendChild(new Letter(txt));
-			} else {
-				let w = new Word();
-				w.appendChild(new Letter(txt));
-				manipulator.appendAndSelect(w);
-			}
-		}
-		return true;
+	getDefaultHandler() {
+		return 'lineDefault';
 	}
 
 	getEventTable(context) {

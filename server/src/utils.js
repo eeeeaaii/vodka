@@ -19,7 +19,6 @@ import { NexContainer } from './nex/nexcontainer.js';
 import { EError } from './nex/eerror.js';
 import * as Utils from './utils.js'
 import { Expectation } from './nex/expectation.js';
-import { manipulator } from './vodka.js'
 import { Doc } from './nex/doc.js';
 import { Line } from './nex/line.js';
 import { Word } from './nex/word.js';

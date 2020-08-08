@@ -15,18 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-
 import { ValueNex } from './valuenex.js'
-import { manipulator } from '../vodka.js'
-import { isNormallyHandled } from '../keyresponsefunctions.js'
-
-// remove with deprecated defaultHandle
-import { Separator } from './separator.js'
-import { Word } from './word.js'
-import { Letter } from './letter.js'
 import * as Vodka from '../vodka.js'
-
 
 class ESymbol extends ValueNex {
 	constructor(val) {
@@ -69,25 +59,8 @@ class ESymbol extends ValueNex {
 		return b;
 	}
 
-	defaultHandle(txt) {
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let allowedKeyRegex = /^[a-zA-Z0-9-_:]$/;
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-
-		if (allowedKeyRegex.test(txt)) {
-			this.appendText(txt);
-		} else if (isSeparator) {
-			manipulator.insertAfterSelectedAndSelect(new Separator(txt));
-		} else {
-			let letter = new Letter(txt);
-			manipulator.insertAfterSelectedAndSelect(new Word())
-				&& manipulator.appendAndSelect(txt);
-
-		}
-		return true;
+	getDefaultHandler() {
+		return 'insertOrAddToESymbol';
 	}
 
 	getEventTable(context) {

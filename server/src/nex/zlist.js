@@ -16,15 +16,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { NexContainer } from './nexcontainer.js'
-import { manipulator } from '../vodka.js'
-import { isNormallyHandled } from '../keyresponsefunctions.js'
 import { ContextType } from '../contexttype.js'
 import * as Vodka from '../vodka.js';
-
-// remove with deprecated defaultHandle
-import { Letter } from './letter.js'
-import { Separator } from './separator.js'
-
 
 class Zlist extends NexContainer {
 	constructor() {
@@ -68,27 +61,8 @@ class Zlist extends NexContainer {
 		domNode.classList.add('data');
 	}
 
-	defaultHandle(txt, context) {
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let isCommand = (context == ContextType.COMMAND);
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-		if (isSeparator) {
-			manipulator.insertAfterSelectedAndSelect(new Separator(txt));
-		} else {
-			if (isCommand) {
-				if (this.hasChildren()) {
-					manipulator.insertAfterSelectedAndSelect(new Letter(txt));
-				} else {
-					manipulator.appendAndSelect(new Letter(txt));
-				}							
-			} else {
-				manipulator.appendAndSelect(new Letter(txt));
-			}
-		}
-		return true;
+	getDefaultHandler() {
+		return 'zlistDefault';
 	}
 
 	getEventTable(context) {

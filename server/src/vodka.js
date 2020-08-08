@@ -18,11 +18,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { setAppFlags } from './globalappflags.js'
 
 import { Environment } from './environment.js'
-import { Manipulator } from './manipulator.js'
 import { StepEvaluator } from './stepevaluator.js'
 import { EventQueue } from './eventqueue.js'
 import { PerformanceMonitor } from './perfmon.js'
-import { GarbageCollector } from './gc.js'
 import { ContractEnforcer } from './contract.js'
 import { KeyDispatcher } from './keydispatcher.js'
 import { Autocomplete } from './autocomplete.js'
@@ -177,6 +175,9 @@ function logMouseEvent(e) {
 `;	
 }
 function logKeyDownEvent(e) {
+	if (e.code == 'AltLeft' || e.code == 'AltRight') {
+		alert("Do not use the option key when recording tests! Puppeteer does not support this and your test will not work correctly.");
+	}
 	shorthand += '|' + e.key;
 	recorded_session += `testactions.push({type:'keydown',code:'${e.code}'});
 `;	
@@ -210,7 +211,7 @@ const EVENT_DEBUG = false;
 const PERFORMANCE_MONITOR = false;
 
 // app-wide params
-const MAX_RENDER_DEPTH = 500;
+const MAX_RENDER_DEPTH = 100;
 
 // renderer state
 var root = null;
@@ -231,13 +232,11 @@ const BINDINGS = BUILTINS.pushEnv();
 
 
 // global objects/singletons
-const manipulator = new Manipulator();
 const stepEvaluator = new StepEvaluator();
 const eventQueue = new EventQueue();
 const KEY_DISPATCHER = new KeyDispatcher();
 const autocomplete = new Autocomplete();
 const perfmon = new PerformanceMonitor();
-const gc = new GarbageCollector();
 const contractEnforcer = new ContractEnforcer(); // someday this will likely be scoped in the environment
 const undo = new Undo();
 
@@ -480,13 +479,11 @@ export {
 	MAX_RENDER_DEPTH,
 	BUILTINS,
 	BINDINGS,
-	manipulator,
 	stepEvaluator,
 	eventQueue,
 	KEY_DISPATCHER,
 	autocomplete,
 	perfmon,
-	gc,
 	beep,
 	undo,
 	root

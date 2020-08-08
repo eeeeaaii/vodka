@@ -17,12 +17,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { ContextType, ContextMapBuilder } from '../contexttype.js'
 import { Nex } from './nex.js'
-import { isNormallyHandled } from '../keyresponsefunctions.js'
-import { manipulator } from '../vodka.js'
-
-// remove with deprecated defaultHandle
-import { Separator } from './separator.js'
-import { KeyResponseFunctions } from '../keyresponsefunctions.js'
 
 class Letter extends Nex {
 	constructor(letter) {
@@ -68,29 +62,8 @@ class Letter extends Nex {
 		return this.value;
 	}
 
-	// maybe instead of talking directly to the manipulator this could return a string
-	// that represents the function to call?
-	defaultHandle(txt, context) {
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		// zlists are experimental I guess?
-		if (txt == '<') {
-			return false;
-		}
-		let inWord = (context == ContextType.WORD);
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-		if (isSeparator) {
-			if (inWord) {
-				KeyResponseFunctions['split-word-and-insert-separator'](txt);				
-			} else {
-				manipulator.insertAfterSelectedAndSelect(new Separator(txt));				
-			}
-		} else {
-			manipulator.insertAfterSelectedAndSelect(new Letter(txt));
-		}
-		return true;
+	getDefaultHandler() {
+		return 'insertAtLetterLevel';
 	}
 
 	getEventTable(context) {
