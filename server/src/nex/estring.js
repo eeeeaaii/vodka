@@ -21,9 +21,7 @@ const MODE_NORMAL = 1;
 const MODE_EXPANDED = 2;
 const QUOTE_ESCAPE = 'QQQQ'
 
-import * as Vodka from '../vodka.js'
-
-import { eventQueue } from '../eventqueue.js'
+import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { ValueNex } from './valuenex.js'
 import { systemState } from '../systemstate.js'
 import { RENDER_FLAG_RERENDER, RENDER_FLAG_SHALLOW } from '../globalconstants.js'
@@ -192,7 +190,7 @@ class EString extends ValueNex {
 
 	startModalEditing() {
 		this.mode = MODE_EXPANDED;
-		Vodka.deactivateKeyFunnel();
+		systemState.setKeyFunnelActive(false);
 	}
 
 	finishInput(renderNode) {
@@ -200,10 +198,10 @@ class EString extends ValueNex {
 			renderNode = this.cachedRenderNodeHack;
 		}
 		let val = this.inputfield.value;
-		Vodka.activateKeyFunnel();
+		systemState.setKeyFunnelActive(true);
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val);
-		eventQueue.enqueueRenderNodeRender(
+		eventQueueDispatcher.enqueueRenderNodeRender(
 				renderNode,
 				systemState.getGlobalCurrentDefaultRenderFlags()
 					| RENDER_FLAG_RERENDER

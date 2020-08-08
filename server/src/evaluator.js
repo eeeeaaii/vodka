@@ -16,12 +16,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import * as Utils from './utils.js'
-import { eventQueue } from '../eventqueue.js'
+import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import { RenderNode } from './rendernode.js'
 import { manipulator } from './manipulator.js'
 import { EError } from './nex/eerror.js'
-import { BuiltinArgEvaluator } from '../builtinargevaluator.js'
-import { BINDINGS } from '../environment.js'
+import { BuiltinArgEvaluator } from './builtinargevaluator.js'
+import { BINDINGS } from './environment.js'
 
 // use this wrapper to handle exceptions correctly, this
 // saves us from having to put exception handling in every
@@ -94,7 +94,7 @@ function evaluateAndReplace(s) {
 
 function evaluateAndKeep(s) {
 	let n = evaluateNexSafely(s.getNex(), BINDINGS);
-	eventQueue.enqueueAlertAnimation(s);
+	eventQueueDispatcher.enqueueAlertAnimation(s);
 	if (Utils.isFatalError(n)) {
 		beep();
 		manipulator.insertBeforeSelectedAndSelect(n);

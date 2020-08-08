@@ -30,8 +30,9 @@ const QUOTE_ESCAPE = 'QQQQ'
 
 
 import { RENDER_FLAG_RERENDER, RENDER_FLAG_SHALLOW } from '../globalconstants.js'
-import { eventQueue } from '../eventqueue.js'
+import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { NexContainer } from './nexcontainer.js'
+import { systemState } from '../systemstate.js'
 
 class EError extends NexContainer {
 	constructor(val, prefix) {
@@ -136,7 +137,7 @@ class EError extends NexContainer {
 
 	startModalEditing() {
 		this.mode = MODE_EXPANDED;
-		deactivateKeyFunnel();
+		systemState.setKeyFunnelActive(false);
 	}
 
 	drawNormal(renderNode) {
@@ -154,10 +155,10 @@ class EError extends NexContainer {
 			renderNode = this.cachedRenderNodeHack;
 		}
 		let val = this.inputfield.value;
-		activateKeyFunnel();
+		systemState.setKeyFunnelActive(true);
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val);
-		eventQueue.enqueueRenderNodeRender(
+		eventQueueDispatcher.enqueueRenderNodeRender(
 				renderNode,
 				current_default_render_flags
 					| RENDER_FLAG_RERENDER

@@ -28,6 +28,8 @@ class SystemState {
 		this.overrideOnNextRender = false;
 		this.selectWhenYouFindIt = null;
 		this.root = null;
+		this.key_funnel_active = true;
+		this.stackLevel = 0;
 	}
 
 	setGlobalSelectedNode(newNode) {
@@ -78,8 +80,42 @@ class SystemState {
 		this.root = r;
 	}
 
+	isKeyFunnelActive() {
+		return this.key_funnel_active;
+	}
+
+	setKeyFunnelActive(val) {
+		this.key_funnel_active = val;
+	}
+
+	resetStack() {
+		this.stackLevel = 0;
+	}
+
+	pushStackLevel() {
+		this.stackLevel++;
+	}
+
+	popStackLevel() {
+		this.stackLevel--;
+	}
+
+	stackCheck() {
+		if (this.stackLevel > 10000) {
+			throw new Error('stack overflow');
+		}
+	}
+}
+
+// This function is here because it depends on stacklevel, which is stored here, no other reason
+function INDENT() {
+	let s = '';
+	for (var i = 0; i < systemState.stackLevel; i++) {
+		s = s + '  ';
+	}
+	return s;
 }
 
 const systemState = new SystemState();
 
-export { systemState }
+export { systemState, INDENT }

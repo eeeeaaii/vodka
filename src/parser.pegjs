@@ -1,84 +1,6 @@
 {
   
 
-  function concatParserString(arr) {
-    return arr.join('');
-  }
-
-  function makeInteger(negation, digits) {
-    let n = Number(concatParserString(digits));
-    if (negation) {
-      n = -n;
-    }
-    return new Integer(n);
-  }
-
-  function makeSymbol(letters) {
-    return new ESymbol(concatParserString(letters));
-  }
-
-  function makeString(contents) {
-    return new EString(concatParserString(contents));
-  }
-
-  function makeFloat(contents) {
-    return new Float(contents);
-  }
-
-  function makeNil() {
-    return new Nil();
-  }
-
-  function makeOrgList(children) {
-    let r = new Org();
-    for (let i = 0; i < children.length ; i++) {
-      r.appendChild(children[i]);
-    }
-    return r;
-  }
-
-  function makeExpList(children) {
-    let r = new Expectation();
-    for (let i = 0; i < children.length ; i++) {
-      r.appendChild(children[i]);
-    }
-    return r;
-  }
-
-  function makeLambdaList(children) {
-    let r = new Lambda();
-    for (let i = 0; i < children.length ; i++) {
-      r.appendChild(children[i]);
-    }
-    return r;
-  }
-
-  function makeCommandList(children) {
-    let r = new Command();
-    for (let i = 0; i < children.length ; i++) {
-      r.appendChild(children[i]);
-    }
-    return r;
-  }
-
-  function makeNamedCommandList(name, children) {
-    name = concatParserString(name);
-    let r = new Command(Command.convertV2StringToMath(name));
-    for (let i = 0; i < children.length ; i++) {
-      r.appendChild(children[i]);
-    }
-    return r;
-  }
-
-  function makeNamedCommandListWithPrivate(name, privatedata, children) {
-    name = concatParserString(name);
-    let r = new Command(Command.convertV2StringToMath(name));
-    for (let i = 0; i < children.length ; i++) {
-      r.appendChild(children[i]);
-    }
-    r.setPrivateData(privateData);
-    return r;
-  }
 }
 
 
@@ -103,21 +25,21 @@ list
  ;
 
 org_list
- = '(' CHILDREN:(nex_with_space *) _  ')' { return makeOrgList(CHILDREN); }
+ = '(' CHILDREN:(nex_with_space *) _  ')' { return PF.makeOrgList(CHILDREN); }
  ;
 
 exp_list
- = '*(' CHILDREN:(nex_with_space *) _  ')' { return makeExpList(CHILDREN); }
+ = '*(' CHILDREN:(nex_with_space *) _  ')' { return PF.makeExpList(CHILDREN); }
  ;
 
 lambda_list
- = '&(' CHILDREN:(nex_with_space *) _  ')' { return makeLambdaList(CHILDREN); }
+ = '&(' CHILDREN:(nex_with_space *) _  ')' { return PF.makeLambdaList(CHILDREN); }
  ;
 
 cmd_list
- = '~(' CHILDREN:(nex_with_space *) _  ')' { return makeCommandList(CHILDREN); }
- / '~(' NAME:cmd_name CHILDREN:(nex_with_space *) _  ')' { return makeNamedCommandList(NAME, CHILDREN); }
- / '~(' NAME:cmd_name PRIVATE:private_data_section CHILDREN:(nex_with_space *) _  ')' { return makeNamedCommandListWithPrivate(NAME, PRIVATE, CHILDREN); }
+ = '~(' CHILDREN:(nex_with_space *) _  ')' { return PF.makeCommandList(CHILDREN); }
+ / '~(' NAME:cmd_name CHILDREN:(nex_with_space *) _  ')' { return PF.makeNamedCommandList(NAME, CHILDREN); }
+ / '~(' NAME:cmd_name PRIVATE:private_data_section CHILDREN:(nex_with_space *) _  ')' { return PF.makeNamedCommandListWithPrivate(NAME, PRIVATE, CHILDREN); }
  ;
 
 cmd_name
@@ -137,29 +59,29 @@ atom
   ;
 
 boolean_expression
-  = '!yes' { return new Bool(true); }
-  / '!no'  { return new Bool(false); }
+  = '!yes' { return PF.makeBool(true); }
+  / '!no'  { return PF.makeBool(false); }
   ;
 
 symbol_expression
-  = '@' SYMBOL:[a-zA-Z0-9_:-]+ { return makeSymbol(SYMBOL); }
+  = '@' SYMBOL:[a-zA-Z0-9_:-]+ { return PF.makeSymbol(SYMBOL); }
   ;
 
 integer_expression
-  = '#' NEGATION:'-'? DIGITS:[0-9]+ { return makeInteger(NEGATION, DIGITS); }
+  = '#' NEGATION:'-'? DIGITS:[0-9]+ { return PF.makeInteger(NEGATION, DIGITS); }
   ;
 
 string_expression
-  = '$' '"' STRING_CONTENTS:[^"]* '"' { return makeString(STRING_CONTENTS); }
-  / '$' STRING_CONTENTS:private_data_section { return makeString(STRING_CONTENTS); }
+  = '$' '"' STRING_CONTENTS:[^"]* '"' { return PF.makeString(STRING_CONTENTS); }
+  / '$' STRING_CONTENTS:private_data_section { return PF.makeString(STRING_CONTENTS); }
   ;
 
 float_expression
-  = '%' FLOAT:float_digits { return makeFloat(FLOAT); }
+  = '%' FLOAT:float_digits { return PF.makeFloat(FLOAT); }
   ;
 
 nil_expression
-  = '^' { return makeNil() }
+  = '^' { return PF.makeNil() }
   ;
 
 float_digits

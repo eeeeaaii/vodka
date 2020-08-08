@@ -15,9 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Vodka from '../vodka.js'
-
-import { eventQueue } from '../eventqueue.js'
+import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
+import { INDENT, systemState } from '../systemstate.js'
 import { autocomplete } from '../autocomplete.js'
 import { NexContainer } from './nexcontainer.js'
 import { isNormallyHandled } from '../keyresponsefunctions.js'
@@ -160,7 +159,7 @@ class Command extends NexContainer {
 	doAlertAnimation(lambda) {
 		let rn = lambda.getRenderNodes();
 		for (let i = 0; i < rn.length; i++) {
-			eventQueue.enqueueAlertAnimation(rn[i]);
+			eventQueueDispatcher.enqueueAlertAnimation(rn[i]);
 		}
 	}
 
@@ -242,12 +241,12 @@ class Command extends NexContainer {
 	// it is also used to look up symbol bindings
 
 	evaluate(executionEnv) {
-		Vodka.pushStackLevel();
-		Vodka.stackCheck(); // not for step eval, this is to prevent call stack overflow.
+		systemState.pushStackLevel();
+		systemState.stackCheck(); // not for step eval, this is to prevent call stack overflow.
 
 		if (CONSOLE_DEBUG) {
-			console.log(`${Vodka.INDENT()}evaluating command: ${this.debugString()}`);
-			console.log(`${Vodka.INDENT()}closure is: ${this.evalState.closure.debugString()}`);
+			console.log(`${INDENT()}evaluating command: ${this.debugString()}`);
+			console.log(`${INDENT()}closure is: ${this.evalState.closure.debugString()}`);
 		}
 		// the arg container holds onto the args and is used by the arg evaluator.
 		// I think this is useful for step eval but I can't remember
@@ -256,20 +255,20 @@ class Command extends NexContainer {
 		// the job of the evaluator is to evaluate the args AND bind them to variables in the new scope.
 		let argEvaluator = this.evalState.closure.getArgEvaluator(this.evalState.cmdname, argContainer, executionEnv);
 		argEvaluator.evaluateArgs();
-		if (Vodka.PERFORMANCE_MONITOR) {
+		if (PERFORMANCE_MONITOR) {
 			perfmon.logMethodCallStart(this.evalState.closure.getCmdName());
 		}
 		this.doAlertAnimation(this.evalState.closure.getLambda());
 		// actually run the code.
 		this.notReallyCachedClosure = this.evalState.closure;
 		let r = this.evalState.closure.executor(executionEnv, argEvaluator, this.evalState.cmdname, this.tags);
-		if (Vodka.PERFORMANCE_MONITOR) {
+		if (PERFORMANCE_MONITOR) {
 			perfmon.logMethodCallEnd(this.evalState.closure.getCmdName());
 		}
 		if (CONSOLE_DEBUG) {
-			console.log(`${Vodka.INDENT()}command returned: ${r.debugString()}`);
+			console.log(`${INDENT()}command returned: ${r.debugString()}`);
 		}
-		Vodka.popStackLevel();
+		systemState.popStackLevel();
 		return r;
 	}
 

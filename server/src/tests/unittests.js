@@ -16,6 +16,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { eventQueue } from '../eventqueue.js'
+import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
+
+eventQueue.initialize();
 
 export function runTest(testname) {
 	eval('TEST_' + testname + '();');
@@ -41,7 +44,7 @@ function assertFalsy(a) {
 
 function TEST_eventqueue_events_alertanimation() {
 	let fakeRenderNode = new Object();
-	eventQueue.enqueueAlertAnimation(fakeRenderNode);
+	eventQueueDispatcher.enqueueAlertAnimation(fakeRenderNode);
 	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'doAlertAnimation',
@@ -59,7 +62,7 @@ function TEST_eventqueue_events_doclickhandleraction() {
 	let fakeTarget = new Object();
 	let fakeRenderNode = new Object();
 	let fakeEvent = new Object();
-	eventQueue.enqueueDoClickHandlerAction(fakeTarget, fakeRenderNode, fakeEvent);
+	eventQueueDispatcher.enqueueDoClickHandlerAction(fakeTarget, fakeRenderNode, fakeEvent);
 	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'doClickHandlerAction',
@@ -83,7 +86,7 @@ function TEST_eventqueue_events_dokeyinput() {
 	let hasCtrl = true;
 	let hasMeta = true;
 	let hasAlt = true;
-	eventQueue.enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt);
+	eventQueueDispatcher.enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt);
 	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'doKeyInput',
@@ -109,7 +112,7 @@ function TEST_eventqueue_events_dokeyinput() {
 function TEST_eventqueue_events_expectationcallback() {
 	let result = new Object();
 	let callback = new Object();
-	eventQueue.enqueueExpectationCallback(callback, result);
+	eventQueueDispatcher.enqueueExpectationCallback(callback, result);
 	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'expectationCallback',
@@ -128,7 +131,7 @@ function TEST_eventqueue_events_expectationcallback() {
 function TEST_eventqueue_events_expectationfulfill() {
 	let exp = new Object();
 	let result = new Object();
-	eventQueue.enqueueExpectationFulfill(exp, result);
+	eventQueueDispatcher.enqueueExpectationFulfill(exp, result);
 	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'expectationFulfill',
@@ -144,7 +147,7 @@ function TEST_eventqueue_events_expectationfulfill() {
 }
 
 function TEST_eventqueue_events_gc() {
-	eventQueue.enqueueGC();
+	eventQueueDispatcher.enqueueGC();
 	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'gc',
@@ -157,7 +160,7 @@ function TEST_eventqueue_events_gc() {
 }
 
 function TEST_eventqueue_events_importanttoplevelrender() {
-	eventQueue.enqueueImportantTopLevelRender();
+	eventQueueDispatcher.enqueueImportantTopLevelRender();
 	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'importantTopLevelRender',
@@ -173,7 +176,7 @@ function TEST_eventqueue_events_importanttoplevelrender() {
 function TEST_eventqueue_events_rendernoderender() {
 	let fakeRenderNode = new Object();
 	let flags = 3249;
-	eventQueue.enqueueRenderNodeRender(fakeRenderNode, flags);
+	eventQueueDispatcher.enqueueRenderNodeRender(fakeRenderNode, flags);
 	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'renderNodeRender',
@@ -190,7 +193,7 @@ function TEST_eventqueue_events_rendernoderender() {
 }
 
 function TEST_eventqueue_events_toplevelrender() {
-	eventQueue.enqueueTopLevelRender();
+	eventQueueDispatcher.enqueueTopLevelRender();
 	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'topLevelRender',
@@ -204,11 +207,11 @@ function TEST_eventqueue_events_toplevelrender() {
 
 function TEST_eventqueue_priority_inverseordering() {
 	let obj = new Object();
-	eventQueue.enqueueGC();
-	eventQueue.enqueueAlertAnimation(obj);
-	eventQueue.enqueueRenderNodeRender(obj, obj);
-	eventQueue.enqueueExpectationFulfill(obj, obj)
-	eventQueue.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
+	eventQueueDispatcher.enqueueGC();
+	eventQueueDispatcher.enqueueAlertAnimation(obj);
+	eventQueueDispatcher.enqueueRenderNodeRender(obj, obj);
+	eventQueueDispatcher.enqueueExpectationFulfill(obj, obj)
+	eventQueueDispatcher.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
 	assertEqual(eventQueue.retrieveNextItem().action, 'doKeyInput');
 	assertEqual(eventQueue.retrieveNextItem().action, 'expectationFulfill');
 	assertEqual(eventQueue.retrieveNextItem().action, 'renderNodeRender');
@@ -219,14 +222,14 @@ function TEST_eventqueue_priority_inverseordering() {
 
 function TEST_eventqueue_priority_addedwhiledequeueing() {
 	let obj = new Object();
-	eventQueue.enqueueGC();
-	eventQueue.enqueueAlertAnimation(obj);
-	eventQueue.enqueueRenderNodeRender(obj, obj);
-	eventQueue.enqueueExpectationFulfill(obj, obj)
-	eventQueue.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
+	eventQueueDispatcher.enqueueGC();
+	eventQueueDispatcher.enqueueAlertAnimation(obj);
+	eventQueueDispatcher.enqueueRenderNodeRender(obj, obj);
+	eventQueueDispatcher.enqueueExpectationFulfill(obj, obj)
+	eventQueueDispatcher.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
 	assertEqual(eventQueue.retrieveNextItem().action, 'doKeyInput');
 	assertEqual(eventQueue.retrieveNextItem().action, 'expectationFulfill');
-	eventQueue.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
+	eventQueueDispatcher.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
 	assertEqual(eventQueue.retrieveNextItem().action, 'doKeyInput');
 	assertEqual(eventQueue.retrieveNextItem().action, 'renderNodeRender');
 	assertEqual(eventQueue.retrieveNextItem().action, 'doAlertAnimation');
@@ -235,11 +238,11 @@ function TEST_eventqueue_priority_addedwhiledequeueing() {
 
 function TEST_eventqueue_priority_inverseordering2() {
 	let obj = new Object();
-	eventQueue.enqueueGC();
-	eventQueue.enqueueAlertAnimation(obj);
-	eventQueue.enqueueTopLevelRender();
-	eventQueue.enqueueExpectationCallback(obj, obj)
-	eventQueue.enqueueDoClickHandlerAction(obj, obj, obj);
+	eventQueueDispatcher.enqueueGC();
+	eventQueueDispatcher.enqueueAlertAnimation(obj);
+	eventQueueDispatcher.enqueueTopLevelRender();
+	eventQueueDispatcher.enqueueExpectationCallback(obj, obj)
+	eventQueueDispatcher.enqueueDoClickHandlerAction(obj, obj, obj);
 	assertEqual(eventQueue.retrieveNextItem().action, 'doClickHandlerAction');
 	assertEqual(eventQueue.retrieveNextItem().action, 'expectationCallback');
 	assertEqual(eventQueue.retrieveNextItem().action, 'topLevelRender');
@@ -249,37 +252,37 @@ function TEST_eventqueue_priority_inverseordering2() {
 
 function TEST_eventqueue_priority_normalandimportantrender() {
 	let obj = new Object();
-	eventQueue.enqueueTopLevelRender();
-	eventQueue.enqueueImportantTopLevelRender();
+	eventQueueDispatcher.enqueueTopLevelRender();
+	eventQueueDispatcher.enqueueImportantTopLevelRender();
 	assertEqual(eventQueue.retrieveNextItem().action, 'importantTopLevelRender');
 	assertEqual(eventQueue.retrieveNextItem().action, 'topLevelRender');
 }
 
 function TEST_eventqueue_deduping() {
 	let obj = new Object();
-	eventQueue.enqueueGC();
-	eventQueue.enqueueGC();
-	eventQueue.enqueueGC();
-	eventQueue.enqueueGC();
-	eventQueue.enqueueAlertAnimation(obj);
-	eventQueue.enqueueAlertAnimation(obj);
-	eventQueue.enqueueAlertAnimation(obj);
-	eventQueue.enqueueAlertAnimation(obj);
-	eventQueue.enqueueRenderNodeRender();
-	eventQueue.enqueueRenderNodeRender();
-	eventQueue.enqueueRenderNodeRender();
-	eventQueue.enqueueRenderNodeRender();
-	eventQueue.enqueueTopLevelRender();
-	eventQueue.enqueueTopLevelRender();
-	eventQueue.enqueueTopLevelRender();
-	eventQueue.enqueueTopLevelRender();
-	eventQueue.enqueueTopLevelRender();
-	eventQueue.enqueueRenderNodeRender();
-	eventQueue.enqueueTopLevelRender();
-	eventQueue.enqueueImportantTopLevelRender();
-	eventQueue.enqueueImportantTopLevelRender();
-	eventQueue.enqueueImportantTopLevelRender();
-	eventQueue.enqueueImportantTopLevelRender();
+	eventQueueDispatcher.enqueueGC();
+	eventQueueDispatcher.enqueueGC();
+	eventQueueDispatcher.enqueueGC();
+	eventQueueDispatcher.enqueueGC();
+	eventQueueDispatcher.enqueueAlertAnimation(obj);
+	eventQueueDispatcher.enqueueAlertAnimation(obj);
+	eventQueueDispatcher.enqueueAlertAnimation(obj);
+	eventQueueDispatcher.enqueueAlertAnimation(obj);
+	eventQueueDispatcher.enqueueRenderNodeRender();
+	eventQueueDispatcher.enqueueRenderNodeRender();
+	eventQueueDispatcher.enqueueRenderNodeRender();
+	eventQueueDispatcher.enqueueRenderNodeRender();
+	eventQueueDispatcher.enqueueTopLevelRender();
+	eventQueueDispatcher.enqueueTopLevelRender();
+	eventQueueDispatcher.enqueueTopLevelRender();
+	eventQueueDispatcher.enqueueTopLevelRender();
+	eventQueueDispatcher.enqueueTopLevelRender();
+	eventQueueDispatcher.enqueueRenderNodeRender();
+	eventQueueDispatcher.enqueueTopLevelRender();
+	eventQueueDispatcher.enqueueImportantTopLevelRender();
+	eventQueueDispatcher.enqueueImportantTopLevelRender();
+	eventQueueDispatcher.enqueueImportantTopLevelRender();
+	eventQueueDispatcher.enqueueImportantTopLevelRender();
 	assertEqual(eventQueue.retrieveNextItem().action, 'importantTopLevelRender');
 	assertEqual(eventQueue.retrieveNextItem().action, 'renderNodeRender');
 	assertEqual(eventQueue.retrieveNextItem().action, 'topLevelRender');

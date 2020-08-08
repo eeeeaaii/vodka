@@ -24,7 +24,7 @@ function incFFGen() {
 import * as Utils from '../utils.js'
 
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
-import { eventQueue } from '../eventqueue.js'
+import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { gc } from '../gc.js'
 import { ContextType } from '../contexttype.js'
 import { evaluateNexSafely } from '../evaluator.js'
@@ -244,7 +244,7 @@ class Expectation extends NexContainer {
 
 	getCallbackForSet() {
 		return (function(result) {
-			eventQueue.enqueueExpectationFulfill(this.callbackRouter, result);
+			eventQueueDispatcher.enqueueExpectationFulfill(this.callbackRouter, result);
 		}).bind(this);
 	}
 

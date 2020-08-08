@@ -20,8 +20,8 @@ import * as Utils from './utils.js'
 import { systemState } from './systemstate.js'
 import { LambdaEditor } from './nex/lambda.js'
 import { TagEditor } from './tag.js'
-import { eventQueue } from './eventqueue.js'
-import { RENDER_FLAG_SELECTED, RENDER_FLAG_REMOVE_OVERRIDES, RENDER_FLAG_SHALLOW, RENDER_FLAG_NORMAL, RENDER_FLAG_RERENDER, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
+import { eventQueueDispatcher } from './eventqueuedispatcher.js'
+import { RENDER_FLAG_SELECTED, RENDER_FLAG_REMOVE_OVERRIDES, RENDER_FLAG_SHALLOW, RENDER_FLAG_NORMAL, RENDER_FLAG_RERENDER, RENDER_FLAG_EXPLODED } from './globalconstants.js'
 
 const MAX_RENDER_DEPTH = 100;
 
@@ -511,5 +511,6 @@ class RenderNode {
 		return newchild;
 	}    
 }
+
 export { RenderNode }
 

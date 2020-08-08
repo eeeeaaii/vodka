@@ -44,6 +44,7 @@ import * as Vodka from './vodka.js'
 import { gc } from './gc.js'
 import { respondToClickEvent } from './browsereventresponsefunctions.js'
 import { systemState } from './systemstate.js'
+import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 
 const EVENT_DEBUG = false;
 
@@ -55,6 +56,18 @@ class EventQueue {
 		this.queueSet[RENDER_PRIORITY] = [];
 		this.queueSet[ALERT_ANIMATION_PRORITY] = [];
 		this.queueSet[GC_PRIORITY] = [];
+	}
+
+	initialize() {
+		eventQueueDispatcher.createDelegate('enqueueAlertAnimation', this);
+		eventQueueDispatcher.createDelegate('enqueueRenderNodeRender', this);
+		eventQueueDispatcher.createDelegate('enqueueDoKeyInput', this);
+		eventQueueDispatcher.createDelegate('enqueueDoClickHandlerAction', this);
+		eventQueueDispatcher.createDelegate('enqueueImportantTopLevelRender', this);
+		eventQueueDispatcher.createDelegate('enqueueExpectationFulfill', this);
+		eventQueueDispatcher.createDelegate('enqueueExpectationCallback', this);
+		eventQueueDispatcher.createDelegate('enqueueTopLevelRender', this);
+		eventQueueDispatcher.createDelegate('enqueueGC', this);
 	}
 
 	enqueueAlertAnimation(renderNode) {

@@ -15,8 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { eventQueue } from '../eventqueue.js'
-import { systemState } from '../systemstate.js'
+import { eventQueueDispatcher } from './eventqueuedispatcher.js'
+import { systemState } from './systemstate.js'
 
 // can return null if user clicks on some other thing
 function getParentNexOfDomElement(elt) {
@@ -50,7 +50,7 @@ function respondToClickEvent(nex, renderNode, browserEvent) {
 	if (insertAfterRemove && systemState.getGlobalSelectedNode() != oldSelectedNode) {
 		manipulator.removeNex(oldSelectedNode);
 	}
-	eventQueue.enqueueImportantTopLevelRender();
+	eventQueueDispatcher.enqueueImportantTopLevelRender();
 }
 
 export { respondToClickEvent }

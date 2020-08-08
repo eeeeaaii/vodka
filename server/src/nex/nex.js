@@ -17,12 +17,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 let NEXT_NEX_ID = 0;
 
-import * as Vodka from '../vodka.js'
-
 import { getGlobalAppFlag } from '../globalappflags.js'
 import { systemState } from '../systemstate.js'
-import { eventQueue } from '../eventqueue.js'
+import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { RENDER_FLAG_SELECTED, RENDER_FLAG_SHALLOW, RENDER_FLAG_NORMAL, RENDER_FLAG_RERENDER, RENDER_FLAG_EXPLODED, RENDER_FLAG_DEPTH_EXCEEDED } from '../globalconstants.js'
+import { checkRecordState } from '../testrecorder.js'
 
 class Nex {
 	constructor() {
@@ -108,7 +107,7 @@ class Nex {
 			flags &= (~RENDER_FLAG_NORMAL);
 			flags &= (~RENDER_FLAG_EXPLODED);
 
-			eventQueue.enqueueRenderNodeRender(
+			eventQueueDispatcher.enqueueRenderNodeRender(
 					this.rendernodes[i],
 					flags
 					| (this.rendernodes[i].isExploded() ? RENDER_FLAG_EXPLODED : RENDER_FLAG_NORMAL)
@@ -261,8 +260,8 @@ class Nex {
 
 	_setClickHandler(renderNode) {
 		renderNode.getDomNode().onmousedown = (event) => {
-			Vodka.checkRecordState(event, 'mouse');
-			eventQueue.enqueueDoClickHandlerAction(this, renderNode, event)
+			checkRecordState(event, 'mouse');
+			eventQueueDispatcher.enqueueDoClickHandlerAction(this, renderNode, event)
 			event.stopPropagation();
 		};
 	}
@@ -320,6 +319,8 @@ class Nex {
 		return null;
 	}
 }
+
+
 
 if (typeof module !== 'undefined' && module.exports) module.exports = { Nex: Nex }
 
