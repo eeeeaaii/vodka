@@ -17,6 +17,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as Utils from './utils.js'
 import * as Vodka from './vodka.js'
+
+import { systemState } from './systemstate.js'
 import { LambdaEditor } from './nex/lambda.js'
 import { TagEditor } from './tag.js'
 import { eventQueue } from './eventqueue.js'
@@ -305,7 +307,7 @@ class RenderNode {
 	}
 
 	setSelected(rerender) {
-		let selectedNode = Vodka.getGlobalSelectedNode();
+		let selectedNode = systemState.getGlobalSelectedNode();
 		if (selectedNode == this) return;
 		if (selectedNode) {
 			selectedNode.setUnselected();
@@ -318,7 +320,7 @@ class RenderNode {
 		if (rerender) {
 			eventQueue.renderNodeRender(this, Vodka.RENDER_FLAG_RERENDER | Vodka.RENDER_FLAG_SHALLOW | current_default_Vodka.render_flags);
 		}
-		Vodka.setGlobalSelectedNode(selectedNode);
+		systemState.setGlobalSelectedNode(selectedNode);
 	}
 
 	setUnselected() {

@@ -18,6 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as Vodka from './vodka.js'
 
+import { systemState } from './systemstate.js'
 import { manipulator } from './manipulator.js'
 import { undo } from './undo.js'
 import { ContextType } from './contexttype.js';
@@ -27,13 +28,13 @@ import { evaluateNexSafely } from './evaluator.js'
 class KeyDispatcher {
 	dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
 		let keyContext = ContextType.COMMAND;
-		let p = Vodka.getGlobalSelectedNode().getParent();
+		let p = systemState.getGlobalSelectedNode().getParent();
 		if (p) {
 			while((keyContext = p.getNex().getContextType()) == ContextType.PASSTHROUGH) {
 				p = p.getParent();
 			}
 		}
-		if (Vodka.getGlobalSelectedNode().usingEditor()) {
+		if (systemState.getGlobalSelectedNode().usingEditor()) {
 			// will return whether or not to "reroute"
 			// rerouting means the editor didn't handle the key AND wants keydispatcher
 			// to handle it instead
@@ -92,19 +93,19 @@ class KeyDispatcher {
 			if (window.legacyEnterBehaviorForTests
 					&& eventName == 'ShiftEnter'
 					&& (
-						Vodka.getGlobalSelectedNode().getNex().getTypeName() == '-command-'
-						|| Vodka.getGlobalSelectedNode().getNex().getTypeName() == '-symbol-'
+						systemState.getGlobalSelectedNode().getNex().getTypeName() == '-command-'
+						|| systemState.getGlobalSelectedNode().getNex().getTypeName() == '-symbol-'
 					)) {
 				eventName = 'Enter';
 			}
 			try {
-				let sourceNex = (Vodka.getGlobalSelectedNode().getNex());
+				let sourceNex = (systemState.getGlobalSelectedNode().getNex());
 				let parentNex = null;
-				if (Vodka.getGlobalSelectedNode().getParent()) {
-					parentNex = Vodka.getGlobalSelectedNode().getParent().getNex();
+				if (systemState.getGlobalSelectedNode().getParent()) {
+					parentNex = systemState.getGlobalSelectedNode().getParent().getNex();
 				}
 				// returning false here means we tell the browser not to process the event.
-				if (this.runDefaultHandle(sourceNex, eventName, keyContext, Vodka.getGlobalSelectedNode())) return false;
+				if (this.runDefaultHandle(sourceNex, eventName, keyContext, systemState.getGlobalSelectedNode())) return false;
 				if (this.runFunctionFromOverrideTable(sourceNex, parentNex, eventName)) return false;
 				if (this.runFunctionFromRegularTable(sourceNex, eventName, keyContext)) return false;
 				if (this.runFunctionFromGenericTable(sourceNex, eventName)) return false;
@@ -139,7 +140,7 @@ class KeyDispatcher {
 		// is finished.
 		// right now we just have an editor for tags but we will need editors for
 		// strings, symbols, commands/lambdas.
-		return Vodka.getGlobalSelectedNode().routeKeyToCurrentEditor(keycode);
+		return systemState.getGlobalSelectedNode().routeKeyToCurrentEditor(keycode);
 	}
 
 	getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichKey) {
@@ -265,10 +266,10 @@ class KeyDispatcher {
 	// returns true if it was a valid function that could be run
 	actOnFunction(f, context) {
 		if ((typeof f) == 'string') {
-			KeyResponseFunctions[f](Vodka.getGlobalSelectedNode());
+			KeyResponseFunctions[f](systemState.getGlobalSelectedNode());
 			return true;
 		} else if ((typeof f) == 'function') {
-			f(Vodka.getGlobalSelectedNode());
+			f(systemState.getGlobalSelectedNode());
 			return true;
 		} else if ((typeof f) == 'object') {
 			// contains different functions for different contexts
@@ -279,7 +280,7 @@ class KeyDispatcher {
 					throw new Error('must specify a default context if associating a key with a map')
 				}
 			}
-			KeyResponseFunctions[f2](Vodka.getGlobalSelectedNode());
+			KeyResponseFunctions[f2](systemState.getGlobalSelectedNode());
  			return true;
 		} else if (f instanceof Nex) {
 			evaluateNexSafely(f, Vodka.BINDINGS)
@@ -289,30 +290,30 @@ class KeyDispatcher {
 	}
 
 	doEscape() {
-		let current_default_render_flags = Vodka.getGlobalCurrentDefaultRenderFlags();
+		let current_default_render_flags = systemState.getGlobalCurrentDefaultRenderFlags();
 		if (current_default_render_flags & Vodka.RENDER_FLAG_EXPLODED) {
 			current_default_render_flags &= (~Vodka.RENDER_FLAG_EXPLODED);
 		} else {
 			current_default_render_flags |= Vodka.RENDER_FLAG_EXPLODED;
 		}
-		Vodka.setGlobalOverrideOnNextRender(true);
-		Vodka.setGlobalCurrentDefaultRenderFlags(current_default_render_flags);
+		systemState.setGlobalOverrideOnNextRender(true);
+		systemState.setGlobalCurrentDefaultRenderFlags(current_default_render_flags);
 	}
 
 	doMetaEnter() {
 		isStepEvaluating = true;
 		try {
-			let s = Vodka.getGlobalSelectedNode().getNex();
+			let s = systemState.getGlobalSelectedNode().getNex();
 			let phaseExecutor = s.phaseExecutor;
 			let firstStep = false;
 			if (!phaseExecutor) {
 				firstStep = true;
 				phaseExecutor = new PhaseExecutor();
 				// need to copy the selected nex, replace it in the parent, and discard!
-				let copiedNex = Vodka.getGlobalSelectedNode().getNex().makeCopy();
-				let parentNode = Vodka.getGlobalSelectedNode().getParent();
+				let copiedNex = systemState.getGlobalSelectedNode().getNex().makeCopy();
+				let parentNode = systemState.getGlobalSelectedNode().getParent();
 				let parentNex = parentNode.getNex();
-				parentNex.replaceChildWith(Vodka.getGlobalSelectedNode().getNex(), copiedNex);
+				parentNex.replaceChildWith(systemState.getGlobalSelectedNode().getNex(), copiedNex);
 				parentNode.childnodes = []; // wtf
 				// hack: rerender the parent to refresh/fix the cached childnodes in it
 				// we cannot use eventqueue because this thread needs this data later on :(
@@ -322,7 +323,7 @@ class KeyDispatcher {
 				newSelectedNode.setSelected();
 				// gross
 				topLevelRender();
-				s = Vodka.getGlobalSelectedNode().getNex();
+				s = systemState.getGlobalSelectedNode().getNex();
 				s.pushNexPhase(phaseExecutor, Vodka.BINDINGS);
 			}
 			phaseExecutor.doNextStep();

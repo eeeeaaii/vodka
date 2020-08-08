@@ -19,6 +19,7 @@ let NEXT_NEX_ID = 0;
 
 import { getGlobalAppFlag } from '../globalappflags.js'
 import * as Vodka from '../vodka.js'
+import { systemState } from '../systemstate.js'
 import { eventQueue } from '../eventqueue.js'
 
 class Nex {
@@ -82,7 +83,7 @@ class Nex {
 	}
 
 	doRenderSequencing(renderNode) {
-		if (getGlobalAppFlag('otags') || this.lastRenderPassNumber == Vodka.getGlobalRenderPassNumber()) {
+		if (getGlobalAppFlag('otags') || this.lastRenderPassNumber == systemState.getGlobalRenderPassNumber()) {
 			// this node has been rendered before in this pass!
 			// if this is the first dupe, we go back to the first one
 			// and prepend the object tag.
@@ -93,7 +94,7 @@ class Nex {
 			this.prependObjectTag(renderNode);
 		} else {
 			this.rendernodes = [ renderNode ];
-			this.lastRenderPassNumber = Vodka.getGlobalRenderPassNumber();
+			this.lastRenderPassNumber = systemState.getGlobalRenderPassNumber();
 			// for now we assume there will be only one render,
 			// do not prepend.
 		}
@@ -101,7 +102,7 @@ class Nex {
 
 	renderOnlyThisNex() {
 		for (let i = 0; i < this.rendernodes.length; i++) {
-			let flags = Vodka.getGlobalCurrentDefaultRenderFlags();
+			let flags = systemState.getGlobalCurrentDefaultRenderFlags();
 			flags &= (~Vodka.RENDER_FLAG_NORMAL);
 			flags &= (~Vodka.RENDER_FLAG_EXPLODED);
 

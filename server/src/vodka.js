@@ -22,6 +22,7 @@ import { perfmon } from './perfmon.js'
 
 import { eventQueue } from './eventqueue.js'
 import { keyDispatcher } from './keydispatcher.js'
+import { systemState } from './systemstate.js'
 
 import { createAsyncBuiltins } from './builtins/asyncbuiltins.js'
 import { createBasicBuiltins } from './builtins/basicbuiltins.js'
@@ -202,22 +203,19 @@ const RENDER_FLAG_DEPTH_EXCEEDED = 32;
 // GLOBAL VARIABLES
 
 // flags and temporaries
-var overrideOnNextRender = false;
-var isStepEvaluating = false; // allows some performance-heavy operations while step evaluating
 const CONSOLE_DEBUG = false;
 const PERFORMANCE_MONITOR = false;
 
 // app-wide params
 const MAX_RENDER_DEPTH = 100;
 
-// renderer state
+
+// all these should go into SystemState
+// possibly some of them would be moved into Render-specific
+// SystemState objects (for example, screen rendering vs. audio rendering)
+var isStepEvaluating = false; // allows some performance-heavy operations while step evaluating
 var root = null;
 var hiddenroot = null;
-var selectedNode = null;
-var current_default_render_flags = RENDER_FLAG_NORMAL;
-let renderPassNumber = 0;
-
-// used by the executor to prevent browser-level stack overflow
 let stackLevel = 0;
 
 // global lexical environment.
@@ -318,56 +316,20 @@ function createBuiltins() {
 }
 
 function nodeLevelRender(node) {
-	renderPassNumber++;
-	let flags = current_default_render_flags;
+	systemState.setGlobalRenderPassNumber(systemState.getGlobalRenderPassNumber() + 1);
+	let flags = systemState.getGlobalCurrentDefaultRenderFlags();;
 	node.render(flags);
 }
 
 function topLevelRender() {
-	renderPassNumber++;
-	let flags = current_default_render_flags;
-	if (overrideOnNextRender) {
-		overrideOnNextRender = false;
+	systemState.setGlobalRenderPassNumber(systemState.getGlobalRenderPassNumber() + 1);
+	let flags = systemState.getGlobalCurrentDefaultRenderFlags();
+	if (systemState.getGlobalOverrideOnNextRender()) {
+		systemState.setGlobalOverrideOnNextRender(false);
 		flags |= RENDER_FLAG_REMOVE_OVERRIDES;
 	}
 	root.setRenderDepth(0);
 	root.render(flags);
-}
-
-function getGlobalCurrentDefaultRenderFlags() {
-	return current_default_render_flags;
-}
-
-function setGlobalCurrentDefaultRenderFlags(f) {
-	current_default_render_flags = f;
-}
-
-function setGlobalSelectWhenYouFindIt(node) {
-	selectWhenYouFindIt = node;
-}
-
-function getGlobalSelectWhenYouFindIt() {
-	return selectWhenYouFindIt;
-}
-
-function setGlobalSelectedNode(newNode) {
-	selectedNode = newNode;
-}
-
-function getGlobalSelectedNode() {
-	return selectedNode;
-}
-
-function setGlobalOverrideOnNextRender(t) {
-	overrideOnNextRender = t;
-}
-
-function setGlobalRenderPassNumber(n) {
-	renderPassNumber = n;
-}
-
-function getGlobalRenderPassNumber() {
-	return renderPassNumber;
 }
 
 function setRoot(newRootNex) {
@@ -429,16 +391,9 @@ export {
 	popStackLevel,
 	stackCheck,
 	INDENT,
-	setGlobalSelectedNode,
-	getGlobalSelectedNode,
 	topLevelRender,
 	nodeLevelRender,
 	doRealKeyInput,
-	getGlobalCurrentDefaultRenderFlags,
-	setGlobalOverrideOnNextRender,
-	setGlobalCurrentDefaultRenderFlags,
-	getGlobalRenderPassNumber,
-	setGlobalRenderPassNumber,
 	deactivateKeyFunnel,
 	activateKeyFunnel,
 	setRoot,

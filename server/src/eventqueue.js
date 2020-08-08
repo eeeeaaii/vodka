@@ -42,6 +42,7 @@ const GC_PRIORITY = 4;
 import * as Vodka from './vodka.js'
 import { gc } from './gc.js'
 import { respondToClickEvent } from './browsereventresponsefunctions.js'
+import { systemState } from './systemstate.js'
 
 const EVENT_DEBUG = false;
 
@@ -90,7 +91,7 @@ class EventQueue {
 					&& other.flags == this.flags);
 			},
 			do: function() {
-				Vodka.setGlobalRenderPassNumber(Vodka.getGlobalRenderPassNumber() + 1);
+				systemState.setGlobalRenderPassNumber(systemState.getGlobalRenderPassNumber() + 1);
 				this.renderNode.render(this.flags);
 			}
 		};

@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Vodka from './vodka.js';
+import { systemState } from './systemstate.js'
 
 import { Nex } from './nex/nex.js'; 
 import { NexContainer } from './nex/nexcontainer.js'; 
@@ -581,7 +581,7 @@ const KeyResponseFunctions = {
 	'replace-selected-with-string': function(s) { manipulator.replaceSelectedWith(new EString()); },
 	'replace-selected-with-float': function(s) { manipulator.replaceSelectedWith(new Float()); },
 	'replace-selected-with-nil': function(s) { manipulator.replaceSelectedWith(new Nil()); },
-	'replace-selected-with-lambda': function(s) { manipulator.replaceSelectedWith(new Lambda()) && Vodka.getGlobalSelectedNode().startLambdaEditor(); },
+	'replace-selected-with-lambda': function(s) { manipulator.replaceSelectedWith(new Lambda()) && systemState.getGlobalSelectedNode().startLambdaEditor(); },
 	'replace-selected-with-expectation': function(s) { manipulator.replaceSelectedWith(new Expectation()); },
 	'replace-selected-with-word': function(s) { manipulator.replaceSelectedWith(new Word()); },
 	'replace-selected-with-line': function(s) { manipulator.replaceSelectedWith(new Line()); },
@@ -600,7 +600,7 @@ const KeyResponseFunctions = {
 	'insert-or-append-nil': function(s) { insertOrAppend(s, new Nil()); },
 	'insert-or-append-lambda': function(s) {
 		insertOrAppend(s, new Lambda())
-		&& Vodka.getGlobalSelectedNode().startLambdaEditor();
+		&& systemState.getGlobalSelectedNode().startLambdaEditor();
 	},
 	'insert-or-append-expectation': function(s) { insertOrAppend(s, new Expectation()); },
 	'insert-or-append-word': function(s) { insertOrAppend(s, new Word()); },
@@ -615,7 +615,7 @@ const KeyResponseFunctions = {
 	'insert-string-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new EString()); },
 	'insert-float-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Float()); },
 	'insert-nil-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Nil()); },
-	'insert-lambda-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Lambda())  && Vodka.getGlobalSelectedNode().startLambdaEditor(); },
+	'insert-lambda-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Lambda())  && systemState.getGlobalSelectedNode().startLambdaEditor(); },
 	'insert-expectation-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Expectation()); },
 	'insert-word-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Word()); },
 	'insert-line-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Line()); },
@@ -625,7 +625,7 @@ const KeyResponseFunctions = {
 
 
 	'wrap-in-command': function(s) { manipulator.wrapSelectedInAndSelect(new Command()); },
-	'wrap-in-lambda': function(s) { manipulator.wrapSelectedInAndSelect(new Lambda())  && Vodka.getGlobalSelectedNode().startLambdaEditor(); },
+	'wrap-in-lambda': function(s) { manipulator.wrapSelectedInAndSelect(new Lambda())  && systemState.getGlobalSelectedNode().startLambdaEditor(); },
 	'wrap-in-expectation': function(s) { manipulator.wrapSelectedInAndSelect(new Expectation()); },
 	'wrap-in-word': function(s) { manipulator.wrapSelectedInAndSelect(new Word()); },
 	'wrap-in-line': function(s) { manipulator.wrapSelectedInAndSelect(new Line()); },
@@ -646,7 +646,7 @@ const KeyResponseFunctions = {
 
 	'remove-separator-and-possibly-join-words': function(s) {
 		manipulator.removeSelectedAndSelectPreviousLeaf();
-		let p = Vodka.getGlobalSelectedNode().getParent();
+		let p = systemState.getGlobalSelectedNode().getParent();
 		manipulator.joinToSiblingIfSame(p);
 	},
 
@@ -660,7 +660,7 @@ const KeyResponseFunctions = {
 	'legacy-insert-string-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new EString()); },
 	'legacy-insert-float-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Float()); },
 	'legacy-insert-nil-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Nil()); },
-	'legacy-insert-lambda-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Lambda())  && Vodka.getGlobalSelectedNode().startLambdaEditor(); },
+	'legacy-insert-lambda-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Lambda())  && systemState.getGlobalSelectedNode().startLambdaEditor(); },
 	'legacy-insert-expectation-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Expectation()); },
 
 
@@ -782,7 +782,7 @@ const KeyResponseFunctions = {
 	},
 
 	'replace-selected-with-word-correctly': function(s) {
-		let selected = Vodka.getGlobalSelectedNode();
+		let selected = systemState.getGlobalSelectedNode();
 		let obj = new RenderNode(new Word());
 		if (Utils.isDoc(selected.getParent())) {
 			let ln = new RenderNode(new Line());
@@ -816,7 +816,7 @@ const KeyResponseFunctions = {
 		if (manipulator.selectPreviousLeaf()) {
 			let oldParent = s.getParent(); // may need later
 			manipulator.removeNex(s);
-			s = Vodka.getGlobalSelectedNode();
+			s = systemState.getGlobalSelectedNode();
 			let line;
 			let word;
 			// when we selected the previous sibling, we may be:

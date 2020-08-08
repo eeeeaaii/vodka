@@ -23,6 +23,7 @@ const QUOTE_ESCAPE = 'QQQQ'
 
 import { eventQueue } from '../eventqueue.js'
 import { ValueNex } from './valuenex.js'
+import { systemState } from '../systemstate.js'
 import * as Vodka from '../vodka.js'
 
 class EString extends ValueNex {
@@ -202,7 +203,7 @@ class EString extends ValueNex {
 		this.setFullValue(val);
 		eventQueue.enqueueRenderNodeRender(
 				renderNode,
-				Vodka.getGlobalCurrentDefaultRenderFlags()
+				systemState.getGlobalCurrentDefaultRenderFlags()
 					| Vodka.RENDER_FLAG_RERENDER
 					| Vodka.RENDER_FLAG_SHALLOW);
 	}

@@ -15,9 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Vodka from '../vodka.js'
 import { eventQueue } from '../eventqueue.js'
-
+import { systemState } from '../systemstate.js'
 
 // can return null if user clicks on some other thing
 function getParentNexOfDomElement(elt) {
@@ -33,22 +32,22 @@ function respondToClickEvent(nex, renderNode, browserEvent) {
 		return;
 	}
 	let parentNexDomElt = getParentNexOfDomElement(browserEvent.target);
-	if (Vodka.getGlobalSelectedNode().getDomNode() == parentNexDomElt) {
+	if (systemState.getGlobalSelectedNode().getDomNode() == parentNexDomElt) {
 		return;
 	}
 	let insertAfterRemove = false;
-	let oldSelectedNode = Vodka.getGlobalSelectedNode();
-	if ((Vodka.getGlobalSelectedNode().getNex().getTypeName() == '-estring-'
-		|| Vodka.getGlobalSelectedNode().getNex().getTypeName() == '-eerror-')
-			&& Vodka.getGlobalSelectedNode().getNex().getMode() == MODE_EXPANDED) {
-		Vodka.getGlobalSelectedNode().getNex().finishInput();
-	} else if (Vodka.getGlobalSelectedNode().getNex().getTypeName() == '-insertionpoint-') {
+	let oldSelectedNode = systemState.getGlobalSelectedNode();
+	if ((systemState.getGlobalSelectedNode().getNex().getTypeName() == '-estring-'
+		|| systemState.getGlobalSelectedNode().getNex().getTypeName() == '-eerror-')
+			&& systemState.getGlobalSelectedNode().getNex().getMode() == MODE_EXPANDED) {
+		systemState.getGlobalSelectedNode().getNex().finishInput();
+	} else if (systemState.getGlobalSelectedNode().getNex().getTypeName() == '-insertionpoint-') {
 		insertAfterRemove = true;
 	}
 
 	browserEvent.stopPropagation();
 	renderNode.setSelected(false /*shallow-rerender*/);
-	if (insertAfterRemove && Vodka.getGlobalSelectedNode() != oldSelectedNode) {
+	if (insertAfterRemove && systemState.getGlobalSelectedNode() != oldSelectedNode) {
 		manipulator.removeNex(oldSelectedNode);
 	}
 	eventQueue.enqueueImportantTopLevelRender();
