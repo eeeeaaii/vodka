@@ -53,5 +53,7 @@ class SimpleTypeContract {
 	}
 }
 
-export { ContractEnforcer, IdentityContract, SimpleTypeContract }
+const contractEnforcer = new ContractEnforcer(); // someday this will likely be scoped in the environment
+
+export { contractEnforcer, IdentityContract, SimpleTypeContract }
 

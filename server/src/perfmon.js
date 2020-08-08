@@ -15,8 +15,6 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-
 class PerformanceMonitor {
 	constructor() {
 		this.methods = {};
@@ -181,5 +179,7 @@ class PerformanceMonitor {
 	}
 }
 
-export { PerformanceMonitor }
+const perfmon = new PerformanceMonitor();
+
+export { perfmon }
 

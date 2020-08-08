@@ -18,8 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { setAppFlags } from './globalappflags.js'
 
 import { Environment } from './environment.js'
-import { PerformanceMonitor } from './perfmon.js'
-import { ContractEnforcer } from './contract.js'
+import { perfmon } from './perfmon.js'
 
 import { eventQueue } from './eventqueue.js'
 import { keyDispatcher } from './keydispatcher.js'
@@ -39,7 +38,6 @@ import { createSyscalls } from './builtins/syscalls.js'
 import { createTagBuiltins } from './builtins/tagbuiltins.js'
 import { createTestBuiltins } from './builtins/testbuiltins.js'
 import { createTypeConversionBuiltins } from './builtins/typeconversions.js'
-import { Undo } from './undo.js'
 import { RenderNode } from './rendernode.js'
 import { Root } from './nex/root.js'
 import { Doc } from './nex/doc.js'
@@ -228,12 +226,6 @@ let stackLevel = 0;
 // any environments nested under that are closures.
 const BUILTINS = new Environment(null);
 const BINDINGS = BUILTINS.pushEnv();
-
-
-// global objects/singletons
-const perfmon = new PerformanceMonitor();
-const contractEnforcer = new ContractEnforcer(); // someday this will likely be scoped in the environment
-const undo = new Undo();
 
 function dumpPerf() {
 	perfmon.dump();
@@ -469,8 +461,6 @@ export {
 	MAX_RENDER_DEPTH,
 	BUILTINS,
 	BINDINGS,
-	perfmon,
-	undo,
 	root
 
 }

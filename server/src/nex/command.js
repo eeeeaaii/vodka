@@ -17,6 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as Vodka from '../vodka.js'
 
+import { perfmon } from '../perfmon.js'
 import { eventQueue } from '../eventqueue.js'
 import { autocomplete } from '../autocomplete.js'
 import { NexContainer } from './nexcontainer.js'
@@ -255,14 +256,14 @@ class Command extends NexContainer {
 		let argEvaluator = this.evalState.closure.getArgEvaluator(this.evalState.cmdname, argContainer, executionEnv);
 		argEvaluator.evaluateArgs();
 		if (Vodka.PERFORMANCE_MONITOR) {
-			Vodka.perfmon.logMethodCallStart(this.evalState.closure.getCmdName());
+			perfmon.logMethodCallStart(this.evalState.closure.getCmdName());
 		}
 		this.doAlertAnimation(this.evalState.closure.getLambda());
 		// actually run the code.
 		this.notReallyCachedClosure = this.evalState.closure;
 		let r = this.evalState.closure.executor(executionEnv, argEvaluator, this.evalState.cmdname, this.tags);
 		if (Vodka.PERFORMANCE_MONITOR) {
-			Vodka.perfmon.logMethodCallEnd(this.evalState.closure.getCmdName());
+			perfmon.logMethodCallEnd(this.evalState.closure.getCmdName());
 		}
 		if (Vodka.CONSOLE_DEBUG) {
 			console.log(`${Vodka.INDENT()}command returned: ${r.debugString()}`);

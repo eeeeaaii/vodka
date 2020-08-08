@@ -59,4 +59,6 @@ class Undo {
 	}
 }
 
-export { Undo }
+const undo = new Undo();
+
+export { undo }

@@ -17,6 +17,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Builtin } from '../nex/builtin.js'
 import { EError } from '../nex/eerror.js'
+
+import { contractEnforcer } from '../contract.js'
 import { IdentityContract } from '../contract.js'
 import { SimpleTypeContract } from '../contract.js'
 

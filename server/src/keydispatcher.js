@@ -19,6 +19,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Vodka from './vodka.js'
 
 import { manipulator } from './manipulator.js'
+import { undo } from './undo.js'
 import { ContextType } from './contexttype.js';
 import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
 import { evaluateNexSafely } from './evaluator.js'
@@ -48,7 +49,7 @@ class KeyDispatcher {
 		// 	// any editor stuff short circuits this, so you can undo what you type
 		// 	// in an editor (which makes sense because different input devices will
 		// 	// have different editors, which may or may not make sense with undo.
-		// 	Vodka.undo.saveForUndo(Vodka.root.getNex());			
+		// 	undo.saveForUndo(Vodka.root.getNex());			
 		// }
 
 		// there are a few special cases
@@ -57,8 +58,8 @@ class KeyDispatcher {
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-z') {
 			// do not save state for undo obv
-			if (Vodka.undo.canUndo()) {
-				Vodka.undo.performUndo();
+			if (undo.canUndo()) {
+				undo.performUndo();
 			}
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-x') {
@@ -125,11 +126,11 @@ class KeyDispatcher {
 	}
 
 	saveForUndo() {
-		Vodka.undo.saveStateForUndo(Vodka.root.getNex());
+		undo.saveStateForUndo(Vodka.root.getNex());
 	}
 
 	eraseLastUndo() {
-		Vodka.undo.eraseLastSavedState();
+		undo.eraseLastSavedState();
 	}
 
 	doEditorEvent(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey) {
