@@ -79,6 +79,12 @@ function importNex(name, callback) {
 
 	sendToServer(payload, function(data) {
 		let nex = new NexParser(data).parse();
+		if (!nex.getCommandName || nex.getCommandName() != 'package') {
+			let r = new EError('Cannot import a non-package, see file contents')
+			r.appendChild(nex);
+			callback(r);
+			return;
+		}
 		let result = evaluateNexSafely(nex, BINDINGS);
 		let r = null;
 		if (result.getTypeName() != '-error-') {
@@ -88,8 +94,9 @@ function importNex(name, callback) {
 			r = new EError("Import failed.");
 			r.setErrorType(ERROR_TYPE_WARN);
 			r.appendChild(result);
+			r.appendChild(nex);
 		}
-		callback(nex);
+		callback(r);
 	});
 }
 

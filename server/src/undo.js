@@ -16,6 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { systemState } from './systemstate.js'
+import { getGlobalAppFlagIsSet } from './globalappflags.js'
 
 const UNDO_LIMIT = 10;
 
@@ -30,6 +31,9 @@ class Undo {
 	}
 
 	saveStateForUndo(nex) {
+		if (getGlobalAppFlagIsSet('skipundo')) {
+			return;
+		}
 		this.undobuffer.unshift(nex.makeCopy());
 		let selectedNode = systemState.getGlobalSelectedNode();
 		let selectedNodeId = selectedNode.getNex().getID();		

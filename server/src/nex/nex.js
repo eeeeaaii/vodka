@@ -17,7 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 let NEXT_NEX_ID = 0;
 
-import { getGlobalAppFlag } from '../globalappflags.js'
+import { getGlobalAppFlagIsSet } from '../globalappflags.js'
 import { systemState } from '../systemstate.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { RENDER_FLAG_SELECTED, RENDER_FLAG_SHALLOW, RENDER_FLAG_NORMAL, RENDER_FLAG_RERENDER, RENDER_FLAG_EXPLODED, RENDER_FLAG_DEPTH_EXCEEDED } from '../globalconstants.js'
@@ -121,11 +121,11 @@ class Nex {
 	}
 
 	doRenderSequencing(renderNode) {
-		if (getGlobalAppFlag('otags') || this.lastRenderPassNumber == systemState.getGlobalRenderPassNumber()) {
+		if (getGlobalAppFlagIsSet('otags') || this.lastRenderPassNumber == systemState.getGlobalRenderPassNumber()) {
 			// this node has been rendered before in this pass!
 			// if this is the first dupe, we go back to the first one
 			// and prepend the object tag.
-			if (getGlobalAppFlag('otags') || this.rendernodes.length == 1) {
+			if (getGlobalAppFlagIsSet('otags') || this.rendernodes.length == 1) {
 				this.prependObjectTag(this.rendernodes[0]);
 			}
 			this.rendernodes.push(renderNode);

@@ -115,6 +115,18 @@ class Environment {
 		this.listOfPackagesUsed.push(name);
 	}
 
+	packageBeingUsed(name) {
+		if (!this.listOfPackagesUsed) {
+			return false;
+		}
+		for (let i = 0; i < this.listOfPackagesUsed.length ; i++) {
+			if (name == this.listOfPackagesUsed[i]) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	setPackageForBinding(name) {
 		if (this.packages == null) {
 			this.packages = [];
@@ -134,7 +146,7 @@ class Environment {
 		if (this.currentPackageForBinding) {
 			name = this.currentPackageForBinding + ':' + name;
 		}
-		if (val.getTypeName() == '-closure-') {
+		if (val.getTypeName() == '-closure-' && !this.packageBeingUsed(this.currentPackageForBinding)) {
 			val.getLexicalEnvironment().usePackage(this.currentPackageForBinding);
 		}
 		this.bind(name, val, this.currentPackageForBinding);

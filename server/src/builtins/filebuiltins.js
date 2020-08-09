@@ -47,6 +47,11 @@ function createFileBuiltins() {
 			let importMessage = new EError(`importing the package ${nm}`);
 			importMessage.setErrorType(ERROR_TYPE_INFO);
 			exp.appendChild(importMessage)
+			// we activate because import is frequently used in the package
+			// construct in an imperative style, and if I didn't do this
+			// I'd have to put special logic in package() to do it and this
+			// is easier.
+			exp.activate();
 			return exp;
 		}
 	);
@@ -61,27 +66,6 @@ function createFileBuiltins() {
 			exp.set(function(callback) {
 				return function() {
 					loadNex(nm, function(loadResult) {
-						callback(loadResult);
-					})
-				}
-			})
-			let loadingMessage = new EError(`loading the file ${nm}`);
-			loadingMessage.setErrorType(ERROR_TYPE_INFO);
-			exp.appendChild(loadingMessage)
-			return exp;
-		}
-	);
-
-	Builtin.createBuiltin(
-		'load-v2',
-		[ '_name@' ],
-		function(env, executionEnvironment) {
-			let namesym = env.lb('name');
-			let nm = namesym.getTypedValue();
-			let exp = new Expectation();
-			exp.set(function(callback) {
-				return function() {
-					loadNexV2(nm, function(loadResult) {
 						callback(loadResult);
 					})
 				}
@@ -164,29 +148,6 @@ function createFileBuiltins() {
 			exp.set(function(callback) {
 				return function() {
 					saveNex(nm, val, function(saveResult) {
-						callback(saveResult);
-					})
-				}
-			});
-			let savingMessage = new EError(`saving (in the file ${nm}) this data: ${val.debugString()}`);
-			savingMessage.setErrorType(ERROR_TYPE_INFO);
-			exp.appendChild(savingMessage)
-			return exp;
-		}
-	);
-
-
-	Builtin.createBuiltin(
-		'save-v2',
-		[ '_name@', '_nex' ],
-		function(env, executionEnvironment) {
-			let namesym = env.lb('name');
-			let nm = namesym.getTypedValue();
-			let val = env.lb('nex');			
-			let exp = new Expectation();
-			exp.set(function(callback) {
-				return function() {
-					saveNexV2(nm, val, function(saveResult) {
 						callback(saveResult);
 					})
 				}

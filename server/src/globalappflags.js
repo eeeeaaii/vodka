@@ -9,8 +9,12 @@ function setAppFlags() {
 	})
 }
 
-function getGlobalAppFlag(flagname) {
+function getGlobalAppFlagIsSet(flagname) {
+	return !!appFlags[flagname];
+}
+
+function getGlobalAppFlagValue(flagname) {
 	return appFlags[flagname];
 }
 
-export { setAppFlags, getGlobalAppFlag }
+export { setAppFlags, getGlobalAppFlagIsSet, getGlobalAppFlagValue }
