@@ -36,7 +36,10 @@ class Builtin extends Lambda {
 		this.closure = BUILTINS;
 	}
 
-	toString() {
+	toString(version) {
+		if (version == 'v2') {
+			throw new Error('saving builtins directly is unsupported and hopefully impossible');
+		}
 		return `[BUILTIN:${this.name}]`;
 	}
 

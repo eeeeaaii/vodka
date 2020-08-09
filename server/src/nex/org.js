@@ -22,7 +22,10 @@ import { wrapError } from '../evaluator.js'
 
 class Org extends NexContainer {
 	constructor() {
-		super()
+		super();
+		// private data is currently unused but I want the logic for
+		// handling it here so I can implement parsing and tests for it
+		this.privateData = '';
 	}
 
 	toString(version) {
@@ -33,8 +36,27 @@ class Org extends NexContainer {
 	}
 
 	toStringV2() {
-		return '(' + super.childrenToString('v2') + ')';
+		return `${this.toStringV2PrivateDataSection()}(${this.toStringV2TagList()}${super.childrenToString('v2')})`;
+
 	}
+
+	deserializePrivateData(data) {
+		// TODO: this is probably not sustainable - the only way this knows that
+		// the data is not "for it" is that it's not 'v' indicating vertical
+		if (data && data.length > 0 && data[0] != 'v') {
+			this.privateData = data[0];
+			data.splice(0, 1);
+		}
+		super.deserializePrivateData(data);
+	}
+
+	serializePrivateData(data) {
+		if (this.privateData != '') {
+			data.push(this.privateData);
+		}
+		super.serializePrivateData(data);
+	}
+
 
 	getTypeName() {
 		return '-org-';

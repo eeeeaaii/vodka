@@ -110,12 +110,25 @@ class EError extends NexContainer {
 //		}
 	}	
 
-	toString() {
+	debugString() {
+		return '?"' + this.getFullTypedValue() + '"';
+	}
+
+	toString(version) {
+		if (version == 'v2') {
+			return this.toStringV2();
+		}
 		return '?"' + this.escapeContents() + '"';
 	}
 
-	debugString() {
-		return '?"' + this.getFullTypedValue() + '"';
+	toStringV2() {
+		// if this error contains \r, \t, or |, we do it the other way.
+		return '?' + this.toStringV2TagList() + this.toStringV2PrivateDataSection();
+	}
+
+	serializePrivateData(data) {
+		data.push(this.getFullTypedValue());
+		super.serializePrivateData(data);
 	}
 
 	drawButton() {

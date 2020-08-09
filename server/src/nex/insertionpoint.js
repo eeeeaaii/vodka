@@ -38,8 +38,15 @@ class InsertionPoint extends ValueNex {
 		return r;
 	}
 
-	toString() {
+	toString(version) {
+		if (version == 'v2') {
+			return this.toStringV2();
+		}
 		return '';
+	}
+
+	toStringV2() {
+		throw new Error('cannot save with insertion point!')
 	}
 
 	isEmpty() {

@@ -74,8 +74,24 @@ class Lambda extends NexContainer {
 	}
 
 	toStringV2() {
-		return `&(${super.childrenToString()})`;
+		return `&${this.toStringV2PrivateDataSection()}(${this.toStringV2TagList()}${super.childrenToString('v2')})`;
 	}
+
+	deserializePrivateData(data) {
+		// TODO: this is probably not sustainable - the only way this knows that
+		// the data is not "for it" is that it's not 'v' indicating vertical
+		if (data && data.length > 0 && data[0] != 'v') {
+			this.amptext = data[0];
+			data.splice(0, 1);
+		}
+		super.deserializePrivateData(data);
+	}
+
+	serializePrivateData(data) {
+		data.push(this.amptext);
+		super.serializePrivateData(data);
+	}
+
 
 	debugString() {
 		return `(&${this.amptext} ${super.childrenDebugString()})`;

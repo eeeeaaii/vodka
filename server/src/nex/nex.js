@@ -43,20 +43,57 @@ class Nex {
 
 	toString() {}
 
+	toStringV2PrivateDataSection() {
+		let data = [];
+		this.serializePrivateData(data);
+		if (data.length == 0) {
+			return '';
+		}
+		let v = data.join('|');
+		if (v == '') {
+			return '';
+		}
+
+		// if this string contains \r, \t, ", {, }, or |, we put the contents in braces,
+		// escaping it... otherwise we just use quotes
+		if (v.indexOf('\n') >= 0
+				|| v.indexOf('\t') >= 0
+				|| v.indexOf('\r') >= 0
+				|| v.indexOf('"') >= 0
+				|| v.indexOf('{') >= 0
+				|| v.indexOf('}') >= 0) {
+			v = v.replace('|', '||');
+			v = v.replace('}', '|}');
+			v = v.replace('{', '|{');
+			return '{' + v + '}';
+		} else {
+			return '"' + v + '"';
+		}
+	}
+
+	toStringV2TagList() {
+		if (this.numTags() == 0) {
+			return '';
+		}
+		let s = '<';
+		for (let i = 0; i < this.numTags(); i++) {
+			let tag = this.getTag(i);
+			if (s != '<') {
+				s += ' ';
+			}
+			s += '`' + tag.toString() + '`';
+		}
+		return s + '>';
+	}
+
+	deserializePrivateData(data) {
+	}
+
+	serializePrivateData(data) {
+	}
+
 	debugString() {
 		return this.toString();
-	}
-
-	writeV2PrivateData() {
-		let s = this.serializeV2PrivateData();
-		if (s) {
-			return '|SP|' + s + '|EP|'
-		}
-		return '';
-	}
-
-	serializeV2PrivateData() {
-		return '';
 	}
 
 	getTypeName() {

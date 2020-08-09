@@ -36,9 +36,17 @@ class Line extends NexContainer {
 		return r;
 	}
 
-	toString() {
+	toString(version) {
+		if (version == 'v2') {
+			return this.toStringV2();
+		}
 		return '[' + super.childrenToString() + ']';
 	}
+
+	toStringV2() {
+		return `[line](${this.toStringV2TagList()}${super.childrenToString('v2')})`;
+	}
+
 
 	getValueAsString() {
 		let s = '';

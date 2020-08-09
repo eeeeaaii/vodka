@@ -143,6 +143,21 @@ class NexContainer extends Nex {
 		return r;		
 	}
 
+	deserializePrivateData(data) {
+		if (data && data.length > 0 && data[0] == 'v') {
+			this.vdir = true;
+			data.splice(0, 1);
+		}
+		super.deserializePrivateData(data);
+	}
+
+	serializePrivateData(data) {
+		if (this.vdir) {
+			data.push('v');
+		}
+		super.serializePrivateData(data);
+	}
+
 	childrenToString(version) {
 		if (version == 'v2') {
 			return this.childrenToStringV2();

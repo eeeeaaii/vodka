@@ -37,6 +37,17 @@ class Float extends ValueNex {
 		return r;
 	}
 
+	toString(version) {
+		if (version == 'v2') {
+			return this.toStringV2();
+		}
+		return super.toString(version);
+	}
+
+	toStringV2() {
+		return '%' + this.toStringV2TagList() + this.value;
+	}
+
 	_isValid(value) {
 		return !isNaN(Number(value));
 	}

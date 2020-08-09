@@ -35,8 +35,15 @@ class Zlist extends NexContainer {
 		return r;
 	}
 
-	toString() {
+	toString(version) {
+		if (version == 'v2') {
+			return this.toStringV2();
+		}
 		return '<' + super.childrenToString() + '>';
+	}
+
+	toStringV2() {
+		return `[zlist](${this.toStringV2TagList()}${super.childrenToString('v2')})`;
 	}
 
 	getKeyFunnel() {

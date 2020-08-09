@@ -24,6 +24,18 @@ class Newline extends Separator {
 		super("&nbsp;");
 	}
 
+	toString(version) {
+		if (version == 'v2') {
+			return this.toStringV2();
+		}
+		return super.toString();
+	}
+
+	toStringV2() {
+		return `[newline]()`
+	}
+
+
 	getTypeName() {
 		return '-newline-';
 	}

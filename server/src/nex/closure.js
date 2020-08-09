@@ -31,6 +31,13 @@ class Closure extends ValueNex {
 		this.boundName = null;
 	}
 
+	toString(version) {
+		if (version == 'v2') {
+			throw new Error('saving closures is not supported.')
+		}
+		return super.toString(version);
+	}
+
 	makeCopy() {
 		let r = new Closure();
 		this.copyFieldsTo(r);
@@ -82,7 +89,6 @@ class Closure extends ValueNex {
 		return `<br>NAME: ${this.cmdname}<br>LAMBDA: ${this.lambda.toString()}<br>LEXENV: ${this.lexicalEnvironment.toString()}`;
 
 	}
-
 
 	shouldActivateReturnedExpectations() {
 		let rvp = this.lambda.getReturnValueParam();

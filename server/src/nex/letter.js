@@ -37,8 +37,20 @@ class Letter extends Nex {
 		return r;
 	}
 
-	toString() {
+	toString(version) {
+		if (version == 'v2') {
+			return this.toStringV2();
+		}
 		return '|(' + this.value + ')|';
+	}
+
+	toStringV2() {
+		return `[letter]${this.toStringV2PrivateDataSection()}(${this.toStringV2TagList()})`
+	}
+
+	serializePrivateData(data) {
+		data.push(this.value);
+		super.serializePrivateData(data);
 	}
 
 	isLeaf() {

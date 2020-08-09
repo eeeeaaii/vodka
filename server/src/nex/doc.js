@@ -24,8 +24,15 @@ class Doc extends NexContainer {
 		super();
 	}
 
-	toString() {
+	toString(version) {
+		if (version == 'v2') {
+			return this.toStringV2();
+		}
 		return '{' + super.childrenToString() + '}';
+	}
+
+	toStringV2() {
+		return `[doc](${this.toStringV2TagList()}${super.childrenToString('v2')})`;
 	}
 
 	getTypeName() {

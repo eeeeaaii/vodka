@@ -25,10 +25,18 @@ class Separator extends Letter {
 	getTypeName() {
 		return '-separator-';
 	}
+
 	// makeCopy is same as superclass
 
-	toString() {
+	toString(version) {
+		if (version == 'v2') {
+			return this.toStringV2();
+		}
 		return '|[' + this.value + ']|';
+	}
+
+	toStringV2() {
+		return `[separator]${this.toStringV2PrivateDataSection(this.value)}(${this.toStringV2TagList()})`
 	}
 
 	getKeyFunnel() {

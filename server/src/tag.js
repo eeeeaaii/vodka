@@ -17,7 +17,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 class Tag  {
 	constructor(name) {
-		this.name = name;
+		// can't have backticks in tags
+		this.name = name.replace('`', '');
 	}
 
 	getName() {
@@ -26,6 +27,10 @@ class Tag  {
 
 	equals(tag) {
 		return this.name == tag.name;
+	}
+
+	toString() {
+		return this.name;
 	}
 
 	draw(parentNode, isExploded) {

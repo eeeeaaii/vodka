@@ -44,9 +44,17 @@ class Bool extends ValueNex {
 		return r;
 	}
 
-	toString() {
+	toString(version) {
+		if (version == 'v2') {
+			return this.toStringV2();
+		}
 		return '!' + this.renderValue();
 	}
+
+	toStringV2() {
+		return '!' + this.toStringV2TagList() + this.renderValue();
+	}
+
 
 	getTypedValue() {
 		return this.value === 'yes';

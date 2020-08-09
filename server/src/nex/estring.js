@@ -74,14 +74,12 @@ class EString extends ValueNex {
 	}
 
 	toStringV2() {
-		// if this string contains \r, \t, or |, we do it the other way.
-		let v = this.getFullTypedValue();
-		if (v.indexOf('\n') >= 0 || v.indexOf('\t') >= 0 || v.indexOf('"') >= 0|| v.indexOf('|') >= 0) {
-			v = v.replace('|', '||');
-			return '$|SP|' + v + '|EP|';
-		} else {
-			return '$"' + v + '"';
-		}
+		return '$' + this.toStringV2TagList() + this.toStringV2PrivateDataSection();
+	}
+
+	serializePrivateData(data) {
+		data.push(this.getFullTypedValue());
+		super.serializePrivateData(data);
 	}
 
 	debugString() {
