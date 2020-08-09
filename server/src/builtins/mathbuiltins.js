@@ -178,7 +178,9 @@ function createMathBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'log',
+		// log base e, helps to differentiate
+		// from methods that log things
+		'log-e',
 		[ 'a%' ],
 		function(env, executionEnvironment) {
 			let a = env.lb('a').getTypedValue();
@@ -187,7 +189,7 @@ function createMathBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'log10',
+		'log-10',
 		[ 'a%' ],
 		function(env, executionEnvironment) {
 			let a = env.lb('a').getTypedValue();
@@ -196,7 +198,7 @@ function createMathBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'log2',
+		'log-2',
 		[ 'a%' ],
 		function(env, executionEnvironment) {
 			let a = env.lb('a').getTypedValue();
