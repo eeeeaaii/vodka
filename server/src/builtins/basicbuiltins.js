@@ -88,12 +88,39 @@ function createBasicBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'first',
+		[ 'list()' ],
+		function(env, executionEnvironment) {
+			let lst = env.lb('list');
+			if (lst.numChildren() == 0) {
+				return new EError('first: cannot get first element of empty list. Sorry!');
+			}
+			return lst.getFirstChild();
+		}
+	);
+
+
+	Builtin.createBuiltin(
 		'cdr',
 		[ 'list()' ],
 		function(env, executionEnvironment) {
 			let c = env.lb('list');
 			if (c.numChildren() == 0) {
 				return new EError("cdr: given an empty list, cannot make a new list with first element removed. Sorry!");
+			}
+			let newOne = c.makeCopy(true);
+			c.getChildrenForCdr(newOne);
+			return newOne;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'rest',
+		[ 'list()' ],
+		function(env, executionEnvironment) {
+			let c = env.lb('list');
+			if (c.numChildren() == 0) {
+				return new EError("rest: given an empty list, cannot make a new list with first element removed. Sorry!");
 			}
 			let newOne = c.makeCopy(true);
 			c.getChildrenForCdr(newOne);

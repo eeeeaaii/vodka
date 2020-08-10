@@ -1,0 +1,1 @@
+~"bind"h( @add-all &" list"v( ~"if"v( ~"is-empty"h( @list~) ~"+"h( ~"first"h( @list~) ~"rest"h( @list~)~) %0~)&)~)

@@ -52,6 +52,29 @@ function createLogicBuiltins() {
 		}
 	)
 
+	// todo: deprecate regular if
+	Builtin.createBuiltin(
+		'if-then-else',
+		[ 'cond!', '_iftrue', '_iffalse' ],
+		function(env, executionEnvironment) {
+			let b = env.lb('cond').getTypedValue();
+			if (b) {
+				let iftrue = evaluateNexSafely(env.lb('iftrue'), executionEnvironment);
+				if (Utils.isFatalError(iftrue)) {
+					iftrue = wrapError('&szlig;', 'if: error in argument 2', iftrue);
+				}
+				return iftrue;
+			} else {
+				let iffalse = evaluateNexSafely(env.lb('iffalse'), executionEnvironment);
+				if (Utils.isFatalError(iffalse)) {
+					iffalse = wrapError('&szlig;', 'if: error in argument 3', iffalse);
+				}
+				return iffalse;
+			}
+		}
+	)
+
+
 	Builtin.createBuiltin(
 		'not',
 		[ 'val!' ],
