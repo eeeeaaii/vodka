@@ -1,25 +1,19 @@
 
 ASYNC/EXPECTATION TO DO:
-- make "Activate" function and make it so that the comma in function params just checks to make sure that the function is activated
-- figure out what happens if ffClosure throws an error
+- make more specific param code for expectations so you can specify that a given expectation param must be activated, must have an ffwith, must be set, etc.
 - reference counting doesn't work in the sense that if you delete an expectation containing other ones, it keeps firing...? because of the stale reference in the pendingExpectations, probably...
 
 
 TYPE-RELATED TO DO
-- actually check types for return values of lambdas, but disallow/ignore,
-- get rid of the "comma" type and just have a single expectation type since we now just explicitly activate with the activate command
 - figure out how to resolve orgs with multiple matching tags (first match?) and do we iterate first thru the tags in the expr being evaluated or first thru the tags on the org?
 - figure out if it's an error if returned org doesn't have tag
-- make builtin type checker operate off strings (i.e. make a type string parser)
-- use the builtin argument type checker for lambdas also
 - contract adherence check at tag assignment time with the tag builtin
 - builtin that checks contract adherence
 - implement tag checking in function params (single bracket [])
 - implement tag checking WITH contract adherence (double bracket) 
-- return value type checking
 - functions that return nothing (i.e. \?) - remove themselves from parent
 - functions that return multiple values - put all in parent
-- "do not eval" functions that always act like they are quoted the first time
+- "do not eval" functions that always act like they are quoted the first time [8/15/20 what did I mean by this?]
 - make it so braces inside tags are ignored [stuff in here]
 - contracts that need to be implemented
 - - equality
@@ -31,79 +25,57 @@ TYPE-RELATED TO DO
 - - custom (runs code to see if nex satisifies)
 (see CHANGEBLOG.txt for more info)
 
-TESTS TO-DO
+GENERAL TESTS TO-DO (see spreadsheet for to-do info on individual tests)
 - all tests may need to be re-recorded
-- set up a unit testing framework that's not screenshot based
-- make it so that async code can be screenshot tested (i.e. so the browser doesn't exit too early)
 - re-do tests for builtins using unit testing framework
-- make tests for copy and paste actions (cmd-c, cmd-v)
-- need test for partial-exploded mode ,it doesn't work because esc is integral to my test recording framework
 - I should have a test for each type of error location to make sure error propagation doesn't get broken. so basically any place that evaluateNexSafely is called
-- builtins that need tests
-- - run-js
-- - equal
-- - cram/chop
-- - all async primitives
-- - to-word/to-float
-- - eval
-- - others?
-- - error propagation (for example, error in args to a method)
 
 SERVER/FILES TO DO
-- I need to be able to save and load tags!!!
 - saving a file with an error in it only saves the top-level error not the enclosed errors.
 - implement authentication/usernames/something and make it so each user saves/loads files from their private location
 - make it so library files like util-functions, etc., are loaded from a global place that can't be modified, but that if you've done git pull and are modifying the source, there's a way you can pass a flag or something so that those files CAN be modified
 - change the import builtin so it's like "import util" instead of "import util-functions"
 - come up with a file extension for files and automatically add it on the server side
 - make a pretty-printer util for nex files so they can be processed to be easier to look at in a text editor
-- make parser tolerant of whitespace (so it can parse pretty-printed files)
-- now that closures are a nex object we need to make it so it throws an error if you try to save one (because you can't save its memory/environment so it doesn't make sense to save it)
+- think of a way to reasonably save closures, including saving their memory/lexical env
 - server doesn't crash anymore when you load a file that isn't there but still need to improve error reporting.
-- make it so that there is a globally recognized delimiter for each nexes "private data" and so when a nex is serialized its private data can be formatted however it wants, provided it doesn't use the delimiter
 
 RENDERING TO-DO
-- make closures render in a more intelligible way (similar to how lambdas used to render) so you can see the args, name, etc.
 - handle insertion points at the render node level
 - get rid of that carriage return object and use insertion point for that
 - implement the thing where instead of having various types of renders, you just mark whatever is dirty as dirty, then call a function that renders whatever's dirty
-- do "in place" rendering rather than deleting innerHTML and re-rendering (needs nexes to have three rendering functions - pre-render for dom nodes that precede children, actual render which draws children, and post-render for dom nodes that come after children)
+- (maybe already does this) do "in place" rendering rather than deleting innerHTML and re-rendering (needs nexes to have three rendering functions - pre-render for dom nodes that precede children, actual render which draws children, and post-render for dom nodes that come after children)
 - make certain visual things like width/height cachable in the nex itself so that builtins like get-width can just retrieve it rather than having to re-render the nex to find out its width
 - make tags precede content for lists, come after content for atoms
-- make a better look/visual presentation for closures
 
 EVALUATION ENGINE TO-DO:
-- make it so that closures can, depending on flags/options, copy the contents of a lambda when created, so that you can change the contents of any lambda expressions without changing the code that any outstanding closures will run (need to see if this is a performance hit)
-- make certain nexes like integers etc automatically copy themselves when evaluated so that when
-  an integer is returned by a function you can't modify it and modify the function that returned
-  it
+- (maybe already does this) make it so that closures can, depending on flags/options, copy the contents of a lambda when created, so that you can change the contents of any lambda expressions without changing the code that any outstanding closures will run (need to see if this is a performance hit)
 
 CODE CLEANUP TO-DO
 - make a better naming convention for js global variables
 - fix render node hacks in estring class coming from the normal/expanded drawing logic
 - remove dead code from eerror class because it can't be drawn in expanded mode anymore
-- BuiltinParamManager and BuiltinArgEvaluator do the same thing, merge somehow
+- BuiltinArgEvaluator can just be called ArgEvaluator
 - when I made the render node class I just copied all the methods from NexContainer, but because js isn't type safe, these should be renamed to something different so I can at least grep for them
 - port to typescript?
 
 BUILTIN TO-DO
+- make a builtin to convert a closure to a lambda (it would really retrieve the lambda)
 - figure out what to do in run-js if no DOM object (throw exception? create one?)
 - figure out whether I should use exclamation point for primitives that change the value of things (like set!) as in regular lisp
 - short circuit evaluation for conditionals
 - implement cond
 - implement to-word for lines and docs
 - implement "equal" for list types (needs to be deep equal)
-- make "type creation" primitives (make-integer, make-float, etc)
 
 USER INPUT TO DO
 - use regexes in the event table
 - make "editor" classes for symbol, string, etc., similar to tags
 - figure out key combination for "reopening editor"
-- make one level of undo at least
+- fix problems with undo
 - editor for command is especially impt because it's diff from lambda now
 - figure out what actually happens with lambdas that have incorrectly specified args (make it so the editor will not allow you to input incorrect args?)
-- make it so that the "package" command SAVES the package file and runs it. However when you use "import" it looks to see if the top level element in the loaded file is a package. If it's not,
-it's an error, otherwise it runs the package but suppresses the part where it saves it
+- make it so that the "package" command SAVES the package file and runs it. However when you use "import" it looks to see if the top level element in the loaded file is a package. If it's not, it's an error, otherwise it runs the package but suppresses the part where it saves it
 (maybe by just appending an optional param or something before evaluating it)
 
 PERFORMANCE TO DO
@@ -112,8 +84,8 @@ PERFORMANCE TO DO
 - rendering is slow (see rendering section)
 
 CUSTOM NEXES
-- make a new list type actually called list that's equivalent to a word but can be re-oriented vert or horiz
-- make doc/line/word into custom nexes
+- make it so orgs can be oriented vert or horiz
+- make doc/line/word into custom nexes ("subclasses" of org)
 - - for doc type, make it so that you can type things like an exclaimation point without it inserting a boolean
 - make custom nexes to implement sound/audio
 

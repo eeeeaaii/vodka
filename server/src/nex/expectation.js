@@ -240,6 +240,9 @@ class Expectation extends NexContainer {
 			let result = evaluateNexSafely(cmd, this.ffExecutionEnvironment);
 			this.replaceChildAt(result, i);
 		}
+		if (this.numChildren() == 0) {
+			console.log("warning: tried to evaluate ff-with on children, but there were no children.");
+		}
 		// ffClosure could have returned expectations, so we wait again.
 		this.doOrWaitToDo(function() {
 			this.testForReactivationAfterFFClosure();

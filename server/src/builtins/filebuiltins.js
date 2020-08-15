@@ -24,7 +24,7 @@ import { Nil } from '../nex/nil.js'
 import { ESymbol } from '../nex/esymbol.js'
 import { ERROR_TYPE_INFO } from '../nex/eerror.js'
 import { wrapError } from '../evaluator.js'
-import { saveNex, saveNexV2, loadNex, loadNexV2, importNex } from '../servercommunication.js'
+import { saveNex, loadNex, importNex } from '../servercommunication.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { BINDINGS } from '../environment.js'
 

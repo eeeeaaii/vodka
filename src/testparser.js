@@ -2,17 +2,22 @@
 
 import { parse } from './parser_for_testing.js';
 
-function testParse(program, expected) {
-	let result = parse('v2:' + program);
+function testParse(input, expectedoutput) {
+	if (!expectedoutput) expectedoutput = input;
+	let result = parse('v2:' + input);
 	let output = result.toString('v2');
-	if (!expected) expected = program;
-	if (output == expected) {
-		console.log('OK: ' + output);
+	let secondresult = parse('v2:' + output);
+	let secondoutput = secondresult.toString('v2');
+	if (output != expectedoutput) {
+		console.log('***** ERROR: first serialization did not match expected serialization.');
+		console.log('    first serialization: ' + output);
+		console.log('    expected serialization: ' + expectedoutput);
+	} else if (secondoutput != output) {
+		console.log('***** ERROR: first serialization did not match second serialization.');
+		console.log('    first serialization: ' + output);
+		console.log('    second serialization: ' + secondoutput);
 	} else {
-		console.log('ERROR: serialized output did not match expected value.');
-		console.log('    parse input: ' + program);
-		console.log('    expected output: ' + expected);
-		console.log('    actual output: ' + output);
+		console.log('OK: ' + output);		
 	}
 }
 
@@ -43,10 +48,17 @@ testParse('?{hel\tleo}');
 testParse('%23');
 testParse('%23.43');
 testParse('%0.23');
+testParse('%.23', '%0.23');
 testParse('%-0.23');
 testParse('^');
 testParse('()');
 testParse('(#234 %54 #3434)');
+testParse(`
+	(
+		#234
+		%54
+		#3434
+	)`, '(#234 %54 #3434)');
 testParse('(#234 %54 ($"apple" ^ @hello) #3434)');
 testParse('*()');
 testParse('&()');

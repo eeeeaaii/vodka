@@ -73,6 +73,7 @@ class TagEditor {
 
 	}
 
+	// returns whether to continue processing whatever the key is
 	routeKey(text) {
 		if (text == 'Enter') {
 			this.finish();
@@ -80,6 +81,9 @@ class TagEditor {
 		} else if (text == 'Tab') {
 			this.finish();
 			return true;
+		} else if (text == '`') { // no backticks allowed in tags
+			this.finish();
+			return false;
 		} else if (text == 'Backspace') {
 			this.tagText = this.tagText.substr(0, this.tagText.length - 1);
 			this.editorDomNode.innerHTML = this.tagText;			

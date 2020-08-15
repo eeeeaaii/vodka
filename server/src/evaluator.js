@@ -79,14 +79,13 @@ function wrapError(prefix, message, inner) {
 
 function evaluateAndReplace(s) {
 	let n = evaluateNexSafely(s.getNex(), BINDINGS);
+	if (Utils.isFatalError(n)) {
+		beep();
+	} else if (n.getTypeName() == '-expectation-' && !n.isActivated()) {
 	// ONLY AT TOP LEVEL we activate expectations.
-	if (n.getTypeName() == '-expectation-' && !n.isActivated()) {
 		n.activate();
 	}
 
-	if (Utils.isFatalError(n)) {
-		beep();
-	}
 	if (n) {
 		manipulator.replaceSelectedWith(new RenderNode(n));
 	}
@@ -94,11 +93,14 @@ function evaluateAndReplace(s) {
 
 function evaluateAndKeep(s) {
 	let n = evaluateNexSafely(s.getNex(), BINDINGS);
-	eventQueueDispatcher.enqueueAlertAnimation(s);
 	if (Utils.isFatalError(n)) {
 		beep();
 		manipulator.insertBeforeSelectedAndSelect(n);
+	} else if (n.getTypeName() == '-expectation-' && !n.isActivated()) {
+		// ONLY AT TOP LEVEL we activate expectations.
+		n.activate();
 	}
+	eventQueueDispatcher.enqueueAlertAnimation(s);
 }
 
 function evaluateAndCopy(s) {

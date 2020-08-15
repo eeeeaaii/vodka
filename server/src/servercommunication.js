@@ -18,7 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { BINDINGS } from './environment.js'
 import { EError, ERROR_TYPE_WARN, ERROR_TYPE_INFO } from './nex/eerror.js'
 import { evaluateNexSafely } from './evaluator.js'
-import { NexParser } from './nexparser.js'
+import { parse } from './nexparser2.js';
 
 function sendToServer(payload, cb) {
 	let xhr = new XMLHttpRequest();
@@ -33,7 +33,7 @@ function sendToServer(payload, cb) {
 }
 
 function saveNex(name, nex, callback) {
-	let payload = `save\t${name}\t${nex.toString()}`;
+	let payload = `save\t${name}\t${'v2:' + nex.toString('v2')}`;
 
 	sendToServer(payload, function(data) {
 		let e = new EError("success");
@@ -41,35 +41,13 @@ function saveNex(name, nex, callback) {
 		callback(e);
 	});
 }
-
-
-function saveNexV2(name, nex, callback) {
-	let payload = `save\t${name}\t${nex.toString('v2')}`;
-
-	sendToServer(payload, function(data) {
-		let e = new EError("success");
-		e.setErrorType(ERROR_TYPE_INFO);
-		callback(e);
-	});
-}
-
 
 function loadNex(name, callback) {
 	let payload = `load\t${name}`;
 
 	sendToServer(payload, function(data) {
 		document.title = name;
-		let nex = new NexParser(data).parse();
-		callback(nex);
-	});
-}
-
-function loadNexV2(name, callback) {
-	let payload = `load\t${name}`;
-
-	sendToServer(payload, function(data) {
-		document.title = name;
-		NexParserV2.parse(data);
+		let nex = parse(data);
 		callback(nex);
 	});
 }
@@ -78,7 +56,7 @@ function importNex(name, callback) {
 	let payload = `load\t${name}`;
 
 	sendToServer(payload, function(data) {
-		let nex = new NexParser(data).parse();
+		let nex = parse(data);
 		if (!nex.getCommandName || nex.getCommandName() != 'package') {
 			let r = new EError('Cannot import a non-package, see file contents')
 			r.appendChild(nex);
@@ -100,4 +78,4 @@ function importNex(name, callback) {
 	});
 }
 
-export { saveNex, importNex, loadNex, loadNexV2, saveNexV2 }
+export { saveNex, importNex, loadNex  }

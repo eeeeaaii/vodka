@@ -25,15 +25,12 @@ import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js
 class Lambda extends NexContainer {
 	constructor(val) {
 		super();
-		this.amptext = val ? val : '';
 		this.cachedParamNames = [];
 		this.paramsArray = [];
 		this.returnValueParam = null;
 		this.cmdname = null;
 		this.isEditing = false;
-		if (this.amptext) {
-			this.cacheParamNames();
-		}
+		this.setAmpText(val ? val : '');
 	}
 
 	getTypeName() {
@@ -49,7 +46,7 @@ class Lambda extends NexContainer {
 
 	copyFieldsTo(r) {
 		super.copyFieldsTo(r);
-		r.amptext = this.amptext;
+		r.setAmpText(this.amptext);
 		// The params array is supposed to be immutable.
 		// Can't really enforce that because it's javscript but
 		// we will treat it as such for efficiency. Therefore
@@ -60,6 +57,14 @@ class Lambda extends NexContainer {
 		r.cmdname = this.cmdname;
 		r.needsEval = this.needsEval;
 		r.cachedParamNames = this.cachedParamNames;
+	}
+
+	setAmpText(newval) {
+		if (newval == this.amptext) return;
+		this.amptext = newval;
+		if (this.amptext) {
+			this.cacheParamNames();
+		}
 	}
 
 	renderChildrenIfNormal() {
@@ -80,8 +85,11 @@ class Lambda extends NexContainer {
 	deserializePrivateData(data) {
 		// TODO: this is probably not sustainable - the only way this knows that
 		// the data is not "for it" is that it's not 'v' indicating vertical
+		//
+		// if you have a function that has just one parameter called v,
+		// you're fucked
 		if (data && data.length > 0 && data[0] != 'v') {
-			this.amptext = data[0];
+			this.setAmpText(data[0]);
 			data.splice(0, 1);
 		}
 		super.deserializePrivateData(data);
@@ -192,13 +200,11 @@ class Lambda extends NexContainer {
 	}
 
 	deleteLastAmpLetter() {
-		this.amptext = this.amptext.substr(0, this.amptext.length - 1);
-		this.cacheParamNames();
+		this.setAmpText(this.amptext.substr(0, this.amptext.length - 1));
 	}
 
 	appendAmpText(txt) {
-		this.amptext = this.amptext + txt;
-		this.cacheParamNames();
+		this.setAmpText(this.amptext + txt);
 	}
 
 	doNotProcess(key) {

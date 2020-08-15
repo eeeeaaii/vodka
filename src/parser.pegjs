@@ -107,6 +107,7 @@ nil_expression
 float_digits
   = INT_PART:integer_part DEC_PART:( '.' DEC_DIGITS:decimal_part {return DEC_DIGITS; } ) ?
       { return  DEC_PART ? (INT_PART + '.' + DEC_PART) : INT_PART} 
+  / '.' DEC_DIGITS:decimal_part { return '0.' + DEC_DIGITS; }
   ;
 
 integer_part

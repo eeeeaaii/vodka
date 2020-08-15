@@ -1,1 +1,1 @@
-~"bind"h( @add-all &" list"v( ~"if-then-else"v( ~"is-empty"h( @list~) ~"+"h( ~"first"h( @list~) ~"rest"h( @list~)~) %0~)&)~)
+v2:~(bind @add-all &" list|v"(~"v"(if-then-else ~(is-empty @list) ~(::pl:: ~(first @list) ~(rest @list)) %0)))
