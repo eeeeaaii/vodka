@@ -52,10 +52,6 @@ class Float extends ValueNex {
 		return !isNaN(Number(value));
 	}
 
-	evaluate() {
-		return this;
-	}
-
 	renderValue() {
 		return this.value;
 	}

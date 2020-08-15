@@ -43,6 +43,7 @@ import { Separator } from './nex/separator.js';
 import { ValueNex } from './nex/valuenex.js'; 
 import { Word } from './nex/word.js'; 
 import { Zlist } from './nex/zlist.js'; 
+import { Tag } from './tag.js'; 
 
 
 var st = {};

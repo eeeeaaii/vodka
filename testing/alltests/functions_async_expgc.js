@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 //endgnumessage//
-//testname// execution_expectation_expgc
+//testname// functions_async_expgc
 //startdescription//
 /*
 The expectation garbage collector cancels all expectations that aren't anchored to the screen in any way. This tests it by setting up a delayed exp, then binding it to a variable (the bind expression returns the variable name and thus the actual expectation gets detached from the screen), then exp-gc is run, then the variable is evaluated, which re-attaches the expectation to the screen. A long enough delay needs to happen after that to verify that the expectation *never got fulfilled*

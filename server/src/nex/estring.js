@@ -45,6 +45,8 @@ class EString extends ValueNex {
 		// when vodka wants to call native js from a nex, we attach a js
 		// function to an estring and then pass that estring as the first
 		// parameter of a call to the run-js function.
+		//
+		// 8/14 this is so weird why did I do this
 		this.attachedJS = js;
 	}
 
@@ -64,6 +66,11 @@ class EString extends ValueNex {
 		let r = new EString(this.getFullTypedValue(), '$', 'string');
 		this.copyFieldsTo(r);
 		return r;
+	}
+
+	copyFieldsTo(r) {
+		super.copyFieldsTo(r);
+		r.attachedJS = this.attachedJS;
 	}
 
 	toString(version) {

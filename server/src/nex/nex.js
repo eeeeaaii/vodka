@@ -256,8 +256,9 @@ class Nex {
 	}
 
 	evaluate(env) {
-		return this;
+		return this.makeCopy();
 	}
+
 
 	evalCleanup() {
 	}

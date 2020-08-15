@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 //endgnumessage//
-//testname// execution_expectation_ff
+//testname// functions_async_ff
 //startdescription//
 /*
 Tests that ff works by binding a list to @a and then cramming an expectation in then calling ff on it

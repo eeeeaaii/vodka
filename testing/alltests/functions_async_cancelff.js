@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 //endgnumessage//
-//testname// execution_expectation_cancelff
+//testname// functions_async_cancelff
 //startdescription//
 /*
 tests both versions of cancelff, the one where you pass it something to cancel and the one where it cancels everything

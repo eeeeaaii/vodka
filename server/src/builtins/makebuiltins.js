@@ -24,6 +24,7 @@ import { Command } from '../nex/command.js'
 import { Expectation } from '../nex/expectation.js' 
 import { Lambda } from '../nex/lambda.js' 
 import { Zlist } from '../nex/zlist.js' 
+import { Org } from '../nex/org.js' 
 
 function createMakeBuiltins() {
     // I don't think I need "make" functions for atom types. It
@@ -33,17 +34,38 @@ function createMakeBuiltins() {
 
 	Builtin.createBuiltin(
 		'make-command',
-		[],
+		['nex...'],
 		function(env, executionEnvironment) {
-			return new Command();
+			let args = env.lb('nex');
+			let cmd = new Command();
+			for (let i = 0 ; i < args.numChildren(); i++) {
+				let arg = args.getChildAt(i);
+				if (i == 0) {
+					// should be name of command
+					if (arg.getTypeName() == '-symbol-') {
+						cmd = new Command(arg.getTypedValue())
+					} else {
+						cmd = new Command();
+						cmd.appendChild(arg);
+					}
+				} else {
+					cmd.appendChild(arg);
+				}
+			}
+			return cmd;
 		}
 	);
 
 	Builtin.createBuiltin(
 		'make-doc',
-		[],
+		['nex...'],
 		function(env, executionEnvironment) {
-			return new Doc();
+			let args = env.lb('nex');
+			let r = new Doc();
+			for (let i = 0 ; i < args.numChildren(); i++) {
+				r.appendChild(args.getChildAt(i));
+			}
+			return r;
 		}
 	);
 
@@ -53,7 +75,7 @@ function createMakeBuiltins() {
 		function(env, executionEnvironment) {
 			let exps = env.lb('nex');
 			let r = new Expectation();
-			for (let i = exps.numChildren() - 1; i >= 0; i--) {
+			for (let i = 0 ; i < exps.numChildren(); i++) {
 				let c = exps.getChildAt(i);
 				r.appendChild(c);
 			}
@@ -63,36 +85,69 @@ function createMakeBuiltins() {
 
 	Builtin.createBuiltin(
 		'make-lambda',
-		[],
+		['nex...'],
 		function(env, executionEnvironment) {
-			return new Lambda();
+			let exps = env.lb('nex');
+			let r = new Lambda();
+			for (let i = 0 ; i < exps.numChildren(); i++) {
+				let c = exps.getChildAt(i);
+				r.appendChild(c);
+			}
+			return r;
 		}
 	);
 
 	Builtin.createBuiltin(
 		'make-line',
-		[],
+		['nex...'],
 		function(env, executionEnvironment) {
-			return new Line();
+			let args = env.lb('nex');
+			let r = new Line();
+			for (let i = 0 ; i < args.numChildren(); i++) {
+				r.appendChild(args.getChildAt(i));
+			}
+			return r;
 		}
 	);
 
 	Builtin.createBuiltin(
 		'make-word',
-		[],
+		['nex...'],
 		function(env, executionEnvironment) {
-			return new Word();
+			let args = env.lb('nex');
+			let r = new Word();
+			for (let i = 0 ; i < args.numChildren(); i++) {
+				r.appendChild(args.getChildAt(i));
+			}
+			return r;
 		}
 	);
 
 	Builtin.createBuiltin(
 		'make-zlist',
-		[],
+		['nex...'],
 		function(env, executionEnvironment) {
-			return new Zlist();
+			let args = env.lb('nex');
+			let r = new Zlist();
+			for (let i = 0 ; i < args.numChildren(); i++) {
+				r.appendChild(args.getChildAt(i));
+			}
+			return r;
 		}
 	);
-}
+
+	Builtin.createBuiltin(
+		'make-org',
+		['nex...'],
+		function(env, executionEnvironment) {
+			let args = env.lb('nex');
+			let r = new Org();
+			for (let i = 0 ; i < args.numChildren(); i++) {
+				r.appendChild(args.getChildAt(i));
+			}
+			return r;
+		}
+	);}
 
 export { createMakeBuiltins }
 

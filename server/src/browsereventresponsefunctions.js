@@ -17,6 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import { systemState } from './systemstate.js'
+import { manipulator } from './manipulator.js'
 
 // can return null if user clicks on some other thing
 function getParentNexOfDomElement(elt) {

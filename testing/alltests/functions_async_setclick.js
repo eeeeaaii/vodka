@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 //endgnumessage//
-//testname// execution_expectation_setclick
+//testname// functions_async_setclick
 //startdescription//
 /*
 tests using expectations to set a click handler on something

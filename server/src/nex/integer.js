@@ -55,10 +55,6 @@ class Integer extends ValueNex {
 		return !isNaN(v);
 	}
 
-	evaluate() {
-		return this;
-	}
-
 	renderValue() {
 		return '' + this.value;
 	}

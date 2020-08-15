@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 //endgnumessage//
-//testname// execution_expectation_setdelay
+//testname// functions_async_setdelay
 //startdescription//
 /*
 tests set-delay with a 500 ms delay
