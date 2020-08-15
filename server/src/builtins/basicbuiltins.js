@@ -49,6 +49,40 @@ import { evaluateNexSafely, wrapError } from '../evaluator.js'
 
 function createBasicBuiltins() {
 	Builtin.createBuiltin(
+		'dump-memory',
+		[ 'closure&' ],
+		function(env, executionEnvironment) {
+			let closure = env.lb('closure');
+			let lexenv = closure.getLexicalEnvironment();
+			let doLevel = function(envAtLevel) {
+				let r = new Org();
+				envAtLevel.doForEachBinding(function(binding) {
+					let rec = new Org();
+					rec.appendChild(new ESymbol(binding.name));
+					rec.appendChild(binding.val);
+					r.appendChild(rec);
+				})
+				if (envAtLevel.getParent()) {
+					r.appendChild(doLevel(envAtLevel.getParent()));
+				}
+				return r;
+			}
+			return doLevel(lexenv);
+		}
+	);
+
+
+	Builtin.createBuiltin(
+		'see-id',
+		[ 'nex' ],
+		function(env, executionEnvironment) {
+			let nex = env.lb('nex');
+			return new EString('' + nex.getID());
+		}
+	);
+
+
+	Builtin.createBuiltin(
 		'begin',
 		[ 'nex...' ],
 		function(env, executionEnvironment) {

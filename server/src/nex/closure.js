@@ -20,13 +20,14 @@ import * as Utils from '../utils.js'
 import { BuiltinArgEvaluator } from '../builtinargevaluator.js'
 import { Nil } from './nil.js'
 import { wrapError, evaluateNexSafely } from '../evaluator.js'
+import { BINDINGS, BUILTINS } from '../environment.js'
 
 
 class Closure extends ValueNex {
 	constructor(lambda, lexicalEnvironment, name) {
 		super('', '&', name ? name : 'closure')
 		this.lambda = lambda;
-		this.cmdname = '*** not set ***';
+		this.cmdname = '(name not set)';
 		this.lexicalEnvironment = lexicalEnvironment;
 		this.boundName = null;
 	}
@@ -86,8 +87,19 @@ class Closure extends ValueNex {
 	}
 
 	renderValue() {
-		return `<br>NAME: ${this.cmdname}<br>LAMBDA: ${this.lambda.toString()}<br>LEXENV: ${this.lexicalEnvironment.toString()}`;
-
+		let r = this.cmdname + '<br>';
+		r += 'CODE : ' + this.lambda.debugString() + '<br>';
+		if (this.lexicalEnvironment == BUILTINS) {
+			r += 'LEXENV : BUILTINS<br>';
+		} else if (this.lexicalEnvironment == BINDINGS) {
+			r += 'LEXENV : BINDINGS<br>';
+		} else {
+			r += 'LEXENV :<br>';
+			this.lexicalEnvironment.doForEachBinding(function(binding) {
+				r += '&nbsp;&nbsp;&nbsp;' + binding.name + ' : ' + binding.val.debugString() + '<br>';
+			})
+		}
+		return r;
 	}
 
 	shouldActivateReturnedExpectations() {

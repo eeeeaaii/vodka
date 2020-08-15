@@ -188,6 +188,7 @@ testactions.push({type:'keydown',code:'Digit2'});
 testactions.push({type:'keyup',code:'Digit2'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'pause',length:500});
 
 harness.runTestNew(testactions, 'direct');
 //endtest//

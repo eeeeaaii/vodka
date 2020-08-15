@@ -16,87 +16,88 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 //endgnumessage//
-//testname// saveload_line
+//testname// functions_basic_seeid
 //startdescription//
 /*
-tests saving/loading of a line (the line has a word in it)
+just tests the see-id function by having two references to a nex on the screen (so the id can be seen) and then calling see-id on it
 */
 //enddescription//
-//testspec// |Shift|~|s|a|v|e|Shift|@|t|[|l|i|n|e|Shift|Tab|Tab|Tab|Enter|Shift|~|l|o|a|d|Shift|@|t|Shift|Tab|Enter
+//testspec// |Shift|Shift|~|b|i|n|d|Shift|@|a|Shift|^|Shift|Tab|Enter|Enter|Shift|@|a|Enter|Shift|~|s|e|e|-|i|d|Shift|@|a|Shift|Tab|Enter|ArrowLeft
 //starttest//
 var harness = require('../testharness');
 
 var testactions = [];
 
 testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Backquote'});
 testactions.push({type:'keyup',code:'Backquote'});
 testactions.push({type:'keyup',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'KeyS'});
-testactions.push({type:'keydown',code:'KeyA'});
-testactions.push({type:'keyup',code:'KeyS'});
-testactions.push({type:'keydown',code:'KeyV'});
-testactions.push({type:'keyup',code:'KeyA'});
-testactions.push({type:'keydown',code:'KeyE'});
-testactions.push({type:'keyup',code:'KeyV'});
-testactions.push({type:'keyup',code:'KeyE'});
-testactions.push({type:'keydown',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'Digit2'});
-testactions.push({type:'keyup',code:'Digit2'});
-testactions.push({type:'keyup',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'KeyT'});
-testactions.push({type:'keyup',code:'KeyT'});
-testactions.push({type:'keydown',code:'BracketLeft'});
-testactions.push({type:'keyup',code:'BracketLeft'});
-testactions.push({type:'keydown',code:'KeyL'});
+testactions.push({type:'keydown',code:'KeyB'});
+testactions.push({type:'keyup',code:'KeyB'});
 testactions.push({type:'keydown',code:'KeyI'});
-testactions.push({type:'keyup',code:'KeyL'});
 testactions.push({type:'keyup',code:'KeyI'});
 testactions.push({type:'keydown',code:'KeyN'});
-testactions.push({type:'keyup',code:'KeyN'});
-testactions.push({type:'keydown',code:'KeyE'});
-testactions.push({type:'keyup',code:'KeyE'});
-testactions.push({type:'keydown',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'Tab'});
-testactions.push({type:'keyup',code:'Tab'});
-testactions.push({type:'keydown',code:'Tab'});
-testactions.push({type:'keyup',code:'Tab'});
-testactions.push({type:'keydown',code:'Tab'});
-testactions.push({type:'keyup',code:'Tab'});
-testactions.push({type:'keyup',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'Enter'});
-testactions.push({type:'keyup',code:'Enter'});
-
-
-testactions.push({type:'pause',length:500});
-
-
-testactions.push({type:'keydown',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'Backquote'});
-testactions.push({type:'keyup',code:'Backquote'});
-testactions.push({type:'keyup',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'KeyL'});
-testactions.push({type:'keyup',code:'KeyL'});
-testactions.push({type:'keydown',code:'KeyO'});
-testactions.push({type:'keydown',code:'KeyA'});
 testactions.push({type:'keydown',code:'KeyD'});
-testactions.push({type:'keyup',code:'KeyO'});
-testactions.push({type:'keyup',code:'KeyA'});
+testactions.push({type:'keyup',code:'KeyN'});
 testactions.push({type:'keyup',code:'KeyD'});
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Digit2'});
 testactions.push({type:'keyup',code:'Digit2'});
 testactions.push({type:'keyup',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'KeyT'});
-testactions.push({type:'keyup',code:'KeyT'});
+testactions.push({type:'keydown',code:'KeyA'});
+testactions.push({type:'keyup',code:'KeyA'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Digit6'});
+testactions.push({type:'keyup',code:'Digit6'});
+testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
-
-testactions.push({type:'pause',length:1000});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Digit2'});
+testactions.push({type:'keyup',code:'Digit2'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'KeyA'});
+testactions.push({type:'keyup',code:'KeyA'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Backquote'});
+testactions.push({type:'keyup',code:'Backquote'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'KeyS'});
+testactions.push({type:'keydown',code:'KeyE'});
+testactions.push({type:'keyup',code:'KeyS'});
+testactions.push({type:'keyup',code:'KeyE'});
+testactions.push({type:'keydown',code:'KeyE'});
+testactions.push({type:'keyup',code:'KeyE'});
+testactions.push({type:'keydown',code:'Minus'});
+testactions.push({type:'keyup',code:'Minus'});
+testactions.push({type:'keydown',code:'KeyI'});
+testactions.push({type:'keydown',code:'KeyD'});
+testactions.push({type:'keyup',code:'KeyI'});
+testactions.push({type:'keyup',code:'KeyD'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Digit2'});
+testactions.push({type:'keyup',code:'Digit2'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'KeyA'});
+testactions.push({type:'keyup',code:'KeyA'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Tab'});
+testactions.push({type:'keyup',code:'Tab'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+testactions.push({type:'keyup',code:'ArrowLeft'});
 
 harness.runTestNew(testactions, 'direct');
 //endtest//

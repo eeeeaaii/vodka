@@ -194,9 +194,16 @@ class Command extends NexContainer {
 	}
 
 	evalSetup(executionEnv) {
-		if (this.evalState != null) {
-			return;
-		}
+		// do not cache the entire eval state by doing
+		// something like if (this.evalState) return;
+		//
+		// we need to reevaluate the evalState every
+		// time we evaluate. The only thing
+		// we want to cache with commands
+		// is cachedClosure and even that presupposes
+		// we can't re-bind symbols to the same
+		// names as builtins (we don't prevent this)
+
 		// we need a closure, we need a name to use for error messages, and we need to know if skip first arg.
 		let closure = null;
 		let cmdname = null;

@@ -152,8 +152,9 @@ class Environment {
 		this.bind(name, val, this.currentPackageForBinding);
 	}
 
-	makeBindingRecord(value, packageName) {
+	makeBindingRecord(name, value, packageName) {
 		return {
+			name: name,
 			val: value,
 			packageName: packageName
 		}
@@ -164,7 +165,10 @@ class Environment {
 			this.symbols[name].val = val;
 			this.symbols[name].packageName = packageName; // I guess it's totally unnecessary because you could parse the name.
 		} else {
-			this.symbols[name] = this.makeBindingRecord(val, packageName);
+			this.symbols[name] = this.makeBindingRecord(name, val, packageName);
+		}
+		if (val.getTypeName() == '-closure-') {
+			val.setCmdName(name);
 		}
 	}
 
@@ -192,6 +196,13 @@ class Environment {
 			r.push(nm);
 		}
 		return r;
+	}
+
+	doForEachBinding(f) {
+		for (let s in this.symbols) {
+			let symrec = this.symbols[s];
+			f(symrec);
+		}
 	}
 
 	hasSymbolItself(name) {
