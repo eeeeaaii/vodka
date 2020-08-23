@@ -81,11 +81,18 @@ class ParamParser {
 		let variadic = false;
 		let optional = false;
 		let skipactivate = false;
+		let convert = true;
 		// we re-parse every time the user changes the args
 		// when they are editing the args -- this means that there are transition states
 		// while they are typing when the args may not make sense and it's just okay.
 		if (s.charAt(0) == '_') {
 			skipeval = true;
+			s = s.substring(1);
+			if (s == '') return null;
+		}
+
+		if (s.charAt(0) == '=') {
+			convert = false;
 			s = s.substring(1);
 			if (s == '') return null;
 		}
@@ -120,7 +127,8 @@ class ParamParser {
 			skipeval: skipeval,
 			skipactivate: skipactivate,
 			variadic: variadic,
-			optional: optional
+			optional: optional,
+			convert: convert
 		}
 	}
 

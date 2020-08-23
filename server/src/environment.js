@@ -20,6 +20,7 @@ const BUILTIN_ARG_PREFIX = '|';
 const UNBOUND = "****UNBOUND****"
 
 import { EError } from './nex/eerror.js'
+import { NexContainer } from './nex/nexcontainer.js'
 import { systemState } from './systemstate.js'
 
 class Environment {
@@ -32,10 +33,12 @@ class Environment {
 	}
 
 	copy(shareParent) {
+		throw new Error('dont do this');
 		let newEnv = new Environment(null);
 		for (let sym in this.symbols) {
 			let rec = this.symbols[sym];
 			let copiedRecord = {
+				name: rec.name,
 				val: rec.val,
 				packagename: rec.packageName,
 			}
@@ -172,12 +175,27 @@ class Environment {
 		}
 	}
 
-	set(name, val) {
+	set(name, val, optionalTag) {
 		let binding = this._recursiveLookup(name, [this.listOfPackagesUsed]);
 		if (!binding) {
 			throw new EError(`undefined symbol ${name}, cannot set. Sorry!`)
 		}
-		binding.val = val;
+		if (optionalTag) {
+			// need to find child of binding that has this tag.
+			let v = binding.val;
+			if (!(v instanceof NexContainer)) {
+				throw new EError('cannot dereference a non-org');
+			}
+			for (let i = 0; i < v.numChildren(); i++) {
+				if (v.getChildAt(i).hasTag(optionalTag)) {
+					val.addTag(optionalTag);
+					v.replaceChildAt(val, i);
+					return;
+				}
+			}
+		} else {
+			binding.val = val;
+		}
 	}
 
 	// only used by builtins to retrieve args, we can just directly access this env

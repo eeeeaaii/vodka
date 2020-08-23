@@ -81,10 +81,10 @@ class Expectation extends NexContainer {
 	copyFieldsTo(nex) {
 		super.copyFieldsTo(nex);
 		if (this.ffClosure) {
-			nex.ffClosure = this.ffClosure.makeCopy();		
+			nex.ffClosure = this.ffClosure;		
 		}
 		if (this.ffExecutionEnvironment) {
-			nex.ffExecutionEnvironment = this.ffExecutionEnvironment.copy();
+			nex.ffExecutionEnvironment = this.ffExecutionEnvironment;
 		}
 		if (this.callbackRouter) {
 			nex.callbackRouter = this.callbackRouter;
@@ -209,9 +209,7 @@ class Expectation extends NexContainer {
 			throw new EError('Expectation: cannot call ff-with on the expectation, it currently fulfilling');
 		}
 		this.ffClosure = closure;
-		// TODO: think of a bug that is fixed by copying the execution env,
-		// or remove the copy.
-		this.ffExecutionEnvironment = executionEnvironment.copy();
+		this.ffExecutionEnvironment = executionEnvironment;
 	}
 
 	notifyAfterFulfill() {
@@ -395,24 +393,15 @@ class Expectation extends NexContainer {
 	}
 
 	toStringV2() {
-		return `*${this.toStringV2PrivateDataSection()}(${this.toStringV2TagList()}${super.childrenToString('v2')})`;
+		return `*${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
 
 	deserializePrivateData(data) {
-		// TODO: this is probably not sustainable - the only way this knows that
-		// the data is not "for it" is that it's not 'v' indicating vertical
-		if (data && data.length > 0 && data[0] != 'v') {
-			this.privateData = data[0];
-			data.splice(0, 1);
-		}
-		super.deserializePrivateData(data);
+		this.privateData = data;
 	}
 
-	serializePrivateData(data) {
-		if (this.privateData != '') {
-			data.push(this.privateData);
-		}
-		super.serializePrivateData(data);
+	serializePrivateData() {
+		return this.privateData;
 	}
 
 	getTypeName() {

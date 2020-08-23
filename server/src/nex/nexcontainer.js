@@ -136,6 +136,14 @@ class NexContainer extends Nex {
 		}
 	}
 
+	listStartV2() {
+		return '(' + (this.vdir ? '|' : '_');
+	}
+
+	listEndV2() {
+		return (this.vdir ? '|' : '_') + ')';
+	}
+
 	childrenToStringV2() {
 		let r = '';
 		for (let p = this.firstChildNex; p != null; p = p.next) {
@@ -145,21 +153,6 @@ class NexContainer extends Nex {
 			r += p.n.toString('v2');
 		}
 		return r;		
-	}
-
-	deserializePrivateData(data) {
-		if (data && data.length > 0 && data[0] == 'v') {
-			this.vdir = true;
-			data.splice(0, 1);
-		}
-		super.deserializePrivateData(data);
-	}
-
-	serializePrivateData(data) {
-		if (this.vdir) {
-			data.push('v');
-		}
-		super.serializePrivateData(data);
 	}
 
 	childrenToString(version) {

@@ -124,7 +124,13 @@ function createEnvironmentBuiltins() {
 		[ '_name@', 'nex' ],
 		function(env, executionEnvironment) {
 			let rhs = env.lb('nex');
-			executionEnvironment.set(env.lb('name').getTypedValue(), rhs);
+			let namenex = env.lb('name');
+			let name = namenex.getTypedValue();
+			let tag = null;
+			if (namenex.numTags() == 1) {
+				tag = namenex.getTag(0);
+			}
+			executionEnvironment.set(name, rhs, tag);
 			return rhs;
 		}
 	);

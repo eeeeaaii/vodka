@@ -40,7 +40,7 @@ function isError(n) {
 
 function isFatalError(n) {
 	if (!n) return false;
-	return n.getTypeName() == '-error-' && n.getErrorType() == ERROR_TYPE_FATAL;
+	return n.getTypeName && n.getTypeName() == '-error-' && n.getErrorType() == ERROR_TYPE_FATAL && !n.shouldSuppress();
 }
 
 function isInDocContext(n) {

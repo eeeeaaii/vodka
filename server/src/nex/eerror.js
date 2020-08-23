@@ -48,6 +48,19 @@ class EError extends NexContainer {
 //		super(val, '?', 'eerror')
 		this.setFullValue(val); // will call render
 		this.errorType = ERROR_TYPE_FATAL; // default
+		this.suppress = false;
+	}
+
+	suppressNextCatch() {
+		this.suppress = true;
+	}
+
+	shouldSuppress() {
+		if (this.suppress) {
+			this.suppress = false;
+			return true;
+		}
+		return false;
 	}
 
 	setErrorType(et) {
@@ -62,8 +75,9 @@ class EError extends NexContainer {
 		return '-error-';
 	}
 
-	makeCopy() {
+	makeCopy(shallow) {
 		let r = new EError(this.getFullTypedValue());
+		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -104,10 +118,7 @@ class EError extends NexContainer {
 
 	setFullValue(fullval) {
 		this.fullValue = fullval;
-		this.displayValue = this.prefix + '&nbsp;' + this.fullValue.trim();
-//		if (this.displayValue.length > ESTRING_LIMIT) {
-//			this.displayValue = this.displayValue.substr(0, (ESTRING_LIMIT - 3)) + '...';
-//		}
+		this.displayValue = this.fullValue;
 	}	
 
 	debugString() {
@@ -126,9 +137,12 @@ class EError extends NexContainer {
 		return '?' + this.toStringV2TagList() + this.toStringV2PrivateDataSection();
 	}
 
-	serializePrivateData(data) {
-		data.push(this.getFullTypedValue());
-		super.serializePrivateData(data);
+	deserializePrivateData(data) {
+		this.setFullValue(data);
+	}
+
+	serializePrivateData() {
+		return this.getFullTypedValue();
 	}
 
 	drawButton() {
@@ -153,12 +167,24 @@ class EError extends NexContainer {
 		systemState.setKeyFunnelActive(false);
 	}
 
+	escape(str) {
+		str = str.replace(/&/, "&amp;");
+		str = str.replace(/</, "&lt;");
+		str = str.replace(/>/, "&gt;");
+		str = str.replace(/"/, "&quot;");
+		str = str.replace(/'/, "&apos;");
+		str = str.replace(/ /, "&nbsp;");
+		str = str.replace(/\n/g, "<br>");
+		str = str.replace(/\r/g, "<br>");
+		return str;
+	}
+
 	drawNormal(renderNode) {
 		let domNode = renderNode.getDomNode();
 		if (this.displayValue !== '') {
 			this.innerspan = document.createElement("div");
 			this.innerspan.classList.add('innerspan');
-			this.innerspan.innerHTML = this.displayValue;
+			this.innerspan.innerHTML = '? ' + this.escape('' + this.displayValue);
 			domNode.appendChild(this.innerspan);
 		}
 	}

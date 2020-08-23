@@ -66,6 +66,8 @@ class NativeOrg extends Org {
 				cmd.appendChild(new ESymbol('a' + i));
 			}
 			lm.appendChild(cmd);
+			// we don't need to enforce here because again, somehow loading in a contract
+			// that prevents you from creating API methods is not nice behavior.
 			lm.addTag(new Tag(name));
 			this.appendChild(lm);
 		}

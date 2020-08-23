@@ -34,7 +34,9 @@ class Undo {
 		if (getGlobalAppFlagIsSet('skipundo')) {
 			return;
 		}
-		this.undobuffer.unshift(nex.makeCopy());
+		// Shallow copy for undo is going to have to be good enough.
+		// The fewer levels of undo the less chance of it being a problem.
+		this.undobuffer.unshift(nex.makeCopy(true /* shallow */));
 		let selectedNode = systemState.getGlobalSelectedNode();
 		let selectedNodeId = selectedNode.getNex().getID();		
 		this.selectedNodeIdBuffer.unshift(selectedNodeId);

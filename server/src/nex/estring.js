@@ -84,9 +84,12 @@ class EString extends ValueNex {
 		return '$' + this.toStringV2TagList() + this.toStringV2PrivateDataSection();
 	}
 
-	serializePrivateData(data) {
-		data.push(this.getFullTypedValue());
-		super.serializePrivateData(data);
+	deserializePrivateData(data) {
+		this.setFullValue(data);
+	}
+
+	serializePrivateData() {
+		return this.getFullTypedValue();
 	}
 
 	debugString() {
@@ -131,9 +134,23 @@ class EString extends ValueNex {
 		return this.displayValue;
 	}
 
+	escape(str) {
+		str = str.replace('&', "&amp;");
+		str = str.replace('<', "&lt;");
+		str = str.replace('>', "&gt;");
+		str = str.replace('"', "&quot;");
+		str = str.replace("'", "&apos;");
+		str = str.replace(" ", "&nbsp;");
+		str = str.replace("\n", "<br>");
+		str = str.replace("\r", "<br>");
+		return str;
+	}
+
 	setFullValue(fullval) {
 		this.fullValue = fullval;
-		this.displayValue = this.fullValue === ' ' ? '&nbsp;' : this.fullValue.trim();
+		// well I guess they're the same now? except for the
+		// truncation but I'm getting rid of that too
+		this.displayValue = this.fullValue;
 		if (this.displayValue.length > ESTRING_LIMIT) {
 			this.displayValue = this.displayValue.substr(0, (ESTRING_LIMIT - 3)) + '...';
 		}
@@ -159,7 +176,7 @@ class EString extends ValueNex {
 		if (this.displayValue !== '') {
 			this.innerspan = document.createElement("div");
 			this.innerspan.classList.add('innerspan');
-			this.innerspan.innerHTML = this.displayValue;
+			this.innerspan.innerHTML = this.escape(this.displayValue);
 			domNode.appendChild(this.innerspan);
 		}
 	}

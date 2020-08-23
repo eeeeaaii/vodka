@@ -44,12 +44,7 @@ class Nex {
 	toString() {}
 
 	toStringV2PrivateDataSection() {
-		let data = [];
-		this.serializePrivateData(data);
-		if (data.length == 0) {
-			return '';
-		}
-		let v = data.join('|');
+		let v = this.serializePrivateData();
 		if (v == '') {
 			return '';
 		}
@@ -89,11 +84,12 @@ class Nex {
 	deserializePrivateData(data) {
 	}
 
-	serializePrivateData(data) {
+	serializePrivateData() {
+		return '';
 	}
 
 	debugString() {
-		return this.toString();
+		return this.toString('v2');
 	}
 
 	getTypeName() {
@@ -208,6 +204,8 @@ class Nex {
 	needsEvaluation() {
 		return false;
 	}
+
+	// Tag functions
 
 	addTag(tag) {
 		if (this.hasTag(tag)) return;

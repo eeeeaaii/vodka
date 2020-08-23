@@ -45,12 +45,15 @@ class Letter extends Nex {
 	}
 
 	toStringV2() {
-		return `[letter]${this.toStringV2PrivateDataSection()}(${this.toStringV2TagList()})`
+		return `[letter]${this.toStringV2PrivateDataSection()}${this.toStringV2TagList()}`
 	}
 
 	serializePrivateData(data) {
-		data.push(this.value);
-		super.serializePrivateData(data);
+		return this.value;
+	}
+
+	deserializePrivateData(data) {
+		this.value = data;
 	}
 
 	isLeaf() {

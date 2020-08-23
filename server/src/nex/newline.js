@@ -32,7 +32,7 @@ class Newline extends Separator {
 	}
 
 	toStringV2() {
-		return `[newline]()`
+		return `[newline]`
 	}
 
 

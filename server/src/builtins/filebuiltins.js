@@ -18,6 +18,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from '../utils.js'
 
 import { Builtin } from '../nex/builtin.js'
+import { Command } from '../nex/command.js'
+import { Lambda } from '../nex/lambda.js'
 import { EError } from '../nex/eerror.js'
 import { Expectation } from '../nex/expectation.js'
 import { Nil } from '../nex/nil.js'
@@ -53,6 +55,46 @@ function createFileBuiltins() {
 			// is easier.
 			exp.activate();
 			return exp;
+		}
+	);
+
+	// this could be a util function I guess
+	Builtin.createBuiltin(
+		'with-imports',
+		[ '_nexes...' ],
+		function(env, executionEnvironment) {
+			let nexes = env.lb('nexes');
+			let innerExpArgs = [];
+			let toReturn = new Nil();
+			for (let i = 0; i < nexes.numChildren(); i++) {
+				let nex = nexes.getChildAt(i);
+				if (i == nexes.numChildren() - 1) {
+					toReturn = nex;
+				} else {
+					if (!nex.getTypeName() == '-symbol-') {
+						return new EError(`Cannot import ${nex.debugString}.`);
+					}
+					innerExpArgs.push(Command.makeCommandWithArgs("import", nex));
+				}
+			}
+			// the reason for outer/inner exp is that
+			// if we set ff-with on the inner exp
+			// (the one that contains multiple items)
+			// we will get ff-with called for each item
+			let cmd =
+			//Command.makeCommandWithArgs(
+			//	"ff",
+				Command.makeCommandWithArgs(
+					"ff-with",
+					Command.makeCommandWithArgs(
+						"make-expectation",
+						Command.makeCommandWithArgs(
+							"make-expectation",
+							innerExpArgs)),
+					Lambda.makeLambda(
+						"n",
+						toReturn));
+			return evaluateNexSafely(cmd, executionEnvironment);
 		}
 	);
 

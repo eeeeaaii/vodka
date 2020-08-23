@@ -19,6 +19,7 @@ import { ContextType } from '../contexttype.js';
 import { NexContainer } from './nexcontainer.js';
 import { ParamParser } from '../paramparser.js';
 import { Closure } from './closure.js';
+import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 
 
@@ -43,6 +44,14 @@ class Lambda extends NexContainer {
 		this.copyFieldsTo(r);
 		return r;
 	}
+
+	doAlertAnimation() {
+		let rn = this.getRenderNodes();
+		for (let i = 0; i < rn.length; i++) {
+			eventQueueDispatcher.enqueueAlertAnimation(rn[i]);
+		}
+	}
+
 
 	copyFieldsTo(r) {
 		super.copyFieldsTo(r);
@@ -79,25 +88,15 @@ class Lambda extends NexContainer {
 	}
 
 	toStringV2() {
-		return `&${this.toStringV2PrivateDataSection()}(${this.toStringV2TagList()}${super.childrenToString('v2')})`;
+		return `&${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
 
 	deserializePrivateData(data) {
-		// TODO: this is probably not sustainable - the only way this knows that
-		// the data is not "for it" is that it's not 'v' indicating vertical
-		//
-		// if you have a function that has just one parameter called v,
-		// you're fucked
-		if (data && data.length > 0 && data[0] != 'v') {
-			this.setAmpText(data[0]);
-			data.splice(0, 1);
-		}
-		super.deserializePrivateData(data);
+		this.setAmpText(data);
 	}
 
-	serializePrivateData(data) {
-		data.push(this.amptext);
-		super.serializePrivateData(data);
+	serializePrivateData() {
+		return this.amptext;
 	}
 
 
@@ -225,8 +224,15 @@ class Lambda extends NexContainer {
 		};
 	}
 
-	static makeLambda(argstring, args) {
+	static makeLambda(argstring, maybeargs) {
 		let lambda = new Lambda(argstring);
+		// this little snippet lets you do varargs or array
+		let args = [];
+		if (Array.isArray(maybeargs)) {
+			args = maybeargs;
+		} else {
+			args = Array.prototype.slice.call(arguments).splice(1);
+		}
 		for (let i = 0; i < args.length; i++) {
 			lambda.appendChild(args[i]);
 		}

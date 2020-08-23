@@ -55,6 +55,23 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	grid-column: 1;
 	grid-row: 1;
 }
+.zlist > .nex:nth-child(1) { z-index:0; }
+.zlist > .nex:nth-child(2) { z-index:1; }
+.zlist > .nex:nth-child(3) { z-index:2; }
+.zlist > .nex:nth-child(4) { z-index:3; }
+.zlist > .nex:nth-child(5) { z-index:4; }
+.zlist > .nex:nth-child(6) { z-index:5; }
+.zlist > .nex:nth-child(7) { z-index:6; }
+.zlist > .nex:nth-child(8) { z-index:7; }
+.zlist > .nex:nth-child(9) { z-index:8; }
+.zlist > .nex:nth-child(10) { z-index:9; }
+.zlist > .nex:nth-child(11) { z-index:10; }
+.zlist > .nex:nth-child(12) { z-index:11; }
+.zlist > .nex:nth-child(13) { z-index:12; }
+.zlist > .nex:nth-child(14) { z-index:13; }
+.zlist > .nex:nth-child(15) { z-index:14; }
+.zlist > .nex:nth-child(16) { z-index:15; }
+.zlist > .nex:nth-child(17) { z-index:16; }
 
 .zlist.exploded > .nex:nth-child(1) { margin-top:0px; }
 .zlist.exploded > .nex:nth-child(2) { margin-top:10px; }

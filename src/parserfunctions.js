@@ -64,9 +64,18 @@ function appendChildrenToListType(listtype, children) {
 
 function setPrivateData(obj, parserStr) {
 	let str = concatParserString(parserStr);
-	let arr = str.split('|');
-	obj.deserializePrivateData(arr);
+	obj.deserializePrivateData(str);
 	return obj;
+}
+
+function setVertHoriz(obj, vh) {
+	if (vh == 'v') {
+		obj.setVertical();
+	} else if (vh == 'h') {
+		obj.setHorizontal();
+	} else {
+		throw new Error('unknown verthoriz code');
+	}
 }
 
 function makeInteger(negation, digits, taglist) {
@@ -101,40 +110,66 @@ function makeNil(taglist) {
 	return addTagsToNex(new Nil(), taglist);
 }
 
-function makeOrgList(children, privateData, taglist) {
+function makeOrgList(children, privateData, taglist, verthoriz) {
 	let t = new Org();
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
 	addTagsToNex(t, taglist);
+	setVertHoriz(t, verthoriz);
 	return t;
 }
 
-function makeExpList(children, privateData, taglist) {
+function makeExpList(children, privateData, taglist, verthoriz) {
 	let t = new Expectation();
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
 	addTagsToNex(t, taglist);
+	setVertHoriz(t, verthoriz);
 	return t;
 }
 
-function makeLambdaList(children, privateData, taglist) {
+function makeLambdaList(children, privateData, taglist, verthoriz) {
 	let t = new Lambda();
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
 	addTagsToNex(t, taglist);
+	setVertHoriz(t, verthoriz);
 	return t;
 }
 
-function makeCommandList(name, children, privateData, taglist) {
+function makeCommandList(name, children, privateData, taglist, verthoriz) {
 	let cmdname = Command.convertV2StringToMath(concatParserString(name));
 	let t = new Command(cmdname);
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
 	addTagsToNex(t, taglist);
+	setVertHoriz(t, verthoriz);
 	return t;
 }
 
-function makeInstanceList(instname, children, privatedata, taglist) {
+function makeInstanceAtom(instname, privatedata, taglist) {
+	// currently only letter, separator, and newline supported
+	let name = concatParserString(instname);
+	let t = null;
+	let isList = false;
+	switch(name) {
+		case 'letter':
+			t = new Letter(concatParserString(privatedata));
+			break;
+		case 'separator':
+			t = new Separator(concatParserString(privatedata));
+			break;
+		case 'newline':
+			t = new Newline();
+			break;
+		default:
+			throw new Error('unrecognized instance type: ' + instname);
+	}
+	setPrivateData(t, privatedata);
+	addTagsToNex(t, taglist);
+	return t;}
+
+function makeInstanceList(instname, children, privatedata, taglist, verthoriz) {
 	// currently only word, doc, and line supported
 	let name = concatParserString(instname);
 	let t = null;
@@ -156,21 +191,13 @@ function makeInstanceList(instname, children, privatedata, taglist) {
 			t = new Zlist();
 			isList = true;
 			break;
-		case 'letter':
-			t = new Letter(concatParserString(privatedata));
-			break;
-		case 'separator':
-			t = new Separator(concatParserString(privatedata));
-			break;
-		case 'newline':
-			t = new Newline();
-			break;
 		default:
 			throw new Error('unrecognized instance type: ' + instname);
 	}
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privatedata);
 	addTagsToNex(t, taglist);
+	setVertHoriz(t, verthoriz);
 	return t;
 }
 
@@ -186,6 +213,7 @@ export {
 	makeOrgList,
 	makeExpList,
 	makeInstanceList,
+	makeInstanceAtom,
 	makeError
 }
 

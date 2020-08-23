@@ -1,4 +1,42 @@
 
+- use shift keydown followed immediately by shift keyup as indication that we are switching
+- insert mode
+- default insert mode is the most common one
+
+atoms inserting atom
+insert after
+insert before
+
+atoms inserting list:
+insert after
+insert before
+insert around
+
+empty lists, inserting list
+insert inside
+insert after
+insert before
+insert around
+
+empty lists, inserting atom
+insert inside
+insert after
+insert before
+
+full lists, inserting atom
+insert after
+insert before
+insert around
+insert as first element
+
+
+
+NEW TO-DOs AFTER TRYING THE NEW VERSION OUT
+- need a "command alias" function so I can easily rename/alias commands without writing new tests
+- I actually do think I will need a form of ~import that has callbacks
+- "ff" should just be "start"
+
+
 ASYNC/EXPECTATION TO DO:
 - make more specific param code for expectations so you can specify that a given expectation param must be activated, must have an ffwith, must be set, etc.
 - reference counting doesn't work in the sense that if you delete an expectation containing other ones, it keeps firing...? because of the stale reference in the pendingExpectations, probably...

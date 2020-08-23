@@ -1,3 +1,73 @@
+=========================== tag-types ====================================
+---
+title: Tag types
+date: "2020-08-17T00:10:46.000-04"
+description: I guess we need two types of tags
+---
+I want to make it so that the instantiate function works like this:
+
+```
+~(_instantiate ^<'Tagname'>_)
+```
+
+Or like this:
+
+```
+~(_instantiate (<'Tagname'>)_)
+```
+
+In the first example, it's a null that we are passing to the function, tagged with
+the name of the template we want to instantiate. In the second, it's an org,
+and in that case we merge the contents of the passed-in org with the contents
+of the org we instantiated.
+
+The idea of passing a null is great, because it makes this really clear:
+
+```
+~(_~(_<'methodname'>instantiate ^<'Classname'>_) ...method args..._)
+```
+
+The null tells it which template to instantiate and then the tag on the instantiate
+call itself says to dereference whatever is returned. So instantiate an object,
+then call one of its methods right away. It makes sense, because the two primary
+usages of the tag are 1. telling it what to dereference 2. labeling things
+so you can find them again via dereferencing. This is... neither type of usage.
+
+This of course makes you think -- what if you nest calls to instantiate?
+
+```
+~(_instantiate ~(_<'class2'>instantiate ^<'class1'>_)_)
+```
+
+This doesn't work.
+
+See, we want the nested expression to instantiate the class, NOT dereference,
+and then we want the 'class2' tag to be used by the function we are passing the
+return value TO, like in the previous example.
+But this doesn't work, because the instantiate function
+creates a NEW object, returning it. That returned object thing has all new tags.
+
+Not to mention if that thing had a method named class2, that would get dereferenced.
+
+I have to think more about this. Like, do I make a separate type of tag that is
+a "dereference" tag that, instead of staying with the object itself, stays
+at the invocation site, and regardless of what is returned, it will dereference
+that?
+
+Maybe I just need to pass two args to instantiate, so I always pass
+the null with tag for the first arg, then optionally the second param.
+
+Another problem with this approach is that, even if you tried to propagate
+the tag from the thing passed in, the returned thing has to be
+tagged with the classname of that inner-thing you just instantiated.
+The result of this is that when you are calling the outer instantiate,
+it won't know what you want to instantiate, because it will have both
+tags 'class1' and 'class2'.
+
+Yeah I think for now we need to use the two-arg form until I get more used
+to these tags and how they can be used.
+
+
 =========================== cursor-command-type ====================================
 ---
 title: A Cursor Command Type?

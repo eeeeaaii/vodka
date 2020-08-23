@@ -590,7 +590,7 @@ const KeyResponseFunctions = {
 	'replace-selected-with-doc': function(s) { manipulator.replaceSelectedWith(new Doc()); },
 	'replace-selected-with-org': function(s) { manipulator.replaceSelectedWith(new Org()); },
 
-	'add-tag': function(s) { s.addTag(); },
+	'add-tag': function(s) { s.startTagEditor(); },
 	'remove-all-tags': function(s) { s.removeAllTags(); },
 
 	'insert-or-append-command': function(s) { insertOrAppend(s, new Command()); },

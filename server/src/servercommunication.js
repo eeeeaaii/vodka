@@ -47,8 +47,25 @@ function loadNex(name, callback) {
 
 	sendToServer(payload, function(data) {
 		document.title = name;
-		let nex = parse(data);
-		callback(nex);
+		try {
+			let nex = parse(data);
+			callback(nex);
+		} catch (e) {
+			if (e instanceof EError) {
+				callback(nex);
+			} else {
+				callback(new EError(
+`PEG PARSER PERROR
+full error message follows:
+${e.name}
+${e.message}
+line: ${e.location.start.line}
+col: ${e.location.start.column}
+found: "${e.found}"
+expected: ${e.expected[0].type}
+` + e));
+			}
+		}
 	});
 }
 

@@ -38,7 +38,7 @@ class Builtin extends Lambda {
 
 	toString(version) {
 		if (version == 'v2') {
-			throw new Error('saving builtins directly is unsupported and hopefully impossible');
+			return `[BUILTIN:${this.name}]`;
 		}
 		return `[BUILTIN:${this.name}]`;
 	}

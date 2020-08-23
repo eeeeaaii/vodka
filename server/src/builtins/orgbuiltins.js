@@ -15,62 +15,86 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from '../utils.js'
+
 import { Builtin } from '../nex/builtin.js'
 import { EError } from '../nex/eerror.js'
+import { templateStore } from '../templates.js'
+import { ERROR_TYPE_INFO } from '../nex/eerror.js'
+
 
 function createOrgBuiltins() {
 	Builtin.createBuiltin(
-		'set-tagged',
-		['org) any'],
+		'template',
+		[ 'nonce^', 'org()' ],
 		function(env, executionEnvironment) {
-			// first param should be an org,
-			// second param is any.
-			// first param should be tagged.
-			// second param is assigned to the 
-			// member of first param bearing its tag.
-			return new EString("unimplemented");
-		}
-	)
-
-
-	Builtin.createBuiltin(
-		'class',
-		[ 'sym@ org)' ],
-		function(env, executionEnvironment) {
-			let sym = env.lb('sym');
-			let canonicalOrg = env.lb('org').makeCopy();
-
-			/*
-			initer = method that does this:
-				newthis = copy of canonical org
-				for each method in newthis:
-					if (method has this pointer as first arg):
-						newmethod = method that does this:
-							firstarg = newthis
-							return call of method(firstarg, rest of args)
-						replace method with newmethod in newthis
-					endif
-				endfor
-				return newthis
-			bind initer to symbol make-sym (where sym is name of class)
-
-			if we were allowing polymorphism we would do the above
-			for each initializer in a class but polymorphism isn't good
-			because it relies on extracontextual information to resolve
-			the method reference
-
-			*/
-
-			return new EString("unimplemented");
-			// let r = '';
-			// let ar = env.lb('str');
-			// for (let i = 0; i < ar.numChildren(); i++) {
-			// 	let s = ar.getChildAt(i).getFullTypedValue();
-			// 	r += s;
-			// }
-			// return new EString(r);
+			let nonce = env.lb('nonce');
+			let org = env.lb('org');
+			try {
+				let template = templateStore.createTemplate(nonce, org, executionEnvironment);
+				let r = new EError(`created template ${template.getName()}`);
+				r.setErrorType(ERROR_TYPE_INFO);
+				return r;
+			} catch (e) {
+				if (Utils.isFatalError(e)) {
+					return e;
+				} else {
+					throw e;
+				}
+			}
 		}
 	);
+
+	Builtin.createBuiltin(
+		'merge',
+		[ 'nex...' ],
+		function(env, executionEnvironment) {
+			let nexc = env.lb('nex');
+			let a = [];
+			for (let i = 0; i < nexc.numChildren(); i++) {
+				a.push(nexc.getChildAt(i));
+			}
+			try {
+				return templateStore.merge(a);
+			} catch (e) {
+				if (Utils.isFatalError(e)) {
+					return e;
+				} else {
+					throw e;
+				}
+			}
+		}
+	);
+
+	Builtin.createBuiltin(
+		'instantiate',
+		[ 'initer', 'nex...' ],
+		function(env, executionEnvironment) {
+			let initer = env.lb('initer');
+			let args = env.lb('nex');
+			let a = [];
+			for (let i = 0; i < args.numChildren(); i++) {
+				let c = args.getChildAt(i);
+				a.push(c);
+			}
+			try {
+				if (initer.getTypeName() == '-nil-') {
+					initer = templateStore.merge([initer]);					
+				}
+				if (!initer || !initer.getTypeName || initer.getTypeName() != '-org-') {
+					return EError('can only init with an org');
+				}
+				return templateStore.instantiate(initer, a);
+			} catch (e) {
+				if (Utils.isFatalError(e)) {
+					return e;
+				} else {
+					throw e;
+				}
+			}
+		}
+	);
+
 }
 
 export { createOrgBuiltins }

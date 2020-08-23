@@ -34,10 +34,17 @@ class Closure extends ValueNex {
 
 	toString(version) {
 		if (version == 'v2') {
-			throw new Error('saving closures is not supported.')
+			console.log('saving closures is not supported, but toString is also used elsewhere so we cant throw an error here');
+			return `[CLOSURE FOR: ${this.lambda.toString('v2')}]`;
 		}
 		return super.toString(version);
 	}
+
+	// According to what I wrote in my blog, I should not really copy
+	// closures. However it doesn't matter as long as I don't really
+	// copy the contents of the closures -- i.e. the lambda, memory, etc.
+	// the closure obj itself can just be a ref to those things,
+	// which means that i can do things later that are more display-oriented
 
 	makeCopy() {
 		let r = new Closure();
@@ -48,7 +55,7 @@ class Closure extends ValueNex {
 	copyFieldsTo(nex) {
 		super.copyFieldsTo(nex);
 		nex.lambda = this.lambda;
-		nex.lexicalEnvironment = this.lexicalEnvironment.copy();
+		nex.lexicalEnvironment = this.lexicalEnvironment;
 		nex.boundName = this.boundName;
 	}
 
@@ -70,8 +77,20 @@ class Closure extends ValueNex {
 		this.lexicalEnvironment = env;
 	}
 
-	getLambda() {
-		return this.lambda;
+	getReturnValueParam() {
+		return this.lambda.getReturnValueParam();
+	}
+
+	isBuiltin() {
+		return (this.lambda instanceof Builtin);
+	}
+
+	doAlertAnimation() {
+		this.lambda.doAlertAnimation();
+	}
+
+	getLambdaDebugString() {
+		return this.lambda.debugString();
 	}
 
 	setCmdName(nm) {
@@ -88,7 +107,7 @@ class Closure extends ValueNex {
 
 	renderValue() {
 		let r = this.cmdname + '<br>';
-		r += 'CODE : ' + this.lambda.debugString() + '<br>';
+		r += 'CODE : ' + this.getLambdaDebugString() + '<br>';
 		if (this.lexicalEnvironment == BUILTINS) {
 			r += 'LEXENV : BUILTINS<br>';
 		} else if (this.lexicalEnvironment == BINDINGS) {

@@ -30,6 +30,7 @@ class RenderNode {
 		this.selected = false;
 		this.nex = forNex;
 		this.parentalfigure = null;
+		this.indexinparentalfigure = -1;
 		this.childnodes = [];
 		this.domNode = document.createElement("div");
 		this.isCurrentlyExploded = false;
@@ -39,12 +40,21 @@ class RenderNode {
 	}
 
 	routeKeyToCurrentEditor(keycode) {
-		let reroute = this.currentEditor.routeKey(keycode);
-		// the editor will decide when it's finished and will stop editing
-		if (!this.currentEditor.isEditing()) {
-			this.currentEditor = null;
+		try {
+			let reroute = this.currentEditor.routeKey(keycode);
+			// the editor will decide when it's finished and will stop editing
+			if (!this.currentEditor.isEditing()) {
+				this.currentEditor = null;
+			}
+			return reroute;
+		} catch (e) {
+			if (e.getTypeName && e.getTypeName() == '-error-') {
+				//oops. The editor SHOULD put the existing nex inside the error.
+				this.replaceSelfInParentWith(e);
+			} else {
+				throw e;
+			}
 		}
-		return reroute;
 	}
 
 	usingEditor() {
@@ -60,7 +70,7 @@ class RenderNode {
 		this.currentEditor.startEditing();
 	}
 
-	addTag() {
+	startTagEditor() {
 		if (this.currentEditor) {
 			throw new Error('cannot edit two things at once');
 		}
@@ -115,7 +125,7 @@ class RenderNode {
 		for (let i = 0; i < nex.numChildren(); i++) {
 			let child = nex.getChildAt(i);
 			let childRenderNode = new RenderNode(child);
-			childRenderNode.setParent(this);
+			childRenderNode.setParent(this, i);
 			this.domNode.appendChild(childRenderNode.domNode);
 			this.childnodes.push(childRenderNode);
 		}
@@ -144,8 +154,9 @@ class RenderNode {
 		return this.parentalfigure;
 	}
 
-	setParent(p) {
+	setParent(p, index) {
 		this.parentalfigure = p;
+		this.indexinparentalfigure = index;
 	}
 
 	hasChildren() {
@@ -278,7 +289,7 @@ class RenderNode {
 					// the child changed since the last time we rendered!!!
 					// need to fix.
 					this.childnodes[i] = childRenderNode = new RenderNode(this.getNex().getChildAt(i));
-					this.childnodes[i].setParent(this);
+					this.childnodes[i].setParent(this, i);
 				}
 				childRenderNode.setRenderDepth(this.renderDepth + 1);
 				// need to append child before drawing so things like focus() work right
@@ -290,7 +301,7 @@ class RenderNode {
 				// oops, more nodes added since the last time we rendered.
 				for ( ; i < this.getNex().numChildren(); i++) {
 					let newNode = new RenderNode(this.getNex().getChildAt(i));
-					newNode.setParent(this);
+					newNode.setParent(this, i);
 					newNode.setRenderDepth(this.renderDepth + 1);
 					this.childnodes[i] = newNode;
 					this.domNode.appendChild(newNode.getDomNode());
@@ -343,12 +354,23 @@ class RenderNode {
 		}
 	}
 
+
+	replaceSelfInParentWith(newNode) {
+		if (!(newNode instanceof RenderNode)) {
+			newNode = this.getRenderNodeFor(newNode);
+		}
+		this.parentalfigure.replaceChildAt(newNode, this.indexinparentalfigure);
+		newNode.setSelected();
+	}
+
+
     ////////////////////////////////////////
     ////////////////////////////////////////
     ////////////////////////////////////////
     ////////////////////////////////////////
 
     // most of these copied from nexcontainer
+
 	getIndexOfChild(c) {
 		for (let i = 0; i < this.childnodes.length; i++) {
 			if (this.childnodes[i] == c) {
@@ -371,7 +393,7 @@ class RenderNode {
 		this.childnodes.splice(i, 1);
 		this.getNex().removeChildAt(i);
 		this.getDomNode().removeChild(r.getDomNode());
-		r.setParent(null);
+		r.setParent(null, -1);
 		return r;
 	}
 
@@ -414,7 +436,7 @@ class RenderNode {
 			this.getNex().insertChildAt(c.getNex(), i);
 			this.getDomNode().insertBefore(c.getDomNode(), this.childnodes[i + 1].getDomNode());
 		}
-		c.setParent(this);
+		c.setParent(this, i);
 	}
 
 	replaceChildAt(c, i) {

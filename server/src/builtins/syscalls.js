@@ -36,6 +36,17 @@ function createSyscalls() {
 		}
 	);
 
+	Builtin.createBuiltin(
+		'apply-css-style-to-no-copy',
+		[ 'style$', 'nex' ],
+		function(env, executionEnvironment) {
+			let s = env.lb('style').getFullTypedValue();
+			let n = env.lb('nex');
+			n.setCurrentStyle(s);
+			return n;
+		}
+	);
+
 	// this is basically just for testing foreign function interface
 	Builtin.createBuiltin(
 		'get-alerter',

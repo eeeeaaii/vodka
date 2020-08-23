@@ -21,6 +21,8 @@ import { EError } from '../nex/eerror.js'
 import { contractEnforcer } from '../contract.js'
 import { IdentityContract } from '../contract.js'
 import { SimpleTypeContract } from '../contract.js'
+import { ContentsLikeContract } from '../contract.js'
+import { ContentsTaggedLikeContract } from '../contract.js'
 
 function createContractBuiltins() {
 	Builtin.createBuiltin(
@@ -56,6 +58,42 @@ function createContractBuiltins() {
 			let contract = new SimpleTypeContract(nex.getTypeName());
 			contractEnforcer.createContract(tag, contract);
 			return nex;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'must-have-contents-tagged-like',
+		[ 'tag^', 'org()' ],
+		function(env, executionEnvironment) {
+			// enforces that the tag can only be applied to orgs
+			// that have the same number of children, of the same data types.
+			let nil = env.lb('tag');
+			let org = env.lb('org');
+			if (nil.numTags() != 1) {
+				return new EError('must-have-contents-tagged-like: cannot set up contract, first arg needs exactly one tag')
+			}
+			let tag = nil.getTag(0);
+			let contract = new ContentsTaggedLikeContract(org);
+			contractEnforcer.createContract(tag, contract);
+			return org;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'must-have-contents-like',
+		[ 'tag^', 'org()' ],
+		function(env, executionEnvironment) {
+			// enforces that the tag can only be applied to orgs
+			// that have the same number of children, of the same data types.
+			let nil = env.lb('tag');
+			let org = env.lb('org');
+			if (nil.numTags() != 1) {
+				return new EError('must-have-contents-like: cannot set up contract, first arg needs exactly one tag')
+			}
+			let tag = nil.getTag(0);
+			let contract = new ContentsLikeContract(org);
+			contractEnforcer.createContract(tag, contract);
+			return org;
 		}
 	);
 }

@@ -17,31 +17,93 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Closure } from './closure.js';
 import { Nil } from './nil.js';
+import { EError } from './eerror.js';
+import { NexContainer } from './nexcontainer.js';
 import { BUILTINS } from '../environment.js'
+import { ParamParser } from '../paramparser.js';
+import { BuiltinArgEvaluator } from '../builtinargevaluator.js'
+
+
 
 class ForeignClosure extends Closure {
-	constructor(lambda, foreignfunction) {
-		super(lambda, BUILTINS, 'foreignclosure')
+	constructor(paramstr, foreignfunction) {
+		super(null /* lambda */, BUILTINS, 'foreignclosure');
+		let paramParser = new ParamParser();
+		paramParser.parseString(paramstr);
+		this.paramstr = paramstr;
+		this.paramsArray = paramParser.getParams();
+		this.returnValueParam = paramParser.getReturnValue();		
 		this.foreignfunction = foreignfunction;
+	}
+	
+	setScopeForForeignFunction(scope) {
+		this.foreignfunction = this.foreignfunction.bind(scope);
 	}
 
 	makeCopy() {
-		let r = new ForeignClosure();
+		let r = new ForeignClosure(this.paramstr, this.foreignfunction);
 		this.copyFieldsTo(r);
 		return r;
 	}
 
-	copyFieldsTo(nex) {
-		super.copyFieldsTo(nex);
-		nex.foreignfunction = this.foreignfunction;
+	toString(version) {
+		if (version == 'v2') {
+			return `?"CLOSURE FOR FOREIGN"`;
+		}
+		return super.toString(version);
 	}
 
-	convertToJSArgs(nexlst) {
+	isBuiltin() {
+		return false; //?
+	}
+
+	getLambdaDebugString() {
+		return '*FOREIGN CLOSURE*';
+	}
+
+	doAlertAnimation() {}
+
+	getReturnValueParam() {
+		return this.returnValueParam;
+
+	}
+
+	getArgEvaluator(cmdname, argContainer, executionEnvironment) {
+		return new BuiltinArgEvaluator(cmdname, this.paramsArray, argContainer, executionEnvironment);
+	}
+
+	copyFieldsTo(nex) {
+		super.copyFieldsTo(nex);
+	}
+
+	nexChildrenToList(nx) {
 		let a = [];
+		for (let i = 0; i < nx.numChildren(); i++) {
+			a[i] = nx.getChildAt(i);
+		}
+		return a;
+	}
+
+	// because of cycles, we only process up to 15 levels
+	// wyd trying to pass in objects more complex than that?
+	convertToJSArgs(nexlst, levels) {
+		let a = [];
+		if (!levels) {
+			levels = 0;
+		}
+		if (levels > 15) {
+			throw new EError("Error: arguments passed into foreign closure are too deeply nested (15 levels max)")
+		}
 		for (let i = 0; i < nexlst.length; i++) {
 			let nx = nexlst[i];
+			if (!this.paramsArray[i].convert) {
+				a[i] = nx;
+				continue;
+			}
 			if (nx.getTypeName() == '-string-') {
 				a[i] = nx.getFullTypedValue();
+			} else if (nx instanceof NexContainer) {
+				a[i] = this.convertToJSArgs(this.nexChildrenToList(nx), levels + 1);
 			} else {
 				a[i] = nx.getTypedValue();
 			}
@@ -49,11 +111,11 @@ class ForeignClosure extends Closure {
 		return a;
 	}
 
-	convertToVodkaReturnValue(returnDataType, returnValue) {
+	convertToVodkaReturnValue(returnValue) {
 		if (!returnValue) {
 			return new Nil();
 		}
-		switch (returnDataType.typeString) {
+		switch (this.returnValueParam.typeString) {
 			case '$':
 				return new EString(returnValue);
 			case '^':

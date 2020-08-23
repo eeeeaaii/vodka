@@ -117,35 +117,20 @@ class Command extends NexContainer {
 		}
 	}
 
-/*
-	toStringV2() {
-		return `*${this.toStringV2PrivateDataSection()}(${this.toStringV2TagList()}${super.childrenToString('v2')})`;
-	}
-*/
-
 	toStringV2() {
 		let cmdPrefix = this.convertMathToV2String(this.commandtext);
-		if (cmdPrefix != '' && !this.numChildren() == 0) {
+		if (cmdPrefix != '') {
 			cmdPrefix = cmdPrefix + ' ';
 		}
-		return `~${this.toStringV2PrivateDataSection()}(${this.toStringV2TagList()}${cmdPrefix}${super.childrenToString('v2')})`;		
+		return `~${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}${super.childrenToString('v2')}${this.listEndV2()}`;		
 	}
 
 	deserializePrivateData(data) {
-		// TODO: this is probably not sustainable - the only way this knows that
-		// the data is not "for it" is that it's not 'v' indicating vertical
-		if (data && data.length > 0 && data[0] != 'v') {
-			this.privateData = data[0];
-			data.splice(0, 1);
-		}
-		super.deserializePrivateData(data);
+		this.privateData = data;
 	}
 
-	serializePrivateData(data) {
-		if (this.privateData != '') {
-			data.push(this.privateData);
-		}
-		super.serializePrivateData(data);
+	serializePrivateData() {
+		return this.privateData;
 	}
 
 	copyFieldsTo(nex) {
@@ -160,7 +145,7 @@ class Command extends NexContainer {
 
 	isLambdaCommand(env) {
 		let closure = this.getClosure(env);
-		return !(closure.getLambda() instanceof Builtin);
+		return !(closure.isBuiltin());
 	}
 
 	getCommandName() {
@@ -179,14 +164,6 @@ class Command extends NexContainer {
 
 	hasCachedClosure() {
 		return !!this.cachedClosure;
-	}
-
-	// maybe deprecated
-	doAlertAnimation(lambda) {
-		let rn = lambda.getRenderNodes();
-		for (let i = 0; i < rn.length; i++) {
-			eventQueueDispatcher.enqueueAlertAnimation(rn[i]);
-		}
 	}
 
 	needsEvaluation() {
@@ -246,7 +223,7 @@ class Command extends NexContainer {
 		}
 		if (cmdname == null) {
 			// we have to give them something
-			cmdname = `<br>*** unnamed function, function body follows **** <br>${closure.getLambda().debugString()}<br>*** end function body ***<br>`;
+			cmdname = `<br>*** unnamed function, function body follows **** <br>${closure.getLambdaDebugString()}<br>*** end function body ***<br>`;
 		}
 
 		this.evalState = {
@@ -257,7 +234,7 @@ class Command extends NexContainer {
 	}
 
 	getExpectedReturnType() {
-		return this.evalState.closure.getLambda().getReturnValueParam();
+		return this.evalState.closure.getReturnValueParam();
 	}
 
 	maybeGetCommandName() {
@@ -291,7 +268,7 @@ class Command extends NexContainer {
 		if (PERFORMANCE_MONITOR) {
 			perfmon.logMethodCallStart(this.evalState.closure.getCmdName());
 		}
-		this.doAlertAnimation(this.evalState.closure.getLambda());
+		this.evalState.closure.doAlertAnimation();
 		// actually run the code.
 		this.notReallyCachedClosure = this.evalState.closure;
 		let r = this.evalState.closure.executor(executionEnv, argEvaluator, this.evalState.cmdname, this.tags);
@@ -395,17 +372,33 @@ class Command extends NexContainer {
 		return q;
 	}
 
-	static makeCommandWithClosure(closure) {
+	static makeCommandWithClosure(closure, maybeargs) {
 		let cmd = new Command();
 		cmd.appendChild(Command.quote(closure));
-		for (let i = 1; i < arguments.length; i++) {
-			cmd.appendChild(arguments[i]);
+
+		// this little snippet lets you do varargs or array
+		let args = [];
+		if (Array.isArray(maybeargs)) {
+			args = maybeargs;
+		} else {
+			args = Array.prototype.slice.call(arguments).splice(1);
+		}
+		for (let i = 0; i < args.length; i++) {
+			cmd.appendChild(args[i]);
 		}
 		return cmd;
 	}
 
-	static makeCommandWithArgs(cmdname, args) {
+	static makeCommandWithArgs(cmdname, maybeargs) {
 		let cmd = new Command(cmdname);
+
+		// this little snippet lets you do varargs or array
+		let args = [];
+		if (Array.isArray(maybeargs)) {
+			args = maybeargs;
+		} else {
+			args = Array.prototype.slice.call(arguments).splice(1);
+		}
 		for (let i = 0; i < args.length; i++) {
 			cmd.appendChild(args[i]);
 		}

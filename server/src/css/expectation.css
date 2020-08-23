@@ -18,7 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 .expectation {
-	display: contents;
+/*	display: contents;*/
 }
 
 .expectation > .dotspan {

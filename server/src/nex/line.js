@@ -44,7 +44,7 @@ class Line extends NexContainer {
 	}
 
 	toStringV2() {
-		return `[line](${this.toStringV2TagList()}${super.childrenToString('v2')})`;
+		return `[line]${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
 
 

@@ -26,32 +26,30 @@ list
  ;
 
 instance_list
- = INST_NAME:instance_name PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ ')' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST); }
- ;
-
-instance_name
- = '[' INST_NAME_DATA:instance_name_data ']' { return INST_NAME_DATA; }
- ;
-
-instance_name_data
- = [a-zA-Z0-9]*
+ = INST_NAME:instance_name PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ '_)' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ / INST_NAME:instance_name PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ '|)' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'v'); }
  ;
 
 org_list
- = PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST); }
+ = PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ / PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'v'); }
  ;
 
 exp_list
- = '*' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST); }
+ = '*' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ / '*' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'v'); }
  ;
 
 lambda_list
- = '&' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST); }
+ = '&' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ / '&' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'v'); }
  ;
 
 cmd_list
- = '~' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST); }
- / '~' PRIVATE:private_data_section '(' TAGLIST:taglist? NAME:cmd_name CHILDREN:(nex_with_space *) _  ')' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST); }
+ = '~' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ / '~' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'v'); }
+ / '~' PRIVATE:private_data_section '(_' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  '_)' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ / '~' PRIVATE:private_data_section '(|' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  '|)' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'v'); }
  ;
 
 cmd_name
@@ -73,7 +71,20 @@ atom
   / error_expression
   / float_expression
   / nil_expression
+  / instance_atom
   ;
+
+instance_atom
+ = INST_NAME:instance_name PRIVATE:private_data_section TAGLIST:taglist? ! '(' { return PF.makeInstanceAtom(INST_NAME, PRIVATE, TAGLIST); }
+ ;
+
+instance_name
+ = '[' INST_NAME_DATA:instance_name_data ']' { return INST_NAME_DATA; }
+ ;
+
+instance_name_data
+ = [a-zA-Z0-9]*
+ ;
 
 boolean_expression
   = '!' TAGLIST:taglist? 'yes' { return PF.makeBool(true, TAGLIST); }
@@ -81,7 +92,12 @@ boolean_expression
   ;
 
 symbol_expression
-  = '@' TAGLIST:taglist? SYMBOL:[a-zA-Z0-9_:-]+  { return PF.makeSymbol(SYMBOL, TAGLIST); }
+  = '@' TAGLIST:taglist? SYMBOL:(symbol_char)+  { return PF.makeSymbol(SYMBOL, TAGLIST); }
+  ;
+
+symbol_char
+  = SYMBOL_CHAR:[a-zA-Z0-9:-] { return SYMBOL_CHAR; }
+  / '_' ! ')'                { return '_'; }
   ;
 
 integer_expression
@@ -148,6 +164,8 @@ private_data_item
   ;
 
 _
- = [ \r\n\t]*
+ = ws*
  ;
 
+ws
+ = [ \r\n\t]

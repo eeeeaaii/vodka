@@ -15,6 +15,9 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { contractEnforcer } from './contract.js';
+import { EError } from './nex/eerror.js'
+
 class Tag  {
 	constructor(name) {
 		// can't have backticks in tags
@@ -31,6 +34,19 @@ class Tag  {
 
 	toString() {
 		return this.name;
+	}
+
+	addTagToNexWithEnforcement(nex) {
+		if (nex.hasTag(this)) return; // nex also checks this but let's optimize I guess
+		// check contract
+		let errorMessage = contractEnforcer.enforce(this, nex);
+		if (!errorMessage) {
+			nex.addTag(this);
+		} else {
+			let e = new EError(errorMessage);
+			e.appendChild(nex);
+			throw e;
+		}
 	}
 
 	draw(parentNode, isExploded) {
@@ -57,20 +73,25 @@ class TagEditor {
 		this.editorDomNode.classList.add('exploded');
 		this.tagText = '';
 		this._isEditing = false;
+		this.resultingError = null;
 		this.nex = nex;
 	}
 
 	finish() {
-		let tag = new Tag(this.tagText);
-		// TODO: implement contract enforcing.
-		// if (contractEnforcer.enforce(tag, this.nex)) {
-			this.nex.addTag(new Tag(this.tagText));
-		// } else {
-		// 	this.nex.addTag(new Tag(`[TAG ERROR: cannot add tag ${tag.getName()} to this nex, does not satisfy contract.]`));
-		// }
-
+		if (!this.tagText == '') {
+			let tag = new Tag(this.tagText);
+			tag.addTagToNexWithEnforcement(this.nex);
+		}
 		this._isEditing = false;
 
+	}
+
+	hasResultingError() {
+		return !!this.resultingError;
+	}
+
+	getResultingError() {
+		return this.resultingError;
 	}
 
 	// returns whether to continue processing whatever the key is

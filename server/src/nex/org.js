@@ -26,6 +26,11 @@ class Org extends NexContainer {
 		// private data is currently unused but I want the logic for
 		// handling it here so I can implement parsing and tests for it
 		this.privateData = '';
+
+		// temporary storage slot for drawfunction used during instantiation
+		this.drawcheat = null;
+
+		this.drawFunction = null;
 	}
 
 	toString(version) {
@@ -35,26 +40,29 @@ class Org extends NexContainer {
 		return `[org]`;
 	}
 
+	setDrawCheat(dc) {
+		this.drawcheat = dc;
+	}
+
+	getDrawCheat(dc) {
+		return this.drawcheat;
+	}
+
+	setDrawFunction(f) {
+		this.drawFunction = f;
+	}
+
 	toStringV2() {
-		return `${this.toStringV2PrivateDataSection()}(${this.toStringV2TagList()}${super.childrenToString('v2')})`;
+		return `${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 
 	}
 
 	deserializePrivateData(data) {
-		// TODO: this is probably not sustainable - the only way this knows that
-		// the data is not "for it" is that it's not 'v' indicating vertical
-		if (data && data.length > 0 && data[0] != 'v') {
-			this.privateData = data[0];
-			data.splice(0, 1);
-		}
-		super.deserializePrivateData(data);
+		this.privateData = data;
 	}
 
 	serializePrivateData(data) {
-		if (this.privateData != '') {
-			data.push(this.privateData);
-		}
-		super.serializePrivateData(data);
+		return this.privateData;
 	}
 
 
@@ -94,6 +102,14 @@ class Org extends NexContainer {
 		super.renderInto(renderNode, renderFlags);
 		domNode.classList.add('org');
 		domNode.classList.add('data');
+		if (this.drawFunction) {
+			let r = this.drawFunction(domNode.innerHTML);
+			if (typeof(r) == 'string') {
+				domNode.innerHTML = r;
+			} else {
+				domNode.appendChild(r);
+			}
+		}
 	}
 
 	doJobWithTag(jobname, args) {
@@ -124,6 +140,15 @@ class Org extends NexContainer {
 			'Enter': 'evaluate-nex',
 			'ShiftSpace': 'toggle-dir', // doesn't work
 		};
+	}
+
+	static makeTaggedOrgWithContents(tag) {
+		let org = new Org();
+		org.addTag(tag);
+		for (let i = 1; i < arguments.length; i++) {
+			org.appendChild(arguments[i]);
+		}
+		return org;
 	}
 }
 

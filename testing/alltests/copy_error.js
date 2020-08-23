@@ -1,0 +1,59 @@
+//startgnumessage//
+/*
+This file is part of Vodka.
+
+Vodka is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Vodka is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+*/
+//endgnumessage//
+//testname// copy_error
+//startdescription//
+/*
+verifies you can copy and paste an error
+*/
+//enddescription//
+//testspec// |Shift|~|/|Shift|#|3|Shift|#|Shift|Tab|Enter|Meta|c|v
+//starttest//
+var harness = require('../testharness');
+
+var testactions = [];
+
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Backquote'});
+testactions.push({type:'keyup',code:'Backquote'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Slash'});
+testactions.push({type:'keyup',code:'Slash'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Digit3'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keyup',code:'Digit3'});
+testactions.push({type:'keydown',code:'Digit3'});
+testactions.push({type:'keyup',code:'Digit3'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Digit3'});
+testactions.push({type:'keyup',code:'Digit3'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Tab'});
+testactions.push({type:'keyup',code:'Tab'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keydown',code:'MetaRight'});
+testactions.push({type:'keydown',code:'KeyC'});
+testactions.push({type:'keydown',code:'KeyV'});
+testactions.push({type:'keyup',code:'MetaRight'});
+
+harness.runTestNew(testactions, 'direct');
+//endtest//

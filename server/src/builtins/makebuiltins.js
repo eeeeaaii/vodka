@@ -25,6 +25,7 @@ import { Expectation } from '../nex/expectation.js'
 import { Lambda } from '../nex/lambda.js' 
 import { Zlist } from '../nex/zlist.js' 
 import { Org } from '../nex/org.js' 
+import { ERROR_TYPE_INFO, ERROR_TYPE_FATAL, ERROR_TYPE_WARN } from '../nex/eerror.js'
 
 function createMakeBuiltins() {
     // I don't think I need "make" functions for atom types. It
@@ -147,7 +148,42 @@ function createMakeBuiltins() {
 			}
 			return r;
 		}
-	);}
+	);
+
+	Builtin.createBuiltin(
+		'make-error',
+		['str$'],
+		function(env, executionEnvironment) {
+			let str = env.lb('str');
+			let r = new EError(str.getFullTypedValue());
+			r.setErrorType(ERROR_TYPE_FATAL);
+			r.suppressNextCatch();
+			return r;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'make-warning',
+		['str$'],
+		function(env, executionEnvironment) {
+			let str = env.lb('str');
+			let r = new EError(str.getFullTypedValue());
+			r.setErrorType(ERROR_TYPE_WARN);
+			return r;
+		}
+	);
+
+	Builtin.createBuiltin(
+		'make-info',
+		['str$'],
+		function(env, executionEnvironment) {
+			let str = env.lb('str');
+			let r = new EError(str.getFullTypedValue());
+			r.setErrorType(ERROR_TYPE_INFO);
+			return r;
+		}
+	);
+}
 
 export { createMakeBuiltins }
 

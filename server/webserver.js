@@ -92,7 +92,7 @@ function doLoad(data, cb) {
 	let filename = './packages/' + nm;
 	fs.readFile('./packages/' + nm, function(err, data) {
 		if (err) {
-			cb(`?"file not found: '${nm}'. Sorry!"`);
+			cb(`v2:?"file not found: '${nm}'. Sorry!"`);
 		} else {
 			cb(data)
 		}
