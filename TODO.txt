@@ -2,6 +2,9 @@
 - use shift keydown followed immediately by shift keyup as indication that we are switching
 - insert mode
 - default insert mode is the most common one
+- always have visual indicator of where next insert will happen
+- insert around is always last one, if you choose insert around but then you
+- insert a list, it just inserts before
 
 atoms inserting atom
 insert after
@@ -26,9 +29,13 @@ insert before
 full lists, inserting atom
 insert after
 insert before
-insert around
 insert as first element
 
+full lists, inserting list
+insert after
+insert before
+insert as first element
+insert around
 
 
 NEW TO-DOs AFTER TRYING THE NEW VERSION OUT

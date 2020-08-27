@@ -54,17 +54,41 @@ import * as Utils from './utils.js';
 
 import { UNHANDLED_KEY } from './globalconstants.js'
 
+import { experiments } from './globalappflags.js'
 
-// import { ContextType } from './contexttype.js'
+// V2_INSERTION
+import {
+	INSERT_UNSPECIFIED,
+	INSERT_AFTER,
+	INSERT_BEFORE,
+	INSERT_INSIDE,
+	INSERT_AROUND
+} from './rendernode.js'
 
-// These KeyResponseFunctions are all untested and not integrated. Need to integrate
-// one at a time and test.
 
 function insertOrAppend(s, obj) {
 	if (s.hasChildren()) {
 		return manipulator.insertAfterSelectedAndSelect(obj);
 	} else {
 		return manipulator.appendAndSelect(obj);
+	}
+}
+
+// V2_INSERTION
+function insertAtInsertionPoint(s, obj) {
+	switch(s.getInsertionMode()) {
+		case INSERT_AFTER:
+			return manipulator.insertAfterSelectedAndSelect(obj);
+		case INSERT_BEFORE:
+			return manipulator.insertBeforeSelectedAndSelect(obj);
+		case INSERT_INSIDE:
+			return manipulator.insertAsFirstChild(obj);
+		case INSERT_AROUND:
+			if (obj.isNexContainer()) {
+				return manipulator.wrapSelectedInAndSelect(obj);
+			} else {
+				return manipulator.insertBeforeSelectedAndSelect(obj);
+			}
 	}
 }
 
@@ -549,12 +573,13 @@ const KeyResponseFunctions = {
 	},
 
 	'select-parent': function(s) { manipulator.selectParent(); },
+
 	'select-first-child-or-create-insertion-point': function(s) {
 		if (!manipulator.selectFirstChild()) {
 			return manipulator.appendAndSelect(new InsertionPoint());
 		} else return true;
 	},
-	// 'select-next-sibling': function(s) { manipulator.selectNextSibling(); },
+
 	'select-first-child-or-fail': function(s) { manipulator.selectFirstChild(); },
 
 	'select-parent-and-remove-self': function(s) { manipulator.selectParent() && manipulator.removeNex(s); },
@@ -574,6 +599,109 @@ const KeyResponseFunctions = {
 	'no-op': function(s) {},
 
 	'start-lambda-editor': function(s) { s.startLambdaEditor(); },
+
+
+	// BEGIN V2_INSERTION
+
+	// deletes
+
+	'delete-letter-v2': function(s) {
+		manipulator.deleteLeafV2(s);
+	},
+
+	'delete-separator-v2': function(s) {
+		manipulator.deleteLeafV2(s);
+	},
+
+	'delete-line-v2': function(s) {
+		manipulator.deleteLineV2(s);
+	},
+
+	// movement
+
+
+	'move-left-up-v2': function(s) {
+		manipulator.selectPreviousSibling()
+			||  manipulator.forceInsertionModeForSelected(INSERT_BEFORE);
+	},
+	'move-right-down-v2': function(s) {
+		if (s.getInsertionMode() == INSERT_BEFORE) {
+			manipulator.forceInsertionModeForSelected(INSERT_AFTER);
+		} else {
+			manipulator.selectNextSibling()
+				||  manipulator.forceInsertionModeForSelected(INSERT_AFTER);
+		}
+	},
+
+	'move-to-previous-leaf-v2': function(s) {
+		manipulator.selectPreviousLeafV2(s);
+	},
+	'move-to-next-leaf-v2': function(s) {		
+		manipulator.selectNextLeafV2(s);
+	},
+
+	'select-first-child-or-force-insert-inside-insertion-mode': function(s) {
+		if (!manipulator.selectFirstChild()) {
+			return manipulator.forceInsertionModeForSelected(INSERT_INSIDE);
+		} else {
+			// when selecting first child, put insertion point before it
+			// WILL BREAK ALL THE TESTS
+			// so I need some kind of flag for old tests
+//			manipulator.forceInsertionModeForSelected(INSERT_BEFORE)
+
+			return true;
+		};
+	},
+
+	// line breaks
+
+	'do-line-break-always-v2': function(s) {
+		let newline = new RenderNode(new Newline());
+		manipulator.insertAfterSelected(newline)
+			&& manipulator.putAllNextSiblingsInNewLine()
+			&& newline.setSelected();
+	},
+
+	'do-line-break-from-line-v2': function(s) {
+		manipulator.doLineBreakForLine(s);
+	},
+
+
+	'do-line-break-for-letter-v2': function(s) {
+		manipulator.doLineBreakForLetter(s);
+	},
+
+	'do-line-break-for-separator-v2': function(s) {
+		manipulator.doLineBreakForSeparator(s);
+	},
+
+	'move-to-corresponding-letter-in-previous-line-v2': function(s) {
+		manipulator.selectCorrespondingLetterInPreviousLine()
+			 || manipulator.selectPreviousSibling()
+			 ||  manipulator.forceInsertionModeForSelected(INSERT_BEFORE)
+			;
+	},
+	'move-to-corresponding-letter-in-next-line-v2': function(s) {
+		manipulator.selectCorrespondingLetterInNextLine()
+			 || manipulator.selectNextSibling()
+			 ||  manipulator.forceInsertionModeForSelected(INSERT_AFTER)
+			;
+	},
+
+	'insert-command-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Command()); },
+	'insert-bool-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Bool()); },
+	'insert-symbol-at-insertion-point': function(s) { insertAtInsertionPoint(s, new ESymbol()); },
+	'insert-integer-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Integer()); },
+	'insert-string-at-insertion-point': function(s) { insertAtInsertionPoint(s, new EString()); },
+	'insert-float-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Float()); },
+	'insert-nil-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Nil()); },
+	'insert-lambda-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Lambda()); },
+	'insert-expectation-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Expectation()); },
+	'insert-word-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Word()); },
+	'insert-line-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Line()); },
+	'insert-doc-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Doc()); },
+	'insert-org-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Org()); },
+	// END V2_INSERTION
 
 
 	'replace-selected-with-command': function(s) { manipulator.replaceSelectedWith(new Command()); },
@@ -783,19 +911,6 @@ const KeyResponseFunctions = {
 		}		
 	},
 
-	'replace-selected-with-word-correctly': function(s) {
-		let selected = systemState.getGlobalSelectedNode();
-		let obj = new RenderNode(new Word());
-		if (Utils.isDoc(selected.getParent())) {
-			let ln = new RenderNode(new Line());
-			ln.appendChild(obj);
-			manipulator.replaceSelectedWith(ln);
-			obj.setSelected();
-		} else {
-			manipulator.replaceSelectedWith(obj);
-		}
-	},
-
 
 	'do-line-break-after-letter': function(s) {
 		let newline = new RenderNode(new Newline());
@@ -813,6 +928,20 @@ const KeyResponseFunctions = {
 
 		}
 	},
+
+	'replace-selected-with-word-correctly': function(s) {
+		let selected = systemState.getGlobalSelectedNode();
+		let obj = new RenderNode(new Word());
+		if (Utils.isDoc(selected.getParent())) {
+			let ln = new RenderNode(new Line());
+			ln.appendChild(obj);
+			manipulator.replaceSelectedWith(ln);
+			obj.setSelected();
+		} else {
+			manipulator.replaceSelectedWith(obj);
+		}
+	},
+
 
 	'delete-newline': function(s) {
 		if (manipulator.selectPreviousLeaf()) {

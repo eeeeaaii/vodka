@@ -23,7 +23,16 @@ import { TagEditor } from './tag.js'
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import { RENDER_FLAG_SELECTED, RENDER_FLAG_REMOVE_OVERRIDES, RENDER_FLAG_SHALLOW, RENDER_FLAG_NORMAL, RENDER_FLAG_RERENDER, RENDER_FLAG_EXPLODED } from './globalconstants.js'
 
+import { experiments } from './globalappflags.js'
+
 const MAX_RENDER_DEPTH = 100;
+
+// V2_INSERTION
+const INSERT_UNSPECIFIED = 0;
+const INSERT_AFTER = 1;
+const INSERT_BEFORE = 2;
+const INSERT_INSIDE = 3;
+const INSERT_AROUND = 4;
 
 class RenderNode {
 	constructor(forNex) {
@@ -37,6 +46,14 @@ class RenderNode {
 		this.explodedOverride = -1;
 		this.firstToggleOnNexRender = false;
 		this.currentEditor = null;
+
+		if (experiments.V2_INSERTION) {
+			this.setInsertionMode(INSERT_UNSPECIFIED);
+		}
+	}
+
+	debugString() {
+		return `[RNODE FOR]\n${this.getNex().debugString()}`
 	}
 
 	routeKeyToCurrentEditor(keycode) {
@@ -60,6 +77,12 @@ class RenderNode {
 	usingEditor() {
 		// there will be other editors I guess
 		return this.currentEditor && this.currentEditor.isEditing();
+	}
+
+	possiblyStartMainEditor() {
+		if (this.getNex().getTypeName() == '-lambda-') {
+			this.startLambdaEditor();
+		}
 	}
 
 	startLambdaEditor() {
@@ -269,6 +292,11 @@ class RenderNode {
 			return;
 		}
 		if (this.getNex().isNexContainer() && this.getNex().getTypeName() != '-nativeorg-' && !(renderFlags & RENDER_FLAG_SHALLOW)) {
+			if (experiments.V2_INSERTION) {
+				if ((renderFlags & RENDER_FLAG_EXPLODED) && this.insertionMode == INSERT_INSIDE) {
+					this.domNode.appendChild(this.getInsertionPointDomNode(this.insertionMode));			
+				}
+			}
 			let i = 0;
 			for (i = 0; i < this.childnodes.length; i++) {
 				if (i >= this.getNex().numChildren()) {
@@ -292,9 +320,30 @@ class RenderNode {
 					this.childnodes[i].setParent(this, i);
 				}
 				childRenderNode.setRenderDepth(this.renderDepth + 1);
+
+				if (experiments.V2_INSERTION) {
+					if ((renderFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_BEFORE) {
+						this.domNode.appendChild(this.getInsertionPointDomNode(childRenderNode.insertionMode));			
+					}
+				}
 				// need to append child before drawing so things like focus() work right
-				this.domNode.appendChild(childRenderNode.getDomNode());
+				if (experiments.V2_INSERTION) {
+					if ((renderFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_AROUND) {
+						let aroundNode = this.getInsertionPointDomNode(childRenderNode.insertionMode);
+						this.domNode.appendChild(aroundNode);
+						aroundNode.appendChild(childRenderNode.getDomNode());
+					} else {
+						this.domNode.appendChild(childRenderNode.getDomNode());
+					}
+				} else {
+					this.domNode.appendChild(childRenderNode.getDomNode());
+				}
 				childRenderNode.render(renderFlags);
+				if (experiments.V2_INSERTION) {
+					if ((renderFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_AFTER) {
+						this.domNode.appendChild(this.getInsertionPointDomNode(childRenderNode.insertionMode));			
+					}
+				}
 
 			}
 			if (i < (this.getNex().numChildren())) {
@@ -319,6 +368,85 @@ class RenderNode {
 		this.nex.renderTags(this.domNode, renderFlags);
 	}
 
+	// V2_INSERTION
+	getInsertionPointDomNode(insertionMode) {
+		if (insertionMode == INSERT_AROUND) {
+			return this.getInsertionPointForAround();
+		} else {
+			return this.getInsertionPointForNotAround();
+		}
+	}
+
+	// V2_INSERTION
+	getInsertionPointForAround() {
+		let ipoint = document.createElement('div');
+		let ss = "";
+		ss += "padding:5px;";
+		ss += "border:2px dotted #ff7777;";
+		ipoint.setAttribute("style", ss);
+		return ipoint;		
+	}
+
+	// V2_INSERTION
+	getInsertionPointForNotAround() {
+		let ipoint = document.createElement('div');
+		let ss = "";
+		ss += "width:5px;";
+		ss += "height:6px;";
+		ss += "padding:0px;";
+		ss += "color:#ff7777;";
+		ss += "line-height:0.4;";
+		if (this.getNex().isHorizontal && this.getNex().isHorizontal()) {
+			ss += "margin-top:6px;";
+		} else {
+			ss += "margin-left:6px;"
+		}
+
+		ipoint.setAttribute("style", ss);
+		ipoint.innerHTML = "&bull;";
+		return ipoint;
+	}
+
+	// V2_INSERTION
+	setInsertionMode(mode) {
+		this.insertionMode = mode;
+	}
+
+	// V2_INSERTION
+	nextInsertionMode() {
+		if (this.getNex().isNexContainer()) {
+			switch(this.insertionMode) {
+				case INSERT_INSIDE:
+					this.setInsertionMode(INSERT_AFTER);
+					break;
+				case INSERT_AFTER:
+					this.setInsertionMode(INSERT_BEFORE);
+					break;
+				case INSERT_BEFORE:
+					this.setInsertionMode(INSERT_AROUND);
+					break;
+				default:
+					this.setInsertionMode(INSERT_INSIDE);
+			}
+		} else {
+			switch(this.insertionMode) {
+				case INSERT_AFTER:
+					this.setInsertionMode(INSERT_BEFORE);
+					break;
+				case INSERT_BEFORE:
+					this.setInsertionMode(INSERT_AROUND);
+					break;
+				default:
+					this.setInsertionMode(INSERT_AFTER);
+			}
+		}
+	}
+
+	// V2_INSERTION
+	getInsertionMode() {
+		return this.insertionMode;
+	}
+
 	setSelected(rerender) {
 		let selectedNode = systemState.getGlobalSelectedNode();
 		if (selectedNode == this) return;
@@ -330,6 +458,13 @@ class RenderNode {
 		}
 		selectedNode = this;
 		this.selected = true;
+		if (experiments.V2_INSERTION) {
+			if (this.getNex().isNexContainer() && this.getNex().numChildren() == 0) {
+				this.setInsertionMode(INSERT_INSIDE);
+			} else {
+				this.setInsertionMode(INSERT_AFTER);
+			}
+		}
 		if (rerender) {
 			eventQueue.renderNodeRender(this, RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | systemState.getGlobalCurrentDefaultRenderFlags());
 		}
@@ -338,6 +473,9 @@ class RenderNode {
 
 	setUnselected() {
 		this.selected = false;
+		if (experiments.V2_INSERTION) {
+			this.setInsertionMode(INSERT_UNSPECIFIED);
+		}
 	}
 
 	getLeftX() {
@@ -392,7 +530,13 @@ class RenderNode {
 		let r = this.childnodes[i];
 		this.childnodes.splice(i, 1);
 		this.getNex().removeChildAt(i);
-		this.getDomNode().removeChild(r.getDomNode());
+		let domNodeToRemove = r.getDomNode();
+		if (experiments.V2_INSERTION) {
+			if (r.getInsertionMode() == INSERT_AROUND) {
+				domNodeToRemove = domNodeToRemove.parentNode;
+			}
+		}
+		this.getDomNode().removeChild(domNodeToRemove);
 		r.setParent(null, -1);
 		return r;
 	}
@@ -434,7 +578,14 @@ class RenderNode {
 		} else {
 			this.childnodes.splice(i, 0, c);
 			this.getNex().insertChildAt(c.getNex(), i);
-			this.getDomNode().insertBefore(c.getDomNode(), this.childnodes[i + 1].getDomNode());
+			let renderNodeToInsertBefore = this.childnodes[i + 1];
+			let domNodeToInsertBefore = renderNodeToInsertBefore.getDomNode();
+			if (experiments.V2_INSERTION) {
+				if (renderNodeToInsertBefore.getInsertionMode() == INSERT_AROUND) {
+					domNodeToInsertBefore = domNodeToInsertBefore.parentNode;
+				}
+			}
+			this.getDomNode().insertBefore(c.getDomNode(), domNodeToInsertBefore);
 		}
 		c.setParent(this, i);
 	}
@@ -534,5 +685,13 @@ class RenderNode {
 	}    
 }
 
-export { RenderNode }
+export { RenderNode,
+// V2_INSERTION
+	INSERT_UNSPECIFIED,
+	INSERT_AFTER,
+	INSERT_BEFORE,
+	INSERT_INSIDE,
+	INSERT_AROUND
+
+ }
 

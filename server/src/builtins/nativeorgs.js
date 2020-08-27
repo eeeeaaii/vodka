@@ -112,10 +112,16 @@ function createNativeOrgs() {
 			},
 			{
 				'name': 'line',
-				'args': '^ a0# a1# a2# a3#',
+				'args': '^ color() a0# a1# a2# a3#',
 				'func': function(args) {
-					this.ctx.moveTo(args[0], args[1]);
-					this.ctx.lineTo(args[2], args[3]);
+					let color = args[0];
+					let r = color[0];
+					let g = color[1];
+					let b = color[2];
+					this.ctx.strokeStyle = '#' + this.toHex(r) + this.toHex(g) + this.toHex(b);
+					this.ctx.beginPath();
+					this.ctx.moveTo(args[1], args[2]);
+					this.ctx.lineTo(args[3], args[4]);
 					this.ctx.stroke();
 			    }
 			},

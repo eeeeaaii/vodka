@@ -31,6 +31,7 @@ class Org extends NexContainer {
 		this.drawcheat = null;
 
 		this.drawFunction = null;
+		this.setVertical();
 	}
 
 	toString(version) {

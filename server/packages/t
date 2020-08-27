@@ -1,1 +1,1 @@
-v2:~(|with-imports @animation-functions ~(|make-zlist ~(_ff ~(_do-on-every &" lst"(|~(_let @a ~(_::pl:: ~(_car @lst_) #1_)_) ~(_cons @a ~(_cons ~(_to-word @a_) [word](__)_)_)|) [word](_#0 $_) #100_)_) ~(_ff ~(_do-on-every &" lst"(|~(_let @a ~(_::pl:: ~(_car @lst_) #1_)_) ~(_cons @a ~(_cons ~(_to-word @a_) [word](__)_)_)|) [word](_#0 $_) #120_)_)|)|)
+v2:[zlist](_[letter]"t" [letter]"h" [letter]"e" [letter]"r" [letter]"e"_)

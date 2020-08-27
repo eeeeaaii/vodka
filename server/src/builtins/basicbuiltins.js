@@ -101,7 +101,7 @@ function createBasicBuiltins() {
 		function(env, executionEnvironment) {
 			let c = env.lb('list');
 			if (c.numChildren() == 0) {
-				return new EError("chop: cannot get first element of empty list. Sorry!");
+				return new EError("cap: cannot get first element of empty list. Sorry!");
 			}
 			let r = c.getChildAt(0);
 			c.removeChild(c.getChildAt(0));
@@ -121,18 +121,7 @@ function createBasicBuiltins() {
 		}
 	);
 
-	Builtin.createBuiltin(
-		'first',
-		[ 'list()' ],
-		function(env, executionEnvironment) {
-			let lst = env.lb('list');
-			if (lst.numChildren() == 0) {
-				return new EError('first: cannot get first element of empty list. Sorry!');
-			}
-			return lst.getFirstChild();
-		}
-	);
-
+	Builtin.aliasBuiltin('first', 'car');
 
 	Builtin.createBuiltin(
 		'cdr',
@@ -148,19 +137,7 @@ function createBasicBuiltins() {
 		}
 	);
 
-	Builtin.createBuiltin(
-		'rest',
-		[ 'list()' ],
-		function(env, executionEnvironment) {
-			let c = env.lb('list');
-			if (c.numChildren() == 0) {
-				return new EError("rest: given an empty list, cannot make a new list with first element removed. Sorry!");
-			}
-			let newOne = c.makeCopy(true);
-			c.getChildrenForCdr(newOne);
-			return newOne;
-		}
-	);
+	Builtin.aliasBuiltin('rest', 'cdr');
 
 	Builtin.createBuiltin(
 		'chop',

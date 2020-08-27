@@ -17,6 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { ContextType, ContextMapBuilder } from '../contexttype.js'
 import { Nex } from './nex.js'
+import { experiments } from '../globalappflags.js'
 
 class Letter extends Nex {
 	constructor(letter) {
@@ -82,41 +83,74 @@ class Letter extends Nex {
 	}
 
 	getEventTable(context) {
-		return {
-			'Tab': 'move-to-next-leaf',
-			'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
-			'ArrowDown': 'move-to-corresponding-letter-in-next-line',
-			'ArrowLeft': 'move-to-previous-leaf',
-			'ArrowRight': 'move-to-next-leaf',
-			'ShiftBackspace' : new ContextMapBuilder()
-					.add(ContextType.DEFAULT, 'remove-selected-and-select-previous-sibling')
-					.add(ContextType.WORD, 'remove-selected-and-select-previous-leaf')
-					.build(),
-			'Backspace' : new ContextMapBuilder()
-					.add(ContextType.DEFAULT, 'remove-selected-and-select-previous-sibling')
-					.add(ContextType.WORD, 'remove-selected-and-select-previous-leaf')
-					.build(),
-			'Enter': 'do-line-break-after-letter',
-			// deprecated, change to insert-command-as-next-sibling
-			'~': 'legacy-insert-command-as-next-sibling-of-parent',
-			// all the rest also deprecated, to be removed.
-			'!': 'legacy-insert-bool-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-			'@': 'legacy-insert-symbol-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-			'#': 'legacy-insert-integer-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-			'$': 'legacy-insert-string-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-			'%': 'legacy-insert-float-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-			'^': 'legacy-insert-nil-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-			'&': 'legacy-insert-lambda-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-			'*': 'legacy-insert-expectation-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-			// end deprecated
+		if (experiments.V2_INSERTION) {
+			return {
+				'Tab': 'move-to-next-leaf',
+				'ArrowUp': 'move-to-corresponding-letter-in-previous-line-v2',
+				'ArrowDown': 'move-to-corresponding-letter-in-next-line-v2',
+				'ArrowLeft': 'move-to-previous-leaf-v2',
+				'ArrowRight': 'move-to-next-leaf-v2',
+				'Backspace' : 'delete-letter-v2',
+				'ShiftBackspace' : 'delete-letter-v2',
+				'Enter': 'do-line-break-for-letter-v2',
+				// deprecated, change to insert-command-as-next-sibling
+				'~': 'legacy-insert-command-as-next-sibling-of-parent',
+				// all the rest also deprecated, to be removed.
+				'!': 'legacy-insert-bool-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+				'@': 'legacy-insert-symbol-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+				'#': 'legacy-insert-integer-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+				'$': 'legacy-insert-string-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+				'%': 'legacy-insert-float-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+				'^': 'legacy-insert-nil-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+				'&': 'legacy-insert-lambda-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+				'*': 'legacy-insert-expectation-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+				// end deprecated
 
-			'(': 'insert-word-as-next-sibling',
-			'[': 'insert-line-as-next-sibling',
-			'{': 'insert-doc-as-next-sibling',
+				'(': 'insert-word-as-next-sibling',
+				'[': 'insert-line-as-next-sibling',
+				'{': 'insert-doc-as-next-sibling',
 
-			// experimental
-			'<': 'insert-zlist-as-next-sibling',
-			'*': 'insert-type-as-next-sibling',
+				// experimental
+				'<': 'insert-zlist-as-next-sibling',
+				'*': 'insert-type-as-next-sibling',
+			}
+		} else {
+			return {
+				'Tab': 'move-to-next-leaf',
+				'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
+				'ArrowDown': 'move-to-corresponding-letter-in-next-line',
+				'ArrowLeft': 'move-to-previous-leaf',
+				'ArrowRight': 'move-to-next-leaf',
+				'ShiftBackspace' : new ContextMapBuilder()
+						.add(ContextType.DEFAULT, 'remove-selected-and-select-previous-sibling')
+						.add(ContextType.WORD, 'remove-selected-and-select-previous-leaf')
+						.build(),
+				'Backspace' : new ContextMapBuilder()
+						.add(ContextType.DEFAULT, 'remove-selected-and-select-previous-sibling')
+						.add(ContextType.WORD, 'remove-selected-and-select-previous-leaf')
+						.build(),
+				'Enter': 'do-line-break-after-letter',
+				// deprecated, change to insert-command-as-next-sibling
+				'~': 'legacy-insert-command-as-next-sibling-of-parent',
+				// all the rest also deprecated, to be removed.
+				'!': 'legacy-insert-bool-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+				'@': 'legacy-insert-symbol-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+				'#': 'legacy-insert-integer-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+				'$': 'legacy-insert-string-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+				'%': 'legacy-insert-float-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+				'^': 'legacy-insert-nil-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+				'&': 'legacy-insert-lambda-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+				'*': 'legacy-insert-expectation-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
+				// end deprecated
+
+				'(': 'insert-word-as-next-sibling',
+				'[': 'insert-line-as-next-sibling',
+				'{': 'insert-doc-as-next-sibling',
+
+				// experimental
+				'<': 'insert-zlist-as-next-sibling',
+				'*': 'insert-type-as-next-sibling',
+			}
 		}
 	}
 }

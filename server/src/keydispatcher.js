@@ -24,6 +24,7 @@ import { undo } from './undo.js';
 import { ContextType } from './contexttype.js';
 import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
 import { evaluateNexSafely } from './evaluator.js';
+import { experiments } from './globalappflags.js'
 
 class KeyDispatcher {
 	dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
@@ -45,13 +46,12 @@ class KeyDispatcher {
 		}
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
 
-		// if (eventName != 'Meta-z') {
-		// 	// If we aren't undoing we save the last state so we can undo to it.
-		// 	// any editor stuff short circuits this, so you can undo what you type
-		// 	// in an editor (which makes sense because different input devices will
-		// 	// have different editors, which may or may not make sense with undo.
-		// 	undo.saveForUndo(Vodka.root.getNex());			
-		// }
+		if (experiments.V2_INSERTION) {
+			if (eventName == 'NakedShift') {
+				systemState.getGlobalSelectedNode().nextInsertionMode();
+				return false;
+			}
+		}
 
 		// there are a few special cases
 		if (eventName == '|') {
@@ -351,77 +351,151 @@ class KeyDispatcher {
 	}
 
 	getNexContainerGenericTable() {
-		return {
-			'ShiftTab': 'select-parent',
-			'Tab': 'select-first-child-or-create-insertion-point',
-			'ArrowUp': 'move-left-up',
-			'ArrowLeft': 'move-left-up',
-			'ArrowDown': 'move-right-down',
-			'ArrowRight': 'move-right-down',
-			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-			'Backspace': 'remove-selected-and-select-previous-sibling',
-			'ShiftEscape': 'toggle-exploded',
-			'~': 'insert-or-append-command',
-			'!': 'insert-or-append-bool',
-			'@': 'insert-or-append-symbol',
-			'#': 'insert-or-append-integer',
-			'$': 'insert-or-append-string',
-			'%': 'insert-or-append-float',
-			'^': 'insert-or-append-nil',
-			'&': 'insert-or-append-lambda',
-			'*': 'insert-or-append-expectation',
-			'(': 'insert-or-append-word',
-			')': 'insert-or-append-org',
-			'[': 'insert-or-append-line',
-			'{': 'insert-or-append-doc',
-			'`': 'add-tag',
-			'Alt`': 'remove-all-tags',
+		if (experiments.V2_INSERTION) {
+			return {
+				'ShiftTab': 'select-parent',
+				'Tab': 'select-first-child-or-force-insert-inside-insertion-mode',
+				'ArrowUp': 'move-left-up-v2',
+				'ArrowLeft': 'move-left-up-v2',
+				'ArrowDown': 'move-right-down-v2',
+				'ArrowRight': 'move-right-down-v2',
+				'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
+				'Backspace': 'remove-selected-and-select-previous-sibling',
+				'ShiftEscape': 'toggle-exploded',
+				'~': 'insert-command-at-insertion-point',
+				'!': 'insert-bool-at-insertion-point',
+				'@': 'insert-symbol-at-insertion-point',
+				'#': 'insert-integer-at-insertion-point',
+				'$': 'insert-string-at-insertion-point',
+				'%': 'insert-float-at-insertion-point',
+				'^': 'insert-nil-at-insertion-point',
+				'&': 'insert-lambda-at-insertion-point',
+				'*': 'insert-expectation-at-insertion-point',
+				'(': 'insert-word-at-insertion-point',
+				')': 'insert-org-at-insertion-point',
+				'[': 'insert-line-at-insertion-point',
+				'{': 'insert-doc-at-insertion-point',
+				'`': 'add-tag',
+				'Alt`': 'remove-all-tags',
 
-			'Alt~': 'wrap-in-command',
-			'Alt&': 'wrap-in-lambda',
-			'Alt*': 'wrap-in-expectation',
-			'Alt(': 'wrap-in-word',
-			'Alt)': 'wrap-in-org',
-			'Alt[': 'wrap-in-line',
-			'Alt{': 'wrap-in-doc',
-		};
+				'Alt~': 'wrap-in-command',
+				'Alt&': 'wrap-in-lambda',
+				'Alt*': 'wrap-in-expectation',
+				'Alt(': 'wrap-in-word',
+				'Alt)': 'wrap-in-org',
+				'Alt[': 'wrap-in-line',
+				'Alt{': 'wrap-in-doc',
+			};
+		} else {
+			return {
+				'ShiftTab': 'select-parent',
+				'Tab': 'select-first-child-or-create-insertion-point',
+				'ArrowUp': 'move-left-up',
+				'ArrowLeft': 'move-left-up',
+				'ArrowDown': 'move-right-down',
+				'ArrowRight': 'move-right-down',
+				'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
+				'Backspace': 'remove-selected-and-select-previous-sibling',
+				'ShiftEscape': 'toggle-exploded',
+				'~': 'insert-or-append-command',
+				'!': 'insert-or-append-bool',
+				'@': 'insert-or-append-symbol',
+				'#': 'insert-or-append-integer',
+				'$': 'insert-or-append-string',
+				'%': 'insert-or-append-float',
+				'^': 'insert-or-append-nil',
+				'&': 'insert-or-append-lambda',
+				'*': 'insert-or-append-expectation',
+				'(': 'insert-or-append-word',
+				')': 'insert-or-append-org',
+				'[': 'insert-or-append-line',
+				'{': 'insert-or-append-doc',
+				'`': 'add-tag',
+				'Alt`': 'remove-all-tags',
+
+				'Alt~': 'wrap-in-command',
+				'Alt&': 'wrap-in-lambda',
+				'Alt*': 'wrap-in-expectation',
+				'Alt(': 'wrap-in-word',
+				'Alt)': 'wrap-in-org',
+				'Alt[': 'wrap-in-line',
+				'Alt{': 'wrap-in-doc',
+			};
+		}
 	}
 
 	getNexGenericTable() {
-		return {
-			'ShiftTab': 'select-parent',
-			'Tab': 'select-next-sibling',
-			'ArrowUp': 'move-left-up',
-			'ArrowDown': 'move-right-down',
-			'ArrowLeft': 'move-left-up',
-			'ArrowRight': 'move-right-down',
-			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-			'Backspace': 'remove-selected-and-select-previous-sibling',
-			'ShiftEscape': 'toggle-exploded',
-			'~': 'insert-command-as-next-sibling',
-			'!': 'insert-bool-as-next-sibling',
-			'@': 'insert-symbol-as-next-sibling',
-			'#': 'insert-integer-as-next-sibling',
-			'$': 'insert-string-as-next-sibling',
-			'%': 'insert-float-as-next-sibling',
-			'^': 'insert-nil-as-next-sibling',
-			'&': 'insert-lambda-as-next-sibling',
-			'*': 'insert-expectation-as-next-sibling',
-			'(': 'insert-word-as-next-sibling',
-			')': 'insert-org-as-next-sibling',
-			'[': 'insert-line-as-next-sibling',
-			'{': 'insert-doc-as-next-sibling',
-			'`': 'add-tag',
-			'Alt`': 'remove-all-tags',
+		if (experiments.V2_INSERTION) {
+			return {
+				'ShiftTab': 'select-parent',
+				'Tab': 'select-next-sibling',
+				'ArrowUp': 'move-left-up-v2',
+				'ArrowDown': 'move-right-down-v2',
+				'ArrowLeft': 'move-left-up-v2',
+				'ArrowRight': 'move-right-down-v2',
+				'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
+				'Backspace': 'remove-selected-and-select-previous-sibling',
+				'ShiftEscape': 'toggle-exploded',
+				'~': 'insert-command-at-insertion-point',
+				'!': 'insert-bool-at-insertion-point',
+				'@': 'insert-symbol-at-insertion-point',
+				'#': 'insert-integer-at-insertion-point',
+				'$': 'insert-string-at-insertion-point',
+				'%': 'insert-float-at-insertion-point',
+				'^': 'insert-nil-at-insertion-point',
+				'&': 'insert-lambda-at-insertion-point',
+				'*': 'insert-expectation-at-insertion-point',
+				'(': 'insert-word-at-insertion-point',
+				')': 'insert-org-at-insertion-point',
+				'[': 'insert-line-at-insertion-point',
+				'{': 'insert-doc-at-insertion-point',
+				'`': 'add-tag',
+				'Alt`': 'remove-all-tags',
 
-			'Alt~': 'wrap-in-command',
-			'Alt&': 'wrap-in-lambda',
-			'Alt*': 'wrap-in-expectation',
-			'Alt(': 'wrap-in-word',
-			'Alt)': 'wrap-in-org',
-			'Alt[': 'wrap-in-line',
-			'Alt{': 'wrap-in-doc',
-		};
+				'Alt~': 'wrap-in-command',
+				'Alt&': 'wrap-in-lambda',
+				'Alt*': 'wrap-in-expectation',
+				'Alt(': 'wrap-in-word',
+				'Alt)': 'wrap-in-org',
+				'Alt[': 'wrap-in-line',
+				'Alt{': 'wrap-in-doc',
+			};
+		} else {
+			return {
+				'ShiftTab': 'select-parent',
+				'Tab': 'select-next-sibling',
+				'ArrowUp': 'move-left-up',
+				'ArrowDown': 'move-right-down',
+				'ArrowLeft': 'move-left-up',
+				'ArrowRight': 'move-right-down',
+				'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
+				'Backspace': 'remove-selected-and-select-previous-sibling',
+				'ShiftEscape': 'toggle-exploded',
+				'~': 'insert-command-as-next-sibling',
+				'!': 'insert-bool-as-next-sibling',
+				'@': 'insert-symbol-as-next-sibling',
+				'#': 'insert-integer-as-next-sibling',
+				'$': 'insert-string-as-next-sibling',
+				'%': 'insert-float-as-next-sibling',
+				'^': 'insert-nil-as-next-sibling',
+				'&': 'insert-lambda-as-next-sibling',
+				'*': 'insert-expectation-as-next-sibling',
+				'(': 'insert-word-as-next-sibling',
+				')': 'insert-org-as-next-sibling',
+				'[': 'insert-line-as-next-sibling',
+				'{': 'insert-doc-as-next-sibling',
+				'`': 'add-tag',
+				'Alt`': 'remove-all-tags',
+
+				'Alt~': 'wrap-in-command',
+				'Alt&': 'wrap-in-lambda',
+				'Alt*': 'wrap-in-expectation',
+				'Alt(': 'wrap-in-word',
+				'Alt)': 'wrap-in-org',
+				'Alt[': 'wrap-in-line',
+				'Alt{': 'wrap-in-doc',
+			};
+		}
 	}
 }
 

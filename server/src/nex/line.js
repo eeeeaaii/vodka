@@ -19,6 +19,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { ContextType } from '../contexttype.js'
 import { NexContainer } from './nexcontainer.js'
 import { EError } from './eerror.js'
+import { experiments } from '../globalappflags.js'
+
 
 class Line extends NexContainer {
 	constructor() {
@@ -110,22 +112,42 @@ class Line extends NexContainer {
 	}
 
 	getEventTable(context) {
-		return {
-			'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
-			'Backspace': 'remove-selected-and-select-previous-leaf',
-			'Enter': 'do-line-break-from-line',
-			'~': 'insert-command-as-next-sibling',
-			'!': 'insert-bool-as-next-sibling',
-			'@': 'insert-symbol-as-next-sibling',
-			'#': 'insert-integer-as-next-sibling',
-			'$': 'insert-string-as-next-sibling',
-			'%': 'insert-float-as-next-sibling',
-			'^': 'insert-nil-as-next-sibling',
-			'&': 'insert-lambda-as-next-sibling',
-			'*': 'insert-expectation-as-next-sibling',
-			'(': 'insert-word-as-next-sibling',
-			'[': 'insert-line-as-next-sibling',
-			'{': 'insert-doc-as-next-sibling',
+		if (experiments.V2_INSERTION) {
+			return {
+				'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
+				'Backspace': 'remove-selected-and-select-previous-leaf',
+				'Enter': 'do-line-break-from-line-v2',
+				'~': 'insert-command-as-next-sibling',
+				'!': 'insert-bool-as-next-sibling',
+				'@': 'insert-symbol-as-next-sibling',
+				'#': 'insert-integer-as-next-sibling',
+				'$': 'insert-string-as-next-sibling',
+				'%': 'insert-float-as-next-sibling',
+				'^': 'insert-nil-as-next-sibling',
+				'&': 'insert-lambda-as-next-sibling',
+				'*': 'insert-expectation-as-next-sibling',
+				'(': 'insert-word-as-next-sibling',
+				'[': 'insert-line-as-next-sibling',
+				'{': 'insert-doc-as-next-sibling',
+			}
+		} else {
+			return {
+				'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
+				'Backspace': 'remove-selected-and-select-previous-leaf',
+				'Enter': 'do-line-break-from-line',
+				'~': 'insert-command-as-next-sibling',
+				'!': 'insert-bool-as-next-sibling',
+				'@': 'insert-symbol-as-next-sibling',
+				'#': 'insert-integer-as-next-sibling',
+				'$': 'insert-string-as-next-sibling',
+				'%': 'insert-float-as-next-sibling',
+				'^': 'insert-nil-as-next-sibling',
+				'&': 'insert-lambda-as-next-sibling',
+				'*': 'insert-expectation-as-next-sibling',
+				'(': 'insert-word-as-next-sibling',
+				'[': 'insert-line-as-next-sibling',
+				'{': 'insert-doc-as-next-sibling',
+			}
 		}
 	}
 }

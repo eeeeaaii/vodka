@@ -101,6 +101,11 @@ class Builtin extends Lambda {
 		Builtin.bindBuiltinObject(name, closure);
 	}
 
+	static aliasBuiltin(aliasName, boundName) {
+		let bound = BUILTINS.lookupBinding(boundName);
+		Builtin.bindBuiltinObject(aliasName, bound);
+	}
+
 	static bindBuiltinObject(name, nex) {
 		BUILTINS.bind(name, nex);
 	}

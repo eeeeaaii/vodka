@@ -96,7 +96,8 @@ class ForeignClosure extends Closure {
 		}
 		for (let i = 0; i < nexlst.length; i++) {
 			let nx = nexlst[i];
-			if (!this.paramsArray[i].convert) {
+			// we only allow raw non-converts at top level
+			if (levels == 0 &&  !this.paramsArray[i].convert) {
 				a[i] = nx;
 				continue;
 			}

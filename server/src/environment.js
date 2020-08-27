@@ -269,7 +269,7 @@ class Environment {
 		return binding;
 	}
 
-	// just returns the name
+	// just returns the value
 	lookupBinding(name) {
 		return this.lookupFullBinding(name).val;
 	}

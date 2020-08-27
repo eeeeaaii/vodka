@@ -201,6 +201,14 @@ class NexContainer extends Nex {
 		this.vdir = false;
 	}
 
+	isVertical() {
+		return this.vdir;
+	}
+
+	isHorizontal() {
+		return !this.vdir;
+	}
+
 	renderInto(renderNode, renderFlags) {
 		let domNode = renderNode.getDomNode();
 		super.renderInto(renderNode, renderFlags);

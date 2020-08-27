@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { setAppFlags } from './globalappflags.js'
+import { setAppFlags, experiments } from './globalappflags.js'
 import { perfmon } from './perfmon.js'
 
 import { eventQueue } from './eventqueue.js'
@@ -40,19 +40,26 @@ import { createTestBuiltins } from './builtins/testbuiltins.js'
 import { createTypeConversionBuiltins } from './builtins/typeconversions.js'
 import { RenderNode } from './rendernode.js'
 import { Root } from './nex/root.js'
+import { Command } from './nex/command.js'
+import { ESymbol } from './nex/esymbol.js'
 import { Doc } from './nex/doc.js'
 import { runTest } from './tests/unittests.js';
 import { checkRecordState } from './testrecorder.js'
-import { RENDER_FLAG_REMOVE_OVERRIDES } from './globalconstants.js'
+import { RENDER_FLAG_REMOVE_OVERRIDES, RENDER_FLAG_EXPLODED } from './globalconstants.js'
+import { getGlobalAppFlagIsSet, getGlobalAppFlagValue } from '../globalappflags.js'
+import { evaluateNexSafely } from './evaluator.js'
+import { BINDINGS } from '../environment.js'
+
 
 // EXPERIMENTS
 
 // all these should go into SystemState
 // possibly some of them would be moved into Render-specific
 // SystemState objects (for example, screen rendering vs. audio rendering)
-var isStepEvaluating = false; // allows some performance-heavy operations while step evaluating
-var hiddenroot = null;
+let isStepEvaluating = false; // allows some performance-heavy operations while step evaluating
+let hiddenroot = null;
 let stackLevel = 0;
+let root = null;
 
 function dumpPerf() {
 	perfmon.dump();
@@ -131,6 +138,24 @@ function topLevelRender() {
 	systemState.getRoot().render(flags);
 }
 
+function doStartupWork() {
+	if (getGlobalAppFlagIsSet('file')) {
+		let filename = getGlobalAppFlagValue('file');
+		let cmd = Command.makeCommandWithArgs(
+			"ff",
+			Command.makeCommandWithArgs(
+				"load",
+				new ESymbol(filename)));
+		let exp = evaluateNexSafely(cmd, BINDINGS);
+		let expNode = root.appendChild(exp);
+		expNode.setSelected(false);
+		systemState.setGlobalCurrentDefaultRenderFlags(RENDER_FLAG_EXPLODED);
+	} else {
+		let docNode = root.appendChild(new Doc());
+		docNode.setSelected(false /* don't render yet */);
+	}
+}
+
 // app main entry point
 
 function setup() {
@@ -149,29 +174,45 @@ function setup() {
 	// when there are different render node types.
 	// note this is duplicated in undo.js
 	let rootnex = new Root(true /* attached */);
-	var root = new RenderNode(rootnex);
+	root = new RenderNode(rootnex);
 	let rootDomNode = document.getElementById('mixroot');
 	root.setDomNode(rootDomNode);
 	systemState.setRoot(root);
 
-	let docNode = root.appendChild(new Doc());
-	docNode.setSelected(false /* don't render yet */);
+
+	// V2_INSERTION
+	let justPressedShift = false;
+
 	document.onclick = function(e) {
 		checkRecordState(e, 'mouse');
 		return true;
 	}
 	document.onkeyup = function(e) {
 		checkRecordState(e, 'up');
+		if (experiments.V2_INSERTION) {
+			if (justPressedShift) {
+				return doKeyInputNotForTests('NakedShift', e.code, e.shiftKey, e.ctrlKey, e.metaKey, e.altKey);
+			}
+			justPressedShift = false;
+		}
 		return true;
 	}
 	document.onkeydown = function(e) {
 		checkRecordState(e, 'down');
 		if (systemState.isKeyFunnelActive()) {
+			if (experiments.V2_INSERTION) {
+				if (e.key == 'Shift') {
+					justPressedShift = true;
+				} else {
+					justPressedShift = false;
+				}
+			}
 			return doKeyInputNotForTests(e.key, e.code, e.shiftKey, e.ctrlKey, e.metaKey, e.altKey);
 		} else {
 			return true;
 		}
 	}
+	doStartupWork();
 	eventQueueDispatcher.enqueueTopLevelRender();
 }
 

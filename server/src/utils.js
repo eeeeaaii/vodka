@@ -122,6 +122,12 @@ function isInsertionPoint(n) {
 	return n.getTypeName() == '-insertionpoint-';
 }
 
+function isRoot(n) {
+	if (n instanceof RenderNode) n = n.getNex();
+	if (!n) return false;
+	return n.getTypeName() == '-root-';
+}
+
 export {
 	isError,
 	isFatalError,
@@ -138,5 +144,6 @@ export {
 	isEString,
 	isCommand,
 	isLambda,
-	isInsertionPoint
+	isInsertionPoint,
+	isRoot
 }
