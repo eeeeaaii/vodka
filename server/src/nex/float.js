@@ -18,6 +18,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 import { ValueNex } from './valuenex.js'
+import { experiments } from '../globalappflags.js'
+
 
 class Float extends ValueNex {
 	constructor(val) {
@@ -126,10 +128,20 @@ class Float extends ValueNex {
 	}
 
 	getEventTable(context) {
-		return {
-			'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
-			'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-leaf',
-			'Enter': 'do-line-break-always',
+		if (experiments.V2_INSERTION) {
+			return {
+				// these 2 are questionable but make tests pass?
+				'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
+				'Backspace': 'remove-selected-and-select-previous-leaf-v2',
+				'Enter': 'do-line-break-always',
+			}
+		} else {
+			return {
+				// these 2 are questionable but make tests pass?
+				'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
+				'Backspace': 'remove-selected-and-select-previous-leaf',
+				'Enter': 'do-line-break-always',
+			}
 		}
 	}
 }

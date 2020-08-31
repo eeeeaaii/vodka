@@ -120,8 +120,6 @@ testactions.push({type:'keyup',code:'Enter'});
 testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'ArrowUp'});
 testactions.push({type:'keyup',code:'ArrowUp'});
-testactions.push({type:'keydown',code:'ShiftRight'});
-testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'ArrowDown'});
 testactions.push({type:'keyup',code:'ArrowDown'});
 testactions.push({type:'keydown',code:'ArrowDown'});

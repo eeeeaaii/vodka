@@ -38,8 +38,6 @@ testactions.push({type:'keydown',code:'KeyI'});
 testactions.push({type:'keyup',code:'KeyI'});
 testactions.push({type:'keydown',code:'KeyN'});
 testactions.push({type:'keyup',code:'KeyN'});
-testactions.push({type:'keydown',code:'ShiftRight'});
-testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'KeyD'});
 testactions.push({type:'keyup',code:'KeyD'});
 testactions.push({type:'keydown',code:'ShiftRight'});

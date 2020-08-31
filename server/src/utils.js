@@ -49,7 +49,7 @@ function isInDocContext(n) {
 }
 
 function isDocElement(n) {
-	return isDoc(n) || isLine(n) || isWord(n);
+	return isDoc(n) || isLine(n) || isWord(n) || isLetter(n) || isSeparator(n);
 }
 
 function isExpectation(n) {

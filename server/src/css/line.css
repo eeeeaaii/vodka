@@ -34,3 +34,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	padding: 3px;
 	border-width: 3px;
 }
+
+.emptyline {
+	height:1.12em;	
+}
+
+.emptyline.selected {
+	background-color: black;
+	width:1px;
+}

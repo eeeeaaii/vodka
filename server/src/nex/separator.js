@@ -17,10 +17,17 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Letter } from './letter.js'
 import { experiments } from '../globalappflags.js'
+import { RENDER_FLAG_INSERT_AFTER } from '../globalconstants.js'
 
 class Separator extends Letter {
 	constructor(letter) {
 		super(letter);
+	}
+
+	makeCopy() {
+		let r = new Separator(this.value);
+		this.copyFieldsTo(r);
+		return r;
 	}
 
 	getTypeName() {
@@ -49,6 +56,11 @@ class Separator extends Letter {
 		super.renderInto(renderNode, renderFlags, true /* skip tags hack */);
 		domNode.classList.add('separator');
 		domNode.classList.add('data');
+		if (renderFlags & RENDER_FLAG_INSERT_AFTER) {
+			domNode.classList.add('rightinsert');
+		} else {
+			domNode.classList.add('leftinsert');			
+		}
 	}
 
 	getEventTable(context) {

@@ -18,6 +18,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { ValueNex } from './valuenex.js'
 import { CONSOLE_DEBUG } from '../globalconstants.js'
 import { INDENT, systemState } from '../systemstate.js'
+import { experiments } from '../globalappflags.js'
+import { Editor } from '../editors.js'
+
 
 class ESymbol extends ValueNex {
 	constructor(val) {
@@ -71,22 +74,79 @@ class ESymbol extends ValueNex {
 		return b;
 	}
 
+	renderInto(renderNode, renderFlags) {
+		super.renderInto(renderNode, renderFlags);
+		let domNode = renderNode.getDomNode();
+		if (this.isEditing) {
+			domNode.classList.add('editing');
+		} else {
+			domNode.classList.remove('editing');
+		}
+	}
+
+
 	getDefaultHandler() {
-		return 'insertOrAddToESymbol';
+		if (experiments.V2_INSERTION) {
+			return 'standardDefault';
+		} else {
+			return 'insertOrAddToESymbol';
+		}
 	}
 
 	getEventTable(context) {
-		return {
-			'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
-			'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-leaf',
-			'ShiftEnter': 'evaluate-nex',
-			'Enter': 'evaluate-nex',
+		if (experiments.V2_INSERTION) {
+			return {
+				// these 2 are questionable but make tests pass?
+				'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
+				'Backspace': 'remove-selected-and-select-previous-leaf-v2',
+				'ShiftEnter': 'evaluate-nex',
+				'Enter': 'evaluate-nex',
+			}
+		} else {
+			return {
+				// WHY this is wrong
+				// backspace is the other damn thing
+				// deleting one char at a time from the contents
+
+				// these 2 are questionable but make tests pass?
+				'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
+				'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-leaf',
+				'ShiftEnter': 'evaluate-nex',
+				'Enter': 'evaluate-nex',
+			}
 		}
 	}
 }
 
 
 
+class ESymbolEditor extends Editor {
 
-export { ESymbol }
+	constructor(nex) {
+		super(nex);
+	}
+
+	hasContent() {
+		return this.nex.getValue() != '';
+	}
+
+	doBackspaceEdit() {
+		this.nex.deleteLastLetter();
+	}
+
+	doAppendEdit(text) {
+		this.nex.appendText(text);
+	}
+
+	shouldAppend(text) {
+		return /^[a-zA-Z0-9:_-]$/.test(text);
+	}
+
+	shouldTerminateAndReroute(text) {
+		return !this.shouldAppend(text);
+	}
+}
+
+
+export { ESymbol, ESymbolEditor }
 

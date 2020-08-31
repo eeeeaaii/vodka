@@ -61,6 +61,10 @@ class ValueNex extends Nex {
 		this.value = v;
 	}
 
+	getValue() {
+		return this.value;
+	}
+
 	appendText(txt) {
 		let v = this.value;
 		v = v + txt;

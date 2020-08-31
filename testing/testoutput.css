@@ -20,6 +20,17 @@ body {
 	margin: 0;
 }
 
+#goldenoutput {
+	padding: 14px;
+	font-family: Courier;
+	font-size: 16px;
+}
+
+.goldenoutputtextarea {
+	width:800px;
+	padding: 5px;
+}
+
 .summary {
 	margin-bottom:20px;	
 }
@@ -32,10 +43,22 @@ body {
 	margin-bottom: 15px;
 }
 
+.printcommands {
+	font-family: Courier;
+	font-size: 16px;
+	margin-left: 10px;
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+
 .regencommand {
 	width: 400px;
 	height: 20px;
 	font-size: 9px;
+}
+
+.tall {
+	height:200px;
 }
 
 .summaryname {
@@ -74,6 +97,26 @@ body {
 	padding-bottom:15px;
 }
 
+.testrerun {
+	background-color: #cccccc;
+	font-family: Courier;
+	font-size: 20px;
+	margin-left: 0px;
+	padding-left: 30px;
+	padding-top:15px;
+	padding-bottom:15px;	
+}
+
+.regengolden {
+	font-family: Courier;
+	font-size: 10px;
+	padding-left: 30px;
+	padding-top: 4px;
+	padding-bottom: 4px;	
+	background-color:#ff8888;
+	color: white;
+}
+
 .testvariant {
 	padding:0;
 }
@@ -93,6 +136,11 @@ body {
 
 .passed {
 	background-color: green;
+	color: white;
+}
+
+.ignored {
+	background-color: #0b219e;
 	color: white;
 }
 

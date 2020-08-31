@@ -34,6 +34,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	padding: 5px;
 }
 
+
 .valuenex.exploded.selected {
 	padding: 3px;
 	border: 3px solid var(--selected-border);
@@ -41,6 +42,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border-bottom: 3px solid var(--selected-border);
 	border-top: 3px solid var(--selected-border);
 	*/
+}
+
+.valuenex.exploded.editing {
+	background-color: #ffbfbe;
+	font-weight: bold;
 }
 
 /* TODO: move to symbol.css if it works out 

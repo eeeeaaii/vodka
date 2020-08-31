@@ -29,8 +29,6 @@ var harness = require('../testharness');
 var testactions = [];
 
 testactions.push({type:'keydown',code:'ShiftRight'});
-testactions.push({type:'keyup',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Backquote'});
 testactions.push({type:'keyup',code:'Backquote'});
 testactions.push({type:'keyup',code:'ShiftRight'});

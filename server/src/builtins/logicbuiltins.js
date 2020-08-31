@@ -60,7 +60,7 @@ function createLogicBuiltins() {
 			if (b) {
 				let iftrueresult = evaluateNexSafely(iftrue, executionEnvironment);
 				if (Utils.isFatalError(iftrueresult)) {
-					return wrapError('&szlig;', 'if: error in argument 2', iftrueresult);
+					return wrapError('&szlig;', 'if(-then(-else)): error in argument 2', iftrueresult);
 				}
 				return iftrueresult;
 			} else if (iffalse == UNBOUND) {
@@ -68,7 +68,7 @@ function createLogicBuiltins() {
 			} else {
 				let iffalseresult = evaluateNexSafely(iffalse, executionEnvironment);
 				if (Utils.isFatalError(iffalseresult)) {
-					return wrapError('&szlig;', 'if: error in argument 3', iffalseresult);
+					return wrapError('&szlig;', 'if(-then(-else)): error in argument 3', iffalseresult);
 				}
 				return iffalseresult;
 			}

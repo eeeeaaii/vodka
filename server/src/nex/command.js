@@ -28,9 +28,11 @@ import { Closure } from './closure.js'
 import { ContextType } from '../contexttype.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED, CONSOLE_DEBUG } from '../globalconstants.js'
+import { Editor } from '../editors.js'
 
 // remove with deprecated defaultHandle
 import { Letter } from './letter.js'
+import { experiments } from '../globalappflags.js'
 
 
 class Command extends NexContainer {
@@ -303,6 +305,11 @@ class Command extends NexContainer {
 			} else {
 				codespan.classList.remove('exploded');
 			}
+			if (this.isEditing) {
+				codespan.classList.add('editing');
+			} else {
+				codespan.classList.remove('editing');
+			}
 			codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
 		}
 	}
@@ -413,18 +420,73 @@ class Command extends NexContainer {
 	}
 
 	getDefaultHandler() {
-		return 'insertAfterCommand';
+		if (experiments.V2_INSERTION) {
+			return 'standardDefault';
+		} else {
+			return 'insertAfterCommand';
+		}
+	}
+
+	doTabHack() {
+		this.dotabhack = 2;
 	}
 
 	getEventTable(context) {
-		return {
-			'ShiftEnter': 'evaluate-nex-and-keep',
-			'Enter': 'evaluate-nex',
-			'Backspace': 'delete-last-command-letter-or-remove-selected-and-select-previous-sibling',
-			'ShiftSpace': 'toggle-dir',
-			'CtrlSpace': 'autocomplete'
-		};
+		// same?
+		if (experiments.V2_INSERTION) {
+			return {
+				'ShiftEnter': 'evaluate-nex-and-keep',
+				'Enter': 'evaluate-nex',
+				'Backspace': 'delete-last-command-letter-or-remove-selected-and-select-previous-sibling',
+				'ShiftSpace': 'toggle-dir',
+				'CtrlSpace': 'autocomplete'
+			};
+		} else {
+			return {
+				'ShiftEnter': 'evaluate-nex-and-keep',
+				'Enter': 'evaluate-nex',
+				'Backspace': 'delete-last-command-letter-or-remove-selected-and-select-previous-sibling',
+				'ShiftSpace': 'toggle-dir',
+				'CtrlSpace': 'autocomplete'
+			};
+		}
 	}
 }
 
-export { Command }
+class CommandEditor extends Editor {
+
+	constructor(nex) {
+		super(nex);
+	}
+
+	doBackspaceEdit() {
+		this.nex.deleteLastCommandLetter();
+	}
+
+	doAppendEdit(text) {
+		this.nex.appendCommandText(text);
+	}
+
+	hasContent() {
+		return this.nex.getCommandText() != '';
+	}
+
+	shouldAppend(text) {
+		if (/^[a-zA-Z0-9:_-]$/.test(text)) return true; // normal chars
+		if (/^[/<>=+*]$/.test(text)) return true;
+		return false;
+	}
+
+	shouldTerminateAndReroute(input) {
+		// don't terminate for math stuff, this is temporary
+		if (/^[/<>=+*]$/.test(input)) return false;
+
+		// command-friendly characters
+		if (/^[a-zA-Z0-9:_-]$/.test(input)) return false;
+
+		// anything else, pop out
+		return true;
+	}
+}
+
+export { Command, CommandEditor }

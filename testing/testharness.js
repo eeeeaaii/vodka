@@ -20,6 +20,35 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 const puppeteer = require('puppeteer');
 
+const readline = require('readline');
+
+
+const rl = readline.createInterface({
+	input: process.stdin,
+	output: process.stdout
+})
+
+rl.on('line', (input) => {
+	if (!paused) {
+		paused = true;
+	} else {
+		if ('' + input == '') {
+			step = true;
+		} else {
+			switch(input) {
+				case '1': speed = 1; break;
+				case '2': speed = 2; break;
+				case '3': speed = 3; break;
+			}
+			paused = false;
+		}
+	}
+})
+
+var speed = 1;
+var step = false;
+var paused = false;
+
 function delay(timeout) {
 	return new Promise((resolve) => {
 		setTimeout(resolve, timeout);
@@ -38,18 +67,35 @@ function runUnitTest(testinput) {
 	runTest(testinput, 'indirect', false);
 }
 
+function spaces(n) {
+	n += 30; // number of lines in the file before the test stuff starts.
+			// doesn't work for the old tests.
+	if (n < 10) return '    ' + n;
+	if (n < 100) return '   ' + n;
+	if (n < 1000) return '  ' + n;
+	if (n < 10000) return ' ' + n;
+	return n;
+}
+
 function runTestImpl(testinput, method, legacy) {
 	(async() => {
 		let normal_out = process.argv[2];
 		let exploded_out = process.argv[3];
-//			const browser = await puppeteer.launch({headless:false, slowMo:250});
-		const browser = await puppeteer.launch();
+		let headful = (process.argv[4] == "yes");
+		let dolog = headful;
+		let browser = null;
+		if (headful) {
+			browser = await puppeteer.launch({headless:false});
+		} else {
+			browser = await puppeteer.launch();
+		}
 		const page = await browser.newPage();
 		page.on('console', msg => {
 			for (let i = 0; i < msg.args().length; ++i) {
 			    console.log(`${i}: ${msg.args()[i]}`);
 			}
 			})
+		if (headful) console.log("enter to pause, enter to step, anything+enter to resume")
 		await page.goto('http://localhost:3000', {waitUntil: 'networkidle2'});
 		// I recorded a bunch of tests that used shift-enter to mean "execute and replace"
 		// before I changed the meaning of shift-enter to "execute and leave"
@@ -64,22 +110,41 @@ function runTestImpl(testinput, method, legacy) {
 			})
 			// we have logged all browser interactions directly, the new way.
 			for (let i = 0; i < testinput.length; i++) {
+				if (paused && !step) {
+					i--;
+					await delay(2);
+					continue;
+				}
+				step = false;
 				let t = testinput[i];
 				switch(t.type) {
 					case 'click':
+						if (dolog) console.log(`${spaces(i)}. click:   ${t.x}, ${t.y}`)
 						await page.mouse.click(Number(t.x), Number(t.y));
 						break;
 					case 'keydown':
+						if (dolog) console.log(`${spaces(i)}. keydown: ${t.code}`);
 						await page.keyboard.down(t.code);
 						break;
 					case 'keyup':
+						if (dolog) console.log(`${spaces(i)}. keyup:         (${t.code})`);
 						await page.keyboard.up(t.code);
 						break;
 					case 'pause':
+						if (dolog) console.log(`${spaces(i)}. pause`);
 						await page.waitFor(t.length);
 						break;
 				}
-				await delay(2);
+				if (headful) {
+					switch(speed) {
+						case 1: await delay(250); break;
+						case 2: await delay(150); break;
+						case 3: await delay(50); break;
+
+					}					
+				} else {
+					await delay(2);
+				}
 			}
 		} else {
 			// legacy mode, where we call the javascript 'doKeyInput' method
@@ -88,16 +153,19 @@ function runTestImpl(testinput, method, legacy) {
 			await delay(150);
 		}
 		await page.screenshot({path: exploded_out});
+		// if (headful) {
+		// 	await delay(10000);
+		// }
 		await page.evaluate(function() {
 			doKeyInput('Escape', 'Escape', false, false, false);
 		})
-		
+		await rl.close();
 		await page.screenshot({path: normal_out});
 		await browser.close();
 	})().catch((error) => {
 		console.log("TEST FAILED");
 		console.error(error);
-//			await browser.close();
+		//await browser.close();
 		process.exit(1);
 	});
 }

@@ -28,7 +28,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 
-@keyframes letterblink {
+@keyframes letterblinkright {
 	from {
 		border-top: 1px solid black;
 		border-right: 1px solid black;
@@ -55,9 +55,41 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	}
 }
 
-.letter.selected {
+@keyframes letterblinkleft {
+	from {
+		border-top: 1px solid black;
+		border-left: 1px solid black;
+		border-bottom: 1px solid black;
+		margin-top: -1px;
+		margin-left: -1px;
+		margin-bottom: -1px;
+	}
+	99% {
+		border-top: 1px solid black;
+		border-left: 1px solid black;
+		border-bottom: 1px solid black;
+		margin-top: -1px;
+		margin-left: -1px;
+		margin-bottom: -1px;
+	}
+	to {
+		border-top: 0px;
+		border-left: 0px;
+		border-bottom: 0px;
+		margin-top: 0px;
+		margin-left: 0px;
+		margin-bottom: 0px;
+	}
+}
+
+.letter.selected.leftinsert {
 	animation-duration: 1s;
-	animation-name: letterblink;
+	animation-name: letterblinkleft;
+	animation-iteration-count: 1;
+}
+.letter.selected.rightinsert {
+	animation-duration: 1s;
+	animation-name: letterblinkright;
 	animation-iteration-count: 1;
 }
 

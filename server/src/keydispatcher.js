@@ -24,7 +24,7 @@ import { undo } from './undo.js';
 import { ContextType } from './contexttype.js';
 import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
 import { evaluateNexSafely } from './evaluator.js';
-import { experiments } from './globalappflags.js'
+import { experiments } from '../globalappflags.js'
 
 class KeyDispatcher {
 	dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
@@ -35,16 +35,16 @@ class KeyDispatcher {
 				p = p.getParent();
 			}
 		}
+		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
 		if (systemState.getGlobalSelectedNode().usingEditor()) {
 			// will return whether or not to "reroute"
 			// rerouting means the editor didn't handle the key AND wants keydispatcher
 			// to handle it instead
-			let reroute = this.doEditorEvent(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
+			let reroute = this.doEditorEvent(eventName);
 			if (!reroute) {
 				return false;
 			}
 		}
-		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
 
 		if (experiments.V2_INSERTION) {
 			if (eventName == 'NakedShift') {
@@ -134,13 +134,13 @@ class KeyDispatcher {
 		undo.eraseLastSavedState();
 	}
 
-	doEditorEvent(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey) {
+	doEditorEvent(eventName) {
 		// events are handled differently when an editor is being used
 		// all events are routed to the editor instead of the nex, until the editor
 		// is finished.
 		// right now we just have an editor for tags but we will need editors for
 		// strings, symbols, commands/lambdas.
-		return systemState.getGlobalSelectedNode().routeKeyToCurrentEditor(keycode);
+		return systemState.getGlobalSelectedNode().routeKeyToCurrentEditor(eventName);
 	}
 
 	getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichKey) {
@@ -151,6 +151,8 @@ class KeyDispatcher {
 			return 'ShiftMetaEnter';
 		} else if (keycode == 'Enter' && hasMeta) {
 			return 'MetaEnter';
+		} else if (keycode == 'Enter' && hasCtrl) {
+			return 'CtrlEnter';
 		} else if (keycode == 'Escape' && hasShift) {
 			return 'ShiftEscape';
 		} else if (keycode == 'Enter' && hasShift) {
@@ -359,9 +361,10 @@ class KeyDispatcher {
 				'ArrowLeft': 'move-left-up-v2',
 				'ArrowDown': 'move-right-down-v2',
 				'ArrowRight': 'move-right-down-v2',
-				'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-				'Backspace': 'remove-selected-and-select-previous-sibling',
+				'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
+				'Backspace': 'remove-selected-and-select-previous-sibling-v2',
 				'ShiftEscape': 'toggle-exploded',
+				'CtrlEnter': 'start-main-editor',
 				'~': 'insert-command-at-insertion-point',
 				'!': 'insert-bool-at-insertion-point',
 				'@': 'insert-symbol-at-insertion-point',
@@ -433,9 +436,10 @@ class KeyDispatcher {
 				'ArrowDown': 'move-right-down-v2',
 				'ArrowLeft': 'move-left-up-v2',
 				'ArrowRight': 'move-right-down-v2',
-				'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-				'Backspace': 'remove-selected-and-select-previous-sibling',
+				'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
+				'Backspace': 'remove-selected-and-select-previous-sibling-v2',
 				'ShiftEscape': 'toggle-exploded',
+				'CtrlEnter': 'start-main-editor',
 				'~': 'insert-command-at-insertion-point',
 				'!': 'insert-bool-at-insertion-point',
 				'@': 'insert-symbol-at-insertion-point',

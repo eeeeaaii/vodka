@@ -109,8 +109,6 @@ testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Equal'});
 testactions.push({type:'keyup',code:'Equal'});
 testactions.push({type:'keydown',code:'ShiftRight'});
-testactions.push({type:'keyup',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Digit5'});
 testactions.push({type:'keyup',code:'Digit5'});
 testactions.push({type:'keyup',code:'ShiftRight'});

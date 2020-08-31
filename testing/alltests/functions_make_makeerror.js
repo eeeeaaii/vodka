@@ -139,8 +139,6 @@ testactions.push({type:'keyup',code:'KeyO'});
 testactions.push({type:'keydown',code:'KeyR'});
 testactions.push({type:'keyup',code:'KeyR'});
 testactions.push({type:'keydown',code:'ShiftRight'});
-testactions.push({type:'keyup',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Digit4'});
 testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keyup',code:'Digit4'});

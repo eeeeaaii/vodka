@@ -38,82 +38,177 @@
   	}
   }
 
+  function selectAllPassing(cb) {
+  	let elts = document.getElementsByClassName('passinginput');
+  	for (let i = 0; i < elts.length; i++) {
+  		elts[i].checked = cb.checked;
+  	}
+  }
+
+  function selectAllFailing(cb) {
+  	let elts = document.getElementsByClassName('failinginput');
+  	for (let i = 0; i < elts.length; i++) {
+  		elts[i].checked = cb.checked;
+  	}
+  }
+
+  function selectAllIgnored(cb) {
+  	let elts = document.getElementsByClassName('ignoredinput');
+  	for (let i = 0; i < elts.length; i++) {
+  		elts[i].checked = cb.checked;
+  	}
+  }
+
+  function genGoldenUpdates() {
+  	let elts = document.getElementsByTagName('input');
+  	let cmdlist = '';
+  	out = document.getElementById('goldenoutput');
+  	let thing = document.createElement('textarea');
+  	thing.classList.add('goldenoutputtextarea')
+
+  	let val = '';
+
+  	let rows = 0;
+  	for (let i = 0; i < elts.length; i++) {
+  		let elt = elts[i];
+  		if (elt.checked) {
+  			cmd = document.getElementsByTagName('input')[i].dataset['regen'];
+  			if (!cmd) {
+  				continue;
+  			}
+  			rows++;
+  			val += cmd;
+  			val += '\n';
+  		}
+  	}
+  	val += '\n'
+  	val += 'echo "REMEMBER TO RUN ALL TESTS BEFORE GIT PUSH';
+  	thing.rows = rows + 2;
+  	thing.defaultValue = val;
+  	out.appendChild(thing);
+  }
+
 </script>
 </head>
 <body>
 	<div class="summary">
 		<div class="summaryheader">Test Summary</div>
+		<div class="printcommands">
+			<button type="button" onclick="genGoldenUpdates();">Print Commands</button>
+			<div id="goldenoutput"></div>
+		</div>
 		<div class="summarylist">
 			<div class="summaryname failed">Failing Tests: {{summary.num_failing}}</div>
-			{{#each summary.failing}}
-			<div class="summarylistitem"><a href="#a_{{this}}">{{this}}</a></div>
-			{{/each}}
+				<div class="summarylistitem">
+					<input type="checkbox" onclick="selectAllFailing(this)">
+					(select all)
+				</div>
+				{{#each summary.failing}}
+				<div class="summarylistitem"> 
+					<input type="checkbox" class="failinginput" data-regen="./runtests.sh {{this}}">
+					 <a href="#a_{{this}}">{{this}}</a>
+				</div>
+				{{/each}}
 		</div>
 		<div class="summarylist">
 			<div class="summaryname passed">Passing Tests: {{summary.num_passing}}</div>
+				<div class="summarylistitem">
+					<input type="checkbox" onclick="selectAllPassing(this)">
+					(select all)
+				</div>
 				{{#each summary.passing}}
-			<div class="summarylistitem"><a href="#a_{{this}}">{{this}}</a></div>
-			{{/each}}
+				<div class="summarylistitem">
+					<input type="checkbox" class="passinginput" data-regen="./runtests.sh {{this}}">
+					<a href="#a_{{this}}">{{this}}</a>
+				</div>
+				{{/each}}
+		</div>
+		<div class="summarylist">
+			<div class="summaryname ignored">Ignored Tests: {{summary.num_ignored}}</div>
+				<div class="summarylistitem">
+					<input type="checkbox" onclick="selectAllIgnored(this)">
+					(select all)
+				</div>
+				{{#each summary.ignored}}
+				<div class="summarylistitem">
+					<input type="checkbox" class="ignoredinput" data-regen="./runtests.sh {{this}}">
+					<a href="#a_{{this}}">{{this}}</a>
+				</div>
+				{{/each}}
 		</div>
 	</div>
 {{#each testresults}}
 	<div class="testout">
-		<!--
-		<div class="testname" onclick="showhide('testvariants{{test}}')"><a name="a_{{test}}">{{test}}</a></div>
-	    -->
-		<div class="testname"><a name="a_{{test}}">{{test}}</a></div>
+		<div class="testname">
+			<a name="a_{{test}}">{{test}}</a>
+		</div>
+		<div class="testrerun">
+			<input type="checkbox" data-regen="./runtests.sh {{test}}">
+			to rerun: <textarea class="regencommand">./runtests.sh {{test}}</textarea>
+		</div>
 		<div id="testvariants{{test}}">
-			{{#if node_success}}
-				{{#each diffs}}
-
+			{{#if node_ignored}}
 				<div class="testvariant">
-					{{#if regenerated_golden}}
-						<div class="testvariantname newgolden">{{diff_type}} (recreated golden)</div>
-					{{else}}
-						{{#if diff_succeeded}}
-							<div class="testvariantname passed">{{diff_type}} (passing)</div>
-						{{else}}
-							<div class="testvariantname failed">{{diff_type}} (FAILING) <textarea class="regencommand">{{regenerate_command}}</textarea></div>
-						{{/if}}
-					{{/if}}
-					<div class="testoutputs">
-						<div class="outimg" onclick="togglestyle(this);">
-							<div class="outimgname">screenshot</div>
-							<img src="alltests/{{../test}}/{{../test}}_OUT_{{diff_type}}.png">
-						</div>
-						<div class="outimg" onclick="togglestyle(this);">
-							<div class="outimgname">golden</div>
-							<img src="alltests/{{../test}}/{{../test}}_GOLDEN_{{diff_type}}.png">
-						</div>
-						<div class="outimg" onclick="togglestyle(this);">
-							<div class="outimgname">diff</div>
-							<img src="alltests/{{../test}}/{{../test}}_DIFF_{{diff_type}}.png">
-						</div>
-						<div class="codeframe" onclick="togglestyleCodeframe(this);">
-							<div class="outimgname">code</div>
-							<iframe class="ifr" id="{{../test}}_ifr0" src="./alltests/{{../test}}/{{../test}}_code.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
-							</iframe>
-						</div>
-					</div>
+					<div class="testvariantname ignored tall">TEST IGNORED</div>
 				</div>
-				{{/each}}
 			{{else}}
-				<div class="testvariant">
-					<div class="testvariantname failed">TEST CRASHED</div>
-					<div class="testoutputs">
-						<div class="codeframe" onclick="togglestyleCodeframe(this);">
-							<div class="outimgname">output</div>
-							<iframe class="ifr" id="{{test}}_ifr1" src="./alltests/{{test}}/output.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
-							</iframe>
-						</div>
-						<div class="codeframe" onclick="togglestyleCodeframe(this);">
-							<div class="outimgname">code</div>
-							<iframe class="ifr" id="{{test}}_ifr2" src="./alltests/{{test}}/{{test}}_code.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
-							</iframe>
+				{{#if node_success}}
+					{{#each diffs}}
+
+					<div class="testvariant">
+						{{#if regenerated_golden}}
+							<div class="testvariantname newgolden">{{diff_type}} (recreated golden)</div>
+						{{else}}
+							{{#if diff_succeeded}}
+								<div class="testvariantname passed">{{diff_type}} (passing)</div>
+							{{else}}
+								<div class="testvariantname failed">{{diff_type}} (FAILING)</div>
+								<div class="regengolden">
+									<input type="checkbox" data-regen="{{regenerate_command}}">
+									to regenerate golden:								
+									<textarea class="regencommand">{{regenerate_command}}</textarea>
+								</div>
+							{{/if}}
+						{{/if}}
+						<div class="testoutputs">
+							<div class="outimg" onclick="togglestyle(this);">
+								<div class="outimgname">screenshot</div>
+								<img src="alltests/{{../test}}/{{../test}}_OUT_{{diff_type}}.png">
+							</div>
+							<div class="outimg" onclick="togglestyle(this);">
+								<div class="outimgname">golden</div>
+								<img src="alltests/{{../test}}/{{../test}}_GOLDEN_{{diff_type}}.png">
+							</div>
+							<div class="outimg" onclick="togglestyle(this);">
+								<div class="outimgname">diff</div>
+								<img src="alltests/{{../test}}/{{../test}}_DIFF_{{diff_type}}.png">
+							</div>
+							<div class="codeframe" onclick="togglestyleCodeframe(this);">
+								<div class="outimgname">code</div>
+								<iframe class="ifr" id="{{../test}}_ifr0" src="./alltests/{{../test}}/{{../test}}_code.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+								</iframe>
+							</div>
 						</div>
 					</div>
+					{{/each}}
+				{{else}}
+					<div class="testvariant">
+						<div class="testvariantname failed">TEST CRASHED</div>
+						<div class="testoutputs">
+							<div class="codeframe" onclick="togglestyleCodeframe(this);">
+								<div class="outimgname">output</div>
+								<iframe class="ifr" id="{{test}}_ifr1" src="./alltests/{{test}}/output.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+								</iframe>
+							</div>
+							<div class="codeframe" onclick="togglestyleCodeframe(this);">
+								<div class="outimgname">code</div>
+								<iframe class="ifr" id="{{test}}_ifr2" src="./alltests/{{test}}/{{test}}_code.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+								</iframe>
+							</div>
+						</div>
+					</div>
+				{{/if}}
 				</div>
-			</div>
 			{{/if}}
 		</div>
 	</div>

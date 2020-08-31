@@ -15,12 +15,13 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from '../utils.js';
 
 import { ContextType } from '../contexttype.js'
 import { NexContainer } from './nexcontainer.js'
 import { EError } from './eerror.js'
 import { experiments } from '../globalappflags.js'
-
+import { RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 
 class Line extends NexContainer {
 	constructor() {
@@ -89,6 +90,20 @@ class Line extends NexContainer {
 		super.renderInto(renderNode, renderFlags);
 		domNode.classList.add('line');
 		domNode.classList.add('data');
+		// weird
+		let hasDocChild = false;
+		for (let i = 0; i < this.numChildren() ;i++) {
+			let c = this.getChildAt(i);
+			if (Utils.isDocElement(c)) {
+				hasDocChild = true;
+				break;
+			}
+		}
+		if ((!(renderFlags & RENDER_FLAG_EXPLODED)) && !hasDocChild) {
+			domNode.classList.add('emptyline');
+		} else {
+			domNode.classList.remove('emptyline');
+		}
 	}
 
 	getEventOverrides() {
@@ -111,12 +126,33 @@ class Line extends NexContainer {
 		return 'lineDefault';
 	}
 
+	doTabHack() {
+		this.dotabhack = 2;
+	}
+
 	getEventTable(context) {
 		if (experiments.V2_INSERTION) {
+			if (experiments.V2_INSERTION_TAB_HACK && this.dotabhack) {
+				this.dotabhack--;
+				return {
+					'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
+					'Backspace': 'remove-selected-and-select-previous-leaf-v2',
+					'Enter': 'do-line-break-from-line-v2',
+					'ArrowUp': 'move-to-corresponding-letter-in-previous-line-v2',
+					'ArrowDown': 'move-to-corresponding-letter-in-next-line-v2',
+					'ArrowLeft': 'move-to-previous-leaf-v2',
+					'ArrowRight': 'move-to-next-leaf-v2',
+				}
+
+			}
 			return {
-				'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
-				'Backspace': 'remove-selected-and-select-previous-leaf',
+				'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
+				'Backspace': 'remove-selected-and-select-previous-leaf-v2',
 				'Enter': 'do-line-break-from-line-v2',
+				'ArrowUp': 'move-to-corresponding-letter-in-previous-line-v2',
+				'ArrowDown': 'move-to-corresponding-letter-in-next-line-v2',
+				'ArrowLeft': 'move-to-previous-leaf-v2',
+				'ArrowRight': 'move-to-next-leaf-v2',
 				'~': 'insert-command-as-next-sibling',
 				'!': 'insert-bool-as-next-sibling',
 				'@': 'insert-symbol-as-next-sibling',

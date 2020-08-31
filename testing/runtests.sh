@@ -19,6 +19,7 @@ RED='\033[0;31m'
 YELLOW='\033[0;33m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
+HEADFUL="no"
 
 do_image_comparison() {
 	DIFF_MODE=$1
@@ -67,6 +68,7 @@ do_test() {
 	TESTOUTPUT_EXPLODED="${SSDIR}/${BASENAME}_OUT_EXPLODED.png"
 	TESTFILE_ASHTML="${SSDIR}/${BASENAME}_code.txt"
 	TESTOUTPUT_JSON="${SSDIR}/${BASENAME}_testresults.json"
+	IGNOREFILE="${SSDIR}/${BASENAME}.ignore"
 
 	if [ ! -e ${TESTFILE} ]; then
 		echo -e "[$BASENAME] is not a real test!"
@@ -74,26 +76,37 @@ do_test() {
 	fi
 
 	test -d $SSDIR || mkdir $SSDIR
-	echo -e "[$BASENAME] running test"
-	NODE_SUCCESS=false
-
-	echo "{ " > ${TESTOUTPUT_JSON}
-	cp $TESTFILE ${TESTFILE_ASHTML}
-	node $TESTFILE ${TESTOUTPUT_NORMAL} ${TESTOUTPUT_EXPLODED} 2> ${TESTOUTPUT} && NODE_SUCCESS=true
-	if [ "$NODE_SUCCESS" == "false" ]; then
-		echo -e "${RED}[${BASENAME}]${NC} test crashed!!!!! check console for error."
+	if [ -e ${IGNOREFILE} ]; then
+		echo -e "[$BASENAME] ignoring test"
+		echo "{ " > ${TESTOUTPUT_JSON}
 		echo "    \"test\": \"${BASENAME}\"," >> ${TESTOUTPUT_JSON}
-		echo "    \"node_success\": ${NODE_SUCCESS}" >> ${TESTOUTPUT_JSON}
+		echo "    \"node_ignored\": true," >> ${TESTOUTPUT_JSON}
+		echo "    \"node_success\": false" >> ${TESTOUTPUT_JSON}
+		echo "  }" >> ${TESTOUTPUT_JSON}
 	else
-		echo "    \"test\": \"${BASENAME}\"," >> ${TESTOUTPUT_JSON}
-		echo "    \"node_success\": ${NODE_SUCCESS}," >> ${TESTOUTPUT_JSON}
-		echo "    \"diffs\": [" >> ${TESTOUTPUT_JSON}
-		do_image_comparison "NORMAL" ${BASENAME} ${TESTOUTPUT_JSON}
-		echo "    ," >> ${TESTOUTPUT_JSON}
-		do_image_comparison "EXPLODED" ${BASENAME} ${TESTOUTPUT_JSON}
-		echo "    ]" >> ${TESTOUTPUT_JSON}
+		echo -e "[$BASENAME] running test"
+		NODE_SUCCESS=false
+
+		echo "{ " > ${TESTOUTPUT_JSON}
+		cp $TESTFILE ${TESTFILE_ASHTML}
+		node $TESTFILE ${TESTOUTPUT_NORMAL} ${TESTOUTPUT_EXPLODED} ${HEADFUL} 2> ${TESTOUTPUT} && NODE_SUCCESS=true
+		if [ "$NODE_SUCCESS" == "false" ]; then
+			echo -e "${RED}[${BASENAME}]${NC} test crashed!!!!! check console for error."
+			echo "    \"test\": \"${BASENAME}\"," >> ${TESTOUTPUT_JSON}
+			echo "    \"node_ignored\": false," >> ${TESTOUTPUT_JSON}
+			echo "    \"node_success\": ${NODE_SUCCESS}" >> ${TESTOUTPUT_JSON}
+		else
+			echo "    \"test\": \"${BASENAME}\"," >> ${TESTOUTPUT_JSON}
+			echo "    \"node_ignored\": false," >> ${TESTOUTPUT_JSON}
+			echo "    \"node_success\": ${NODE_SUCCESS}," >> ${TESTOUTPUT_JSON}
+			echo "    \"diffs\": [" >> ${TESTOUTPUT_JSON}
+			do_image_comparison "NORMAL" ${BASENAME} ${TESTOUTPUT_JSON}
+			echo "    ," >> ${TESTOUTPUT_JSON}
+			do_image_comparison "EXPLODED" ${BASENAME} ${TESTOUTPUT_JSON}
+			echo "    ]" >> ${TESTOUTPUT_JSON}
+		fi
+		echo "  }" >> ${TESTOUTPUT_JSON}
 	fi
-	echo "  }" >> ${TESTOUTPUT_JSON}
 }
 
 if [ "$1" == "" ]; then
@@ -104,14 +117,14 @@ if [ "$1" == "" ]; then
 		do_test ${BASENAME}
 	done
 else
-	while [ "$1" != "" ]; do
-		TESTFILE=$1
-		BASENAME=${TESTFILE#./alltests/}
-		BASENAME=${BASENAME#alltests/}
-		BASENAME=${BASENAME%.js}
-		do_test $BASENAME
-		shift
-	done
+	TESTFILE=$1
+	BASENAME=${TESTFILE#./alltests/}
+	BASENAME=${BASENAME#alltests/}
+	BASENAME=${BASENAME%.js}
+	if [ "--show" == "$2" ]; then
+		HEADFUL="yes"
+	fi
+	do_test $BASENAME
 fi
 
 node parsetestoutput.js

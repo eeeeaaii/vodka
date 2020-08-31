@@ -18,6 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { NexContainer } from './nexcontainer.js'
 import { EError } from './eerror.js'
 import { ContextType } from '../contexttype.js'
+import { experiments } from '../globalappflags.js'
 
 class Doc extends NexContainer {
 	constructor() {
@@ -50,18 +51,15 @@ class Doc extends NexContainer {
 		let s = '';
 		let index = 0;
 		this.doForEachChild(c => {
-			index++;
 			if (c.getTypeName() == '-line-') {
+				if (index > 0) {
+					s += '\n';
+				}
 				s += c.getValueAsString();
 			} else {
-				throw new EError(`We are trying to convert this document`
-					+ ` to a string, but we can't, because `
-					+ ` the document has a child that's not a Line.`
-					+ ` A document normally should contain only Lines.`
-					+ ` Instead, this document has an object of type ${c.getTypeName()}`
-					+ ` at position ${index}. If it helps, we can give the`
-					+ ` textual representation of that object as ${c.debugString()}`);
+				throw new EError(`Cannot convert doc to string, incorrect doc format (at line ${index}, has ${c.debugString()}). Sorry!`);
 			}
+			index++;
 		});
 		return s;
 	}
@@ -81,13 +79,24 @@ class Doc extends NexContainer {
 		return 'docHandle';
 	}
 
+	doTabHack() {
+		this.dotabhack = 2;
+	}
+
 	getEventTable(context) {
-		return {
-			'Enter': 'do-line-break-always',
-			// wha
-			'(': 'insert-word-as-next-sibling',
-			'[': 'insert-line-as-next-sibling',
-			'{': 'insert-doc-as-next-sibling',
+		if (experiments.V2_INSERTION_TAB_HACK && this.dotabhack) {
+			this.dotabhack--;
+			return {
+				'Enter': 'do-line-break-always',
+			}
+		} else {
+			return {
+				'Enter': 'do-line-break-always',
+				// wha
+				'(': 'insert-word-as-next-sibling',
+				'[': 'insert-line-as-next-sibling',
+				'{': 'insert-doc-as-next-sibling',
+			}
 		}
 	}
 }

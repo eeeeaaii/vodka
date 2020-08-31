@@ -23,11 +23,14 @@ var alljson = [];
 var jsonfiles = glob.sync("./alltests/*/*.json")
 var failing_tests = [];
 var passing_tests = [];
+var ignored_tests = [];
 jsonfiles.forEach((jsonfile) => {
 	let rawjson = fs.readFileSync(jsonfile);
 	try {
 		let json = JSON.parse(rawjson);
-		if (json.node_success
+		if (json.node_ignored) {
+			ignored_tests.push(json.test);
+		} else if (json.node_success
 				&& json.diffs[0].diff_succeeded
 				&& json.diffs[1].diff_succeeded) {
 			passing_tests.push(json.test);
@@ -44,8 +47,10 @@ jsonfiles.forEach((jsonfile) => {
 var summary = {
 	num_passing: passing_tests.length,
 	num_failing: failing_tests.length,
+	num_ignored: ignored_tests.length,
 	passing: passing_tests,
-	failing: failing_tests
+	failing: failing_tests,
+	ignored: ignored_tests
 }
 
 var data = { summary: summary, testresults: alljson };

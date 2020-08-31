@@ -20,9 +20,15 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	display: inline-block;
 }
 
-.separator.selected {
+.separator.selected.leftinsert {
 	animation-duration: 1s;
-	animation-name: letterblink;
+	animation-name: letterblinkleft;
+	animation-iteration-count: 1;
+}
+
+.separator.selected.rightinsert {
+	animation-duration: 1s;
+	animation-name: letterblinkright;
 	animation-iteration-count: 1;
 }
 
@@ -31,6 +37,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	margin-bottom: 6px;
 }
 .separator.exploded.selected {
+	animation-name: none;
 	border-top: 1px solid black;
 	border-right: 1px solid black;
 	border-bottom: 1px solid black;

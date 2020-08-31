@@ -18,6 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { ContextType, ContextMapBuilder } from '../contexttype.js'
 import { Nex } from './nex.js'
 import { experiments } from '../globalappflags.js'
+import { RENDER_FLAG_INSERT_AFTER } from '../globalconstants.js'
 
 class Letter extends Nex {
 	constructor(letter) {
@@ -70,6 +71,11 @@ class Letter extends Nex {
 		super.renderInto(renderNode, renderFlags);
 		domNode.classList.add('letter');
 		domNode.classList.add('data');
+		if (renderFlags & RENDER_FLAG_INSERT_AFTER) {
+			domNode.classList.add('rightinsert');
+		} else {
+			domNode.classList.add('leftinsert');			
+		}
 		let contents = (this.value == " " || this.value == "&nbsp;") ? "\xa0" : this.value;
 		domNode.appendChild(document.createTextNode(contents));
 	}

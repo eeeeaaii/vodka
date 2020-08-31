@@ -19,9 +19,22 @@ import * as Utils from './utils.js'
 
 import { systemState } from './systemstate.js'
 import { LambdaEditor } from './nex/lambda.js'
+import { ESymbolEditor } from './nex/esymbol.js'
+import { CommandEditor } from './nex/command.js'
 import { TagEditor } from './tag.js'
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
-import { RENDER_FLAG_SELECTED, RENDER_FLAG_REMOVE_OVERRIDES, RENDER_FLAG_SHALLOW, RENDER_FLAG_NORMAL, RENDER_FLAG_RERENDER, RENDER_FLAG_EXPLODED } from './globalconstants.js'
+import {
+	RENDER_FLAG_SELECTED,
+	RENDER_FLAG_REMOVE_OVERRIDES,
+	RENDER_FLAG_SHALLOW,
+	RENDER_FLAG_NORMAL,
+	RENDER_FLAG_RERENDER,
+	RENDER_FLAG_EXPLODED,
+	RENDER_FLAG_INSERT_INSIDE,
+	RENDER_FLAG_INSERT_AFTER,
+	RENDER_FLAG_INSERT_BEFORE,
+	RENDER_FLAG_INSERT_AROUND,
+} from './globalconstants.js'
 
 import { experiments } from './globalappflags.js'
 
@@ -45,7 +58,7 @@ class RenderNode {
 		this.isCurrentlyExploded = false;
 		this.explodedOverride = -1;
 		this.firstToggleOnNexRender = false;
-		this.currentEditor = null;
+		this.currentEd = null;
 
 		if (experiments.V2_INSERTION) {
 			this.setInsertionMode(INSERT_UNSPECIFIED);
@@ -56,12 +69,20 @@ class RenderNode {
 		return `[RNODE FOR]\n${this.getNex().debugString()}`
 	}
 
+	getCurrentEditor() {
+		return this.currentEd;
+	}
+
+	setCurrentEditor(newval) {
+		this.currentEd = newval;
+	}
+
 	routeKeyToCurrentEditor(keycode) {
 		try {
-			let reroute = this.currentEditor.routeKey(keycode);
+			let reroute = this.getCurrentEditor().routeKey(keycode);
 			// the editor will decide when it's finished and will stop editing
-			if (!this.currentEditor.isEditing()) {
-				this.currentEditor = null;
+			if (!this.getCurrentEditor().isEditing()) {
+				this.setCurrentEditor(null);
 			}
 			return reroute;
 		} catch (e) {
@@ -74,31 +95,48 @@ class RenderNode {
 		}
 	}
 
+	forceCloseEditor() {
+		if (this.getCurrentEditor()) {
+			this.getCurrentEditor().forceClose();
+			this.setCurrentEditor(null);
+		}
+	}
+
 	usingEditor() {
 		// there will be other editors I guess
-		return this.currentEditor && this.currentEditor.isEditing();
+		return this.getCurrentEditor() && this.getCurrentEditor().isEditing();
+	}
+
+	getEditorForType(nex) {
+		switch(nex.getTypeName()) {
+			case '-lambda-':
+				return new LambdaEditor(nex);
+			case '-command-':
+				return new CommandEditor(nex);
+			case '-symbol-':
+				return new ESymbolEditor(nex);
+			default:
+				return null;
+		}
 	}
 
 	possiblyStartMainEditor() {
-		if (this.getNex().getTypeName() == '-lambda-') {
-			this.startLambdaEditor();
+		let editor = this.getEditorForType(this.getNex());
+		if (editor) {
+			this.startEditor(editor);
 		}
 	}
 
-	startLambdaEditor() {
-		if (this.currentEditor) {
+	startEditor(editor) {
+		if (this.getCurrentEditor()) {
 			throw new Error('cannot edit two things at once');
 		}
-		this.currentEditor = new LambdaEditor(this.nex);
-		this.currentEditor.startEditing();
+		this.setCurrentEditor(editor);
+		this.getCurrentEditor().startEditing();
 	}
 
 	startTagEditor() {
-		if (this.currentEditor) {
-			throw new Error('cannot edit two things at once');
-		}
-		this.currentEditor = new TagEditor(this.nex);
-		this.currentEditor.startEditing();
+		startEditor(new TagEditor(this.getNex()));
 	}
 
 	removeAllTags() {
@@ -282,6 +320,13 @@ class RenderNode {
 			this.renderDepthExceeded();
 			return;
 		}
+		switch(this.insertionMode) {
+			case INSERT_INSIDE: useFlags |= RENDER_FLAG_INSERT_INSIDE; break;
+			case INSERT_BEFORE: useFlags |= RENDER_FLAG_INSERT_BEFORE; break;
+			case INSERT_AFTER: useFlags |= RENDER_FLAG_INSERT_AFTER; break;
+			case INSERT_AROUND: useFlags |= RENDER_FLAG_INSERT_AROUND; break;
+		}
+
 		this.nex.renderInto(this, useFlags);
 		this.nex.doRenderSequencing(this);
 		this.isCurrentlyExploded = !!(renderFlags & RENDER_FLAG_EXPLODED);
@@ -359,8 +404,8 @@ class RenderNode {
 			}
 
 		}
-		if (this.currentEditor && this.currentEditor.isEditing()) {
-			let postNode = this.currentEditor.postNode();
+		if (this.getCurrentEditor() && this.getCurrentEditor().isEditing()) {
+			let postNode = this.getCurrentEditor().postNode();
 			if (postNode) {
 				this.domNode.appendChild(postNode);
 			}
@@ -475,6 +520,9 @@ class RenderNode {
 		this.selected = false;
 		if (experiments.V2_INSERTION) {
 			this.setInsertionMode(INSERT_UNSPECIFIED);
+		}
+		if (this.getCurrentEditor()) {
+			this.forceCloseEditor();
 		}
 	}
 

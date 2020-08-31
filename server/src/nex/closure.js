@@ -130,7 +130,6 @@ class Closure extends ValueNex {
 	}
 
 	executor(executionEnvironment, argEvaluator, cmdname, commandTags) {
-//		let newScope = this.lexicalEnvironment.pushEnv();
 		let scope = this.lexicalEnvironment.pushEnv();
 		argEvaluator.bindArgs(scope);
 		if (this.lambda.getTypeName() == '-builtin-') {
@@ -141,23 +140,11 @@ class Closure extends ValueNex {
 		let numc = this.lambda.numChildren();
 		for (let i = 0; i < numc; i++) {
 			let c = this.lambda.getChildAt(i);
-			// for now we just don't activate in lambdas. I think this is fine because the
-			// lambda's result will always be returned as an arg somewhere, or at the
-			// top level.
 			r = evaluateNexSafely(c, scope, true /* skipactivate */);
 			if (Utils.isFatalError(r)) {
 				r = wrapError('&amp;', `${cmdname}: error in expr ${i+1}`, r);
 				return r;
 			}
-			// if (rvp && isReturnValue) {
-			// 	let typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[rvp.type](r);
-			// 	if (!typeChecksOut) {
-			// 		return wrapError('&amp;', `${cmdname}: should return ${rvp.type} but returned ${r.getTypeName()}`, r);
-			// 		// if (arg.getTypeName() == '-error-') {
-			// 		// 	throw wrapError('&szlig;', `${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, arg);
-			// 		// }
-			// 	}
-			// }
 		}
 		return r;
 	}

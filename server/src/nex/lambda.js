@@ -21,7 +21,7 @@ import { ParamParser } from '../paramparser.js';
 import { Closure } from './closure.js';
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
-
+import { Editor } from '../editors.js'
 
 class Lambda extends NexContainer {
 	constructor(val) {
@@ -65,6 +65,7 @@ class Lambda extends NexContainer {
 		r.returnValueParam = this.returnValueParam;
 		r.cmdname = this.cmdname;
 		r.needsEval = this.needsEval;
+		r.isEditing = this.isEditing;
 		r.cachedParamNames = this.cachedParamNames;
 	}
 
@@ -219,7 +220,7 @@ class Lambda extends NexContainer {
 
 	getEventTable(context) {
 		return {
-			'Enter': 'start-lambda-editor',
+			'Enter': 'start-main-editor',
 			'ShiftSpace': 'toggle-dir',
 		};
 	}
@@ -240,43 +241,38 @@ class Lambda extends NexContainer {
 	}
 }
 
-class LambdaEditor {
-	constructor(lambda) {
-		this._isEditing = false;
-		this.lambda = lambda;
+class LambdaEditor extends Editor {
+
+	constructor(nex) {
+		super(nex);
 	}
 
-	routeKey(text) {
-		if (text == 'Enter') {
-			this._isEditing = false;
-			this.lambda.isEditing = false;			
-		} else if (text == 'Tab') {
-			this._isEditing = false;
-			this.lambda.isEditing = false;
-			return true; // reroute
-		} else if (text == 'Backspace') {
-			this.lambda.deleteLastAmpLetter();
-		} else if (/^.$/.test(text)) {
-			this.lambda.appendAmpText(text);
-		}
+	doBackspaceEdit() {
+		this.nex.deleteLastAmpLetter();
+	}
+
+	doAppendEdit(text) {
+		this.nex.appendAmpText(text);
+	}
+
+	hasContent() {
+		return this.nex.getAmpText() != '';
+	}
+
+	shouldAppend(text) {
+		if (/^[a-zA-Z0-9_-]$/.test(text)) return true;
+		if (/^[!@#$%^&*)(]$/.test(text)) return true;
+		if (/^[ ]$/.test(text)) return true;
+		if (/^[.]$/.test(text)) return true;
+		if (/^[?]$/.test(text)) return true;
+		if (/^[,]$/.test(text)) return true; // legacy
+		if (/^[\[]$/.test(text)) return true;
+		if (/^[\]]$/.test(text)) return true;
 		return false;
 	}
 
-	startEditing() {
-		this._isEditing = true;
-		this.lambda.isEditing = true;
-	}
-
-	isEditing() {
-		return this._isEditing;
-	}
-
-	postNode() {
-		return null;
-	}
-
-	preNode() {
-		return null;
+	shouldTerminateAndReroute(text) {
+		return !this.shouldAppend(text);
 	}
 }
 

@@ -40,8 +40,10 @@ fi
 
 TESTOUT_NORMAL="./alltests/${BASENAME}/${BASENAME}_OUT_NORMAL.png"
 GOLDEN_NORMAL="./alltests/${BASENAME}/${BASENAME}_GOLDEN_NORMAL.png"
+GOLDEN_NORMAL_BACKUP="./alltests/${BASENAME}/${BASENAME}_GOLDEN_NORMAL.backup.png"
 TESTOUT_EXPLODED="./alltests/${BASENAME}/${BASENAME}_OUT_EXPLODED.png"
 GOLDEN_EXPLODED="./alltests/${BASENAME}/${BASENAME}_GOLDEN_EXPLODED.png"
+GOLDEN_EXPLODED_BACKUP="./alltests/${BASENAME}/${BASENAME}_GOLDEN_EXPLODED.backup.png"
 
 if [ "${VARIANT}" == "-n" -o "${VARIANT}" == "-b" ]; then
 	if [ ! -e "${TESTOUT_NORMAL}" ]; then
@@ -52,6 +54,7 @@ if [ "${VARIANT}" == "-n" -o "${VARIANT}" == "-b" ]; then
 #	echo "[${BASENAME}] changing NORMAL golden to reflect most recent test output. Are you sure? (y/n)"
 #	read INP
 #	if [ "$INP" == "y" ]; then
+		cp ${GOLDEN_NORMAL} ${GOLDEN_NORMAL_BACKUP}
 		cp ${TESTOUT_NORMAL} ${GOLDEN_NORMAL}
 		echo "[${BASENAME}] NORMAL golden updated"
 #	fi
@@ -66,6 +69,7 @@ if [ "${VARIANT}" == "-e"  -o "${VARIANT}" == "-b" ]; then
 #	echo "[${BASENAME}] changing EXPLODED golden to reflect most recent test output. Are you sure? (y/n)"
 #	read INP
 #	if [ "$INP" == "y" ]; then
+		cp ${GOLDEN_EXPLODED} ${GOLDEN_EXPLODED_BACKUP}
 		cp ${TESTOUT_EXPLODED} ${GOLDEN_EXPLODED}
 		echo "[${BASENAME}] EXPLODED golden updated"
 #	fi
