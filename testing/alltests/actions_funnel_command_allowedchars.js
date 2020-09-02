@@ -168,5 +168,7 @@ testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Semicolon'});
 testactions.push({type:'keyup',code:'Semicolon'});
 testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
 harness.runTest(testactions, 'direct');
 //endtest//

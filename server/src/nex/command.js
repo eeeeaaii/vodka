@@ -478,6 +478,7 @@ class CommandEditor extends Editor {
 	}
 
 	shouldTerminateAndReroute(input) {
+		if (super.shouldTerminateAndReroute()) return true;
 		// don't terminate for math stuff, this is temporary
 		if (/^[/<>=+*]$/.test(input)) return false;
 

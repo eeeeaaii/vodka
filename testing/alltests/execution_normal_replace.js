@@ -74,6 +74,8 @@ testactions.push({type:'keyup',code:'KeyC'});
 testactions.push({type:'keyup',code:'KeyH'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
 
 harness.runTestNew(testactions, 'direct');
 //endtest//

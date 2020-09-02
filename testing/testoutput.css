@@ -31,6 +31,13 @@ body {
 	padding: 5px;
 }
 
+.copyclick {
+	font-size: 10px;
+	color: #0000ff;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
 .summary {
 	margin-bottom:20px;	
 }
@@ -97,14 +104,14 @@ body {
 	padding-bottom:15px;
 }
 
-.testrerun {
+.commandblock {
 	background-color: #cccccc;
 	font-family: Courier;
-	font-size: 20px;
+	font-size: 18px;
 	margin-left: 0px;
 	padding-left: 30px;
-	padding-top:15px;
-	padding-bottom:15px;	
+	padding-top:5px;
+	padding-bottom:5px;	
 }
 
 .regengolden {
@@ -181,6 +188,20 @@ body {
 
 .outimg img {
 	display: inline-block;
+}
+
+#copied {
+	visibility: hidden;
+	position:absolute;
+}
+
+.toast {
+	background-color: #dddddd;
+	color: #333399;
+	padding: 4px;
+	border: 1px solid #003333;
+	font-family: Courier;
+	font-size: 12px;	
 }
 
 .ifr {

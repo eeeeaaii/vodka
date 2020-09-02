@@ -272,6 +272,7 @@ class LambdaEditor extends Editor {
 	}
 
 	shouldTerminateAndReroute(text) {
+		if (super.shouldTerminateAndReroute()) return true;
 		return !this.shouldAppend(text);
 	}
 }

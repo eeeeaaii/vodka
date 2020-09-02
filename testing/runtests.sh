@@ -124,6 +124,9 @@ else
 	if [ "--show" == "$2" ]; then
 		HEADFUL="yes"
 	fi
+	if [ "-s" == "$2" ]; then
+		HEADFUL="yes"
+	fi
 	do_test $BASENAME
 fi
 

@@ -77,6 +77,23 @@ function spaces(n) {
 	return n;
 }
 
+function pausableAction(t) {
+	if (t.type == 'keyup' || t.type == 'pause') return false;
+	if (t.code) {
+		switch(t.code) {
+			case 'ShiftLeft': return false;
+			case 'ShiftRight': return false;
+			case 'MetaLeft': return false;
+			case 'MetaRight': return false;
+			case 'AltLeft': return false;
+			case 'AltRight': return false;
+			case 'ControlLeft': return false;
+			case 'ControlRight': return false;
+		}
+	}
+	return true;
+}
+
 function runTestImpl(testinput, method, legacy) {
 	(async() => {
 		let normal_out = process.argv[2];
@@ -110,13 +127,13 @@ function runTestImpl(testinput, method, legacy) {
 			})
 			// we have logged all browser interactions directly, the new way.
 			for (let i = 0; i < testinput.length; i++) {
-				if (paused && !step) {
+				let t = testinput[i];
+				if (pausableAction(t) && paused && !step) {
 					i--;
 					await delay(2);
 					continue;
 				}
 				step = false;
-				let t = testinput[i];
 				switch(t.type) {
 					case 'click':
 						if (dolog) console.log(`${spaces(i)}. click:   ${t.x}, ${t.y}`)

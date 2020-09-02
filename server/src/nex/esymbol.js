@@ -143,7 +143,8 @@ class ESymbolEditor extends Editor {
 	}
 
 	shouldTerminateAndReroute(text) {
-		return !this.shouldAppend(text);
+		return super.shouldTerminateAndReroute()
+			|| !this.shouldAppend(text);
 	}
 }
 

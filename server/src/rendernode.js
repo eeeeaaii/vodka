@@ -112,9 +112,17 @@ class RenderNode {
 			case '-lambda-':
 				return new LambdaEditor(nex);
 			case '-command-':
-				return new CommandEditor(nex);
+				if (experiments.COMMAND_EDITOR) {
+					return new CommandEditor(nex);
+				} else {
+					return false;
+				}
 			case '-symbol-':
-				return new ESymbolEditor(nex);
+				if (experiments.SYMBOL_EDITOR) {
+					return new ESymbolEditor(nex);
+				} else {
+					return false;
+				}
 			default:
 				return null;
 		}
@@ -136,7 +144,7 @@ class RenderNode {
 	}
 
 	startTagEditor() {
-		startEditor(new TagEditor(this.getNex()));
+		this.startEditor(new TagEditor(this.getNex()));
 	}
 
 	removeAllTags() {

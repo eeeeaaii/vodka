@@ -23,10 +23,10 @@
   }
 
   function iframeOnload(obj) {
-    obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
-	obj.contentWindow.document.onclick = function() {
-	  	togglestyleCodeframe(obj.parentElement);
-	}
+//    obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+	// obj.contentWindow.document.onclick = function() {
+	//   	togglestyleCodeframe(obj.parentElement);
+	// }
   }
 
   function showhide(id) {
@@ -59,7 +59,7 @@
   	}
   }
 
-  function genGoldenUpdates() {
+  function printSelectedCommands() {
   	let elts = document.getElementsByTagName('input');
   	let cmdlist = '';
   	out = document.getElementById('goldenoutput');
@@ -72,7 +72,7 @@
   	for (let i = 0; i < elts.length; i++) {
   		let elt = elts[i];
   		if (elt.checked) {
-  			cmd = document.getElementsByTagName('input')[i].dataset['regen'];
+  			cmd = document.getElementsByTagName('input')[i].dataset['command'];
   			if (!cmd) {
   				continue;
   			}
@@ -88,13 +88,37 @@
   	out.appendChild(thing);
   }
 
+  function doClip(event, txt) {
+  	let x = event.pageX;
+  	let y = event.pageY;
+  	navigator.permissions.query({name: "clipboard-write"}).then(result => {
+  		if (result.state == "granted" || result.state == "prompt") {
+  			navigator.clipboard.writeText(txt);
+  			showToastAt("Copied!", x, y);
+  		}
+  	});
+  }
+
+  function showToastAt(content, x, y) {
+  	let elt = document.createElement('div');
+  	elt.appendChild(document.createTextNode(content));
+  	elt.style.position = 'absolute';
+  	elt.style.left = '' + x + 'px';
+  	elt.style.top = '' + y + 'px';
+  	elt.classList.add('toast');
+  	document.body.appendChild(elt);
+  	setTimeout(function() {
+  		document.body.removeChild(elt);
+  	}, 1000);
+  }
+
 </script>
 </head>
 <body>
 	<div class="summary">
 		<div class="summaryheader">Test Summary</div>
 		<div class="printcommands">
-			<button type="button" onclick="genGoldenUpdates();">Print Commands</button>
+			<button type="button" onclick="printSelectedCommands();">Print Commands</button>
 			<div id="goldenoutput"></div>
 		</div>
 		<div class="summarylist">
@@ -105,7 +129,7 @@
 				</div>
 				{{#each summary.failing}}
 				<div class="summarylistitem"> 
-					<input type="checkbox" class="failinginput" data-regen="./runtests.sh {{this}}">
+					<input type="checkbox" class="failinginput" data-command="./runtests.sh {{this}}">
 					 <a href="#a_{{this}}">{{this}}</a>
 				</div>
 				{{/each}}
@@ -118,7 +142,7 @@
 				</div>
 				{{#each summary.passing}}
 				<div class="summarylistitem">
-					<input type="checkbox" class="passinginput" data-regen="./runtests.sh {{this}}">
+					<input type="checkbox" class="passinginput" data-command="./runtests.sh {{this}}">
 					<a href="#a_{{this}}">{{this}}</a>
 				</div>
 				{{/each}}
@@ -131,7 +155,7 @@
 				</div>
 				{{#each summary.ignored}}
 				<div class="summarylistitem">
-					<input type="checkbox" class="ignoredinput" data-regen="./runtests.sh {{this}}">
+					<input type="checkbox" class="ignoredinput" data-command="./runtests.sh {{this}}">
 					<a href="#a_{{this}}">{{this}}</a>
 				</div>
 				{{/each}}
@@ -142,9 +166,15 @@
 		<div class="testname">
 			<a name="a_{{test}}">{{test}}</a>
 		</div>
-		<div class="testrerun">
-			<input type="checkbox" data-regen="./runtests.sh {{test}}">
+		<div class="commandblock">
+			<input type="checkbox" data-command="./runtests.sh {{test}}">
 			to rerun: <textarea class="regencommand">./runtests.sh {{test}}</textarea>
+			<a class="copyclick" onclick="doClip(event, 'runtests.sh {{test}}')">(copy)</a>
+		</div>
+		<div class="commandblock">
+			<input type="checkbox" data-command="subl alltests/{{test}}.js">
+			to edit: <textarea class="regencommand">subl alltests/{{test}}.js</textarea>
+			<a class="copyclick" onclick="doClip(event, 'subl alltests/{{test}}.js')">(copy)</a>
 		</div>
 		<div id="testvariants{{test}}">
 			{{#if node_ignored}}
@@ -164,9 +194,10 @@
 							{{else}}
 								<div class="testvariantname failed">{{diff_type}} (FAILING)</div>
 								<div class="regengolden">
-									<input type="checkbox" data-regen="{{regenerate_command}}">
+									<input type="checkbox" data-command="{{regenerate_command}}">
 									to regenerate golden:								
 									<textarea class="regencommand">{{regenerate_command}}</textarea>
+									<a class="copyclick" onclick="doClip(event, '{{regenerate_command}}')">(copy)</a>
 								</div>
 							{{/if}}
 						{{/if}}
@@ -213,6 +244,5 @@
 		</div>
 	</div>
 {{/each}}
-
 </body>
 </html>

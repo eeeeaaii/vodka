@@ -1,3 +1,75 @@
+=========================== experiments ====================================
+---
+title: Lots of Experiments
+date: "2020-09-01T00:09:05.000-04"
+description: I'm in pretty deep with these now
+---
+Okay I'm running a bunch of experiments now and need to step back and figure out what I want to really do here.
+
+Here are the experiments I'm running:
+
+1. New insertion: this is the thing where I get rid of insertion point and newline nexes, and instead there is a persistent small red dot "insertion pip" that exists wherever you are. You can move it around (after, before, around, inside) by pressing and releasing the shift key.
+
+2. Insertion tab hack: the above experiment with insertion points makes it so that when you create a new container nex, then press tab, instead of descending into the container and creating an insertion point object, essentially nothing happens because the insertion pip is already where it is supposed to be. This initially caused huge problems because the selected node was not what the test thought it was. So I made this hack such that whenever you press tab on a command, or some other lists, a little flag is set, so that the very next time an event is sent to that command (or other list), it will "emulate" the deprecated insertion point nex. This helped... kind of. But see below.
+
+3. Lenient doc format: this is because in the new world I want to have more exacting tests for whether to apply the doc/line/word/letter/separator magic, so there are tests to make sure that the letter is actually inside a word that's inside a line that's inside a doc... etc. This makes tests fail, so this experiment makes those tests more lenient.
+
+Alright so... the tab hack. Let's say you want to type this:
+
+```
+(_cons [letter]"A" (__)_)
+```
+How do you make this? You create a command nex, start typing "cons" -- good so far. Now you want to make the letter nex, "a", inside the cons. In the old world, we press "tab," then "a". With experiments on, our tab hack saves us.
+
+Alrighty. But what if we want to type this?
+
+```
+(_@hello [letter]"t" [letter]"h" [letter]"e" [letter]"r" [letter]"e"_)
+```
+
+Oh well that's annoying. In the old world, we'd type `@`, then `hello`, then press the right arrow key to create an insertion point after the symbol, and proceed with "there." If I want the old tests to run exactly as-is with the new insertion experiment stuff on, I need to implement a right-arrow hack. Also, embarrasingly, there's *no way to do this* with the new insertion mode.
+
+When I realized this, I started setting the tests that failed this way to "ignore" (hello new feature!). But after a bit I decided to just jump into making two more experiments:
+
+4. Command editor: this is the editor I've been wanting for a while, which is analogous to the lambda editor I already have.
+
+5. Symbol editor: same thing as command and lambda editors, but for symbols.
+
+These new editors fix the ambiguity problem, but also make tests fail. Yay.
+
+So yeah, here I am fixing tests. And it's a pain to fix tests. So I made it less of a pain by re-enabling "headful" chrome for the tests -- so instead of starting chrome in a headless (invisible) mode, it opens up chrome in the foreground while the test is running so you can see what's happening. That was fun, and I then made it so you can step through tests one keystroke at a time, and speed up/slow down the test runner.
+
+Then I got kind of excited and started fixing tests in a non-backward-compatible way, so that these tests now will only pass if the experiments are enabled. My goal was to get them all passing, then go back, reenable the ignored tests that required there to be a command or symbol editor, and fix those too. I would go fast and get to the finish line, get all the tests passing with experiments on! I am a smart developer and can do this!
+
+Except of course, no. I just hit something else -- some tests failing because of something I forgot. I didn't fix deletions: so right now, even though there is a command editor, if you hit backspace with a command selected, it will start deleting letters from the command text. This is not right. This should require re-entering the editor.
+
+However, this raises the question -- what SHOULD happen if you hit backspace? Should it be the same as shift-backspace?
+
+There is something else I wanted to implement -- that's "reparenting delete." That's where you delete an interior node in the tree, but rather than also deleting the child nodes, you reparent its children "in place" -- they take the place of their parent in the grandparent. This essentially flattens the tree structure at that point. If I have this, I can get rid of the stupid thing where hitting enter with an expectation selected evalutes to its contents. I can just let people reparent instead if they want the contents of the expectation. That frees up that keystroke, so I can make it do something that makes more sense, so that hitting enter with an expectation selected activates the expectation. That frees me up to delete the kludgy "auto-activation" that happens when you interactively evaluate a nex that returns an expectation. Instead, in that case you would just hit enter twice, easy.
+
+So that's all great, but shoud I implement all that now, and set up another experiment? Or should I continue doing what I'm doing -- i.e. edit the tests, essentially adding an "enter" before any place where the user would be hitting backspace to edit the text of a command?
+
+I feel like at this point there are failing tests, and they are failing for several different reasons. If I implement reparenting delete, that just adds another reason to the list of reasons why tests are failing. If I then go back to trying to get them to pass again, it will just be harder to figure out why they are failing.
+
+OTOH if I don't implement reparenting delete now, then I have to go through an additional cycle. I'll get all the tests working, then implement reparenting delete, which will break tests, then go back and fix them all again. I am already going to have to do that for this stupid tab hack.
+
+There is something I can do to help make it easier to fix exceedingly munged up tests, making it at least possible for me to move forward and do reparenting delete. I saved all my old goldens, and old tests, before even starting this massive test fixing effort. I could make a way to pass a flag into the test framework so that it runs an entirely different *set* of tests and goldens.
+
+I think this makes it so I can basically break the tests as much as I want, including getting rid of the insertion tab hack (which I hate), and then once I'm done doing damage to them, go through one single pass through to fix them all. If a test breaks and I can't tell why, I can run the test against the original golden directory in `--show` mode, with experiments off so I am getting the old behavior *and* the old tests, grab some popcorn, and watch the test do what it's *supposed* to do. In most cases, even with super broken tests, this should be enough information for me to fix them.
+
+I've done a lot of changes now, and it's been a while since I ran the entire test suite with experiments off -- I will need to do at least one full run that way, comparing against the old goldens, and debug any tests in the old set that break, so I can make sure I'm still at that baseline. Should have thought of that before, but oh well. Cowboy-engineer in me hates debugging deprecated code but, I mean, Cowboy also hates writing tests too... we haven't been listening to Cowboy much lately.
+
+So what's the upshot? Basically this:
+
+1. make a way to specify a "test set" directory when running runtests.sh (so "alltests" is the default, but then maybe you could pass "oldtests" or whatever)
+2. save the test results HTML output in the alltests (or whatever it's called) directory, so I don't have to rerun all the tests just so I can compare two different sets of tests/goldens
+3. make it so you can pass experiment flags into runtests.sh (probably by just passing in query string params, that then get passed into the headless or headful chrome instance)
+
+I feel like I might be creeping toward a world where I partition the tests into "test sets" in different directories, just to make my test runs faster/more targeted/just only testing what I'm working on/etc., so that running the full suite goes through all the test dirs and tests each one.
+
+After all this though... I still think I should wait to implement reparenting delete. Fixing the tests is a matter of just putting in a few "Enter" keystrokes at the right places, so it will invoke the editor instead of relying on the old way of deleting characters from the command text. Then, for now, I just make backspace and shift-backspace the EXACT same thing for nodes that have editors.
+
+
 =========================== tag-types ====================================
 ---
 title: Tag types

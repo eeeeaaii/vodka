@@ -37,5 +37,6 @@ doKeyInput('Shift', 'ShiftRight', true, false, false);
 doKeyInput('~', 'Backquote', true, false, false);
 doKeyInput('~', 'Backquote', true, false, false);
 doKeyInput('~', 'Backquote', true, false, false);
+doKeyInput('Enter', 'Enter', false, false, false);
 });
 //endtest//

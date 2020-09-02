@@ -32,7 +32,10 @@ class Editor {
 	shouldTerminate(text) {
 		return text == 'Enter'
 			|| text == 'Tab'
-			|| text == 'Backspace';
+			|| (
+				text == 'Backspace'
+				&& !this.hasContent()
+				)
 	}
 
 	shouldBackspace(text) {
@@ -53,7 +56,7 @@ class Editor {
 	}
 
 	shouldTerminateAndReroute(text) {
-		return false;
+		return text == 'ShiftTab';
 	}
 
 	shouldAppend(text) {
@@ -67,12 +70,10 @@ class Editor {
 			this.doBackspaceEdit();
 			return false;
 		} else if (this.shouldTerminate(text)) {
-			this._isEditing = false;
-			this.nex.isEditing = false;
+			this.finish();
 			return false;
 		} else if (this.shouldTerminateAndReroute(text)) {
-			this._isEditing = false;
-			this.nex.isEditing = false;
+			this.finish();
 			return true;
 		} else if (this.shouldAppend(text)) {
 			this.doAppendEdit(text);
@@ -88,21 +89,25 @@ class Editor {
 		this.nex.isEditing = true;
 	}
 
+	finish() {
+		this._isEditing = false;
+		this.nex.isEditing = false;		
+	}
+
 	isEditing() {
 		return this._isEditing;
 	}
 
 	postNode() {
-		return null;
+		return null; // override optionally
 	}
 
 	preNode() {
-		return null;
+		return null; // override optionally
 	}
 
 	forceClose() {
-		this._isEditing = false;
-		this.nex.isEditing = false;
+		this.finish();
 	}
 }
 

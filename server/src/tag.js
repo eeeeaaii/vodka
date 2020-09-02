@@ -17,6 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { contractEnforcer } from './contract.js';
 import { EError } from './nex/eerror.js'
+import { Editor } from './editors.js'
 
 class Tag  {
 	constructor(name) {
@@ -65,70 +66,72 @@ class Tag  {
 	}
 }
 
-class TagEditor {
+class TagEditor extends Editor {
 	constructor(nex) {
+		super(nex);
 		this.editorDomNode = document.createElement("div");
 		this.editorDomNode.classList.add('tag');
 		this.editorDomNode.classList.add('tag-editing');
 		this.editorDomNode.classList.add('exploded');
 		this.tagText = '';
-		this._isEditing = false;
-		this.resultingError = null;
-		this.nex = nex;
+	}
+
+	doBackspaceEdit() {
+		this.tagText = this.tagText.substr(0, this.tagText.length - 1);
+		this.editorDomNode.innerHTML = this.tagText;
+	}
+
+	doAppendEdit(text) {
+		this.tagText = this.tagText + text;
+		this.editorDomNode.innerHTML = this.tagText;			
+	}
+
+	shouldTerminate(text) {
+		return super.shouldTerminate(text)
+			|| text == '`';
+	}
+
+	hasContent() {
+		return this.tagText != '';
+	}
+
+	shouldAppend(text) {
+		return true;
 	}
 
 	finish() {
+		super.finish();
 		if (!this.tagText == '') {
 			let tag = new Tag(this.tagText);
 			tag.addTagToNexWithEnforcement(this.nex);
 		}
-		this._isEditing = false;
-
 	}
 
-	hasResultingError() {
-		return !!this.resultingError;
-	}
-
-	getResultingError() {
-		return this.resultingError;
-	}
+	///////
 
 	// returns whether to continue processing whatever the key is
-	routeKey(text) {
-		if (text == 'Enter') {
-			this.finish();
-			return false;
-		} else if (text == 'Tab') {
-			this.finish();
-			return true;
-		} else if (text == '`') { // no backticks allowed in tags
-			this.finish();
-			return false;
-		} else if (text == 'Backspace') {
-			this.tagText = this.tagText.substr(0, this.tagText.length - 1);
-			this.editorDomNode.innerHTML = this.tagText;			
-		} else if (/^.$/.test(text)) {
-			this.tagText = this.tagText + text;
-			this.editorDomNode.innerHTML = this.tagText;			
-		}
-		return false;
-	}
-
-	startEditing() {
-		this._isEditing = true;
-	}
-
-	isEditing() {
-		return this._isEditing;
-	}
+	// routeKey(text) {
+	// 	if (text == 'Enter') {
+	// 		this.finish();
+	// 		return false;
+	// 	} else if (text == 'Tab') {
+	// 		this.finish();
+	// 		return true;
+	// 	} else if (text == '`') { // no backticks allowed in tags
+	// 		this.finish();
+	// 		return false;
+	// 	} else if (text == 'Backspace') {
+	// 		this.tagText = this.tagText.substr(0, this.tagText.length - 1);
+	// 		this.editorDomNode.innerHTML = this.tagText;			
+	// 	} else if (/^.$/.test(text)) {
+	// 		this.tagText = this.tagText + text;
+	// 		this.editorDomNode.innerHTML = this.tagText;			
+	// 	}
+	// 	return false;
+	// }
 
 	postNode() {
 		return this.editorDomNode;
-	}
-
-	preNode() {
-		return null;
 	}
 }
 
