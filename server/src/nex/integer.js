@@ -109,11 +109,11 @@ class Integer extends ValueNex {
 		return 'integerDefault';
 	}
 
-	getEventTable(context) {
-		return {
-			'Enter': 'do-line-break-always',
-		}
-	}
+//	getEventTable(context) {
+//		return {
+//			'Enter': 'do-line-break-always',
+//		}
+//	}
 }
 
 

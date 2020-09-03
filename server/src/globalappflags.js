@@ -17,14 +17,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 
-
-
 const appFlags = {};
 const experiments = {
 	'COMMAND_EDITOR': true,
 	'SYMBOL_EDITOR': true,
 	'V2_INSERTION': true,
-	'V2_INSERTION_TAB_HACK': true,
+	'V2_INSERTION_TAB_HACK': false,
 	'V2_INSERTION_LENIENT_DOC_FORMAT': true
 };
 

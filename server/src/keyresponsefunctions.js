@@ -70,34 +70,10 @@ function insertOrAppend(s, obj) {
 }
 
 // V2_INSERTION
-function insertAtInsertionPoint(s, obj) {
-	if (!(obj instanceof RenderNode)) {
-		obj = new RenderNode(obj);
-	}
-	switch(s.getInsertionMode()) {
-		case INSERT_AFTER:
-			return manipulator.insertAfterSelectedAndSelect(obj);
-		case INSERT_BEFORE:
-			return manipulator.insertBeforeSelectedAndSelect(obj);
-		case INSERT_INSIDE:
-			return manipulator.insertAsFirstChild(obj);
-		case INSERT_AROUND:
-			if (obj.getNex().isNexContainer()) {
-				return manipulator.wrapSelectedInAndSelect(obj);
-			} else {
-				return manipulator.insertBeforeSelectedAndSelect(obj);
-			}
-	}
-}
-
-function insertAtSelectedNodesInsertionPoint(n) {
-	let s = systemState.getGlobalSelectedNode();
-	return insertAtInsertionPoint(s, n);
-}
 
 function V2_INSERT_insertAfterSelectedShim(n) {
 	if (experiments.V2_INSERTION) {
-		return insertAtSelectedNodesInsertionPoint(n);
+		return manipulator.defaultInsertForV2(manipulator.selected(), n)
 	} else {
 		return manipulator.insertAfterSelectedAndSelect(n);
 	}
@@ -105,9 +81,9 @@ function V2_INSERT_insertAfterSelectedShim(n) {
 
 function V2_INSERT_appendAndSelectShim(n) {
 	if (experiments.V2_INSERTION) {
-		return insertAtSelectedNodesInsertionPoint(n);
+		return manipulator.defaultInsertForV2(manipulator.selected(), n)
 	} else {
-		return manipulator.appendAndSelect(new Letter(txt));
+		return manipulator.appendAndSelect(manipulator.newLetter(txt));
 	}
 }
 
@@ -143,16 +119,16 @@ const DefaultHandlers = {
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		if (isSeparator) {
-			V2_INSERT_insertAfterSelectedShim(new Separator(txt));
+			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt));
 		} else {
 			if (isCommand) {
 				if (nex.hasChildren()) {
-					V2_INSERT_insertAfterSelectedShim(new Letter(txt));
+					V2_INSERT_insertAfterSelectedShim(manipulator.newLetter(txt));
 				} else {
-					V2_INSERT_appendAndSelectShim(new Letter(txt));
+					V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt));
 				}							
 			} else {
-				V2_INSERT_appendAndSelectShim(new Letter(txt));
+				V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt));
 			}
 		}
 		return true;
@@ -166,16 +142,16 @@ const DefaultHandlers = {
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		if (isSeparator) {
-			V2_INSERT_insertAfterSelectedShim(new Separator(txt));
+			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt));
 		} else {
 			if (isCommand) {
 				if (nex.hasChildren()) {
-					V2_INSERT_insertAfterSelectedShim(new Letter(txt));
+					V2_INSERT_insertAfterSelectedShim(manipulator.newLetter(txt));
 				} else {
-					V2_INSERT_appendAndSelectShim(new Letter(txt));
+					V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt));
 				}							
 			} else {
-				V2_INSERT_appendAndSelectShim(new Letter(txt));
+				V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt));
 			}
 		}
 		return true;
@@ -189,10 +165,10 @@ const DefaultHandlers = {
 		let isSeparator = !letterRegex.test(txt);
 
 		if (isSeparator) {
-			V2_INSERT_insertAfterSelectedShim(new Separator(txt))
+			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt))
 		} else {
-			let w = new Word();
-			w.appendChild(new Letter(txt));
+			let w = manipulator.newWord();
+			w.appendChild(manipulator.newLetter(txt));
 			V2_INSERT_insertAfterSelectedShim(w);
 			w.setSelected();
 		}
@@ -210,15 +186,13 @@ const DefaultHandlers = {
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		if (isSeparator) {
-			V2_INSERT_insertAfterSelectedShim(new Separator(txt));
+			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt));
 		} else {
 			if (isCommand) {
-				V2_INSERT_insertAfterSelectedShim(new Letter(txt));
+				V2_INSERT_insertAfterSelectedShim(manipulator.newLetter(txt));
 			} else {
-				let newword = new Word();
-				newword = new RenderNode(newword);
-				let newletter = new Letter(txt);
-				newletter = new RenderNode(newletter);
+				let newword = manipulator.newWord();
+				let newletter = manipulator.newLetter(txt);
 				newword.appendChild(newletter);
 				V2_INSERT_insertAfterSelectedShim(newword);
 				manipulator.joinToSiblingIfSame(newword);
@@ -234,14 +208,24 @@ const DefaultHandlers = {
 		}
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
+		if (experiments.V2_INSERTION) {
+			if (isSeparator) {
+				manipulator.insertSeparatorFromLineV2(manipulator.newSeparator(txt), manipulator.selected())
+			} else {
+				manipulator.insertLetterFromLineV2(manipulator.newLetter(txt), manipulator.selected())
+			}
+			return true;
+		}
+
+
 		if (isSeparator) {
-			V2_INSERT_appendAndSelectShim(new Separator(txt));
+			V2_INSERT_appendAndSelectShim(manipulator.newSeparator(txt));
 		} else {
 			if (manipulator.selectLastChild()) {
-				selectedNex.appendChild(new Letter(txt));
+				selectedNex.appendChild(manipulator.newLetter(txt));
 			} else {
-				let w = new RenderNode(new Word());
-				let lett = new RenderNode(new Letter(txt));
+				let w = manipulator.newWord();
+				let lett = manipulator.newLetter(txt);
 				w.appendChild(lett);
 				V2_INSERT_appendAndSelectShim(w);
 				if (experiments.V2_INSERTION) {
@@ -275,10 +259,14 @@ const DefaultHandlers = {
 		if (okRegex.test(txt)) {
 			nex.appendText(txt);
 		} else if (isSeparator) {
-			V2_INSERT_insertAfterSelectedShim(new Separator(txt));
+			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt));
 		} else {
-			V2_INSERT_insertAfterSelectedShim(new Word())
-				&& V2_INSERT_appendAndSelectShim(new Letter(txt));
+			if (experiments.V2_INSERTION) {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+			} else {
+				V2_INSERT_insertAfterSelectedShim(manipulator.newWord())
+					&& V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt));				
+			}
 		}
 		return true;
 	},
@@ -295,28 +283,28 @@ const DefaultHandlers = {
 		if (isSeparator) {
 			if (Utils.isWord(parent)) {
 				manipulator.selectParent()
-					&& V2_INSERT_insertAfterSelectedShim(new Separator(txt))
+					&& V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt))
 					&& manipulator.removeNex(sourcenode);
 			} else {
-				manipulator.replaceSelectedWith(new Separator(txt));		
+				manipulator.replaceSelectedWith(manipulator.newSeparator(txt));		
 			}
 		} else {
 			if (Utils.isDoc(parent)) {
-				let ln = new RenderNode(new Line());
-				let w = new RenderNode(new Word());
-				let lt = new RenderNode(new Letter(txt));
+				let ln = manipulator.newLine();
+				let w = manipulator.newWord();
+				let lt = manipulator.newLetter(txt);
 				ln.appendChild(w);
 				w.appendChild(lt);
 				manipulator.replaceSelectedWith(ln);
 				lt.setSelected();
 			} else if (Utils.isLine(parent)) {
-				let w = new RenderNode(new Word());
-				let lt = new RenderNode(new Letter(txt));
+				let w = manipulator.newWord();
+				let lt = manipulator.newLetter(txt);
 				w.appendChild(lt);
 				manipulator.replaceSelectedWith(w);
 				lt.setSelected();
 			} else {			
-				manipulator.replaceSelectedWith(new Letter(txt));
+				manipulator.replaceSelectedWith(manipulator.newLetter(txt));
 			}
 		}
 		return true;
@@ -345,10 +333,15 @@ const DefaultHandlers = {
 		if (okRegex.test(txt)) {
 			nex.appendText(txt);
 		} else if (isSeparator) {
-			V2_INSERT_insertAfterSelectedShim(new Separator(txt));
+			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt));
 		} else {
-			V2_INSERT_insertAfterSelectedShim(new Word())
-				&& V2_INSERT_appendAndSelectShim(new Letter(txt));
+
+			if (experiments.V2_INSERTION) {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+			} else {
+				V2_INSERT_insertAfterSelectedShim(manipulator.newWord())
+					&& V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt));				
+			}
 		}
 		return true;
 	},
@@ -362,9 +355,9 @@ const DefaultHandlers = {
 
 		let toInsert = null;
 		if (isSeparator) {
-			toInsert = new Separator(txt);
+			toInsert = manipulator.newSeparator(txt);
 		} else {
-			toInsert = new Letter(txt);
+			toInsert = manipulator.newLetter(txt);
 		}
 		if (nex.hasChildren()) {
 			V2_INSERT_insertAfterSelectedShim(toInsert)
@@ -385,11 +378,15 @@ const DefaultHandlers = {
 		if (allowedKeyRegex.test(txt)) {
 			nex.appendText(txt);
 		} else if (isSeparator) {
-			V2_INSERT_insertAfterSelectedShim(new Separator(txt));
+			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt));
 		} else {
-			let letter = new Letter(txt);
-			V2_INSERT_insertAfterSelectedShim(new Word())
-				&& V2_INSERT_appendAndSelectShim(txt);
+
+			if (experiments.V2_INSERTION) {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+			} else {
+				V2_INSERT_insertAfterSelectedShim(manipulator.newWord())
+					&& V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt));				
+			}
 
 		}
 		return true;
@@ -403,13 +400,14 @@ const DefaultHandlers = {
 		let isSeparator = !letterRegex.test(txt);
 
 		if (isSeparator) {
-			V2_INSERT_insertAfterSelectedShim(new Separator(txt))
+			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt))
 		} else {
-			let l = new RenderNode(new Letter(txt));
-			let w = new RenderNode(new Word());
-			w.appendChild(l);
-			V2_INSERT_insertAfterSelectedShim(w);
-			l.setSelected();
+			if (experiments.V2_INSERTION) {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+			} else {
+				V2_INSERT_insertAfterSelectedShim(manipulator.newWord())
+					&& V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt));				
+			}
 		}		
 	},
 
@@ -421,14 +419,19 @@ const DefaultHandlers = {
 		let isSeparator = !letterRegex.test(txt);
 
 		if (isSeparator) {
-			V2_INSERT_insertAfterSelectedShim(new Separator(txt))
+			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt))
 		} else {
-			V2_INSERT_insertAfterSelectedShim(new Word())
-				&& selectedNex.getKeyFunnel().appendText(txt);
+			if (experiments.V2_INSERTION) {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+			} else {
+				V2_INSERT_insertAfterSelectedShim(manipulator.newWord())
+					&& V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt));				
+			}
 		}
 		return true;
 	},
 
+	// this is the default V2_INSERTION for all code objects!
 	'justAppendLetterOrSeparator': function(nex, txt) {
 		if (isNormallyHandled(txt)) {
 			return false;
@@ -436,9 +439,9 @@ const DefaultHandlers = {
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		if (isSeparator) {
-			V2_INSERT_appendAndSelectShim(new Separator(txt))
+			V2_INSERT_appendAndSelectShim(manipulator.newSeparator(txt))
 		} else {
-			V2_INSERT_appendAndSelectShim(new Letter(txt))
+			V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt))
 		}
 		return true;
 	},
@@ -450,9 +453,9 @@ const DefaultHandlers = {
 		let isLetterRegex = /^.$/;
 		if (isLetterRegex.test(txt)) {
 			if (nex.hasChildren()) {
-				V2_INSERT_insertAfterSelectedShim(new Letter(txt))
+				V2_INSERT_insertAfterSelectedShim(manipulator.newLetter(txt))
 			} else {
-				V2_INSERT_appendAndSelectShim(new Letter(txt));
+				V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt));
 			}
 		}
 		return true;
@@ -472,9 +475,9 @@ const DefaultHandlers = {
 		let isSeparator = !letterRegex.test(txt);
 
 		if (isSeparator) {
-			manipulator.insertAtSelectedObjInsertionPoint(new Separator(txt));
+			manipulator.insertAtSelectedObjInsertionPoint(manipulator.newSeparator(txt));
 		} else {
-			manipulator.insertAtSelectedObjInsertionPoint(new Letter(txt));
+			manipulator.insertAtSelectedObjInsertionPoint(manipulator.newLetter(txt));
 		}
 		return true;
 	},
@@ -489,9 +492,9 @@ const DefaultHandlers = {
 			nex.appendCommandText(txt);
 		} else if (isLetterRegex.test(txt)) {
 			if (nex.hasChildren()) {
-				V2_INSERT_insertAfterSelectedShim(new Letter(txt))
+				V2_INSERT_insertAfterSelectedShim(manipulator.newLetter(txt))
 			} else {
-				V2_INSERT_appendAndSelectShim(new Letter(txt));
+				V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt));
 			}
 		}
 		return true;
@@ -511,15 +514,15 @@ const DefaultHandlers = {
 		if (isSeparator) {
 			if (inWord) {
 				if (experiments.V2_INSERTION) {
-					manipulator.insertSeparatorBeforeOrAfterSelectedLetter(new RenderNode(new Separator(txt)));
+					manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator(txt));
 				} else {
 					KeyResponseFunctions['split-word-and-insert-separator'](txt);
 				}
 			} else {
-				V2_INSERT_insertAfterSelectedShim(new Separator(txt));				
+				V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt));				
 			}
 		} else {
-			V2_INSERT_insertAfterSelectedShim(new Letter(txt));
+			V2_INSERT_insertAfterSelectedShim(manipulator.newLetter(txt));
 		}
 		return true;
 	},
@@ -535,14 +538,12 @@ const DefaultHandlers = {
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		if (isSeparator) {
-			V2_INSERT_insertAfterSelectedShim(new Separator(txt));
+			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt));
 		} else {
 			if (isLine) {
 				if (experiments.V2_INSERTION) {
-					let newword = new Word();
-					newword = new RenderNode(newword);
-					let newletter = new Letter(txt);
-					newletter = new RenderNode(newletter);
+					let newword = manipulator.newWord();
+					let newletter = manipulator.newLetter(txt);
 					newword.appendChild(newletter);
 					V2_INSERT_insertAfterSelectedShim(newword);
 					manipulator.joinToSiblingIfSame(newword);
@@ -551,7 +552,7 @@ const DefaultHandlers = {
 					KeyResponseFunctions['insert-letter-after-separator'](txt);
 				}
 			} else {
-				V2_INSERT_insertAfterSelectedShim(new Letter(txt));
+				V2_INSERT_insertAfterSelectedShim(manipulator.newLetter(txt));
 			}
 		}
 		return true;
@@ -564,12 +565,12 @@ const DefaultHandlers = {
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		if (isSeparator) {
-			V2_INSERT_insertAfterSelectedShim(new Separator(txt));
+			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt));
 		} else {
 			if (manipulator.selectLastChild()) {
-				V2_INSERT_insertAfterSelectedShim(new Letter(txt));
+				V2_INSERT_insertAfterSelectedShim(manipulator.newLetter(txt));
 			} else {
-				V2_INSERT_appendAndSelectShim(new Letter(txt))
+				V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt))
 			}
 		}
 		return true;
@@ -586,14 +587,14 @@ const DefaultHandlers = {
 		let isSeparator = !letterRegex.test(txt);
 
 		if (isSeparator) {
-			V2_INSERT_insertAfterSelectedShim(new Separator(txt));
+			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt));
 		} else if (txt == 'y' || txt == 'Y') {
 			nex.setValue('yes');
 		} else if (txt == 'n' || txt == 'N') {
 			nex.setValue('no');
 		} else {
-			let letter = new Letter(txt);
-			V2_INSERT_insertAfterSelectedShim(new Word())
+			let letter = manipulator.newLetter(txt);
+			V2_INSERT_insertAfterSelectedShim(manipulator.newWord())
 				&& V2_INSERT_appendAndSelectShim(letter);
 
 		}
@@ -695,6 +696,10 @@ const KeyResponseFunctions = {
 
 	// BEGIN V2_INSERTION
 
+	'evaluate-v2': function(s) {
+		evaluateAndReplace(s);
+	},
+
 	// deletes
 
 	'delete-letter-v2': function(s) {
@@ -724,8 +729,6 @@ const KeyResponseFunctions = {
 			manipulator.removeSelectedAndSelectPreviousLeafV2(s);
 		}
 	},
-
-
 
 	// movement
 
@@ -781,76 +784,77 @@ const KeyResponseFunctions = {
 			;
 	},
 
-	'insert-command-at-insertion-point': function(s) { insertAtInsertionPoint(s, manipulator.newCommand()); },
-	'insert-bool-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Bool()); },
-	'insert-symbol-at-insertion-point': function(s) { insertAtInsertionPoint(s, manipulator.newESymbol()); },
-	'insert-integer-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Integer()); },
-	'insert-string-at-insertion-point': function(s) { insertAtInsertionPoint(s, new EString()); },
-	'insert-float-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Float()); },
-	'insert-nil-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Nil()); },
-	'insert-lambda-at-insertion-point': function(s) { insertAtInsertionPoint(s, manipulator.newLambda()); },
-	'insert-expectation-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Expectation()); },
-	'insert-word-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Word()); },
-	'insert-line-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Line()); },
-	'insert-doc-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Doc()); },
-	'insert-org-at-insertion-point': function(s) { insertAtInsertionPoint(s, new Org()); },
+	'insert-command-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newCommand()); },
+	'insert-bool-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newBool()); },
+	'insert-symbol-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newESymbol()); },
+	'insert-integer-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newInteger()); },
+	'insert-string-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newEString()); },
+	'insert-float-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newFloat()); },
+	'insert-nil-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newNil()); },
+	'insert-lambda-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newLambda()); },
+	'insert-expectation-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newExpectation()); },
+	'insert-word-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newWord()); },
+	'insert-line-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newLine()); },
+	'insert-doc-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newDoc()); },
+	'insert-org-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newOrg()); },
+	'insert-zlist-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newZlist()); },
 	// END V2_INSERTION
 
 
 	'replace-selected-with-command': function(s) { manipulator.replaceSelectedWith(manipulator.newCommand()); },
-	'replace-selected-with-bool': function(s) { manipulator.replaceSelectedWith(new Bool()); },
+	'replace-selected-with-bool': function(s) { manipulator.replaceSelectedWith(manipulator.newBool()); },
 	'replace-selected-with-symbol': function(s) { manipulator.replaceSelectedWith(manipulator.newESymbol()); },
-	'replace-selected-with-integer': function(s) { manipulator.replaceSelectedWith(new Integer()); },
-	'replace-selected-with-string': function(s) { manipulator.replaceSelectedWith(new EString()); },
-	'replace-selected-with-float': function(s) { manipulator.replaceSelectedWith(new Float()); },
-	'replace-selected-with-nil': function(s) { manipulator.replaceSelectedWith(new Nil()); },
+	'replace-selected-with-integer': function(s) { manipulator.replaceSelectedWith(manipulator.newInteger()); },
+	'replace-selected-with-string': function(s) { manipulator.replaceSelectedWith(manipulator.newEString()); },
+	'replace-selected-with-float': function(s) { manipulator.replaceSelectedWith(manipulator.newFloat()); },
+	'replace-selected-with-nil': function(s) { manipulator.replaceSelectedWith(manipulator.newNil()); },
 	'replace-selected-with-lambda': function(s) { manipulator.replaceSelectedWith(manipulator.newLambda()); },
-	'replace-selected-with-expectation': function(s) { manipulator.replaceSelectedWith(new Expectation()); },
-	'replace-selected-with-word': function(s) { manipulator.replaceSelectedWith(new Word()); },
-	'replace-selected-with-line': function(s) { manipulator.replaceSelectedWith(new Line()); },
-	'replace-selected-with-doc': function(s) { manipulator.replaceSelectedWith(new Doc()); },
-	'replace-selected-with-org': function(s) { manipulator.replaceSelectedWith(new Org()); },
+	'replace-selected-with-expectation': function(s) { manipulator.replaceSelectedWith(manipulator.newExpectation()); },
+	'replace-selected-with-word': function(s) { manipulator.replaceSelectedWith(manipulator.newWord()); },
+	'replace-selected-with-line': function(s) { manipulator.replaceSelectedWith(manipulator.newLine()); },
+	'replace-selected-with-doc': function(s) { manipulator.replaceSelectedWith(manipulator.newDoc()); },
+	'replace-selected-with-org': function(s) { manipulator.replaceSelectedWith(manipulator.newOrg()); },
 
 	'add-tag': function(s) { s.startTagEditor(); },
 	'remove-all-tags': function(s) { s.removeAllTags(); },
 
 	'insert-or-append-command': function(s) { insertOrAppend(s, manipulator.newCommand()); },
-	'insert-or-append-bool': function(s) { insertOrAppend(s, new Bool()); },
+	'insert-or-append-bool': function(s) { insertOrAppend(s, manipulator.newBool()); },
 	'insert-or-append-symbol': function(s) { insertOrAppend(s, manipulator.newESymbol()); },
-	'insert-or-append-integer': function(s) { insertOrAppend(s, new Integer()); },
-	'insert-or-append-string': function(s) { insertOrAppend(s, new EString()); },
-	'insert-or-append-float': function(s) { insertOrAppend(s, new Float()); },
-	'insert-or-append-nil': function(s) { insertOrAppend(s, new Nil()); },
+	'insert-or-append-integer': function(s) { insertOrAppend(s, manipulator.newInteger()); },
+	'insert-or-append-string': function(s) { insertOrAppend(s, manipulator.newEString()); },
+	'insert-or-append-float': function(s) { insertOrAppend(s, manipulator.newFloat()); },
+	'insert-or-append-nil': function(s) { insertOrAppend(s, manipulator.newNil()); },
 	'insert-or-append-lambda': function(s) { insertOrAppend(s, manipulator.newLambda()); },
-	'insert-or-append-expectation': function(s) { insertOrAppend(s, new Expectation()); },
-	'insert-or-append-word': function(s) { insertOrAppend(s, new Word()); },
-	'insert-or-append-line': function(s) { insertOrAppend(s, new Line()); },
-	'insert-or-append-doc': function(s) { insertOrAppend(s, new Doc()); },
-	'insert-or-append-org': function(s) { insertOrAppend(s, new Org()); },
+	'insert-or-append-expectation': function(s) { insertOrAppend(s, manipulator.newExpectation()); },
+	'insert-or-append-word': function(s) { insertOrAppend(s, manipulator.newWord()); },
+	'insert-or-append-line': function(s) { insertOrAppend(s, manipulator.newLine()); },
+	'insert-or-append-doc': function(s) { insertOrAppend(s, manipulator.newDoc()); },
+	'insert-or-append-org': function(s) { insertOrAppend(s, manipulator.newOrg()); },
 
 	'insert-command-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newCommand()); },
-	'insert-bool-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Bool()); },
+	'insert-bool-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newBool()); },
 	'insert-symbol-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newESymbol()); },
-	'insert-integer-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Integer()); },
-	'insert-string-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new EString()); },
-	'insert-float-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Float()); },
-	'insert-nil-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Nil()); },
+	'insert-integer-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newInteger()); },
+	'insert-string-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newEString()); },
+	'insert-float-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newFloat()); },
+	'insert-nil-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newNil()); },
 	'insert-lambda-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newLambda()); },
-	'insert-expectation-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Expectation()); },
-	'insert-word-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Word()); },
-	'insert-line-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Line()); },
-	'insert-doc-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Doc()); },
-	'insert-zlist-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Zlist()); },
-	'insert-org-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(new Org()); },
+	'insert-expectation-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newExpectation()); },
+	'insert-word-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newWord()); },
+	'insert-line-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newLine()); },
+	'insert-doc-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newDoc()); },
+	'insert-zlist-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newZlist()); },
+	'insert-org-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newOrg()); },
 
 
 	'wrap-in-command': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newCommand()); },
 	'wrap-in-lambda': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newLambda()); },
-	'wrap-in-expectation': function(s) { manipulator.wrapSelectedInAndSelect(new Expectation()); },
-	'wrap-in-word': function(s) { manipulator.wrapSelectedInAndSelect(new Word()); },
-	'wrap-in-line': function(s) { manipulator.wrapSelectedInAndSelect(new Line()); },
-	'wrap-in-doc': function(s) { manipulator.wrapSelectedInAndSelect(new Doc()); },
-	'wrap-in-org': function(s) { manipulator.wrapSelectedInAndSelect(new Org()); },
+	'wrap-in-expectation': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newExpectation()); },
+	'wrap-in-word': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newWord()); },
+	'wrap-in-line': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newLine()); },
+	'wrap-in-doc': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newDoc()); },
+	'wrap-in-org': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newOrg()); },
 
 
 	// WIP
@@ -861,7 +865,7 @@ const KeyResponseFunctions = {
 	'split-word-and-insert-separator': function(s) {
 		manipulator.splitCurrentWordIntoTwo()
 			&& manipulator.selectParent()
-			&& manipulator.insertAfterSelectedAndSelect(new Separator(s));
+			&& manipulator.insertAfterSelectedAndSelect(manipulator.newSeparator(s));
 	},
 
 	'remove-separator-and-possibly-join-words': function(s) {
@@ -874,21 +878,19 @@ const KeyResponseFunctions = {
 	// the parent in a weird way.
 	// all deprecated
 	'legacy-insert-command-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newCommand()); },
-	'legacy-insert-bool-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Bool()); },
+	'legacy-insert-bool-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newBool()); },
 	'legacy-insert-symbol-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newESymbol()); },
-	'legacy-insert-integer-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Integer()); },
-	'legacy-insert-string-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new EString()); },
-	'legacy-insert-float-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Float()); },
-	'legacy-insert-nil-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Nil()); },
+	'legacy-insert-integer-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newInteger()); },
+	'legacy-insert-string-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newEString()); },
+	'legacy-insert-float-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newFloat()); },
+	'legacy-insert-nil-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newNil()); },
 	'legacy-insert-lambda-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newLambda()); },
-	'legacy-insert-expectation-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(new Expectation()); },
+	'legacy-insert-expectation-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newExpectation()); },
 
 
 	'insert-letter-after-separator': function(s) {
-		let newword = new Word();
-		newword = new RenderNode(newword);
-		let newletter = new Letter(s);
-		newletter = new RenderNode(newletter);
+		let newword = manipulator.newWord();
+		let newletter = manipulator.newLetter(s);
 		newword.appendChild(newletter);
 		manipulator.insertAfterSelectedAndSelect(newword);
 		manipulator.joinToSiblingIfSame(newword);
@@ -920,20 +922,20 @@ const KeyResponseFunctions = {
 	// this is doc-specific, will go away once we have classes
 	'append-letter-to-doc': function(s) {
 		manipulator.selectLastChild()
-			|| manipulator.appendAndSelect(new Line());
+			|| manipulator.appendAndSelect(manipulator.newLine());
 		manipulator.selectLastChild()
-			|| manipulator.appendAndSelect(new Word());
+			|| manipulator.appendAndSelect(manipulator.newWord());
 		if (manipulator.selectLastChild()) {
-			manipulator.insertAfterSelectedAndSelect(new Letter(s));
+			manipulator.insertAfterSelectedAndSelect(manipulator.newLetter(s));
 		} else {
-			manipulator.appendAndSelect(new Letter(s))
+			manipulator.appendAndSelect(manipulator.newLetter(s))
 		}
 	},
 
 	'append-separator-to-doc': function(s) {
 		manipulator.selectLastChild()
-			|| manipulator.appendAndSelect(new Line());
-		manipulator.appendAndSelect(new Separator(s));
+			|| manipulator.appendAndSelect(manipulator.newLine());
+		manipulator.appendAndSelect(manipulator.newSeparator(s));
 	},
 
 	'call-delete-handler-then-remove-selected-and-select-previous-sibling': function(s) {
@@ -987,7 +989,7 @@ const KeyResponseFunctions = {
 			manipulator.doLineBreakAlwaysV2(s);
 			return;
 		}
-		let newline = new RenderNode(new Newline());
+		let newline = new Newline();
 		manipulator.insertAfterSelected(newline)
 			&& manipulator.putAllNextSiblingsInNewLine()
 			&& newline.setSelected();
@@ -995,10 +997,10 @@ const KeyResponseFunctions = {
 
 	'do-line-break-from-line': function(s) {
 		if (Utils.isDoc(s.getParent())) {
-			manipulator.insertAfterSelectedAndSelect(new Line())
+			manipulator.insertAfterSelectedAndSelect(manipulator.newLine())
 				&& manipulator.appendAndSelect(new Newline());
 		} else {
-			let newline = new RenderNode(new Newline());
+			let newline = new Newline();
 			manipulator.insertAfterSelected(newline)
 				&& manipulator.putAllNextSiblingsInNewLine()
 				&& newline.setSelected();
@@ -1007,7 +1009,7 @@ const KeyResponseFunctions = {
 
 
 	'do-line-break-after-letter': function(s) {
-		let newline = new RenderNode(new Newline());
+		let newline = new Newline();
 		if (Utils.isWord(s.getParent())) {
 			manipulator.splitCurrentWordIntoTwo()
 				&& manipulator.selectParent()
@@ -1025,9 +1027,9 @@ const KeyResponseFunctions = {
 
 	'replace-selected-with-word-correctly': function(s) {
 		let selected = systemState.getGlobalSelectedNode();
-		let obj = new RenderNode(new Word());
+		let obj = manipulator.newWord();
 		if (Utils.isDoc(selected.getParent())) {
-			let ln = new RenderNode(new Line());
+			let ln = manipulator.newLine();
 			ln.appendChild(obj);
 			manipulator.replaceSelectedWith(ln);
 			obj.setSelected();

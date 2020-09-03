@@ -84,15 +84,18 @@ class Doc extends NexContainer {
 	}
 
 	getEventTable(context) {
-		if (experiments.V2_INSERTION_TAB_HACK && this.dotabhack) {
-			this.dotabhack--;
+		if (experiments.V2_INSERTION) {
+			if (experiments.V2_INSERTION_TAB_HACK) {
+				if (this.dotabhack) {
+					this.dotabhack--;
+				}				
+			}
 			return {
 				'Enter': 'do-line-break-always',
 			}
 		} else {
 			return {
 				'Enter': 'do-line-break-always',
-				// wha
 				'(': 'insert-word-as-next-sibling',
 				'[': 'insert-line-as-next-sibling',
 				'{': 'insert-doc-as-next-sibling',

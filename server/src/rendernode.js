@@ -19,6 +19,7 @@ import * as Utils from './utils.js'
 
 import { systemState } from './systemstate.js'
 import { LambdaEditor } from './nex/lambda.js'
+import { BoolEditor } from './nex/bool.js'
 import { ESymbolEditor } from './nex/esymbol.js'
 import { CommandEditor } from './nex/command.js'
 import { TagEditor } from './tag.js'
@@ -87,8 +88,11 @@ class RenderNode {
 			return reroute;
 		} catch (e) {
 			if (e.getTypeName && e.getTypeName() == '-error-') {
-				//oops. The editor SHOULD put the existing nex inside the error.
+				// YOU HAVE TO SET THE CURRENT EDITOR TO NULL FIRST
+				// because replacing self triggers a forceClose via select/unselect
+				this.setCurrentEditor(null);
 				this.replaceSelfInParentWith(e);
+				return false;
 			} else {
 				throw e;
 			}
@@ -111,6 +115,8 @@ class RenderNode {
 		switch(nex.getTypeName()) {
 			case '-lambda-':
 				return new LambdaEditor(nex);
+			case '-bool-':
+				return new BoolEditor(nex);
 			case '-command-':
 				if (experiments.COMMAND_EDITOR) {
 					return new CommandEditor(nex);

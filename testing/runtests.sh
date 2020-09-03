@@ -20,6 +20,10 @@ YELLOW='\033[0;33m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 HEADFUL="no"
+TESTDIR="alltests"
+TESTFILE="*"
+ARG_PARSING_STATE="DEFAULT"
+PARAMS=""
 
 do_image_comparison() {
 	DIFF_MODE=$1
@@ -61,9 +65,9 @@ do_image_comparison() {
 
 do_test() {
 	BASENAME=$1
-	SSDIR="./alltests/${BASENAME}"
-	TESTFILE="./alltests/${BASENAME}.js"
-	TESTOUTPUT="./alltests/${BASENAME}/output.txt"
+	SSDIR="./${TESTDIR}/${BASENAME}"
+	TESTFILE="./${TESTDIR}/${BASENAME}.js"
+	TESTOUTPUT="./${TESTDIR}/${BASENAME}/output.txt"
 	TESTOUTPUT_NORMAL="${SSDIR}/${BASENAME}_OUT_NORMAL.png"
 	TESTOUTPUT_EXPLODED="${SSDIR}/${BASENAME}_OUT_EXPLODED.png"
 	TESTFILE_ASHTML="${SSDIR}/${BASENAME}_code.txt"
@@ -89,7 +93,7 @@ do_test() {
 
 		echo "{ " > ${TESTOUTPUT_JSON}
 		cp $TESTFILE ${TESTFILE_ASHTML}
-		node $TESTFILE ${TESTOUTPUT_NORMAL} ${TESTOUTPUT_EXPLODED} ${HEADFUL} 2> ${TESTOUTPUT} && NODE_SUCCESS=true
+		node $TESTFILE ${TESTOUTPUT_NORMAL} ${TESTOUTPUT_EXPLODED} ${HEADFUL} ${PARAMS} 2> ${TESTOUTPUT} && NODE_SUCCESS=true
 		if [ "$NODE_SUCCESS" == "false" ]; then
 			echo -e "${RED}[${BASENAME}]${NC} test crashed!!!!! check console for error."
 			echo "    \"test\": \"${BASENAME}\"," >> ${TESTOUTPUT_JSON}
@@ -109,26 +113,62 @@ do_test() {
 	fi
 }
 
-if [ "$1" == "" ]; then
-	for TESTFILE in ./alltests/*.js; do
-		BASENAME=${TESTFILE#./alltests/}
-		BASENAME=${BASENAME#alltests/}
-		BASENAME=${BASENAME%.js}
+run() {
+	if [ "$TESTFILE" == "*" ]; then
+		for CTESTFILE in ./${TESTDIR}/*.js; do
+			BASENAME="${CTESTFILE}"
+			BASENAME="${BASENAME#./${TESTDIR}/}"
+			BASENAME="${BASENAME%.js}"
+			echo $BASENAME
+			do_test ${BASENAME}
+		done
+	else
+		BASENAME="${TESTFILE}"
+		BASENAME="${BASENAME#./${TESTDIR}/}"
+		BASENAME="${BASENAME%.js}"
 		do_test ${BASENAME}
-	done
-else
-	TESTFILE=$1
-	BASENAME=${TESTFILE#./alltests/}
-	BASENAME=${BASENAME#alltests/}
-	BASENAME=${BASENAME%.js}
-	if [ "--show" == "$2" ]; then
-		HEADFUL="yes"
 	fi
-	if [ "-s" == "$2" ]; then
-		HEADFUL="yes"
-	fi
-	do_test $BASENAME
-fi
+
+}
+
+
+while [ "$1" != "" ]; do
+	case "$1" in
+		--show)
+			HEADFUL="yes"
+			ARG_PARSING_STATE="DEFAULT"
+			;;
+		-s)
+			HEADFUL="yes"
+			ARG_PARSING_STATE="DEFAULT"
+			;;
+
+		--testdir)
+			ARG_PARSING_STATE="LOOKING_FOR_TESTDIR"
+			;;
+
+		--params)
+			ARG_PARSING_STATE="LOOKING_FOR_PARAMS"
+			;;
+		*)
+			case "${ARG_PARSING_STATE}" in
+				LOOKING_FOR_TESTDIR)
+					TESTDIR=$1
+					;;
+				LOOKING_FOR_PARAMS)
+					PARAMS=$1
+					;;
+				*)
+					TESTFILE=$1
+					;;
+			esac
+			ARG_PARSING_STATE="DEFAULT"
+			;;
+	esac
+	shift
+done
+
+run
 
 node parsetestoutput.js
 

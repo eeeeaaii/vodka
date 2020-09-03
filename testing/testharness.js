@@ -99,6 +99,13 @@ function runTestImpl(testinput, method, legacy) {
 		let normal_out = process.argv[2];
 		let exploded_out = process.argv[3];
 		let headful = (process.argv[4] == "yes");
+		let params = '';
+		if (process.argv.length >= 6) {
+			params = process.argv[5];
+			if (params && params.indexOf('?') != 0) {
+				params = '?' + params;
+			}			
+		}
 		let dolog = headful;
 		let browser = null;
 		if (headful) {
@@ -113,7 +120,7 @@ function runTestImpl(testinput, method, legacy) {
 			}
 			})
 		if (headful) console.log("enter to pause, enter to step, anything+enter to resume")
-		await page.goto('http://localhost:3000', {waitUntil: 'networkidle2'});
+		await page.goto('http://localhost:3000' + params, {waitUntil: 'networkidle2'});
 		// I recorded a bunch of tests that used shift-enter to mean "execute and replace"
 		// before I changed the meaning of shift-enter to "execute and leave"
 		if (legacy) {

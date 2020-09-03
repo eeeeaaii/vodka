@@ -36,19 +36,20 @@ class KeyDispatcher {
 			}
 		}
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
+
+		if (experiments.V2_INSERTION) {
+			if (eventName == 'NakedShift') {
+				systemState.getGlobalSelectedNode().nextInsertionMode();
+				return false;
+			}
+		}
+
 		if (systemState.getGlobalSelectedNode().usingEditor()) {
 			// will return whether or not to "reroute"
 			// rerouting means the editor didn't handle the key AND wants keydispatcher
 			// to handle it instead
 			let reroute = this.doEditorEvent(eventName);
 			if (!reroute) {
-				return false;
-			}
-		}
-
-		if (experiments.V2_INSERTION) {
-			if (eventName == 'NakedShift') {
-				systemState.getGlobalSelectedNode().nextInsertionMode();
 				return false;
 			}
 		}
@@ -365,19 +366,19 @@ class KeyDispatcher {
 				'Backspace': 'remove-selected-and-select-previous-sibling-v2',
 				'ShiftEscape': 'toggle-exploded',
 				'CtrlEnter': 'start-main-editor',
-				'~': 'insert-command-at-insertion-point',
-				'!': 'insert-bool-at-insertion-point',
-				'@': 'insert-symbol-at-insertion-point',
-				'#': 'insert-integer-at-insertion-point',
-				'$': 'insert-string-at-insertion-point',
-				'%': 'insert-float-at-insertion-point',
-				'^': 'insert-nil-at-insertion-point',
-				'&': 'insert-lambda-at-insertion-point',
-				'*': 'insert-expectation-at-insertion-point',
-				'(': 'insert-word-at-insertion-point',
-				')': 'insert-org-at-insertion-point',
-				'[': 'insert-line-at-insertion-point',
-				'{': 'insert-doc-at-insertion-point',
+				'~': 'insert-command-at-insertion-point-v2',
+				'!': 'insert-bool-at-insertion-point-v2',
+				'@': 'insert-symbol-at-insertion-point-v2',
+				'#': 'insert-integer-at-insertion-point-v2',
+				'$': 'insert-string-at-insertion-point-v2',
+				'%': 'insert-float-at-insertion-point-v2',
+				'^': 'insert-nil-at-insertion-point-v2',
+				'&': 'insert-lambda-at-insertion-point-v2',
+				'*': 'insert-expectation-at-insertion-point-v2',
+				'(': 'insert-word-at-insertion-point-v2',
+				')': 'insert-org-at-insertion-point-v2',
+				'[': 'insert-line-at-insertion-point-v2',
+				'{': 'insert-doc-at-insertion-point-v2',
 				'`': 'add-tag',
 				'Alt`': 'remove-all-tags',
 
@@ -439,20 +440,22 @@ class KeyDispatcher {
 				'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
 				'Backspace': 'remove-selected-and-select-previous-sibling-v2',
 				'ShiftEscape': 'toggle-exploded',
+				'Enter': 'evaluate-v2',
 				'CtrlEnter': 'start-main-editor',
-				'~': 'insert-command-at-insertion-point',
-				'!': 'insert-bool-at-insertion-point',
-				'@': 'insert-symbol-at-insertion-point',
-				'#': 'insert-integer-at-insertion-point',
-				'$': 'insert-string-at-insertion-point',
-				'%': 'insert-float-at-insertion-point',
-				'^': 'insert-nil-at-insertion-point',
-				'&': 'insert-lambda-at-insertion-point',
-				'*': 'insert-expectation-at-insertion-point',
-				'(': 'insert-word-at-insertion-point',
-				')': 'insert-org-at-insertion-point',
-				'[': 'insert-line-at-insertion-point',
-				'{': 'insert-doc-at-insertion-point',
+				'~': 'insert-command-at-insertion-point-v2',
+				'!': 'insert-bool-at-insertion-point-v2',
+				'@': 'insert-symbol-at-insertion-point-v2',
+				'#': 'insert-integer-at-insertion-point-v2',
+				'$': 'insert-string-at-insertion-point-v2',
+				'%': 'insert-float-at-insertion-point-v2',
+				'^': 'insert-nil-at-insertion-point-v2',
+				'&': 'insert-lambda-at-insertion-point-v2',
+				'*': 'insert-expectation-at-insertion-point-v2',
+				'(': 'insert-word-at-insertion-point-v2',
+				')': 'insert-org-at-insertion-point-v2',
+				'[': 'insert-line-at-insertion-point-v2',
+				'{': 'insert-doc-at-insertion-point-v2',
+				'<': 'insert-zlist-at-insertion-point-v2',
 				'`': 'add-tag',
 				'Alt`': 'remove-all-tags',
 

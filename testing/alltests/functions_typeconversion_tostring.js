@@ -19,38 +19,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testname//  functions_typeconversion_tostring
 //startdescription//
 /*
-Tests all the conversions from other things to strings: bools, floats, ints, letters, words, lines, and docs.
-~to-string
-!
-shift-tab
-~to-string
-~
-backspace
-!y
-shift-tab
-~to-string
-%45.45
-shift-tab
-~to-string
-#323
-shift-tab
-~to-string
-tab
-j
-~to-string
-(hello
-shift-tab x2
-~to-string
-[hello there
-shift-tab x3
-~to-string
-{hello there
-enter
-people
-shift-tab x4
-arrow-up x7
-shift-enter-arrowdown x7 (shift-enter, THEN arrowdown)
-shift-enter
+Tests all the conversions from other things to strings: bools, floats, ints, letters, words, lines, and docs.<br>~to-string<br>!<br>shift-tab<br>~to-string<br>~<br>backspace<br>!y<br>shift-tab<br>~to-string<br>%45.45<br>shift-tab<br>~to-string<br>#323<br>shift-tab<br>~to-string<br>tab<br>j<br>~to-string<br>(hello<br>shift-tab x2<br>~to-string<br>[hello there<br>shift-tab x3<br>~to-string<br>{hello there<br>enter<br>people<br>shift-tab x4<br>arrow-up x7<br>shift-enter-arrowdown x7 (shift-enter, THEN arrowdown)<br>shift-enter<br>
 */
 //enddescription//
 //testspec// |Shift|~|t|o|-|s|t|r|i|n|g|Shift|!|Shift|Tab|Shift|~|t|o|-|s|t|r|i|n|g|Shift|~|Backspace|Shift|!|y|Shift|Tab|Shift|~|t|o|-|s|t|r|i|n|g|Shift|%|4|5|.|4|5|Shift|Tab|Shift|~|t|o|-|s|t|r|i|n|g|Shift|#|3|2|3|Shift|Tab|Shift|~|t|o|-|s|t|r|i|n|g|Tab|j|Shift|~|t|o|-|s|t|r|i|n|g|Shift|(|h|e|l|l|o|Shift|Tab|Tab|Shift|~|t|o|-|s|t|r|i|n|g|[|h|e|l|l|o| |t|h|e|r|e|Shift|Tab|Tab|Tab|Shift|~|t|o|-|s|t|r|i|n|g|Shift|{|h|e|l|l|o| |t|h|e|r|e|Enter|p|e|o|p|l|e|Shift|Tab|Tab|Tab|Tab|ArrowUp|ArrowUp|ArrowUp|ArrowUp|ArrowUp|ArrowUp|ArrowUp|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Shift|Enter
@@ -113,6 +82,8 @@ testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Backquote'});
 testactions.push({type:'keyup',code:'Backquote'});
 testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Backspace'});
+testactions.push({type:'keyup',code:'Backspace'});
 testactions.push({type:'keydown',code:'Backspace'});
 testactions.push({type:'keyup',code:'Backspace'});
 testactions.push({type:'keydown',code:'ShiftRight'});
@@ -227,6 +198,10 @@ testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keydown',code:'KeyJ'});
 testactions.push({type:'keyup',code:'KeyJ'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Tab'});
+testactions.push({type:'keyup',code:'Tab'});
+testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Backquote'});
 testactions.push({type:'keyup',code:'Backquote'});

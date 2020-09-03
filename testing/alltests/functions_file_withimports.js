@@ -225,6 +225,8 @@ testactions.push({type:'keydown',code:'KeyL'});
 testactions.push({type:'keydown',code:'KeyD'});
 testactions.push({type:'keyup',code:'KeyL'});
 testactions.push({type:'keyup',code:'KeyD'});
+testactions.push({type:'keydown',code:'Space'});
+testactions.push({type:'keyup',code:'Space'});
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Backquote'});
 testactions.push({type:'keyup',code:'Backquote'});

@@ -105,6 +105,8 @@ testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
+testactions.push({type:'keydown',code:'Tab'});
+testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'Digit6'});

@@ -216,8 +216,6 @@ testactions.push({type:'keydown',code:'KeyO'});
 testactions.push({type:'keydown',code:'KeyF'});
 testactions.push({type:'keyup',code:'KeyO'});
 testactions.push({type:'keyup',code:'KeyF'});
-testactions.push({type:'keydown',code:'ShiftRight'});
-testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keydown',code:'ShiftRight'});

@@ -20,6 +20,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { ValueNex } from './valuenex.js'
 import { isNormallyHandled } from '../keyresponsefunctions.js'
 import { experiments } from '../globalappflags.js'
+import { Editor } from '../editors.js'
 
 class Bool extends ValueNex {
 	constructor(val) {
@@ -70,7 +71,21 @@ class Bool extends ValueNex {
 	}
 
 	getDefaultHandler() {
-		return 'modifyBoolOrInsert';
+		if (experiments.V2_INSERTION) {
+			return 'justAppendLetterOrSeparator';
+		} else {
+			return 'modifyBoolOrInsert';
+		}
+	}
+
+	renderInto(renderNode, renderFlags) {
+		super.renderInto(renderNode, renderFlags);
+		let domNode = renderNode.getDomNode();
+		if (this.isEditing) {
+			domNode.classList.add('editing');
+		} else {
+			domNode.classList.remove('editing');
+		}
 	}
 
 	getEventTable(context) {
@@ -79,7 +94,7 @@ class Bool extends ValueNex {
 				// these 2 are questionable but make tests pass?
 				'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
 				'Backspace': 'remove-selected-and-select-previous-leaf-v2',
-				'Enter': 'do-line-break-always',
+//				'Enter': 'do-line-break-always',
 			}
 		} else {
 			return {
@@ -92,7 +107,39 @@ class Bool extends ValueNex {
 	}
 }
 
+class BoolEditor extends Editor {
+	constructor(nex) {
+		super(nex);
+	}
+
+	hasContent() {
+		return true;
+	}
+
+	doBackspaceEdit() {
+	}
+
+	doAppendEdit(text) {
+		if (/^[yY]$/.test(text)) {
+			this.nex.setValue('yes');
+		} else if (/^[nN]$/.test(text)) {
+			this.nex.setValue('no');
+		}
+	}
+
+	shouldAppend(text) {
+		return /^[yYnN]$/.test(text);
+	}
+
+	shouldTerminate(text) {
+		return false; // always reroute if not editing
+	}
+
+	shouldTerminateAndReroute(text) {
+		return !(/^[yYnN]$/.test(text));
+	}
+}
 
 
-export { Bool }
+export { Bool, BoolEditor }
 

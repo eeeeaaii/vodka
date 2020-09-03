@@ -122,8 +122,6 @@ testactions.push({type:'keydown',code:'ShiftLeft'}); // typing &
 testactions.push({type:'keydown',code:'Digit7'});
 testactions.push({type:'keyup',code:'Digit7'});
 testactions.push({type:'keyup',code:'ShiftLeft'});
-testactions.push({type:'keydown',code:'ShiftRight'}); // stray shift!
-testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Space'});
 testactions.push({type:'keyup',code:'Space'});
 testactions.push({type:'keydown',code:'KeyN'});

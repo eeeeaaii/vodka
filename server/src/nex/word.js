@@ -96,8 +96,11 @@ class Word extends NexContainer {
 	}
 
 	getEventTable(context) {
-		if (experiments.V2_INSERTION_TAB_HACK && this.dotabhack) {
-			this.dotabhack--;
+
+		if (experiments.V2_INSERTION) {
+			if (experiments.V2_INSERTION_TAB_HACK && this.dotabhack) {
+				this.dotabhack--;
+			}
 			return {
 				'Enter': 'do-line-break-always',
 				'ArrowUp': 'move-to-corresponding-letter-in-previous-line',

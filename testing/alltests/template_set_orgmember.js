@@ -199,6 +199,8 @@ testactions.push({type:'keyup',code:'MetaRight'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
 testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Backquote'});
 testactions.push({type:'keyup',code:'Backquote'});
 testactions.push({type:'keyup',code:'ShiftRight'});
@@ -376,6 +378,8 @@ testactions.push({type:'keyup',code:'KeyA'});
 testactions.push({type:'keyup',code:'KeyR'});
 testactions.push({type:'keydown',code:'KeyT'});
 testactions.push({type:'keyup',code:'KeyT'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
 

@@ -24,12 +24,22 @@ import { Nex } from './nex/nex.js'
 import { Root } from './nex/root.js' 
 import { Lambda } from './nex/lambda.js'
 import { ESymbol } from './nex/esymbol.js' 
+import { EString } from './nex/estring.js' 
 import { InsertionPoint } from './nex/insertionpoint.js' 
 import { RenderNode } from './rendernode.js' 
 import { Word } from './nex/word.js' 
-import { EString } from './nex/estring.js' 
 import { Command } from './nex/command.js' 
+import { Bool } from './nex/bool.js' 
 import { Line } from './nex/line.js' 
+import { Zlist } from './nex/zlist.js' 
+import { Org } from './nex/org.js' 
+import { Float } from './nex/float.js' 
+import { Expectation } from './nex/expectation.js' 
+import { Integer } from './nex/integer.js' 
+import { Letter } from './nex/letter.js' 
+import { Doc } from './nex/doc.js' 
+import { Separator } from './nex/separator.js' 
+import { Nil } from './nex/nil.js' 
 import { Newline } from './nex/newline.js' 
 import { experiments } from './globalappflags.js'
 // V2_INSERTION
@@ -44,25 +54,32 @@ import {
 class Manipulator {
 
 
+	// private methods start with _
+	// everything at the beginning of this file should be new
+	// everything at the end is probably deprecated
+	// look at the line number, divide by total lines in this doc
+	// that is the probability it is deprecated	
 
 
-
-	// private methods
-
-
+	// deprecated
 	_conformData(data) {
 		if (data instanceof Nex) {
 			return new RenderNode(data);
 		} else return data;
 	}
 
-	// gets the selected node
+	// UTILITIES HAVE THIS ASCII ART BULLSHIT SEPARATOR 'KAY
 
-	_selected() {
-		return systemState.getGlobalSelectedNode();		
+	//////// *********************** --------------------------------------------------
+	//////// *********************** --------------------------------------------------
+	//////// *********************** --------------------------------------------------
+	// TESTS
+
+	_inSameLine(s1, s2) {
+		let l1 = this.getEnclosingLine(s1);
+		let l2 = this.getEnclosingLine(s2);
+		return l1 == l2;
 	}
-
-	// some tests
 
 	_isInsertBefore(node) {
 		return (node.getInsertionMode() == INSERT_BEFORE);
@@ -122,6 +139,23 @@ class Manipulator {
 		return true;
 	}
 
+	_isSeparatorInLetterPosition(node) {
+		if (!Utils.isSeparator(node)) return false;
+		let word = node.getParent();
+		if (!word) return false;
+		if (!Utils.isWord(word)) return false;
+		if (experiments.V2_INSERTION_LENIENT_DOC_FORMAT) {
+			return true;
+		}
+		let line = word.getParent();
+		if (!line) return false;
+		if (!Utils.isLine(line)) return false;
+		let doc = line.getParent();
+		if (!doc) return false;
+		if (!Utils.isDoc(doc)) return false;
+		return true;
+	}
+
 	_isInDocFormat(node) {
 		return this._isLetterInDocFormat(node)
 			|| this._isSeparatorInDocFormat(node)
@@ -171,33 +205,11 @@ class Manipulator {
 		return true;
 	}
 
-	_newWord() {
-		return new RenderNode(new Word());
-	}
+	//////// *********************** --------------------------------------------------
+	//////// *********************** --------------------------------------------------
+	//////// *********************** --------------------------------------------------
+	// SPLITTING
 
-	_newLine() {
-		return new RenderNode(new Line());
-	}
-
-	// public
-	newLambda() {
-		let r = new RenderNode(new Lambda());		
-		r.possiblyStartMainEditor();
-		return r;
-	}
-
-	newESymbol() {
-		let r = new RenderNode(new ESymbol());
-		r.possiblyStartMainEditor();
-		return r;
-	}
-
-	// public
-	newCommand() {
-		let r = new RenderNode(new Command());		
-		r.possiblyStartMainEditor();
-		return r;
-	}
 
 	// given a list
 	// ( ( a b c d S e f g ) )
@@ -267,6 +279,31 @@ class Manipulator {
 		return this._splitParentBeforeAndPutIn(p, toPutInGrandparentLevel);
 	}
 
+	// given a list like this:
+	// ( ( a b c ( ...S... ) d e ) )
+	// splits just grandparent, ignoring what's in the parent of S
+	// ( ( a b c ) ( (...S...) d e ) )
+	_splitGrandparentBeforeAndPutIn(toSplitBefore, toPutIn) {
+		let p = toSplitBefore.getParent();
+		if (!p) return false;
+		return this._splitParentBeforeAndPutIn(p, toPutIn);
+	}
+
+	// given a list like this:
+	// ( ( a b c ( ...S... ) d e ) )
+	// splits just grandparent, ignoring what's in the parent of S
+	// ( ( a b c (...S...) ) ( d e ) )
+	_splitGrandparentAfterAndPutIn(toSplitAfter, toPutIn) {
+		let p = toSplitAfter.getParent();
+		if (!p) return false;
+		return this._splitParentAfterAndPutIn(p, toPutIn);
+	}
+
+	//////// *********************** --------------------------------------------------
+	//////// *********************** --------------------------------------------------
+	//////// *********************** --------------------------------------------------
+	// APPENDING
+
 	_appendAfterAndSelect(toAppend, after) {
 		if (this._appendAfter(toAppend, after)) {
 			toAppend.setSelected();
@@ -281,6 +318,16 @@ class Manipulator {
 		p.insertChildAfter(toAppend, after);
 		return true;
 	}
+
+	_appendAsLastChildOf(toAppend, inside) {
+		inside.appendChild(toAppend);
+		return true;
+	}
+
+	//////// *********************** --------------------------------------------------
+	//////// *********************** --------------------------------------------------
+	//////// *********************** --------------------------------------------------
+	// PREPENDING
 
 	_prependBeforeAndSelect(toPrepend, before) {
 		if (this._prependBefore(toPrepend, before)) {
@@ -297,6 +344,16 @@ class Manipulator {
 		return true;
 	}
 
+	_prependAsFirstChildOf(toPrepend, inside) {
+		inside.prependChild(toPrepend);
+		return true;
+	}
+
+	//////// *********************** --------------------------------------------------
+	//////// *********************** --------------------------------------------------
+	//////// *********************** --------------------------------------------------
+	// JOINING
+
 	// takes all the contents of c2 and puts them in c1,
 	// then deletes c2
 	_joinContainers(c1, c2) {
@@ -307,7 +364,11 @@ class Manipulator {
 		}
 		this._deleteNode(c2);
 	}
-	// public methods
+
+	//////// *********************** --------------------------------------------------
+	//////// *********************** --------------------------------------------------
+	//////// *********************** --------------------------------------------------
+	// DELETING
 
 
 	// cleaned up version of removeNex
@@ -322,6 +383,77 @@ class Manipulator {
 		}
 		p.removeChild(node);
 		return true;
+	}
+
+	_deleteLetterAndPossiblyWord(s) {
+		let word = s.getParent();
+		if (!word) return;
+		if (word.numChildren() == 1) {
+			this._deleteNode(word);
+		} else {
+			this._deleteNode(s);
+		}
+	}
+
+	_deleteUpToLine(s) {
+		// could be line > thing
+		// or line > word > thing
+		let p = s.getParent();
+		if (!p) return false;
+		this._deleteNode(s);
+		if (Utils.isWord(p)) {
+			let line = p.getParent();
+			this._deleteNode(p);
+		}
+		return true;
+	}
+
+	_deleteSeparatorAndPossiblyJoinWords(s) {
+		let prev = this._getSiblingBefore(s);
+		let next = this._getSiblingAfter(s);
+		this._deleteNode(s);
+		if (prev && next && Utils.isWord(prev) && Utils.isWord(next)) {
+			this._joinContainers(prev, next);
+		}
+	}
+
+	_deleteCorrectlyAccordingToLeafType(toDelete) {
+		if (this._isLetterInDocFormat(toDelete)) {
+			this._deleteLetterAndPossiblyWord(toDelete);					
+		} else if (this._isSeparatorInDocFormat(toDelete) || this._isLetterInSeparatorPosition(toDelete)) {
+			this._deleteSeparatorAndPossiblyJoinWords(toDelete);
+		}
+	}
+
+	_deleteLineBreak(s) {
+		let enclosingLine = this.getEnclosingLine(s);
+		let previousSibLine = this._getSiblingBefore(enclosingLine);
+		if (enclosingLine && previousSibLine && Utils.isLine(previousSibLine)) {
+			this._joinContainers(previousSibLine, enclosingLine);
+			// now maybe join words.
+			let enclosingWord = this.getEnclosingWord(s);
+			let previousSibWord = this._getSiblingBefore(enclosingWord); // if enclosingWord null, returns null
+			if (enclosingWord && previousSibWord && Utils.isWord(previousSibWord)) {
+				this._joinContainers(previousSibWord, enclosingWord);
+			}
+			let prev = this._getLeafBefore(s);
+			if (prev && this._inSameLine(prev, s)) {
+				prev.setSelected();
+				this._forceInsertionMode(INSERT_AFTER, prev);
+			}
+			return true;
+		}
+
+	}
+
+	//////// *********************** --------------------------------------------------
+	//////// *********************** --------------------------------------------------
+	//////// *********************** --------------------------------------------------
+	// GETTING OTHER NODES
+
+	// gets the selected node
+	selected() {
+		return systemState.getGlobalSelectedNode();		
 	}
 
 	_getSiblingAfter(of) {
@@ -405,12 +537,6 @@ class Manipulator {
 		return c;
 	}
 
-	_inSameLine(s1, s2) {
-		let l1 = this.getEnclosingLine(s1);
-		let l2 = this.getEnclosingLine(s2);
-		return l1 == l2;
-	}
-
 	_getFirstChildOf(s) {
 		if (!Utils.isNexContainer(s)) return false;
 		let c = s.getFirstChild();
@@ -441,68 +567,111 @@ class Manipulator {
 		return c;
 	}
 
-	_deleteLetterAndPossiblyWord(s) {
-		let word = s.getParent();
-		if (!word) return;
-		if (word.numChildren() == 1) {
-			this._deleteNode(word);
+
+	//////// *********************** --------------------------------------------------
+	//////// *********************** --------------------------------------------------
+	//////// *********************** --------------------------------------------------
+
+
+	//////// OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+	//////// OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+	//////// OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+
+	// OKAY NOW THIS OTHER ASCII GARBAGE IS FOR PRIVATE HELPER METHODS
+	// THEY ARE NOT UTILITIES BECAUSE THEY AREN'T GENERAL PURPOSE
+	// THEY ARE SPECIFIC IN PURPOSE BUT NOT PUBLIC
+	// THESE SHOULD ALL BE SEPARATE CLASSES THEN I WOULDN'T HAVE TO SCREAM IN ALL CAPS
+
+
+	_doLineBreakBeforeSeparator(s) {
+		if (this._isSeparatorInDocFormat(s) || this._isLetterInSeparatorPosition(s)) {
+			if (this._splitParentBeforeAndPutIn(s, this.newLine())) {
+				// split was performed, select next leaf and put insertion point before
+				this.selectPreviousLeaf();
+				this._forceInsertionMode(INSERT_AFTER, this.selected());
+			} else {
+				this._prependBefore(this.newLine(), this.getEnclosingLine(s));
+				// leave current thing selected!
+			}
+		} else if (this._isSeparatorInLetterPosition(s)) {
+			this._doLineBreakBeforeLetter(s);
 		} else {
-			this._deleteNode(s);
+			// idk, call the method we use for random things? do nothing? idk
 		}
 	}
 
-	_deleteUpToLine(s) {
-		// could be line > thing
-		// or line > word > thing
-		let p = s.getParent();
-		if (!p) return false;
-		this._deleteNode(s);
-		if (Utils.isWord(p)) {
-			let line = p.getParent();
-			this._deleteNode(p);
-		}
-		return true;
-	}
-
-	_deleteSeparatorAndPossiblyJoinWords(s) {
-		let prev = this._getSiblingBefore(s);
-		let next = this._getSiblingAfter(s);
-		this._deleteNode(s);
-		if (prev && next && Utils.isWord(prev) && Utils.isWord(next)) {
-			this._joinContainers(prev, next);
-		}
-	}
-
-	_deleteCorrectlyAccordingToLeafType(toDelete) {
-		if (this._isLetterInDocFormat(toDelete)) {
-			this._deleteLetterAndPossiblyWord(toDelete);					
-		} else if (this._isSeparatorInDocFormat(toDelete) || this._isLetterInSeparatorPosition(toDelete)) {
-			this._deleteSeparatorAndPossiblyJoinWords(toDelete);
-		}
-	}
-
-	_deleteLineBreak(s) {
-		let enclosingLine = this.getEnclosingLine(s);
-		let previousSibLine = this._getSiblingBefore(enclosingLine);
-		if (enclosingLine && previousSibLine && Utils.isLine(previousSibLine)) {
-			this._joinContainers(previousSibLine, enclosingLine);
-			// now maybe join words.
-			let enclosingWord = this.getEnclosingWord(s);
-			let previousSibWord = this._getSiblingBefore(enclosingWord); // if enclosingWord null, returns null
-			if (enclosingWord && previousSibWord && Utils.isWord(previousSibWord)) {
-				this._joinContainers(previousSibWord, enclosingWord);
+	_doLineBreakAfterSeparator(s) {
+		if (this._isSeparatorInDocFormat(s) || this._isLetterInSeparatorPosition(s)) {
+			if (this._splitParentAfterAndPutIn(s, this.newLine())) {
+				// split was performed, select next leaf and put insertion point before
+				this.selectNextLeaf();
+				this._forceInsertionMode(INSERT_BEFORE, this.selected());
+			} else {
+				let line = this.newLine();
+				// split not performed, insert new empty line
+				this._appendAfterAndSelect(line, this.getEnclosingLine(s));
+				line.getNex().doTabHack();
 			}
-			let prev = this._getLeafBefore(s);
-			if (prev && this._inSameLine(prev, s)) {
-				prev.setSelected();
-				this._forceInsertionMode(INSERT_AFTER, prev);
-			}
-			return true;
+		} else if (this._isSeparatorInLetterPosition(s)) {
+			this._doLineBreakAfterLetter(s);
+		} else {
+			// idk, call the method we use for random things? do nothing? idk
 		}
-
 	}
 
-	// V2_INSERTION - start
+	_doLineBreakBeforeLetter(s) {
+		if (this._isLetterInDocFormat(s) || this._isSeparatorInLetterPosition(s)) {
+			// for situations where we have ( ( a S b c) )
+			if (this._splitParentAndGrandparentBeforeAndPutIn(s, this.newWord(), this.newLine())) {
+				// split was performed, need to move selected node
+				this.selectPreviousLeaf();
+				this._forceInsertionMode(INSERT_AFTER, this.selected());
+			// for situations where we have ( a ( S b c) )
+			} else if (this._splitGrandparentBeforeAndPutIn(s, this.newLine())) {
+				this.selectPreviousLeaf();
+				this._forceInsertionMode(INSERT_AFTER, this.selected());				
+			} else {
+				this._prependBefore(this.newLine(), this.getEnclosingLine(s));
+				// leave current thing selected!
+			}
+		} else if (this._isLetterInSeparatorPosition(s)) {
+			this._doLineBreakBeforeSeparator(s);
+		}
+	}
+
+	_doLineBreakAfterLetter(s) {
+		if (this._isLetterInDocFormat(s) || this._isSeparatorInLetterPosition(s)) {
+			// for situations where we have ( ( a b S c ) )
+			if (this._splitParentAndGrandparentAfterAndPutIn(s, this.newWord(), this.newLine())) {
+				// split was performed, need to move selected node
+				this.selectNextLeaf();
+				this._forceInsertionMode(INSERT_BEFORE, this.selected());
+			// for situations where we have ( ( a b S ) c )
+			} else if (this._splitGrandparentAfterAndPutIn(s, this.newLine())) {
+				this.selectNextLeaf();
+				this._forceInsertionMode(INSERT_BEFORE, this.selected());				
+			} else {
+				let line = this.newLine();
+				this._appendAfterAndSelect(line, this.getEnclosingLine(s));
+				line.getNex().doTabHack();
+			}
+		} else if (this._isLetterInSeparatorPosition(s)) {
+			this._doLineBreakAfterSeparator(s);
+		}
+	}	
+
+
+	//////// OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+	//////// OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+	//////// OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+
+
+	// OKAY BELOW THIS WE HAVE ENTRY POINT METHODS
+	// THAT ARE CALLED DIRECTLY FROM KEYRESPONSEFUNCTIONS.JS
+	// TO PERFORM WHATEVER ACTIONS IT WANTS TO PERFORM
+	// THESE NEED A BETTER NAMING CONVENTION THAT TELLS YOU
+	// WHAT NEX FIRES THEM IN RESPONSE TO WHAT KEYSTROKES
+
 	deleteLeafV2(s) {
 		if (this._isOnlyLeafInLine(s)) {
 			if (this._isInsertAfter(s)) {
@@ -581,7 +750,7 @@ class Manipulator {
 			return;
 		}
 
-		let toDel = this._selected();
+		let toDel = this.selected();
 		let r = (
 			this.attemptToRemoveLastItemInCommand(true /* hacks are great */)
 			||
@@ -598,21 +767,21 @@ class Manipulator {
 		if (this._isFirstLeafInLine(s)) {
 			if (s.getInsertionMode() == INSERT_BEFORE) {
 				this.selectPreviousLeaf();
-				let changedWhatIsSelected = (s != this._selected());
+				let changedWhatIsSelected = (s != this.selected());
 				if (changedWhatIsSelected) {
-					if (Utils.isLine(this._selected())) {
-						this._forceInsertionMode(INSERT_INSIDE, this._selected());
+					if (Utils.isLine(this.selected())) {
+						this._forceInsertionMode(INSERT_INSIDE, this.selected());
 					} else {
-						this._forceInsertionMode(INSERT_AFTER, this._selected());
+						this._forceInsertionMode(INSERT_AFTER, this.selected());
 					}
 				} else {
 					// because attempting to go to the previous leaf temporarily changes
 					// which node is selected, doing so will revert selection mode
 					// to the default (insert_after), so we need to restore it to before.
-					this._forceInsertionMode(INSERT_BEFORE, this._selected());					
+					this._forceInsertionMode(INSERT_BEFORE, this.selected());					
 				}
 			} else {
-				this._forceInsertionMode(INSERT_BEFORE, this._selected());
+				this._forceInsertionMode(INSERT_BEFORE, this.selected());
 			}
 		} else if (this._isEmptyLineInDoc(s)) {
 			let sib = this._getSiblingBefore(s);
@@ -633,83 +802,21 @@ class Manipulator {
 
 	selectNextLeafV2(s) {
 		if (s.getInsertionMode() == INSERT_BEFORE) {
-			this._forceInsertionMode(INSERT_AFTER, this._selected());
+			this._forceInsertionMode(INSERT_AFTER, this.selected());
 			return;
 		}
 		this.selectNextLeaf();
-		if (this._isFirstLeafInLine(this._selected())) {
-			this._forceInsertionMode(INSERT_BEFORE, this._selected());
+		if (this._isFirstLeafInLine(this.selected())) {
+			this._forceInsertionMode(INSERT_BEFORE, this.selected());
 		} else {
-			if (Utils.isLine(this._selected())) {
-				this._forceInsertionMode(INSERT_INSIDE, this._selected());
+			if (Utils.isLine(this.selected())) {
+				this._forceInsertionMode(INSERT_INSIDE, this.selected());
 			} else {
-				this._forceInsertionMode(INSERT_AFTER, this._selected());
+				this._forceInsertionMode(INSERT_AFTER, this.selected());
 			}
 		}
 	}
 
-	_doLineBreakBeforeSeparator(s) {
-		if (this._isSeparatorInDocFormat(s)) {
-			if (this._splitParentBeforeAndPutIn(s, this._newLine())) {
-				// split was performed, select next leaf and put insertion point before
-				this.selectPreviousLeaf();
-				this._forceInsertionMode(INSERT_AFTER, this._selected());
-			} else {
-				this._prependBefore(this._newLine(), this.getEnclosingLine(s));
-				// leave current thing selected!
-			}
-		} else {
-			// idk, call the method we use for random things? do nothing? idk
-		}
-	}
-
-	_doLineBreakAfterSeparator(s) {
-		if (this._isSeparatorInDocFormat(s)) {
-			if (this._splitParentAfterAndPutIn(s, this._newLine())) {
-				// split was performed, select next leaf and put insertion point before
-				this.selectNextLeaf();
-				this._forceInsertionMode(INSERT_BEFORE, this._selected());
-			} else {
-				let line = this._newLine();
-				// split not performed, insert new empty line
-				this._appendAfterAndSelect(line, this.getEnclosingLine(s));
-				line.getNex().doTabHack();
-			}
-		} else {
-			// idk, call the method we use for random things? do nothing? idk
-		}
-	}
-
-	_doLineBreakBeforeLetter(s) {
-		if (this._isLetterInDocFormat(s)) {
-			if (this._splitParentAndGrandparentBeforeAndPutIn(s, this._newWord(), this._newLine())) {
-				// split was performed, need to move selected node
-				this.selectPreviousLeaf();
-				this._forceInsertionMode(INSERT_AFTER, this._selected());
-			} else {
-				this._prependBefore(this._newLine(), this.getEnclosingLine(s));
-				// leave current thing selected!
-			}
-		} else if (this._isLetterInSeparatorPosition(s)) {
-			this._doLineBreakBeforeSeparator(s);
-		}
-	}
-
-	_doLineBreakAfterLetter(s) {
-		if (this._isLetterInDocFormat(s)) {
-			if (this._splitParentAndGrandparentAfterAndPutIn(s, this._newWord(), this._newLine())) {
-				// split was performed, need to move selected node
-				this.selectNextLeaf();
-				this._forceInsertionMode(INSERT_BEFORE, this._selected());
-			} else {
-				let line = this._newLine();
-				this._appendAfterAndSelect(line, this.getEnclosingLine(s));
-				line.getNex().doTabHack();
-			}
-		} else if (this._isLetterInSeparatorPosition(s)) {
-			this._doLineBreakAfterSeparator(s);
-		}
-	}
 
 	doLineBreakForLetter(s) {
 		if (s.getInsertionMode() == INSERT_AFTER) {
@@ -728,7 +835,7 @@ class Manipulator {
 	}
 
 	doLineBreakForLine(s) {
-		let ln = this._newLine();
+		let ln = this.newLine();
 		let mode = s.getInsertionMode();
 		if (mode == INSERT_BEFORE || mode == INSERT_AROUND) {
 			this._prependBeforeAndSelect(ln, s);
@@ -738,7 +845,7 @@ class Manipulator {
 	}
 
 	doLineBreakAlwaysV2(s) {
-		let line = this._newLine();
+		let line = this.newLine();
 		let p = s.getParent();
 		if (!p) return false;
 		if (!this._splitParentAfterAndPutIn(s, line)) {
@@ -758,7 +865,7 @@ class Manipulator {
 
 	moveLeftUpV2(s) {
 		this.selectPreviousSibling()
-			|| this._forceInsertionMode(INSERT_BEFORE, this._selected())
+			|| this._forceInsertionMode(INSERT_BEFORE, this.selected())
 	}
 
 	moveRightDownV2(s) {
@@ -766,7 +873,7 @@ class Manipulator {
 			this._forceInsertionMode(INSERT_AFTER, s);
 		} else {
 			this.selectNextSibling()
-				||  this._forceInsertionMode(INSERT_AFTER, this._selected());
+				||  this._forceInsertionMode(INSERT_AFTER, this.selected());
 		}		
 	}
 
@@ -777,7 +884,7 @@ class Manipulator {
 					s.getNex().doTabHack();
 				}
 			}
-			this._forceInsertionMode(INSERT_INSIDE, this._selected());
+			this._forceInsertionMode(INSERT_INSIDE, this.selected());
 		} else {
 			// when selecting first child, put insertion point before it
 			// WILL BREAK ALL THE TESTS
@@ -791,22 +898,43 @@ class Manipulator {
 
 	// here
 	// V2_INSERTION
+	// START V2_INSERTION INSERT STUFF
+
+	defaultInsertForV2(insertInto, toInsert) {
+		// ahem this only works if insertInto is selected
+		switch(insertInto.getInsertionMode()) {
+			case INSERT_AFTER:
+				return this.insertAfterSelectedAndSelect(toInsert);
+			case INSERT_BEFORE:
+				return this.insertBeforeSelectedAndSelect(toInsert);
+			case INSERT_INSIDE:
+				return this.insertAsFirstChild(toInsert);
+			case INSERT_AROUND:
+				if (Utils.isNexContainer(toInsert)) {
+					return this.wrapSelectedInAndSelect(toInsert);
+				} else {
+					return this.insertBeforeSelectedAndSelect(toInsert);
+				}
+		}
+	}
+
+
 	insertSeparatorBeforeOrAfterSelectedLetter(newSeparator) {
-		let s = this._selected();
+		let s = this.selected();
 		if (s.getInsertionMode() == INSERT_AFTER) {
 			let w = s.getParent();
 			// we always put the separator after the word
 			// we are currently in, but sometimes we split that
 			// word.
 			if (!this._isLastChildOf(s, w)) {
-				let nw = this._newWord();
+				let nw = this.newWord();
 				this._splitParentAfterAndPutIn(s, nw)
 			}
 			this._appendAfterAndSelect(newSeparator, w);
 		} else {
 			let w = s.getParent();
 			if (!this._isFirstChildOf(s, w)) {
-				let nw = this._newWord();
+				let nw = this.newWord();
 				this._splitParentBeforeAndPutIn(s, nw)
 				this._prependBeforeAndSelect(newSeparator, nw);
 			} else {
@@ -815,8 +943,34 @@ class Manipulator {
 		}
 	}
 
+	// doc elements get special insert methods I guess
+	// I'm going to hold the line on keeping regexes out of this file
+	insertLetterFromLineV2(newLetter, line) {
+		if (line.getInsertionMode() == INSERT_INSIDE) {
+			if (this._isEmpty(line) || !Utils.isWord(this._getFirstChildOf(line))) {
+				let word = this.newWord();
+				this._prependAsFirstChildOf(newLetter, word)
+				this._prependAsFirstChildOf(word, line);
+				newLetter.setSelected();
+				return true;
+			} else {
+				let word = this._getFirstChildOf(line);
+				this._prependAsFirstChildOf(newLetter, word);
+				newLetter.setSelected();
+				return true;
+			}
+		} else {
+			return this.defaultInsertForV2(line, newLetter);
+		}
+	}
+
+	insertSeparatorFromLineV2(newSeparator, line) {
+		return this.defaultInsertForV2(line, newSeparator);
+	}
 
 
+
+	// END V2_INSERTION INSERT STUFF
 
 
 
@@ -1194,7 +1348,7 @@ class Manipulator {
 
 	// ALL THE INSERTS SHOULD BE REPLACED BY THIS
 	insertAtSelectedObjInsertionPoint(node) {
-		let s = this._selected();
+		let s = this.selected();
 		switch(s.getInsertionMode()) {
 			case INSERT_AFTER:
 				return manipulator.insertAfterSelectedAndSelect(node);
@@ -1224,7 +1378,7 @@ class Manipulator {
 	}
 
 	wrapSelectedInAndSelect(wrapperNode) {
-		let s = this._selected();
+		let s = this.selected();
 		let p = s.getParent();
 		p.replaceChildWith(s, wrapperNode);
 		wrapperNode.appendChild(s);
@@ -1442,6 +1596,7 @@ class Manipulator {
 	}
 
 
+
 	putAllNextSiblingsInNewLine() {
 		return this.split(new Line())
 	}
@@ -1565,6 +1720,92 @@ class Manipulator {
 		}
 	}
 
+
+	newDoc() {
+		return new RenderNode(new Doc());
+	}
+
+	newWord() {
+		return new RenderNode(new Word());
+	}
+
+	newLine() {
+		return new RenderNode(new Line());
+	}
+
+	// public
+	newLambda() {
+		let r = new RenderNode(new Lambda());		
+		r.possiblyStartMainEditor();
+		return r;
+	}
+
+	newESymbol() {
+		let r = new RenderNode(new ESymbol());
+		r.possiblyStartMainEditor();
+		return r;
+	}
+
+	// public
+	newCommand() {
+		let r = new RenderNode(new Command());		
+		r.possiblyStartMainEditor();
+		return r;
+	}
+
+	newBool() {
+		let r = new RenderNode(new Bool());		
+		r.possiblyStartMainEditor();
+		return r;
+	}
+
+	newInteger() {
+		let r = new RenderNode(new Integer());		
+		r.possiblyStartMainEditor();
+		return r;		
+	}
+
+	newEString() {
+		let r = new RenderNode(new EString());
+		r.possiblyStartMainEditor();
+		return r;
+	}
+
+	newFloat() {
+		let r = new RenderNode(new Float());
+		r.possiblyStartMainEditor();
+		return r;		
+	}
+
+	newNil() {
+		let r = new RenderNode(new Nil());
+		return r;		
+	}
+
+	newExpectation() {
+		let r = new RenderNode(new Expectation());
+		return r;		
+	}
+
+	newZlist() {
+		let r = new RenderNode(new Zlist());
+		return r;		
+	}
+
+	newOrg() {
+		let r = new RenderNode(new Org());
+		return r;
+	}
+
+	newSeparator(txt) {
+		let r = new RenderNode(new Separator(txt));
+		return r;
+	}
+
+	newLetter(txt) {
+		let r = new RenderNode(new Letter(txt));
+		return r;
+	}
 }
 
 const manipulator = new Manipulator();

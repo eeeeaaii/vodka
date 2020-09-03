@@ -261,7 +261,7 @@ class LambdaEditor extends Editor {
 
 	shouldAppend(text) {
 		if (/^[a-zA-Z0-9_-]$/.test(text)) return true;
-		if (/^[!@#$%^&*)(]$/.test(text)) return true;
+		if (/^[!@#$%^~&*)(]$/.test(text)) return true;
 		if (/^[ ]$/.test(text)) return true;
 		if (/^[.]$/.test(text)) return true;
 		if (/^[?]$/.test(text)) return true;

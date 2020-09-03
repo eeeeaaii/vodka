@@ -84,7 +84,7 @@ class Separator extends Letter {
 				'Enter': 'do-line-break-for-separator-v2',
 				// all the rest also deprecated, to be removed.
 				// end deprecated
-				'<': 'insert-zlist-as-next-sibling',
+//				'<': 'insert-zlist-as-next-sibling',
 			}
 		} else {
 			return {

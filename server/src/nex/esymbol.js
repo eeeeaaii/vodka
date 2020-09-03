@@ -118,10 +118,7 @@ class ESymbol extends ValueNex {
 	}
 }
 
-
-
 class ESymbolEditor extends Editor {
-
 	constructor(nex) {
 		super(nex);
 	}

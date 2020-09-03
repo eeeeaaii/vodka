@@ -120,6 +120,8 @@ testactions.push({type:'keyup',code:'Digit2'});
 testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Backspace'});
 testactions.push({type:'keyup',code:'Backspace'});
+testactions.push({type:'keydown',code:'Backspace'});
+testactions.push({type:'keyup',code:'Backspace'});
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Digit3'});
 testactions.push({type:'keyup',code:'ShiftRight'});
@@ -168,13 +170,13 @@ testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
-
 testactions.push({type:'pause',length:500})
-
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Backquote'});
 testactions.push({type:'keyup',code:'Backquote'});
 testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Backspace'});
+testactions.push({type:'keyup',code:'Backspace'});
 testactions.push({type:'keydown',code:'Backspace'});
 testactions.push({type:'keyup',code:'Backspace'});
 testactions.push({type:'keydown',code:'ShiftRight'});
@@ -215,6 +217,8 @@ testactions.push({type:'keydown',code:'KeyC'});
 testactions.push({type:'keyup',code:'KeyC'});
 testactions.push({type:'keydown',code:'KeyK'});
 testactions.push({type:'keyup',code:'KeyK'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
 
