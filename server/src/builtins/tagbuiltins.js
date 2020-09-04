@@ -23,7 +23,7 @@ import { Tag } from '../tag.js'
 function createTagBuiltins() {
 	Builtin.createBuiltin(
 		'add-tag',
-		[ '_nex', 'tag$' ],
+		[ 'nex', 'tag$' ],
 		function(env, executionEnvironment) {
 			let n = env.lb('nex');
 			let tagname = env.lb('tag').getFullTypedValue();
@@ -34,7 +34,7 @@ function createTagBuiltins() {
 
 	Builtin.createBuiltin(
 		'clear-tags',
-		[ '_nex' ],
+		[ 'nex' ],
 		function(env, executionEnvironment) {
 			let n = env.lb('_nex');
 			n.clearTags();
@@ -44,7 +44,7 @@ function createTagBuiltins() {
 
 	Builtin.createBuiltin(
 		'has-tag',
-		[ '_nex', 'tag$' ],
+		[ 'nex', 'tag$' ],
 		function(env, executionEnvironment) {
 			let n = env.lb('nex');
 			let tagname = env.lb('tag').getFullTypedValue();
@@ -59,7 +59,7 @@ function createTagBuiltins() {
 
 	Builtin.createBuiltin(
 		'remove-tag',
-		[ '_nex', 'tag$' ],
+		[ 'nex', 'tag$' ],
 		function(env, executionEnvironment) {
 			let n = env.lb('nex');
 			let tagname = env.lb('tag').getFullTypedValue();
