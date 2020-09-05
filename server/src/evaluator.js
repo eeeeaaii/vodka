@@ -96,9 +96,18 @@ function evaluateAndKeep(s) {
 	if (Utils.isFatalError(n)) {
 		beep();
 		manipulator.insertBeforeSelectedAndSelect(n);
-	} else if (n.getTypeName() == '-expectation-' && !n.isActivated()) {
-		// ONLY AT TOP LEVEL we activate expectations.
-		n.activate();
+	} else if (Utils.isExpectation(n)) {
+		if (!n.isActivated()) {
+			// ONLY AT TOP LEVEL we activate expectations.
+			n.activate();
+		}
+		n.addPendingCallback(function() {
+			if (n.hasChildren() && Utils.isError(n.getChildAt(0))) {
+				beep();
+				manipulator.insertBeforeSelectedAndSelect(n);
+				eventQueueDispatcher.enqueueTopLevelRender();
+			}
+		})
 	}
 	eventQueueDispatcher.enqueueAlertAnimation(s);
 }
