@@ -10,7 +10,6 @@ BUGS I FOUND WHILE TRYING TO FINISH IG3
      -- wait actually maybe arrow keys navigate between different tags in an item holy shit
 
 
-
 2. If you are in "insert around" on something like a symbol, and you hit backspace, it will not
    delete because of a hack that I put in renderNode.removeChildAt. I remove the parent node instead
    because I made an assumption about the circumstances under which someone would be deleting something
@@ -35,6 +34,7 @@ BUGS I FOUND WHILE TRYING TO FINISH IG3
 5. maybe put it back the way it was where delete goes into edit mode and deletes one char, then shift-delete while in edit mode deletes the entire contents.
 
 6. make a way for canvas to support transparency
+  - prob just make it so that if 4 ints in the color org, the first one is alpha
 
 8. I think if you paste a command with nothing in it, the insertion point should automatically be INSERT_AFTER because it's far more likely you will want to paste again next to, not inside.
 
@@ -45,8 +45,6 @@ BUGS I FOUND WHILE TRYING TO FINISH IG3
 11. still getting old style insertion point when deleting a command that's inside another command
 
 12. make estring show the entire contents so that I can use them as comments
-
-13. I need a builtin way to get pi and e, could just be a function.
 
 14. just rename first-non-nil as case it's the same
 
