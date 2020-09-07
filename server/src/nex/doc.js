@@ -36,6 +36,11 @@ class Doc extends NexContainer {
 		return `[doc]${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
 
+	prettyPrintInternal(lvl) {
+		return this.standardListPrettyPrint(lvl, '[doc]');
+	}
+
+
 	getTypeName() {
 		return '-doc-';
 	}

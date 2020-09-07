@@ -92,6 +92,10 @@ class Lambda extends NexContainer {
 		return `&${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
 
+	prettyPrintInternal(lvl) {
+		return this.standardListPrettyPrint(lvl, '&');
+	}
+
 	deserializePrivateData(data) {
 		this.setAmpText(data);
 	}

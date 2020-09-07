@@ -29,7 +29,7 @@ const foreignGlobalData = new ForeignGlobalData();
 function createNativeOrgs() {
 	// this works
 	templateStore.bindForeignClosure('alert', ' =a', function(a) {
-		alert(a[0].debugString());
+		alert(a[0].prettyPrint());
 	});
 
 	templateStore.createForeignTemplate(

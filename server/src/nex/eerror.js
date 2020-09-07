@@ -139,6 +139,11 @@ class EError extends NexContainer {
 		return '?' + this.toStringV2TagList() + this.toStringV2PrivateDataSection();
 	}
 
+	prettyPrintInternal(lvl) {
+		return this.standardListPrettyPrint(lvl, '?');
+	}	
+
+
 	deserializePrivateData(data) {
 		this.setFullValue(data);
 	}
@@ -170,12 +175,12 @@ class EError extends NexContainer {
 	}
 
 	escape(str) {
-		str = str.replace(/&/, "&amp;");
-		str = str.replace(/</, "&lt;");
-		str = str.replace(/>/, "&gt;");
-		str = str.replace(/"/, "&quot;");
-		str = str.replace(/'/, "&apos;");
-		str = str.replace(/ /, "&nbsp;");
+		str = str.replace(/&/g, "&amp;");
+		str = str.replace(/</g, "&lt;");
+		str = str.replace(/>/g, "&gt;");
+		str = str.replace(/"/g, "&quot;");
+		str = str.replace(/'/g, "&apos;");
+		str = str.replace(/ /g, "&nbsp;");
 		str = str.replace(/\n/g, "<br>");
 		str = str.replace(/\r/g, "<br>");
 		return str;

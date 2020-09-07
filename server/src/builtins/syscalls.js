@@ -25,6 +25,17 @@ import { RenderNode } from '../rendernode.js'
 
 function createSyscalls() {
 	Builtin.createBuiltin(
+		'force-draw',
+		[ 'nex' ],
+		function(env, executionEnvironment) {
+			let n = env.lb('nex');
+			n.renderOnlyThisNex();
+			return n;
+		}
+	);
+
+
+	Builtin.createBuiltin(
 		'apply-css-style-to',
 		[ 'style$', 'nex' ],
 		function(env, executionEnvironment) {

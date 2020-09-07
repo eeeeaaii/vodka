@@ -90,7 +90,7 @@ class Closure extends ValueNex {
 	}
 
 	getLambdaDebugString() {
-		return this.lambda.debugString();
+		return this.lambda.prettyPrint();
 	}
 
 	setCmdName(nm) {

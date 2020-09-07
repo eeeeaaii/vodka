@@ -41,6 +41,10 @@ class Org extends NexContainer {
 		return `[org]`;
 	}
 
+	prettyPrintInternal(lvl) {
+		return this.standardListPrettyPrint(lvl, '[org]');
+	}
+
 	setDrawCheat(dc) {
 		this.drawcheat = dc;
 	}

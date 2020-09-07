@@ -102,7 +102,7 @@ function evaluateAndKeep(s) {
 			n.activate();
 		}
 		n.addPendingCallback(function() {
-			if (n.hasChildren() && Utils.isError(n.getChildAt(0))) {
+			if (n.hasChildren() && Utils.isFatalError(n.getChildAt(0))) {
 				beep();
 				manipulator.insertBeforeSelectedAndSelect(n);
 				eventQueueDispatcher.enqueueTopLevelRender();

@@ -127,6 +127,18 @@ class Command extends NexContainer {
 		return `~${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}${super.childrenToString('v2')}${this.listEndV2()}`;		
 	}
 
+	prettyPrintInternal(lvl) {
+		// because of cmdPrefix we don't use standardListPrettyPrint
+		let cmdPrefix = this.convertMathToV2String(this.commandtext);
+		if (cmdPrefix != '') {
+			cmdPrefix = cmdPrefix + ' ';
+		}
+		let fline = `${this.doTabs(lvl)}~${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}\n`;
+		let contents = this.prettyPrintChildren(lvl + 1);
+		let lline = `${this.doTabs(lvl)}${this.listEndV2()}\n`
+		return fline + contents + lline;
+	}	
+
 	deserializePrivateData(data) {
 		this.privateData = data;
 	}

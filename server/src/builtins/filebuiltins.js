@@ -72,7 +72,7 @@ function createFileBuiltins() {
 					toReturn = nex;
 				} else {
 					if (!nex.getTypeName() == '-symbol-') {
-						return new EError(`Cannot import ${nex.debugString}.`);
+						return new EError(`Cannot import ${nex.prettyPrint()}.`);
 					}
 					innerExpArgs.push(Command.makeCommandWithArgs("import", nex));
 				}
@@ -170,7 +170,7 @@ function createFileBuiltins() {
 					})
 				}
 			});
-			let savingMessage = new EError(`editing package (in the file ${nm}) this data: ${val.debugString()}`);
+			let savingMessage = new EError(`editing package (in the file ${nm}) this data: ${val.prettyPrint()}`);
 			savingMessage.setErrorType(ERROR_TYPE_INFO);
 			exp.appendChild(savingMessage)
 			return exp;
@@ -194,7 +194,7 @@ function createFileBuiltins() {
 					})
 				}
 			});
-			let savingMessage = new EError(`saving (in the file ${nm}) this data: ${val.debugString()}`);
+			let savingMessage = new EError(`saving (in the file ${nm}) this data: ${val.prettyPrint()}`);
 			savingMessage.setErrorType(ERROR_TYPE_INFO);
 			exp.appendChild(savingMessage)
 			return exp;
@@ -223,7 +223,7 @@ function createFileBuiltins() {
 			for (let i = 0; i < packageList.numChildren(); i++) {
 				let c = packageList.getChildAt(i);
 				if (!(c.getTypeName() == '-symbol-')) {
-					return new EError(`using: first arg must be a list of symbols that denote package names, but ${c.debugString()} is not a symbol. Sorry!`);
+					return new EError(`using: first arg must be a list of symbols that denote package names, but ${c.prettyPrint()} is not a symbol. Sorry!`);
 				}
 				let packageName = c.getTypedValue();
 				if (!BINDINGS.isKnownPackageName(packageName)) {

@@ -43,6 +43,26 @@ class Nex {
 
 	toString() {}
 
+	doTabs(n) {
+		let r = '';
+		for (let i = 0; i < n; i++) {
+			r += '  ';
+		}
+		return r;
+	}
+
+	prettyPrint(lvl) {
+		if (!lvl) {
+			lvl = 0;
+		}
+		return this.prettyPrintInternal(lvl);
+	}
+
+	prettyPrintInternal(lvl) {
+		let str = this.debugString();
+		return this.doTabs(lvl) + str + '\n';
+	}
+
 	toStringV2PrivateDataSection() {
 		let v = this.serializePrivateData();
 		if (v == '') {

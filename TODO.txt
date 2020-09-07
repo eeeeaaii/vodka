@@ -1,53 +1,75 @@
+BUGS I FOUND WHILE TRYING TO FINISH IG3
 
-- use shift keydown followed immediately by shift keyup as indication that we are switching
-- insert mode
-- default insert mode is the most common one
-- always have visual indicator of where next insert will happen
-- insert around is always last one, if you choose insert around but then you
-- insert a list, it just inserts before
+1. hitting right arrow when editing tag puts in the text ArrowRight
 
-atoms inserting atom
-insert after
-insert before
+2. the exception below:
+keydispatcher.js:125 Uncaught DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+    at RenderNode.removeChildAt (http://localhost:3000/rendernode.js:601:21)
+    at RenderNode.removeChild (http://localhost:3000/rendernode.js:690:15)
+    at Manipulator._deleteNode (http://localhost:3000/manipulator.js:384:5)
+    at Manipulator.removeAndSelectPreviousSiblingV2 (http://localhost:3000/manipulator.js:722:8)
+    at Object.remove-selected-and-select-previous-sibling-v2 (http://localhost:3000/keyresponsefunctions.js:722:15)
+    at KeyDispatcher.actOnFunction (http://localhost:3000/keydispatcher.js:272:27)
+    at KeyDispatcher.runFunctionFromGenericTable (http://localhost:3000/keydispatcher.js:223:17)
+    at KeyDispatcher.dispatch (http://localhost:3000/keydispatcher.js:112:14)
+    at Module.doRealKeyInput (http://localhost:3000/vodka.js:73:24)
+    at Object.do (http://localhost:3000/eventqueue.js:129:11)
 
-atoms inserting list:
-insert after
-insert before
-insert around
+3. need to make it so that tabbing in puts the insertion point BEFORE the first element, will break tests, just deal
 
-empty lists, inserting list
-insert inside
-insert after
-insert before
-insert around
+4. need a way to remove and edit tags from the interface itself
 
-empty lists, inserting atom
-insert inside
-insert after
-insert before
+5. maybe put it back the way it was where delete goes into edit mode and deletes one char, then shift-delete while in edit mode deletes the entire contents.
 
-full lists, inserting atom
-insert after
-insert before
-insert as first element
+6. make a way for canvas to support transparency
 
-full lists, inserting list
-insert after
-insert before
-insert as first element
-insert around
+7. having an "if defined" would have been nice in ig3, because then I could have said "if not defined (canvas)" and then only if not defined then define it inside the begin (sometimes I have to execute the with-imports again because of changing external dependency)
+
+8. I think if you paste a command with nothing in it, the insertion point should automatically be INSERT_AFTER because it's far more likely you will want to paste again next to, not inside.
+
+9. really need some form of documentation so I can deref a method name and see what it is what to pass etc, start with builtins I guess
+
+10. weird that I can change insertion point while still editing, should kill editor when doing that.
+
+11. still getting old style insertion point when deleting a command that's inside another command
+
+12. make estring show the entire contents so that I can use them as comments
+
+13. I need a builtin way to get pi and e, could just be a function.
+
+14. just rename first-non-nil as case it's the same
+
+15. when you cram text into something else via an expectation it doesn't mark it as dirty or render it - the expectation only renders itself, doesn't render other things (need a quick and dirty fix for this now but maybe should fix rendering/make more efficient)
+
+16.
+Uncaught TypeError: Cannot read property 'setSelected' of null
+    at Manipulator.deleteLeafV2 (manipulator.js:688)
+    at Object.delete-letter-v2 (keyresponsefunctions.js:706)
+    at KeyDispatcher.actOnFunction (keydispatcher.js:272)
+    at KeyDispatcher.runFunctionFromRegularTable (keydispatcher.js:235)
+    at KeyDispatcher.dispatch (keydispatcher.js:111)
+    at Module.doRealKeyInput (vodka.js:73)
+    at Object.do (eventqueue.js:129)
+    at EventQueue.processNextItem (eventqueue.js:271)
+    at EventQueue.<anonymous> (eventqueue.js:240)
+
+17. align-right and align-left in style-functions do cross axis alignment, why?
+
+18. when copying, put debugString in system clipboard
+
+19. this fails:
+(_animation:fade-out-for-seconds (_set-delay (_make-expectation whatever_)_)_)
+the outer exp somehow inherits the inner exp delay?
+
+20. hitting tab when you are editing command - tab isn't rerouted but it should be
 
 
 NEW TO-DOs AFTER TRYING THE NEW VERSION OUT
-- need a "command alias" function so I can easily rename/alias commands without writing new tests
-- I actually do think I will need a form of ~import that has callbacks
 - "ff" should just be "start"
-
 
 ASYNC/EXPECTATION TO DO:
 - make more specific param code for expectations so you can specify that a given expectation param must be activated, must have an ffwith, must be set, etc.
 - reference counting doesn't work in the sense that if you delete an expectation containing other ones, it keeps firing...? because of the stale reference in the pendingExpectations, probably...
-
 
 TYPE-RELATED TO DO
 - figure out how to resolve orgs with multiple matching tags (first match?) and do we iterate first thru the tags in the expr being evaluated or first thru the tags on the org?

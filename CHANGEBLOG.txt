@@ -1,8 +1,73 @@
+=========================== in-boxes ====================================
+---
+title: 'Third Piece: "In Boxes"'
+date: "2020-09-06T00:08:48.000-04"
+description: In which I describe how I made this piece.
+---
+So I've published my third piece, which I'm calling "In Boxes." This is square
+and has two main parts: a random walk algorithm in the center of the square,
+and a poem that is written around the edges, one line at a time, clockwise.
+
+[You can see it here.](https://www.instagram.com/p/CEzF2SVg4UL/) The full
+version is more than 2 minutes long but both instagram and twitter
+trim videos to one minute. It's okay though, one minute is long enough
+to convey the idea, and the word sequence loops three times so you're not missing
+much.
+
+The idea for this came from being in quarantine, but also from
+being kind of "stuck inside my own head" while in quarantine.
+I was looking around at some
+random walks on the web and saw some pretty boring ones that involved
+just horizontal and vertical movement. This is a common implementation because
+of course it's easy and doesn't involve any real math. Not sure if mine
+is that much of an improvement, but I took the same thing
+and implemented the four possible steps (in the four cardinal directions) as vectors,
+then slowly rotated these vectors clockwise. This fills the space in a much more irregular way.
+
+I wanted the random walk to stay in the center of the screen, so I used a weighting
+function to skew the probabilities of each of the four possible movements,
+so if the walk head gets near the edge of the limit circle, it becomes
+less and less likely that it will want to land on that circle,
+with probability reaching zero on the circle itself. I didn't experiment
+with just putting a hard binary limit, but in the past I've seen poor results
+with doing this, so having a gradual slope to zero probably
+looks better than it would otherwise. The exact formula is:
+
+```
+(_power (_minus %1 (_divided-by @radius @maxradius_)_) (_divided-by %1 %100_)_)
+```
+
+Which might look slightly more familiar to you as `(1-x)^(1/10)`.
+
+I wrote the poem after coming up with the visual idea, and as a result this
+feels less like a poem and more like an art piece. It's interesting
+how that works. It's not my best poem but it gets the job done, I think.
+
+I logged 19 bugs in Vodka while working on this. My approach this time was
+to log the bug and just keep going, even if it forced me to compromise
+on what I wanted to do. I wanted the lines in the random walk to have
+transparency, and I wanted the fade out of the text to start after a second
+or two "beat" and then be a faster fade. I wasn't able to do either of
+these things because of bugs.
+
+Of course, I could have just stopped working on this and
+fixed the bugs, but the problem with doing that is then I just go down
+a rabbit hole of software development and the piece ends up taking
+forever to be completed (this is what happened with my previous piece).
+For this reason I am switching to a phased approach: when making poetry/art/music/whatever
+with Vodka, I'll be just making poetry/art/music/whatever -- and, of course,
+logging bugs. When I'm done and publish, I'll put on my
+engineer hat and fix the bugs I logged while making the previous piece.
+My hope is that by doing this,
+the bugs I end up fixing first are the ones that really would bother
+actual users (because I'm logging bugs when I'm "in user mode").
+
+
 =========================== experiments ====================================
 ---
 title: Lots of Experiments
 date: "2020-09-01T00:09:05.000-04"
-description: I'm in pretty deep with these now
+description: I'm in pretty deep with these now.
 ---
 Okay I'm running a bunch of experiments now and need to step back and figure out what I want to really do here.
 
@@ -74,7 +139,7 @@ After all this though... I still think I should wait to implement reparenting de
 ---
 title: Tag types
 date: "2020-08-17T00:10:46.000-04"
-description: I guess we need two types of tags
+description: I guess we need two types of tags.
 ---
 I want to make it so that the instantiate function works like this:
 
@@ -144,7 +209,7 @@ to these tags and how they can be used.
 ---
 title: A Cursor Command Type?
 date: "2020-05-31T00:08:52.000-04"
-description: Brief sketch for an idea to replace KeyResponseFunctions
+description: Brief sketch for an idea to replace KeyResponseFunctions.
 ---
 Previously I was thinking that custom nexes would tell the IDE/REPL how to treat them
 by returning a map from strings representing an input name (for example, 'ShiftEnter') to strings, where each
