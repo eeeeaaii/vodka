@@ -44,6 +44,15 @@ import { Zlist } from '../nex/zlist.js'
 
 function createTestBuiltins() {
 	Builtin.createBuiltin(
+		'is-defined',
+		[ '_nex' ],
+		function(env, executionEnvironment) {
+			return new Bool(env.lb('nex') instanceof Bool);
+		}
+	);
+
+
+	Builtin.createBuiltin(
 		'is-boolean',
 		[ 'nex' ],
 		function(env, executionEnvironment) {

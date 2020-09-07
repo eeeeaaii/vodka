@@ -1,53 +1,12 @@
-./runtests.sh execution_expectation_ffwith_again
-./runtests.sh execution_expectation_ffwith_cannot
-./runtests.sh execution_expectation_set_again
-./runtests.sh execution_expectation_set_cannot
-./runtests.sh execution_literal_expectation
-./runtests.sh execution_normal_lexicalenv
-./runtests.sh execution_paramparser_bool
-./runtests.sh execution_paramparser_expectation
-./runtests.sh execution_paramparser_optional
-./runtests.sh foreign_nestedargs
-./runtests.sh functions_async_cancelff
-./runtests.sh functions_async_expgc
-./runtests.sh functions_async_ffwith_withdelay
-./runtests.sh functions_async_ffwith
-./runtests.sh functions_async_reset
-./runtests.sh functions_async_setclick
-./runtests.sh functions_async_setdelay
-./runtests.sh functions_async_setimmediate
-./runtests.sh functions_basic_seeid
-./runtests.sh functions_contract_mustbe
-./runtests.sh functions_contract_musthavecontentslike
-./runtests.sh functions_contract_musthavecontentstaggedlike
-./runtests.sh functions_contract_musthavetypeof
-./runtests.sh functions_environment_bind_tointeger
-./runtests.sh functions_file_import_insidepackage
-./runtests.sh functions_file_import_invalidpackage
-./runtests.sh functions_file_import
-./runtests.sh functions_file_use
-./runtests.sh functions_file_withimports
-./runtests.sh functions_logic_and
-./runtests.sh functions_logic_firstnonnil
-./runtests.sh functions_logic_if_skipeval
-./runtests.sh functions_logic_or
-./runtests.sh functions_math_dividedby
-./runtests.sh functions_misc_alias
-./runtests.sh functions_org_template
-./runtests.sh functions_string_indexof
-./runtests.sh functions_typeconversion_tointeger
-./runtests.sh functions_typeconversion_tostring
-./runtests.sh graphics_closure
-./runtests.sh graphics_command_hidechildren
-./runtests.sh graphics_command_vertical
-./runtests.sh graphics_general_renderdepthexceeded
-./runtests.sh saveload_doc
-./runtests.sh saveload_expectation
-./runtests.sh saveload_org
-./runtests.sh tags_valuenex_display
-./runtests.sh template_basic
-./runtests.sh template_initializer
-./runtests.sh template_instantiate_withnonce
-./runtests.sh template_set_orgmember
-
-echo "REMEMBER TO RUN ALL TESTS BEFORE GIT PUSH
+./goldenupdate.sh copy_closure -e
+./goldenupdate.sh execution_literal_expectation -e
+./goldenupdate.sh execution_paramparser_closure -e
+./goldenupdate.sh execution_paramparser_command -e
+./goldenupdate.sh foreign_nestedargs -e
+./goldenupdate.sh functions_contract_mustbe -e
+./goldenupdate.sh functions_environment_bind_tointeger -e
+./goldenupdate.sh functions_make_makecommand -e
+./goldenupdate.sh graphics_closure -e
+./goldenupdate.sh graphics_general_renderdepthexceeded -e
+./goldenupdate.sh template_initializer -e
+./goldenupdate.sh template_set_orgmember -e

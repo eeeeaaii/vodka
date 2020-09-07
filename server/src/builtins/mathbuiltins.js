@@ -25,6 +25,22 @@ import { UNBOUND } from '../environment.js'
 
 function createMathBuiltins() {
 	Builtin.createBuiltin(
+		'get-pi',
+		[ ],
+		function(env, executionEnvironment) {
+			return new Float(Math.PI);
+		}
+	);
+
+	Builtin.createBuiltin(
+		'get-e',
+		[ ],
+		function(env, executionEnvironment) {
+			return new Float(Math.E);
+		}
+	);
+
+	Builtin.createBuiltin(
 		'acos',
 		[ 'arg%' ],
 		function(env, executionEnvironment) {

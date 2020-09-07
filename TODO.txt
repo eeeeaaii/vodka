@@ -1,29 +1,40 @@
 BUGS I FOUND WHILE TRYING TO FINISH IG3
 
 1. hitting right arrow when editing tag puts in the text ArrowRight
+   -- for now, just add ArrowRight, etc., to the "shouldIgnore" list in editors.js
+   -- at some point, a revamp - two options
+      1. use arrow keys to go back and edit without deleting
+      2. arrow keys are TerminateAndReroute?
+4. need a way to remove and edit tags from the interface itself
+  -- when doing this, hit right arrow in the test, so this can cover item 1 above.
+     -- wait actually maybe arrow keys navigate between different tags in an item holy shit
 
-2. the exception below:
-keydispatcher.js:125 Uncaught DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-    at RenderNode.removeChildAt (http://localhost:3000/rendernode.js:601:21)
-    at RenderNode.removeChild (http://localhost:3000/rendernode.js:690:15)
-    at Manipulator._deleteNode (http://localhost:3000/manipulator.js:384:5)
-    at Manipulator.removeAndSelectPreviousSiblingV2 (http://localhost:3000/manipulator.js:722:8)
-    at Object.remove-selected-and-select-previous-sibling-v2 (http://localhost:3000/keyresponsefunctions.js:722:15)
-    at KeyDispatcher.actOnFunction (http://localhost:3000/keydispatcher.js:272:27)
-    at KeyDispatcher.runFunctionFromGenericTable (http://localhost:3000/keydispatcher.js:223:17)
-    at KeyDispatcher.dispatch (http://localhost:3000/keydispatcher.js:112:14)
-    at Module.doRealKeyInput (http://localhost:3000/vodka.js:73:24)
-    at Object.do (http://localhost:3000/eventqueue.js:129:11)
+
+
+2. If you are in "insert around" on something like a symbol, and you hit backspace, it will not
+   delete because of a hack that I put in renderNode.removeChildAt. I remove the parent node instead
+   because I made an assumption about the circumstances under which someone would be deleting something
+   (what was the assumption?) exception here:
+    keydispatcher.js:125 Uncaught DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+        at RenderNode.removeChildAt (http://localhost:3000/rendernode.js:601:21)
+        at RenderNode.removeChild (http://localhost:3000/rendernode.js:690:15)
+        at Manipulator._deleteNode (http://localhost:3000/manipulator.js:384:5)
+        at Manipulator.removeAndSelectPreviousSiblingV2 (http://localhost:3000/manipulator.js:722:8)
+        at Object.remove-selected-and-select-previous-sibling-v2 (http://localhost:3000/keyresponsefunctions.js:722:15)
+        at KeyDispatcher.actOnFunction (http://localhost:3000/keydispatcher.js:272:27)
+        at KeyDispatcher.runFunctionFromGenericTable (http://localhost:3000/keydispatcher.js:223:17)
+        at KeyDispatcher.dispatch (http://localhost:3000/keydispatcher.js:112:14)
+        at Module.doRealKeyInput (http://localhost:3000/vodka.js:73:24)
+        at Object.do (http://localhost:3000/eventqueue.js:129:11)
 
 3. need to make it so that tabbing in puts the insertion point BEFORE the first element, will break tests, just deal
+   -- it's in manipulator.selectFirstChildOrMoveInsertionPoint there's even a comment saying where to put it
 
-4. need a way to remove and edit tags from the interface itself
+
 
 5. maybe put it back the way it was where delete goes into edit mode and deletes one char, then shift-delete while in edit mode deletes the entire contents.
 
 6. make a way for canvas to support transparency
-
-7. having an "if defined" would have been nice in ig3, because then I could have said "if not defined (canvas)" and then only if not defined then define it inside the begin (sometimes I have to execute the with-imports again because of changing external dependency)
 
 8. I think if you paste a command with nothing in it, the insertion point should automatically be INSERT_AFTER because it's far more likely you will want to paste again next to, not inside.
 
@@ -63,9 +74,19 @@ the outer exp somehow inherits the inner exp delay?
 
 20. hitting tab when you are editing command - tab isn't rerouted but it should be
 
+7. having an "if defined" would have been nice in ig3, because then I could have said "if not defined (canvas)" and then only if not defined then define it inside the begin (sometimes I have to execute the with-imports again because of changing external dependency)
+  -- this existed and I forgot!
+
+
+
+
 
 NEW TO-DOs AFTER TRYING THE NEW VERSION OUT
 - "ff" should just be "start"
+
+TEST FRAMEWORK TO DO:
+- make a way for each test to individually specify query string flags to pass in
+- make a flag that mutes oid display so that I don't have to keep fixing goldens for oid changes every damn time, but don't specify that flag for tests where oid's matter (like actual oid tests)
 
 ASYNC/EXPECTATION TO DO:
 - make more specific param code for expectations so you can specify that a given expectation param must be activated, must have an ffwith, must be set, etc.

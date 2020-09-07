@@ -101,10 +101,7 @@ function createTypeConversionBuiltins() {
 				let s = v.getFullTypedValue();
 				let mayben = parseFloat(s);
 				if (Number.isNaN(mayben)) {
-					return new EError('Okay so to-float tried to turn this string'
-						+ ` "${s}" into a float, but it couldn't.`
-						+ ` There might be characters in that string`
-						+ ` that aren't numeric.`);					
+					return new EError(`to-float: could not convert "${s}". Sorry!`);
 				} else {
 					return new Float(mayben);
 				}
@@ -113,10 +110,7 @@ function createTypeConversionBuiltins() {
 				let s = v.getText();
 				let mayben = parseFloat(s);
 				if (Number.isNaN(mayben)) {
-					return new EError('Okay so to-float tried to turn a letter object'
-						+ ` "${s}" into a float, but it couldn't.`
-						+ ` The letter objects that you can realistically turn into`
-						+ ` a float are the single digits 0-9.`);					
+					return new EError(`to-float: could not convert "${s}". Sorry!`);
 				} else {
 					return new Float(mayben);
 				}
@@ -131,18 +125,12 @@ function createTypeConversionBuiltins() {
 						: ((v instanceof Line)
 							? 'line'
 							: 'doc');
-					return new EError('So we tried to convert an object of type'
-						+ ` ${v.getTypeName()} into a float, but it didn't work.`
-						+ ` When we converted that object into a string representation,`
-						+ ` we got ${mayben}. There might be non-numeric characters`
-						+ ` or something like that.`);
+					return new EError(`to-float: could not convert "${s}" (object of type ${v.getTypeName()}). Sorry!`);
 				} else {
 					return new Float(mayben);
 				}
 			} else {
-				return new EError('You wanted us to convert an object of type'
-					+ ` ${v.getTypeName()} to a float, but we haven't implemented`
-					+ ` any conversion logic for that type yet. Sorry about that!`);
+				return new EError(`to-float: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
 			}
 		}
 	);
@@ -163,9 +151,7 @@ function createTypeConversionBuiltins() {
 				let s = v.getFullTypedValue();
 				let mayben = parseInt(s);
 				if (Number.isNaN(mayben)) {
-					return new EError(`Sorry, we tried to convert the string ${mayben}`
-						+ ` into an integer, but it didn't work. Maybe there are non-digit`
-						+ ` characters in it.`);					
+					return new EError(`to-integer: could not convert "${s}". Sorry!`);
 				} else {
 					return new Integer(mayben);
 				}
@@ -174,10 +160,7 @@ function createTypeConversionBuiltins() {
 				let s = v.getText();
 				let mayben = parseInt(s);
 				if (Number.isNaN(mayben)) {
-					return new EError(`So you asked us to convert the letter`
-						+ ` ${mayben} into an integer, but we can't.`
-						+ ` The only letters we can really convert into`
-						+ ` integers are the letters 0-9.`);
+					return new EError(`to-integer: could not convert "${s}". Sorry!`);
 				} else {
 					return new Integer(mayben);
 				}
@@ -187,18 +170,12 @@ function createTypeConversionBuiltins() {
 				let mayben = parseInt(s);
 				if (Number.isNaN(mayben)) {
 					// rofl
-					return new EError('So we tried to convert an object of type'
-						+ ` ${v.getTypeName()} into an integer, but it didn't work.`
-						+ ` When we converted that object into a string representation,`
-						+ ` we got ${mayben}. There might be non-numeric characters`
-						+ ` or something like that.`);
+					return new EError(`to-integer: could not convert "${s}" (object of type ${v.getTypeName()}). Sorry!`);
 				} else {
 					return new Integer(mayben);
 				}
 			} else {
-				return new EError('You wanted us to convert an object of type'
-					+ ` ${v.getTypeName()} to an integer, but we haven't implemented`
-					+ ` any conversion logic for that type yet. Sorry about that!`);
+				return new EError(`to-integer: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
 			}
 		}
 	);
@@ -226,10 +203,10 @@ function createTypeConversionBuiltins() {
 				if (typeof(ss) == 'string') {
 					return new EString(ss);
 				} else {
-					return new EError(`to-string: object of type ${v.getTypeName()} failed to convert into a string. Result was ${'' + ss}. No more information available. Sorry!`)
+					return new EError(`to-string: could not convert "${ss}" (object of type ${v.getTypeName()}). Sorry!`);
 				}
 			} else {
-				return new EError(`to-string: unimplemented for type ${v.getTypeName()}. Sorry!`);
+				return new EError(`to-string: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
 
 			}
 		}
@@ -261,11 +238,10 @@ function createTypeConversionBuiltins() {
 				let w = new Word();
 				w.appendChild(v.makeCopy());
 				return w;
-			} else if (v instanceof Line || v instanceof Doc) {
-				return new EError('Sorry, our bad - calling to-work on a Line or Doc is not yet implemented :(')
 			} else {
-				return new EError('Okay, so to-word was called on an object of'
-					+ `type "${v.getTypeName()}". This is not supported -- sorry about that.`);
+				// should at least be able to do lines and docs.
+				// I feel like maybe to-word should just be in util-functions tho.
+				return new EError(`to-word: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
 			}
 		}
 	);
