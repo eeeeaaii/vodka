@@ -47,8 +47,8 @@ class Word extends NexContainer {
 		return `[word]${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
 
- 	prettyPrintInternal(lvl) {
-		return this.standardListPrettyPrint(lvl, '[word]');
+ 	prettyPrintInternal(lvl, hdir) {
+		return this.standardListPrettyPrint(lvl, '[word]', hdir);
 	}
 
 	getContextType() {

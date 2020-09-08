@@ -25,6 +25,7 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { ValueNex } from './valuenex.js'
 import { systemState } from '../systemstate.js'
 import { RENDER_FLAG_RERENDER, RENDER_FLAG_SHALLOW } from '../globalconstants.js'
+import * as Utils from '../utils.js'
 
 class EString extends ValueNex {
 	constructor(val, ch, t) {
@@ -134,18 +135,6 @@ class EString extends ValueNex {
 		return this.displayValue;
 	}
 
-	escape(str) {
-		str = str.replace('&', "&amp;");
-		str = str.replace('<', "&lt;");
-		str = str.replace('>', "&gt;");
-		str = str.replace('"', "&quot;");
-		str = str.replace("'", "&apos;");
-		str = str.replace(" ", "&nbsp;");
-		str = str.replace("\n", "<br>");
-		str = str.replace("\r", "<br>");
-		return str;
-	}
-
 	setFullValue(fullval) {
 		this.fullValue = fullval;
 		// well I guess they're the same now? except for the
@@ -176,7 +165,7 @@ class EString extends ValueNex {
 		if (this.displayValue !== '') {
 			this.innerspan = document.createElement("div");
 			this.innerspan.classList.add('innerspan');
-			this.innerspan.innerHTML = this.escape(this.displayValue);
+			this.innerspan.innerHTML = Utils.escape(this.displayValue);
 			domNode.appendChild(this.innerspan);
 		}
 	}

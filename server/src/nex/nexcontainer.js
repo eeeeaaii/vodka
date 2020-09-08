@@ -144,18 +144,19 @@ class NexContainer extends Nex {
 		return (this.vdir ? '|' : '_') + ')';
 	}
 
-	standardListPrettyPrint(lvl, designator) {
+	standardListPrettyPrint(lvl, designator, hdir) {
 		// designator is like ~, or [doc], or whatever tells you the list type
-		let fline = `${this.doTabs(lvl)}${designator}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}\n`;
+		let fline = `${this.doTabs(lvl, hdir)}${designator}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}`;// exp \n`;
 		let contents = this.prettyPrintChildren(lvl + 1);
-		let lline = `${this.doTabs(lvl)}${this.listEndV2()}\n`
+//		let lline = `${this.doTabs(lvl)}${this.listEndV2()}\n` // exp
+		let lline = `${this.listEndV2()}` // exp
 		return fline + contents + lline;
 	}
 
 	prettyPrintChildren(lvl) {
 		let r = '';
 		for (let p = this.firstChildNex; p != null; p = p.next) {
-			r += p.n.prettyPrintInternal(lvl);
+			r += p.n.prettyPrintInternal(lvl, !this.vdir); // exp
 		}
 		return r;		
 	}

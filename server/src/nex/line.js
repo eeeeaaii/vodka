@@ -50,8 +50,8 @@ class Line extends NexContainer {
 		return `[line]${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
 
-	prettyPrintInternal(lvl) {
-		return this.standardListPrettyPrint(lvl, '[line]');
+	prettyPrintInternal(lvl, hdir) {
+		return this.standardListPrettyPrint(lvl, '[line]', hdir);
 	}
 
 

@@ -146,6 +146,8 @@ testactions.push({type:'keydown', code:'ArrowUp'});
 testactions.push({type:'keyup', code:'ArrowUp'});
 testactions.push({type:'keydown', code:'Tab'});
 testactions.push({type:'keyup', code:'Tab'});
+testactions.push({type:'keydown', code:'ArrowRight'});
+testactions.push({type:'keyup', code:'ArrowRight'});
 testactions.push({type:'keydown', code:'ShiftLeft'});
 testactions.push({type:'keydown', code:'Digit9'});
 testactions.push({type:'keyup', code:'Digit9'});

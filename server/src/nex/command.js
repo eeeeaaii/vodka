@@ -127,15 +127,18 @@ class Command extends NexContainer {
 		return `~${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}${super.childrenToString('v2')}${this.listEndV2()}`;		
 	}
 
-	prettyPrintInternal(lvl) {
+	prettyPrintInternal(lvl, hdir) {
 		// because of cmdPrefix we don't use standardListPrettyPrint
 		let cmdPrefix = this.convertMathToV2String(this.commandtext);
-		if (cmdPrefix != '') {
-			cmdPrefix = cmdPrefix + ' ';
-		}
-		let fline = `${this.doTabs(lvl)}~${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}\n`;
+		// exp
+//		if (cmdPrefix != '') {
+//			cmdPrefix = cmdPrefix + ' ';
+//		}
+		// exp
+		let fline = `${this.doTabs(lvl, hdir)}~${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}`; // exp // \n`;
 		let contents = this.prettyPrintChildren(lvl + 1);
-		let lline = `${this.doTabs(lvl)}${this.listEndV2()}\n`
+//		let lline = `${this.doTabs(lvl)}${this.listEndV2()}\n`
+		let lline = `${this.listEndV2()}` // exp
 		return fline + contents + lline;
 	}	
 

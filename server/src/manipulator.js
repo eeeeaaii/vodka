@@ -886,10 +886,11 @@ class Manipulator {
 			}
 			this._forceInsertionMode(INSERT_INSIDE, this.selected());
 		} else {
+
 			// when selecting first child, put insertion point before it
 			// WILL BREAK ALL THE TESTS
 			// so I need some kind of flag for old tests
-//			manipulator.forceInsertionModeForSelected(INSERT_BEFORE)
+			manipulator._forceInsertionMode(INSERT_BEFORE, this.selected())
 
 			return true;
 		};
@@ -1681,10 +1682,18 @@ class Manipulator {
 	}
 
 
+	copyTextToSystemClipboard(txt) {
+		navigator.permissions.query({name: "clipboard-write"}).then(result => {
+			if (result.state == "granted" || result.state == "prompt") {
+				navigator.clipboard.writeText(txt);
+			}
+		});		
+	}
 
 	// used in keydispatcher.js
 	doCut() {
 		CLIPBOARD = systemState.getGlobalSelectedNode().getNex();
+		this.copyTextToSystemClipboard(CLIPBOARD.prettyPrint());
 		let x = systemState.getGlobalSelectedNode();
 		this.selectPreviousSibling() || this.selectParent();		
 		this.removeNex(x);
@@ -1693,6 +1702,7 @@ class Manipulator {
 	// used in keydispatcher.js
 	doCopy() {
 		CLIPBOARD = systemState.getGlobalSelectedNode().getNex();
+		this.copyTextToSystemClipboard(CLIPBOARD.prettyPrint());
 	}
 
 	// used in keydispatcher.js

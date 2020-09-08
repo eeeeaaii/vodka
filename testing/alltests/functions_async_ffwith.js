@@ -158,6 +158,8 @@ testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
+testactions.push({type:'keydown',code:'ArrowRight'});
+testactions.push({type:'keyup',code:'ArrowRight'});
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Digit3'});
 testactions.push({type:'keyup',code:'Digit3'});
@@ -192,6 +194,8 @@ testactions.push({type:'keydown',code:'ArrowRight'});
 testactions.push({type:'keyup',code:'ArrowRight'});
 testactions.push({type:'keydown',code:'ArrowRight'});
 testactions.push({type:'keyup',code:'ArrowRight'});
+testactions.push({type:'keydown',code:'ArrowRight'});
+testactions.push({type:'keyup',code:'ArrowRight'});
 testactions.push({type:'keydown',code:'Backspace'});
 testactions.push({type:'keyup',code:'Backspace'});
 testactions.push({type:'keydown',code:'Backspace'});
@@ -207,11 +211,6 @@ testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
-
-// V2_INSERTION - last tab makes old mode pass, new mode fail
-
-//testactions.push({type:'keydown',code:'Tab'});
-//testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'MetaRight'});
 testactions.push({type:'keydown',code:'KeyC'});
@@ -221,6 +220,8 @@ testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
+testactions.push({type:'keydown',code:'ArrowRight'});
+testactions.push({type:'keyup',code:'ArrowRight'});
 testactions.push({type:'keydown',code:'ArrowRight'});
 testactions.push({type:'keyup',code:'ArrowRight'});
 testactions.push({type:'keydown',code:'Backspace'});

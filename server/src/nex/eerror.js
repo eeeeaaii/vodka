@@ -34,6 +34,7 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { NexContainer } from './nexcontainer.js'
 import { systemState } from '../systemstate.js'
 import { experiments } from '../globalappflags.js'
+import * as Utils from '../utils.js'
 
 
 class EError extends NexContainer {
@@ -139,8 +140,8 @@ class EError extends NexContainer {
 		return '?' + this.toStringV2TagList() + this.toStringV2PrivateDataSection();
 	}
 
-	prettyPrintInternal(lvl) {
-		return this.standardListPrettyPrint(lvl, '?');
+	prettyPrintInternal(lvl, hdir) {
+		return this.standardListPrettyPrint(lvl, '?', hdir);
 	}	
 
 
@@ -174,24 +175,12 @@ class EError extends NexContainer {
 		systemState.setKeyFunnelActive(false);
 	}
 
-	escape(str) {
-		str = str.replace(/&/g, "&amp;");
-		str = str.replace(/</g, "&lt;");
-		str = str.replace(/>/g, "&gt;");
-		str = str.replace(/"/g, "&quot;");
-		str = str.replace(/'/g, "&apos;");
-		str = str.replace(/ /g, "&nbsp;");
-		str = str.replace(/\n/g, "<br>");
-		str = str.replace(/\r/g, "<br>");
-		return str;
-	}
-
 	drawNormal(renderNode) {
 		let domNode = renderNode.getDomNode();
 		if (this.displayValue !== '') {
 			this.innerspan = document.createElement("div");
 			this.innerspan.classList.add('innerspan');
-			this.innerspan.innerHTML = '? ' + this.escape('' + this.displayValue);
+			this.innerspan.innerHTML = '? ' + Utils.escape('' + this.displayValue);
 			domNode.appendChild(this.innerspan);
 		}
 	}

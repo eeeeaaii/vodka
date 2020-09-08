@@ -50,6 +50,8 @@ function createLogicBuiltins() {
 		}
 	)
 
+	Builtin.aliasBuiltin('case', 'first-non-nil');
+
 	Builtin.createBuiltin(
 		'if',
 		[ 'cond!', '_iftrue', '_iffalse?' ],

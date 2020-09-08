@@ -3,6 +3,8 @@
 ./goldenupdate.sh execution_paramparser_closure -e
 ./goldenupdate.sh execution_paramparser_command -e
 ./goldenupdate.sh foreign_nestedargs -e
+./goldenupdate.sh functions_async_reset -e
+./goldenupdate.sh functions_basic_seeid -e
 ./goldenupdate.sh functions_contract_mustbe -e
 ./goldenupdate.sh functions_environment_bind_tointeger -e
 ./goldenupdate.sh functions_make_makecommand -e

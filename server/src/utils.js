@@ -17,7 +17,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { NexContainer } from './nex/nexcontainer.js';
 import { EError } from './nex/eerror.js';
-import * as Utils from './utils.js'
 import { Expectation } from './nex/expectation.js';
 import { Doc } from './nex/doc.js';
 import { Line } from './nex/line.js';
@@ -128,6 +127,20 @@ function isRoot(n) {
 	return n.getTypeName() == '-root-';
 }
 
+function escape(str) {
+	str = str.replace(/&/g, "&amp;");
+	str = str.replace(/</g, "&lt;");
+	str = str.replace(/>/g, "&gt;");
+	str = str.replace(/"/g, "&quot;");
+	str = str.replace(/'/g, "&apos;");
+	str = str.replace(/ /g, "&nbsp;");
+	str = str.replace(/\n/g, "<br>");
+	str = str.replace(/\r/g, "<br>");
+	return str;
+}
+
+
+
 export {
 	isError,
 	isFatalError,
@@ -145,5 +158,6 @@ export {
 	isCommand,
 	isLambda,
 	isInsertionPoint,
-	isRoot
+	isRoot,
+	escape
 }

@@ -35,7 +35,7 @@ class Closure extends ValueNex {
 	toString(version) {
 		if (version == 'v2') {
 			console.log('saving closures is not supported, but toString is also used elsewhere so we cant throw an error here');
-			return `[CLOSURE FOR: ${this.lambda.toString('v2')}]`;
+			return `[CLOSURE FOR: ${this.lambda.prettyPrint()}]`;
 		}
 		return super.toString(version);
 	}
@@ -106,16 +106,16 @@ class Closure extends ValueNex {
 	}
 
 	renderValue() {
-		let r = this.cmdname + '<br>';
-		r += 'CODE : ' + this.getLambdaDebugString() + '<br>';
+		let r = this.cmdname + '\n';
+		r += 'CODE : ' + this.getLambdaDebugString() + '\n';
 		if (this.lexicalEnvironment == BUILTINS) {
-			r += 'LEXENV : BUILTINS<br>';
+			r += 'LEXENV : BUILTINS\n';
 		} else if (this.lexicalEnvironment == BINDINGS) {
-			r += 'LEXENV : BINDINGS<br>';
+			r += 'LEXENV : BINDINGS\n';
 		} else {
-			r += 'LEXENV :<br>';
+			r += 'LEXENV :\n';
 			this.lexicalEnvironment.doForEachBinding(function(binding) {
-				r += '&nbsp;&nbsp;&nbsp;' + binding.name + ' : ' + binding.val.debugString() + '<br>';
+				r += '   ' + binding.name + ' : ' + binding.val.debugString() + '\n';
 			})
 		}
 		return r;

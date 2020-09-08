@@ -43,10 +43,11 @@ class Nex {
 
 	toString() {}
 
-	doTabs(n) {
-		let r = '';
+	doTabs(n, hdir) {
+		if (hdir) return ' '; // exp
+		let r = '\n'; // exp
 		for (let i = 0; i < n; i++) {
-			r += '  ';
+			r += '   ';
 		}
 		return r;
 	}
@@ -55,12 +56,12 @@ class Nex {
 		if (!lvl) {
 			lvl = 0;
 		}
-		return this.prettyPrintInternal(lvl);
+		return this.prettyPrintInternal(lvl, true);
 	}
 
-	prettyPrintInternal(lvl) {
+	prettyPrintInternal(lvl, hdir) {
 		let str = this.debugString();
-		return this.doTabs(lvl) + str + '\n';
+		return this.doTabs(lvl, hdir) + str;// exp // + '\n';
 	}
 
 	toStringV2PrivateDataSection() {

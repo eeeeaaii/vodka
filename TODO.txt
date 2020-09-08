@@ -1,13 +1,8 @@
 BUGS I FOUND WHILE TRYING TO FINISH IG3
 
 1. hitting right arrow when editing tag puts in the text ArrowRight
-   -- for now, just add ArrowRight, etc., to the "shouldIgnore" list in editors.js
-   -- at some point, a revamp - two options
-      1. use arrow keys to go back and edit without deleting
-      2. arrow keys are TerminateAndReroute?
 4. need a way to remove and edit tags from the interface itself
-  -- when doing this, hit right arrow in the test, so this can cover item 1 above.
-     -- wait actually maybe arrow keys navigate between different tags in an item holy shit
+   -- fix both of these by having arrow keys switch between different tags in one element
 
 
 2. If you are in "insert around" on something like a symbol, and you hit backspace, it will not
@@ -32,6 +27,9 @@ BUGS I FOUND WHILE TRYING TO FINISH IG3
 
 
 5. maybe put it back the way it was where delete goes into edit mode and deletes one char, then shift-delete while in edit mode deletes the entire contents.
+11. still getting old style insertion point when deleting a command that's inside another command
+   -- fix both of these by having backspace on commands, lambdas, etc enter into insertion mode
+
 
 6. make a way for canvas to support transparency
   - prob just make it so that if 4 ints in the color org, the first one is alpha
@@ -42,11 +40,8 @@ BUGS I FOUND WHILE TRYING TO FINISH IG3
 
 10. weird that I can change insertion point while still editing, should kill editor when doing that.
 
-11. still getting old style insertion point when deleting a command that's inside another command
-
 12. make estring show the entire contents so that I can use them as comments
-
-14. just rename first-non-nil as case it's the same
+  -- maybe keep a way to collapse them but add a "collapse button"
 
 15. when you cram text into something else via an expectation it doesn't mark it as dirty or render it - the expectation only renders itself, doesn't render other things (need a quick and dirty fix for this now but maybe should fix rendering/make more efficient)
 
@@ -61,8 +56,11 @@ Uncaught TypeError: Cannot read property 'setSelected' of null
     at Object.do (eventqueue.js:129)
     at EventQueue.processNextItem (eventqueue.js:271)
     at EventQueue.<anonymous> (eventqueue.js:240)
-
-17. align-right and align-left in style-functions do cross axis alignment, why?
+    -- can't reproduce, somehow it's the first leaf in the line, but not the only leaf,
+    -- and yet when I call getNextLeaf, it gets null. Maybe I should reimplement
+    -- the function that tests whether it's the only leaf in line to call getNextLeaf
+    -- and return true/false depending on whether null. But getNextLeaf doesn't obey
+    -- the line as stop point. Only commands. HRM.
 
 18. when copying, put debugString in system clipboard
 

@@ -46,8 +46,8 @@ class Zlist extends NexContainer {
 		return `[zlist]${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
 
-	prettyPrintInternal(lvl) {
-		return this.standardListPrettyPrint(lvl, '[zlist]');
+	prettyPrintInternal(lvl, hdir) {
+		return this.standardListPrettyPrint(lvl, '[zlist]', hdir);
 	}
 
 	getKeyFunnel() {
