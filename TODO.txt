@@ -21,18 +21,10 @@ BUGS I FOUND WHILE TRYING TO FINISH IG3
         at Module.doRealKeyInput (http://localhost:3000/vodka.js:73:24)
         at Object.do (http://localhost:3000/eventqueue.js:129:11)
 
-3. need to make it so that tabbing in puts the insertion point BEFORE the first element, will break tests, just deal
-   -- it's in manipulator.selectFirstChildOrMoveInsertionPoint there's even a comment saying where to put it
-
-
 
 5. maybe put it back the way it was where delete goes into edit mode and deletes one char, then shift-delete while in edit mode deletes the entire contents.
 11. still getting old style insertion point when deleting a command that's inside another command
    -- fix both of these by having backspace on commands, lambdas, etc enter into insertion mode
-
-
-6. make a way for canvas to support transparency
-  - prob just make it so that if 4 ints in the color org, the first one is alpha
 
 8. I think if you paste a command with nothing in it, the insertion point should automatically be INSERT_AFTER because it's far more likely you will want to paste again next to, not inside.
 

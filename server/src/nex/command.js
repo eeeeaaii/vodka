@@ -130,14 +130,8 @@ class Command extends NexContainer {
 	prettyPrintInternal(lvl, hdir) {
 		// because of cmdPrefix we don't use standardListPrettyPrint
 		let cmdPrefix = this.convertMathToV2String(this.commandtext);
-		// exp
-//		if (cmdPrefix != '') {
-//			cmdPrefix = cmdPrefix + ' ';
-//		}
-		// exp
 		let fline = `${this.doTabs(lvl, hdir)}~${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}`; // exp // \n`;
 		let contents = this.prettyPrintChildren(lvl + 1);
-//		let lline = `${this.doTabs(lvl)}${this.listEndV2()}\n`
 		let lline = `${this.listEndV2()}` // exp
 		return fline + contents + lline;
 	}	
@@ -181,6 +175,10 @@ class Command extends NexContainer {
 
 	hasCachedClosure() {
 		return !!this.cachedClosure;
+	}
+
+	getLambdaFromCachedClosure() {
+		return this.cachedClosure.getLambda();
 	}
 
 	needsEvaluation() {

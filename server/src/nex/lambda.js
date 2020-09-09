@@ -171,6 +171,10 @@ class Lambda extends NexContainer {
 		this.returnValueParam = paramParser.getReturnValue();
 	}
 
+	getParams() {
+		return this.paramsArray;
+	}
+
 	getReturnValueParam() {
 		return this.returnValueParam;
 	}

@@ -518,8 +518,16 @@ class RenderNode {
 		selectedNode = this;
 		this.selected = true;
 		if (experiments.V2_INSERTION) {
-			if (this.getNex().isNexContainer() && this.getNex().numChildren() == 0) {
-				this.setInsertionMode(INSERT_INSIDE);
+			let nex = this.getNex();
+			if (nex.isNexContainer() && nex.numChildren() == 0) {
+				// for commands that we know have no args, we don't do insert inside by default.
+				if (Utils.isCommand(nex)
+						&& nex.hasCachedClosure()
+						&& nex.getLambdaFromCachedClosure().getParams().length == 0) {
+					this.setInsertionMode(INSERT_AFTER);
+				} else {
+					this.setInsertionMode(INSERT_INSIDE);
+				}
 			} else {
 				this.setInsertionMode(INSERT_AFTER);
 			}

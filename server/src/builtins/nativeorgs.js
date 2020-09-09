@@ -78,19 +78,48 @@ function createNativeOrgs() {
 						}
 						return z;
 					}
+
+					this.setFillFromColor = function(color) {
+						let t, r, g, b;
+						if (color.length == 4) {
+							t = color[0] / 256.0;
+		 					r = color[1];
+							g = color[2];
+							b = color[3];							
+						} else {
+							t = 1.0;
+		 					r = color[0];
+							g = color[1];
+							b = color[2];
+						}
+						this.ctx.globalAlpha = t;
+						this.ctx.fillStyle = '#' + this.toHex(r) + this.toHex(g) + this.toHex(b);
+					}
+
+					this.setStrokeFromColor = function(color) {
+						if (color.length == 4) {
+							let t = color[0] / 256.0;
+		 					let r = color[1];
+							let g = color[2];
+							let b = color[3];							
+						} else {
+							let t = 1.0;
+		 					let r = color[0];
+							let g = color[1];
+							let b = color[2];
+						}
+						this.ctx.globalAlpha = t;
+						this.ctx.strokeStyle = '#' + this.toHex(r) + this.toHex(g) + this.toHex(b);
+					}
 				}
 			},
 			{
 				'name': 'dot',
 				'args': '^ color() x# y#',
 				'func': function(args) {
-					let color = args[0];
-					let r = color[0];
-					let g = color[1];
-					let b = color[2];
+					this.setFillFromColor(args[0]);
 					let x = args[1];
 					let y = args[2];
-					this.ctx.fillStyle = '#' + this.toHex(r) + this.toHex(g) + this.toHex(b);
 					this.ctx.fillRect(x, y, 1, 1);
 			    }
 			},
@@ -98,15 +127,11 @@ function createNativeOrgs() {
 				'name': 'rect',
 				'args': '^ color() x# y# w# h#',
 				'func': function(args) {
-					let color = args[0];
-					let r = color[0];
-					let g = color[1];
-					let b = color[2];
+					this.setFillFromColor(args[0]);
 					let x = args[1];
 					let y = args[2];
 					let w = args[3];
 					let h = args[4];
-					this.ctx.fillStyle = '#' + this.toHex(r) + this.toHex(g) + this.toHex(b);
 					this.ctx.fillRect(x, y, w, h);
 			    }
 			},
@@ -114,11 +139,7 @@ function createNativeOrgs() {
 				'name': 'line',
 				'args': '^ color() a0# a1# a2# a3#',
 				'func': function(args) {
-					let color = args[0];
-					let r = color[0];
-					let g = color[1];
-					let b = color[2];
-					this.ctx.strokeStyle = '#' + this.toHex(r) + this.toHex(g) + this.toHex(b);
+					this.setStrokeFromColor(args[0]);
 					this.ctx.beginPath();
 					this.ctx.moveTo(args[1], args[2]);
 					this.ctx.lineTo(args[3], args[4]);

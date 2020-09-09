@@ -97,6 +97,10 @@ class Closure extends ValueNex {
 		this.cmdname = nm;
 	}
 
+	getLambda() {
+		return this.lambda;
+	}
+
 	getCmdName() {
 		return this.cmdname;
 	}
