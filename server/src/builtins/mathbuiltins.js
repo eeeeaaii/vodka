@@ -29,7 +29,8 @@ function createMathBuiltins() {
 		[ ],
 		function(env, executionEnvironment) {
 			return new Float(Math.PI);
-		}
+		},
+		'returns pi.'
 	);
 
 	Builtin.createBuiltin(
@@ -37,7 +38,8 @@ function createMathBuiltins() {
 		[ ],
 		function(env, executionEnvironment) {
 			return new Float(Math.E);
-		}
+		},
+		'returns e.'
 	);
 
 	Builtin.createBuiltin(
@@ -47,7 +49,8 @@ function createMathBuiltins() {
 			let a = env.lb('arg').getTypedValue();
 			let b = Math.acos(a);
 			return new Float(b);
-		}
+		},
+		'computes the inverse cosine of |arg (the angle whose cosine is |arg)'
 	);
 
 	Builtin.createBuiltin(
@@ -57,7 +60,8 @@ function createMathBuiltins() {
 			let a = env.lb('arg').getTypedValue();
 			let b = Math.asin(a);
 			return new Float(b);
-		}
+		},
+		'computes the inverse sine of |arg (the angle whose sine is |arg)'
 	);
 
 	Builtin.createBuiltin(
@@ -67,7 +71,8 @@ function createMathBuiltins() {
 			let a = env.lb('arg').getTypedValue();
 			let b = Math.atan(a);
 			return new Float(b);
-		}
+		},
+		'computes the inverse tangent of |arg (the angle whose tangent is |arg)'
 	);
 
 	Builtin.createBuiltin(
@@ -77,7 +82,8 @@ function createMathBuiltins() {
 			let y = env.lb('y').getTypedValue();
 			let x = env.lb('x').getTypedValue();
 			return new Float(Math.atan2(y, x));
-		}
+		},
+		'computes the angle between the x axis and the line to (x, y), in the range from +pi and -pi.'
 	);
 
 	Builtin.createBuiltin(
@@ -87,7 +93,8 @@ function createMathBuiltins() {
 			let a = env.lb('arg').getTypedValue();
 			a = Math.ceil(a);
 			return new Float(a);
-		}
+		},
+		'returns the integer ceiling of |arg.'
 	);
 
 	Builtin.createBuiltin(
@@ -97,7 +104,8 @@ function createMathBuiltins() {
 			let a = env.lb('arg').getTypedValue();
 			let b = Math.cos(a);
 			return new Float(b);
-		}
+		},
+		'returns the cosine of |arg (adjacent/hypotenuse)'
 	);
 
 	Builtin.createBuiltin(
@@ -116,7 +124,8 @@ function createMathBuiltins() {
 			} else {
 				return new Integer(result);
 			}
-		}
+		},
+		'divides |divid by |divis and returns the result.'
 	);
 
 	Builtin.createBuiltin(
@@ -127,7 +136,8 @@ function createMathBuiltins() {
 			let b = env.lb('rhs').getTypedValue();
 			let r = (a == b);
 			return new Bool(r);
-		}
+		},
+		'returns true if |lhs and |rhs evaluates to numbers that are equal.'
 	);
 
 	Builtin.createBuiltin(
@@ -136,7 +146,8 @@ function createMathBuiltins() {
 		function(env, executionEnvironment) {
 			let a = env.lb('a').getTypedValue();
 			return new Float(Math.exp(a));
-		}
+		},
+		'computes the exponential function of |a (e to the |a).'
 	);
 
 	Builtin.createBuiltin(
@@ -146,7 +157,8 @@ function createMathBuiltins() {
 			let a = env.lb('arg').getTypedValue();
 			a = Math.floor(a);
 			return new Float(a);
-		}
+		},
+		'computes the integer floor of |arg.'
 	);
 
 	Builtin.createBuiltin(
@@ -157,7 +169,8 @@ function createMathBuiltins() {
 			let b = env.lb('rhs').getTypedValue();
 			let r = (a > b);
 			return new Bool(r);
-		}
+		},
+		'returns true if |lhs evaluates to a number that is strictly greater than |rhs.'
 	);
 
 	Builtin.createBuiltin(
@@ -168,7 +181,8 @@ function createMathBuiltins() {
 			let b = env.lb('rhs').getTypedValue();
 			let r = (a >= b);
 			return new Bool(r);
-		}
+		},
+		'returns true if |lhs evaluates to a number that is greater than or equal to |rhs.'
 	);
 
 	Builtin.createBuiltin(
@@ -179,7 +193,8 @@ function createMathBuiltins() {
 			let b = env.lb('rhs').getTypedValue();
 			let r = (a < b);
 			return new Bool(r);
-		}
+		},
+		'returns true if |lhs evaluates to a number that is strictly less than |rhs.'
 	);
 
 	Builtin.createBuiltin(
@@ -190,7 +205,8 @@ function createMathBuiltins() {
 			let b = env.lb('rhs').getTypedValue();
 			let r = (a <= b);
 			return new Bool(r);
-		}
+		},
+		'returns true if |lhs evaluates to a number that is less than or equal to |rhs.'
 	);
 
 	Builtin.createBuiltin(
@@ -201,7 +217,8 @@ function createMathBuiltins() {
 		function(env, executionEnvironment) {
 			let a = env.lb('a').getTypedValue();
 			return new Float(Math.log(a));
-		}
+		},
+		'computes the log base e of |a.'
 	);
 
 	Builtin.createBuiltin(
@@ -210,7 +227,8 @@ function createMathBuiltins() {
 		function(env, executionEnvironment) {
 			let a = env.lb('a').getTypedValue();
 			return new Float(Math.log10(a));
-		}
+		},
+		'computes the log base 10 of |a.'
 	);
 
 	Builtin.createBuiltin(
@@ -219,7 +237,8 @@ function createMathBuiltins() {
 		function(env, executionEnvironment) {
 			let a = env.lb('a').getTypedValue();
 			return new Float(Math.log2(a));
-		}
+		},
+		'computes the log base 2 of |a.'
 	);
 
 	Builtin.createBuiltin(
@@ -247,7 +266,8 @@ function createMathBuiltins() {
 					return new Integer(result);
 				}
 			}
-		}
+		},
+		'subtracts |sub from |min and returns the result.'
 	);
 
 	Builtin.createBuiltin(
@@ -258,7 +278,8 @@ function createMathBuiltins() {
 			let b = env.lb('modulus');
 			let result = a.getTypedValue() % b.getTypedValue();
 			return new Integer(result);
-		}
+		},
+		'computes |divid modulo |modulus and returns the result.'
 	);
 
 	Builtin.createBuiltin(
@@ -269,7 +290,8 @@ function createMathBuiltins() {
 			let b = env.lb('rhs').getTypedValue();
 			let r = (a != b);
 			return new Bool(r);
-		}
+		},
+		'returns true if |lhs evaluates to a number that is not equal to |rhs.'
 	);
 
 	Builtin.createBuiltin(
@@ -279,7 +301,8 @@ function createMathBuiltins() {
 			let a = env.lb('a').getTypedValue();
 			let b = env.lb('b').getTypedValue();
 			return new Float(Math.pow(a, (1.0/b)));
-		}
+		},
+		'computes the |bth root of |a.'
 	);
 
 	Builtin.createBuiltin(
@@ -298,7 +321,8 @@ function createMathBuiltins() {
 			}
 			let r = foundFloat ? new Float(total) : new Integer(total);
 			return r;
-		}
+		},
+		'adds the arguments and returns the result.'
 	);
 
 	Builtin.createBuiltin(
@@ -308,7 +332,8 @@ function createMathBuiltins() {
 			let a = env.lb('a').getTypedValue();
 			let b = env.lb('b').getTypedValue();
 			return new Float(Math.pow(a, b));
-		}
+		},
+		'computes |a to the |b power and returns the result.'
 	);
 
 	Builtin.createBuiltin(
@@ -317,7 +342,8 @@ function createMathBuiltins() {
 		function(env, executionEnvironment) {
 			let n = Math.random();
 			return new Float(n);
-		}
+		},
+		'returns a random number between 0 and 1.'
 	);
 
 	Builtin.createBuiltin(
@@ -327,7 +353,8 @@ function createMathBuiltins() {
 			let a = env.lb('arg').getTypedValue();
 			a = Math.round(a);
 			return new Float(a);
-		}
+		},
+		'return |arg rounded to the nearest integer.'
 	);
 
 	Builtin.createBuiltin(
@@ -337,7 +364,8 @@ function createMathBuiltins() {
 			let a = env.lb('arg').getTypedValue();
 			let b = Math.sin(a);
 			return new Float(b);
-		}
+		},
+		'computes the sin (opposite/hypotenuse) of |arg.'
 	);
 
 
@@ -347,7 +375,8 @@ function createMathBuiltins() {
 		function(env, executionEnvironment) {
 			let a = env.lb('a').getTypedValue();
 			return new Float(Math.sqrt(a));
-		}
+		},
+		'computes the square root of |a.'
 	);
 
 	Builtin.createBuiltin(
@@ -357,7 +386,8 @@ function createMathBuiltins() {
 			let a = env.lb('arg').getTypedValue();
 			let b = Math.tan(a);
 			return new Float(b);
-		}
+		},
+		'computes the tangent (opposite/adjacent) of |arg.'
 	);
 
 	Builtin.createBuiltin(
@@ -376,7 +406,8 @@ function createMathBuiltins() {
 			}
 			let r = foundFloat ? new Float(result) : new Integer(result);
 			return r;
-		}
+		},
+		'multiplies the args and returns the result.'
 	);
 }
 

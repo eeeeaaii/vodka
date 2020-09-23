@@ -66,9 +66,9 @@ class Letter extends Nex {
 		return new LetterKeyFunnel(this);
 	}
 
-	renderInto(renderNode, renderFlags, skipTags) {
+	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
-		super.renderInto(renderNode, renderFlags);
+		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('letter');
 		domNode.classList.add('data');
 		if (renderFlags & RENDER_FLAG_INSERT_AFTER) {

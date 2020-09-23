@@ -423,7 +423,7 @@ class Expectation extends NexContainer {
 		return ContextType.COMMAND;
 	}
 
-	renderInto(renderNode, renderFlags) {
+	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		let dotspan = null;
 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
@@ -431,7 +431,7 @@ class Expectation extends NexContainer {
 			dotspan.classList.add('dotspan');
 			domNode.appendChild(dotspan);
 		}
-		super.renderInto(renderNode, renderFlags);
+		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('expectation');
 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
 			if (renderFlags & RENDER_FLAG_EXPLODED) {

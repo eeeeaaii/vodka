@@ -29,9 +29,6 @@ import { ContextType } from '../contexttype.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED, CONSOLE_DEBUG } from '../globalconstants.js'
 import { Editor } from '../editors.js'
-
-// remove with deprecated defaultHandle
-import { Letter } from './letter.js'
 import { experiments } from '../globalappflags.js'
 
 
@@ -301,7 +298,7 @@ class Command extends NexContainer {
 		return this.notReallyCachedClosure.shouldActivateReturnedExpectations();
 	}
 
-	renderInto(renderNode, renderFlags) {
+	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		let codespan = null;
 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
@@ -309,7 +306,7 @@ class Command extends NexContainer {
 			codespan.classList.add('codespan');
 			domNode.appendChild(codespan);
 		}			
-		super.renderInto(renderNode, renderFlags); // will create children
+		super.renderInto(renderNode, renderFlags, withEditor); // will create children
 		domNode.classList.add('command');
 		domNode.classList.add('codelist');
 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
@@ -358,20 +355,6 @@ class Command extends NexContainer {
 		this.cacheClosureIfCommandTextIsBound();
 		this.searchingOn = null;
 		this.previousMatch = null;
-	}
-
-	// expression list interface
-
-	getExpressionAt(i) {
-		return this.getChildAt(i);
-	}
-
-	getNumExpressions() {
-		return this.getNumChildren();
-	}
-
-	replaceExpressionAt(newarg, i) {
-		this.replaceChildAt(newarg, i);
 	}
 
 	getContextType() {
@@ -445,7 +428,6 @@ class Command extends NexContainer {
 	}
 
 	getEventTable(context) {
-		// same?
 		if (experiments.V2_INSERTION) {
 			return {
 				'ShiftEnter': 'evaluate-nex-and-keep',
@@ -469,7 +451,7 @@ class Command extends NexContainer {
 class CommandEditor extends Editor {
 
 	constructor(nex) {
-		super(nex);
+		super(nex, 'CommandEditor');
 	}
 
 	doBackspaceEdit() {

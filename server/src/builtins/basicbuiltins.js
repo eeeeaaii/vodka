@@ -68,7 +68,8 @@ function createBasicBuiltins() {
 				return r;
 			}
 			return doLevel(lexenv);
-		}
+		},
+		'returns the memory environment of |exp, in the form of a list containing all bound symbols along with their values.'
 	);
 
 
@@ -78,7 +79,8 @@ function createBasicBuiltins() {
 		function(env, executionEnvironment) {
 			let nex = env.lb('nex');
 			return new EString('' + nex.getID());
-		}
+		},
+		'returns the ID of |nex as a string.'
 	);
 
 
@@ -92,7 +94,8 @@ function createBasicBuiltins() {
 			} else {
 				return lst.getChildAt(lst.numChildren() - 1);
 			}
-		}
+		},
+		'all arguments are evaluated in order from first to last, and the result of the last evaluation is returned.'
 	);
 
 	Builtin.createBuiltin(
@@ -106,7 +109,8 @@ function createBasicBuiltins() {
 			let r = c.getChildAt(0);
 			c.removeChild(c.getChildAt(0));
 			return r;
-		}
+		},
+		'destructively and permanently removes the first element of |list, and returns the removed element.'
 	);
 
 	Builtin.createBuiltin(
@@ -118,7 +122,8 @@ function createBasicBuiltins() {
 				return new EError('first/car: cannot get first element of empty list. Sorry!');
 			}
 			return lst.getFirstChild();
-		}
+		},
+		'returns the first element of |list, without altering |list in any way.'
 	);
 
 	Builtin.aliasBuiltin('first', 'car');
@@ -134,7 +139,8 @@ function createBasicBuiltins() {
 			let newOne = c.makeCopy(true);
 			c.getChildrenForCdr(newOne);
 			return newOne;
-		}
+		},
+		'returns a new list containing all elements of |list except the first one.'
 	);
 
 	Builtin.aliasBuiltin('rest', 'cdr');
@@ -149,7 +155,8 @@ function createBasicBuiltins() {
 			}
 			c.removeChild(c.getChildAt(0));
 			return c;
-		}
+		},
+		'destructively and permanently removes the first element of |list, and returns |list.'
 	);
 
 	Builtin.createBuiltin(
@@ -161,7 +168,8 @@ function createBasicBuiltins() {
 			let newOne = lst.makeCopy(true);
 			lst.setChildrenForCons(nex, newOne);
 			return newOne;
-		}
+		},
+		'creates a new list by prepending |nex to |list, and returns the new list.'
 	);
 
 	Builtin.createBuiltin(
@@ -169,7 +177,8 @@ function createBasicBuiltins() {
 		[ 'nex' ],
 		function(env, executionEnvironment) {
 			return env.lb('nex').makeCopy();
-		}
+		},
+		'returns a deep copy of |nex (if |nex is a list, list elements are also copied).'
 	);
 
 
@@ -180,7 +189,8 @@ function createBasicBuiltins() {
 			let lst = env.lb('list');
 			lst.prependChild(env.lb('nex'));
 			return lst;
-		}
+		},
+		'permanently alters |list by prepending |nex to it.'
 	);
 
 	Builtin.createBuiltin(
@@ -190,7 +200,8 @@ function createBasicBuiltins() {
 			let lhs = env.lb('lhs');
 			let rhs = env.lb('rhs');
 			return new Bool(rhs.getID() == lhs.getID());
-		}
+		},
+		'returns true if |lhs and |rhs refer to the same in-memory object.'
 	);
 
 	Builtin.createBuiltin(
@@ -244,7 +255,8 @@ function createBasicBuiltins() {
 			} else {
 				return new Bool(false);
 			}
-		}
+		},
+		'returns true if |lhs and |rhs have the same semantic value (specific implementation depends on the type |lhs and |rhs).'
 	);
 
 	// 'eval' is really eval again because args to functions are evaled
@@ -257,7 +269,8 @@ function createBasicBuiltins() {
 			// we do not wrap errors for eval - we let
 			// the caller deal with it
 			return newresult;				
-		}
+		},
+		'returns the result of evaluating |nex.'
 	);
 
 	Builtin.createBuiltin(
@@ -279,7 +292,8 @@ function createBasicBuiltins() {
 				}
 			}
 			return resultList;				
-		}
+		},
+		'returns a new list containing only the elements of |list for which |func calls true when it is called on that element.'
 	);
 
 	Builtin.createBuiltin(
@@ -302,7 +316,8 @@ function createBasicBuiltins() {
 
 			}
 			return resultList;				
-		}
+		},
+		'goes through all the elements in |list and replaces each one with the result of calling |func on that element.'
 	);
 
 	Builtin.createBuiltin(
@@ -310,16 +325,17 @@ function createBasicBuiltins() {
 		[ '_nex' ],
 		function(env, executionEnvironment) {
 			return env.lb('nex');
-		}
+		},
+		'returns the unevaluated form of |nex.'
 	);
 
 	Builtin.createBuiltin(
 		'reduce-with-starting',
-		[ 'list()', 'func&', 'startval' ],
+		[ 'list()', 'func&', 'startvalue' ],
 		function(env, executionEnvironment) {
 			let list = env.lb('list');
 			let closure = env.lb('func');
-			let sn = env.lb('startval');
+			let sn = env.lb('startvalue');
 			let p = sn;
 			for (let i = 0; i < list.numChildren(); i++) {
 				let item = list.getChildAt(i);
@@ -331,7 +347,8 @@ function createBasicBuiltins() {
 				p = result;
 			}
 			return p;				
-		}
+		},
+		'progressively updates a value, starting with |startvalue, by calling |func on each element in |list, passing in 1. the list element and 2. the progressively updated value, returning the final updated value.'
 	);
 
 

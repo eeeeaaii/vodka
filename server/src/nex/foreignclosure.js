@@ -26,7 +26,7 @@ import { BuiltinArgEvaluator } from '../builtinargevaluator.js'
 
 
 class ForeignClosure extends Closure {
-	constructor(paramstr, foreignfunction) {
+	constructor(paramstr, foreignfunction, docstring) {
 		super(null /* lambda */, BUILTINS, 'foreignclosure');
 		let paramParser = new ParamParser();
 		paramParser.parseString(paramstr);
@@ -34,6 +34,7 @@ class ForeignClosure extends Closure {
 		this.paramsArray = paramParser.getParams();
 		this.returnValueParam = paramParser.getReturnValue();		
 		this.foreignfunction = foreignfunction;
+		this.docstring = docstring ? docstring : '-no doc string-';
 	}
 	
 	setScopeForForeignFunction(scope) {
@@ -41,7 +42,7 @@ class ForeignClosure extends Closure {
 	}
 
 	makeCopy() {
-		let r = new ForeignClosure(this.paramstr, this.foreignfunction);
+		let r = new ForeignClosure(this.paramstr, this.foreignfunction, this.docstring);
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -58,7 +59,11 @@ class ForeignClosure extends Closure {
 	}
 
 	getLambdaDebugString() {
-		return '*FOREIGN CLOSURE*';
+		return ' &"' + this.paramstr + '"';
+	}
+
+	getDocString() {
+		return this.docstring;
 	}
 
 	doAlertAnimation() {}

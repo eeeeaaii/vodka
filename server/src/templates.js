@@ -36,7 +36,7 @@ class TemplateStore  {
 		this.foreigntemplates = {};
 	}
 
-	bindForeignClosure(name, params, f) {
+	bindForeignClosure(name, params, docs, f) {
 		let fc = new ForeignClosure(params, f);
 		BUILTINS.bind(name, fc);
 	}
@@ -64,7 +64,7 @@ class TemplateStore  {
 				if (membername == ':draw') {
 					drawCheat = member.func;
 				} else {
-					let fc = new ForeignClosure(member.args, member.func);
+					let fc = new ForeignClosure(member.args, member.func, member.docs);
 					fc.addTag(new Tag(membername));
 					org.appendChild(fc);					
 				}

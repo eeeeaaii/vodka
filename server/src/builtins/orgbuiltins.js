@@ -26,12 +26,12 @@ import { ERROR_TYPE_INFO } from '../nex/eerror.js'
 function createOrgBuiltins() {
 	Builtin.createBuiltin(
 		'template',
-		[ 'nonce^', 'org()' ],
+		[ 'nix^', 'org()' ],
 		function(env, executionEnvironment) {
-			let nonce = env.lb('nonce');
+			let nix = env.lb('nix');
 			let org = env.lb('org');
 			try {
-				let template = templateStore.createTemplate(nonce, org, executionEnvironment);
+				let template = templateStore.createTemplate(nix, org, executionEnvironment);
 				let r = new EError(`created template ${template.getName()}`);
 				r.setErrorType(ERROR_TYPE_INFO);
 				return r;
@@ -42,7 +42,8 @@ function createOrgBuiltins() {
 					throw e;
 				}
 			}
-		}
+		},
+		'creates a template identified by the nix tag.'
 	);
 
 	Builtin.createBuiltin(
@@ -63,14 +64,15 @@ function createOrgBuiltins() {
 					throw e;
 				}
 			}
-		}
+		},
+		'merges the orgs passed to it, returning an org with the union of all members'
 	);
 
 	Builtin.createBuiltin(
 		'instantiate',
-		[ 'initer', 'nex...' ],
+		[ 'init', 'nex...' ],
 		function(env, executionEnvironment) {
-			let initer = env.lb('initer');
+			let init = env.lb('init');
 			let args = env.lb('nex');
 			let a = [];
 			for (let i = 0; i < args.numChildren(); i++) {
@@ -78,13 +80,13 @@ function createOrgBuiltins() {
 				a.push(c);
 			}
 			try {
-				if (initer.getTypeName() == '-nil-') {
-					initer = templateStore.merge([initer]);					
+				if (init.getTypeName() == '-nil-') {
+					init = templateStore.merge([init]);					
 				}
-				if (!initer || !initer.getTypeName || initer.getTypeName() != '-org-') {
+				if (!init || !init.getTypeName || init.getTypeName() != '-org-') {
 					return EError('can only init with an org');
 				}
-				return templateStore.instantiate(initer, a);
+				return templateStore.instantiate(init, a);
 			} catch (e) {
 				if (Utils.isFatalError(e)) {
 					return e;
@@ -92,7 +94,8 @@ function createOrgBuiltins() {
 					throw e;
 				}
 			}
-		}
+		},
+		'instantiates a new org from the template |init, or if |init is a nix, the template named by |init.'
 	);
 
 }

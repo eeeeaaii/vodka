@@ -102,9 +102,9 @@ class Org extends NexContainer {
 		return false;
 	}
 
-	renderInto(renderNode, renderFlags) {
+	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
-		super.renderInto(renderNode, renderFlags);
+		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('org');
 		domNode.classList.add('data');
 		if (this.drawFunction) {

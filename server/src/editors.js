@@ -16,9 +16,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 class Editor {
-	constructor(nex) {
+	constructor(nex, type) {
 		this._isEditing = false;
 		this.nex = nex;
+		this.type = type;
 	}
 
 	doBackspaceEdit() {
@@ -31,7 +32,6 @@ class Editor {
 
 	shouldTerminate(text) {
 		return text == 'Enter'
-			|| text == 'Tab'
 			|| (
 				text == 'Backspace'
 				&& !this.hasContent()
@@ -56,10 +56,15 @@ class Editor {
 	}
 
 	shouldTerminateAndReroute(text) {
-		return text == 'ShiftTab';
+		return text == 'ShiftTab' || text == 'Tab';
 	}
 
 	shouldAppend(text) {
+		return false;
+	}
+
+	performSpecialProcessing(text) {
+		console.log('editor: ignored ' + text);
 		return false;
 	}
 
@@ -79,8 +84,7 @@ class Editor {
 			this.doAppendEdit(text);
 			return false;
 		} else {
-			console.log('editor: ignored ' + text);
-			return false;
+			return this.performSpecialProcessing(text);
 		}
 	}
 

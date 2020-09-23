@@ -89,9 +89,9 @@ class Line extends NexContainer {
 		return new LineKeyFunnel(this);
 	}
 
-	renderInto(renderNode, renderFlags) {
+	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
-		super.renderInto(renderNode, renderFlags);
+		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('line');
 		domNode.classList.add('data');
 		// weird

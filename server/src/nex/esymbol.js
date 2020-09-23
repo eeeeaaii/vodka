@@ -74,8 +74,8 @@ class ESymbol extends ValueNex {
 		return b;
 	}
 
-	renderInto(renderNode, renderFlags) {
-		super.renderInto(renderNode, renderFlags);
+	renderInto(renderNode, renderFlags, withEditor) {
+		super.renderInto(renderNode, renderFlags, withEditor);
 		let domNode = renderNode.getDomNode();
 		if (this.isEditing) {
 			domNode.classList.add('editing');
@@ -120,7 +120,7 @@ class ESymbol extends ValueNex {
 
 class ESymbolEditor extends Editor {
 	constructor(nex) {
-		super(nex);
+		super(nex, 'ESymbolEditor');
 	}
 
 	hasContent() {

@@ -18,11 +18,21 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { contractEnforcer } from './contract.js';
 import { EError } from './nex/eerror.js'
 import { Editor } from './editors.js'
+import * as Utils from '../utils.js'
 
 class Tag  {
 	constructor(name) {
 		// can't have backticks in tags
 		this.name = name.replace('`', '');
+		this.isEditing = false;
+	}
+
+	setName(text) {
+		this.name = text;
+	}
+
+	setIsEditing(val) {
+		this.isEditing = val;
 	}
 
 	getName() {
@@ -37,17 +47,13 @@ class Tag  {
 		return this.name;
 	}
 
-	addTagToNexWithEnforcement(nex) {
-		if (nex.hasTag(this)) return; // nex also checks this but let's optimize I guess
-		// check contract
+	checkForContractError(nex) {
 		let errorMessage = contractEnforcer.enforce(this, nex);
-		if (!errorMessage) {
-			nex.addTag(this);
-		} else {
+		if (errorMessage) {
 			let e = new EError(errorMessage);
 			e.appendChild(nex);
 			throw e;
-		}
+		}		
 	}
 
 	draw(parentNode, isExploded) {
@@ -55,6 +61,9 @@ class Tag  {
 		this.tagDomNode.classList.add('tag');
 		if (isExploded) {
 			this.tagDomNode.classList.add('exploded');
+		}
+		if (this.isEditing) {
+			this.tagDomNode.classList.add('tag-editing');
 		}
 		this.tagDomNode.innerHTML = this.name;
 		parentNode.appendChild(this.tagDomNode);
@@ -68,22 +77,31 @@ class Tag  {
 
 class TagEditor extends Editor {
 	constructor(nex) {
-		super(nex);
-		this.editorDomNode = document.createElement("div");
-		this.editorDomNode.classList.add('tag');
-		this.editorDomNode.classList.add('tag-editing');
-		this.editorDomNode.classList.add('exploded');
-		this.tagText = '';
+		super(nex, 'TagEditor');
+		this.managedTag = new Tag('');
+		this.managedTag.setIsEditing(true);
+		this.nex = nex;
+		this.previousValue = null; // only used if you arrow around
+		nex.addTag(this.managedTag);
 	}
 
 	doBackspaceEdit() {
-		this.tagText = this.tagText.substr(0, this.tagText.length - 1);
-		this.editorDomNode.innerHTML = this.tagText;
+		if (this.managedTag.getName() == '') {
+			// this should never be null because of the check in shouldBackspace
+			let newManagedTag = this.nex.getTagBefore(this.managedTag);
+			this.nex.removeTag(this.managedTag);
+			this.manageNewTag(newManagedTag);
+		} else {
+			let oldval = this.managedTag.getName();
+			let newval = oldval.substr(0, oldval.length - 1);
+			this.managedTag.setName(newval);
+		}
 	}
 
 	doAppendEdit(text) {
-		this.tagText = this.tagText + text;
-		this.editorDomNode.innerHTML = this.tagText;			
+		let oldval = this.managedTag.getName();
+		let newval = oldval + '' + text;
+		this.managedTag.setName(newval);
 	}
 
 	shouldTerminate(text) {
@@ -91,19 +109,109 @@ class TagEditor extends Editor {
 			|| text == '`';
 	}
 
+	shouldBackspace(text) {
+		// if the tag is empty and you backspace,
+		// but there is a tag BEFORE this tag,
+		// we go to it
+		return text == 'Backspace'
+			&& 
+			( this.hasContent()
+				|| this.nex.getTagBefore(this.managedTag)); 
+	}
+
 	hasContent() {
-		return this.tagText != '';
+		return this.managedTag.getName() != '';
 	}
 
 	shouldAppend(text) {
-		return true;
+		// append if a single character, otherwise it's special
+		return (/^.$/.test(text));
+	}
+
+	manageNewTag(newManagedTag) {
+		this.managedTag = newManagedTag;
+		newManagedTag.setIsEditing(true);
+		this.previousValue = newManagedTag.getName();
+	}
+
+	performSpecialProcessing(text) {
+		let newManagedTag = null;
+		if (text == 'ShiftBackspace') {
+			newManagedTag = this.nex.getTagBefore(this.managedTag);
+			this.nex.removeTag(this.managedTag);
+			if (newManagedTag) {
+				this.manageNewTag(newManagedTag);
+			} else {
+				this.managedTag = null;
+				this.finish();
+			}
+
+		} else if ((text == 'ArrowRight' || text == 'ArrowLeft')) {
+			if (text == 'ArrowRight') {
+				newManagedTag = this.nex.getTagAfter(this.managedTag);
+				if (!newManagedTag) {
+					if (this.hasContent()) {
+						newManagedTag = new Tag('');
+						this.nex.addTag(newManagedTag);						
+					}
+				}
+			} else if (text == 'ArrowLeft') {
+				newManagedTag = this.nex.getTagBefore(this.managedTag);
+				if (!newManagedTag) {
+					if (this.hasContent()) {
+						newManagedTag = new Tag('');
+						this.nex.addTagAtStart(newManagedTag);
+					}
+				}
+			}
+			if (newManagedTag) {
+				// throws error if contract fail, just returns false if dupe tag
+				this.validateNewTagValue();
+				this.managedTag.setIsEditing(false);
+				if (this.managedTag.getName() == '') {
+					this.nex.removeTag(this.managedTag);
+				}
+				this.manageNewTag(newManagedTag);
+			}
+		}
+		return false;
+	}
+
+	revertInvalidTagEntry() {
+		if (this.previousValue) {
+			this.managedTag.setName(this.previousValue);
+			this.managedTag.setIsEditing(false);
+		} else {
+			this.nex.removeTagByReference(this.managedTag);
+		}		
+	}
+
+	validateNewTagValue() {
+		if (this.nex.numTagsEqualTo(this.managedTag) > 1) {
+			// tried to enter a duplicate tag.
+			this.revertInvalidTagEntry();
+			return false;
+		}
+		try {
+			this.managedTag.checkForContractError(this.nex);
+		} catch (e) {
+			if (Utils.isFatalError(e)) {
+				this.revertInvalidTagEntry();
+			}
+			throw(e);
+		}
+		return true;		
 	}
 
 	finish() {
 		super.finish();
-		if (!this.tagText == '') {
-			let tag = new Tag(this.tagText);
-			tag.addTagToNexWithEnforcement(this.nex);
+		if (!this.managedTag) return;
+		if (this.managedTag.getName() == '') {
+			this.nex.removeTag(this.managedTag);
+		} else {
+			// throws error if fail
+			this.validateNewTagValue();
+			this.managedTag.setIsEditing(false);
 		}
 	}
 

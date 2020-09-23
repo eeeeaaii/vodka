@@ -148,7 +148,6 @@ class NexContainer extends Nex {
 		// designator is like ~, or [doc], or whatever tells you the list type
 		let fline = `${this.doTabs(lvl, hdir)}${designator}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}`;// exp \n`;
 		let contents = this.prettyPrintChildren(lvl + 1);
-//		let lline = `${this.doTabs(lvl)}${this.listEndV2()}\n` // exp
 		let lline = `${this.listEndV2()}` // exp
 		return fline + contents + lline;
 	}
@@ -226,9 +225,9 @@ class NexContainer extends Nex {
 		return !this.vdir;
 	}
 
-	renderInto(renderNode, renderFlags) {
+	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
-		super.renderInto(renderNode, renderFlags);
+		super.renderInto(renderNode, renderFlags, withEditor);
 		if (this.vdir) {
 			domNode.classList.add('vdir');
 		} else {

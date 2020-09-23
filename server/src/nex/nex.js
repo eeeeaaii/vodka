@@ -233,6 +233,11 @@ class Nex {
 		this.tags.push(tag);
 	}
 
+	addTagAtStart(tag) {
+		if (this.hasTag(tag)) return;
+		this.tags.unshift(tag);		
+	}
+
 	hasTag(tag) {
 		for (let i = 0; i < this.tags.length; i++) {
 			if (this.tags[i].equals(tag)) return true;
@@ -248,12 +253,54 @@ class Nex {
 		}
 	}
 
+	removeTagByReference(tag) {
+		for (let i = 0; i < this.tags.length; i++) {
+			if (this.tags[i] == tag) {
+				this.tags.splice(i, 1);
+				return;
+			}
+		}
+	}
+
 	numTags() {
 		return this.tags.length;
 	}
 
+	// used for validation only
+	// should never return more than 2! and that only when validating
+	// and the user has tried to enter a duplicate tag.
+	numTagsEqualTo(tag) {
+		let ct = 0;
+		for (let i = 0; i < this.tags.length; i++) {
+			if (this.tags[i].equals(tag)) {
+				ct++;
+			}
+		}
+		return ct;
+	}
+
 	getTag(n) {
 		return this.tags[n].copy();
+	}
+
+	// by reference
+	getTagAfter(tag) {
+		for (let i = 0; i < this.tags.length; i++) {
+			if (this.tags[i] == tag && i < this.tags.length - 1) {
+				return this.tags[i + 1];
+			}
+		}
+		return null;
+	}
+
+	// by reference
+	getTagBefore(tag) {
+		for (let i = 0; i < this.tags.length; i++) {
+			if (this.tags[i] == tag && i >= 1) {
+				return this.tags[i - 1];
+			}
+		}
+		return null;
 	}
 
 	clearTags() {
@@ -323,7 +370,7 @@ class Nex {
 		};
 	}
 
-	renderInto(renderNode, renderFlags) {
+	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		if (!(renderFlags & RENDER_FLAG_RERENDER)) {
 			this._setClickHandler(renderNode);
@@ -344,7 +391,7 @@ class Nex {
 	}
 
 	// actually is a domNode, not a renderNode
-	renderTags(domNode, renderFlags) {
+	renderTags(domNode, renderFlags, editor) {
 		if (
 			(renderFlags & RENDER_FLAG_SHALLOW)
 			&& (renderFlags & RENDER_FLAG_RERENDER)) {

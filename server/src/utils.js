@@ -51,6 +51,10 @@ function isDocElement(n) {
 	return isDoc(n) || isLine(n) || isWord(n) || isLetter(n) || isSeparator(n);
 }
 
+function isDocContainerType(n) {
+	return isDoc(n) || isLine(n) || isWord(n);
+}
+
 function isExpectation(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 if (!n) return false;
@@ -100,7 +104,7 @@ function isNexContainer(n) {
 function isEString(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n) return false;
-	return n.getTypeName() == '-estring-';
+	return n.getTypeName() == '-string-';
 }
 
 function isCommand(n) {
@@ -146,6 +150,7 @@ export {
 	isFatalError,
 	isInDocContext,
 	isDocElement,
+	isDocContainerType,
 	isExpectation,
 	isDoc,
 	isLine,

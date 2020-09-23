@@ -28,7 +28,7 @@ const foreignGlobalData = new ForeignGlobalData();
 
 function createNativeOrgs() {
 	// this works
-	templateStore.bindForeignClosure('alert', ' =a', function(a) {
+	templateStore.bindForeignClosure('alert', ' =a', 'pops up an alert.', function(a) {
 		alert(a[0].prettyPrint());
 	});
 
@@ -37,6 +37,7 @@ function createNativeOrgs() {
 			{
 				'name': 'show',
 				'args': '^ a$',
+				'docs': 'shows a notification with |a in it.',
 				'func': function(a) {
 					Notification.requestPermission().then(function (permission) {
 			    		if (permission === "granted") {
@@ -61,6 +62,7 @@ function createNativeOrgs() {
 			{
 				'name': ':init',
 				'args': '^ w# h#',
+				'docs': 'initializes the Canvas.',
 				'func': function(args) {
 					// we don't want the contents of the canvas to get destroyed in between calls to draw
 					// so we store the node in private data and re-append every time we draw
@@ -97,16 +99,17 @@ function createNativeOrgs() {
 					}
 
 					this.setStrokeFromColor = function(color) {
+						let t, r, g, b;
 						if (color.length == 4) {
-							let t = color[0] / 256.0;
-		 					let r = color[1];
-							let g = color[2];
-							let b = color[3];							
+							t = color[0] / 256.0;
+		 					r = color[1];
+							g = color[2];
+							b = color[3];							
 						} else {
-							let t = 1.0;
-		 					let r = color[0];
-							let g = color[1];
-							let b = color[2];
+							t = 1.0;
+		 					r = color[0];
+							g = color[1];
+							b = color[2];
 						}
 						this.ctx.globalAlpha = t;
 						this.ctx.strokeStyle = '#' + this.toHex(r) + this.toHex(g) + this.toHex(b);
@@ -116,6 +119,7 @@ function createNativeOrgs() {
 			{
 				'name': 'dot',
 				'args': '^ color() x# y#',
+				'docs': 'draws a dot with color |color at |x and |y.',
 				'func': function(args) {
 					this.setFillFromColor(args[0]);
 					let x = args[1];
@@ -126,6 +130,7 @@ function createNativeOrgs() {
 			{
 				'name': 'rect',
 				'args': '^ color() x# y# w# h#',
+				'docs': 'draws a rectangle with color |color at |x, |y with width |w and height |h.',
 				'func': function(args) {
 					this.setFillFromColor(args[0]);
 					let x = args[1];
@@ -138,6 +143,7 @@ function createNativeOrgs() {
 			{
 				'name': 'line',
 				'args': '^ color() a0# a1# a2# a3#',
+				'docs': 'draws a line with color |color from point |a0, |a1 to point |a2, |a3.',
 				'func': function(args) {
 					this.setStrokeFromColor(args[0]);
 					this.ctx.beginPath();
@@ -149,6 +155,7 @@ function createNativeOrgs() {
 			{
 				'name': 'fill-background',
 				'args': '^ color()',
+				'docs': 'fills the background of the canvas with color |color.',
 				'func': function(args) {
 					let color = args[0];
 					let r = color[0];
@@ -174,6 +181,7 @@ function createNativeOrgs() {
 			{
 				'name': ':init',
 				'args': '',
+				'docs': 'initializes the oscillator.',
 				'func': function(args) {
 					// I want to make it so that this works if you
 					// instantiate it as a standalone, but also
@@ -198,6 +206,7 @@ function createNativeOrgs() {
 			{
 				'name': 'setFreq',
 				'args': ' f#',
+				'docs': 'sets the frequency of the oscillator to |f.',
 				'func': function(args) {
 					this.oscillator.frequency.setValueAtTime(args[0], foreignGlobalData.audioCtx.currentTime);
 				}

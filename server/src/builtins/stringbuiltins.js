@@ -33,7 +33,8 @@ function createStringBuiltins() {
 				r += s;
 			}
 			return new EString(r);
-		}
+		},
+		'concatenates the passed-in strings and returns the result.'
 	);
 
 	Builtin.createBuiltin(
@@ -47,7 +48,8 @@ function createStringBuiltins() {
 			}
 			let c = s.charAt(n);
 			return new EString(c);
-		}
+		},
+		'returns the character in |str at index position |pos.'
 	);
 
 	Builtin.createBuiltin(
@@ -58,7 +60,8 @@ function createStringBuiltins() {
 			let tofind = env.lb('tofind').getFullTypedValue();
 			let i = s.indexOf(tofind);
 			return new Integer(i);
-		}
+		},
+		'returns the index position of |tofind in |str.'
 	);
 
 	Builtin.createBuiltin(
@@ -72,7 +75,8 @@ function createStringBuiltins() {
 				r = `${r}${i > 0 ? on : ''}${lst.getChildAt(i).getFullTypedValue()}`;
 			}
 			return new EString(r);
-		}
+		},
+		'joins the string elements of |strs into a single string on the separator |on.'
 	);
 
 	Builtin.createBuiltin(
@@ -82,7 +86,8 @@ function createStringBuiltins() {
 			let s = env.lb('str').getFullTypedValue();
 			let len = s.length;
 			return new Integer(len);
-		}
+		},
+		'returns the length of (number of characters in) |str'
 	);
 
 	Builtin.createBuiltin(
@@ -97,7 +102,8 @@ function createStringBuiltins() {
 				r.appendChild(cc);
 			}
 			return r;
-		}
+		},
+		'turns a string into a list of strings of one-letter each, one for each letter in |str.'
 	);
 
 	Builtin.createBuiltin(
@@ -113,7 +119,8 @@ function createStringBuiltins() {
 				lst.appendChild(strnex);
 			}
 			return lst;
-		}
+		},
+		'splits |str into separate strings on the separator |on.'
 	);
 
 	Builtin.createBuiltin(
@@ -125,8 +132,10 @@ function createStringBuiltins() {
 			let len = env.lb('len').getTypedValue();
 			let s = str.substr(start, len);
 			return new EString(s);
-		}
-	);}
+		},
+		'retrieves a substring of |str that is |len characters long starting at |start'
+	);
+}
 
 export { createStringBuiltins }
 

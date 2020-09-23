@@ -175,6 +175,7 @@ function setup() {
 	// note this is duplicated in undo.js
 	let rootnex = new Root(true /* attached */);
 	root = new RenderNode(rootnex);
+	document.vodkaroot = root; // for debugging in chrome dev tools
 	let rootDomNode = document.getElementById('mixroot');
 	root.setDomNode(rootDomNode);
 	systemState.setRoot(root);

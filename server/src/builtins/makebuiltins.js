@@ -54,7 +54,8 @@ function createMakeBuiltins() {
 				}
 			}
 			return cmd;
-		}
+		},
+		'creates a new command containing the args as children.'
 	);
 
 	Builtin.createBuiltin(
@@ -67,7 +68,8 @@ function createMakeBuiltins() {
 				r.appendChild(args.getChildAt(i));
 			}
 			return r;
-		}
+		},
+		'creates a new doc containing the args as children.'
 	);
 
 	Builtin.createBuiltin(
@@ -81,7 +83,8 @@ function createMakeBuiltins() {
 				r.appendChild(c);
 			}
 			return r;
-		}
+		},
+		'creates a new expectation containing the args as children.'
 	);
 
 	Builtin.createBuiltin(
@@ -95,7 +98,8 @@ function createMakeBuiltins() {
 				r.appendChild(c);
 			}
 			return r;
-		}
+		},
+		'creates a new lambda containing the args as children.'
 	);
 
 	Builtin.createBuiltin(
@@ -108,7 +112,8 @@ function createMakeBuiltins() {
 				r.appendChild(args.getChildAt(i));
 			}
 			return r;
-		}
+		},
+		'creates a new line containing the args as children.'
 	);
 
 	Builtin.createBuiltin(
@@ -121,7 +126,8 @@ function createMakeBuiltins() {
 				r.appendChild(args.getChildAt(i));
 			}
 			return r;
-		}
+		},
+		'creates a new word containing the args as children.'
 	);
 
 	Builtin.createBuiltin(
@@ -134,7 +140,8 @@ function createMakeBuiltins() {
 				r.appendChild(args.getChildAt(i));
 			}
 			return r;
-		}
+		},
+		'creates a new zlist containing the args as children.'
 	);
 
 	Builtin.createBuiltin(
@@ -147,7 +154,8 @@ function createMakeBuiltins() {
 				r.appendChild(args.getChildAt(i));
 			}
 			return r;
-		}
+		},
+		'creates a new org containing the args as children.'
 	);
 
 	Builtin.createBuiltin(
@@ -159,7 +167,8 @@ function createMakeBuiltins() {
 			r.setErrorType(ERROR_TYPE_FATAL);
 			r.suppressNextCatch();
 			return r;
-		}
+		},
+		'creates a new (fatal) error with |str as the description.'
 	);
 
 	Builtin.createBuiltin(
@@ -170,7 +179,8 @@ function createMakeBuiltins() {
 			let r = new EError(str.getFullTypedValue());
 			r.setErrorType(ERROR_TYPE_WARN);
 			return r;
-		}
+		},
+		'creates a new warning (an error with type WARN) with |str as the description.'
 	);
 
 	Builtin.createBuiltin(
@@ -181,7 +191,8 @@ function createMakeBuiltins() {
 			let r = new EError(str.getFullTypedValue());
 			r.setErrorType(ERROR_TYPE_INFO);
 			return r;
-		}
+		},
+		'creates a new info (an error with type INFO) with |str as the description.'
 	);
 }
 

@@ -27,74 +27,70 @@ import { ContentsTaggedLikeContract } from '../contract.js'
 function createContractBuiltins() {
 	Builtin.createBuiltin(
 		'must-be',
-		[ 'tag^', 'nex' ],
+		[ 'nix^', 'nex' ],
 		function(env, executionEnvironment) {
-			// enforces that the tag can only be applied to
-			// nexes that have the same type as the passed-in arg
-			let nil = env.lb('tag');
+			let nix = env.lb('nix');
 			let nex = env.lb('nex');
-			if (nil.numTags() != 1) {
-				return new EError('tag-must-be: cannot set up contract, first arg needs exactly one tag')
+			if (nix.numTags() != 1) {
+				return new EError('must-be: cannot set up contract, nix needs exactly one tag')
 			}
-			let tag = nil.getTag(0);
+			let tag = nix.getTag(0);
 			let contract = new IdentityContract(nex.getID());
 			contractEnforcer.createContract(tag, contract);
 			return nex;
-		}
+		},
+		'ensures that the nix tag can only be applied to |nex.'
 	);
 
 	Builtin.createBuiltin(
 		'must-have-type-of',
-		[ 'tag^', 'nex' ],
+		[ 'nix^', 'nex' ],
 		function(env, executionEnvironment) {
-			// enforces that the tag can only be applied to
-			// nexes that have the same type as the passed-in arg
-			let nil = env.lb('tag');
+			let nix = env.lb('nix');
 			let nex = env.lb('nex');
-			if (nil.numTags() != 1) {
-				return new EError('tag-must-be: cannot set up contract, first arg needs exactly one tag')
+			if (nix.numTags() != 1) {
+				return new EError('tag-must-be: cannot set up contract, nix needs exactly one tag')
 			}
-			let tag = nil.getTag(0);
+			let tag = nix.getTag(0);
 			let contract = new SimpleTypeContract(nex.getTypeName());
 			contractEnforcer.createContract(tag, contract);
 			return nex;
-		}
+		},
+		'ensures that anything with the nix tag must have the same type as |nex.'
 	);
 
 	Builtin.createBuiltin(
 		'must-have-contents-tagged-like',
-		[ 'tag^', 'org()' ],
+		[ 'nix^', 'org()' ],
 		function(env, executionEnvironment) {
-			// enforces that the tag can only be applied to orgs
-			// that have the same number of children, of the same data types.
-			let nil = env.lb('tag');
+			let nix = env.lb('nix');
 			let org = env.lb('org');
-			if (nil.numTags() != 1) {
-				return new EError('must-have-contents-tagged-like: cannot set up contract, first arg needs exactly one tag')
+			if (nix.numTags() != 1) {
+				return new EError('must-have-contents-tagged-like: cannot set up contract, nix needs exactly one tag')
 			}
-			let tag = nil.getTag(0);
+			let tag = nix.getTag(0);
 			let contract = new ContentsTaggedLikeContract(org);
 			contractEnforcer.createContract(tag, contract);
 			return org;
-		}
+		},
+		'ensures that anything with the nix tag must have the same number of children as |org, and those children must be tagged the same way.'
 	);
 
 	Builtin.createBuiltin(
 		'must-have-contents-like',
-		[ 'tag^', 'org()' ],
+		[ 'nix^', 'org()' ],
 		function(env, executionEnvironment) {
-			// enforces that the tag can only be applied to orgs
-			// that have the same number of children, of the same data types.
-			let nil = env.lb('tag');
+			let nix = env.lb('nix');
 			let org = env.lb('org');
-			if (nil.numTags() != 1) {
-				return new EError('must-have-contents-like: cannot set up contract, first arg needs exactly one tag')
+			if (nix.numTags() != 1) {
+				return new EError('must-have-contents-like: cannot set up contract, nix needs exactly one tag')
 			}
-			let tag = nil.getTag(0);
+			let tag = nix.getTag(0);
 			let contract = new ContentsLikeContract(org);
 			contractEnforcer.createContract(tag, contract);
 			return org;
-		}
+		},
+		'ensures that anything with the nix tag must have the same number of children as |org, and those children must have the same types.'
 	);
 }
 

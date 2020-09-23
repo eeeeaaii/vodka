@@ -51,7 +51,8 @@ function createAsyncBuiltins() {
 			let exp1 = env.lb('exp1');
 			exp1.activate();
 			return exp1; // or 2?
-		}
+		},
+		'activates the expectation.'
 	);
 
 
@@ -67,7 +68,8 @@ function createAsyncBuiltins() {
 				exp.cancel();
 				return exp;
 			}
-		}
+		},
+		'cancels the optional argument |exp (it will never fulfill), or, if no args, cancels all unfulfilled expectations.'
 	);
 
 	Builtin.createBuiltin(
@@ -76,7 +78,8 @@ function createAsyncBuiltins() {
 		function(env, executionEnvironment) {
 			eventQueueDispatcher.enqueueGC();
 			return new Nil();
-		}
+		},
+		'attempts to cancel any unfulfilled expectations that are not visible on the screen.'
 	);
 
 	Builtin.createBuiltin(
@@ -90,15 +93,16 @@ function createAsyncBuiltins() {
 			} else {
 				return c;
 			}
-		}
+		},
+		'retrieves the fulfill-function for |exp (or nil, if it doesn\'t have one).'
 	);
 
 
 	Builtin.createBuiltin(
 		'ff-with',
-		[ 'exp*', 'any' ],
+		[ 'exp*', 'val' ],
 		function(env, executionEnvironment) {
-			let ff = env.lb('any');
+			let ff = env.lb('val');
 			if (ff.getTypeName() != '-closure-') {
 				let argstring = ' a';
 				let children = [ ff ];
@@ -108,7 +112,8 @@ function createAsyncBuiltins() {
 			let exp = env.lb('exp');
 			exp.ffWith(ff, executionEnvironment);
 			return exp;
-		}
+		},
+		'sets the fulfill-function of |exp to be |val (if it\'s a closure), or a closure that returns |val (if it\'s not).'
 	);
 
 	Builtin.createBuiltin(
@@ -118,7 +123,8 @@ function createAsyncBuiltins() {
 			let exp = env.lb('exp');
 			exp.reset();
 			return exp;
-		}
+		},
+		'if |exp has been fulfilled, resets it so that it can be activated again.'
 	);
 
 	Builtin.createBuiltin(
@@ -140,7 +146,8 @@ function createAsyncBuiltins() {
 				}
 			});
 			return exp;
-		}
+		},
+		'sets |exp to fulfill when clicked on.'
 	);
 
 	Builtin.createBuiltin(
@@ -157,7 +164,8 @@ function createAsyncBuiltins() {
 				}
 			});
 			return exp;
-		}
+		},
+		'sets |exp to fulfill after the specified delay.'
 	);
 
 	Builtin.createBuiltin(
@@ -171,7 +179,8 @@ function createAsyncBuiltins() {
 				}
 			});
 			return exp;
-		}
+		},
+		'sets |exp to fulfill immediately.'
 	);
 
 }

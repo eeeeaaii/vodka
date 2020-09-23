@@ -16,7 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-const ESTRING_LIMIT = 20;
+const ESTRING_LIMIT = Infinity;
 const MODE_NORMAL = 1;
 const MODE_EXPANDED = 2;
 const QUOTE_ESCAPE = 'QQQQ'
@@ -145,9 +145,9 @@ class EString extends ValueNex {
 		}
 	}
 
-	renderInto(renderNode, renderFlags) {
+	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
-		super.renderInto(renderNode, renderFlags);
+		super.renderInto(renderNode, renderFlags, withEditor);
 		// this one always can rerender because it's not a container
 		// we only need to care about rerenders when it's a container type
 		domNode.innerHTML = this.prefix;

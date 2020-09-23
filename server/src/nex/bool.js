@@ -15,8 +15,6 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-
 import { ValueNex } from './valuenex.js'
 import { isNormallyHandled } from '../keyresponsefunctions.js'
 import { experiments } from '../globalappflags.js'
@@ -57,7 +55,6 @@ class Bool extends ValueNex {
 		return '!' + this.toStringV2TagList() + this.renderValue();
 	}
 
-
 	getTypedValue() {
 		return this.value === 'yes';
 	}
@@ -78,8 +75,8 @@ class Bool extends ValueNex {
 		}
 	}
 
-	renderInto(renderNode, renderFlags) {
-		super.renderInto(renderNode, renderFlags);
+	renderInto(renderNode, renderFlags, withEditor) {
+		super.renderInto(renderNode, renderFlags, withEditor);
 		let domNode = renderNode.getDomNode();
 		if (this.isEditing) {
 			domNode.classList.add('editing');
@@ -94,7 +91,6 @@ class Bool extends ValueNex {
 				// these 2 are questionable but make tests pass?
 				'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
 				'Backspace': 'remove-selected-and-select-previous-leaf-v2',
-//				'Enter': 'do-line-break-always',
 			}
 		} else {
 			return {
@@ -109,7 +105,7 @@ class Bool extends ValueNex {
 
 class BoolEditor extends Editor {
 	constructor(nex) {
-		super(nex);
+		super(nex, 'BoolEditor');
 	}
 
 	hasContent() {
@@ -140,6 +136,4 @@ class BoolEditor extends Editor {
 	}
 }
 
-
 export { Bool, BoolEditor }
-

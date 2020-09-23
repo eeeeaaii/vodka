@@ -27,7 +27,7 @@ class Closure extends ValueNex {
 	constructor(lambda, lexicalEnvironment, name) {
 		super('', '&', name ? name : 'closure')
 		this.lambda = lambda;
-		this.cmdname = '(name not set)';
+		this.cmdname = '|';
 		this.lexicalEnvironment = lexicalEnvironment;
 		this.boundName = null;
 	}
@@ -105,22 +105,32 @@ class Closure extends ValueNex {
 		return this.cmdname;
 	}
 
+	getDocString() {
+		return this.getLambda().getDocString();
+	}
+
 	getArgEvaluator(cmdname, argContainer, executionEnvironment) {
 		return new BuiltinArgEvaluator(cmdname, this.lambda.paramsArray, argContainer, executionEnvironment);
 	}
 
 	renderValue() {
-		let r = this.cmdname + '\n';
-		r += 'CODE : ' + this.getLambdaDebugString() + '\n';
+		let r = this.cmdname;
+		for (let i = 0; i < this.numTags(); i++) {
+			r += '[' + this.getTag(i).getName(i) + ']';
+		}
+		r += '\n';
+		r += '  ' + this.getDocString() + '\n';
+		r += ' ' + this.getLambdaDebugString() + '\n';
 		if (this.lexicalEnvironment == BUILTINS) {
-			r += 'LEXENV : BUILTINS\n';
+			r += '  BUILTINS\n';
 		} else if (this.lexicalEnvironment == BINDINGS) {
-			r += 'LEXENV : BINDINGS\n';
+			r += '  BINDINGS\n';
 		} else {
-			r += 'LEXENV :\n';
+			r += '  {\n';
 			this.lexicalEnvironment.doForEachBinding(function(binding) {
-				r += '   ' + binding.name + ' : ' + binding.val.debugString() + '\n';
+				r += '    ' + binding.name + ': ' + binding.val.debugString() + '\n';
 			})
+			r += '  }';
 		}
 		return r;
 	}
@@ -158,7 +168,4 @@ class Closure extends ValueNex {
 	}
 }
 
-
-
 export { Closure }
-

@@ -55,7 +55,8 @@ function createFileBuiltins() {
 			// is easier.
 			exp.activate();
 			return exp;
-		}
+		},
+		'imports the package in file |name, loading the file and binding the package contents into memory.'
 	);
 
 	// this could be a util function I guess
@@ -95,7 +96,8 @@ function createFileBuiltins() {
 						"n",
 						toReturn));
 			return evaluateNexSafely(cmd, executionEnvironment);
-		}
+		},
+		'imports the packages named in the args one after the other, and then executes the last arg with those packages imported and loaded.'
 	);
 
 	Builtin.createBuiltin(
@@ -116,7 +118,8 @@ function createFileBuiltins() {
 			loadingMessage.setErrorType(ERROR_TYPE_INFO);
 			exp.appendChild(loadingMessage)
 			return exp;
-		}
+		},
+		'loads the file |name.'
 	);
 
 	Builtin.createBuiltin(
@@ -134,7 +137,8 @@ function createFileBuiltins() {
 			}
 			BINDINGS.setPackageForBinding(null);
 			return new Nil();
-		}
+		},
+		'creates a package named |name (all bindings in |nex will be bound with the package name as their scope identifier).'
 	);
 
 	// run it AND save it *mind=blown*
@@ -174,7 +178,8 @@ function createFileBuiltins() {
 			savingMessage.setErrorType(ERROR_TYPE_INFO);
 			exp.appendChild(savingMessage)
 			return exp;
-		}
+		},
+		'creates the package |name, and also saves it in the the file "|name-functions".'
 	);
 
 	
@@ -198,7 +203,8 @@ function createFileBuiltins() {
 			savingMessage.setErrorType(ERROR_TYPE_INFO);
 			exp.appendChild(savingMessage)
 			return exp;
-		}
+		},
+		'saves |nex in the file |name.'
 	);
 
 
@@ -212,7 +218,8 @@ function createFileBuiltins() {
 			}
 			executionEnvironment.usePackage(packageName);
 			return new Nil();
-		}
+		},
+		'makes it so bindings in the package |name can be dereferenced without the package identifier (effect lands for the remainder of the current scope).'
 	);	
 
 	Builtin.createBuiltin(
@@ -242,7 +249,8 @@ function createFileBuiltins() {
 				}
 			}
 			return result;
-		}
+		},
+		'makes it so bindings in the packages in |namelist can be dereferenced without the package identifier when evaluating the rest of the arguments.'
 	);	
 
 

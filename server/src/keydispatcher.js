@@ -39,6 +39,10 @@ class KeyDispatcher {
 
 		if (experiments.V2_INSERTION) {
 			if (eventName == 'NakedShift') {
+				// if we get a naked shift while editing, we leave the editor.
+				if (systemState.getGlobalSelectedNode().usingEditor()) {
+					systemState.getGlobalSelectedNode().forceCloseEditor();
+				}
 				systemState.getGlobalSelectedNode().nextInsertionMode();
 				return false;
 			}

@@ -15,19 +15,19 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-var recording = false;
-var firstKeyUp = true; // ignore first key up of recorded session because it's the esc key
-var recorded_session = `
+let recording = false;
+let firstKeyUp = true; // ignore first key up of recorded session because it's the esc key
+let recorded_session = `
 var harness = require('../testharness');
 
 var testactions = [];
 
 `
 
-var session_end = `
+let session_end = `
 harness.runTestNew(testactions, 'direct');
 `
-var shorthand = '';
+let shorthand = '';
 
 function captureRecording() {
 	let session_output = `//testspec// ${shorthand}
@@ -47,7 +47,7 @@ const RECORDING             = 7;
 const RECORDING_DONE_EXPECTING_UP    = 8;
 const RECORDING_DONE    = 9;
 
-var state = EXPECTING_FIRST_DOWN;
+let state = EXPECTING_FIRST_DOWN;
 
 function checkRecordState(event, type) {
 	let kc = event.code;
@@ -117,6 +117,9 @@ function checkRecordState(event, type) {
 			if (kc == 'Escape' && type == 'up') {
 				state = RECORDING_DONE;
 				captureRecording();
+				setTimeout(function() {
+					alert('finished recording test.' + recorded_session);
+				}, 1);
 			} else {
 				state = WILL_NOT_RECORD;
 			}
@@ -124,6 +127,10 @@ function checkRecordState(event, type) {
 		case RECORDING_DONE:
 			break;
 	}
+}
+
+function isRecordingTest() {
+	return recording;
 }
 
 function logMouseEvent(e) {
@@ -143,5 +150,5 @@ function logKeyUpEvent(e) {
 `;	
 }
 
-export { checkRecordState }
+export { checkRecordState, isRecordingTest }
 

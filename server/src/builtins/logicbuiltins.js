@@ -31,7 +31,8 @@ function createLogicBuiltins() {
 		[ 'val1!', 'val2!' ],
 		function(env, executionEnvironment) {
 			return new Bool(env.lb('val1').getTypedValue() && env.lb('val2').getTypedValue());
-		}
+		},
+		'returns true if both |val1 and |val2 evaluate to boolean true.'
 	)
 
 	Builtin.createBuiltin(
@@ -47,7 +48,8 @@ function createLogicBuiltins() {
 				}
 			}
 			return new Nil();
-		}
+		},
+		'returns the first argument that does not evaluate to nil, ignoring the rest.'
 	)
 
 	Builtin.aliasBuiltin('case', 'first-non-nil');
@@ -74,7 +76,8 @@ function createLogicBuiltins() {
 				}
 				return iffalseresult;
 			}
-		}
+		},
+		'evalutes |cond, and if it is true, return |iftrue, otherwise return |iffalse (if it is present) or nil (if it isn\'t).'
 	)
 
 	Builtin.aliasBuiltin('if-then-else', 'if');
@@ -85,7 +88,8 @@ function createLogicBuiltins() {
 		[ 'val!' ],
 		function(env, executionEnvironment) {
 			return new Bool(!env.lb('val').getTypedValue());
-		}
+		},
+		'evalutes to true if |val evaluates to false, or false if |val evaluates to true.'
 	)
 
 
@@ -94,7 +98,8 @@ function createLogicBuiltins() {
 		[ 'val1!', 'val2!' ],
 		function(env, executionEnvironment) {
 			return new Bool(env.lb('val1').getTypedValue() || env.lb('val2').getTypedValue());
-		}
+		},
+		'evaluates to true if either or both of |val1 or |val2 evaluate to true.'
 	)
 
 

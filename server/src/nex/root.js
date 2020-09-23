@@ -31,6 +31,10 @@ class Root extends NexContainer {
 		return r;
 	}
 
+	prettyPrintInternal(lvl, hdir) {
+		return this.standardListPrettyPrint(lvl, 'ROOT: ', false);
+	}
+
 	getTypeName() {
 		return '-root-';
 	}
@@ -50,9 +54,9 @@ class Root extends NexContainer {
 		return ContextType.COMMAND;
 	}
 
-	renderInto(renderNode, renderFlags) {
+	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
-		super.renderInto(renderNode, renderFlags);
+		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('root');
 	}
 

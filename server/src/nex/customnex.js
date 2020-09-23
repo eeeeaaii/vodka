@@ -48,12 +48,12 @@ class CustomNex extends Nex {
 		return '[name]'
 	}
 
-	renderInto(renderNode, renderFlags) {
+	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		if (this.drawcommand) {
 			this.drawcommand(this);
 		}
-		super.renderInto(renderNode, renderFlags);
+		super.renderInto(renderNode, renderFlags, withEditor);
 
 	}
 

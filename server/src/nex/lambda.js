@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from '../utils.js'
+
 import { ContextType } from '../contexttype.js';
 import { NexContainer } from './nexcontainer.js';
 import { ParamParser } from '../paramparser.js';
@@ -52,6 +54,33 @@ class Lambda extends NexContainer {
 		}
 	}
 
+	hasDocStringInFirstPosition() {
+		return this.numChildren() > 0 && (
+			Utils.isDocContainerType(this.getChildAt(0))
+			|| Utils.isEString(this.getChildAt(0)));
+	}
+
+	getDocStringValue() {
+		let c = this.getChildAt(0);
+		if (Utils.isDocContainerType(c)) {
+			let r = c.getValueAsString();
+			if (typeof(r) == 'string') {
+				return r;
+			} else {
+				return '-invalid doc string-';
+			}
+		} else { //should be an estring
+			return c.getFullTypedValue();
+		}
+	}
+
+	getDocString() {
+		if (this.hasDocStringInFirstPosition()) {
+			return this.getDocStringValue();
+		} else {
+			return '-no doc string-'
+		}
+	}
 
 	copyFieldsTo(r) {
 		super.copyFieldsTo(r);
@@ -88,6 +117,19 @@ class Lambda extends NexContainer {
 		return `&"${this.amptext}"${this.vdir ? 'v' : 'h'}(${super.childrenToString()}&)`;
 	}
 
+	// overridden because we shouldn't pretty print the doc string, it's going to look
+	// like garbage and most of the time we'll be seeing it anyway, since we'll be looking at
+	// a closure in the interface.
+	prettyPrintChildren(lvl) {
+		let i = (this.hasDocStringInFirstPosition() ? 1 : 0);
+		let r = '';
+		for (; i < this.numChildren() ; i++) {
+			let c = this.getChildAt(i);
+			r += c.prettyPrintInternal(lvl, !this.vdir); // exp
+		}
+		return r;		
+	}
+
 	toStringV2() {
 		return `&${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
@@ -103,7 +145,6 @@ class Lambda extends NexContainer {
 	serializePrivateData() {
 		return this.amptext;
 	}
-
 
 	debugString() {
 		return `(&${this.amptext} ${super.childrenDebugString()})`;
@@ -121,7 +162,7 @@ class Lambda extends NexContainer {
 		return '&#8907;';
 	}
 
-	renderInto(renderNode, renderFlags) {
+	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		let codespan = null;
 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
@@ -129,7 +170,7 @@ class Lambda extends NexContainer {
 			codespan.classList.add('codespan');
 			domNode.appendChild(codespan);
 		}
-		super.renderInto(renderNode, renderFlags);
+		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('lambda');
 		domNode.classList.add('codelist');
 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
@@ -252,7 +293,7 @@ class Lambda extends NexContainer {
 class LambdaEditor extends Editor {
 
 	constructor(nex) {
-		super(nex);
+		super(nex, 'LambdaEditor');
 	}
 
 	doBackspaceEdit() {

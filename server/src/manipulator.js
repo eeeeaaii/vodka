@@ -18,7 +18,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 var CLIPBOARD = null;
 
 import * as Utils from './utils.js'
-
 import { systemState } from './systemstate.js'
 import { Nex } from './nex/nex.js' 
 import { Root } from './nex/root.js' 
@@ -42,6 +41,7 @@ import { Separator } from './nex/separator.js'
 import { Nil } from './nex/nil.js' 
 import { Newline } from './nex/newline.js' 
 import { experiments } from './globalappflags.js'
+import { isRecordingTest } from './testrecorder.js'
 // V2_INSERTION
 import {
 	INSERT_UNSPECIFIED,
@@ -752,7 +752,7 @@ class Manipulator {
 
 		let toDel = this.selected();
 		let r = (
-			this.attemptToRemoveLastItemInCommand(true /* hacks are great */)
+			this.attemptToRemoveLastItemInCommand()
 			||
 			(this.selectPreviousLeaf() || this.selectParent())
 			&&
@@ -1429,18 +1429,14 @@ class Manipulator {
 		return r;
 	}
 
-	attemptToRemoveLastItemInCommand(hacksAreGreat) {
+	attemptToRemoveLastItemInCommand() {
 		let p = (systemState.getGlobalSelectedNode()).getParent();
 		if (!p) return false;
 		if (p.numChildren() == 1 && Utils.isCodeContainer(p)) {
 			if (!this.removeNex((systemState.getGlobalSelectedNode()))) return false;
 			p.setSelected();
-			if (!hacksAreGreat) {
-				this.appendAndSelect(new InsertionPoint());				
-			} else {
-				if (experiments.V2_INSERTION) {
-					this._forceInsertionMode(INSERT_INSIDE, p);
-				}
+			if (experiments.V2_INSERTION) {
+				this._forceInsertionMode(INSERT_INSIDE, p);
 			}
 			return true;
 		}
@@ -1693,7 +1689,9 @@ class Manipulator {
 	// used in keydispatcher.js
 	doCut() {
 		CLIPBOARD = systemState.getGlobalSelectedNode().getNex();
-		this.copyTextToSystemClipboard(CLIPBOARD.prettyPrint());
+		if (!isRecordingTest()) {
+			this.copyTextToSystemClipboard(CLIPBOARD.prettyPrint());
+		}
 		let x = systemState.getGlobalSelectedNode();
 		this.selectPreviousSibling() || this.selectParent();		
 		this.removeNex(x);
@@ -1702,7 +1700,9 @@ class Manipulator {
 	// used in keydispatcher.js
 	doCopy() {
 		CLIPBOARD = systemState.getGlobalSelectedNode().getNex();
-		this.copyTextToSystemClipboard(CLIPBOARD.prettyPrint());
+		if (!isRecordingTest()) {
+			this.copyTextToSystemClipboard(CLIPBOARD.prettyPrint());
+		}
 	}
 
 	// used in keydispatcher.js

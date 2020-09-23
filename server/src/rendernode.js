@@ -55,11 +55,13 @@ class RenderNode {
 		this.parentalfigure = null;
 		this.indexinparentalfigure = -1;
 		this.childnodes = [];
+		this.wrapperDomNodes = [];
 		this.domNode = document.createElement("div");
 		this.isCurrentlyExploded = false;
 		this.explodedOverride = -1;
 		this.firstToggleOnNexRender = false;
 		this.currentEd = null;
+		this.wrapperDomNode = null;
 
 		if (experiments.V2_INSERTION) {
 			this.setInsertionMode(INSERT_UNSPECIFIED);
@@ -341,7 +343,7 @@ class RenderNode {
 			case INSERT_AROUND: useFlags |= RENDER_FLAG_INSERT_AROUND; break;
 		}
 
-		this.nex.renderInto(this, useFlags);
+		this.nex.renderInto(this, useFlags, this.getCurrentEditor());
 		this.nex.doRenderSequencing(this);
 		this.isCurrentlyExploded = !!(renderFlags & RENDER_FLAG_EXPLODED);
 
@@ -388,10 +390,11 @@ class RenderNode {
 				// need to append child before drawing so things like focus() work right
 				if (experiments.V2_INSERTION) {
 					if ((renderFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_AROUND) {
-						let aroundNode = this.getInsertionPointDomNode(childRenderNode.insertionMode);
-						this.domNode.appendChild(aroundNode);
-						aroundNode.appendChild(childRenderNode.getDomNode());
+						this.wrapperDomNodes[i] = this.getInsertionPointDomNode(childRenderNode.insertionMode);
+						this.domNode.appendChild(this.wrapperDomNodes[i]);
+						this.wrapperDomNodes[i].appendChild(childRenderNode.getDomNode());
 					} else {
+						this.wrapperDomNodes[i] = null;
 						this.domNode.appendChild(childRenderNode.getDomNode());
 					}
 				} else {
@@ -424,7 +427,7 @@ class RenderNode {
 				this.domNode.appendChild(postNode);
 			}
 		}
-		this.nex.renderTags(this.domNode, renderFlags);
+		this.nex.renderTags(this.domNode, renderFlags, this.getCurrentEditor());
 	}
 
 	// V2_INSERTION
@@ -601,10 +604,9 @@ class RenderNode {
 		this.childnodes.splice(i, 1);
 		this.getNex().removeChildAt(i);
 		let domNodeToRemove = r.getDomNode();
-		if (experiments.V2_INSERTION) {
-			if (r.getInsertionMode() == INSERT_AROUND) {
-				domNodeToRemove = domNodeToRemove.parentNode;
-			}
+		if (this.wrapperDomNodes[i]) {
+			domNodeToRemove = this.wrapperDomNodes[i];
+			this.wrapperDomNodes[i] = null;
 		}
 		this.getDomNode().removeChild(domNodeToRemove);
 		r.setParent(null, -1);

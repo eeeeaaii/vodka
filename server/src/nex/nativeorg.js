@@ -112,9 +112,9 @@ class NativeOrg extends Org {
 		return r;
 	}
 
-	renderInto(renderNode, renderFlags) {
+	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
-		super.renderInto(renderNode, renderFlags);
+		super.renderInto(renderNode, renderFlags, withEditor);
 		if (this.drawfunction) {
 			this.drawfunction(renderNode, renderFlags);
 		} else {

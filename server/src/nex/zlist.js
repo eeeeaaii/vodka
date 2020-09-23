@@ -58,7 +58,7 @@ class Zlist extends NexContainer {
 		return ContextType.DOC;
 	}
 
-	renderInto(renderNode, renderFlags) {
+	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		// set the height before calling super.renderInto so that the height
 		// can be overridden by apply-css-style-to
@@ -67,7 +67,7 @@ class Zlist extends NexContainer {
 		} else {
 			domNode.style.height = '0px';
 		}
-		super.renderInto(renderNode, renderFlags);
+		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('zlist');
 		domNode.classList.add('data');
 	}

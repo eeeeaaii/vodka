@@ -21,13 +21,14 @@ import { BUILTINS } from '../environment.js'
 import { PERFORMANCE_MONITOR, perfmon } from '../perfmon.js'
 
 class Builtin extends Lambda {
-	constructor(name, params, retval) {
+	constructor(name, params, retval, docstring) {
 		super();
 		this.name = name;
 		this.paramsArray = params;
 		this.returnValueParam = retval;
 		this.internaljs = null;
-		let amp = ' ' + name;
+		this.docstring = docstring ? docstring : ' - no docs - ';
+		let amp = name;
 		for (let i = 0; i < params.length; i++) {
 			amp += ' ' + params[i].name;
 		}
@@ -66,14 +67,22 @@ class Builtin extends Lambda {
 		return '&szlig;';
 	}
 
-	renderInto(renderNode, renderFlags) {
+	getDocString() {
+		return this.docstring;
+	}
+
+	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
-		super.renderInto(renderNode, renderFlags);
+		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('builtin');
 	}
 
 	setF(f) {
 		this.f = f.bind(this);
+	}
+
+	prettyPrintInternal(lvl, hdir) {
+		return ` [&]${this.toStringV2PrivateDataSection()}${this.toStringV2TagList()}`;// exp \n`;
 	}
 
 	evaluate(executionEnvironment) {
@@ -82,12 +91,12 @@ class Builtin extends Lambda {
 		return r;
 	}
 
-	static createBuiltin(name, paramsArray, f) {
+	static createBuiltin(name, paramsArray, f, docstring) {
 		let parser = new ParamParser(true /* isBuiltin */);
 		parser.parse(paramsArray);
 		let params = parser.getParams();
 		let retval = parser.getReturnValue();
-		let builtin = new Builtin(name, params, retval);
+		let builtin = new Builtin(name, params, retval, docstring);
 		if (PERFORMANCE_MONITOR) {
 			perfmon.registerMethod(name);
 		}
@@ -119,6 +128,4 @@ class Builtin extends Lambda {
 	}
 }
 
-
 export { Builtin }
-

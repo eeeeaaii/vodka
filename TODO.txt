@@ -1,39 +1,7 @@
 BUGS I FOUND WHILE TRYING TO FINISH IG3
 
-1. hitting right arrow when editing tag puts in the text ArrowRight
-4. need a way to remove and edit tags from the interface itself
-   -- fix both of these by having arrow keys switch between different tags in one element
-
-
-2. If you are in "insert around" on something like a symbol, and you hit backspace, it will not
-   delete because of a hack that I put in renderNode.removeChildAt. I remove the parent node instead
-   because I made an assumption about the circumstances under which someone would be deleting something
-   (what was the assumption?) exception here:
-    keydispatcher.js:125 Uncaught DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-        at RenderNode.removeChildAt (http://localhost:3000/rendernode.js:601:21)
-        at RenderNode.removeChild (http://localhost:3000/rendernode.js:690:15)
-        at Manipulator._deleteNode (http://localhost:3000/manipulator.js:384:5)
-        at Manipulator.removeAndSelectPreviousSiblingV2 (http://localhost:3000/manipulator.js:722:8)
-        at Object.remove-selected-and-select-previous-sibling-v2 (http://localhost:3000/keyresponsefunctions.js:722:15)
-        at KeyDispatcher.actOnFunction (http://localhost:3000/keydispatcher.js:272:27)
-        at KeyDispatcher.runFunctionFromGenericTable (http://localhost:3000/keydispatcher.js:223:17)
-        at KeyDispatcher.dispatch (http://localhost:3000/keydispatcher.js:112:14)
-        at Module.doRealKeyInput (http://localhost:3000/vodka.js:73:24)
-        at Object.do (http://localhost:3000/eventqueue.js:129:11)
-
 
 5. maybe put it back the way it was where delete goes into edit mode and deletes one char, then shift-delete while in edit mode deletes the entire contents.
-11. still getting old style insertion point when deleting a command that's inside another command
-   -- fix both of these by having backspace on commands, lambdas, etc enter into insertion mode
-
-8. I think if you paste a command with nothing in it, the insertion point should automatically be INSERT_AFTER because it's far more likely you will want to paste again next to, not inside.
-
-9. really need some form of documentation so I can deref a method name and see what it is what to pass etc, start with builtins I guess
-
-10. weird that I can change insertion point while still editing, should kill editor when doing that.
-
-12. make estring show the entire contents so that I can use them as comments
-  -- maybe keep a way to collapse them but add a "collapse button"
 
 15. when you cram text into something else via an expectation it doesn't mark it as dirty or render it - the expectation only renders itself, doesn't render other things (need a quick and dirty fix for this now but maybe should fix rendering/make more efficient)
 
@@ -54,19 +22,23 @@ Uncaught TypeError: Cannot read property 'setSelected' of null
     -- and return true/false depending on whether null. But getNextLeaf doesn't obey
     -- the line as stop point. Only commands. HRM.
 
-18. when copying, put debugString in system clipboard
-
 19. this fails:
 (_animation:fade-out-for-seconds (_set-delay (_make-expectation whatever_)_)_)
 the outer exp somehow inherits the inner exp delay?
 
-20. hitting tab when you are editing command - tab isn't rerouted but it should be
-
-7. having an "if defined" would have been nice in ig3, because then I could have said "if not defined (canvas)" and then only if not defined then define it inside the begin (sometimes I have to execute the with-imports again because of changing external dependency)
-  -- this existed and I forgot!
 
 
 
+
+IDK TO DOs
+- rename ff-of to fff-of
+- rename ff to activate
+- change set-click to ff-with-click
+- change set-delay to ff-after-delay
+- change set-immediate to ff-immediately
+- change ff-with to fff
+- change bindings/builtins to always return list
+- make and and or multi-arg not two-arg
 
 
 NEW TO-DOs AFTER TRYING THE NEW VERSION OUT
@@ -99,6 +71,7 @@ TYPE-RELATED TO DO
 - - list-must-contain-nonexclusively: must contain given tags (or types), can have others
 - - summary: something with tag Foo must have tags Bar, Baz, Qux
 - - custom (runs code to see if nex satisifies)
+- really must make sure there is no such thing as an empty tag, all hell will break loose
 (see CHANGEBLOG.txt for more info)
 
 GENERAL TESTS TO-DO (see spreadsheet for to-do info on individual tests)

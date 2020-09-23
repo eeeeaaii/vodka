@@ -36,7 +36,8 @@ function createEnvironmentBuiltins() {
 			let namestr = name.getTypedValue();
 			BINDINGS.bindInPackage(namestr, val);
 			return name;
-		}
+		},
+		'binds a new global variable named |name with a value of |nex.'
 	);
 
 	Builtin.createBuiltin(
@@ -58,7 +59,8 @@ function createEnvironmentBuiltins() {
 				}
 				return r;
 			}
-		}
+		},
+		'returns a list of all globally bound variables.'
 	);
 
 	Builtin.createBuiltin(
@@ -80,7 +82,8 @@ function createEnvironmentBuiltins() {
 				}
 				return r;
 			}
-		}
+		},
+		'returns a list of all vodka builtins.'
 	);
 
 	Builtin.createBuiltin(
@@ -101,7 +104,8 @@ function createEnvironmentBuiltins() {
 					throw e;
 				}
 			}
-		}
+		},
+		'returns true if the symbol |name is bound in the global environment.'
 	);
 
 	Builtin.createBuiltin(
@@ -116,7 +120,8 @@ function createEnvironmentBuiltins() {
 				rhs.getLexicalEnvironment().bind(symname, rhs);
 			}
 			return rhs;
-		}
+		},
+		'binds |name to |nex in the current closure\'s local scope.'
 	);
 
 	Builtin.createBuiltin(
@@ -132,7 +137,8 @@ function createEnvironmentBuiltins() {
 			}
 			executionEnvironment.set(name, rhs, tag);
 			return rhs;
-		}
+		},
+		'changes the value of |name to |nex (|name can be a local variable or globally bound symbol).'
 	);
 
 	Builtin.createBuiltin(
@@ -143,7 +149,8 @@ function createEnvironmentBuiltins() {
 			let rhs = env.lb('closure');
 			rhs.setLexicalEnvironment(executionEnvironment);
 			return rhs;
-		}
+		},
+		'replaces the lexical environment of |closure with the current lexical environment.'
 	);	
 
 }

@@ -73,9 +73,9 @@ class Doc extends NexContainer {
 		return ContextType.DOC;
 	}
 
-	renderInto(renderNode, renderFlags) {
+	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
-		super.renderInto(renderNode, renderFlags);
+		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('doc');
 		domNode.classList.add('data');
 	}
