@@ -23,7 +23,13 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { RENDER_FLAG_SELECTED, RENDER_FLAG_SHALLOW, RENDER_FLAG_NORMAL, RENDER_FLAG_RERENDER, RENDER_FLAG_EXPLODED, RENDER_FLAG_DEPTH_EXCEEDED } from '../globalconstants.js'
 import { checkRecordState } from '../testrecorder.js'
 
+/**
+ * This is the parent class for all nexes, aka pieces of vodka code, aka s-expressions.
+ */
 class Nex {
+	/**
+	 * Creates a Nex.
+	 */
 	constructor() {
 		this.lastRenderPassNumber = null;
 		this.firstRenderNode = null;

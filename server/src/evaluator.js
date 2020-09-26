@@ -23,15 +23,15 @@ import { EError } from './nex/eerror.js'
 import { BuiltinArgEvaluator } from './builtinargevaluator.js'
 import { BINDINGS } from './environment.js'
 
-// use this wrapper to handle exceptions correctly, this
-// saves us from having to put exception handling in every
-// location where we evaluate nexes.
+/** @module evaluator */
 
 /**
- * This is the main workhorse function that evaluates bits of vodka code.
+ * This is the main workhorse function that evaluates bits of vodka code. This should be used
+ * instead of calling evaluate() on a Nex directly, because it handles exceptions correctly.
  *
  * @param {Nex} nex - the code to evaluate
  * @param {Environment} executionEnvironment - the environment to use to look up symbols in the code (for example, the closure's captured scope if this code is evaluated inside a closure)
+ * @returns {Nex} what this code evaluates to (can be an error)
  */
 function evaluateNexSafely(nex, executionEnvironment, skipActivation /* TODO: remove this param */) {
 	let result;
@@ -77,6 +77,19 @@ function evaluateNexSafely(nex, executionEnvironment, skipActivation /* TODO: re
 	return result;
 }
 
+/**
+ * This function is a convenience method for the process of creating a new EError
+ * and inserting a previously existing EError as its first child. Used for
+ * creating a stack trace of EErrors. If you have some code that calls
+ * evaluateNexSafely and it returns an EError, you can use this method to wrap
+ * the returned error in another error that gives more information about where
+ * the error happened, then return the wrapped error.
+ *
+ * @param {string} prefix - a code indicating the context type where this is happening
+ * @param {string} message - the description for the new EError we are creating
+ * @param {EError} inner - the inner EError we are wrapping
+ * @returns {EError} the wrapper error
+ */
 function wrapError(prefix, message, inner) {
 	let e = new EError(message, prefix);
 	e.appendChild(inner);
@@ -84,6 +97,13 @@ function wrapError(prefix, message, inner) {
 }
 
 
+/**
+ * This method is used for when you want to evaluate the Nex inside a RenderNode
+ * and replace the RenderNode with the result of the computation. If it returns
+ * an expectation we activate it. We also emit a beep if it's an error.
+ *
+ * @param {RenderNode} s - the RenderNode to evaluate and replace (probably the selected node)
+ */
 function evaluateAndReplace(s) {
 	let n = evaluateNexSafely(s.getNex(), BINDINGS);
 	if (Utils.isFatalError(n)) {
@@ -98,6 +118,18 @@ function evaluateAndReplace(s) {
 	}
 }
 
+/**
+ * This method is used to evaluate a Nex and throw away the result. Obviously only
+ * useful if evaluating the Nex has side effects. If it returns an error, the error
+ * will be prepended to the parent of the selected node before the selected node.
+ * If an expectation is returned, it is activated.
+ *
+ * This currently has a hack where it looks for errors in the children of returned
+ * expectations. It's not clear this is the right way to do this since the expectation could have an
+ * arbitrary number of children
+ *
+ * @param {RenderNode} s = the RenderNode to evaluate
+ */
 function evaluateAndKeep(s) {
 	let n = evaluateNexSafely(s.getNex(), BINDINGS);
 	if (Utils.isFatalError(n)) {

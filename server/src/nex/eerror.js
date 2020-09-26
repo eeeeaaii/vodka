@@ -37,6 +37,11 @@ import { experiments } from '../globalappflags.js'
 import * as Utils from '../utils.js'
 
 
+/**
+ * Nex that indicates an error or exceptional condition (compare to the Exception class in Java, for example).
+ * It's a container because various diagnostic information might need to be included as a child of this Nex. In practice this is
+ * usually a lower-level error in the stack trace.
+ */
 class EError extends NexContainer {
 	constructor(val, prefix) {
 		super();

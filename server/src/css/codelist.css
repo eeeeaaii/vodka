@@ -21,7 +21,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	flex-direction: row;
 	align-items: flex-start;
 	/*border: 3px solid var(--unselected-border);*/
-	border-width: 1.5px 3.5px 1.5px 3.5px;
+	border-width: 1px 3px 1px 3px;
 	border-style: solid;
 	border-color: var(--unselected-border);
 	border-radius: 6px;	
@@ -35,7 +35,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 .codelist.exploded.vdir {
 	flex-direction: column;
-	border-width: 3.5px 1.5px 3.5px 1.5px;
+	border-width: 3px 1px 3px 1px;
 	padding: 0px 5px 2px 5px;
 }
 

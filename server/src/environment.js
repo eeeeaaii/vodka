@@ -23,7 +23,18 @@ import { EError } from './nex/eerror.js'
 import { NexContainer } from './nex/nexcontainer.js'
 import { systemState } from './systemstate.js'
 
+/** @module environment */
+
+
+/**
+ * This class represents a memory space or scope. The entire memory space of the
+ * running program is a tree of Environment objects.
+ */
 class Environment {
+	/**
+	 * Creates a new environment.
+	 * @param {Environment} parentEnv - the parent environment
+	 */
 	constructor(parentEnv) {
 		this.parentEnv = parentEnv;
 		this.symbols = {};
@@ -279,7 +290,18 @@ class Environment {
 // BUILTINS are implemented in javascript.
 // anything bound with (bind ...) goes in BINDINGS.
 // any environments nested under that are closures.
+
+/**
+ * This is the global built-in lexical environment. All symbols bound here
+ * are natively implemented in javascript and are part of the
+ * vodka language runtime.
+ */
 const BUILTINS = new Environment(null);
+
+/**
+ * This is the global environment for user-bound variables. All symbols
+ * bound with the bind primitive are in this scope.
+ */
 const BINDINGS = BUILTINS.pushEnv();
 
 export { Environment, BUILTINS, BINDINGS, BUILTIN_ARG_PREFIX, UNBOUND }
