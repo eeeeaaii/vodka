@@ -1,5 +1,11 @@
 BUGS I FOUND WHILE TRYING TO FINISH IG3
 
+- I am currently running tests. if they all succeed, git push.
+- then, change the 1.5 and 3.5 to 1 and 3 in the css for codelist
+- then run tests and do not change code at all.
+- then update all goldens
+- then push again
+- comments are okay as long as you don't mess them up.
 
 5. maybe put it back the way it was where delete goes into edit mode and deletes one char, then shift-delete while in edit mode deletes the entire contents.
 
@@ -21,13 +27,6 @@ Uncaught TypeError: Cannot read property 'setSelected' of null
     -- the function that tests whether it's the only leaf in line to call getNextLeaf
     -- and return true/false depending on whether null. But getNextLeaf doesn't obey
     -- the line as stop point. Only commands. HRM.
-
-19. this fails:
-(_animation:fade-out-for-seconds (_set-delay (_make-expectation whatever_)_)_)
-the outer exp somehow inherits the inner exp delay?
-
-
-
 
 
 IDK TO DOs

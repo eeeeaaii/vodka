@@ -56,7 +56,7 @@ class Expectation extends NexContainer {
 	constructor() {
 		super()
 		this.hasBeenSet = false;
-		this.fulfilled = false;
+		this.setFulfilled(false);
 		this.activated = false;
 		this.ffClosure = null;
 
@@ -94,8 +94,15 @@ class Expectation extends NexContainer {
 			// generate a new activation function for my new baby expectation.
 			nex.set(this.activationFunctionGenerator);
 		}
-		// We explicitly DON'T activate when copying
-		// because it might mess up the timing.
+		// when copying a fulfilled expectation, we keep it fulfilled.
+		// it might be reset after being copied.
+		nex.setFulfilled(this.isFulfilled());
+		// we have checks to make sure you can't copy
+		// an exp while it's in flight, as a result
+		// we can copy all the flags.
+		nex.activated = this.activated;
+
+
 	}
 
 	evaluate() {
@@ -112,8 +119,20 @@ class Expectation extends NexContainer {
 		}
 	}
 
+	isInFlight() {
+		return this.activated && !this.fulfilled;
+	}
+
+	isActivated() {
+		return this.activated;
+	}
+
 	isFulfilled() {
 		return this.fulfilled;
+	}
+
+	setFulfilled(val) {
+		this.fulfilled = val;
 	}
 
 	isSet() {
@@ -129,7 +148,7 @@ class Expectation extends NexContainer {
 	}
 
 	reset() {
-		this.fulfilled = false;
+		this.setFulfilled(false);
 		this.activated = false;
 		this.startedTryingToFulfill = false;
 	}
@@ -161,7 +180,7 @@ class Expectation extends NexContainer {
 	}
 
 	set(activationFunctionGenerator) {
-		if (this.fulfilled) {
+		if (this.isFulfilled()) {
 			throw new EError('Expectation: cannot set the expectation, has already been fulfilled');			
 		}
 		if (this.activated) {
@@ -175,22 +194,6 @@ class Expectation extends NexContainer {
 		this.activationFunction = activationFunctionGenerator(this.getCallbackForSet(), this);
 	}
 
-	isActivated() {
-		return this.activated;
-	}
-
-	isFulfilled() {
-		return this.fulfilled;
-	}
-
-	isSet() {
-		return this.hasBeenSet;
-	}
-
-	hasFFF() {
-		return !!this.ffClosure;
-	}
-
 	// this method is called by the ffwith builtin to designate an "ff-with"
 	// function, i.e. a callback to call after this is fulfilled
 	ffWith(closure, executionEnvironment) {
@@ -199,7 +202,7 @@ class Expectation extends NexContainer {
 		// but the problem with that is that the pending expectations
 		// have already been notified so it's really too late -- too many weird possibilities
 		// for order of fulfillment changing or race conditions.
-		if (this.fulfilled) {
+		if (this.isFulfilled()) {
 			throw new EError('Expectation: cannot call ff-with on the expectation, has already been fulfilled');			
 		}
 		if (this.activated) {
@@ -250,7 +253,7 @@ class Expectation extends NexContainer {
 	completeFulfill() {
 		// At this point we are officially fulfilled.
 		// however, the ffClosure can undo this.
-		this.fulfilled = true;
+		this.setFulfilled(true);
 		if (this.ffClosure) {
 			this.callFFClosureOnAllChildren();
 		} else {
@@ -259,7 +262,7 @@ class Expectation extends NexContainer {
 	}
 
 	fulfill(result) {
-		if (this.fulfilled) {
+		if (this.isFulfilled()) {
 			throw new Error("expectation fulfilled again somehow: " + this.debugString());
 		}
 		if (this.ffgen < FF_GEN) {
@@ -413,6 +416,12 @@ class Expectation extends NexContainer {
 	}
 
 	makeCopy(shallow) {
+		if (this.activating) {
+			throw new EError('cannot copy an expectation while it is activating.');
+		}
+		if (this.isInFlight()) {
+			throw new EError('cannot copy an expectation whie it is in flight (pending fulfill)')
+		}
 		let r = new Expectation();
 		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);

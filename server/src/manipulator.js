@@ -1699,9 +1699,16 @@ class Manipulator {
 
 	// used in keydispatcher.js
 	doCopy() {
-		CLIPBOARD = systemState.getGlobalSelectedNode().getNex();
-		if (!isRecordingTest()) {
-			this.copyTextToSystemClipboard(CLIPBOARD.prettyPrint());
+		try {
+			CLIPBOARD = systemState.getGlobalSelectedNode().getNex().makeCopy();
+			if (!isRecordingTest()) {
+				this.copyTextToSystemClipboard(CLIPBOARD.prettyPrint());
+			}
+		} catch (e) {
+			if (Utils.isFatalError(e)) {
+				Utils.beep();
+				this.insertBeforeSelectedAndSelect(e);				
+			} else throw e;
 		}
 	}
 

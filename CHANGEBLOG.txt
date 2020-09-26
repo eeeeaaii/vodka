@@ -1,3 +1,48 @@
+=========================== render-env-idea ====================================
+---
+title: 'Render Environment Idea'
+date: "2020-09-24T00:08:19.000-04"
+description: In which I think out loud about how to fix rendering.
+---
+Currently rendering is a bit of a disorganized mess. There are several
+different methods for rendering: render just one renderNode (and its
+children), render everything, "important" renders that take precedence
+over other events in the eventqueue, etc. Calls out to the eventQueue
+to enqueue different render actions are sprinkled throughout the codebase
+and when you do various actions in the interface, because they are sometimes
+needed when that thing happens,
+but then this often results in several render
+passes happening when one would suffice.
+
+Well-written user interface frameworks usually solve this with a "dirty flag."
+When something happens that invalidates a particular portion of the user
+interface, it gets marked as dirty or invalid. Later, a render pass redraws
+only those things that have been marked dirty.
+
+I have a little complication though, which is the separation of the
+RenderNode layer from the Nex layer. If you cram a nex into a nexcontainer,
+it's reasonable to say at that point that the nexcontainer's rendernode
+is invalid. However I'm not entirely sure it's a good idea to store
+a list of RenderNodes inside each Nex (even though I do this now,
+primarily to deal with oid's).
+
+I am wondering if I should have a RenderEnvironment object.
+This would replace the GarbageCollector and would inherit its functionality,
+but would also contain a map from Nexes back to RenderNodes.
+You might have a program you were working on and you wanted to
+switch back and forth between different rendering environments --
+you have a 3d code editing env and a 2d env, or voice-only env.
+Maybe certain notions only make sense in the 3d env.
+I feel like storing a list of RenderNodes in the Nex is a leaky abstraction,
+but if the Nex has a reference to its current RenderEnvironment, and just
+calls methods in that environment to notify it that it's dirty,
+that it's just been newly created, that its children have changed, etc...
+or calls a method in the environment to ask it whether there is
+more than one reference to it currently visible (relevant to displaying
+oids) -- this feels cleaner to me. And the RenderEnvironment can keep
+track of the number of references to each Nex, keep track of which Nexes are
+dirty and need to be rerendered, etc.
+
 =========================== in-boxes ====================================
 ---
 title: 'Third Piece: "In Boxes"'
