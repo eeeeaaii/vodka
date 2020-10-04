@@ -47,13 +47,10 @@ bugs found when doing ig4
     like the "activate" call in evaluateAndReplace.
 17. I'm getting an infinite recursion when trying to activate this code:
      ~(_animation:loop2 ~(_animation:seq ~(_animation:fade-in-for-seconds [word](_ [letter]"h" [letter]"e" [letter]"l" [letter]"l" [letter]"o"_) %1_) ~(_animation:fade-out-for-seconds [word](_ [letter]"h" [letter]"e" [letter]"l" [letter]"l" [letter]"o"_) %1_)_)_)
-
-     and this isn't working:
-      ~(_loop2 ~(_animation:fade-in-for-seconds [word](_ [letter]"h" [letter]"e" [letter]"l" [letter]"l" [letter]"o"_) %3_)_)
-
-    and it's not clear why.
+     -- see if it still happens after I fix it with ff-get, see #19
 18. experiments is clearly superior to the old appFlags because it's strongly
     typed so we should just use that for all flags, experiments or not.
+19. need to make ff-gen builtin, see blog post
 
 
 bugs found when doing ig3
@@ -181,6 +178,9 @@ USER INPUT TO DO
 - figure out what actually happens with lambdas that have incorrectly specified args (make it so the editor will not allow you to input incorrect args?)
 - make it so that the "package" command SAVES the package file and runs it. However when you use "import" it looks to see if the top level element in the loaded file is a package. If it's not, it's an error, otherwise it runs the package but suppresses the part where it saves it
 (maybe by just appending an optional param or something before evaluating it)
+- make it so I can paste from one browser window to another (requires parsing the nex output),
+  also last version tracking, so that, of the in-memory clipboard and the system clipboard,
+  the most recent one gets pasted. Could solve the last-copied problem by ALWAYS serializing to system clipboard EXCEPT this will screw up the ability to copy and paste closures inside a document.
 
 PERFORMANCE TO DO
 - instanceof checks are slow, for nexes instead compare to getTypeName()
