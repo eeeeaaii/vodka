@@ -1,3 +1,126 @@
+=========================== more-exp-nonsense ====================================
+---
+title: 'More Expectation Nonsense'
+date: "2020-10-03T00:09:54.000-04"
+description: It never ends.
+---
+
+
+This doesn't work:
+
+```
+ ~(|loop2
+   ~(_animation:fade-in-for-seconds [word](_ [letter]"x"_) %3_)|)
+```
+
+For reference, this is the definition of loop2, which is where
+the problem resides:
+```
+ ~(_bind @loop2 &" exp*"(|
+      ~(_let @gen &(|
+            ~(_copy @exp_)|)_)
+      ~(_let @r ~(|ff-with
+            ~(_make-expectation ~(_gen_)_)
+            &" exp"(|
+               ~(_reset @r_)
+               ~(_gen_)|)|)_)
+      @r|)_)
+```
+
+You pass `loop2` an expectation, and what it's supposed to do
+is return an outer expectation that wraps the one you passed in,
+which, every time it fulfills, will re-copy the original one
+you wanted to loop, and then reset itself...
+effectively making it so that any expectation you pass into this
+function will get repeated forever. Each repeat of it is a copy
+of the original expectation.
+
+The problem is caused by the copy of the inner expectation, when the inner expectation is one of the family of animations created by do-on-every:
+
+
+```
+ ~(_bind @do-on-every &"* f& nex interval#"(|
+      ~(_let @exp ~(_cons @nex *(__)_)_)
+      ~(_set-delay ~(_ff-with @exp &" n"(|
+               ~(_reset @exp_)
+               ~(_f @n_)|)_) @interval_)|)_)
+```
+This way of doing animations is that you have a generator function
+that returns the animating expectation, and also gives it an fff
+(this is my cute name for "fulfill function"). The
+fff has a reference to the
+expectation that is returned by the generator function, `do-on-every`.
+It uses that reference to reset
+the expectation on each frame.
+
+This means that if I copy an animation expectation returned by
+`do-on-every` (as I do when it's passed into `loop2`),
+the fff for the copied expectation will share the same memory
+space and bound variables as the fff for the original
+expectation that it was copied from (because copying closure
+memory spaces isn't really a thing).
+So
+ When the fff for the copied expectation calls reset,
+ it will actually be resetting the wrong expectation. It will reset
+ the original, not the copy.
+
+ So what do we do about state for fulfill functions?
+
+Expectations are not objects, and they don't have a "this" pointer. I haven't wanted them to be this in the past because they are supposed to be bare-bones primitives, or at least as much as that is possible with a multistate object. JavaScript has the same issue with Promises having multiple states they can be in.
+I will very likely at some point have to make primitives that allow you to
+query the state of an expectation. Blah.
+
+Anyway, if the fff was an org rather than just a function, then of course it could have a member that was a pointer to its expectation, or really any other
+state, and I could change that value when you copy an expectation. I don't like this idea, but maybe it could only optionally be an org, so you could instead call `ff-org` to pass in an org instead of passing in a closure, if you wanted to.
+
+Another option is that I could automatically create the org for you, so you just could refer to `self.exp` in the fff. But this prevents you from putting your
+own state in the org.
+
+There is a cheap and bad solution that I considered before,
+which is making the first parameter of any fff be the expectation.
+This is really a terrible idea though, because it makes it hard to keep
+the params straight (one param is not like the others) and makes it easier to blow up the world by
+accidentally returning the original expectation from the fff, resulting in
+the expectation containing itself.
+
+Here is a variation that doesn't prioritize one parameter over the others:
+- leave `ff-with` the way it is
+- make another function called `ff-exp` which gets the WHOLE expectation passed in
+- you can set either `ff-with` or `ff-exp` (or both?)
+- the return value of `ff-exp` is ignored, you would have to alter the exp with `cram` or whatnot
+- when you copy `ff-with` or `ff-exp`, we... copy the closure memory...? Oh wait...
+
+That last part is still really problematic. Just passing in the 
+expectation pointer so it can be reset doesn't address all 
+state issues associated with the fff. If a copy happens, it will rear its
+ugly head again for any other state that fff depends on.
+For example, even if I resolved the issue with the expectation pointer
+for animations, there's still the matter of the counter that holds the number of iterations left:
+
+```
+ ~(_bind @do-on-every-with-param &"* f& nex interval#"(|
+      ~(_let @p #0_)
+      ~(_let @exp ~(_cons @nex *(__)_)_)
+      ~(_set-delay ~(_ff-with @exp &" n"(|
+               ~(_reset @exp_)
+               ~(_set @p ~(_::pl:: @p #1_)_)
+               ~(_f @nex @p_)|)_) @interval_)|)_)
+```
+
+If I copy this animation expectation, even if I handle `exp` correctly somehow, both animations will refer to the same iteration counter.
+
+
+Last idea, this has got to be it:
+
+For cases where you need to copy the expectation, instead of passing in a closure for fff, you pass in a closure that returns fff - a "fff generator". Every time we make a copy of the exp we call the generator to obtain our fff for that new expectation.
+
+So with this scheme you could choose to initialize with `ff-gen` or with `ff-with`. If you don't initialize with `ff-gen`, just with `ff-with`, then the expectation will throw an error if you try to copy it, because you haven't given it the generator it needs in order to copy. OTOH, if you initialize with
+`ff-gen`, then you can copy, and not only is `ff-gen` passed a reference to the expectation
+(so your fff can be resetting the correct expectation), but also a new scope
+for storing any arbitrary variables is created for you every time a new
+expectation is created via a copy.
+
+
 =========================== render-env-idea ====================================
 ---
 title: 'Render Environment Idea'

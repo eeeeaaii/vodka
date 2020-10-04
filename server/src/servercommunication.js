@@ -69,6 +69,15 @@ expected: ${e.expected[0].type}
 	});
 }
 
+function loadRaw(name, callback) {
+	let payload = `load\t${name}`;
+
+	sendToServer(payload, function(data) {
+		callback(data);
+	});
+}
+
+
 function importNex(name, callback) {
 	let payload = `load\t${name}`;
 
@@ -95,4 +104,4 @@ function importNex(name, callback) {
 	});
 }
 
-export { saveNex, importNex, loadNex  }
+export { saveNex, importNex, loadNex, loadRaw  }

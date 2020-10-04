@@ -21,12 +21,13 @@ import { Builtin } from '../nex/builtin.js'
 import { Command } from '../nex/command.js'
 import { Lambda } from '../nex/lambda.js'
 import { EError } from '../nex/eerror.js'
+import { EString } from '../nex/estring.js'
 import { Expectation } from '../nex/expectation.js'
 import { Nil } from '../nex/nil.js'
 import { ESymbol } from '../nex/esymbol.js'
 import { ERROR_TYPE_INFO } from '../nex/eerror.js'
 import { wrapError } from '../evaluator.js'
-import { saveNex, loadNex, importNex } from '../servercommunication.js'
+import { saveNex, loadNex, importNex, loadRaw } from '../servercommunication.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { BINDINGS } from '../environment.js'
 
@@ -119,8 +120,31 @@ function createFileBuiltins() {
 			exp.appendChild(loadingMessage)
 			return exp;
 		},
-		'loads the file |name.'
+		'loads the file |name as a Nex (parsing it)'
 	);
+
+	Builtin.createBuiltin(
+		'load-file',
+		[ '_name@' ],
+		function(env, executionEnvironment) {
+			let namesym = env.lb('name');
+			let nm = namesym.getTypedValue();
+			let exp = new Expectation();
+			exp.set(function(callback) {
+				return function() {
+					loadRaw(nm, function(loadResult) {
+						callback(new EString(loadResult));
+					})
+				}
+			})
+			let loadingMessage = new EError(`loading the file ${nm}`);
+			loadingMessage.setErrorType(ERROR_TYPE_INFO);
+			exp.appendChild(loadingMessage)
+			return exp;
+		},
+		'loads raw bytes from the file |name into a string.'
+	);
+
 
 	Builtin.createBuiltin(
 		'package',

@@ -22,6 +22,7 @@ import { EString } from '../nex/estring.js'
 import { Float } from '../nex/float.js'
 import { Integer } from '../nex/integer.js'
 import { RenderNode } from '../rendernode.js'
+import { experiments } from '../globalappflags.js'
 
 function createSyscalls() {
 	Builtin.createBuiltin(
@@ -41,7 +42,9 @@ function createSyscalls() {
 		function(env, executionEnvironment) {
 			let s = env.lb('style').getFullTypedValue();
 			let n = env.lb('nex');
-			n = n.makeCopy();
+			if (!experiments.NO_COPY_CSS) {
+				n = n.makeCopy();
+			}
 			n.setCurrentStyle(s);
 			return n;
 		}

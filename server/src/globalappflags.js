@@ -23,7 +23,12 @@ const experiments = {
 	'SYMBOL_EDITOR': true,
 	'V2_INSERTION': true,
 	'V2_INSERTION_TAB_HACK': false,
-	'V2_INSERTION_LENIENT_DOC_FORMAT': true
+	'V2_INSERTION_LENIENT_DOC_FORMAT': true,
+	'NO_COPY_CSS': true
+};
+
+const flags = {
+	'DEBUG_EXPECTATIONS': true
 };
 
 // some hard coded things here
@@ -35,6 +40,8 @@ function isBoolean(key) {
 		case 'V2_INSERTION':
 		case 'V2_INSERTION_TAB_HACK':
 		case 'V2_INSERTION_LENIENT_DOC_FORMAT':
+		case 'NO_COPY_CSS':
+		case 'DEBUG_EXPECTATIONS':
 			return true;
 		default:
 			return false;
@@ -51,6 +58,9 @@ function setAppFlags() {
 		if (experiments[key]) {
 			experiments[key] = value;
 		}
+		if (flags[key]) {
+			flags[key] = value;
+		}
 	})
 }
 
@@ -62,6 +72,7 @@ function parseBooleanValue(v) {
 	}
 }
 
+// deprecated
 function getGlobalAppFlagIsSet(flagname) {
 	return !!appFlags[flagname];
 }
@@ -72,4 +83,4 @@ function getGlobalAppFlagValue(flagname) {
 
 
 
-export { experiments, setAppFlags, getGlobalAppFlagIsSet, getGlobalAppFlagValue }
+export { experiments, flags, setAppFlags, getGlobalAppFlagIsSet, getGlobalAppFlagValue }

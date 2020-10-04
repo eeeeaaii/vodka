@@ -33,6 +33,7 @@ import { EError } from './eerror.js'
 import { NexContainer } from './nexcontainer.js'
 
 import { Command } from './command.js'
+import { flags } from '../globalappflags.js'
 
 
 class CallbackRouter {
@@ -148,6 +149,9 @@ class Expectation extends NexContainer {
 	}
 
 	reset() {
+		if (flags.DEBUG_EXPECTATIONS) {
+			console.log('resetting ' + this.debugString());
+		}
 		this.setFulfilled(false);
 		this.activated = false;
 		this.startedTryingToFulfill = false;
@@ -223,8 +227,14 @@ class Expectation extends NexContainer {
 
 	testForReactivationAfterFFClosure() {
 		if (this.isFulfilled()) {
+			if (flags.DEBUG_EXPECTATIONS) {
+				console.log('after running fff, still fulfilled, notifying pending, for ' + this.debugString());
+			}
 			this.notifyAfterFulfill();
 		} else if (!this.isActivated()) {
+			if (flags.DEBUG_EXPECTATIONS) {
+				console.log('calling fff reactivated this exp, for ' + this.debugString());
+			}
 			// ffClosure may have reactivated this expectation.
 			this.activate();
 		} else {
@@ -236,13 +246,21 @@ class Expectation extends NexContainer {
 	callFFClosureOnAllChildren() {
 		// just call it on all children first.
 		for (let i = 0; i < this.numChildren(); i++) {
+			if (flags.DEBUG_EXPECTATIONS) {
+				console.log(`calling fff on child ${i} for ` + this.debugString());
+			}
 			let child = this.getChildAt(i);
 			let cmd = Command.makeCommandWithClosure(this.ffClosure, child);
 			let result = evaluateNexSafely(cmd, this.ffExecutionEnvironment);
 			this.replaceChildAt(result, i);
 		}
 		if (this.numChildren() == 0) {
-			console.log("warning: tried to evaluate ff-with on children, but there were no children.");
+			if (flags.DEBUG_EXPECTATIONS) {
+				console.log('tried to evaluate fff on children, but there were no children, for ' + this.debugString());
+			}
+		}
+		if (flags.DEBUG_EXPECTATIONS) {
+			console.log('finished calling fff, need to see if child exps were returned, for ' + this.debugString());
 		}
 		// ffClosure could have returned expectations, so we wait again.
 		this.doOrWaitToDo(function() {
@@ -254,14 +272,26 @@ class Expectation extends NexContainer {
 		// At this point we are officially fulfilled.
 		// however, the ffClosure can undo this.
 		this.setFulfilled(true);
+		if (flags.DEBUG_EXPECTATIONS) {
+			console.log('completing fulfill for ' + this.debugString());
+		}
 		if (this.ffClosure) {
+			if (flags.DEBUG_EXPECTATIONS) {
+				console.log('fff present, evaluating it, for ' + this.debugString());
+			}
 			this.callFFClosureOnAllChildren();
 		} else {
+			if (flags.DEBUG_EXPECTATIONS) {
+				console.log('no fff present, notifying pending exps, for ' + this.debugString());
+			}
 			this.notifyAfterFulfill();
 		}		
 	}
 
 	fulfill(result) {
+		if (flags.DEBUG_EXPECTATIONS) {
+			console.log('fulfill called for ' + this.debugString());
+		}
 		if (this.isFulfilled()) {
 			throw new Error("expectation fulfilled again somehow: " + this.debugString());
 		}
@@ -269,11 +299,17 @@ class Expectation extends NexContainer {
 			// fulfillment was cancelled so we don't do ANYTHING including
 			// setting any state indicating that it's been fullfilled (because it hasn't)
 			// we don't call the callbacks either.
+			if (flags.DEBUG_EXPECTATIONS) {
+				console.log('fulfill was cancelled, so no-op, for ' + this.debugString());
+			}
 			return;
 		}
 		// some builtin-based expectations can have a result supplied by
 		// "external forces" 
 		if (result) {
+			if (flags.DEBUG_EXPECTATIONS) {
+				console.log('new child provided to fulfill for ' + this.debugString());
+			}
 			this.replaceChildAt(result, 0);
 		}
 		// it's possible that unfulfilled exps could have
@@ -293,9 +329,15 @@ class Expectation extends NexContainer {
 		if (this.activationFunction != null) {
 			// this means the expectation has been set. We call the asynchronous method
 			// and when the callback happens, we will fulfill.
+			if (flags.DEBUG_EXPECTATIONS) {
+				console.log('completing activation and beginning async process for ' + this.debugString());
+			}
 			this.activationFunction();
 		} else {
 			// this means the exp was not set. We just fulfill immediately.
+			if (flags.DEBUG_EXPECTATIONS) {
+				console.log('completing activation and commencing immediate fulfill for ' + this.debugString());
+			}
 			this.fulfill();
 		}
 	}
@@ -312,6 +354,9 @@ class Expectation extends NexContainer {
 			return;
 		}
 		this.activating = true;
+		if (flags.DEBUG_EXPECTATIONS) {
+			console.log('beginning activation for ' + this.debugString());
+		}
 
 		// in the future this will actually do this:
 		// if (actClosure) {
@@ -344,6 +389,9 @@ class Expectation extends NexContainer {
 			}
 		}
 		if (!waiting) {
+			if (flags.DEBUG_EXPECTATIONS) {
+				console.log('tested children, all are non-exp or fulfilled, for ' + this.debugString());
+			}
 			todo();
 		}
 	}
@@ -352,9 +400,15 @@ class Expectation extends NexContainer {
 	// returns true if we had to wait
 	maybeWaitBeforeDoing(todo, exp, childrenFinished, i) {
 		if (this.isUnactivatedExpectation(exp)) {
+			if (flags.DEBUG_EXPECTATIONS) {
+				console.log('when testing child exps, found one that was unactivated, for ' + this.debugString());
+			}
 			exp.activate();
 		}
 		if (this.isUnfulfilledExpectation(exp)) {
+			if (flags.DEBUG_EXPECTATIONS) {
+				console.log('when testing child exps, found one that was unfulfilled, for ' + this.debugString());
+			}
 			childrenFinished[i] = false;
 			exp.addPendingCallback(function() {
 				this.doIfLastFulfilled(todo, childrenFinished, i);

@@ -1,16 +1,65 @@
-BUGS I FOUND WHILE TRYING TO FINISH IG3
+bugs found when doing ig4
 
-- I am currently running tests. if they all succeed, git push.
-- then, change the 1.5 and 3.5 to 1 and 3 in the css for codelist
-- then run tests and do not change code at all.
-- then update all goldens
-- then push again
-- comments are okay as long as you don't mess them up.
+1. need a "text-functions" for poetry tools/functions (temporary fix: added functions to util-functions)
+2. autocomplete for symbols
+3. autocomplete inside a "using" block doesn't put in the prefix
+4. maybe a way to get the docstring, etc., directly from the command (like have it show up below when the precache finds the symbol)
+5. "using" primitive doesn't appear to work at all?
+6. maybe change format functions so the parameter (like text size) is first since you're more likely to use insert-around a bit of text, type the format function (like text-in-size), then tab in to add the value (like 100)
+7. JUST MAKE IT SO YOU CAN SAVE CSS STYLES FOR LETTERS, DOCS, WORDS ETC YA DOOF
+8. really really need undo to come back, somehow.
+9. change direction of a nex should NOT exit the editor because often you want to change direction
+   before typing the content in a lambda
+10. this is annoying and confusing:
+    - hitting delete on a command deletes letters but doesn't enter edit mode
+    - control-space is autocomplete
+    - option-space JUST DOES A SPACE
+    - control-enter goes into edit mode
+    - shift-space changes direction
+    there's no rhyme or reason to any of this. tab and shift-tab make sense and have some kind of
+    precedence. If we think of "shift" as inverting the direction of the key you hit, then
+    maybe shift-enter should be the way to enter edit mode. autocomplete and changing direction
+    don't really have inverse operations, but since changing direction is a toggle-like activity
+    maybe it could be bound to caps lock. that leaves autocomplete the only weird one, so it could
+    be bound to control-space (note that this is similar to AndroidStudio, which uses command-space,
+    and sublime, which uses control-space).
+    BUT HANG ON. shift-enter won't work because that's already execute and keep. We need a different key that means "I'm done editing"? Maybe escape? So shift-escape puts you back in editing mode? wow.
+    maybe I just punt and go with command-e or something? capslock?
+    but we were going to use that for changing direction.
+    maybe backslash/pipe key.
+    or maybe it's just the delete key.
+11. change ff to activate, change ff-with to fff
+12. a failed autocomplete lookup exits editor and that's not what we want.
+13. shift-enter aka editing a string repositions the page scroll
+14. maybe bind command-s to do a save if the top level nex on the page is a "save"
+15. css-modifying functions - should they copy the nex?
+    - pros: if you have a variable that stores a poem, and you
+      do a css-modifying function on it, you alter the source
+      data (unless you copy it)
+    - cons: you can't execute a css-modifying function on any
+      nex that contains an active expectation
+    clearly cons outweigh the pros but it's something that
+    users will have to actively think about.
+16. if you write code that causes infinite recursion, you don't get an
+    intelligible vodka error, you have to look in the js inspector.
+    It's entirely possible for users to do this so we need a stack
+    trace they can read for this case. Make sure this also happens with stuff
+    like the "activate" call in evaluateAndReplace.
+17. I'm getting an infinite recursion when trying to activate this code:
+     ~(_animation:loop2 ~(_animation:seq ~(_animation:fade-in-for-seconds [word](_ [letter]"h" [letter]"e" [letter]"l" [letter]"l" [letter]"o"_) %1_) ~(_animation:fade-out-for-seconds [word](_ [letter]"h" [letter]"e" [letter]"l" [letter]"l" [letter]"o"_) %1_)_)_)
+
+     and this isn't working:
+      ~(_loop2 ~(_animation:fade-in-for-seconds [word](_ [letter]"h" [letter]"e" [letter]"l" [letter]"l" [letter]"o"_) %3_)_)
+
+    and it's not clear why.
+18. experiments is clearly superior to the old appFlags because it's strongly
+    typed so we should just use that for all flags, experiments or not.
+
+
+bugs found when doing ig3
 
 5. maybe put it back the way it was where delete goes into edit mode and deletes one char, then shift-delete while in edit mode deletes the entire contents.
-
 15. when you cram text into something else via an expectation it doesn't mark it as dirty or render it - the expectation only renders itself, doesn't render other things (need a quick and dirty fix for this now but maybe should fix rendering/make more efficient)
-
 16.
 Uncaught TypeError: Cannot read property 'setSelected' of null
     at Manipulator.deleteLeafV2 (manipulator.js:688)
@@ -29,19 +78,26 @@ Uncaught TypeError: Cannot read property 'setSelected' of null
     -- the line as stop point. Only commands. HRM.
 
 
-IDK TO DOs
+potential projects
+pp1:
+- write app to display visualization of my financial transactions
+1. extend the load/save primitives to also take string args
+2. if you use string args, it does the load/save in a "private area" directory
+3. you can create directories in private area with some other primitive
+4. write logic to parse CSV file
+5. write logic to "even out" numbers
+6. write logic to chart data in a canvas object
+
+
+OTHER TO DOs
 - rename ff-of to fff-of
-- rename ff to activate
+- rename ff to activate or start
 - change set-click to ff-with-click
 - change set-delay to ff-after-delay
 - change set-immediate to ff-immediately
 - change ff-with to fff
 - change bindings/builtins to always return list
 - make and and or multi-arg not two-arg
-
-
-NEW TO-DOs AFTER TRYING THE NEW VERSION OUT
-- "ff" should just be "start"
 
 TEST FRAMEWORK TO DO:
 - make a way for each test to individually specify query string flags to pass in
