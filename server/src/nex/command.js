@@ -50,6 +50,8 @@ class Command extends NexContainer {
 		// private data is currently unused but I want the logic for
 		// handling it here so I can implement parsing and tests for it
 		this.privateData = '';
+		this.searchingOn = null;
+		this.previousMatch = null;
 	}
 
 	getTypeName() {

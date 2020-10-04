@@ -20,11 +20,15 @@ import { CONSOLE_DEBUG } from '../globalconstants.js'
 import { INDENT, systemState } from '../systemstate.js'
 import { experiments } from '../globalappflags.js'
 import { Editor } from '../editors.js'
+import { autocomplete } from '../autocomplete.js'
+
 
 
 class ESymbol extends ValueNex {
 	constructor(val) {
 		super((val) ? val : '', '@', 'esymbol')
+		this.searchingOn = null;
+		this.previousMatch = null;
 	}
 
 	getTypeName() {
@@ -64,6 +68,33 @@ class ESymbol extends ValueNex {
 		return new SymbolKeyFunnel(this);
 	}
 
+	setValue(v) {
+		super.setValue(v);
+		this.searchingOn = null;
+		this.previousMatch = null;
+	}
+
+
+	appendText(txt) {
+		super.appendText(txt);
+		this.searchingOn = null;
+		this.previousMatch = null;
+	}
+
+	deleteLastLetter() {
+		super.deleteLastLetter();
+		this.searchingOn = null;
+		this.previousMatch = null;
+	}
+
+	autocomplete() {
+		let searchText = this.searchingOn ? this.searchingOn : this.getAsString();
+		let match = autocomplete.findNextMatchAfter(searchText, this.previousMatch);
+		this.setValue(match);
+		this.searchingOn = searchText;
+		this.previousMatch = match;
+	}
+
 	evaluate(env) {
 		systemState.pushStackLevel();
 		let b = env.lookupBinding(this.getTypedValue());
@@ -101,6 +132,7 @@ class ESymbol extends ValueNex {
 				'Backspace': 'remove-selected-and-select-previous-leaf-v2',
 				'ShiftEnter': 'evaluate-nex',
 				'Enter': 'evaluate-nex',
+				'CtrlSpace': 'autocomplete',
 			}
 		} else {
 			return {
@@ -113,6 +145,7 @@ class ESymbol extends ValueNex {
 				'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-leaf',
 				'ShiftEnter': 'evaluate-nex',
 				'Enter': 'evaluate-nex',
+				'CtrlSpace': 'autocomplete',
 			}
 		}
 	}

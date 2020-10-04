@@ -28,7 +28,7 @@ const experiments = {
 };
 
 const flags = {
-	'DEBUG_EXPECTATIONS': true
+	'DEBUG_EXPECTATIONS': false
 };
 
 // some hard coded things here

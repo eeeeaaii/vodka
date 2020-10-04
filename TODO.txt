@@ -1,10 +1,7 @@
 bugs found when doing ig4
 
-1. need a "text-functions" for poetry tools/functions (temporary fix: added functions to util-functions)
-2. autocomplete for symbols
 3. autocomplete inside a "using" block doesn't put in the prefix
 4. maybe a way to get the docstring, etc., directly from the command (like have it show up below when the precache finds the symbol)
-5. "using" primitive doesn't appear to work at all?
 6. maybe change format functions so the parameter (like text size) is first since you're more likely to use insert-around a bit of text, type the format function (like text-in-size), then tab in to add the value (like 100)
 7. JUST MAKE IT SO YOU CAN SAVE CSS STYLES FOR LETTERS, DOCS, WORDS ETC YA DOOF
 8. really really need undo to come back, somehow.

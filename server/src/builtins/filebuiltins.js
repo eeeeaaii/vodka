@@ -260,7 +260,7 @@ function createFileBuiltins() {
 				if (!BINDINGS.isKnownPackageName(packageName)) {
 					return new EError(`using: invalid package name ${packageName}. Sorry!`);
 				}
-				env.usePackage(packageName);
+				executionEnvironment.usePackage(packageName);
 			}
 			let lst = env.lb('nex');
 			let result = new Nil();
@@ -268,7 +268,7 @@ function createFileBuiltins() {
 				let c = lst.getChildAt(j);
 				result = evaluateNexSafely(c, executionEnvironment);
 				if (Utils.isFatalError(result)) {
-					result = wrapError('&szlig;', `using: error in expression ${j+1}, cannot continue. Sorry!`);
+					result = wrapError('&szlig;', `using: error in expression ${j+1}, cannot continue. Sorry!`, result);
 					return result;
 				}
 			}
