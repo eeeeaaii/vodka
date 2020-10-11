@@ -133,6 +133,9 @@ function createSyscalls() {
 				return strn.getAttachedJS()(env.lb('nex'));
 			}
 			let str = strn.getFullTypedValue();
+			// the reason I'm creating these dollar sign variables
+			// is so that the javascript code we eval can refer
+			// to them.
 			var $dom = [];
 			var $nex = [];
 			var $node = [];

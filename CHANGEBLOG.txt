@@ -1,3 +1,132 @@
+=========================== fonts ====================================
+---
+title: 'Fonts'
+date: "2020-10-06T00:09:33.000-04"
+description: In which I rush headlong into another foolish blue sky endeavor.
+---
+Hello any humans who are reading this. I have decided to try to implement parametric fonts, a la METAFONT.
+
+The approach that seems to make the most sense is to draw each character
+inside its own canvas. I sort of have this working, for a few letters.
+However it's going to become a problem if I ever want to implement things
+like negative kerning or negative leading. What I will need to have is:
+
+- an HTML element with position:relative that takes care of positioning/flow
+- a child of the relative element with position:absolute that contains the canvas.
+
+The child element, since it's in its own layout layer, can overlap with other letters,
+which is what we need for fonts.
+
+Let's talk about height first.
+
+The font's size will determine the
+height of the flow element. It might be simpler (from a math perspective)
+to put the baseline at the bottom
+of the flow element, but I think this will cause problems if
+I intermingle system fonts with parametric fonts.
+
+One troublesome thing. Should I use glyph parameters to construe/determine
+leading and linespacing, or should leading/linespacing be a property of
+the font, and the glyph parameters need to obey/stay within those lines?
+
+For example, for height, if I decide this:
+
+- there is a line height, and this is the height of the flow element
+- there is a font size, which is the height of the canvas
+- font size - line height = leading
+- leading is evenly distributed above and below the letter
+- the baseline is SOMEWHERE inside the height of the letter
+- font metrics are measured relative to the baseline (positive for above, negative for below)
+- font metrics are floating point values
+- 1.0 means "the entire font size"
+
+What happens if I have a font where the baseline is at .7 and the descender
+height is -0.4? That extends beyond the edge of the glyph. Do I:
+
+1. just cut off the letter?
+2. make the canvas object a different size, just for that letter, so that the letter
+   can be drawn outside the normal area that this font takes up?
+3. make the entire font have a different font size?
+
+Maybe what we need is a "nominal" font size but that doesn't necessarily correspond
+to the actual size of the glyph's canvas. Maybe the glyph's canvas is only as big
+as it needs to be for what is drawn on it. So SOMETIMES the canvas will be bigger
+than the font height, sometimes smaller.
+
+This has the advantage of making it so you could do super weird effects if you wanted,
+like descenders that started out being ENORMOUS then got smaller.
+
+Okay. Fine. So let's move on to kerning.
+
+In this case, the flow element is going to have a nominal width also,
+but it's a per-character width. Then there's tracking/letterspacing, which
+is a global adjustment to the distance between glyphs. I guess that can
+just be a number that is added to the nominal width.
+
+Then you have kerning, which is the adjustment that happens *only between certain
+pairs of characters*.
+
+Tracking and kerning, added together, I guess give you an adjustment value.
+So if you have these three letters
+
+```
+AVC
+```
+
+There might be letter spacing adjustment between AV that's different from VC.
+Either way though, we need to adjust the width of the flow element, and we
+need to figure out how to adjust the position of the canvas inside it.
+
+NB: the actual canvas width can just stay whatever it is. Let's not modify that:
+this will have a default width based on the glyph.
+
+So if we have these variables:
+
+- `L` - amount of space added to LEFT side of glyph (can be negative)
+- `R` - amount of space added to RIGHT side of glyph (can be negative)
+- `T` - tracking
+- `KL` - kerning between this character and the character on its LEFT
+- `KR` - kerning between this character and the character on its RIGHT
+- `G` - glyph size (varies per glyph)
+
+This means that:
+
+- `L = (T + KL) / 2`
+- `R = (T + KR) / 2`
+- flow element width is `G + L + R` (since L or R can be negative, this could be less than `G`)
+- position of canvas within flow element is `L` (can be to the left of the left side of the flow element)
+- the glyph should be drawn to fill the entire canvas left to right (the canvas itself should not contain any padding)
+
+Let's put the height in mathematical terms also.
+
+- `H` - font height
+- `B` - position of baseline in font (measured from the top)
+- `Ld` - leading
+- `A` - ascender height
+- `D` - descender height
+- `C` - canvas height
+- `F` - flow element height
+
+So
+
+- `C = A + D` - the canvas is as big as it needs to be to display the glyph in question
+- `A - B` - for glyphs where the ascender protrudes above the "nominal" top of the letter top, this is the amount that the ascender sticks above the other letters/normal letters/nominal letter top.
+- `-(A - B) + (Ld / 2)` - position of top of canvas element relative to top of flow element
+- `F = H + Ld` - flow element height is font size + leading
+- if the above rules are followed, the baseline is always 'A' units below the top of the canvas.
+
+I might try a variant where the canvas size is larger, in order to allow for animation of font parameters without having to resize the canvas. If I do that, each canvas will have a "slop" amount which is just a fixed number of pixels that is added to both the width and height, on both sides. So for example, if I was using slop:
+
+- `S` is slop
+- canvas width is glyph width + `S`
+- canvas left position is `L - (S / 2)`
+- canvas top position is `-(A - B) + (Ld / 2) - (S / 2)`
+- the baseline is `A + (S / 2)` units from the top of the canvas
+- the canvas should have `S / 2` padding on each side left/right
+
+Finally, this is a little unrelated, but for some fonts, like Arabic, you need to swap out a glyph for a different one depending on what's after it, what's before it, etc. Of course there is direction as well (and this needs to be fixed in the input layer, but that's a topic for a different blog entry). We already need to have some kind of before/after detection for kerning anyway. I guess the font rendering layer will need to have glyph variants for a particular letter, and there needs to be some notion of a "LetterContextProvider" that gets passed into the font renderer that it can query to find out what letter is before it or after it (since a space is a letter, this is also a proxy for the notion "beginning of word" or "end of word"). This would have to be an interface on the line or other nex container that is holding the letter.
+
+
 =========================== more-exp-nonsense ====================================
 ---
 title: 'More Expectation Nonsense'

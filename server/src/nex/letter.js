@@ -19,11 +19,17 @@ import { ContextType, ContextMapBuilder } from '../contexttype.js'
 import { Nex } from './nex.js'
 import { experiments } from '../globalappflags.js'
 import { RENDER_FLAG_INSERT_AFTER } from '../globalconstants.js'
+import { parametricFontManager } from '../pfonts/pfontmanager.js'
 
 class Letter extends Nex {
 	constructor(letter) {
 		super();
 		this.value = letter;
+		if (experiments.DEFAULT_TO_PARAMETRIC_FONTS) {
+			this.pfont = parametricFontManager.getFont('Basic', {});			
+		} else {
+			this.pfont = null;
+		}
 		if (letter == '') {
 			throw new Error('cannot have an empty letter');
 		}
@@ -76,8 +82,12 @@ class Letter extends Nex {
 		} else {
 			domNode.classList.add('leftinsert');			
 		}
-		let contents = (this.value == " " || this.value == "&nbsp;") ? "\xa0" : this.value;
-		domNode.appendChild(document.createTextNode(contents));
+		if (this.pfont) {
+			domNode.appendChild(this.pfont.getDomNodeFor(this.value));
+		} else {
+			let contents = (this.value == " " || this.value == "&nbsp;") ? "\xa0" : this.value;
+			domNode.appendChild(document.createTextNode(contents));
+		}
 	}
 
 	getText() {

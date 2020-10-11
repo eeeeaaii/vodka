@@ -24,7 +24,8 @@ const experiments = {
 	'V2_INSERTION': true,
 	'V2_INSERTION_TAB_HACK': false,
 	'V2_INSERTION_LENIENT_DOC_FORMAT': true,
-	'NO_COPY_CSS': true
+	'NO_COPY_CSS': true,
+	'DEFAULT_TO_PARAMETRIC_FONTS': false,
 };
 
 const flags = {
@@ -42,6 +43,7 @@ function isBoolean(key) {
 		case 'V2_INSERTION_LENIENT_DOC_FORMAT':
 		case 'NO_COPY_CSS':
 		case 'DEBUG_EXPECTATIONS':
+		case 'DEFAULT_TO_PARAMETRIC_FONTS':
 			return true;
 		default:
 			return false;
@@ -55,10 +57,10 @@ function setAppFlags() {
 			value = parseBooleanValue(value);
 		}
 		appFlags[key] = value;
-		if (experiments[key]) {
+		if (typeof experiments[key] !== 'undefined') {
 			experiments[key] = value;
 		}
-		if (flags[key]) {
+		if (typeof flags[key] !== 'undefined') {
 			flags[key] = value;
 		}
 	})

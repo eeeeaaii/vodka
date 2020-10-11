@@ -17,6 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { systemState } from './systemstate.js'
 import { getGlobalAppFlagIsSet } from './globalappflags.js'
+import { RenderNode } from './rendernode.js'
 
 const UNDO_LIMIT = 10;
 
