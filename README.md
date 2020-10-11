@@ -36,7 +36,7 @@ Planned work includes adding objects for modular synthesis of sound.
 Using Vodka requires that you start a server on your local machine, and then direct your browser to that local URL. Do a git pull, and then run:
 
 	cd server
-	./startserver.sh
+	./runserver.sh
 
 This should start up a server at ``localhost:3000``. Load that URL in your browser
 and you will see a blank canvas.
