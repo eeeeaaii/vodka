@@ -1,5 +1,7 @@
 node_modules
 package-lock.json
 alltests/*/*
+!alltests/*/*_GOLDEN_EXPLODED.png
+!alltests/*/*_GOLDEN_NORMAL.png
 testoutput.html
 testoutput.json

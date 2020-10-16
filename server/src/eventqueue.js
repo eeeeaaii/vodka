@@ -70,6 +70,9 @@ class EventQueue {
 		eventQueueDispatcher.createDelegate('enqueueGC', this);
 	}
 
+	/**
+	 * @param {RenderNode} renderNode
+	 */
 	enqueueAlertAnimation(renderNode) {
 		EVENT_DEBUG ? console.log('enqueueing: AlertAnimation'):null;
 		let item = {
@@ -90,6 +93,10 @@ class EventQueue {
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
+	/**
+	 * @param {RenderNode} renderNode
+	 * @param {number} flags
+	 */
 	enqueueRenderNodeRender(renderNode, flags) {
 		EVENT_DEBUG ? console.log('enqueueing: RenderNodeRender'):null;
 		let item = {
@@ -113,6 +120,14 @@ class EventQueue {
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
+	/**
+	 * @param {string} keycode
+	 * @param {string} whichkey
+	 * @param {boolean} hasShift
+	 * @param {boolean} hasCtrl
+	 * @param {boolean} hasMeta
+	 * @param {boolean} hasAlt
+	 */
 	enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
 		EVENT_DEBUG ? console.log('enqueueing: DoKeyInput'):null;
 		let item = {

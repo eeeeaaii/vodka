@@ -24,7 +24,7 @@ const experiments = {
 	'V2_INSERTION': true,
 	'V2_INSERTION_TAB_HACK': false,
 	'V2_INSERTION_LENIENT_DOC_FORMAT': true,
-	'NO_COPY_CSS': true,
+	'NO_COPY_CSS': false,
 	'DEFAULT_TO_PARAMETRIC_FONTS': false,
 };
 
