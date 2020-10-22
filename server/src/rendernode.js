@@ -270,22 +270,13 @@ class RenderNode {
 	}
 
 	clearDomNode(renderFlags) {
-		while(this.domNode.classList.length > 0) {
-			this.domNode.classList.remove(this.domNode.classList.item(0));
-		}
-
-		// let i = 0;
-		// while(this.domNode.classList.length > i) {
-		// 	let className = this.domNode.classList[i];
-		// 	if (className.indexOf('animating') == 0) {
-		// 		i++;
-		// 	} else {
-		// 		this.domNode.classList.remove(this.domNode.classList.item(i));
-		// 	}
-		// }
+		this.domNode.setAttribute("class", "");
 		this.domNode.setAttribute("style", "");
 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-			this.domNode.innerHTML = "";		
+			// fast removal, do not use innerHTML
+			while (this.domNode.firstChild) {
+				this.domNode.removeChild(this.domNode.lastChild);
+			}
 		}
 	}
 
