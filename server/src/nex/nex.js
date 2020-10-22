@@ -356,6 +356,10 @@ class Nex {
 		throw new Error("unimplemented export to string");
 	}
 
+	setPfont(pfstring) {
+		// no op unless letter?
+	}
+
 	setCurrentStyle(s) {
 		this.currentStyle = s;
 	}

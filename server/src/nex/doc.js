@@ -23,6 +23,7 @@ import { experiments } from '../globalappflags.js'
 class Doc extends NexContainer {
 	constructor() {
 		super();
+		this.pfstring = null;
 	}
 
 	toString(version) {
@@ -40,6 +41,19 @@ class Doc extends NexContainer {
 		return this.standardListPrettyPrint(lvl, '[doc]', hdir);
 	}
 
+	setPfont(pfstring) {
+		this.pfstring = pfstring;
+		this.doForEachChild(function(c) {
+			c.setPfont(pfstring);
+		})
+	}
+
+	insertChildAt(c, i) {
+		if (this.pfstring) {
+			c.setPfont(this.pfstring);
+		}
+		super.insertChildAt(c, i);
+	}
 
 	getTypeName() {
 		return '-doc-';

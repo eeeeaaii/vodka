@@ -23,6 +23,7 @@ import { experiments } from '../globalappflags.js'
 class Word extends NexContainer {
 	constructor() {
 		super();
+		this.pfstring = null;
 	}
 
 	getTypeName() {
@@ -76,6 +77,21 @@ class Word extends NexContainer {
 		domNode.classList.add('word');
 		domNode.classList.add('data');
 	}
+
+	setPfont(pfstring) {
+		this.pfstring = pfstring;
+		this.doForEachChild(function(c) {
+			c.setPfont(pfstring);
+		})
+	}
+
+	insertChildAt(c, i) {
+		if (this.pfstring) {
+			c.setPfont(this.pfstring);
+		}
+		super.insertChildAt(c, i);
+	}
+
 
 	getEventOverrides() {
 		return {

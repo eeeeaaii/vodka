@@ -50,13 +50,27 @@ function createSyscalls() {
 		}
 	);
 
+
 	Builtin.createBuiltin(
-		'apply-css-style-to-no-copy',
+		'apply-style-to',
 		[ 'style$', 'nex' ],
 		function(env, executionEnvironment) {
 			let s = env.lb('style').getFullTypedValue();
 			let n = env.lb('nex');
 			n.setCurrentStyle(s);
+			return n;
+		}
+	);
+
+	Builtin.aliasBuiltin('apply-css-style-to-no-copy', 'apply-style-to');
+
+	Builtin.createBuiltin(
+		'apply-pfont-to',
+		[ 'pfont$', 'nex' ],
+		function(env, executionEnvironment) {
+			let pf = env.lb('pfont').getFullTypedValue();
+			let n = env.lb('nex');
+			n.setPfont(pf);
 			return n;
 		}
 	);
@@ -73,7 +87,7 @@ function createSyscalls() {
 	);
 
 	Builtin.createBuiltin(
-		'get-css-style-from',
+		'get-style-from',
 		[ 'nex' ],
 		function(env, executionEnvironment) {
 			let n = env.lb('nex');
@@ -81,6 +95,8 @@ function createSyscalls() {
 			return new EString(s);
 		}
 	);
+
+	Builtin.aliasBuiltin('get-css-style-from', 'get-style-from');
 
 	Builtin.createBuiltin(
 		'get-pixel-height',

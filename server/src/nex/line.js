@@ -26,6 +26,7 @@ import { RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 class Line extends NexContainer {
 	constructor() {
 		super();
+		this.pfstring = null;
 	}
 
 	getTypeName() {
@@ -78,6 +79,20 @@ class Line extends NexContainer {
 			return new LineKeyFunnel(this);
 		}
 		return null;
+	}
+
+	setPfont(pfstring) {
+		this.pfstring = pfstring;
+		this.doForEachChild(function(c) {
+			c.setPfont(pfstring);
+		})
+	}
+
+	insertChildAt(c, i) {
+		if (this.pfstring) {
+			c.setPfont(this.pfstring);
+		}
+		super.insertChildAt(c, i);
 	}
 
 	getContextType() {

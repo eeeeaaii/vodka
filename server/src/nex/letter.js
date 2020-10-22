@@ -26,7 +26,7 @@ class Letter extends Nex {
 		super();
 		this.value = letter;
 		if (experiments.DEFAULT_TO_PARAMETRIC_FONTS) {
-			this.pfont = parametricFontManager.getFont('Basic', {});			
+			this.pfont = parametricFontManager.getFont('Basic', {}, {});			
 		} else {
 			this.pfont = null;
 		}
@@ -43,6 +43,14 @@ class Letter extends Nex {
 		let r = new Letter(this.value);
 		this.copyFieldsTo(r);
 		return r;
+	}
+
+	setPfont(pfstring) {
+		if (this.pfont && parametricFontManager.isSameFont(this.pfont, pfstring)) {
+			parametricFontManager.redrawFontStringInFont(this.pfont, pfstring);
+		} else {
+			this.pfont = parametricFontManager.getFontForString(pfstring);
+		}
 	}
 
 	toString(version) {
@@ -83,7 +91,7 @@ class Letter extends Nex {
 			domNode.classList.add('leftinsert');			
 		}
 		if (this.pfont) {
-			domNode.appendChild(this.pfont.getDomNodeFor(this.value));
+			domNode.appendChild(this.pfont.drawIntoDomNode(this.value));
 		} else {
 			let contents = (this.value == " " || this.value == "&nbsp;") ? "\xa0" : this.value;
 			domNode.appendChild(document.createTextNode(contents));
@@ -109,26 +117,6 @@ class Letter extends Nex {
 				'Backspace' : 'delete-letter-v2',
 				'ShiftBackspace' : 'delete-letter-v2',
 				'Enter': 'do-line-break-for-letter-v2',
-				// // deprecated, change to insert-command-as-next-sibling
-				// '~': 'legacy-insert-command-as-next-sibling-of-parent',
-				// // all the rest also deprecated, to be removed.
-				// '!': 'legacy-insert-bool-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-				// '@': 'legacy-insert-symbol-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-				// '#': 'legacy-insert-integer-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-				// '$': 'legacy-insert-string-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-				// '%': 'legacy-insert-float-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-				// '^': 'legacy-insert-nil-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-				// '&': 'legacy-insert-lambda-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-				// '*': 'legacy-insert-expectation-as-next-sibling-of-parent', // deprecated, remove and allow separator insert
-				// end deprecated
-
-				// '(': 'insert-word-as-next-sibling',
-				// '[': 'insert-line-as-next-sibling',
-				// '{': 'insert-doc-as-next-sibling',
-
-				// experimental
-				// '<': 'insert-zlist-as-next-sibling',
-				// '*': 'insert-type-as-next-sibling',
 			}
 		} else {
 			return {

@@ -15,11 +15,23 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { Bezier } from './bezier.js'
+
 class MoveOp {
 	constructor(x, y) {
 		this.type = 'move';
 		this.x = x;
 		this.y = y;
+	}
+
+	setParams(params) {
+		// should just be one
+		this.x = params[0].x;
+		this.y = params[0].y;
+	}
+
+	draw(ctx) {
+		ctx.moveTo(this.x, this.y);
 	}
 }
 
@@ -33,6 +45,26 @@ class BezierOp {
 		this.endx = endx;
 		this.endy = endy;
 	}
+
+	setParams(params) {
+		// should just be one
+		this.cp1x = params[0].x;
+		this.cp1y = params[0].y;
+		this.cp2x = params[1].x;
+		this.cp2y = params[1].y;
+		this.endx = params[2].x;
+		this.endy = params[2].y;
+	}
+
+	draw(ctx) {
+		ctx.bezierCurveTo(this.cp1x,
+						  this.cp1y,
+						  this.cp2x,
+						  this.cp2y,
+						  this.endx,
+						  this.endy);
+	}
+
 }
 
 class LineOp {
@@ -40,6 +72,16 @@ class LineOp {
 		this.type = 'line';
 		this.x = x;
 		this.y = y;
+	}
+
+	setParams(params) {
+		// should just be one
+		this.x = params[0].x;
+		this.y = params[0].y;
+	}
+
+	draw(ctx) {
+		ctx.lineTo(this.x, this.y);
 	}
 }
 
@@ -55,8 +97,32 @@ class BezierPlotOp {
 		this.p2x = p2x;
 		this.p2y = p2y;
 	}
-}
 
+	setParams(params) {
+		// should just be one
+		this.aperture = params[0].val;
+		this.p1x = params[1].x;
+		this.p1y = params[1].y;
+		this.cp1x = params[2].x;
+		this.cp1y = params[2].y;
+		this.cp2x = params[3].x;
+		this.cp2y = params[3].y;
+		this.p2x = params[4].x;
+		this.p2y = params[4].y;
+	}
+
+	draw(ctx) {
+		new Bezier(this.p1x,
+				   this.p1y,
+				   this.cp1x,
+				   this.cp1y,
+				   this.cp2x,
+				   this.cp2y,
+				   this.p2x,
+				   this.p2y).plot(ctx, this.aperture);
+
+	}
+}
 
 
 
