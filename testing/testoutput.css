@@ -104,6 +104,17 @@ body {
 	padding-bottom:15px;
 }
 
+.testdescription {
+	background-color: #eeeeee;
+	font-family: Courier;
+	font-size: 14px;
+	margin-left: 0px;
+	padding-left: 30px;
+	padding-top:15px;
+	padding-bottom:15px;
+}
+
+
 .commandblock {
 	background-color: #cccccc;
 	font-family: Courier;

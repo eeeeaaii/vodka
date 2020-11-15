@@ -21,6 +21,7 @@ import { systemState } from './systemstate.js'
 import { LambdaEditor } from './nex/lambda.js'
 import { BoolEditor } from './nex/bool.js'
 import { ESymbolEditor } from './nex/esymbol.js'
+import { EStringEditor } from './nex/estring.js'
 import { CommandEditor } from './nex/command.js'
 import { TagEditor } from './tag.js'
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
@@ -41,7 +42,6 @@ import { experiments } from './globalappflags.js'
 
 const MAX_RENDER_DEPTH = 100;
 
-// V2_INSERTION
 const INSERT_UNSPECIFIED = 0;
 const INSERT_AFTER = 1;
 const INSERT_BEFORE = 2;
@@ -62,10 +62,7 @@ class RenderNode {
 		this.firstToggleOnNexRender = false;
 		this.currentEd = null;
 		this.wrapperDomNode = null;
-
-		if (experiments.V2_INSERTION) {
-			this.setInsertionMode(INSERT_UNSPECIFIED);
-		}
+		this.setInsertionMode(INSERT_UNSPECIFIED);
 	}
 
 	debugString() {
@@ -120,14 +117,12 @@ class RenderNode {
 			case '-bool-':
 				return new BoolEditor(nex);
 			case '-command-':
-				if (experiments.COMMAND_EDITOR) {
-					return new CommandEditor(nex);
-				} else {
-					return false;
-				}
+				return new CommandEditor(nex);
 			case '-symbol-':
-				if (experiments.SYMBOL_EDITOR) {
-					return new ESymbolEditor(nex);
+				return new ESymbolEditor(nex);
+			case '-string-':
+				if (experiments.BETTER_KEYBINDINGS) {
+					return new EStringEditor(nex);
 				} else {
 					return false;
 				}
@@ -344,10 +339,8 @@ class RenderNode {
 			return;
 		}
 		if (this.getNex().isNexContainer() && this.getNex().getTypeName() != '-nativeorg-' && !(renderFlags & RENDER_FLAG_SHALLOW)) {
-			if (experiments.V2_INSERTION) {
-				if ((renderFlags & RENDER_FLAG_EXPLODED) && this.insertionMode == INSERT_INSIDE) {
-					this.domNode.appendChild(this.getInsertionPointDomNode(this.insertionMode));			
-				}
+			if ((renderFlags & RENDER_FLAG_EXPLODED) && this.insertionMode == INSERT_INSIDE) {
+				this.domNode.appendChild(this.getInsertionPointDomNode(this.insertionMode));			
 			}
 			let i = 0;
 			for (i = 0; i < this.childnodes.length; i++) {
@@ -373,29 +366,21 @@ class RenderNode {
 				}
 				childRenderNode.setRenderDepth(this.renderDepth + 1);
 
-				if (experiments.V2_INSERTION) {
-					if ((renderFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_BEFORE) {
-						this.domNode.appendChild(this.getInsertionPointDomNode(childRenderNode.insertionMode));			
-					}
+				if ((renderFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_BEFORE) {
+					this.domNode.appendChild(this.getInsertionPointDomNode(childRenderNode.insertionMode));			
 				}
 				// need to append child before drawing so things like focus() work right
-				if (experiments.V2_INSERTION) {
-					if ((renderFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_AROUND) {
-						this.wrapperDomNodes[i] = this.getInsertionPointDomNode(childRenderNode.insertionMode);
-						this.domNode.appendChild(this.wrapperDomNodes[i]);
-						this.wrapperDomNodes[i].appendChild(childRenderNode.getDomNode());
-					} else {
-						this.wrapperDomNodes[i] = null;
-						this.domNode.appendChild(childRenderNode.getDomNode());
-					}
+				if ((renderFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_AROUND) {
+					this.wrapperDomNodes[i] = this.getInsertionPointDomNode(childRenderNode.insertionMode);
+					this.domNode.appendChild(this.wrapperDomNodes[i]);
+					this.wrapperDomNodes[i].appendChild(childRenderNode.getDomNode());
 				} else {
+					this.wrapperDomNodes[i] = null;
 					this.domNode.appendChild(childRenderNode.getDomNode());
 				}
 				childRenderNode.render(renderFlags);
-				if (experiments.V2_INSERTION) {
-					if ((renderFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_AFTER) {
-						this.domNode.appendChild(this.getInsertionPointDomNode(childRenderNode.insertionMode));			
-					}
+				if ((renderFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_AFTER) {
+					this.domNode.appendChild(this.getInsertionPointDomNode(childRenderNode.insertionMode));			
 				}
 
 			}
@@ -421,7 +406,6 @@ class RenderNode {
 		this.nex.renderTags(this.domNode, renderFlags, this.getCurrentEditor());
 	}
 
-	// V2_INSERTION
 	getInsertionPointDomNode(insertionMode) {
 		if (insertionMode == INSERT_AROUND) {
 			return this.getInsertionPointForAround();
@@ -430,7 +414,6 @@ class RenderNode {
 		}
 	}
 
-	// V2_INSERTION
 	getInsertionPointForAround() {
 		let ipoint = document.createElement('div');
 		let ss = "";
@@ -440,7 +423,6 @@ class RenderNode {
 		return ipoint;		
 	}
 
-	// V2_INSERTION
 	getInsertionPointForNotAround() {
 		let ipoint = document.createElement('div');
 		let ss = "";
@@ -460,12 +442,10 @@ class RenderNode {
 		return ipoint;
 	}
 
-	// V2_INSERTION
 	setInsertionMode(mode) {
 		this.insertionMode = mode;
 	}
 
-	// V2_INSERTION
 	nextInsertionMode() {
 		if (this.getNex().isNexContainer()) {
 			switch(this.insertionMode) {
@@ -495,7 +475,6 @@ class RenderNode {
 		}
 	}
 
-	// V2_INSERTION
 	getInsertionMode() {
 		return this.insertionMode;
 	}
@@ -511,20 +490,18 @@ class RenderNode {
 		}
 		selectedNode = this;
 		this.selected = true;
-		if (experiments.V2_INSERTION) {
-			let nex = this.getNex();
-			if (nex.isNexContainer() && nex.numChildren() == 0) {
-				// for commands that we know have no args, we don't do insert inside by default.
-				if (Utils.isCommand(nex)
-						&& nex.hasCachedClosure()
-						&& nex.getLambdaFromCachedClosure().getParams().length == 0) {
-					this.setInsertionMode(INSERT_AFTER);
-				} else {
-					this.setInsertionMode(INSERT_INSIDE);
-				}
-			} else {
+		let nex = this.getNex();
+		if (nex.isNexContainer() && nex.numChildren() == 0) {
+			// for commands that we know have no args, we don't do insert inside by default.
+			if (Utils.isCommand(nex)
+					&& nex.hasCachedClosure()
+					&& nex.getLambdaFromCachedClosure().getParams().length == 0) {
 				this.setInsertionMode(INSERT_AFTER);
+			} else {
+				this.setInsertionMode(INSERT_INSIDE);
 			}
+		} else {
+			this.setInsertionMode(INSERT_AFTER);
 		}
 		if (rerender) {
 			eventQueue.renderNodeRender(this, RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | systemState.getGlobalCurrentDefaultRenderFlags());
@@ -534,9 +511,7 @@ class RenderNode {
 
 	setUnselected() {
 		this.selected = false;
-		if (experiments.V2_INSERTION) {
-			this.setInsertionMode(INSERT_UNSPECIFIED);
-		}
+		this.setInsertionMode(INSERT_UNSPECIFIED);
 		if (this.getCurrentEditor()) {
 			this.forceCloseEditor();
 		}
@@ -643,10 +618,8 @@ class RenderNode {
 			this.getNex().insertChildAt(c.getNex(), i);
 			let renderNodeToInsertBefore = this.childnodes[i + 1];
 			let domNodeToInsertBefore = renderNodeToInsertBefore.getDomNode();
-			if (experiments.V2_INSERTION) {
-				if (renderNodeToInsertBefore.getInsertionMode() == INSERT_AROUND) {
-					domNodeToInsertBefore = domNodeToInsertBefore.parentNode;
-				}
+			if (renderNodeToInsertBefore.getInsertionMode() == INSERT_AROUND) {
+				domNodeToInsertBefore = domNodeToInsertBefore.parentNode;
 			}
 			this.getDomNode().insertBefore(c.getDomNode(), domNodeToInsertBefore);
 		}
@@ -749,7 +722,6 @@ class RenderNode {
 }
 
 export { RenderNode,
-// V2_INSERTION
 	INSERT_UNSPECIFIED,
 	INSERT_AFTER,
 	INSERT_BEFORE,

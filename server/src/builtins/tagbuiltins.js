@@ -21,52 +21,69 @@ import { Bool } from '../nex/bool.js'
 import { Tag } from '../tag.js'
 
 function createTagBuiltins() {
+
+	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
+
+	function $addTag(env, executionEnvironment) {
+		let n = env.lb('nex');
+		let tagname = env.lb('tag').getFullTypedValue();
+		n.addTag(new Tag(tagname));
+		return n;
+	}
+
 	Builtin.createBuiltin(
 		'add-tag',
 		[ 'nex', 'tag$' ],
-		function(env, executionEnvironment) {
-			let n = env.lb('nex');
-			let tagname = env.lb('tag').getFullTypedValue();
-			n.addTag(new Tag(tagname));
-			return n;
-		}
+		$addTag
 	);
+
+	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
+
+	function $clearTags(env, executionEnvironment) {
+		let n = env.lb('_nex');
+		n.clearTags();
+		return n;
+	}
 
 	Builtin.createBuiltin(
 		'clear-tags',
 		[ 'nex' ],
-		function(env, executionEnvironment) {
-			let n = env.lb('_nex');
-			n.clearTags();
-			return n;
-		}
+		$clearTags
 	);
+
+	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
+
+	function $hasTag(env, executionEnvironment) {
+		let n = env.lb('nex');
+		let tagname = env.lb('tag').getFullTypedValue();
+		let tag = new Tag(tagname);
+		if (n.hasTag(tag)) {
+			return new Bool(true);
+		} else {
+			return new Bool(false);
+		}
+	}
 
 	Builtin.createBuiltin(
 		'has-tag',
 		[ 'nex', 'tag$' ],
-		function(env, executionEnvironment) {
-			let n = env.lb('nex');
-			let tagname = env.lb('tag').getFullTypedValue();
-			let tag = new Tag(tagname);
-			if (n.hasTag(tag)) {
-				return new Bool(true);
-			} else {
-				return new Bool(false);
-			}
-		}
+		$hasTag
 	);
+
+	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
+
+	function $removeTag(env, executionEnvironment) {
+		let n = env.lb('nex');
+		let tagname = env.lb('tag').getFullTypedValue();
+		let tag = new Tag(tagname);
+		n.removeTag(tag);
+		return n;
+	}
 
 	Builtin.createBuiltin(
 		'remove-tag',
 		[ 'nex', 'tag$' ],
-		function(env, executionEnvironment) {
-			let n = env.lb('nex');
-			let tagname = env.lb('tag').getFullTypedValue();
-			let tag = new Tag(tagname);
-			n.removeTag(tag);
-			return n;
-		}
+		$removeTag
 	);
 }
 

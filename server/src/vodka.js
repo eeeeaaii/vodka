@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { setAppFlags, experiments } from './globalappflags.js'
+import { setAppFlags, otherflags, experiments } from './globalappflags.js'
 import { perfmon } from './perfmon.js'
 
 import { eventQueue } from './eventqueue.js'
@@ -46,7 +46,6 @@ import { Doc } from './nex/doc.js'
 import { runTest } from './tests/unittests.js';
 import { checkRecordState } from './testrecorder.js'
 import { RENDER_FLAG_REMOVE_OVERRIDES, RENDER_FLAG_EXPLODED } from './globalconstants.js'
-import { getGlobalAppFlagIsSet, getGlobalAppFlagValue } from '../globalappflags.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { BINDINGS } from '../environment.js'
 
@@ -138,21 +137,28 @@ function topLevelRender() {
 	systemState.getRoot().render(flags);
 }
 
+function setDocRootFromFile(filename) {
+	let cmd = Command.makeCommandWithArgs(
+		"ff",
+		Command.makeCommandWithArgs(
+			"load",
+			new ESymbol(filename)));
+	let exp = evaluateNexSafely(cmd, BINDINGS);
+	let expNode = root.appendChild(exp);
+	expNode.setSelected(false);
+	systemState.setGlobalCurrentDefaultRenderFlags(RENDER_FLAG_EXPLODED);	
+}
+
+function setEmptyDocRoot() {
+	let docNode = root.appendChild(new Doc());
+	docNode.setSelected(false /* don't render yet */);
+}
+
 function doStartupWork() {
-	if (getGlobalAppFlagIsSet('file')) {
-		let filename = getGlobalAppFlagValue('file');
-		let cmd = Command.makeCommandWithArgs(
-			"ff",
-			Command.makeCommandWithArgs(
-				"load",
-				new ESymbol(filename)));
-		let exp = evaluateNexSafely(cmd, BINDINGS);
-		let expNode = root.appendChild(exp);
-		expNode.setSelected(false);
-		systemState.setGlobalCurrentDefaultRenderFlags(RENDER_FLAG_EXPLODED);
+	if (!!otherflags.FILE) {
+		setDocRootFromFile(otherflags.FILE);
 	} else {
-		let docNode = root.appendChild(new Doc());
-		docNode.setSelected(false /* don't render yet */);
+		setEmptyDocRoot();
 	}
 }
 
@@ -181,7 +187,6 @@ function setup() {
 	systemState.setRoot(root);
 
 
-	// V2_INSERTION
 	let justPressedShift = false;
 
 	document.onclick = function(e) {
@@ -190,23 +195,19 @@ function setup() {
 	}
 	document.onkeyup = function(e) {
 		checkRecordState(e, 'up');
-		if (experiments.V2_INSERTION) {
-			if (justPressedShift) {
-				return doKeyInputNotForTests('NakedShift', e.code, e.shiftKey, e.ctrlKey, e.metaKey, e.altKey);
-			}
-			justPressedShift = false;
+		if (justPressedShift) {
+			return doKeyInputNotForTests('NakedShift', e.code, e.shiftKey, e.ctrlKey, e.metaKey, e.altKey);
 		}
+		justPressedShift = false;
 		return true;
 	}
 	document.onkeydown = function(e) {
 		checkRecordState(e, 'down');
 		if (systemState.isKeyFunnelActive()) {
-			if (experiments.V2_INSERTION) {
-				if (e.key == 'Shift') {
-					justPressedShift = true;
-				} else {
-					justPressedShift = false;
-				}
+			if (e.key == 'Shift') {
+				justPressedShift = true;
+			} else {
+				justPressedShift = false;
 			}
 			return doKeyInputNotForTests(e.key, e.code, e.shiftKey, e.ctrlKey, e.metaKey, e.altKey);
 		} else {

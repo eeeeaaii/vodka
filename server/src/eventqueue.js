@@ -85,7 +85,7 @@ class EventQueue {
 					other.action == this.action
 					&& other.renderNode == this.renderNode);
 			},
-			do: function() {
+			do: function doAlertAnimation() {
 				this.renderNode.doAlertAnimation();
 			}
 		};
@@ -111,7 +111,7 @@ class EventQueue {
 					&& other.renderNode == this.renderNode
 					&& other.flags == this.flags);
 			},
-			do: function() {
+			do: function doRenderNodeRender() {
 				systemState.setGlobalRenderPassNumber(systemState.getGlobalRenderPassNumber() + 1);
 				this.renderNode.render(this.flags);
 			}
@@ -140,7 +140,7 @@ class EventQueue {
 			hasAlt: hasAlt,
 			shouldDedupe: false,
 			equals: null, // not needed when shouldDedupe = false
-			do: function() {
+			do: function doDoKeyInput() {
 				Vodka.doRealKeyInput(this.keycode, this.whichkey, this.hasShift, this.hasCtrl, this.hasMeta, this.hasAlt);
 			}
 		};
@@ -157,7 +157,7 @@ class EventQueue {
 				return (
 					other.action == this.action);
 			},
-			do: function() {
+			do: function doImportantTopLevelRender() {
 				Vodka.topLevelRender();
 			}
 		};
@@ -175,7 +175,7 @@ class EventQueue {
 			renderNode: renderNode,
 			event: event,
 			equals: null, // not needed when shouldDedupe = false
-			do: function() {
+			do: function doDoClickHandlerAction() {
 				respondToClickEvent(this.target, this.renderNode, event);
 			}
 		};
@@ -192,7 +192,7 @@ class EventQueue {
 			result: result,
 			shouldDedupe: false,
 			equals: null, // not needed when shouldDedupe = false
-			do: function() {
+			do: function doExpectationFulfill() {
 				this.exp.fulfill(this.result);
 			}
 		};
@@ -210,7 +210,7 @@ class EventQueue {
 			callback: callback,
 			shouldDedupe: false,
 			equals: null, // not needed when shouldDedupe = false
-			do: function() {
+			do: function doExpectationCallback() {
 				this.callback(this.result);
 			}
 		};
@@ -226,7 +226,7 @@ class EventQueue {
 			equals: function(other) {
 				return (other.action == this.action);
 			},
-			do: function() {
+			do: function doTopLevelRender() {
 				Vodka.topLevelRender();
 			}
 		};
@@ -242,7 +242,7 @@ class EventQueue {
 			equals: function(other) {
 				return (other.action == this.action);
 			},
-			do: function() {
+			do: function doEnqueueGC() {
 				gc.markAndSweep();
 			}
 		};
@@ -251,9 +251,10 @@ class EventQueue {
 	}
 
 	setTimeoutForProcessingNextItem(item) {
-		setTimeout((function() {
-			this.processNextItem();
-		}).bind(this), 0);
+		setTimeout(this.processNextItem.bind(this), 0);
+		// setTimeout((function() {
+		// 	this.processNextItem();
+		// }).bind(this), 0);
 	}
 
 	selectQueue() {

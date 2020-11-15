@@ -17,7 +17,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 // useful tool: https://www.metaflop.com/modulator
 
-import { MoveOp, BezierOp, LineOp, BezierPlotOp } from './drawingops.js'
+import { MoveOp, OP_MOVE,
+		 BezierOp, OP_BEZIER,
+		 LineOp, OP_LINE,
+		 BezierPlotOp, OP_BEZIERPLOT } from "./drawingops.js"
+
 import { Glyph } from "./glyph.js"
 import { Font } from "./font.js"
 
@@ -25,1398 +29,1398 @@ import { Font } from "./font.js"
 const GLYPHS = {
 	' ': new Glyph(.4, []),
 	'a': new Glyph(.7, [
-		{ op: 'move', d: [
-			{ x:'left', y:'corpus * .75'},
+		{ op: OP_MOVE, d: [
+			{ x:p => (p.left), y:p => (p.corpus * .75) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'corpus * .75 + (curve * .75)' },
-			{ x:'mid - (curve * .75)', y:'corpus' },
-			{ x:'mid', y:'corpus'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.corpus * .75 + (p.curve * .75)) },
+			{ x:p => (p.mid - (p.curve * .75)), y:p => (p.corpus) },
+			{ x:p => (p.mid), y:p => (p.corpus) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid + (curve * .75)', y:'corpus' },
-			{ x:'right', y:'corpus * .75 + (curve * .75)' },
-			{ x:'right', y:'corpus * .75'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + (p.curve * .75)), y:p => (p.corpus) },
+			{ x:p => (p.right), y:p => (p.corpus * .75 + (p.curve * .75)) },
+			{ x:p => (p.right), y:p => (p.corpus * .75) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'right', y:'corpus * .75 - (curve * .75)' },
-			{ x:'mid + (curve * .75)', y:'corpus / 2' },
-			{ x:'mid', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => (p.corpus * .75 - (p.curve * .75)) },
+			{ x:p => (p.mid + (p.curve * .75)), y:p => (p.corpus / 2) },
+			{ x:p => (p.mid), y:p => (p.corpus / 2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid - (curve * .75)', y:'corpus / 2' },
-			{ x:'left', y:'(corpus * .25) + (curve * .75)' },
-			{ x:'left', y:'(corpus * .25)'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - (p.curve * .75)), y:p => (p.corpus / 2) },
+			{ x:p => (p.left), y:p => ((p.corpus * .25) + (p.curve * .75)) },
+			{ x:p => (p.left), y:p => ((p.corpus * .25)) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'(corpus * .25) - (curve * .75)' },
-			{ x:'mid - (curve * .75)', y:'baseline' },
-			{ x:'mid', y:'baseline'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => ((p.corpus * .25) - (p.curve * .75)) },
+			{ x:p => (p.mid - (p.curve * .75)), y:p => (p.baseline) },
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid + (curve * .75)', y:'baseline' },
-			{ x:'right', y:'(corpus * .25) - (curve * .75)' },
-			{ x:'right', y:'(corpus * .25)'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + (p.curve * .75)), y:p => (p.baseline) },
+			{ x:p => (p.right), y:p => ((p.corpus * .25) - (p.curve * .75)) },
+			{ x:p => (p.right), y:p => ((p.corpus * .25)) },
 		]},
-		{ op: 'move', d: [
-			{ x:'right', y:'corpus * .75'},
+		{ op: OP_MOVE, d: [
+			{ x:p => (p.right), y:p => (p.corpus * .75) },
 		]},
-		{ op: 'line', d: [
-			{ x:'right', y:'baseline - .02' },
+		{ op: OP_LINE, d: [
+			{ x:p => (p.right), y:p => (p.baseline - .02) },
 		]},
 	]),
 
 	'b': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'left', y:'asc'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.asc) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'move', d:[
-			{ x:'left', y:'corpus / 2'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.corpus / 2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'corpus / 2 + curve' },
-			{ x:'mid - curve', y:'corpus' },
-			{ x:'mid', y:'corpus'},
-		]},
-
-		{ op: 'bezier', d: [
-			{ x:'mid + curve', y:'corpus' },
-			{ x:'right', y:'corpus / 2 + curve' },
-			{ x:'right', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.mid - p.curve), y:p => (p.corpus) },
+			{ x:p => (p.mid), y:p => (p.corpus) },
 		]},
 
-		{ op: 'bezier', d: [
-			{ x:'right', y:'corpus / 2 - curve' },
-			{ x:'mid + curve', y:'baseline' },
-			{ x:'mid', y:'baseline'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + p.curve), y:p => (p.corpus) },
+			{ x:p => (p.right), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.right), y:p => (p.corpus / 2) },
 		]},
 
-		{ op: 'bezier', d: [
-			{ x:'mid - curve', y:'baseline' },
-			 { x:'left', y:'corpus / 2 - curve' },
-	  		{ x:'left', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => (p.corpus / 2 - p.curve) },
+			{ x:p => (p.mid + p.curve), y:p => (p.baseline) },
+			{ x:p => (p.mid), y:p => (p.baseline) },
+		]},
+
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - p.curve), y:p => (p.baseline) },
+			 { x:p => (p.left), y:p => (p.corpus / 2 - p.curve) },
+	  		{ x:p => (p.left), y:p => (p.corpus / 2) },
 	  	]},
 	]),
 
 	'c': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'mid', y:'corpus'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.corpus) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid - curve', y:'corpus' },
-		 	{ x:'left', y:'corpus / 2 + curve' },
-		 	{ x:'left', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - p.curve), y:p => (p.corpus) },
+		 	{ x:p => (p.left), y:p => (p.corpus / 2 + p.curve) },
+		 	{ x:p => (p.left), y:p => (p.corpus / 2) },
 		 ]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'corpus / 2 - curve' },
-		 	{ x:'mid - curve', y:'baseline' },
-		 	{ x:'mid', y:'baseline'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.corpus / 2 - p.curve) },
+		 	{ x:p => (p.mid - p.curve), y:p => (p.baseline) },
+		 	{ x:p => (p.mid), y:p => (p.baseline) },
 		 ]},
-		{ op: 'bezierplot', d: [
-			{ val: 'aperture' },
-			{ x: 'mid', y: 'corpus'},
-			{ x: 'mid + curve', y: 'corpus'},
-			{ x: 'right', y: 'corpus / 2 + curve'},
-			{ x: 'right', y: 'corpus / 2'},
+		{ op: OP_BEZIERPLOT, d: [
+			{ val:p => (p.aperture) },
+			{ x:p => (p.mid), y:p => (p.corpus) },
+			{ x:p => (p.mid + p.curve), y:p => (p.corpus) },
+			{ x:p => (p.right), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.right), y:p => (p.corpus / 2) },
 		]},
-		{ op: 'bezierplot', d: [
-			{ val: 'aperture' },
-			{ x: 'mid', y: 'baseline'},
-			{ x: 'mid + curve', y: 'baseline'},
-			{ x: 'right', y: 'corpus / 2 - curve'},
-			{ x: 'right', y: 'corpus / 2'},
+		{ op: OP_BEZIERPLOT, d: [
+			{ val:p => (p.aperture) },
+			{ x:p => (p.mid), y:p => (p.baseline) },
+			{ x:p => (p.mid + p.curve), y:p => (p.baseline) },
+			{ x:p => (p.right), y:p => (p.corpus / 2 - p.curve) },
+			{ x:p => (p.right), y:p => (p.corpus / 2) },
 		]},
 	]),
 
 	'd': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'left', y:'corpus / 2'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.corpus / 2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'corpus / 2 + curve' },
-			{ x:'mid - curve', y:'corpus' },
-			{ x:'mid', y:'corpus'},
-		]},
-
-		{ op: 'bezier', d: [
-			{ x:'mid + curve', y:'corpus' },
-			{ x:'right', y:'corpus / 2 + curve' },
-			{ x:'right', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.mid - p.curve), y:p => (p.corpus) },
+			{ x:p => (p.mid), y:p => (p.corpus) },
 		]},
 
-		{ op: 'bezier', d: [
-			{ x:'right', y:'corpus / 2 - curve' },
-			{ x:'mid + curve', y:'baseline' },
-			{ x:'mid', y:'baseline'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + p.curve), y:p => (p.corpus) },
+			{ x:p => (p.right), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.right), y:p => (p.corpus / 2) },
 		]},
 
-		{ op: 'bezier', d: [
-			{ x:'mid - curve', y:'baseline' },
-			{ x:'left', y:'corpus / 2 - curve' },
-	  		{ x:'left', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => (p.corpus / 2 - p.curve) },
+			{ x:p => (p.mid + p.curve), y:p => (p.baseline) },
+			{ x:p => (p.mid), y:p => (p.baseline) },
+		]},
+
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - p.curve), y:p => (p.baseline) },
+			{ x:p => (p.left), y:p => (p.corpus / 2 - p.curve) },
+	  		{ x:p => (p.left), y:p => (p.corpus / 2) },
 	  	]},
-		{ op:'move', d:[
-			{ x:'right', y:'asc'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.right), y:p => (p.asc) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.baseline) },
 		]},
 
 	]),
 	'e': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'left', y:'corpus / 2'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.corpus / 2) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'corpus / 2'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.corpus / 2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'right', y:'corpus / 2 + curve' },
-		 	{ x:'mid + curve', y:'corpus' },
-		 	{ x:'mid', y:'corpus'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => (p.corpus / 2 + p.curve) },
+		 	{ x:p => (p.mid + p.curve), y:p => (p.corpus) },
+		 	{ x:p => (p.mid), y:p => (p.corpus) },
 		 ]},
-		{ op: 'bezier', d: [
-			{ x:'mid - curve', y:'corpus' },
-		 	{ x:'left', y:'corpus / 2 + curve' },
-		 	{ x:'left', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - p.curve), y:p => (p.corpus) },
+		 	{ x:p => (p.left), y:p => (p.corpus / 2 + p.curve) },
+		 	{ x:p => (p.left), y:p => (p.corpus / 2) },
 		 ]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'corpus / 2 - curve' },
-		 	{ x:'mid - curve', y:'baseline' },
-		 	{ x:'mid', y:'baseline'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.corpus / 2 - p.curve) },
+		 	{ x:p => (p.mid - p.curve), y:p => (p.baseline) },
+		 	{ x:p => (p.mid), y:p => (p.baseline) },
 		 ]},
-		{ op: 'bezierplot', d: [
-			{ val: 'aperture' },
-			{ x: 'mid', y: 'baseline'},
-			{ x: 'mid + curve', y: 'baseline'},
-			{ x: 'right', y: 'corpus / 2 - curve'},
-			{ x: 'right', y: 'corpus / 2'},
+		{ op: OP_BEZIERPLOT, d: [
+			{ val:p => (p.aperture) },
+			{ x:p => (p.mid), y:p => (p.baseline) },
+			{ x:p => (p.mid + p.curve), y:p => (p.baseline) },
+			{ x:p => (p.right), y:p => (p.corpus / 2 - p.curve) },
+			{ x:p => (p.right), y:p => (p.corpus / 2) },
 		]},
 	]),
 	'f': new Glyph(.6, [
-		{ op:'move', d:[
-			{ x:'right', y:'asc'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.right), y:p => (p.asc) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'right - .1', y:'asc' },
-		 	{ x:'mid', y:'asc * .8 + .1' },
-		 	{ x:'mid', y:'asc * .8'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right - .1), y:p => (p.asc) },
+		 	{ x:p => (p.mid), y:p => (p.asc * .8 + .1) },
+		 	{ x:p => (p.mid), y:p => (p.asc * .8) },
 		 ]},
-		{ op:'line', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op:'move', d:[
-			{ x:'left', y:'corpus'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.corpus) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'corpus'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.corpus) },
 		]},
 	]),
 
 	'g': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'left', y:'corpus / 2'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.corpus / 2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'corpus / 2 + curve' },
-			{ x:'mid - curve', y:'corpus' },
-			{ x:'mid', y:'corpus'},
-		]},
-
-		{ op: 'bezier', d: [
-			{ x:'mid + curve', y:'corpus' },
-			{ x:'right', y:'corpus / 2 + curve' },
-			{ x:'right', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.mid - p.curve), y:p => (p.corpus) },
+			{ x:p => (p.mid), y:p => (p.corpus) },
 		]},
 
-		{ op: 'bezier', d: [
-			{ x:'right', y:'corpus / 2 - curve' },
-			{ x:'mid + curve', y:'baseline' },
-			{ x:'mid', y:'baseline'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + p.curve), y:p => (p.corpus) },
+			{ x:p => (p.right), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.right), y:p => (p.corpus / 2) },
 		]},
 
-		{ op: 'bezier', d: [
-			{ x:'mid - curve', y:'baseline' },
-			 { x:'left', y:'corpus / 2 - curve' },
-	  		{ x:'left', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => (p.corpus / 2 - p.curve) },
+			{ x:p => (p.mid + p.curve), y:p => (p.baseline) },
+			{ x:p => (p.mid), y:p => (p.baseline) },
+		]},
+
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - p.curve), y:p => (p.baseline) },
+			 { x:p => (p.left), y:p => (p.corpus / 2 - p.curve) },
+	  		{ x:p => (p.left), y:p => (p.corpus / 2) },
 	  	]},
-		{ op:'move', d:[
-			{ x:'right', y:'corpus'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.right), y:p => (p.corpus) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'desc * .4'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.desc * .4) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'right', y:'desc * .4 - curve' },
-			 { x:'mid + curve', y:'desc' },
-	  		{ x:'mid', y:'desc'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => (p.desc * .4 - p.curve) },
+			 { x:p => (p.mid + p.curve), y:p => (p.desc) },
+	  		{ x:p => (p.mid), y:p => (p.desc) },
 	  	]},
-		{ op: 'bezier', d: [
-			{ x:'mid - curve', y:'desc' },
-			 { x:'left', y:'desc * .4 - curve' },
-	  		{ x:'left', y:'desc * .4'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - p.curve), y:p => (p.desc) },
+			 { x:p => (p.left), y:p => (p.desc * .4 - p.curve) },
+	  		{ x:p => (p.left), y:p => (p.desc * .4) },
 	  	]},
 	]),
 	'h': new Glyph(.8, [
-		{ op:'move', d:[
-			{ x:'left', y:'asc'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.asc) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'corpus / 2'}, // overdraw
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.corpus / 2) }, // overdraw
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'corpus / 2 + curve' },
-			{ x:'mid - curve', y:'corpus' },
-			{ x:'mid', y:'corpus'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.mid - p.curve), y:p => (p.corpus) },
+			{ x:p => (p.mid), y:p => (p.corpus) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid + curve', y:'corpus' },
-			{ x:'right', y:'corpus / 2 + curve' },
-			{ x:'right', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + p.curve), y:p => (p.corpus) },
+			{ x:p => (p.right), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.right), y:p => (p.corpus / 2) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.baseline) },
 		]},
 	]),
 	'i': new Glyph(.15, [
-		{ op:'move', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'corpus'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.corpus) },
 		]},
-		{ op:'move', d:[
-			{ x:'mid', y:'corpus + .1'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.corpus + .1) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'corpus + .2'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.corpus + .2) },
 		]},
 	]),
 	'j': new Glyph(.15, [
-		{ op:'move', d:[
-			{ x:'mid', y:'corpus'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.corpus) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'(desc + .1)'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => ((p.desc + .1)) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid', y:'(desc + .1) - .1' },
-			{ x:'(left - .2) + .1', y:'desc' },
-			{ x:'(left - .2)', y:'desc'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid), y:p => ((p.desc + .1) - .1) },
+			{ x:p => ((p.left - .2) + .1), y:p => (p.desc) },
+			{ x:p => ((p.left - .2)), y:p => (p.desc) },
 		]},
-		{ op:'move', d:[
-			{ x:'mid', y:'corpus + .1'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.corpus + .1) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'corpus + .2'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.corpus + .2) },
 		]},
 	]),
 	'k': new Glyph(.7, [
-		{ op:'move', d:[
-			{ x:'left', y:'asc'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.asc) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'move', d:[
-			{ x:'left', y:'corpus * .4'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.corpus * .4) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'corpus'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.corpus) },
 		]},
-		{ op:'move', d:[
-			{ x:'left + width * .4', y:'corpus * .6'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left + p.width * .4), y:p => (p.corpus * .6) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.baseline) },
 		]},
 	]),
 	'l': new Glyph(.1, [
-		{ op:'move', d:[
-			{ x:'mid', y:'asc'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.asc) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
 	]),
 	'm': new Glyph(1.4, [
-		{ op:'move', d:[
-			{ x:'left', y:'corpus'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.corpus) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'corpus / 2'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.corpus / 2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'corpus / 2 + curve' },
-			{ x:'mid * .5 - curve', y:'corpus' },
-			{ x:'mid * .5 ', y:'corpus'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.mid * .5 - p.curve), y:p => (p.corpus) },
+			{ x:p => (p.mid * .5 ), y:p => (p.corpus) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid * .5 + curve', y:'corpus' },
-			{ x:'mid', y:'corpus / 2 + curve' },
-			{ x:'mid', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid * .5 + p.curve), y:p => (p.corpus) },
+			{ x:p => (p.mid), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.mid), y:p => (p.corpus / 2) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'corpus / 2'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.corpus / 2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid', y:'corpus / 2 + curve' },
-			{ x:'mid * 1.5 - curve', y:'corpus' },
-			{ x:'mid * 1.5 ', y:'corpus'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.mid * 1.5 - p.curve), y:p => (p.corpus) },
+			{ x:p => (p.mid * 1.5 ), y:p => (p.corpus) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid * 1.5 + curve', y:'corpus' },
-			{ x:'right', y:'corpus / 2 + curve' },
-			{ x:'right', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid * 1.5 + p.curve), y:p => (p.corpus) },
+			{ x:p => (p.right), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.right), y:p => (p.corpus / 2) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.baseline) },
 		]},
 	]),
 	'n': new Glyph(0.7, [
-		{ op:'move', d:[
-			{ x:'left', y:'corpus'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.corpus) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'corpus / 2'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.corpus / 2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'corpus / 2 + curve' },
-			{ x:'mid - curve', y:'corpus' },
-			{ x:'mid ', y:'corpus'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.mid - p.curve), y:p => (p.corpus) },
+			{ x:p => (p.mid ), y:p => (p.corpus) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid + curve', y:'corpus' },
-			{ x:'right', y:'corpus / 2 + curve' },
-			{ x:'right', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + p.curve), y:p => (p.corpus) },
+			{ x:p => (p.right), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.right), y:p => (p.corpus / 2) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.baseline) },
 		]},
 	]),
 	'o': new Glyph(1.0, [
-		{ op:'move', d: [
-			{x:'left', y:'corpus / 2'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.corpus / 2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'corpus / 2 + curve' },
-			{ x:'mid - curve', y:'corpus' },
-			{ x:'mid', y:'corpus'},
-		]},
-
-		{ op: 'bezier', d: [
-			{ x:'mid + curve', y:'corpus' },
-			{ x:'right', y:'corpus / 2 + curve' },
-			{ x:'right', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.mid - p.curve), y:p => (p.corpus) },
+			{ x:p => (p.mid), y:p => (p.corpus) },
 		]},
 
-		{ op: 'bezier', d: [
-			{ x:'right', y:'corpus / 2 - curve' },
-			{ x:'mid + curve', y:'baseline' },
-			{ x:'mid', y:'baseline'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + p.curve), y:p => (p.corpus) },
+			{ x:p => (p.right), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.right), y:p => (p.corpus / 2) },
 		]},
 
-		{ op: 'bezier', d: [
-			{ x:'mid - curve', y:'baseline' },
-			 { x:'left', y:'corpus / 2 - curve' },
-	  		{ x:'left', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => (p.corpus / 2 - p.curve) },
+			{ x:p => (p.mid + p.curve), y:p => (p.baseline) },
+			{ x:p => (p.mid), y:p => (p.baseline) },
+		]},
+
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - p.curve), y:p => (p.baseline) },
+			 { x:p => (p.left), y:p => (p.corpus / 2 - p.curve) },
+	  		{ x:p => (p.left), y:p => (p.corpus / 2) },
 	  	]},
 	]),
 	'p': new Glyph(1.0, [
-		{ op:'move', d: [
-			{x:'left', y:'corpus'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.corpus) },
 		]},
-		{ op:'line', d: [
-			{x:'left', y:'desc'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.left), y:p => (p.desc) },
 		]},
-		{ op:'move', d: [
-			{x:'left', y:'corpus / 2'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.corpus / 2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'corpus / 2 + curve' },
-			{ x:'mid - curve', y:'corpus' },
-			{ x:'mid', y:'corpus'},
-		]},
-
-		{ op: 'bezier', d: [
-			{ x:'mid + curve', y:'corpus' },
-			{ x:'right', y:'corpus / 2 + curve' },
-			{ x:'right', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.mid - p.curve), y:p => (p.corpus) },
+			{ x:p => (p.mid), y:p => (p.corpus) },
 		]},
 
-		{ op: 'bezier', d: [
-			{ x:'right', y:'corpus / 2 - curve' },
-			{ x:'mid + curve', y:'baseline' },
-			{ x:'mid', y:'baseline'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + p.curve), y:p => (p.corpus) },
+			{ x:p => (p.right), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.right), y:p => (p.corpus / 2) },
 		]},
 
-		{ op: 'bezier', d: [
-			{ x:'mid - curve', y:'baseline' },
-			 { x:'left', y:'corpus / 2 - curve' },
-	  		{ x:'left', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => (p.corpus / 2 - p.curve) },
+			{ x:p => (p.mid + p.curve), y:p => (p.baseline) },
+			{ x:p => (p.mid), y:p => (p.baseline) },
+		]},
+
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - p.curve), y:p => (p.baseline) },
+			 { x:p => (p.left), y:p => (p.corpus / 2 - p.curve) },
+	  		{ x:p => (p.left), y:p => (p.corpus / 2) },
 	  	]},
 	]),
 	'q': new Glyph(1.0, [
-		{ op:'move', d: [
-			{x:'left', y:'corpus / 2'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.corpus / 2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'corpus / 2 + curve' },
-			{ x:'mid - curve', y:'corpus' },
-			{ x:'mid', y:'corpus'},
-		]},
-
-		{ op: 'bezier', d: [
-			{ x:'mid + curve', y:'corpus' },
-			{ x:'right', y:'corpus / 2 + curve' },
-			{ x:'right', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.mid - p.curve), y:p => (p.corpus) },
+			{ x:p => (p.mid), y:p => (p.corpus) },
 		]},
 
-		{ op: 'bezier', d: [
-			{ x:'right', y:'corpus / 2 - curve' },
-			{ x:'mid + curve', y:'baseline' },
-			{ x:'mid', y:'baseline'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + p.curve), y:p => (p.corpus) },
+			{ x:p => (p.right), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.right), y:p => (p.corpus / 2) },
 		]},
 
-		{ op: 'bezier', d: [
-			{ x:'mid - curve', y:'baseline' },
-			 { x:'left', y:'corpus / 2 - curve' },
-	  		{ x:'left', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => (p.corpus / 2 - p.curve) },
+			{ x:p => (p.mid + p.curve), y:p => (p.baseline) },
+			{ x:p => (p.mid), y:p => (p.baseline) },
+		]},
+
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - p.curve), y:p => (p.baseline) },
+			 { x:p => (p.left), y:p => (p.corpus / 2 - p.curve) },
+	  		{ x:p => (p.left), y:p => (p.corpus / 2) },
 	  	]},
-		{ op:'move', d: [
-			{x:'right', y:'corpus'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.right), y:p => (p.corpus) },
 		]},
-		{ op:'line', d: [
-			{x:'right', y:'desc'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.right), y:p => (p.desc) },
 		]},
 	]),
 	'r': new Glyph(.4, [
-		{ op:'move', d: [
-			{x:'left', y:'corpus'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.corpus) },
 		]},
-		{ op:'line', d: [
-			{x:'left', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'line', d: [
-			{x:'left', y:'corpus / 2'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.left), y:p => (p.corpus / 2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'corpus / 2 + curve' },
-			{ x:'right - curve', y:'corpus' },
-			{ x:'right', y:'corpus'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.corpus / 2 + p.curve) },
+			{ x:p => (p.right - p.curve), y:p => (p.corpus) },
+			{ x:p => (p.right), y:p => (p.corpus) },
 		]},
 	]),
 	's': new Glyph(.65, [
-		{ op:'move', d: [
-			{x:'right', y:'corpus * .8'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.right), y:p => (p.corpus * .8) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'right - (curve * .3)', y:'corpus * .8 + (curve * .7)' },
-			{ x:'mid + (curve * .2)', y:'corpus' },
-			{ x:'mid', y:'corpus'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right - (p.curve * .3)), y:p => (p.corpus * .8 + (p.curve * .7)) },
+			{ x:p => (p.mid + (p.curve * .2)), y:p => (p.corpus) },
+			{ x:p => (p.mid), y:p => (p.corpus) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid - (curve * .7)', y:'corpus' },
-			{ x:'left', y:'corpus * .8 + (curve * .4)' },
-			{ x:'left', y:'corpus * .8' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - (p.curve * .7)), y:p => (p.corpus) },
+			{ x:p => (p.left), y:p => (p.corpus * .8 + (p.curve * .4)) },
+			{ x:p => (p.left), y:p => (p.corpus * .8) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'corpus * .8 - (curve * .7)' },
-			{ x:'mid - (curve * .7)', y:'corpus * .55' },
-			{ x:'mid', y:'corpus * .5' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.corpus * .8 - (p.curve * .7)) },
+			{ x:p => (p.mid - (p.curve * .7)), y:p => (p.corpus * .55) },
+			{ x:p => (p.mid), y:p => (p.corpus * .5) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid + (curve * .7)', y:'corpus * .45' },
-			{ x:'right', y:'corpus * .2 + (curve * .7)' },
-			{ x:'right', y:'corpus * .2' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + (p.curve * .7)), y:p => (p.corpus * .45) },
+			{ x:p => (p.right), y:p => (p.corpus * .2 + (p.curve * .7)) },
+			{ x:p => (p.right), y:p => (p.corpus * .2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'right', y:'corpus * .2 - (curve * .4)' },
-			{ x:'mid + (curve * .7)', y:'baseline' },
-			{ x:'mid', y:'baseline'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => (p.corpus * .2 - (p.curve * .4)) },
+			{ x:p => (p.mid + (p.curve * .7)), y:p => (p.baseline) },
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid - (curve * .2)', y:'baseline' },
-			{ x:'left + (curve * .3)', y:'corpus * .2 - (curve * .7)' },
-			{ x:'left', y:'corpus * .2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - (p.curve * .2)), y:p => (p.baseline) },
+			{ x:p => (p.left + (p.curve * .3)), y:p => (p.corpus * .2 - (p.curve * .7)) },
+			{ x:p => (p.left), y:p => (p.corpus * .2) },
 		]},
 	]),
 	't': new Glyph(.65, [
-		{ op:'move', d: [
-			{x:'width * .4', y:'asc * .8'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.width * .4), y:p => (p.asc * .8) },
 		]},
-		{ op:'line', d: [
-			{x:'width * .4', y:'corpus * .2'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.width * .4), y:p => (p.corpus * .2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'width * .4', y:'corpus * .2 - (curve * .3)' },
-			{ x:'width * .7 - (curve * .3)', y:'baseline' },
-			{ x:'width * .7', y:'baseline' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.width * .4), y:p => (p.corpus * .2 - (p.curve * .3)) },
+			{ x:p => (p.width * .7 - (p.curve * .3)), y:p => (p.baseline) },
+			{ x:p => (p.width * .7), y:p => (p.baseline) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'width * .7 + (curve * .3)', y:'baseline' },
-			{ x:'right', y:'corpus * .2 - (curve * .3)' },
-			{ x:'right', y:'corpus * .2' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.width * .7 + (p.curve * .3)), y:p => (p.baseline) },
+			{ x:p => (p.right), y:p => (p.corpus * .2 - (p.curve * .3)) },
+			{ x:p => (p.right), y:p => (p.corpus * .2) },
 		]},
-		{ op:'move', d: [
-			{x:'left', y:'corpus'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.corpus) },
 		]},
-		{ op:'line', d: [
-			{x:'right', y:'corpus'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.right), y:p => (p.corpus) },
 		]},
 	]),
 	'u': new Glyph(.8, [
-		{ op:'move', d: [
-			{x:'left', y:'corpus'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.corpus) },
 		]},
-		{ op:'line', d: [
-			{x:'left', y:'corpus * .5'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.left), y:p => (p.corpus * .5) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'corpus * .5 - curve' },
-			{ x:'mid - curve', y:'baseline' },
-			{ x:'mid', y:'baseline' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.corpus * .5 - p.curve) },
+			{ x:p => (p.mid - p.curve), y:p => (p.baseline) },
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid + curve', y:'baseline' },
-			{ x:'right', y:'corpus * .5 - curve' },
-			{ x:'right', y:'corpus * .5' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + p.curve), y:p => (p.baseline) },
+			{ x:p => (p.right), y:p => (p.corpus * .5 - p.curve) },
+			{ x:p => (p.right), y:p => (p.corpus * .5) },
 		]},
-		{ op:'line', d: [
-			{x:'right', y:'corpus'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.right), y:p => (p.corpus) },
 		]},
-		{ op:'line', d: [
-			{x:'right', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.right), y:p => (p.baseline) },
 		]},
 	]),
 	'v': new Glyph(.8, [
-		{ op:'move', d: [
-			{x:'left', y:'corpus'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.corpus) },
 		]},
-		{ op:'line', d: [
-			{x:'mid - (curve * .1)', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.mid - (p.curve * .1)), y:p => (p.baseline) },
 		]},
-		{ op:'line', d: [
-			{x:'mid + (curve * .1)', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.mid + (p.curve * .1)), y:p => (p.baseline) },
 		]},
-		{ op:'line', d: [
-			{x:'right', y:'corpus'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.right), y:p => (p.corpus) },
 		]},
 	]),
 	'w': new Glyph(1.6, [
-		{ op:'move', d: [
-			{x:'left', y:'corpus'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.corpus) },
 		]},
-		{ op:'line', d: [
-			{x:'(width * .25) - (curve * .1)', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => ((p.width * .25) - (p.curve * .1)), y:p => (p.baseline) },
 		]},
-		{ op:'line', d: [
-			{x:'(width * .25) + (curve * .1)', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => ((p.width * .25) + (p.curve * .1)), y:p => (p.baseline) },
 		]},
-		{ op:'line', d: [
-			{x:'(width * .5) - (curve * .1)', y:'corpus * .95'},
+		{ op: OP_LINE, d: [
+			{x:p => ((p.width * .5) - (p.curve * .1)), y:p => (p.corpus * .95) },
 		]},
-		{ op:'line', d: [
-			{x:'(width * .5) + (curve * .1)', y:'corpus * .95'},
+		{ op: OP_LINE, d: [
+			{x:p => ((p.width * .5) + (p.curve * .1)), y:p => (p.corpus * .95) },
 		]},
-		{ op:'line', d: [
-			{x:'(width * .75) - (curve * .1)', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => ((p.width * .75) - (p.curve * .1)), y:p => (p.baseline) },
 		]},
-		{ op:'line', d: [
-			{x:'(width * .75) + (curve * .1)', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => ((p.width * .75) + (p.curve * .1)), y:p => (p.baseline) },
 		]},
-		{ op:'line', d: [
-			{x:'width', y:'corpus'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.width), y:p => (p.corpus) },
 		]},
 	]),
 	'x': new Glyph(.8, [
-		{ op:'move', d: [
-			{x:'left', y:'corpus'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.corpus) },
 		]},
-		{ op:'line', d: [
-			{x:'right', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.right), y:p => (p.baseline) },
 		]},
-		{ op:'move', d: [
-			{x:'right', y:'corpus'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.right), y:p => (p.corpus) },
 		]},
-		{ op:'line', d: [
-			{x:'left', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.left), y:p => (p.baseline) },
 		]},
 
 	]),
 	'y': new Glyph(.8, [
-		{ op:'move', d: [
-			{x:'left', y:'corpus'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.corpus) },
 		]},
-		{ op:'line', d: [
-			{x:'mid', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op:'move', d: [
-			{x:'right', y:'corpus'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.right), y:p => (p.corpus) },
 		]},
-		{ op:'line', d: [
-			{x:'left', y:'desc'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.left), y:p => (p.desc) },
 		]},
 
 	]),
 	'z': new Glyph(.8, [
-		{ op:'move', d: [
-			{x:'left', y:'corpus'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.corpus) },
 		]},
-		{ op:'line', d: [
-			{x:'right', y:'corpus'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.right), y:p => (p.corpus) },
 		]},
-		{ op:'line', d: [
-			{x:'left', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'line', d: [
-			{x:'right', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.right), y:p => (p.baseline) },
 		]},
 
 	]),
 
 
 	'A': new Glyph(1.2, [
-		{ op:'move', d: [
-			{x:'left', y:'baseline'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'line', d: [
-			{x:'mid - (curve * .1)', y:'cap'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.mid - (p.curve * .1)), y:p => (p.cap) },
 		]},
-		{ op:'line', d: [
-			{x:'mid + (curve * .1)', y:'cap'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.mid + (p.curve * .1)), y:p => (p.cap) },
 		]},
-		{ op:'line', d: [
-			{x:'right', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.right), y:p => (p.baseline) },
 		]},
-		{ op:'move', d: [
-			{x:'width * .2', y:'corpus / 2'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.width * .2), y:p => (p.corpus / 2) },
 		]},
-		{ op:'line', d: [
-			{x:'width * .8', y:'corpus / 2'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.width * .8), y:p => (p.corpus / 2) },
 		]},
 	]),
 
 	'B': new Glyph(.8, [
-		{ op:'move', d: [
-			{x:'left', y:'cap'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d: [
-			{x:'left', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'move', d: [
-			{x:'left', y:'cap'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d: [
-			{x:'mid', y:'cap'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.mid), y:p => (p.cap) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid + curve', y:'cap' },
-			{ x:'right', y:'cap * .75 + curve' },
-			{ x:'right', y:'cap * .75' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + p.curve), y:p => (p.cap) },
+			{ x:p => (p.right), y:p => (p.cap * .75 + p.curve) },
+			{ x:p => (p.right), y:p => (p.cap * .75) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'right', y:'cap * .75 - curve' },
-			{ x:'mid + curve', y:'cap * .5' },
-			{ x:'mid', y:'cap * .5' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => (p.cap * .75 - p.curve) },
+			{ x:p => (p.mid + p.curve), y:p => (p.cap * .5) },
+			{ x:p => (p.mid), y:p => (p.cap * .5) },
 		]},
-		{ op:'line', d: [
-			{x:'left', y:'cap * .5'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.left), y:p => (p.cap * .5) },
 		]},
-		{ op:'line', d: [
-			{x:'mid', y:'cap * .5'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.mid), y:p => (p.cap * .5) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid + curve', y:'cap * .5' },
-			{ x:'right', y:'cap * .25 + curve' },
-			{ x:'right', y:'cap * .25' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + p.curve), y:p => (p.cap * .5) },
+			{ x:p => (p.right), y:p => (p.cap * .25 + p.curve) },
+			{ x:p => (p.right), y:p => (p.cap * .25) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'right', y:'cap * .25 - curve' },
-			{ x:'mid + curve', y:'baseline' },
-			{ x:'mid', y:'baseline' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => (p.cap * .25 - p.curve) },
+			{ x:p => (p.mid + p.curve), y:p => (p.baseline) },
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op:'line', d: [
-			{x:'left', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.left), y:p => (p.baseline) },
 		]},
 	]),
 	'C': new Glyph(1.2, [
-		{ op:'move', d:[
-			{ x:'mid', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.cap) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid - (curve * 1.3)', y:'cap' },
-		 	{ x:'left', y:'cap / 2 + (curve * 1.3)' },
-		 	{ x:'left', y:'cap / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - (p.curve * 1.3)), y:p => (p.cap) },
+		 	{ x:p => (p.left), y:p => (p.cap / 2 + (p.curve * 1.3)) },
+		 	{ x:p => (p.left), y:p => (p.cap / 2) },
 		 ]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'cap / 2 - (curve * 1.3)' },
-		 	{ x:'mid - (curve * 1.3)', y:'baseline' },
-		 	{ x:'mid', y:'baseline'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.cap / 2 - (p.curve * 1.3)) },
+		 	{ x:p => (p.mid - (p.curve * 1.3)), y:p => (p.baseline) },
+		 	{ x:p => (p.mid), y:p => (p.baseline) },
 		 ]},
-		{ op: 'bezierplot', d: [
-			{ val: 'aperture' },
-			{ x: 'mid', y: 'cap'},
-			{ x: 'mid + (curve * 1.3)', y: 'cap'},
-			{ x: 'right', y: 'cap / 2 + (curve * 1.3)'},
-			{ x: 'right', y: 'cap / 2'},
+		{ op: OP_BEZIERPLOT, d: [
+			{ val:p => (p.aperture) },
+			{ x:p => (p.mid), y:p => (p.cap) },
+			{ x:p => (p.mid + (p.curve * 1.3)), y:p => (p.cap) },
+			{ x:p => (p.right), y:p => (p.cap / 2 + (p.curve * 1.3)) },
+			{ x:p => (p.right), y:p => (p.cap / 2) },
 		]},
-		{ op: 'bezierplot', d: [
-			{ val: 'aperture' },
-			{ x: 'mid', y: 'baseline'},
-			{ x: 'mid + (curve * 1.3)', y: 'baseline'},
-			{ x: 'right', y: 'cap / 2 - (curve * 1.3)'},
-			{ x: 'right', y: 'cap / 2'},
+		{ op: OP_BEZIERPLOT, d: [
+			{ val:p => (p.aperture) },
+			{ x:p => (p.mid), y:p => (p.baseline) },
+			{ x:p => (p.mid + (p.curve * 1.3)), y:p => (p.baseline) },
+			{ x:p => (p.right), y:p => (p.cap / 2 - (p.curve * 1.3)) },
+			{ x:p => (p.right), y:p => (p.cap / 2) },
 		]},
 	]),
 	'D': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'cap'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.cap) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid + (curve * 1.2)', y:'cap' },
-		 	{ x:'right', y:'cap / 2 + (curve * 1.2)' },
-		 	{ x:'right', y:'cap / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + (p.curve * 1.2)), y:p => (p.cap) },
+		 	{ x:p => (p.right), y:p => (p.cap / 2 + (p.curve * 1.2)) },
+		 	{ x:p => (p.right), y:p => (p.cap / 2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'right', y:'cap / 2 - (curve * 1.2)' },
-		 	{ x:'mid + (curve * 1.2)', y:'baseline' },
-		 	{ x:'mid', y:'baseline'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => (p.cap / 2 - (p.curve * 1.2)) },
+		 	{ x:p => (p.mid + (p.curve * 1.2)), y:p => (p.baseline) },
+		 	{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.baseline) },
 		]},
 	]),
 	'E': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'cap'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.cap) },
 		]},
-		{ op:'move', d:[
-			{ x:'left', y:'cap / 2'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap / 2) },
 		]},
-		{ op:'line', d:[
-			{ x:'right - (curve * 1.1)', y:'cap / 2'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right - (p.curve * 1.1)), y:p => (p.cap / 2) },
 		]},
-		{ op:'move', d:[
-			{ x:'left', y:'baseline'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.baseline) },
 		]},
 	]),
 	'F': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'cap'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.cap) },
 		]},
-		{ op:'move', d:[
-			{ x:'left', y:'cap / 2'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap / 2) },
 		]},
-		{ op:'line', d:[
-			{ x:'right - (curve * 1.1)', y:'cap / 2'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right - (p.curve * 1.1)), y:p => (p.cap / 2) },
 		]},
 	]),
 	'G': new Glyph(1.2, [
-		{ op:'move', d:[
-			{ x:'mid', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.cap) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid - (curve * 1.3)', y:'cap' },
-		 	{ x:'left', y:'cap / 2 + (curve * 1.3)' },
-		 	{ x:'left', y:'cap / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - (p.curve * 1.3)), y:p => (p.cap) },
+		 	{ x:p => (p.left), y:p => (p.cap / 2 + (p.curve * 1.3)) },
+		 	{ x:p => (p.left), y:p => (p.cap / 2) },
 		 ]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'cap / 2 - (curve * 1.3)' },
-		 	{ x:'mid - (curve * 1.3)', y:'baseline' },
-		 	{ x:'mid', y:'baseline'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.cap / 2 - (p.curve * 1.3)) },
+		 	{ x:p => (p.mid - (p.curve * 1.3)), y:p => (p.baseline) },
+		 	{ x:p => (p.mid), y:p => (p.baseline) },
 		 ]},
-		{ op: 'bezierplot', d: [
-			{ val: 'aperture' },
-			{ x: 'mid', y: 'cap'},
-			{ x: 'mid + (curve * 1.3)', y: 'cap'},
-			{ x: 'right', y: 'cap / 2 + (curve * 1.3)'},
-			{ x: 'right', y: 'cap / 2'},
+		{ op: OP_BEZIERPLOT, d: [
+			{ val:p => (p.aperture) },
+			{ x:p => (p.mid), y:p => (p.cap) },
+			{ x:p => (p.mid + (p.curve * 1.3)), y:p => (p.cap) },
+			{ x:p => (p.right), y:p => (p.cap / 2 + (p.curve * 1.3)) },
+			{ x:p => (p.right), y:p => (p.cap / 2) },
 		]},
-		{ op: 'bezierplot', d: [
-			{ val: 'aperture' },
-			{ x: 'mid', y: 'baseline'},
-			{ x: 'mid + (curve * 1.3)', y: 'baseline'},
-			{ x: 'right', y: 'cap / 2 - (curve * 1.3)'},
-			{ x: 'right', y: 'cap / 2'},
+		{ op: OP_BEZIERPLOT, d: [
+			{ val:p => (p.aperture) },
+			{ x:p => (p.mid), y:p => (p.baseline) },
+			{ x:p => (p.mid + (p.curve * 1.3)), y:p => (p.baseline) },
+			{ x:p => (p.right), y:p => (p.cap / 2 - (p.curve * 1.3)) },
+			{ x:p => (p.right), y:p => (p.cap / 2) },
 		]},
-		{ op:'move', d:[
-			{ x:'right - .02', y:'baseline'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.right - .02), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'right - .02', y:'corpus * .75'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right - .02), y:p => (p.corpus * .75) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid + curve', y:'corpus * .75'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid + p.curve), y:p => (p.corpus * .75) },
 		]},
 	]),
 	'H': new Glyph(.9, [
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'move', d:[
-			{ x:'left', y:'cap / 2'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap / 2) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'cap / 2'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.cap / 2) },
 		]},
-		{ op:'move', d:[
-			{ x:'right', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.right), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.baseline) },
 		]},
 	]),
 	'I': new Glyph(.3, [
-		{ op:'move', d:[
-			{ x:'mid', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
 	]),
 	'J': new Glyph(.8, [
-		{ op:'move', d:[
-			{ x:'right', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.right), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'corpus / 2'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.corpus / 2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'right', y:'corpus / 2 - curve' },
-		 	{ x:'mid + curve', y:'baseline' },
-		 	{ x:'mid', y:'baseline'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => (p.corpus / 2 - p.curve) },
+		 	{ x:p => (p.mid + p.curve), y:p => (p.baseline) },
+		 	{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid - curve', y:'baseline' },
-		 	{ x:'left', y:'corpus / 2 - curve' },
-		 	{ x:'left', y:'corpus / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - p.curve), y:p => (p.baseline) },
+		 	{ x:p => (p.left), y:p => (p.corpus / 2 - p.curve) },
+		 	{ x:p => (p.left), y:p => (p.corpus / 2) },
 		]},
 	]),
 	'K': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'move', d:[
-			{ x:'left', y:'cap / 2 - (curve)'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap / 2 - (p.curve)) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'cap'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.cap) },
 		]},
-		{ op:'move', d:[
-			{ x:'left + .1', y:'cap / 2'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left + .1), y:p => (p.cap / 2) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.baseline) },
 		]},
 	]),
 	'L': new Glyph(.8, [
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.baseline) },
 		]},
 	]),
 	'M': new Glyph(1.2, [
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op:'move', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'cap'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.cap) },
 		]},
-		{ op:'move', d:[
-			{ x:'right', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.right), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.baseline) },
 		]},
 	]),
 	'N': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.baseline) },
 		]},
-		{ op:'move', d:[
-			{ x:'right', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.right), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.baseline) },
 		]},
 	]),
 	'O': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'mid', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.cap) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid - (curve * 1.2)', y:'cap' },
-		 	{ x:'left', y:'cap / 2 + (curve * 1.2)' },
-		 	{ x:'left', y:'cap / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - (p.curve * 1.2)), y:p => (p.cap) },
+		 	{ x:p => (p.left), y:p => (p.cap / 2 + (p.curve * 1.2)) },
+		 	{ x:p => (p.left), y:p => (p.cap / 2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'cap / 2 - (curve * 1.2)' },
-		 	{ x:'mid - (curve * 1.2)', y:'baseline' },
-		 	{ x:'mid', y:'baseline' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.cap / 2 - (p.curve * 1.2)) },
+		 	{ x:p => (p.mid - (p.curve * 1.2)), y:p => (p.baseline) },
+		 	{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op: 'bezier', d: [
-		 	{ x:'mid + (curve * 1.2)', y:'baseline' },
-		 	{ x:'right', y:'cap / 2 - (curve * 1.2)'},
-		 	{ x:'right', y:'cap / 2'},
+		{ op: OP_BEZIER, d: [
+		 	{ x:p => (p.mid + (p.curve * 1.2)), y:p => (p.baseline) },
+		 	{ x:p => (p.right), y:p => (p.cap / 2 - (p.curve * 1.2)) },
+		 	{ x:p => (p.right), y:p => (p.cap / 2) },
 		]},
-		{ op: 'bezier', d: [
-		 	{ x:'right', y:'cap / 2 + (curve * 1.2)' },
-		 	{ x:'mid + (curve * 1.2)', y:'cap'},
-		 	{ x:'mid', y:'cap'},
+		{ op: OP_BEZIER, d: [
+		 	{ x:p => (p.right), y:p => (p.cap / 2 + (p.curve * 1.2)) },
+		 	{ x:p => (p.mid + (p.curve * 1.2)), y:p => (p.cap) },
+		 	{ x:p => (p.mid), y:p => (p.cap) },
 		]},
 	]),
 
 	'P': new Glyph(.8, [
-		{ op:'move', d: [
-			{x:'left', y:'cap'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d: [
-			{x:'left', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'move', d: [
-			{x:'left', y:'cap'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d: [
-			{x:'mid', y:'cap'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.mid), y:p => (p.cap) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid + curve', y:'cap' },
-			{ x:'right', y:'cap * .75 + curve' },
-			{ x:'right', y:'cap * .75' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + p.curve), y:p => (p.cap) },
+			{ x:p => (p.right), y:p => (p.cap * .75 + p.curve) },
+			{ x:p => (p.right), y:p => (p.cap * .75) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'right', y:'cap * .75 - curve' },
-			{ x:'mid + curve', y:'cap * .5' },
-			{ x:'mid', y:'cap * .5' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => (p.cap * .75 - p.curve) },
+			{ x:p => (p.mid + p.curve), y:p => (p.cap * .5) },
+			{ x:p => (p.mid), y:p => (p.cap * .5) },
 		]},
-		{ op:'line', d: [
-			{x:'left', y:'cap * .5'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.left), y:p => (p.cap * .5) },
 		]},
 	]),
 
 	'Q': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'mid', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.cap) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid - (curve * 1.2)', y:'cap' },
-		 	{ x:'left', y:'cap / 2 + (curve * 1.2)' },
-		 	{ x:'left', y:'cap / 2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - (p.curve * 1.2)), y:p => (p.cap) },
+		 	{ x:p => (p.left), y:p => (p.cap / 2 + (p.curve * 1.2)) },
+		 	{ x:p => (p.left), y:p => (p.cap / 2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'cap / 2 - (curve * 1.2)' },
-		 	{ x:'mid - (curve * 1.2)', y:'baseline' },
-		 	{ x:'mid', y:'baseline' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.cap / 2 - (p.curve * 1.2)) },
+		 	{ x:p => (p.mid - (p.curve * 1.2)), y:p => (p.baseline) },
+		 	{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op: 'bezier', d: [
-		 	{ x:'mid + (curve * 1.2)', y:'baseline' },
-		 	{ x:'right', y:'cap / 2 - (curve * 1.2)'},
-		 	{ x:'right', y:'cap / 2'},
+		{ op: OP_BEZIER, d: [
+		 	{ x:p => (p.mid + (p.curve * 1.2)), y:p => (p.baseline) },
+		 	{ x:p => (p.right), y:p => (p.cap / 2 - (p.curve * 1.2)) },
+		 	{ x:p => (p.right), y:p => (p.cap / 2) },
 		]},
-		{ op: 'bezier', d: [
-		 	{ x:'right', y:'cap / 2 + (curve * 1.2)' },
-		 	{ x:'mid + (curve * 1.2)', y:'cap'},
-		 	{ x:'mid', y:'cap'},
+		{ op: OP_BEZIER, d: [
+		 	{ x:p => (p.right), y:p => (p.cap / 2 + (p.curve * 1.2)) },
+		 	{ x:p => (p.mid + (p.curve * 1.2)), y:p => (p.cap) },
+		 	{ x:p => (p.mid), y:p => (p.cap) },
 		]},
-		{ op:'move', d:[
-			{ x:'mid + (curve / 2)', y:'baseline'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid + (p.curve / 2)), y:p => (p.baseline) },
 		]},		
-		{ op:'line', d:[
-			{ x:'mid + curve', y:'baseline - curve'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid + p.curve), y:p => (p.baseline - p.curve) },
 		]},		
 	]),
 
 	'R': new Glyph(.8, [
-		{ op:'move', d: [
-			{x:'left', y:'cap'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d: [
-			{x:'left', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'move', d: [
-			{x:'left', y:'cap'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d: [
-			{x:'mid', y:'cap'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.mid), y:p => (p.cap) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid + curve', y:'cap' },
-			{ x:'right', y:'cap * .75 + curve' },
-			{ x:'right', y:'cap * .75' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + p.curve), y:p => (p.cap) },
+			{ x:p => (p.right), y:p => (p.cap * .75 + p.curve) },
+			{ x:p => (p.right), y:p => (p.cap * .75) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'right', y:'cap * .75 - curve' },
-			{ x:'mid + curve', y:'cap * .5' },
-			{ x:'mid', y:'cap * .5' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => (p.cap * .75 - p.curve) },
+			{ x:p => (p.mid + p.curve), y:p => (p.cap * .5) },
+			{ x:p => (p.mid), y:p => (p.cap * .5) },
 		]},
-		{ op:'line', d: [
-			{x:'left', y:'cap * .5'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.left), y:p => (p.cap * .5) },
 		]},
-		{ op:'move', d: [
-			{x:'mid', y:'cap * .5'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.mid), y:p => (p.cap * .5) },
 		]},
-		{ op:'line', d: [
-			{x:'right', y:'baseline'},
+		{ op: OP_LINE, d: [
+			{x:p => (p.right), y:p => (p.baseline) },
 		]},
 	]),
 
 	'S': new Glyph(.8, [
-		{ op:'move', d: [
-			{x:'right', y:'cap * .8'},
+		{ op: OP_MOVE, d: [
+			{x:p => (p.right), y:p => (p.cap * .8) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'right - (curve * .3)', y:'cap * .8 + (curve * .7)' },
-			{ x:'mid + (curve * .2)', y:'cap' },
-			{ x:'mid', y:'cap'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right - (p.curve * .3)), y:p => (p.cap * .8 + (p.curve * .7)) },
+			{ x:p => (p.mid + (p.curve * .2)), y:p => (p.cap) },
+			{ x:p => (p.mid), y:p => (p.cap) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid - (curve * .7)', y:'cap' },
-			{ x:'left', y:'cap * .8 + (curve * .4)' },
-			{ x:'left', y:'cap * .8' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - (p.curve * .7)), y:p => (p.cap) },
+			{ x:p => (p.left), y:p => (p.cap * .8 + (p.curve * .4)) },
+			{ x:p => (p.left), y:p => (p.cap * .8) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'cap * .8 - (curve * .7)' },
-			{ x:'mid - (curve * .7)', y:'cap * .55' },
-			{ x:'mid', y:'cap * .5' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.cap * .8 - (p.curve * .7)) },
+			{ x:p => (p.mid - (p.curve * .7)), y:p => (p.cap * .55) },
+			{ x:p => (p.mid), y:p => (p.cap * .5) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid + (curve * .7)', y:'cap * .45' },
-			{ x:'right', y:'cap * .2 + (curve * .7)' },
-			{ x:'right', y:'cap * .2' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + (p.curve * .7)), y:p => (p.cap * .45) },
+			{ x:p => (p.right), y:p => (p.cap * .2 + (p.curve * .7)) },
+			{ x:p => (p.right), y:p => (p.cap * .2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'right', y:'cap * .2 - (curve * .4)' },
-			{ x:'mid + (curve * .7)', y:'baseline' },
-			{ x:'mid', y:'baseline'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => (p.cap * .2 - (p.curve * .4)) },
+			{ x:p => (p.mid + (p.curve * .7)), y:p => (p.baseline) },
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid - (curve * .2)', y:'baseline' },
-			{ x:'left + (curve * .3)', y:'cap * .2 - (curve * .7)' },
-			{ x:'left', y:'cap * .2'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid - (p.curve * .2)), y:p => (p.baseline) },
+			{ x:p => (p.left + (p.curve * .3)), y:p => (p.cap * .2 - (p.curve * .7)) },
+			{ x:p => (p.left), y:p => (p.cap * .2) },
 		]},
 	]),
 
 	'T': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'mid', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'cap'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.cap) },
 		]},
 	]),
 
 	'U': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'corpus / 2'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.corpus / 2) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'corpus / 2 - curve' },
-			{ x:'mid - curve', y:'baseline' },
-			{ x:'mid', y:'baseline'},
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => (p.corpus / 2 - p.curve) },
+			{ x:p => (p.mid - p.curve), y:p => (p.baseline) },
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid + curve', y:'baseline'},
-			{ x:'right', y:'corpus / 2 - curve' },
-			{ x:'right', y:'corpus / 2' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + p.curve), y:p => (p.baseline) },
+			{ x:p => (p.right), y:p => (p.corpus / 2 - p.curve) },
+			{ x:p => (p.right), y:p => (p.corpus / 2) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'cap'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.cap) },
 		]},
 	]),
 	'V': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op:'move', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'cap'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.cap) },
 		]},
 	]),
 	'W': new Glyph(1.4, [
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'width * .25', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.width * .25), y:p => (p.baseline) },
 		]},
-		{ op:'move', d:[
-			{ x:'width * .25', y:'baseline'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.width * .25), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'cap'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.cap) },
 		]},
-		{ op:'move', d:[
-			{ x:'mid', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'width * .75', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.width * .75), y:p => (p.baseline) },
 		]},
-		{ op:'move', d:[
-			{ x:'width * .75', y:'baseline'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.width * .75), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'cap'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.cap) },
 		]},
 	]),
 	'X': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.baseline) },
 		]},
-		{ op:'move', d:[
-			{ x:'right', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.right), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.baseline) },
 		]},
 	]),
 	'Y': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'cap / 2'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.cap / 2) },
 		]},
-		{ op:'move', d:[
-			{ x:'right', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.right), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'cap / 2'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.cap / 2) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
 	]),
 	'Z': new Glyph(1.0, [
-		{ op:'move', d:[
-			{ x:'left', y:'cap'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'cap'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.cap) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.baseline) },
 		]},
 	]),
 	'.': new Glyph(0.1, [
-		{ op:'move', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'baseline + .1'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline + .1) },
 		]},
 	]),
 	',': new Glyph(0.1, [
-		{ op:'move', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'baseline + .1'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline + .1) },
 		]},
-		{ op:'move', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid', y:'baseline - (curve * .5)'},
-			{ x:'left - .03 + (curve * .5)', y:'baseline - .05' },
-			{ x:'left - .03', y:'baseline - .1' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid), y:p => (p.baseline - (p.curve * .5)) },
+			{ x:p => (p.left - .03 + (p.curve * .5)), y:p => (p.baseline - .05) },
+			{ x:p => (p.left - .03), y:p => (p.baseline - .1) },
 		]},
 	]),
 	';': new Glyph(0.1, [
-		{ op:'move', d:[
-			{ x:'mid', y:'corpus'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.corpus) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'corpus - .1'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.corpus - .1) },
 		]},
-		{ op:'move', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'baseline + .1'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline + .1) },
 		]},
-		{ op:'move', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid', y:'baseline - (curve * .5)'},
-			{ x:'left - .03 + (curve * .5)', y:'baseline - .05' },
-			{ x:'left - .03', y:'baseline - .1' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid), y:p => (p.baseline - (p.curve * .5)) },
+			{ x:p => (p.left - .03 + (p.curve * .5)), y:p => (p.baseline - .05) },
+			{ x:p => (p.left - .03), y:p => (p.baseline - .1) },
 		]},
 	]),
 	':': new Glyph(0.1, [
-		{ op:'move', d:[
-			{ x:'mid', y:'corpus'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.corpus) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'corpus - .1'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.corpus - .1) },
 		]},
-		{ op:'move', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'baseline + .1'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline + .1) },
 		]},
 	]),
 	'-': new Glyph(0.4, [
-		{ op:'move', d:[
-			{ x:'left', y:'corpus / 2'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.corpus / 2) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'corpus / 2'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.corpus / 2) },
 		]},
 	]),
 	'?': new Glyph(.8, [
-		{ op:'move', d:[
-			{ x:'left', y:'(corpus + .1)'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => ((p.corpus + .1)) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'left', y:'(corpus + .1) + curve'},
-			{ x:'mid - curve', y:'asc' },
-			{ x:'mid', y:'asc' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.left), y:p => ((p.corpus + .1) + p.curve) },
+			{ x:p => (p.mid - p.curve), y:p => (p.asc) },
+			{ x:p => (p.mid), y:p => (p.asc) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'mid + curve', y:'asc' },
-			{ x:'right', y:'(corpus + .1) + curve' },
-			{ x:'right', y:'(corpus + .1)' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.mid + p.curve), y:p => (p.asc) },
+			{ x:p => (p.right), y:p => ((p.corpus + .1) + p.curve) },
+			{ x:p => (p.right), y:p => ((p.corpus + .1)) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'right', y:'(corpus + .1) - (curve * .4)' },
-			{ x:'(mid * 1.5) + (curve * .4)', y:'corpus' },
-			{ x:'(mid * 1.5)', y:'corpus' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => (p.right), y:p => ((p.corpus + .1) - (p.curve * .4)) },
+			{ x:p => ((p.mid * 1.5) + (p.curve * .4)), y:p => (p.corpus) },
+			{ x:p => ((p.mid * 1.5)), y:p => (p.corpus) },
 		]},
-		{ op: 'bezier', d: [
-			{ x:'(mid * 1.5) - (curve * .5)', y:'corpus' },
-			{ x:'mid', y:'(corpus * .75) + (curve * .5)' },
-			{ x:'mid', y:'(corpus * .75)' },
+		{ op: OP_BEZIER, d: [
+			{ x:p => ((p.mid * 1.5) - (p.curve * .5)), y:p => (p.corpus) },
+			{ x:p => (p.mid), y:p => ((p.corpus * .75) + (p.curve * .5)) },
+			{ x:p => (p.mid), y:p => ((p.corpus * .75)) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'baseline + .2'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline + .2) },
 		]},
-		{ op:'move', d:[
-			{ x:'mid', y:'baseline + .1'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline + .1) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'baseline'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.baseline) },
 		]},
 	]),
 	'\'': new Glyph(.3, [
-		{ op:'move', d:[
-			{ x:'mid', y:'asc * .9'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.mid), y:p => (p.asc * .9) },
 		]},
-		{ op:'line', d:[
-			{ x:'mid', y:'corpus'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.mid), y:p => (p.corpus) },
 		]},
 	]),
 	'"': new Glyph(.3, [
-		{ op:'move', d:[
-			{ x:'left', y:'asc * .9'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.left), y:p => (p.asc * .9) },
 		]},
-		{ op:'line', d:[
-			{ x:'left', y:'corpus'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.left), y:p => (p.corpus) },
 		]},
-		{ op:'move', d:[
-			{ x:'right', y:'asc * .9'},
+		{ op: OP_MOVE, d:[
+			{ x:p => (p.right), y:p => (p.asc * .9) },
 		]},
-		{ op:'line', d:[
-			{ x:'right', y:'corpus'},
+		{ op: OP_LINE, d:[
+			{ x:p => (p.right), y:p => (p.corpus) },
 		]},
 
 	]),
@@ -1424,7 +1428,7 @@ const GLYPHS = {
 }
 
 const DEFAULT_PARAMS = {
-	'baseline': 0.7, // measured from the top
+	'baseline_from_top': 0.7, // measured from the top
 	'cap': 0.6, // a capital letter (like M)
 	'asc': 0.7, // ascender (lowercase l)
 	'desc': -0.3, // descender (bottom of a lowercase g or y)
@@ -1435,6 +1439,14 @@ const DEFAULT_PARAMS = {
 	'aperture': 0.7, // gaps in lowercase c, bottom of lowercase e
 	'leading': .1,
 	'tracking': .1,
+
+	'nominalwidth': .4,
+
+	// maybe don't let people override these two?
+	// they are here for convenience
+	'baseline': 0,
+	'left': 0,
+
 }
 
 const DEFAULT_PXPARAMS = {
@@ -1466,6 +1478,12 @@ class Basic extends Font {
 
 	createWithParams(pxparams, inparams) {
 		return new Basic(pxparams, inparams);
+	}
+
+	copy() {
+		let r = new Basic(this.copyParams(this.pxparams), this.copyParams(this.params));
+		r.setLetter(this.letter);
+		return r;
 	}
 
 	getFontName() {

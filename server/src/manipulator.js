@@ -42,7 +42,6 @@ import { Nil } from './nex/nil.js'
 import { Newline } from './nex/newline.js' 
 import { experiments } from './globalappflags.js'
 import { isRecordingTest } from './testrecorder.js'
-// V2_INSERTION
 import {
 	INSERT_UNSPECIFIED,
 	INSERT_AFTER,
@@ -877,13 +876,112 @@ class Manipulator {
 		}		
 	}
 
-	selectFirstChildOrMoveInsertionPoint(s) {
-		if (!this.selectFirstChild()) {
-			if (experiments.V2_INSERTION_TAB_HACK) {
-				if (s.getNex().doTabHack) {
-					s.getNex().doTabHack();
+	moveRightV3(s) {
+		let isVert = s.getParent().getNex().isVertical();
+		if (isVert) {
+			this.selectParent();
+		} else {
+			if (s.getInsertionMode() == INSERT_BEFORE) {
+				this._forceInsertionMode(INSERT_AFTER, s);
+			} else {
+				if (this.selectNextSibling()) {
+					this._forceInsertionMode(INSERT_AFTER, this.selected());
+				} else {
+					this.selectParent();
+				}
+				
+			}			
+		}
+	}
+
+	moveLeftV3(s) {
+		let isVert = s.getParent().getNex().isVertical();
+		if (isVert) {
+			this.selectParent();
+		} else {
+			if (!this.selectPreviousSibling()) {
+				let mode = s.getInsertionMode();
+				if (mode != INSERT_BEFORE) {
+					this._forceInsertionMode(INSERT_BEFORE, this.selected())					
+				} else {
+					this.selectParent();
 				}
 			}
+		}
+	}
+
+	moveDownV3(s) {
+		let isVert = s.getParent().getNex().isVertical();
+		if (!isVert) {
+			this.selectParent();
+		} else {
+			if (s.getInsertionMode() == INSERT_BEFORE) {
+				this._forceInsertionMode(INSERT_AFTER, s);
+			} else {
+				if (this.selectNextSibling()) {
+					this._forceInsertionMode(INSERT_AFTER, this.selected());
+				} else {
+					this.selectParent();
+				}
+				
+			}			
+		}
+	}
+
+	moveUpV3(s) {
+		let isVert = s.getParent().getNex().isVertical();
+		if (!isVert) {
+			this.selectParent();
+		} else {
+			if (!this.selectPreviousSibling()) {
+				let mode = s.getInsertionMode();
+				if (mode != INSERT_BEFORE) {
+					this._forceInsertionMode(INSERT_BEFORE, this.selected())					
+				} else {
+					this.selectParent();
+				}
+			}
+		}
+	}
+
+	forceInsertUpV3(s) {
+		let isVert = s.getParent().getNex().isVertical();
+		if (isVert) {
+			this._forceInsertionMode(INSERT_BEFORE, this.selected());
+		} else {
+			this._forceInsertionMode(INSERT_AROUND, this.selected());
+		}
+	}
+
+	forceInsertDownV3(s) {
+		let isVert = s.getParent().getNex().isVertical();
+		if (isVert) {
+			this._forceInsertionMode(INSERT_AFTER, this.selected());
+		} else {
+			this._forceInsertionMode(INSERT_INSIDE, this.selected());
+		}
+	}
+
+	forceInsertLeftV3(s) {
+		let isVert = s.getParent().getNex().isVertical();
+		if (isVert) {
+			this._forceInsertionMode(INSERT_AROUND, this.selected());
+		} else {
+			this._forceInsertionMode(INSERT_BEFORE, this.selected());
+		}
+	}
+
+	forceInsertRightV3(s) {
+		let isVert = s.getParent().getNex().isVertical();
+		if (isVert) {
+			this._forceInsertionMode(INSERT_INSIDE, this.selected());
+		} else {
+			this._forceInsertionMode(INSERT_AFTER, this.selected());
+		}
+	}
+
+	selectFirstChildOrMoveInsertionPoint(s) {
+		if (!this.selectFirstChild()) {
 			this._forceInsertionMode(INSERT_INSIDE, this.selected());
 		} else {
 
@@ -896,10 +994,6 @@ class Manipulator {
 		};
 
 	}
-
-	// here
-	// V2_INSERTION
-	// START V2_INSERTION INSERT STUFF
 
 	defaultInsertForV2(insertInto, toInsert) {
 		// ahem this only works if insertInto is selected
@@ -919,6 +1013,21 @@ class Manipulator {
 		}
 	}
 
+	forceInsertBefore() {
+			this._forceInsertionMode(INSERT_BEFORE, this.selected());		
+	}
+
+	forceInsertAfter() {
+			this._forceInsertionMode(INSERT_AFTER, this.selected());		
+	}
+
+	forceInsertAround() {
+			this._forceInsertionMode(INSERT_AROUND, this.selected());		
+	}
+
+	forceInsertInside() {
+			this._forceInsertionMode(INSERT_INSIDE, this.selected());		
+	}
 
 	insertSeparatorBeforeOrAfterSelectedLetter(newSeparator) {
 		let s = this.selected();
@@ -969,15 +1078,6 @@ class Manipulator {
 		return this.defaultInsertForV2(line, newSeparator);
 	}
 
-
-
-	// END V2_INSERTION INSERT STUFF
-
-
-
-
-
-
 	getPreviousLine(line) {
 		let p = line.getParent();
 		if (!p) return null;
@@ -1008,10 +1108,6 @@ class Manipulator {
 		}
 		return true;		
 	}
-
-
-	// END V2_INSERTION ----------------------------
-
 
 	selectCorrespondingLetterInPreviousLineV2(s) {
 		let thisLine = Utils.isLine(s) ? s : this.getEnclosingLine(s);
@@ -1435,9 +1531,7 @@ class Manipulator {
 		if (p.numChildren() == 1 && Utils.isCodeContainer(p)) {
 			if (!this.removeNex((systemState.getGlobalSelectedNode()))) return false;
 			p.setSelected();
-			if (experiments.V2_INSERTION) {
-				this._forceInsertionMode(INSERT_INSIDE, p);
-			}
+			this._forceInsertionMode(INSERT_INSIDE, p);
 			return true;
 		}
 		return false;
@@ -1714,26 +1808,18 @@ class Manipulator {
 
 	// used in keydispatcher.js
 	doPaste() {
-		if (experiments.V2_INSERTION) {
-			let s = systemState.getGlobalSelectedNode();
-			switch(s.getInsertionMode()) {
-				case INSERT_AFTER:
-					this.insertAfterSelectedAndSelect(CLIPBOARD.makeCopy());
-					break;
-				case INSERT_BEFORE:
-				case INSERT_AROUND:
-					this.insertBeforeSelectedAndSelect(CLIPBOARD.makeCopy());
-					break;
-				case INSERT_INSIDE:
-					this.insertAsFirstChild(CLIPBOARD.makeCopy());
-					break;
-			}
-		} else {
-			if (Utils.isInsertionPoint(systemState.getGlobalSelectedNode())) {
-				this.replaceSelectedWith(CLIPBOARD.makeCopy())
-			} else {
-				this.insertAfterSelectedAndSelect(CLIPBOARD.makeCopy())
-			}
+		let s = systemState.getGlobalSelectedNode();
+		switch(s.getInsertionMode()) {
+			case INSERT_AFTER:
+				this.insertAfterSelectedAndSelect(CLIPBOARD.makeCopy());
+				break;
+			case INSERT_BEFORE:
+			case INSERT_AROUND:
+				this.insertBeforeSelectedAndSelect(CLIPBOARD.makeCopy());
+				break;
+			case INSERT_INSIDE:
+				this.insertAsFirstChild(CLIPBOARD.makeCopy());
+				break;
 		}
 	}
 

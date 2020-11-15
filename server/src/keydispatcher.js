@@ -37,7 +37,7 @@ class KeyDispatcher {
 		}
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
 
-		if (experiments.V2_INSERTION) {
+		if (!experiments.BETTER_KEYBINDINGS) {
 			if (eventName == 'NakedShift') {
 				// if we get a naked shift while editing, we leave the editor.
 				if (systemState.getGlobalSelectedNode().usingEditor()) {
@@ -154,6 +154,22 @@ class KeyDispatcher {
 		// the only thing is I don't want it to return 'Shift!' or 'Shift$'
 		if (keycode == 'Enter' && hasMeta && hasShift) {
 			return 'ShiftMetaEnter';
+		} else if (keycode == 'ArrowDown' && hasAlt) {
+			return 'AltArrowDown';
+		} else if (keycode == 'ArrowUp' && hasAlt) {
+			return 'AltArrowUp';
+		} else if (keycode == 'ArrowRight' && hasAlt) {
+			return 'AltArrowRight';
+		} else if (keycode == 'ArrowLeft' && hasAlt) {
+			return 'AltArrowLeft';
+		} else if (keycode == 'ArrowDown' && hasShift) {
+			return 'ShiftArrowDown';
+		} else if (keycode == 'ArrowUp' && hasShift) {
+			return 'ShiftArrowUp';
+		} else if (keycode == 'ArrowRight' && hasShift) {
+			return 'ShiftArrowRight';
+		} else if (keycode == 'ArrowLeft' && hasShift) {
+			return 'ShiftArrowLeft';
 		} else if (keycode == 'Enter' && hasMeta) {
 			return 'MetaEnter';
 		} else if (keycode == 'Enter' && hasCtrl) {
@@ -162,8 +178,12 @@ class KeyDispatcher {
 			return 'ShiftEscape';
 		} else if (keycode == 'Enter' && hasShift) {
 			return 'ShiftEnter';
+		} else if (keycode == 'Tab' && hasShift && hasAlt) {
+			return 'ShiftAltTab';
 		} else if (keycode == 'Tab' && hasShift) {
 			return 'ShiftTab';
+		} else if (keycode == 'Tab' && hasAlt) {
+			return 'AltTab';
 		} else if (keycode == ' ' && hasShift) {
 			return 'ShiftSpace';
 		} else if (keycode == ' ' && hasCtrl) {
@@ -358,10 +378,80 @@ class KeyDispatcher {
 	}
 
 	getNexContainerGenericTable() {
-		if (experiments.V2_INSERTION) {
+		if (experiments.BETTER_KEYBINDINGS) {
 			return {
 				'ShiftTab': 'select-parent',
 				'Tab': 'select-first-child-or-force-insert-inside-insertion-mode',
+
+				'ArrowUp': (experiments.VISUAL_KEYBINDINGS
+								? 'move-up-v3'
+								: 'move-left-up-v2'),
+				'ArrowDown': (experiments.VISUAL_KEYBINDINGS
+								? 'move-down-v3'
+								: 'move-right-down-v2'),
+				'ArrowLeft': (experiments.VISUAL_KEYBINDINGS
+								? 'move-left-v3'
+								: 'move-left-up-v2'),
+				'ArrowRight': (experiments.VISUAL_KEYBINDINGS
+								? 'move-right-v3'
+								: 'move-right-down-v2'),
+
+
+				'ShiftArrowUp': (experiments.VISUAL_KEYBINDINGS
+								? 'force-insert-up-v3'
+								: 'force-insert-before'),
+				'ShiftArrowDown': (experiments.VISUAL_KEYBINDINGS
+								? 'force-insert-down-v3'
+								: 'force-insert-after'),
+				'ShiftArrowLeft': (experiments.VISUAL_KEYBINDINGS
+								? 'force-insert-left-v3'
+								: 'force-insert-before'),
+				'ShiftArrowRight': (experiments.VISUAL_KEYBINDINGS
+								? 'force-insert-right-v3'
+								: 'force-insert-after'),
+
+				'AltArrowUp': 'force-insert-around',
+				'AltArrowDown': 'force-insert-inside',
+				'AltArrowLeft': 'force-insert-around',
+				'AltArrowRight': 'force-insert-inside',
+
+				'AltTab': 'start-main-editor',
+
+				'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
+				'Backspace': 'remove-selected-and-select-previous-sibling-v2',
+				'ShiftEscape': 'toggle-exploded',
+				'CtrlEnter': 'start-main-editor',
+
+
+				'~': 'insert-command-at-insertion-point-v2',
+				'!': 'insert-bool-at-insertion-point-v2',
+				'@': 'insert-symbol-at-insertion-point-v2',
+				'#': 'insert-integer-at-insertion-point-v2',
+				'$': 'insert-string-at-insertion-point-v2',
+				'%': 'insert-float-at-insertion-point-v2',
+				'^': 'insert-nil-at-insertion-point-v2',
+				'&': 'insert-lambda-at-insertion-point-v2',
+				'*': 'insert-expectation-at-insertion-point-v2',
+				'(': 'insert-word-at-insertion-point-v2',
+				')': 'insert-org-at-insertion-point-v2',
+				'[': 'insert-line-at-insertion-point-v2',
+				'{': 'insert-doc-at-insertion-point-v2',
+				'`': 'add-tag',
+				'Alt`': 'remove-all-tags',
+
+				'Alt~': 'wrap-in-command',
+				'Alt&': 'wrap-in-lambda',
+				'Alt*': 'wrap-in-expectation',
+				'Alt(': 'wrap-in-word',
+				'Alt)': 'wrap-in-org',
+				'Alt[': 'wrap-in-line',
+				'Alt{': 'wrap-in-doc',
+			};			
+		} else {
+			return {
+				'ShiftTab': 'select-parent',
+				'Tab': 'select-first-child-or-force-insert-inside-insertion-mode',
+
 				'ArrowUp': 'move-left-up-v2',
 				'ArrowLeft': 'move-left-up-v2',
 				'ArrowDown': 'move-right-down-v2',
@@ -393,34 +483,69 @@ class KeyDispatcher {
 				'Alt)': 'wrap-in-org',
 				'Alt[': 'wrap-in-line',
 				'Alt{': 'wrap-in-doc',
-			};
-		} else {
+			};			
+		}
+
+	}
+
+	getNexGenericTable() {
+		if (experiments.BETTER_KEYBINDINGS) {
 			return {
 				'ShiftTab': 'select-parent',
-				'Tab': 'select-first-child-or-create-insertion-point',
-				'ArrowUp': 'move-left-up',
-				'ArrowLeft': 'move-left-up',
-				'ArrowDown': 'move-right-down',
-				'ArrowRight': 'move-right-down',
-				'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-				'Backspace': 'remove-selected-and-select-previous-sibling',
+				'Tab': 'select-next-sibling',
+
+				'ShiftArrowUp': (experiments.VISUAL_KEYBINDINGS
+								? 'force-insert-up-v3'
+								: 'force-insert-before'),
+				'ShiftArrowDown': (experiments.VISUAL_KEYBINDINGS
+								? 'force-insert-down-v3'
+								: 'force-insert-after'),
+				'ShiftArrowLeft': (experiments.VISUAL_KEYBINDINGS
+								? 'force-insert-left-v3'
+								: 'force-insert-before'),
+				'ShiftArrowRight': (experiments.VISUAL_KEYBINDINGS
+								? 'force-insert-right-v3'
+								: 'force-insert-after'),
+
+				'AltArrowUp': 'force-insert-around',
+				'AltArrowLeft': 'force-insert-around',
+
+				'ArrowUp': (experiments.VISUAL_KEYBINDINGS
+								? 'move-up-v3'
+								: 'move-left-up-v2'),
+				'ArrowDown': (experiments.VISUAL_KEYBINDINGS
+								? 'move-down-v3'
+								: 'move-right-down-v2'),
+				'ArrowLeft': (experiments.VISUAL_KEYBINDINGS
+								? 'move-left-v3'
+								: 'move-left-up-v2'),
+				'ArrowRight': (experiments.VISUAL_KEYBINDINGS
+								? 'move-right-v3'
+								: 'move-right-down-v2'),
+
+				'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
+
+				'Backspace': 'remove-selected-and-select-previous-sibling-v2',
+
 				'ShiftEscape': 'toggle-exploded',
-				'~': 'insert-or-append-command',
-				'!': 'insert-or-append-bool',
-				'@': 'insert-or-append-symbol',
-				'#': 'insert-or-append-integer',
-				'$': 'insert-or-append-string',
-				'%': 'insert-or-append-float',
-				'^': 'insert-or-append-nil',
-				'&': 'insert-or-append-lambda',
-				'*': 'insert-or-append-expectation',
-				'(': 'insert-or-append-word',
-				')': 'insert-or-append-org',
-				'[': 'insert-or-append-line',
-				'{': 'insert-or-append-doc',
+				'Enter': 'evaluate-v2',
+				'CtrlEnter': 'start-main-editor',
+				'~': 'insert-command-at-insertion-point-v2',
+				'!': 'insert-bool-at-insertion-point-v2',
+				'@': 'insert-symbol-at-insertion-point-v2',
+				'#': 'insert-integer-at-insertion-point-v2',
+				'$': 'insert-string-at-insertion-point-v2',
+				'%': 'insert-float-at-insertion-point-v2',
+				'^': 'insert-nil-at-insertion-point-v2',
+				'&': 'insert-lambda-at-insertion-point-v2',
+				'*': 'insert-expectation-at-insertion-point-v2',
+				'(': 'insert-word-at-insertion-point-v2',
+				')': 'insert-org-at-insertion-point-v2',
+				'[': 'insert-line-at-insertion-point-v2',
+				'{': 'insert-doc-at-insertion-point-v2',
+				'<': 'insert-zlist-at-insertion-point-v2',
 				'`': 'add-tag',
 				'Alt`': 'remove-all-tags',
-
 				'Alt~': 'wrap-in-command',
 				'Alt&': 'wrap-in-lambda',
 				'Alt*': 'wrap-in-expectation',
@@ -429,11 +554,7 @@ class KeyDispatcher {
 				'Alt[': 'wrap-in-line',
 				'Alt{': 'wrap-in-doc',
 			};
-		}
-	}
-
-	getNexGenericTable() {
-		if (experiments.V2_INSERTION) {
+		} else {
 			return {
 				'ShiftTab': 'select-parent',
 				'Tab': 'select-next-sibling',
@@ -471,42 +592,9 @@ class KeyDispatcher {
 				'Alt[': 'wrap-in-line',
 				'Alt{': 'wrap-in-doc',
 			};
-		} else {
-			return {
-				'ShiftTab': 'select-parent',
-				'Tab': 'select-next-sibling',
-				'ArrowUp': 'move-left-up',
-				'ArrowDown': 'move-right-down',
-				'ArrowLeft': 'move-left-up',
-				'ArrowRight': 'move-right-down',
-				'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-				'Backspace': 'remove-selected-and-select-previous-sibling',
-				'ShiftEscape': 'toggle-exploded',
-				'~': 'insert-command-as-next-sibling',
-				'!': 'insert-bool-as-next-sibling',
-				'@': 'insert-symbol-as-next-sibling',
-				'#': 'insert-integer-as-next-sibling',
-				'$': 'insert-string-as-next-sibling',
-				'%': 'insert-float-as-next-sibling',
-				'^': 'insert-nil-as-next-sibling',
-				'&': 'insert-lambda-as-next-sibling',
-				'*': 'insert-expectation-as-next-sibling',
-				'(': 'insert-word-as-next-sibling',
-				')': 'insert-org-as-next-sibling',
-				'[': 'insert-line-as-next-sibling',
-				'{': 'insert-doc-as-next-sibling',
-				'`': 'add-tag',
-				'Alt`': 'remove-all-tags',
 
-				'Alt~': 'wrap-in-command',
-				'Alt&': 'wrap-in-lambda',
-				'Alt*': 'wrap-in-expectation',
-				'Alt(': 'wrap-in-word',
-				'Alt)': 'wrap-in-org',
-				'Alt[': 'wrap-in-line',
-				'Alt{': 'wrap-in-doc',
-			};
 		}
+
 	}
 }
 

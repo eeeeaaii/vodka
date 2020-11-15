@@ -34,7 +34,6 @@ class Closure extends ValueNex {
 
 	toString(version) {
 		if (version == 'v2') {
-			console.log('saving closures is not supported, but toString is also used elsewhere so we cant throw an error here');
 			return `[CLOSURE FOR: ${this.lambda.prettyPrint()}]`;
 		}
 		return super.toString(version);
@@ -143,12 +142,23 @@ class Closure extends ValueNex {
 		return true;
 	}
 
-	executor(executionEnvironment, argEvaluator, cmdname, commandTags) {
+	closureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags) {
+		if (this.lambda.getTypeName() == '-builtin-') {
+			return this.builtinClosureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags);
+		} else {
+			return this.lambdaClosureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags);
+		}
+	}
+
+	builtinClosureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags) {
 		let scope = this.lexicalEnvironment.pushEnv();
 		argEvaluator.bindArgs(scope);
-		if (this.lambda.getTypeName() == '-builtin-') {
-			return this.lambda.executor(scope, executionEnvironment, commandTags);
-		}
+		return this.lambda.f(scope, executionEnvironment, commandTags);
+	}
+
+	lambdaClosureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags) {
+		let scope = this.lexicalEnvironment.pushEnv();
+		argEvaluator.bindArgs(scope);
 		let r = new Nil();
 		let i = 0;
 		let numc = this.lambda.numChildren();

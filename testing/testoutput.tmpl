@@ -166,6 +166,11 @@
 		<div class="testname">
 			<a name="a_{{test}}">{{test}}</a>
 		</div>
+		{{#if docstring}}
+		<div class="testdescription">
+			{{{docstring}}}
+		</div>
+		{{/if}}
 		<div class="commandblock">
 			<input type="checkbox" data-command="./runtests.sh {{test}}">
 			to rerun: <textarea class="regencommand">./runtests.sh {{test}}</textarea>

@@ -16,7 +16,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { systemState } from './systemstate.js'
-import { getGlobalAppFlagIsSet } from './globalappflags.js'
 import { RenderNode } from './rendernode.js'
 
 const UNDO_LIMIT = 10;
@@ -32,9 +31,6 @@ class Undo {
 	}
 
 	saveStateForUndo(nex) {
-		if (getGlobalAppFlagIsSet('skipundo')) {
-			return;
-		}
 		// Shallow copy for undo is going to have to be good enough.
 		// The fewer levels of undo the less chance of it being a problem.
 		this.undobuffer.unshift(nex.makeCopy(true /* shallow */));

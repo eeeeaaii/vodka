@@ -39,7 +39,13 @@ do_image_comparison() {
 	if [ -e ${GOLDEN} ]; then
 		# compare
 		echo -e "[$BASENAME] ${DIFF_MODE} golden exists, comparing"
-		if ( magick compare -metric ae ${TESTOUTPUT} ${GOLDEN} ${DIFF} > /dev/null 2> /dev/null ); then
+		# fuzz syntax:
+		# -fuzz .1%
+		# if I change the rgb color for unselected-border from #aaaaaa to #aaaaab,
+		# the test will fail. If I set fuzz to .2% (or higher) the test will pass
+		# because the colors are still similar enough to count as equal.
+		# if I set the fuzz to .1% it will fail.
+		if ( magick compare -metric ae -fuzz .1% ${TESTOUTPUT} ${GOLDEN} ${DIFF} > /dev/null 2> /dev/null ); then
 			echo -e "${GREEN}[${BASENAME}]${NC} ${DIFF_MODE} diff passed"
 			DIFF_SUCCEEDED=true
 		else
@@ -93,14 +99,25 @@ do_test() {
 
 		echo "{ " > ${TESTOUTPUT_JSON}
 		cp $TESTFILE ${TESTFILE_ASHTML}
+		DOCSTRING=$(cat $TESTFILE | awk '
+			BEGIN {insection="no"}
+			/\/\/enddescription\/\// { insection="no" }
+			/\/\*/ { next }
+			/\*\// { next }
+			/.?/ { if (insection == "yes") { gsub(/"/, "\\\""); print } }
+			/\/\/startdescription\/\// { insection="yes" }
+			')
+		DOCSTRING=${DOCSTRING//$'\n'/'<br>'}
 		node $TESTFILE ${TESTOUTPUT_NORMAL} ${TESTOUTPUT_EXPLODED} ${HEADFUL} ${PARAMS} 2> ${TESTOUTPUT} && NODE_SUCCESS=true
 		if [ "$NODE_SUCCESS" == "false" ]; then
 			echo -e "${RED}[${BASENAME}]${NC} test crashed!!!!! check console for error."
 			echo "    \"test\": \"${BASENAME}\"," >> ${TESTOUTPUT_JSON}
+			echo "    \"docstring\": \"${DOCSTRING}\"," >> ${TESTOUTPUT_JSON}
 			echo "    \"node_ignored\": false," >> ${TESTOUTPUT_JSON}
 			echo "    \"node_success\": ${NODE_SUCCESS}" >> ${TESTOUTPUT_JSON}
 		else
 			echo "    \"test\": \"${BASENAME}\"," >> ${TESTOUTPUT_JSON}
+			echo "    \"docstring\": \"${DOCSTRING}\"," >> ${TESTOUTPUT_JSON}
 			echo "    \"node_ignored\": false," >> ${TESTOUTPUT_JSON}
 			echo "    \"node_success\": ${NODE_SUCCESS}," >> ${TESTOUTPUT_JSON}
 			echo "    \"diffs\": [" >> ${TESTOUTPUT_JSON}

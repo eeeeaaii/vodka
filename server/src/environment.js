@@ -284,6 +284,11 @@ class Environment {
 	lookupBinding(name) {
 		return this.lookupFullBinding(name).val;
 	}
+
+	hasBinding(name) {
+		let binding = this._recursiveLookup(name, [this.listOfPackagesUsed]);
+		return !!binding;		
+	}
 }
 
 // global lexical environment.

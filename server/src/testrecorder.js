@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { getExperimentsAsString } from './globalappflags.js'
+
 let recording = false;
 let firstKeyUp = true; // ignore first key up of recorded session because it's the esc key
 let recorded_session = `
@@ -25,13 +27,13 @@ var testactions = [];
 `
 
 let session_end = `
-harness.runTestNew(testactions, 'direct');
+harness.runTestWithFlags(testactions, 'direct', experiment_flags);
 `
 let shorthand = '';
 
 function captureRecording() {
 	let session_output = `//testspec// ${shorthand}
-//starttest//` + recorded_session + session_end + `//endtest//
+//starttest//` + sessionPrefix() + recorded_session + session_end + `//endtest//
 `;
 	navigator.clipboard.writeText(session_output);
 }
@@ -48,6 +50,14 @@ const RECORDING_DONE_EXPECTING_UP    = 8;
 const RECORDING_DONE    = 9;
 
 let state = EXPECTING_FIRST_DOWN;
+
+function sessionPrefix() {
+	let flags = getExperimentsAsString();
+	flags = flags.replace(',', ',\n');
+	return `
+const experiment_flags = ${flags};
+	`;
+}
 
 function checkRecordState(event, type) {
 	let kc = event.code;

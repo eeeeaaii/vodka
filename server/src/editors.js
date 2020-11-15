@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { experiments } from './globalappflags.js'
+
 class Editor {
 	constructor(nex, type) {
 		this._isEditing = false;
@@ -31,6 +33,9 @@ class Editor {
 	}
 
 	shouldTerminate(text) {
+		if (experiments.BETTER_KEYBINDINGS) {
+			return text == 'Enter'
+		}
 		return text == 'Enter'
 			|| (
 				text == 'Backspace'

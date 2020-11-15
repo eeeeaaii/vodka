@@ -1,3 +1,36 @@
+=========================== flags ====================================
+---
+title: 'Flags'
+date: "2020-11-15T00:08:29.000-04"
+description: In which I try to think this through.
+---
+So obviously Vodka has flags that change how it works. I want to use this flag system
+to reduce the amount of time I have to spend going back and fixing old tests
+when I change keystrokes or interaction modes: or at least, to be able to
+decouple fixing those tests from actually changing interaction modes and making
+forward progress.
+
+First of all I need the test recorder to write out the current state
+of all flags in the output test file somehow. This should be dynamic/live,
+otherwise when I change the default flag state I have to change `capturetest.sh`,
+which would be annoying. So it will ask `globalappflags.js` to give it those
+values.
+
+Second of all, the current default flag state needs to be immortalized as
+the legacy default and loaded in for all previous tests, that don't have
+flags saved in the test file.
+
+Third of all, I have to make sure not to kill/remove any flag support going forward.
+Unless I want to, which involves fixing old tests.
+
+This gets me what I want, but I do have to pay the price of having an ever-expanding
+set of conditional branches in the code and legacy garbage being held onto
+for longer than I'd like. It's just... I have a LOT of tests.
+
+In terms of format for the flags... IDK I guess JSON is easy enough, there's 
+JSON.stringify that I can use.
+
+
 =========================== fonts ====================================
 ---
 title: 'Fonts'

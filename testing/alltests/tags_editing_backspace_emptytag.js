@@ -20,6 +20,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //startdescription//
 /*
 backspace on empty tag deletes that tag and selects previous one
+
+Note: it's okay for the normal golden to not be in normal mode, this is due to the fact that currently, esc doesn't work when tag editing.
 */
 //enddescription//
 //testspec// |Shift|@|a|p|p|l|e|`|b|a|n|a|n|a|ArrowRight|c|a|t|ArrowLeft|ArrowRight|Backspace|Backspace|Backspace|Backspace

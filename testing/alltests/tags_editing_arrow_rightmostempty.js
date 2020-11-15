@@ -20,6 +20,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //startdescription//
 /*
 verifies that arrowing right on the rightmost tag makes a new empty tag to the right
+
+Note: it's okay for the normal golden to not be in normal mode, this is due to the fact that currently, esc doesn't work when tag editing.
 */
 //enddescription//
 //testspec// |Shift|@|a|p|p|l|e|`|t|a|g|ArrowRight|b|a|n|a|n|a|ArrowRight

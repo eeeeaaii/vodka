@@ -62,14 +62,15 @@ class Command extends NexContainer {
 	// and is meant to be called when the command text changes.
 	cacheClosureIfCommandTextIsBound() {
 		this.cachedClosure = null;
-		try {
+		// previously this function just tried to look up the binding
+		// and caught the exception (and ignored it) if it failed. However
+		// throwing exceptions is expensive and hurts performance so instead
+		// we test directly for whether binding is here
+		if (BUILTINS.hasBinding(this.commandtext)) {
 			let closure = BUILTINS.lookupBinding(this.commandtext);
 			if (closure) {
+				// what if the name of the function gets rebound to a non-closure?
 				this.cachedClosure = closure;
-			}
-		} catch (e) {
-			if (!(e instanceof EError)) {
-				throw e;
 			}
 		}
 	}
@@ -265,6 +266,10 @@ class Command extends NexContainer {
 	// it is also used to look up symbol bindings
 
 	evaluate(executionEnv) {
+		return this.runCommand(executionEnv);
+	}
+
+	runCommand(executionEnv) {
 		systemState.pushStackLevel();
 		systemState.stackCheck(); // not for step eval, this is to prevent call stack overflow.
 
@@ -282,10 +287,13 @@ class Command extends NexContainer {
 		if (PERFORMANCE_MONITOR) {
 			perfmon.logMethodCallStart(this.evalState.closure.getCmdName());
 		}
-		this.evalState.closure.doAlertAnimation();
+		if (!experiments.DISABLE_ALERT_ANIMATIONS) {
+			this.evalState.closure.doAlertAnimation();
+		}
 		// actually run the code.
 		this.notReallyCachedClosure = this.evalState.closure;
-		let r = this.evalState.closure.executor(executionEnv, argEvaluator, this.evalState.cmdname, this.tags);
+		let r = this.evalState.closure.closureExecutor(executionEnv, argEvaluator, this.evalState.cmdname, this.tags);
+		//let r = this.evalState.closure.closureStatementExecutor(executionEnv, argEvaluator, this.evalState.cmdname, this.tags);
 		if (PERFORMANCE_MONITOR) {
 			perfmon.logMethodCallEnd(this.evalState.closure.getCmdName());
 		}
@@ -418,11 +426,7 @@ class Command extends NexContainer {
 	}
 
 	getDefaultHandler() {
-		if (experiments.V2_INSERTION) {
-			return 'standardDefault';
-		} else {
-			return 'insertAfterCommand';
-		}
+		return 'standardDefault';
 	}
 
 	doTabHack() {
@@ -430,13 +434,13 @@ class Command extends NexContainer {
 	}
 
 	getEventTable(context) {
-		if (experiments.V2_INSERTION) {
+		if (experiments.BETTER_KEYBINDINGS) {
 			return {
 				'ShiftEnter': 'evaluate-nex-and-keep',
 				'Enter': 'evaluate-nex',
-				'Backspace': 'delete-last-command-letter-or-remove-selected-and-select-previous-sibling',
 				'ShiftSpace': 'toggle-dir',
-				'CtrlSpace': 'autocomplete'
+				'CtrlSpace': 'autocomplete',
+				'Backspace': 'start-main-editor',
 			};
 		} else {
 			return {

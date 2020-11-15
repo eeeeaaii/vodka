@@ -20,6 +20,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //startdescription//
 /*
 verifies that you can switch editing tag with the arrow and the visual style changes
+
+Note: it's okay for the normal golden to not be in normal mode, this is due to the fact that currently, esc doesn't work when tag editing.
 */
 //enddescription//
 //testspec// |Shift|@|a|p|p|l|e|Enter|`|b|a|n|a|n|a|Enter|`|g|r|a|p|e|ArrowLeft

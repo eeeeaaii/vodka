@@ -70,20 +70,11 @@ class CustomNex extends Nex {
 	}
 
 	getEventTable(context) {
-		if (experiments.V2_INSERTION) {
-			return {
-				// these 2 are questionable but make tests pass?
-				'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
-				'Backspace': 'remove-selected-and-select-previous-leaf-v2',
-				'Enter': 'do-line-break-always',
-			}
-		} else {
-			return {
-				// these 2 are questionable but make tests pass?
-				'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
-				'Backspace': 'remove-selected-and-select-previous-leaf',
-				'Enter': 'do-line-break-always',
-			}
+		return {
+			// these 2 are questionable but make tests pass?
+			'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
+			'Backspace': 'remove-selected-and-select-previous-leaf-v2',
+			'Enter': 'do-line-break-always',
 		}
 	}
 }

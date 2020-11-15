@@ -19,7 +19,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Pen } from "./pen.js"
 
-import { MoveOp, BezierOp, LineOp, BezierPlotOp } from "./drawingops.js"
+import { MoveOp, OP_MOVE,
+		 BezierOp, OP_BEZIER,
+		 LineOp, OP_LINE,
+		 BezierPlotOp, OP_BEZIERPLOT } from "./drawingops.js"
 
 
 // Here's how these params work.
@@ -48,9 +51,12 @@ const FONT_DEBUG = false;
 class Font {
 	constructor(pxparams, inparams) {
 		this.setParams(pxparams, inparams);
-		this.domnode = null;
+		this.flowElement = null;
 		this.previousSlop = -1;
 		this.previousFontSize = -1;
+		this.letter = null;
+		this.glyph = null;
+		this.needsRedraw = false;
 	}
 
 	setParams(inpxparams, inparams) {
@@ -73,6 +79,10 @@ class Font {
 		this.overrideParams(params, inparams);
 		this.setDerivedParams(params, inparams);
 		this.params = params;
+		if (this.glyph) {
+			this.setParamsDerivedFromGlyph();
+		}
+		this.needsRedraw = true;
 	}
 
 	getDefaultPxparams() {
@@ -160,10 +170,6 @@ class Font {
 		return canvas;
 	}
 
-	getNominalCorpus() {
-		return .4;
-	}
-
 	getFontName() {
 		return '';
 	}
@@ -198,20 +204,12 @@ class Font {
 	rebuildCanvas(pt_px,
 				  baseline_from_top,
 				  slop_px,
-				  letter,
 				  lineheight_px,
 				  left_kerning_px,
 				  right_kerning_px,
 				  tracking_px) {
 
 		this.pen = new Pen(pt_px, baseline_from_top, slop_px);
-
-		this.glyph = this.getGlyphs()[letter];
-		if (!this.glyph) {
-			this.glyph = this.getGlyphs()['a'];
-		}
-
-		let width = this.glyph.getWidth() * this.getNominalCorpus();
 
 		this.flowElement = document.createElement('div');
 
@@ -220,33 +218,14 @@ class Font {
 			lineheight_px,
 			pt_px,           /* fontsize_px */
 			baseline_from_top * pt_px,  /* baselineFromTop_px */
-			width * pt_px,    /* glyphwidth_px */
+			this.params.width * pt_px,    /* glyphwidth_px */
 			left_kerning_px,
 			right_kerning_px,
 			tracking_px,
 			slop_px);		
 	}
 
-	drawIntoDomNode(letter) {
-
-		let pt_px = this.pxparams.fontsize; // font height in pixels
-		let left_kerning_px = this.pxparams.left_kerning;
-		let right_kerning_px = this.pxparams.right_kerning;
-		let lineheight_px = pt_px + pt_px * this.params.leading;
-		let tracking_px = pt_px * this.params.tracking;
-
-		// all params
-		// values are in units relative to font size, so 1.0 for
-		// one of these values means it's the same as the font size
-		// in pixels
-
-		let linethickness = this.params.linethickness;
-
-		// below we need to define all the variables that
-		// are in the font expressions
-
-		let baseline_from_top = this.params.baseline;
-
+	maybeEval(x) {
 		let cap = this.params.cap; // capital letter (like M)
 		let asc = this.params.asc; // ascender (lowercase l)
 		let desc = this.params.desc; // desc (bottom of y)
@@ -255,17 +234,68 @@ class Font {
 		let curve = this.params.curve; // used for control points
 		let aperture = this.params.aperture; // opening in c, e
 
+		let left = this.params.left;
+		let right = this.params.right;
+		let baseline = this.params.baseline;
+		let mid = this.params.mid;
+
+		let width = this.params.width;
+
+		if (typeof x == 'string') {
+			return eval(x);
+		} else {
+			return x(this.params);
+		}
+	}
+
+	// this will at some point be expanded to also set the context,
+	// i.e. letter before or after
+	setLetter(letter) {
+		if (this.letter == letter) {
+			return;
+		}
+		this.needsRedraw = true;
+		this.letter = letter;
+		this.glyph = this.getGlyphs()[letter];
+		if (!this.glyph) {
+			this.glyph = this.getGlyphs()['a'];
+		}
+		this.setParamsDerivedFromGlyph();
+	}
+
+	setParamsDerivedFromGlyph() {
+		this.params.width = this.glyph.getWidth() * this.params.nominalwidth;
+		this.params.right = this.params.width;
+		this.params.mid = this.params.width / 2;
+	}
+
+	drawIntoDomNode() {
+		let pt_px = this.pxparams.fontsize; // font height in pixels
+		let left_kerning_px = this.pxparams.left_kerning;
+		let right_kerning_px = this.pxparams.right_kerning;
+		let lineheight_px = pt_px + pt_px * this.params.leading;
+		let tracking_px = pt_px * this.params.tracking;
+		let linethickness = this.params.linethickness;
+		let baseline_from_top = this.params.baseline_from_top;
+		let cap = this.params.cap;
+		let asc = this.params.asc;
+		let desc = this.params.desc;
+		let corpus = this.params.corpus;
+		let bar = this.params.bar;
+		let curve = this.params.curve;
+		let aperture = this.params.aperture;
+
 		let slop_px = this.calculateSlop(asc, desc, pt_px);
 
 		let shouldRebuildCanvas = false;
 
-		if (this.domnode == null) {
+		if (this.flowElement == null) {
 			shouldRebuildCanvas = true;
 		}
 
 		if (slop_px != this.previousSlop) {
 			shouldRebuildCanvas = true;
-			this.previousSlop = pt_px;
+			this.previousSlop = slop_px;
 		}
 
 		if (pt_px != this.previousFontSize) {
@@ -274,10 +304,10 @@ class Font {
 		}
 
 		if (shouldRebuildCanvas) {
+			this.needsRedraw = true;
 			this.rebuildCanvas(pt_px,
 							   baseline_from_top,
 							   slop_px,
-							   letter,
 							   lineheight_px,
 							   left_kerning_px,
 							   right_kerning_px,
@@ -285,107 +315,42 @@ class Font {
 
 		}
 
+		if (this.needsRedraw) {
+			let ctx = this.canvas.getContext("2d");
+			ctx.lineWidth = linethickness * pt_px;
+			ctx.beginPath();
+			ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+			let instructions = this.glyph.getInstructions();
 
-
-		// let pen = new Pen(pt_px, baseline_from_top, slop_px);
-
-		// let glyph = this.getGlyphs()[letter];
-		// if (!glyph) {
-		// 	glyph = this.getGlyphs()['a'];
-		// }
-
-		// let width = glyph.getWidth() * this.getNominalCorpus();
-
-		// let flowElement = document.createElement('div');
-		// let canvas = this.setupCanvas(
-		// 	flowElement,
-		// 	lineheight_px,
-		// 	pt_px,           /* fontsize_px */
-		// 	baseline_from_top * pt_px,  /* baselineFromTop_px */
-		// 	width * pt_px,    /* glyphwidth_px */
-		// 	left_kerning_px,
-		// 	right_kerning_px,
-		// 	tracking_px,
-		// 	slop_px);
-
-		let width = this.glyph.getWidth() * this.getNominalCorpus();
-		let ctx = this.canvas.getContext("2d");
-		ctx.lineWidth = linethickness * pt_px;
-		ctx.beginPath();
-		let instructions = this.glyph.getInstructions();
-
-		// we set up some convenience variables that will
-		// make it easier to search-and-replace in the letter
-		// specs later. Otherwise 0 could be both the baseline
-		// and the left side (for example)
-		let left = 0;
-		let right = width;
-		let mid = width / 2;
-		// when the letters refer to "baseline" it's this
-		let baseline = 0;		
-
-
-		// following line is so that eval statements
-		// can access non-standard params that a
-		// font might add
-		let p = this.params;
-		for (let i = 0; i < instructions.length; i++) {
-			let op = instructions[i];
-			switch(op.type) {
-				case 'bezier':
-					ctx.bezierCurveTo(this.pen.xToPx(eval(op.cp1x)),
-									  this.pen.yToPx(eval(op.cp1y)),
-									  this.pen.xToPx(eval(op.cp2x)),
-									  this.pen.yToPx(eval(op.cp2y)),
-									  this.pen.xToPx(eval(op.endx)),
-									  this.pen.yToPx(eval(op.endy)));
-					break;
-				case 'move':
-					ctx.moveTo(this.pen.xToPx(eval(op.x)), this.pen.yToPx(eval(op.y)));
-					break;
-				case 'line':
-					ctx.lineTo(this.pen.xToPx(eval(op.x)), this.pen.yToPx(eval(op.y)));
-					break;
-				case 'bezierplot':
-					new Bezier(this.pen.xToPx(eval(op.p1x)),
-							   this.pen.yToPx(eval(op.p1y)),
-							   this.pen.xToPx(eval(op.cp1x)),
-							   this.pen.yToPx(eval(op.cp1y)),
-							   this.pen.xToPx(eval(op.cp2x)),
-							   this.pen.yToPx(eval(op.cp2y)),
-							   this.pen.xToPx(eval(op.p2x)),
-							   this.pen.yToPx(eval(op.p2y))).plot(ctx, aperture);
-					break;
-				default:
-					// new thing?
-					let opobj = this.createOp(op.op);
-					let params = [];
-					for (let i = 0; i < op.d.length; i++) {
-						let p = op.d[i];
-						params[i] = {};
-						if (p.x) params[i].x = this.pen.xToPx(eval(p.x));
-						if (p.y) params[i].y = this.pen.yToPx(eval(p.y));
-						if (p.val) params[i].val = eval(p.val);
-					}
-					opobj.setParams(params);
-					opobj.draw(ctx);
-
-
+			for (let i = 0; i < instructions.length; i++) {
+				let oprecord = instructions[i];
+				let opobj = this.createOp(oprecord.op);
+				let params = [];
+				for (let i = 0; i < oprecord.d.length; i++) {
+					let p = oprecord.d[i];
+					params[i] = {};
+					if (p.x) params[i].x = this.pen.xToPx(this.maybeEval(p.x));
+					if (p.y) params[i].y = this.pen.yToPx(this.maybeEval(p.y));
+					if (p.val) params[i].val = this.maybeEval(p.val);
+				}
+				opobj.setParams(params);
+				opobj.draw(ctx);
 			}
+			ctx.stroke();
+			this.needsRedraw = false;
 		}
-		ctx.stroke();
 		return this.flowElement;
 	}
 
 	createOp(opstr) {
 		switch(opstr) {
-			case 'move':
+			case OP_MOVE:
 				return new MoveOp();
-			case 'bezier':
+			case OP_BEZIER:
 				return new BezierOp();
-			case 'bezierplot':
+			case OP_BEZIERPLOT:
 				return new BezierPlotOp();
-			case 'line':
+			case OP_LINE:
 				return new LineOp();
 		}
 	}

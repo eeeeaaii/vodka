@@ -24,6 +24,8 @@ import { Closure } from './closure.js';
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 import { Editor } from '../editors.js'
+import { experiments } from '../globalappflags.js'
+
 
 class Lambda extends NexContainer {
 	constructor(val) {
@@ -268,10 +270,18 @@ class Lambda extends NexContainer {
 	}
 
 	getEventTable(context) {
-		return {
-			'Enter': 'start-main-editor',
-			'ShiftSpace': 'toggle-dir',
-		};
+		if (experiments.BETTER_KEYBINDINGS) {
+			return {
+				'Backspace': 'start-main-editor',
+				'ShiftSpace': 'toggle-dir',
+				'Backspace': 'start-main-editor',
+			};
+		} else {
+			return {
+				'Enter': 'start-main-editor',
+				'ShiftSpace': 'toggle-dir',
+			};
+		}
 	}
 
 	static makeLambda(argstring, maybeargs) {

@@ -72,34 +72,15 @@ class Separator extends Letter {
 	}
 
 	getEventTable() {
-		if (experiments.V2_INSERTION) {
-			return {
-				'Tab': 'move-to-next-leaf-v2',
-				'ArrowUp': 'move-to-corresponding-letter-in-previous-line-v2',
-				'ArrowDown': 'move-to-corresponding-letter-in-next-line-v2',
-				'ArrowLeft': 'move-to-previous-leaf-v2',
-				'ArrowRight': 'move-to-next-leaf-v2',
-				'ShiftBackspace': 'delete-separator-v2',
-				'Backspace': 'delete-separator-v2',
-				'Enter': 'do-line-break-for-separator-v2',
-				// all the rest also deprecated, to be removed.
-				// end deprecated
-//				'<': 'insert-zlist-as-next-sibling',
-			}
-		} else {
-			return {
-				'Tab': 'move-to-next-leaf',
-				'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
-				'ArrowDown': 'move-to-corresponding-letter-in-next-line',
-				'ArrowLeft': 'move-to-previous-leaf',
-				'ArrowRight': 'move-to-next-leaf',
-				'ShiftBackspace': 'remove-separator-and-possibly-join-words',
-				'Backspace': 'remove-separator-and-possibly-join-words',
-				'Enter': 'do-line-break-after-letter',
-				// all the rest also deprecated, to be removed.
-				// end deprecated
-				'<': 'insert-zlist-as-next-sibling',
-			}
+		return {
+			'Tab': 'move-to-next-leaf-v2',
+			'ArrowUp': 'move-to-corresponding-letter-in-previous-line-v2',
+			'ArrowDown': 'move-to-corresponding-letter-in-next-line-v2',
+			'ArrowLeft': 'move-to-previous-leaf-v2',
+			'ArrowRight': 'move-to-next-leaf-v2',
+			'ShiftBackspace': 'delete-separator-v2',
+			'Backspace': 'delete-separator-v2',
+			'Enter': 'do-line-break-for-separator-v2',
 		}
 	}
 }

@@ -20,9 +20,13 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 .org {
 	height:auto;
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
 	align-items: flex-start;
 	padding: 0px;
+}
+
+.org.vdir {
+	flex-direction: column;
 }
 
 .org.exploded {
@@ -43,3 +47,34 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	font-style: italic;
 	font-size: 11px;
 }
+
+/*
+.line {
+	display: flex;
+	flex-direction: row;
+	flex-wrap:wrap;
+	align-items: flex-start;
+}
+
+.line.exploded {
+	padding: 5px;
+	border: 1px solid #a7a7de;
+	border-radius: 6px;	
+}
+
+.line.exploded.selected {
+	padding: 3px;
+	border-width: 3px;
+}
+
+.emptyline {
+	height:1.12em;	
+}
+
+.emptyline.selected {
+	background-color: black;
+	width:1px;
+}
+*/
+
+

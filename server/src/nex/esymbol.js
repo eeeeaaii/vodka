@@ -117,32 +117,23 @@ class ESymbol extends ValueNex {
 
 
 	getDefaultHandler() {
-		if (experiments.V2_INSERTION) {
-			return 'standardDefault';
-		} else {
-			return 'insertOrAddToESymbol';
-		}
+		return 'standardDefault';
 	}
 
 	getEventTable(context) {
-		if (experiments.V2_INSERTION) {
+		if (experiments.BETTER_KEYBINDINGS) {
 			return {
-				// these 2 are questionable but make tests pass?
-				'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
-				'Backspace': 'remove-selected-and-select-previous-leaf-v2',
-				'ShiftEnter': 'evaluate-nex',
-				'Enter': 'evaluate-nex',
+//				'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
+//				'ShiftEnter': 'evaluate-nex',
+//				'Enter': 'evaluate-nex',
+				'Backspace': 'start-main-editor',
 				'CtrlSpace': 'autocomplete',
 			}
 		} else {
 			return {
-				// WHY this is wrong
-				// backspace is the other damn thing
-				// deleting one char at a time from the contents
-
 				// these 2 are questionable but make tests pass?
-				'ShiftBackspace': 'remove-selected-and-select-previous-leaf',
-				'Backspace': 'delete-last-letter-or-remove-selected-and-select-previous-leaf',
+				'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
+				'Backspace': 'remove-selected-and-select-previous-leaf-v2',
 				'ShiftEnter': 'evaluate-nex',
 				'Enter': 'evaluate-nex',
 				'CtrlSpace': 'autocomplete',

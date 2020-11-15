@@ -7,6 +7,6 @@ server/packages/perf*
 server/packages/ig*
 server/src/favicon.ico
 server/sounds/*
-server/src/out/*
+server/docs/*
 soundcreation
 

@@ -20,6 +20,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //startdescription//
 /*
 shift-backspace deletes entire tag when tag editing
+
+Note: it's okay for the normal golden to not be in normal mode, this is due to the fact that currently, esc doesn't work when tag editing.
 */
 //enddescription//
 //testspec// |Shift|@|b|a|c|k|s|p|a|c|e|Enter|`|a|p|p|l|e|ArrowRight|b|a|n|a|n|a|ArrowRight|Shift|Backspace|Shift|Backspace|ArrowLeft|Shift|Backspace|`|d|u|r|i|a|n|ArrowLeft|Shift|Backspace|`|e|n|d|i|v|e|Shift|Backspace

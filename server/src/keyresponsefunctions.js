@@ -51,7 +51,6 @@ import { evaluateAndReplace, evaluateAndKeep, evaluateAndCopy } from './evaluato
 import { UNHANDLED_KEY } from './globalconstants.js'
 import { experiments } from './globalappflags.js'
 
-// V2_INSERTION
 import {
 	INSERT_UNSPECIFIED,
 	INSERT_AFTER,
@@ -69,22 +68,12 @@ function insertOrAppend(s, obj) {
 	}
 }
 
-// V2_INSERTION
-
 function V2_INSERT_insertAfterSelectedShim(n) {
-	if (experiments.V2_INSERTION) {
-		return manipulator.defaultInsertForV2(manipulator.selected(), n)
-	} else {
-		return manipulator.insertAfterSelectedAndSelect(n);
-	}
+	return manipulator.defaultInsertForV2(manipulator.selected(), n)
 }
 
 function V2_INSERT_appendAndSelectShim(n) {
-	if (experiments.V2_INSERTION) {
-		return manipulator.defaultInsertForV2(manipulator.selected(), n)
-	} else {
-		return manipulator.appendAndSelect(manipulator.newLetter(txt));
-	}
+	return manipulator.defaultInsertForV2(manipulator.selected(), n)
 }
 
 
@@ -175,64 +164,16 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	// this is not a new version of lineDefault!
-	// it's newlines. Which are deprecated anyway.
-	'newlineDefault': function(nex, txt, context) {
-		if (experiments.V2_INSERTION) throw new Error('bad');
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let isCommand = (context == ContextType.COMMAND);
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-		if (isSeparator) {
-			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt));
-		} else {
-			if (isCommand) {
-				V2_INSERT_insertAfterSelectedShim(manipulator.newLetter(txt));
-			} else {
-				let newword = manipulator.newWord();
-				let newletter = manipulator.newLetter(txt);
-				newword.appendChild(newletter);
-				V2_INSERT_insertAfterSelectedShim(newword);
-				manipulator.joinToSiblingIfSame(newword);
-				newletter.setSelected();
-			}
-		}
-		return true;
-	},
-
 	'lineDefault': function(nex, txt) {
 		if (isNormallyHandled(txt)) {
 			return false;
 		}
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
-		if (experiments.V2_INSERTION) {
-			if (isSeparator) {
-				manipulator.insertSeparatorFromLineV2(manipulator.newSeparator(txt), manipulator.selected())
-			} else {
-				manipulator.insertLetterFromLineV2(manipulator.newLetter(txt), manipulator.selected())
-			}
-			return true;
-		}
-
-
 		if (isSeparator) {
-			V2_INSERT_appendAndSelectShim(manipulator.newSeparator(txt));
+			manipulator.insertSeparatorFromLineV2(manipulator.newSeparator(txt), manipulator.selected())
 		} else {
-			if (manipulator.selectLastChild()) {
-				selectedNex.appendChild(manipulator.newLetter(txt));
-			} else {
-				let w = manipulator.newWord();
-				let lett = manipulator.newLetter(txt);
-				w.appendChild(lett);
-				V2_INSERT_appendAndSelectShim(w);
-				if (experiments.V2_INSERTION) {
-					lett.setSelected();
-				}
-
-			}
+			manipulator.insertLetterFromLineV2(manipulator.newLetter(txt), manipulator.selected())
 		}
 		return true;
 	},
@@ -240,11 +181,7 @@ const DefaultHandlers = {
 	'integerDefault': function(nex, txt, context, sourcenode) {
 		if (txt == 'Backspace') {
 			if (nex.value == '0') {
-				if (experiments.V2_INSERTION) {
-					KeyResponseFunctions['remove-selected-and-select-previous-sibling-v2'](sourcenode);
-				} else {
-					KeyResponseFunctions['remove-selected-and-select-previous-leaf'](sourcenode);
-				}
+				KeyResponseFunctions['remove-selected-and-select-previous-sibling-v2'](sourcenode);
 			} else {
 				nex.deleteLastLetter();
 			}
@@ -261,12 +198,7 @@ const DefaultHandlers = {
 		} else if (isSeparator) {
 			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt));
 		} else {
-			if (experiments.V2_INSERTION) {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-			} else {
-				V2_INSERT_insertAfterSelectedShim(manipulator.newWord())
-					&& V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt));				
-			}
+			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
 		}
 		return true;
 	},
@@ -314,11 +246,7 @@ const DefaultHandlers = {
 		if (txt == 'Backspace') {
 			// do backspace hack
 			if (nex.value == '0') {
-				if (experiments.V2_INSERTION) {
-					KeyResponseFunctions['remove-selected-and-select-previous-leaf-v2'](sourcenode);
-				} else {
-					KeyResponseFunctions['remove-selected-and-select-previous-leaf'](sourcenode);
-				}
+				KeyResponseFunctions['remove-selected-and-select-previous-leaf-v2'](sourcenode);
 			} else {
 				nex.deleteLastLetter();
 			}
@@ -335,13 +263,7 @@ const DefaultHandlers = {
 		} else if (isSeparator) {
 			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt));
 		} else {
-
-			if (experiments.V2_INSERTION) {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-			} else {
-				V2_INSERT_insertAfterSelectedShim(manipulator.newWord())
-					&& V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt));				
-			}
+			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
 		}
 		return true;
 	},
@@ -380,14 +302,7 @@ const DefaultHandlers = {
 		} else if (isSeparator) {
 			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt));
 		} else {
-
-			if (experiments.V2_INSERTION) {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-			} else {
-				V2_INSERT_insertAfterSelectedShim(manipulator.newWord())
-					&& V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt));				
-			}
-
+			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
 		}
 		return true;
 	},
@@ -402,12 +317,7 @@ const DefaultHandlers = {
 		if (isSeparator) {
 			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt))
 		} else {
-			if (experiments.V2_INSERTION) {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-			} else {
-				V2_INSERT_insertAfterSelectedShim(manipulator.newWord())
-					&& V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt));				
-			}
+			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
 		}		
 	},
 
@@ -421,17 +331,11 @@ const DefaultHandlers = {
 		if (isSeparator) {
 			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt))
 		} else {
-			if (experiments.V2_INSERTION) {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-			} else {
-				V2_INSERT_insertAfterSelectedShim(manipulator.newWord())
-					&& V2_INSERT_appendAndSelectShim(manipulator.newLetter(txt));				
-			}
+			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
 		}
 		return true;
 	},
 
-	// this is the default V2_INSERTION for all code objects!
 	'justAppendLetterOrSeparator': function(nex, txt) {
 		if (isNormallyHandled(txt)) {
 			return false;
@@ -461,7 +365,6 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	// V2_INSERTION only
 	// EVERYTHING SHOULD MIGRATE SLOWLY TO THIS.
 	'standardDefault': function(nex, txt, context) {
 		if (isNormallyHandled(txt)) {
@@ -513,11 +416,7 @@ const DefaultHandlers = {
 		let isSeparator = !letterRegex.test(txt);
 		if (isSeparator) {
 			if (inWord) {
-				if (experiments.V2_INSERTION) {
-					manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator(txt));
-				} else {
-					KeyResponseFunctions['split-word-and-insert-separator'](txt);
-				}
+				manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator(txt));
 			} else {
 				V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt));				
 			}
@@ -541,16 +440,12 @@ const DefaultHandlers = {
 			V2_INSERT_insertAfterSelectedShim(manipulator.newSeparator(txt));
 		} else {
 			if (isLine) {
-				if (experiments.V2_INSERTION) {
-					let newword = manipulator.newWord();
-					let newletter = manipulator.newLetter(txt);
-					newword.appendChild(newletter);
-					V2_INSERT_insertAfterSelectedShim(newword);
-					manipulator.joinToSiblingIfSame(newword);
-					newletter.setSelected();
-				} else {
-					KeyResponseFunctions['insert-letter-after-separator'](txt);
-				}
+				let newword = manipulator.newWord();
+				let newletter = manipulator.newLetter(txt);
+				newword.appendChild(newletter);
+				V2_INSERT_insertAfterSelectedShim(newword);
+				manipulator.joinToSiblingIfSame(newword);
+				newletter.setSelected();
 			} else {
 				V2_INSERT_insertAfterSelectedShim(manipulator.newLetter(txt));
 			}
@@ -641,6 +536,35 @@ const KeyResponseFunctions = {
 			||  manipulator.insertAfterSelectedAndSelect(new InsertionPoint());
 	},
 
+	'force-insert-up-v3' : function(s) {
+		manipulator.forceInsertUpV3(s);
+	},
+	'force-insert-down-v3' : function(s) {
+		manipulator.forceInsertDownV3(s);
+	},
+	'force-insert-left-v3' : function(s) {
+		manipulator.forceInsertLeftV3(s);
+	},
+	'force-insert-right-v3' : function(s) {
+		manipulator.forceInsertRightV3(s);
+	},
+
+	'move-right-v3': function(s) {
+		manipulator.moveRightV3(s);		
+	},
+
+	'move-left-v3': function(s) {
+		manipulator.moveLeftV3(s);
+	},
+
+	'move-up-v3': function(s) {
+		manipulator.moveUpV3(s);		
+	},
+
+	'move-down-v3': function(s) {
+		manipulator.moveDownV3(s);
+	},
+
 	'select-next-sibling': function(s) {
 		manipulator.selectNextSibling();
 	},
@@ -692,9 +616,8 @@ const KeyResponseFunctions = {
 	'no-op': function(s) {},
 
 	'start-main-editor': function(s) { s.possiblyStartMainEditor(); },
+	'start-main-editor-if-not-empty': function(s) { s.possiblyStartMainEditorIfNotEmpty(); },
 
-
-	// BEGIN V2_INSERTION
 
 	'evaluate-v2': function(s) {
 		evaluateAndReplace(s);
@@ -798,7 +721,6 @@ const KeyResponseFunctions = {
 	'insert-doc-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newDoc()); },
 	'insert-org-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newOrg()); },
 	'insert-zlist-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newZlist()); },
-	// END V2_INSERTION
 
 
 	'replace-selected-with-command': function(s) { manipulator.replaceSelectedWith(manipulator.newCommand()); },
@@ -856,6 +778,10 @@ const KeyResponseFunctions = {
 	'wrap-in-doc': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newDoc()); },
 	'wrap-in-org': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newOrg()); },
 
+	'force-insert-inside': function(s) { manipulator.forceInsertInside(); },
+	'force-insert-around': function(s) { manipulator.forceInsertAround(); },
+	'force-insert-after': function(s) { manipulator.forceInsertAfter(); },
+	'force-insert-before': function(s) { manipulator.forceInsertBefore(); },
 
 	// WIP
 	'insert-type-as-next-sibling': function(s) {
@@ -985,14 +911,7 @@ const KeyResponseFunctions = {
 	},
 
 	'do-line-break-always': function(s) {
-		if (experiments.V2_INSERTION) {
-			manipulator.doLineBreakAlwaysV2(s);
-			return;
-		}
-		let newline = new Newline();
-		manipulator.insertAfterSelected(newline)
-			&& manipulator.putAllNextSiblingsInNewLine()
-			&& newline.setSelected();
+		manipulator.doLineBreakAlwaysV2(s);
 	},
 
 	'do-line-break-from-line': function(s) {

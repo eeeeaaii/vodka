@@ -24,6 +24,7 @@ class Word extends NexContainer {
 	constructor() {
 		super();
 		this.pfstring = null;
+		this.setHorizontal();
 	}
 
 	getTypeName() {
@@ -51,6 +52,9 @@ class Word extends NexContainer {
  	prettyPrintInternal(lvl, hdir) {
 		return this.standardListPrettyPrint(lvl, '[word]', hdir);
 	}
+
+	toggleDir() {} // can only be horizontal
+	setVertical() {}
 
 	getContextType() {
 		return ContextType.WORD;
@@ -104,47 +108,11 @@ class Word extends NexContainer {
 		return 'insertAtWordLevel';
 	}
 
-	// in V1 insertion you hit tab to create an insertion point node
-	// inside a list, this would mean that the below things wouldn't be
-	// called and it would insert inside.
-	// since now tab just forces insert-inside mode, then if you type
-	// one of the below things after that, it would still insert as sibling.
-	// WE DON'T EVEN WANT insert as sibling but to get the tests to pass
-	// I'm doing this hack
-	doTabHack() {
-		this.dotabhack = 2;
-	}
-
 	getEventTable(context) {
-
-		if (experiments.V2_INSERTION) {
-			if (experiments.V2_INSERTION_TAB_HACK && this.dotabhack) {
-				this.dotabhack--;
-			}
-			return {
-				'Enter': 'do-line-break-always',
-				'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
-				'ArrowDown': 'move-to-corresponding-letter-in-next-line',
-			}
-
-		}
 		return {
 			'Enter': 'do-line-break-always',
 			'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
 			'ArrowDown': 'move-to-corresponding-letter-in-next-line',
-			'~': 'insert-command-as-next-sibling',
-			'!': 'insert-bool-as-next-sibling',
-			'@': 'insert-symbol-as-next-sibling',
-			'#': 'insert-integer-as-next-sibling',
-			'$': 'insert-string-as-next-sibling',
-			'%': 'insert-float-as-next-sibling',
-			'^': 'insert-nil-as-next-sibling',
-			'&': 'insert-lambda-as-next-sibling',
-			'*': 'insert-expectation-as-next-sibling',
-			'(': 'insert-word-as-next-sibling',
-			'[': 'insert-line-as-next-sibling',
-			'{': 'insert-doc-as-next-sibling',
-
 		}
 	}
 }

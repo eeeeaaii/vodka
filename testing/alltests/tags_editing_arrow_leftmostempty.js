@@ -19,7 +19,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testname// tags_editing_arrow_leftmostempty
 //startdescription//
 /*
-verifies that arrowing left on the leftmost tag makes a new empty tag to the left
+Verifies that arrowing left on the leftmost tag makes a new empty tag to the left.
+
+Note: it's okay for the normal golden to not be in normal mode, this is due to the fact that currently, esc doesn't work when tag editing.
 */
 //enddescription//
 //testspec// |Shift|@|a|p|p|l|e|Enter|`|b|a|n|a|n|a|ArrowLeft|t|a|g|ArrowLeft

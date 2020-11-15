@@ -56,11 +56,15 @@ function delay(timeout) {
 }
 
 function runTest(testinput, method) { // legacy
-	runTestImpl(testinput, method, true /* legacy */);
+	runTestImpl(testinput, method, true /* legacy */, null);
 }
 
 function runTestNew(testinput, method) {
-	runTestImpl(testinput, method, false /* legacy */);
+	runTestImpl(testinput, method, false /* legacy */, null);
+}
+
+function runTestWithFlags(testinput, method, flags) {
+	runTestImpl(testinput, method, false /* legacy */, flags);
 }
 
 function runUnitTest(testinput) {
@@ -94,7 +98,33 @@ function pausableAction(t) {
 	return true;
 }
 
-function runTestImpl(testinput, method, legacy) {
+function toQueryString(flags) {
+	let str = '';
+	let doSep = ((s) => (s == '' ? '?' : '&'));
+	for (let flag in flags) {
+		let value = flags[flag];
+		if (typeof value == 'boolean') {
+			value = (value ? '1' : '0');
+		} else {
+			value = '' + value;
+		}
+		str += doSep(str) + flag + '=' + value;
+	}
+	return str;
+}
+
+function getLegacyDefaultFlags() {
+	return {
+		'DISABLE_ALERT_ANIMATIONS': true, // override, see globalappflags.js
+
+		'V2_INSERTION_LENIENT_DOC_FORMAT': true,
+		'NO_COPY_CSS': false,
+		'BETTER_KEYBINDINGS': false,
+		'VISUAL_KEYBINDINGS': false
+	};
+}
+
+function runTestImpl(testinput, method, legacy, flags) {
 	(async() => {
 		let normal_out = process.argv[2];
 		let exploded_out = process.argv[3];
@@ -105,6 +135,12 @@ function runTestImpl(testinput, method, legacy) {
 			if (params && params.indexOf('?') != 0) {
 				params = '?' + params;
 			}			
+		} else {
+			if (!flags) {
+				params = toQueryString(getLegacyDefaultFlags())
+			} else {
+				params = toQueryString(flags);
+			}
 		}
 		let dolog = headful;
 		let browser = null;
@@ -194,5 +230,5 @@ function runTestImpl(testinput, method, legacy) {
 	});
 }
 
-module.exports = { runTest, runTestNew, runUnitTest }
+module.exports = { runTest, runTestNew, runUnitTest, runTestWithFlags }
 

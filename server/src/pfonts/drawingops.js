@@ -17,9 +17,15 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Bezier } from './bezier.js'
 
+const OP_MOVE = 0;
+const OP_BEZIER = 1;
+const OP_LINE = 2;
+const OP_BEZIERPLOT = 3;
+
+
 class MoveOp {
 	constructor(x, y) {
-		this.type = 'move';
+		this.type = OP_MOVE;
 		this.x = x;
 		this.y = y;
 	}
@@ -37,7 +43,7 @@ class MoveOp {
 
 class BezierOp {
 	constructor(cp1x, cp1y, cp2x, cp2y, endx, endy) {
-		this.type = 'bezier';
+		this.type = OP_BEZIER;
 		this.cp1x = cp1x;
 		this.cp1y = cp1y;
 		this.cp2x = cp2x;
@@ -69,7 +75,7 @@ class BezierOp {
 
 class LineOp {
 	constructor(x, y) {
-		this.type = 'line';
+		this.type = OP_LINE;
 		this.x = x;
 		this.y = y;
 	}
@@ -87,7 +93,7 @@ class LineOp {
 
 class BezierPlotOp {
 	constructor(p1x, p1y, cp1x, cp1y, cp2x, cp2y, p2x, p2y, stopat) {
-		this.type = 'bezierplot';
+		this.type = OP_BEZIERPLOT;
 		this.p1x = p1x;
 		this.p1y = p1y;
 		this.cp1x = cp1x;
@@ -124,7 +130,8 @@ class BezierPlotOp {
 	}
 }
 
-
-
-export { MoveOp, BezierOp, LineOp, BezierPlotOp }
+export { MoveOp, OP_MOVE,
+		 BezierOp, OP_BEZIER,
+		 LineOp, OP_LINE,
+		 BezierPlotOp, OP_BEZIERPLOT } 
 

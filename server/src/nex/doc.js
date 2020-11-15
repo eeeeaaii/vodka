@@ -24,6 +24,7 @@ class Doc extends NexContainer {
 	constructor() {
 		super();
 		this.pfstring = null;
+		this.setVertical();
 	}
 
 	toString(version) {
@@ -36,6 +37,10 @@ class Doc extends NexContainer {
 	toStringV2() {
 		return `[doc]${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
+
+
+	toggleDir() {} // can only be vertical
+	setHorizontal() {}
 
 	prettyPrintInternal(lvl, hdir) {
 		return this.standardListPrettyPrint(lvl, '[doc]', hdir);
@@ -103,22 +108,8 @@ class Doc extends NexContainer {
 	}
 
 	getEventTable(context) {
-		if (experiments.V2_INSERTION) {
-			if (experiments.V2_INSERTION_TAB_HACK) {
-				if (this.dotabhack) {
-					this.dotabhack--;
-				}				
-			}
-			return {
-				'Enter': 'do-line-break-always',
-			}
-		} else {
-			return {
-				'Enter': 'do-line-break-always',
-				'(': 'insert-word-as-next-sibling',
-				'[': 'insert-line-as-next-sibling',
-				'{': 'insert-doc-as-next-sibling',
-			}
+		return {
+			'Enter': 'do-line-break-always',
 		}
 	}
 }

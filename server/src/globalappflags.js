@@ -16,73 +16,113 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-
-const appFlags = {};
+// These flags are recorded in the test files.
+// Whatever values are set for these flags when you record the test,
+// whether it's their default value or the value passed in via 
+// the query string, becomes part of the experiment config
+// for that test and will be set every time it is run.
+//
+// These flags are typically used for gradually introducing a feature.
+// The process would be:
+//
+// 1. Create the flag, test the new feature by passing in the flag in
+//    the query string. Don't do this for too long (see 4, below)
+// 2. When you're feeling more confident, make the flag default to the
+//    new behavior, and change getLegacyDefaultFlags in testharness.js
+//    to default to the old behavior.
+// 3. If you've decided that this new behavior is the way it will be,
+//    forever, and want to clean up the code and get rid of all the if
+//    statements that branch on the flag, change the value in getLegacyDefaultFlags,
+//    run the old tests, and look for problems. Fix them.
+// 4. If you recorded any new tests between stage 1 and 2, those will
+//    have the old behavior saved in the test config. You'll have to 
+//    manually change each of those tests to pass the flag for the new
+//    behavior.
+// 5. If all the tests pass with the flag value that specifies the new
+//    behavior, then you can burn in that behavior permanently.
+// 6. There will be tests saved with this flag in the test config. This
+//    means it's probably a bad idea to reuse flag key names. To prevent
+//    that, keep it here with a comment saying // UNUSED BUT DO NOT REUSE
 const experiments = {
-	'COMMAND_EDITOR': true,
-	'SYMBOL_EDITOR': true,
-	'V2_INSERTION': true,
-	'V2_INSERTION_TAB_HACK': false,
 	'V2_INSERTION_LENIENT_DOC_FORMAT': true,
 	'NO_COPY_CSS': false,
-	'DEFAULT_TO_PARAMETRIC_FONTS': false,
+	'DISABLE_ALERT_ANIMATIONS': false,
+	'BETTER_KEYBINDINGS': false,
+	'VISUAL_KEYBINDINGS': false
+	// See note above about changing testharness.js when adding new flags.
 };
 
-const flags = {
-	'DEBUG_EXPECTATIONS': false
-};
+// These flags aren't saved as part of the test. You should probably
+// never record a test with any of these flags set to any other value
+// than the default value given here, because if your test relies on
+// this flag being set, it will break when it's run by the test harness.
+// These flags are the ones you would use temporarily for debugging
+// but they should not represent features that are gradually being
+// phased in.
+const otherflags = {
+	'DEFAULT_TO_PARAMETRIC_FONTS': false,
+	'DEBUG_EXPECTATIONS': false,
+	'FILE': ''
+}
+
+// If a flag has a certain default value that rarely/never works for
+// tests because it tends to make them flaky, we can override it
+// here. Whatever value you set for that flag when the test is
+// recorded will be ignored (whether that flag is set via
+// live defaults or via query string). Instead, the override value is
+// saved in the test file/config for all new tests. testHarness
+// should probably also set the flag this way in getLegacyDefaultFlags
+// for legacy tests (even if these flags are maybe not the
+// way those legacy tests were originally recorded)
+const overrides = {
+	'DISABLE_ALERT_ANIMATIONS': true
+}
 
 // some hard coded things here
 
-function isBoolean(key) {
-	switch(key) {
-		case 'COMMAND_EDITOR':
-		case 'SYMBOL_EDITOR':
-		case 'V2_INSERTION':
-		case 'V2_INSERTION_TAB_HACK':
-		case 'V2_INSERTION_LENIENT_DOC_FORMAT':
-		case 'NO_COPY_CSS':
-		case 'DEBUG_EXPECTATIONS':
-		case 'DEFAULT_TO_PARAMETRIC_FONTS':
-			return true;
-		default:
-			return false;
+function tryToSetFlag(flagset, key, value) {
+	if (typeof flagset[key] !== 'undefined') {
+		if (typeof flagset[key] == 'boolean') {
+			value = parseBooleanValue(value);
+		}
+		flagset[key] = value;
+		return true;
+	} else {
+		return false;
 	}
 }
 
 function setAppFlags() {
 	var params = new URLSearchParams(window.location.search);
 	params.forEach(function(value, key) {
-		if (isBoolean(key)) {
-			value = parseBooleanValue(value);
-		}
-		appFlags[key] = value;
-		if (typeof experiments[key] !== 'undefined') {
-			experiments[key] = value;
-		}
-		if (typeof flags[key] !== 'undefined') {
-			flags[key] = value;
-		}
+		// don't throw an exception when an unknown flag
+		// is passed because old test configs could contain
+		// basically anything
+		tryToSetFlag(experiments, key, value)
+			|| tryToSetFlag(otherflags, key, value);
 	})
 }
 
 function parseBooleanValue(v) {
-	if (v == 'false' || v == '0') {
-		return false;
-	} else {
-		return !!v;
+	if (v == 1 || v == '1') return true;
+	if (v == 'true') return true;
+	if (v == 'false' || v == '0' || v == 0) return false;
+	return !!v;
+}
+
+function getExperimentsAsString() {
+	let exps = {};
+	for (let key in experiments) {
+		exps[key] = experiments[key];
 	}
-}
-
-// deprecated
-function getGlobalAppFlagIsSet(flagname) {
-	return !!appFlags[flagname];
-}
-
-function getGlobalAppFlagValue(flagname) {
-	return appFlags[flagname];
+	for (let key in overrides) {
+		exps[key] = overrides[key];
+	}
+	return JSON.stringify(exps);
 }
 
 
-
-export { experiments, flags, setAppFlags, getGlobalAppFlagIsSet, getGlobalAppFlagValue }
+export { experiments,
+	     otherflags,
+		 setAppFlags,
+		 getExperimentsAsString }

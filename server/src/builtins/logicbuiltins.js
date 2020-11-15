@@ -26,79 +26,99 @@ import { UNBOUND } from '../environment.js'
 
 
 function createLogicBuiltins() {
+
+	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
+
+	function $and(env, executionEnvironment) {
+		return new Bool(env.lb('val1').getTypedValue() && env.lb('val2').getTypedValue());		
+	}
+
 	Builtin.createBuiltin(
 		'and',
 		[ 'val1!', 'val2!' ],
-		function(env, executionEnvironment) {
-			return new Bool(env.lb('val1').getTypedValue() && env.lb('val2').getTypedValue());
-		},
+		$and,
 		'returns true if both |val1 and |val2 evaluate to boolean true.'
 	)
+
+	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
+
+	function $firstNonNil(env, executionEnvironment) {
+		let nex = env.lb('nex');
+		for (let i = 0; i < nex.numChildren(); i++) {
+			let c = nex.getChildAt(i);
+			let result = evaluateNexSafely(c, executionEnvironment);
+			if (result.getTypeName() != '-nil-') {
+				return result;
+			}
+		}
+		return new Nil();
+	}
 
 	Builtin.createBuiltin(
 		'first-non-nil',
 		[ '_nex...'],
-		function(env, executionEnvironment) {
-			let nex = env.lb('nex');
-			for (let i = 0; i < nex.numChildren(); i++) {
-				let c = nex.getChildAt(i);
-				let result = evaluateNexSafely(c, executionEnvironment);
-				if (result.getTypeName() != '-nil-') {
-					return result;
-				}
-			}
-			return new Nil();
-		},
+		$firstNonNil,
 		'returns the first argument that does not evaluate to nil, ignoring the rest.'
 	)
 
 	Builtin.aliasBuiltin('case', 'first-non-nil');
 
+	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
+
+	function $if(env, executionEnvironment) {
+		let b = env.lb('cond').getTypedValue();
+		let iftrue = env.lb('iftrue');
+		let iffalse = env.lb('iffalse');
+		if (b) {
+			let iftrueresult = evaluateNexSafely(iftrue, executionEnvironment);
+			if (Utils.isFatalError(iftrueresult)) {
+				return wrapError('&szlig;', 'if(-then(-else)): error in argument 2', iftrueresult);
+			}
+			return iftrueresult;
+		} else if (iffalse == UNBOUND) {
+			return new Nil();
+		} else {
+			let iffalseresult = evaluateNexSafely(iffalse, executionEnvironment);
+			if (Utils.isFatalError(iffalseresult)) {
+				return wrapError('&szlig;', 'if(-then(-else)): error in argument 3', iffalseresult);
+			}
+			return iffalseresult;
+		}
+	}
+
 	Builtin.createBuiltin(
 		'if',
 		[ 'cond!', '_iftrue', '_iffalse?' ],
-		function(env, executionEnvironment) {
-			let b = env.lb('cond').getTypedValue();
-			let iftrue = env.lb('iftrue');
-			let iffalse = env.lb('iffalse');
-			if (b) {
-				let iftrueresult = evaluateNexSafely(iftrue, executionEnvironment);
-				if (Utils.isFatalError(iftrueresult)) {
-					return wrapError('&szlig;', 'if(-then(-else)): error in argument 2', iftrueresult);
-				}
-				return iftrueresult;
-			} else if (iffalse == UNBOUND) {
-				return new Nil();
-			} else {
-				let iffalseresult = evaluateNexSafely(iffalse, executionEnvironment);
-				if (Utils.isFatalError(iffalseresult)) {
-					return wrapError('&szlig;', 'if(-then(-else)): error in argument 3', iffalseresult);
-				}
-				return iffalseresult;
-			}
-		},
+		$if,
 		'evalutes |cond, and if it is true, return |iftrue, otherwise return |iffalse (if it is present) or nil (if it isn\'t).'
 	)
 
 	Builtin.aliasBuiltin('if-then-else', 'if');
 	Builtin.aliasBuiltin('if-then', 'if');
 
+	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
+
+	function $not(env, executionEnvironment) {
+		return new Bool(!env.lb('val').getTypedValue());
+	}
+
 	Builtin.createBuiltin(
 		'not',
 		[ 'val!' ],
-		function(env, executionEnvironment) {
-			return new Bool(!env.lb('val').getTypedValue());
-		},
+		$not,
 		'evalutes to true if |val evaluates to false, or false if |val evaluates to true.'
 	)
 
+	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
+
+	function $or(env, executionEnvironment) {
+		return new Bool(env.lb('val1').getTypedValue() || env.lb('val2').getTypedValue());
+	}
 
 	Builtin.createBuiltin(
 		'or',
 		[ 'val1!', 'val2!' ],
-		function(env, executionEnvironment) {
-			return new Bool(env.lb('val1').getTypedValue() || env.lb('val2').getTypedValue());
-		},
+		$or,
 		'evaluates to true if either or both of |val1 or |val2 evaluate to true.'
 	)
 

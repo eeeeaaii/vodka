@@ -27,6 +27,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border: 1px solid #dddddd;
 	padding: 3px;
 	border-radius: 2px 2px 2px 2px;
+	height:100px;
+	width:250px;
+}
+
+.stringinputsubmit:focus {
+	background-color: #dddddd;
 }
 
 .innerspan {

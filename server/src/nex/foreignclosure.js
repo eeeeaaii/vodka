@@ -131,7 +131,7 @@ class ForeignClosure extends Closure {
 		}
 	}	
 
-	executor(executionEnvironment, argEvaluator, cmdname, commandTags) {
+	closureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags) {
 		// I don't have to create a binding.
 		// I just have to get the evaluated arguments out of argEvaluator.
 

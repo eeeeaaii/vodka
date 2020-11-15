@@ -19,7 +19,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testname// tags_editing_arrow_left_onlyemptytag
 //startdescription//
 /*
-verifies that if you're tag editing and you have an empty tag, and you hit left, and there are no other tags, you don't get in a weird state (like 2 empty tags, or a state where you're tag editing but there are no tags so the interface is frozen)
+Verifies that if you're tag editing and you have an empty tag, and you hit left, and there are no other tags, you don't get in a weird state (like 2 empty tags, or a state where you're tag editing but there are no tags so the interface is frozen).
+
+Note: it's okay for the normal golden to not be in normal mode, this is due to the fact that currently, esc doesn't work when tag editing.
 */
 //enddescription//
 //testspec// |Shift|@|a|p|p|l|e|Enter|`|a|Enter|`|ArrowLeft|Backspace|ArrowLeft

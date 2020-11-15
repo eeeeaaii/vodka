@@ -25,7 +25,9 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { ValueNex } from './valuenex.js'
 import { systemState } from '../systemstate.js'
 import { RENDER_FLAG_RERENDER, RENDER_FLAG_SHALLOW } from '../globalconstants.js'
+import { Editor } from '../editors.js'
 import * as Utils from '../utils.js'
+import { experiments } from '../globalappflags.js'
 
 class EString extends ValueNex {
 	constructor(val, ch, t) {
@@ -190,11 +192,17 @@ class EString extends ValueNex {
 
 	drawButton(renderNode) {
 		let domNode = renderNode.getDomNode();
-		this.submitbutton = document.createElement("button")
+		this.submitbutton = document.createElement("button");
+		this.submitbutton.textContent = 'done'
 		this.submitbutton.classList.add('stringinputsubmit');			
 		let t = this;
 		this.submitbutton.onclick = function() {
-			t.finishInput(renderNode);
+			if (experiments.BETTER_KEYBINDINGS) {
+				renderNode.forceCloseEditor();
+
+			} else {
+				t.finishInput(renderNode);
+			}
 		}
 		domNode.appendChild(this.submitbutton);
 	}
@@ -224,14 +232,43 @@ class EString extends ValueNex {
 	}
 
 	getEventTable(context) {
-		return {
-			'ShiftEnter': 'start-modal-editing',
-			'Enter': 'do-line-break-always',
-		};
+		if (experiments.BETTER_KEYBINDINGS) {
+			return {
+				'Backspace': 'start-main-editor',
+			};
+		} else {
+			return {
+				'ShiftEnter': 'start-modal-editing',
+				'Enter': 'do-line-break-always',
+			};
+		}
+	}
+}
+
+class EStringEditor extends Editor {
+	constructor(nex) {
+		super(nex, 'EStringEditor');
+	}
+
+	hasContent() {
+		return this.nex.getFullTypedValue() != '';
+	}
+
+	startEditing() {
+		super.startEditing();
+		this.nex.startModalEditing();
+	}
+
+	finish() {
+		super.finish();
+		this.nex.finishInput();
+	}
+
+	routeKey() {
+		console.log('route key should not be called for string editor');
 	}
 }
 
 
-
-export { EString }
+export { EString, EStringEditor }
 

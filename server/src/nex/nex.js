@@ -17,7 +17,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 let NEXT_NEX_ID = 0;
 
-import { getGlobalAppFlagIsSet } from '../globalappflags.js'
 import { systemState } from '../systemstate.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { RENDER_FLAG_SELECTED, RENDER_FLAG_SHALLOW, RENDER_FLAG_NORMAL, RENDER_FLAG_RERENDER, RENDER_FLAG_EXPLODED, RENDER_FLAG_DEPTH_EXCEEDED } from '../globalconstants.js'
@@ -108,9 +107,22 @@ class Nex {
 		return s + '>';
 	}
 
+	/**
+	 * Parses any private data that this nex has stored in the file.
+	 * @see {@link serializePrivateData}
+	 */
 	deserializePrivateData(data) {
 	}
 
+    /**
+     * Serializes private data. The vodka file format is very bare bones,
+     * and individual nexes do not get saved out with much more than their
+     * name and their children (if they are {@link NexContainer}s). For
+     * that reason, if the nex has any special data that it needs to save
+     * in the file, this needs to get serialized to the "private data"
+     * section. When overriding this function, you can just return the data.
+     * Escaping will be handled for you.
+     */
 	serializePrivateData() {
 		return '';
 	}
@@ -119,6 +131,11 @@ class Nex {
 		return this.toString('v2');
 	}
 
+	/**
+	 * Function that returns a string with the type of the nex. Useful because
+	 * "instance of" checks in JS are expensive.
+	 * @returns a string that gives the type name.
+	 */
 	getTypeName() {
 		throw new Error("only leaf types have names");
 	}
@@ -144,11 +161,11 @@ class Nex {
 	}
 
 	doRenderSequencing(renderNode) {
-		if (getGlobalAppFlagIsSet('otags') || this.lastRenderPassNumber == systemState.getGlobalRenderPassNumber()) {
+		if (this.lastRenderPassNumber == systemState.getGlobalRenderPassNumber()) {
 			// this node has been rendered before in this pass!
 			// if this is the first dupe, we go back to the first one
 			// and prepend the object tag.
-			if (getGlobalAppFlagIsSet('otags') || this.rendernodes.length == 1) {
+			if (this.rendernodes.length == 1) {
 				this.prependObjectTag(this.rendernodes[0]);
 			}
 			this.rendernodes.push(renderNode);
