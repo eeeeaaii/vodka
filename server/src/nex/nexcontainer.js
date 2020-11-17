@@ -298,6 +298,20 @@ class NexContainer extends Nex {
 		return r;
 	}
 
+	fastAppendChildAfter(c, after) {
+		let newP = new ChildNex(c);
+		if (after) {
+			after.next = newP;
+			this.lastChildNex = newP;
+		} else {
+			this.firstChildNex = newP;
+			this.lastChildNex = newP;
+		}
+		c.addReference();
+		this.numChildNexes++;
+		return newP;
+	}
+
 	insertChildAt(c, i) {
 		if (i < 0 || i > this.numChildNexes) {
 			return;

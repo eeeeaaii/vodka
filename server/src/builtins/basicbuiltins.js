@@ -328,61 +328,6 @@ function createBasicBuiltins() {
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
-	function $filterWith(env, executionEnvironment) {
-		let list = env.lb('list');
-		let closure = env.lb('func');
-		let resultList = list.makeCopy(true /* shallow */);
-		for (let i = 0; i < list.numChildren(); i++) {
-			let item = list.getChildAt(i);
-			let cmd = Command.makeCommandWithClosure(closure, Command.quote(list.getChildAt(i)));
-			let result = evaluateNexSafely(cmd, executionEnvironment);
-			if (Utils.isFatalError(result)) {
-				return wrapError('&szlig;', `filter-with: error returned from item ${i+1}`, result);
-			}
-			if (result.getTypedValue()) {
-				resultList.appendChild(list.getChildAt(i));
-			}
-		}
-		return resultList;				
-	}
-
-	Builtin.createBuiltin(
-		'filter-with',
-		[ 'list()', 'func&' ],
-		$filterWith,
-		'returns a new list containing only the elements of |list for which |func calls true when it is called on that element.'
-	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $mapWith(env, executionEnvironment) {
-		let closure = env.lb('func');
-		let list = env.lb('list');
-		// until we congeal things down to a single list type
-		// I'll try to honor the list type of the starting list
-		let resultList = list.makeCopy(true /* shallow */);
-		for (let i = 0; i < list.numChildren(); i++) {
-			let item = list.getChildAt(i);
-			let cmd = Command.makeCommandWithClosure(closure, Command.quote(item))
-			let result = evaluateNexSafely(cmd, executionEnvironment);
-			if (Utils.isFatalError(result)) {
-				return wrapError('&szlig;', `map-with: error returned from item ${i+1}`, result);
-			}
-			resultList.appendChild(result);
-
-		}
-		return resultList;				
-	}
-
-	Builtin.createBuiltin(
-		'map-with',
-		[ 'list()', 'func&' ],
-		$mapWith,
-		'goes through all the elements in |list and replaces each one with the result of calling |func on that element.'
-	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
 	function $quote(env, executionEnvironment) {
 		return env.lb('nex');
 	}
@@ -393,34 +338,6 @@ function createBasicBuiltins() {
 		$quote,
 		'returns the unevaluated form of |nex.'
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $reduceWithStarting(env, executionEnvironment) {
-		let list = env.lb('list');
-		let closure = env.lb('func');
-		let sn = env.lb('startvalue');
-		let p = sn;
-		for (let i = 0; i < list.numChildren(); i++) {
-			let item = list.getChildAt(i);
-			let cmd = Command.makeCommandWithClosure(closure, Command.quote(item), Command.quote(p));
-			let result = evaluateNexSafely(cmd, executionEnvironment);
-			if (Utils.isFatalError(result)) {
-				return wrapError('&szlig;', `reduce-with-starting: error returned from item ${i+1}`, result);
-			}
-			p = result;
-		}
-		return p;				
-	}
-
-	Builtin.createBuiltin(
-		'reduce-with-starting',
-		[ 'list()', 'func&', 'startvalue' ],
-		$reduceWithStarting,
-		'progressively updates a value, starting with |startvalue, by calling |func on each element in |list, passing in 1. the list element and 2. the progressively updated value, returning the final updated value.'
-	);
-
-
 
 }
 

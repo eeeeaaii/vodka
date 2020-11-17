@@ -609,7 +609,6 @@ class Manipulator {
 				let line = this.newLine();
 				// split not performed, insert new empty line
 				this._appendAfterAndSelect(line, this.getEnclosingLine(s));
-				line.getNex().doTabHack();
 			}
 		} else if (this._isSeparatorInLetterPosition(s)) {
 			this._doLineBreakAfterLetter(s);
@@ -652,7 +651,6 @@ class Manipulator {
 			} else {
 				let line = this.newLine();
 				this._appendAfterAndSelect(line, this.getEnclosingLine(s));
-				line.getNex().doTabHack();
 			}
 		} else if (this._isLetterInSeparatorPosition(s)) {
 			this._doLineBreakAfterSeparator(s);
@@ -849,7 +847,6 @@ class Manipulator {
 		if (!p) return false;
 		if (!this._splitParentAfterAndPutIn(s, line)) {
 			this._appendAfterAndSelect(line, p);
-			line.getNex().doTabHack();
 		} else {
 			let child = this._getFirstLeafInside(line);
 			if (child) {

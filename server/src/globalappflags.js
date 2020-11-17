@@ -47,8 +47,7 @@ const experiments = {
 	'V2_INSERTION_LENIENT_DOC_FORMAT': true,
 	'NO_COPY_CSS': false,
 	'DISABLE_ALERT_ANIMATIONS': false,
-	'BETTER_KEYBINDINGS': false,
-	'VISUAL_KEYBINDINGS': false
+	'BETTER_KEYBINDINGS': true,
 	// See note above about changing testharness.js when adding new flags.
 };
 

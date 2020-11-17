@@ -1,1 +1,1 @@
-v2:[word](_<`tag`>[letter]"h" [letter]"e" [letter]"l" [letter]"l" [letter]"o"_)
+v2:~(|begin ~(_bind @k #0_) ~(|for &(_#0_) &" i"(_~(_::lt:: @i #10000_)_) &" i"(_~(_::pl:: @i #1_)_) &" i"(|~(_bind @k ~(_::pl:: @k @i_)_)|)|) ~(|loop-over &" i"(|~(_bind @k ~(_::pl:: @k @i_)_)|) ~(_range #10000_)|)|)

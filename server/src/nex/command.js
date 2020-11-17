@@ -52,6 +52,11 @@ class Command extends NexContainer {
 		this.privateData = '';
 		this.searchingOn = null;
 		this.previousMatch = null;
+		this.skipAlert = false;
+	}
+
+	setSkipAlertAnimation(skipAlert) {
+		this.skipAlert = skipAlert;
 	}
 
 	getTypeName() {
@@ -287,7 +292,7 @@ class Command extends NexContainer {
 		if (PERFORMANCE_MONITOR) {
 			perfmon.logMethodCallStart(this.evalState.closure.getCmdName());
 		}
-		if (!experiments.DISABLE_ALERT_ANIMATIONS) {
+		if (!experiments.DISABLE_ALERT_ANIMATIONS && !this.skipAlert) {
 			this.evalState.closure.doAlertAnimation();
 		}
 		// actually run the code.
@@ -381,8 +386,45 @@ class Command extends NexContainer {
 
 	static quote(item) {
 		let q = new Command('quote');
-		q.appendChild(item);
+		q.fastAppendChildAfter(item, null);
 		return q;
+	}
+
+	// for performance reasons I have these hard coded functions where
+	// you just pass N args
+
+	static makeCommandWithClosureZeroArgs(closure) {
+		let cmd = new Command();
+		let appendIterator = null;
+		appendIterator = cmd.fastAppendChildAfter(Command.quote(closure), appendIterator);
+		return cmd;
+	}
+
+	static makeCommandWithClosureOneArg(closure, arg0) {
+		let cmd = new Command();
+		let appendIterator = null;
+		appendIterator = cmd.fastAppendChildAfter(Command.quote(closure), appendIterator);
+		appendIterator = cmd.fastAppendChildAfter(arg0, appendIterator);
+		return cmd;
+	}
+
+	static makeCommandWithClosureTwoArgs(closure, arg0, arg1) {
+		let cmd = new Command();
+		let appendIterator = null;
+		appendIterator = cmd.fastAppendChildAfter(Command.quote(closure), appendIterator);
+		appendIterator = cmd.fastAppendChildAfter(arg0, appendIterator);
+		appendIterator = cmd.fastAppendChildAfter(arg1, appendIterator);
+		return cmd;
+	}
+
+	static makeCommandWithClosureThreeArgs(closure, arg0, arg1, arg2) {
+		let cmd = new Command();
+		let appendIterator = null;
+		appendIterator = cmd.fastAppendChildAfter(Command.quote(closure), appendIterator);
+		appendIterator = cmd.fastAppendChildAfter(arg0, appendIterator);
+		appendIterator = cmd.fastAppendChildAfter(arg1, appendIterator);
+		appendIterator = cmd.fastAppendChildAfter(arg2, appendIterator);
+		return cmd;
 	}
 
 	static makeCommandWithClosure(closure, maybeargs) {
@@ -396,8 +438,9 @@ class Command extends NexContainer {
 		} else {
 			args = Array.prototype.slice.call(arguments).splice(1);
 		}
+		let appendIterator = null;
 		for (let i = 0; i < args.length; i++) {
-			cmd.appendChild(args[i]);
+			appendIterator = cmd.fastAppendChildAfter(args[i], appendIterator);
 		}
 		return cmd;
 	}
@@ -412,8 +455,9 @@ class Command extends NexContainer {
 		} else {
 			args = Array.prototype.slice.call(arguments).splice(1);
 		}
+		let appendIterator = null;
 		for (let i = 0; i < args.length; i++) {
-			cmd.appendChild(args[i]);
+			appendIterator = cmd.fastAppendChildAfter(args[i], appendIterator);
 		}
 		return cmd;
 	}
@@ -429,28 +473,16 @@ class Command extends NexContainer {
 		return 'standardDefault';
 	}
 
-	doTabHack() {
-		this.dotabhack = 2;
-	}
-
 	getEventTable(context) {
-		if (experiments.BETTER_KEYBINDINGS) {
-			return {
-				'ShiftEnter': 'evaluate-nex-and-keep',
-				'Enter': 'evaluate-nex',
-				'ShiftSpace': 'toggle-dir',
-				'CtrlSpace': 'autocomplete',
-				'Backspace': 'start-main-editor',
-			};
-		} else {
-			return {
-				'ShiftEnter': 'evaluate-nex-and-keep',
-				'Enter': 'evaluate-nex',
-				'Backspace': 'delete-last-command-letter-or-remove-selected-and-select-previous-sibling',
-				'ShiftSpace': 'toggle-dir',
-				'CtrlSpace': 'autocomplete'
-			};
-		}
+		return {
+			'ShiftEnter': 'evaluate-nex-and-keep',
+			'Enter': 'evaluate-nex',
+			'CtrlSpace': 'autocomplete',
+			'ShiftSpace': 'toggle-dir',
+			'Backspace': (experiments.BETTER_KEYBINDINGS
+				? 'start-main-editor'
+				: 'delete-last-command-letter-or-remove-selected-and-select-previous-sibling')
+		};
 	}
 }
 

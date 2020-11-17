@@ -116,11 +116,9 @@ function toQueryString(flags) {
 function getLegacyDefaultFlags() {
 	return {
 		'DISABLE_ALERT_ANIMATIONS': true, // override, see globalappflags.js
-
 		'V2_INSERTION_LENIENT_DOC_FORMAT': true,
 		'NO_COPY_CSS': false,
 		'BETTER_KEYBINDINGS': false,
-		'VISUAL_KEYBINDINGS': false
 	};
 }
 

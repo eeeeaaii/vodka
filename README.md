@@ -13,11 +13,13 @@ Current features:
 - some animations and transition support
 - fonts, styles, and formatting that can be controlled with code
 - limited 2D graphics support
+- parametric fonts
 
 Planned features include:
 
+- a11y support
+- VR/AR integration
 - full 2D graphics support
-- parametric fonts
 - sound synthesis
 - 3D/OpenGL graphics support
 - a dictionary API (word definitions, parts of speech)

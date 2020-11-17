@@ -28,6 +28,7 @@ import { createBasicBuiltins } from './builtins/basicbuiltins.js'
 import { createContractBuiltins } from './builtins/contractbuiltins.js'
 import { createEnvironmentBuiltins } from './builtins/environmentbuiltins.js'
 import { createFileBuiltins } from './builtins/filebuiltins.js'
+import { createIterationBuiltins } from './builtins/iterationbuiltins.js'
 import { createLogicBuiltins } from './builtins/logicbuiltins.js'
 import { createMakeBuiltins } from './builtins/makebuiltins.js'
 import { createMathBuiltins } from './builtins/mathbuiltins.js'
@@ -107,6 +108,7 @@ function createBuiltins() {
 	createContractBuiltins();
 	createEnvironmentBuiltins();
 	createFileBuiltins();
+	createIterationBuiltins();
 	createLogicBuiltins();
 	createMakeBuiltins();
 	createMathBuiltins();

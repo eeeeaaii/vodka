@@ -25,7 +25,7 @@ import * as Utils from '../utils.js'
 class ValueNex extends Nex {
 	constructor(val, prefix, className) {
 		super();
-		this.value = '' + val;
+		this.value = String(val);
 		this.prefix = prefix;
 		this.className = className;
 	}

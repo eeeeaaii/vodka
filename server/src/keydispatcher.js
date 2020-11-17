@@ -378,223 +378,100 @@ class KeyDispatcher {
 	}
 
 	getNexContainerGenericTable() {
-		if (experiments.BETTER_KEYBINDINGS) {
-			return {
-				'ShiftTab': 'select-parent',
-				'Tab': 'select-first-child-or-force-insert-inside-insertion-mode',
+		return {
+			'ShiftTab': 'select-parent',
+			'Tab': 'select-first-child-or-force-insert-inside-insertion-mode',
 
-				'ArrowUp': (experiments.VISUAL_KEYBINDINGS
-								? 'move-up-v3'
-								: 'move-left-up-v2'),
-				'ArrowDown': (experiments.VISUAL_KEYBINDINGS
-								? 'move-down-v3'
-								: 'move-right-down-v2'),
-				'ArrowLeft': (experiments.VISUAL_KEYBINDINGS
-								? 'move-left-v3'
-								: 'move-left-up-v2'),
-				'ArrowRight': (experiments.VISUAL_KEYBINDINGS
-								? 'move-right-v3'
-								: 'move-right-down-v2'),
+			'ArrowUp': 'move-left-up-v2',
+			'ArrowLeft': 'move-left-up-v2',
+			'ArrowDown': 'move-right-down-v2',
+			'ArrowRight': 'move-right-down-v2',
 
+			'ShiftArrowUp': (experiments.BETTER_KEYBINDINGS ? 'force-insert-before' : null),
+			'ShiftArrowDown': (experiments.BETTER_KEYBINDINGS ? 'force-insert-after' : null),
+			'ShiftArrowLeft': (experiments.BETTER_KEYBINDINGS ? 'force-insert-before' : null),
+			'ShiftArrowRight': (experiments.BETTER_KEYBINDINGS ? 'force-insert-after' : null),
 
-				'ShiftArrowUp': (experiments.VISUAL_KEYBINDINGS
-								? 'force-insert-up-v3'
-								: 'force-insert-before'),
-				'ShiftArrowDown': (experiments.VISUAL_KEYBINDINGS
-								? 'force-insert-down-v3'
-								: 'force-insert-after'),
-				'ShiftArrowLeft': (experiments.VISUAL_KEYBINDINGS
-								? 'force-insert-left-v3'
-								: 'force-insert-before'),
-				'ShiftArrowRight': (experiments.VISUAL_KEYBINDINGS
-								? 'force-insert-right-v3'
-								: 'force-insert-after'),
-
-				'AltArrowUp': 'force-insert-around',
-				'AltArrowDown': 'force-insert-inside',
-				'AltArrowLeft': 'force-insert-around',
-				'AltArrowRight': 'force-insert-inside',
-
-				'AltTab': 'start-main-editor',
-
-				'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
-				'Backspace': 'remove-selected-and-select-previous-sibling-v2',
-				'ShiftEscape': 'toggle-exploded',
-				'CtrlEnter': 'start-main-editor',
+			'AltTab': (experiments.BETTER_KEYBINDINGS ? 'force-insert-inside' : null),
+			'ShiftAltTab': (experiments.BETTER_KEYBINDINGS ? 'force-insert-around' : null),
 
 
-				'~': 'insert-command-at-insertion-point-v2',
-				'!': 'insert-bool-at-insertion-point-v2',
-				'@': 'insert-symbol-at-insertion-point-v2',
-				'#': 'insert-integer-at-insertion-point-v2',
-				'$': 'insert-string-at-insertion-point-v2',
-				'%': 'insert-float-at-insertion-point-v2',
-				'^': 'insert-nil-at-insertion-point-v2',
-				'&': 'insert-lambda-at-insertion-point-v2',
-				'*': 'insert-expectation-at-insertion-point-v2',
-				'(': 'insert-word-at-insertion-point-v2',
-				')': 'insert-org-at-insertion-point-v2',
-				'[': 'insert-line-at-insertion-point-v2',
-				'{': 'insert-doc-at-insertion-point-v2',
-				'`': 'add-tag',
-				'Alt`': 'remove-all-tags',
+			'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
+			'Backspace': 'remove-selected-and-select-previous-sibling-v2',
+			'ShiftEscape': 'toggle-exploded',
 
-				'Alt~': 'wrap-in-command',
-				'Alt&': 'wrap-in-lambda',
-				'Alt*': 'wrap-in-expectation',
-				'Alt(': 'wrap-in-word',
-				'Alt)': 'wrap-in-org',
-				'Alt[': 'wrap-in-line',
-				'Alt{': 'wrap-in-doc',
-			};			
-		} else {
-			return {
-				'ShiftTab': 'select-parent',
-				'Tab': 'select-first-child-or-force-insert-inside-insertion-mode',
+			'~': 'insert-command-at-insertion-point-v2',
+			'!': 'insert-bool-at-insertion-point-v2',
+			'@': 'insert-symbol-at-insertion-point-v2',
+			'#': 'insert-integer-at-insertion-point-v2',
+			'$': 'insert-string-at-insertion-point-v2',
+			'%': 'insert-float-at-insertion-point-v2',
+			'^': 'insert-nil-at-insertion-point-v2',
+			'&': 'insert-lambda-at-insertion-point-v2',
+			'*': 'insert-expectation-at-insertion-point-v2',
+			'(': 'insert-word-at-insertion-point-v2',
+			')': 'insert-org-at-insertion-point-v2',
+			'[': 'insert-line-at-insertion-point-v2',
+			'{': 'insert-doc-at-insertion-point-v2',
+			'`': 'add-tag',
+			'Alt`': 'remove-all-tags',
 
-				'ArrowUp': 'move-left-up-v2',
-				'ArrowLeft': 'move-left-up-v2',
-				'ArrowDown': 'move-right-down-v2',
-				'ArrowRight': 'move-right-down-v2',
-				'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
-				'Backspace': 'remove-selected-and-select-previous-sibling-v2',
-				'ShiftEscape': 'toggle-exploded',
-				'CtrlEnter': 'start-main-editor',
-				'~': 'insert-command-at-insertion-point-v2',
-				'!': 'insert-bool-at-insertion-point-v2',
-				'@': 'insert-symbol-at-insertion-point-v2',
-				'#': 'insert-integer-at-insertion-point-v2',
-				'$': 'insert-string-at-insertion-point-v2',
-				'%': 'insert-float-at-insertion-point-v2',
-				'^': 'insert-nil-at-insertion-point-v2',
-				'&': 'insert-lambda-at-insertion-point-v2',
-				'*': 'insert-expectation-at-insertion-point-v2',
-				'(': 'insert-word-at-insertion-point-v2',
-				')': 'insert-org-at-insertion-point-v2',
-				'[': 'insert-line-at-insertion-point-v2',
-				'{': 'insert-doc-at-insertion-point-v2',
-				'`': 'add-tag',
-				'Alt`': 'remove-all-tags',
-
-				'Alt~': 'wrap-in-command',
-				'Alt&': 'wrap-in-lambda',
-				'Alt*': 'wrap-in-expectation',
-				'Alt(': 'wrap-in-word',
-				'Alt)': 'wrap-in-org',
-				'Alt[': 'wrap-in-line',
-				'Alt{': 'wrap-in-doc',
-			};			
-		}
-
+			'Alt~': 'wrap-in-command',
+			'Alt&': 'wrap-in-lambda',
+			'Alt*': 'wrap-in-expectation',
+			'Alt(': 'wrap-in-word',
+			'Alt)': 'wrap-in-org',
+			'Alt[': 'wrap-in-line',
+			'Alt{': 'wrap-in-doc'
+		};			
 	}
 
 	getNexGenericTable() {
-		if (experiments.BETTER_KEYBINDINGS) {
-			return {
-				'ShiftTab': 'select-parent',
-				'Tab': 'select-next-sibling',
+		return {
+			'ShiftTab': 'select-parent',
+			'Tab': 'select-next-sibling',
 
-				'ShiftArrowUp': (experiments.VISUAL_KEYBINDINGS
-								? 'force-insert-up-v3'
-								: 'force-insert-before'),
-				'ShiftArrowDown': (experiments.VISUAL_KEYBINDINGS
-								? 'force-insert-down-v3'
-								: 'force-insert-after'),
-				'ShiftArrowLeft': (experiments.VISUAL_KEYBINDINGS
-								? 'force-insert-left-v3'
-								: 'force-insert-before'),
-				'ShiftArrowRight': (experiments.VISUAL_KEYBINDINGS
-								? 'force-insert-right-v3'
-								: 'force-insert-after'),
+			'ArrowUp': 'move-left-up-v2',
+			'ArrowDown': 'move-right-down-v2',
+			'ArrowLeft': 'move-left-up-v2',
+			'ArrowRight': 'move-right-down-v2',
 
-				'AltArrowUp': 'force-insert-around',
-				'AltArrowLeft': 'force-insert-around',
+			'ShiftArrowUp': (experiments.BETTER_KEYBINDINGS ? 'force-insert-before' : null),
+			'ShiftArrowDown': (experiments.BETTER_KEYBINDINGS ? 'force-insert-after': null),
+			'ShiftArrowLeft': (experiments.BETTER_KEYBINDINGS ? 'force-insert-before': null),
+			'ShiftArrowRight': (experiments.BETTER_KEYBINDINGS ? 'force-insert-after': null),
 
-				'ArrowUp': (experiments.VISUAL_KEYBINDINGS
-								? 'move-up-v3'
-								: 'move-left-up-v2'),
-				'ArrowDown': (experiments.VISUAL_KEYBINDINGS
-								? 'move-down-v3'
-								: 'move-right-down-v2'),
-				'ArrowLeft': (experiments.VISUAL_KEYBINDINGS
-								? 'move-left-v3'
-								: 'move-left-up-v2'),
-				'ArrowRight': (experiments.VISUAL_KEYBINDINGS
-								? 'move-right-v3'
-								: 'move-right-down-v2'),
+			'ShiftAltTab': (experiments.BETTER_KEYBINDINGS ? 'force-insert-around' : null),
 
-				'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
+			'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
+			'Backspace': 'remove-selected-and-select-previous-sibling-v2',
 
-				'Backspace': 'remove-selected-and-select-previous-sibling-v2',
-
-				'ShiftEscape': 'toggle-exploded',
-				'Enter': 'evaluate-v2',
-				'CtrlEnter': 'start-main-editor',
-				'~': 'insert-command-at-insertion-point-v2',
-				'!': 'insert-bool-at-insertion-point-v2',
-				'@': 'insert-symbol-at-insertion-point-v2',
-				'#': 'insert-integer-at-insertion-point-v2',
-				'$': 'insert-string-at-insertion-point-v2',
-				'%': 'insert-float-at-insertion-point-v2',
-				'^': 'insert-nil-at-insertion-point-v2',
-				'&': 'insert-lambda-at-insertion-point-v2',
-				'*': 'insert-expectation-at-insertion-point-v2',
-				'(': 'insert-word-at-insertion-point-v2',
-				')': 'insert-org-at-insertion-point-v2',
-				'[': 'insert-line-at-insertion-point-v2',
-				'{': 'insert-doc-at-insertion-point-v2',
-				'<': 'insert-zlist-at-insertion-point-v2',
-				'`': 'add-tag',
-				'Alt`': 'remove-all-tags',
-				'Alt~': 'wrap-in-command',
-				'Alt&': 'wrap-in-lambda',
-				'Alt*': 'wrap-in-expectation',
-				'Alt(': 'wrap-in-word',
-				'Alt)': 'wrap-in-org',
-				'Alt[': 'wrap-in-line',
-				'Alt{': 'wrap-in-doc',
-			};
-		} else {
-			return {
-				'ShiftTab': 'select-parent',
-				'Tab': 'select-next-sibling',
-				'ArrowUp': 'move-left-up-v2',
-				'ArrowDown': 'move-right-down-v2',
-				'ArrowLeft': 'move-left-up-v2',
-				'ArrowRight': 'move-right-down-v2',
-				'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
-				'Backspace': 'remove-selected-and-select-previous-sibling-v2',
-				'ShiftEscape': 'toggle-exploded',
-				'Enter': 'evaluate-v2',
-				'CtrlEnter': 'start-main-editor',
-				'~': 'insert-command-at-insertion-point-v2',
-				'!': 'insert-bool-at-insertion-point-v2',
-				'@': 'insert-symbol-at-insertion-point-v2',
-				'#': 'insert-integer-at-insertion-point-v2',
-				'$': 'insert-string-at-insertion-point-v2',
-				'%': 'insert-float-at-insertion-point-v2',
-				'^': 'insert-nil-at-insertion-point-v2',
-				'&': 'insert-lambda-at-insertion-point-v2',
-				'*': 'insert-expectation-at-insertion-point-v2',
-				'(': 'insert-word-at-insertion-point-v2',
-				')': 'insert-org-at-insertion-point-v2',
-				'[': 'insert-line-at-insertion-point-v2',
-				'{': 'insert-doc-at-insertion-point-v2',
-				'<': 'insert-zlist-at-insertion-point-v2',
-				'`': 'add-tag',
-				'Alt`': 'remove-all-tags',
-
-				'Alt~': 'wrap-in-command',
-				'Alt&': 'wrap-in-lambda',
-				'Alt*': 'wrap-in-expectation',
-				'Alt(': 'wrap-in-word',
-				'Alt)': 'wrap-in-org',
-				'Alt[': 'wrap-in-line',
-				'Alt{': 'wrap-in-doc',
-			};
-
-		}
-
+			'ShiftEscape': 'toggle-exploded',
+			'Enter': 'evaluate-v2',
+			'~': 'insert-command-at-insertion-point-v2',
+			'!': 'insert-bool-at-insertion-point-v2',
+			'@': 'insert-symbol-at-insertion-point-v2',
+			'#': 'insert-integer-at-insertion-point-v2',
+			'$': 'insert-string-at-insertion-point-v2',
+			'%': 'insert-float-at-insertion-point-v2',
+			'^': 'insert-nil-at-insertion-point-v2',
+			'&': 'insert-lambda-at-insertion-point-v2',
+			'*': 'insert-expectation-at-insertion-point-v2',
+			'(': 'insert-word-at-insertion-point-v2',
+			')': 'insert-org-at-insertion-point-v2',
+			'[': 'insert-line-at-insertion-point-v2',
+			'{': 'insert-doc-at-insertion-point-v2',
+			'<': 'insert-zlist-at-insertion-point-v2',
+			'`': 'add-tag',
+			'Alt`': 'remove-all-tags',
+			'Alt~': 'wrap-in-command',
+			'Alt&': 'wrap-in-lambda',
+			'Alt*': 'wrap-in-expectation',
+			'Alt(': 'wrap-in-word',
+			'Alt)': 'wrap-in-org',
+			'Alt[': 'wrap-in-line',
+			'Alt{': 'wrap-in-doc'
+		};
 	}
 }
 

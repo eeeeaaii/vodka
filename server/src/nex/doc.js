@@ -103,10 +103,6 @@ class Doc extends NexContainer {
 		return 'docHandle';
 	}
 
-	doTabHack() {
-		this.dotabhack = 2;
-	}
-
 	getEventTable(context) {
 		return {
 			'Enter': 'do-line-break-always',

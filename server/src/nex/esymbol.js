@@ -123,15 +123,11 @@ class ESymbol extends ValueNex {
 	getEventTable(context) {
 		if (experiments.BETTER_KEYBINDINGS) {
 			return {
-//				'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
-//				'ShiftEnter': 'evaluate-nex',
-//				'Enter': 'evaluate-nex',
 				'Backspace': 'start-main-editor',
 				'CtrlSpace': 'autocomplete',
 			}
 		} else {
 			return {
-				// these 2 are questionable but make tests pass?
 				'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
 				'Backspace': 'remove-selected-and-select-previous-leaf-v2',
 				'ShiftEnter': 'evaluate-nex',

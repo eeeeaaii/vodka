@@ -273,13 +273,12 @@ class Lambda extends NexContainer {
 		if (experiments.BETTER_KEYBINDINGS) {
 			return {
 				'Backspace': 'start-main-editor',
-				'ShiftSpace': 'toggle-dir',
-				'Backspace': 'start-main-editor',
+				'ShiftSpace': 'toggle-dir'
 			};
 		} else {
 			return {
 				'Enter': 'start-main-editor',
-				'ShiftSpace': 'toggle-dir',
+				'ShiftSpace': 'toggle-dir'
 			};
 		}
 	}
