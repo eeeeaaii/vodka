@@ -20,6 +20,9 @@ import { isNormallyHandled } from '../keyresponsefunctions.js'
 import { experiments } from '../globalappflags.js'
 import { Editor } from '../editors.js'
 
+/**
+ * Nex that represents a boolean value.
+ */
 class Bool extends ValueNex {
 	constructor(val) {
 		if (val === 'true') {

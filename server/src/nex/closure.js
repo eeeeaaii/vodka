@@ -22,7 +22,10 @@ import { Nil } from './nil.js'
 import { wrapError, evaluateNexSafely } from '../evaluator.js'
 import { BINDINGS, BUILTINS } from '../environment.js'
 
-
+/**
+ * Nex that represents a "compiled" or evaluated function. Both
+ * {@link Lambda} and {@link Builtin} nexes become Closures when evaluated.
+ */
 class Closure extends ValueNex {
 	constructor(lambda, lexicalEnvironment, name) {
 		super('', '&', name ? name : 'closure')

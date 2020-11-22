@@ -48,6 +48,17 @@ const experiments = {
 	'NO_COPY_CSS': false,
 	'DISABLE_ALERT_ANIMATIONS': false,
 	'BETTER_KEYBINDINGS': true,
+
+	// When true, makes it so that ctrl-enter always evaluates and does NOT open main editor.
+	// This breaks old tests that used this to open the editor.
+	'CTRL_ENTER_CHANGE': true, 
+
+	// This is the max render depth. We want some tests to be saved with a small
+	// max render depth, because test screenshots are small (example, see
+	// graphics_general_renderdepthexceeded). The value given here
+	// used to be a const, now it is always passed in via flags.
+	'MAX_RENDER_DEPTH': 100,
+
 	// See note above about changing testharness.js when adding new flags.
 };
 
@@ -65,7 +76,7 @@ const otherflags = {
 }
 
 // If a flag has a certain default value that rarely/never works for
-// tests because it tends to make them flaky, we can override it
+// tests for whatever reasons, we can override it
 // here. Whatever value you set for that flag when the test is
 // recorded will be ignored (whether that flag is set via
 // live defaults or via query string). Instead, the override value is
@@ -74,7 +85,7 @@ const otherflags = {
 // for legacy tests (even if these flags are maybe not the
 // way those legacy tests were originally recorded)
 const overrides = {
-	'DISABLE_ALERT_ANIMATIONS': true
+	'DISABLE_ALERT_ANIMATIONS': true,
 }
 
 // some hard coded things here

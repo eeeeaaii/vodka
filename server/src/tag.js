@@ -18,12 +18,15 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { contractEnforcer } from './contract.js';
 import { EError } from './nex/eerror.js'
 import { Editor } from './editors.js'
-import * as Utils from '../utils.js'
+import * as Utils from './utils.js'
 
+/**
+ * Represents a tag.
+ */
 class Tag  {
 	constructor(name) {
 		// can't have backticks in tags
-		this.name = name.replace('`', '');
+		this.name = name.replace(/\`/g, '');
 		this.isEditing = false;
 	}
 

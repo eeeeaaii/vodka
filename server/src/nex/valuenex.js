@@ -20,7 +20,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //
 
 import { Nex } from './nex.js'
-import * as Utils from '../utils.js'
 
 class ValueNex extends Nex {
 	constructor(val, prefix, className) {
@@ -46,24 +45,12 @@ class ValueNex extends Nex {
 		return this.value;
 	}
 
-	escape(str) {
-		str = str.replace('&', "&amp;");
-		str = str.replace('<', "&lt;");
-		str = str.replace('>', "&gt;");
-		str = str.replace('"', "&quot;");
-		str = str.replace("'", "&apos;");
-		str = str.replace(" ", "&nbsp;");
-		str = str.replace("\n", "<br>");
-		str = str.replace("\r", "<br>");
-		return str;
-	}	
-
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add(this.className);
 		domNode.classList.add('valuenex');
-		domNode.innerHTML = '' + this.prefix + Utils.escape(this.renderValue());
+		domNode.innerHTML = '' + this.prefix + this.escape(this.renderValue());
 	}
 
 	getTypedValue() {

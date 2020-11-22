@@ -310,7 +310,7 @@ function createFileBuiltins() {
 
 	Builtin.createBuiltin(
 		'using',
-		[ 'namelist()', '_nex...' ],
+		[ '_namelist()', '_nex...' ],
 		$using,
 		'makes it so bindings in the packages in |namelist can be dereferenced without the package identifier when evaluating the rest of the arguments.'
 	);	

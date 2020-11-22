@@ -143,7 +143,7 @@ class Org extends NexContainer {
 		return {
 			'ShiftEnter': 'evaluate-nex-and-keep',
 			'Enter': 'evaluate-nex',
-			'ShiftSpace': 'toggle-dir', // doesn't work
+			'ShiftSpace': 'toggle-dir',
 		};
 	}
 

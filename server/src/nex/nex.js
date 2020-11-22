@@ -17,6 +17,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 let NEXT_NEX_ID = 0;
 
+function setNextNexId(val) {
+	NEXT_NEX_ID = val;
+}
+
 import { systemState } from '../systemstate.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { RENDER_FLAG_SELECTED, RENDER_FLAG_SHALLOW, RENDER_FLAG_NORMAL, RENDER_FLAG_RERENDER, RENDER_FLAG_EXPLODED, RENDER_FLAG_DEPTH_EXCEEDED } from '../globalconstants.js'
@@ -46,8 +50,26 @@ class Nex {
 		this.inPackage = null; // well here we go with more things in the env I guess.
 	}
 
+    /**
+     * Returns this nex as a string.
+     *
+     * @deprecated use debugString or prettyPrint instead.
+     * @returns {string} string representation of the nex.
+     */
 	toString() {}
 
+	/**
+	 * When pretty printing a vertical nex, members are separated by carriage returns and
+	 * some number of tabs (for horizontal nexes, members are just separated by spaces).
+	 * This (misnamed) method inserts the appropriate separator between members depending
+	 * on whether it's a horizontal or vertical nex.
+	 *
+	 * @param {number} n number of tabs to insert (if inserting tabs)
+	 * @param {boolean} hdir true if horizontal nex printing algorithm, false if vertical
+	 * @returns {string} the appropriate separator string
+	 * @todo rename to something like 'insertMemberSeparator'
+	 * @protected
+	 */
 	doTabs(n, hdir) {
 		if (hdir) return ' '; // exp
 		let r = '\n'; // exp
@@ -69,6 +91,19 @@ class Nex {
 		return this.doTabs(lvl, hdir) + str;// exp // + '\n';
 	}
 
+	escape(str) {
+		str = str.replace(/&/g, "&amp;");
+		str = str.replace(/</g, "&lt;");
+		str = str.replace(/>/g, "&gt;");
+		str = str.replace(/"/g, "&quot;");
+		str = str.replace(/'/g, "&apos;");
+		str = str.replace(/ /g, "&nbsp;");
+		str = str.replace(/\n/g, "<br>");
+		str = str.replace(/\r/g, "<br>");
+		return str;
+	}
+
+
 	toStringV2PrivateDataSection() {
 		let v = this.serializePrivateData();
 		if (v == '') {
@@ -82,10 +117,11 @@ class Nex {
 				|| v.indexOf('\r') >= 0
 				|| v.indexOf('"') >= 0
 				|| v.indexOf('{') >= 0
+				|| v.indexOf('|') >= 0
 				|| v.indexOf('}') >= 0) {
-			v = v.replace('|', '||');
-			v = v.replace('}', '|}');
-			v = v.replace('{', '|{');
+			v = v.replace(/\|/g, '||');
+			v = v.replace(/\}/g, '|}');
+			v = v.replace(/\{/g, '|{');
 			return '{' + v + '}';
 		} else {
 			return '"' + v + '"';
@@ -122,6 +158,7 @@ class Nex {
      * in the file, this needs to get serialized to the "private data"
      * section. When overriding this function, you can just return the data.
      * Escaping will be handled for you.
+     * @returns {string} the serialized private data.
      */
 	serializePrivateData() {
 		return '';
@@ -134,7 +171,7 @@ class Nex {
 	/**
 	 * Function that returns a string with the type of the nex. Useful because
 	 * "instance of" checks in JS are expensive.
-	 * @returns a string that gives the type name.
+	 * @returns {string} a string that gives the type name.
 	 */
 	getTypeName() {
 		throw new Error("only leaf types have names");
@@ -220,10 +257,6 @@ class Nex {
 		return this.id;
 	}
 
-	getTypeName() {
-		throw new Error('need a real type name!')
-	}
-
 	getEventTable(context) {
 		return null;
 	}
@@ -238,7 +271,7 @@ class Nex {
 	}
 
 	copyFieldsTo(nex) {
-		nex.currentStyle = this.currentStyle;
+		nex.setCurrentStyle(this.currentStyle);
 		nex.copiedFromID = this.id;
 		for (let i = 0; i < this.tags.length; i++) {
 			nex.tags[i] = this.tags[i].copy();
@@ -289,9 +322,13 @@ class Nex {
 		return this.tags.length;
 	}
 
-	// used for validation only
-	// should never return more than 2! and that only when validating
-	// and the user has tried to enter a duplicate tag.
+	/**
+	 * Gives you the number of tags that are equal to the passed-in tag.
+	 * Used for validation, because users can't enter duplicate tags.
+	 *
+	 * @todo: change to just return whether or not a tag is present.
+	 * @returns {bool} the number of tags equal to a given tag.
+	 */
 	numTagsEqualTo(tag) {
 		let ct = 0;
 		for (let i = 0; i < this.tags.length; i++) {
@@ -302,7 +339,15 @@ class Nex {
 		return ct;
 	}
 
+	/**
+	 * Retrieves the tag object for a given tag string.
+	 *
+	 * @todo add error checking
+	 * @param {string} tag text
+	 * @returns {Tag} the tag
+	 */
 	getTag(n) {
+		// TODO: error checking
 		return this.tags[n].copy();
 	}
 
@@ -411,13 +456,19 @@ class Nex {
 		if (isExploded) {
 			domNode.classList.add('exploded');
 		}
-		domNode.setAttribute("style", this.currentStyle);
+		domNode.setAttribute("style", this.getCurrentStyle());
 		if (renderFlags & RENDER_FLAG_DEPTH_EXCEEDED) {
 			this.clearDomNode(domNode);
 		}
 	}
 
-	// actually is a domNode, not a renderNode
+	/**
+	 * Renders the tags for a nex.
+	 *
+	 * @param {Node} domNode the dom node to draw into
+	 * @param {number} renderFlags bit mask holding render flag values
+	 * @param {Editor} editor currently unused
+	 */
 	renderTags(domNode, renderFlags, editor) {
 		if (
 			(renderFlags & RENDER_FLAG_SHALLOW)
@@ -456,5 +507,5 @@ class Nex {
 if (typeof module !== 'undefined' && module.exports) module.exports = { Nex: Nex }
 
 
-export { Nex }
+export { Nex, setNextNexId, NEXT_NEX_ID }
 

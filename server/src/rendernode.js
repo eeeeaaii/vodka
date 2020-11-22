@@ -40,14 +40,16 @@ import {
 
 import { experiments } from './globalappflags.js'
 
-const MAX_RENDER_DEPTH = 100;
-
 const INSERT_UNSPECIFIED = 0;
 const INSERT_AFTER = 1;
 const INSERT_BEFORE = 2;
 const INSERT_INSIDE = 3;
 const INSERT_AROUND = 4;
 
+/**
+ * Represents a rectangle on the screen where a nex is actually rendered or
+ * displayed.
+ */
 class RenderNode {
 	constructor(forNex) {
 		this.selected = false;
@@ -318,7 +320,7 @@ class RenderNode {
 		let useFlags = this.selected
 				? renderFlags | RENDER_FLAG_SELECTED
 				: renderFlags;
-		if (this.renderDepth > MAX_RENDER_DEPTH) {
+		if (this.renderDepth > experiments.MAX_RENDER_DEPTH) {
 			this.renderDepthExceeded();
 			return;
 		}

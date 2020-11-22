@@ -44,6 +44,7 @@ import { Root } from './nex/root.js'
 import { Command } from './nex/command.js'
 import { ESymbol } from './nex/esymbol.js'
 import { Doc } from './nex/doc.js'
+import { NEXT_NEX_ID, setNextNexId } from './nex/nex.js'
 import { runTest } from './tests/unittests.js';
 import { checkRecordState } from './testrecorder.js'
 import { RENDER_FLAG_REMOVE_OVERRIDES, RENDER_FLAG_EXPLODED } from './globalconstants.js'
@@ -173,6 +174,11 @@ function setup() {
 	window.doKeyInput = doKeyInput;
 	window.runTest = runTest;
 	createBuiltins();
+	// because of https://github.com/eeeeaaii/vodka/issues/29
+	if (NEXT_NEX_ID > 1000) {
+		throw new Error('too many builtins, increase starting nex ID');
+	}
+	setNextNexId(1000);
 	setAppFlags();
 	hiddenroot = new RenderNode(new Root(true));
 	let hiddenRootDomNode = document.getElementById('hiddenroot');

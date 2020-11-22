@@ -34,7 +34,6 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { NexContainer } from './nexcontainer.js'
 import { systemState } from '../systemstate.js'
 import { experiments } from '../globalappflags.js'
-import * as Utils from '../utils.js'
 
 
 /**
@@ -185,7 +184,7 @@ class EError extends NexContainer {
 		if (this.displayValue !== '') {
 			this.innerspan = document.createElement("div");
 			this.innerspan.classList.add('innerspan');
-			this.innerspan.innerHTML = '? ' + Utils.escape('' + this.displayValue);
+			this.innerspan.innerHTML = '? ' + this.escape('' + this.displayValue);
 			domNode.appendChild(this.innerspan);
 		}
 	}

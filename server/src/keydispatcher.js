@@ -400,6 +400,8 @@ class KeyDispatcher {
 			'Backspace': 'remove-selected-and-select-previous-sibling-v2',
 			'ShiftEscape': 'toggle-exploded',
 
+			'CtrlEnter': (experiments.CTRL_ENTER_CHANGE ? 'evaluate-v2' : 'start-main-editor'),
+
 			'~': 'insert-command-at-insertion-point-v2',
 			'!': 'insert-bool-at-insertion-point-v2',
 			'@': 'insert-symbol-at-insertion-point-v2',
@@ -448,6 +450,7 @@ class KeyDispatcher {
 
 			'ShiftEscape': 'toggle-exploded',
 			'Enter': 'evaluate-v2',
+			'CtrlEnter': (experiments.CTRL_ENTER_CHANGE ? 'evaluate-v2' : 'start-main-editor'),
 			'~': 'insert-command-at-insertion-point-v2',
 			'!': 'insert-bool-at-insertion-point-v2',
 			'@': 'insert-symbol-at-insertion-point-v2',

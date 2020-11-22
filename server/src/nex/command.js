@@ -429,7 +429,8 @@ class Command extends NexContainer {
 
 	static makeCommandWithClosure(closure, maybeargs) {
 		let cmd = new Command();
-		cmd.appendChild(Command.quote(closure));
+		let appendIterator = null;
+		appendIterator = cmd.fastAppendChildAfter(Command.quote(closure), appendIterator);
 
 		// this little snippet lets you do varargs or array
 		let args = [];
@@ -438,7 +439,6 @@ class Command extends NexContainer {
 		} else {
 			args = Array.prototype.slice.call(arguments).splice(1);
 		}
-		let appendIterator = null;
 		for (let i = 0; i < args.length; i++) {
 			appendIterator = cmd.fastAppendChildAfter(args[i], appendIterator);
 		}

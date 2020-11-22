@@ -74,11 +74,20 @@ class Letter extends Nex {
 	}
 
 	serializePrivateData(data) {
-		return this.value;
+		let style = this.getCurrentStyle();
+		if (style) {
+			return `${this.value}|${this.getCurrentStyle()}`;
+		} else {
+			return `${this.value}`;
+		}
 	}
 
 	deserializePrivateData(data) {
-		this.value = data;
+		let a = data.split('|');
+		this.value = a[0];
+		if (a.length > 1) {
+			this.setCurrentStyle(a[1]);
+		}
 	}
 
 	isLeaf() {

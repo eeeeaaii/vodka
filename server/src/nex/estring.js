@@ -26,7 +26,6 @@ import { ValueNex } from './valuenex.js'
 import { systemState } from '../systemstate.js'
 import { RENDER_FLAG_RERENDER, RENDER_FLAG_SHALLOW } from '../globalconstants.js'
 import { Editor } from '../editors.js'
-import * as Utils from '../utils.js'
 import { experiments } from '../globalappflags.js'
 
 class EString extends ValueNex {
@@ -44,15 +43,21 @@ class EString extends ValueNex {
 		this.attachedJS = null;
 	}
 
+	/**
+	 * This method is used internally as a "back door" for plumbing JS functions through
+	 * the vodka parameter parsing pipeline. There is a "run-js" builtin which can be used
+	 * to execute arbitrary javascript code. Vodka also has a notion of "native orgs" which
+	 * are orgs with member methods that run native code. This is the mechanism by which
+	 * we pass the native code into the run-js builtin.
+	 */
 	setAttachedJS(js) {
-		// when vodka wants to call native js from a nex, we attach a js
-		// function to an estring and then pass that estring as the first
-		// parameter of a call to the run-js function.
-		//
-		// 8/14 this is so weird why did I do this
 		this.attachedJS = js;
 	}
 
+	/**
+	 * Retrieves the attached js for this estring
+	 * @see {@link setAttachedJS}
+	 */
 	getAttachedJS() {
 		return this.attachedJS;
 	}
@@ -167,7 +172,7 @@ class EString extends ValueNex {
 		if (this.displayValue !== '') {
 			this.innerspan = document.createElement("div");
 			this.innerspan.classList.add('innerspan');
-			this.innerspan.innerHTML = Utils.escape(this.displayValue);
+			this.innerspan.innerHTML = this.escape(this.displayValue);
 			domNode.appendChild(this.innerspan);
 		}
 	}

@@ -18,6 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { NexContainer } from './nexcontainer.js'
 import { ContextType } from '../contexttype.js'
 import { experiments } from '../globalappflags.js'
+import { evaluateNexSafely } from '../evaluator.js'
 
 
 class Word extends NexContainer {
@@ -46,12 +47,26 @@ class Word extends NexContainer {
 	}
 
 	toStringV2() {
-		return `[word]${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+		return `[word]${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
 
  	prettyPrintInternal(lvl, hdir) {
 		return this.standardListPrettyPrint(lvl, '[word]', hdir);
 	}
+
+	evaluate(env) {
+		// shallow copy, then evaluate children.
+		let wordcopy = this.makeCopy(true);
+		let iterator = null;
+		this.doForEachChild(function(child) {
+			let newchild = evaluateNexSafely(child, env);
+			// we don't throw exceptions. We just embed them. We don't want to erase someone's doc
+			// because they put bad code in it.
+			iterator = wordcopy.fastAppendChildAfter(child.evaluate(env), iterator);
+		})
+		return wordcopy;
+	}
+
 
 	toggleDir() {} // can only be horizontal
 	setVertical() {}
@@ -73,6 +88,14 @@ class Word extends NexContainer {
 
 	getKeyFunnel() {
 		return new WordKeyFunnel(this);
+	}
+
+	serializePrivateData(data) {
+		return `${this.getCurrentStyle()}`;
+	}
+
+	deserializePrivateData(data) {
+		this.setCurrentStyle(data);
 	}
 
 	renderInto(renderNode, renderFlags, withEditor) {

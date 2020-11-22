@@ -31,16 +31,19 @@ class ESymbol extends ValueNex {
 		this.previousMatch = null;
 	}
 
+	/** @override */
 	getTypeName() {
 		return '-symbol-';
 	}
 
+	/** @override */
 	makeCopy() {
 		let r = new ESymbol(this.getTypedValue());
 		this.copyFieldsTo(r);
 		return r;
 	}
 
+	/** @override */
 	toString(version) {
 		if (version == 'v2') {
 			return this.toStringV2();
@@ -48,10 +51,12 @@ class ESymbol extends ValueNex {
 		return super.toString(version);
 	}
 
+	/** @override */
 	toStringV2() {
 		return '@' + this.toStringV2TagList() + this.value;
 	}
 
+	/** @override */
 	needsEvaluation() {
 		return true;
 	}

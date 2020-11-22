@@ -20,6 +20,10 @@ import { ParamParser } from '../paramparser.js'
 import { BUILTINS } from '../environment.js'
 import { PERFORMANCE_MONITOR, perfmon } from '../perfmon.js'
 
+/**
+ * Nex that represents an *uncompiled* builtin function. Compiled builtins
+ * are represented by {@link Closure} objects, same as compiled {@link Lambda}s.
+ */
 class Builtin extends Lambda {
 	constructor(name, params, retval, docstring) {
 		super();

@@ -24,6 +24,9 @@ import { Integer } from '../nex/integer.js'
 import { RenderNode } from '../rendernode.js'
 import { experiments } from '../globalappflags.js'
 
+/**
+ * Creates all syscall builtins.
+ */
 function createSyscalls() {
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -194,7 +197,7 @@ function createSyscalls() {
 	function $runJs(env, executionEnvironment) {
 		let strn = env.lb('expr');
 		let lst = env.lb('nex');
-		if (strn.hasAttachedJS) {
+		if (strn.hasAttachedJS()) {
 			// used by nativeorg
 			return strn.getAttachedJS()(env.lb('nex'));
 		}

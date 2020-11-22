@@ -22,6 +22,7 @@ import { NexContainer } from './nexcontainer.js'
 import { EError } from './eerror.js'
 import { experiments } from '../globalappflags.js'
 import { RENDER_FLAG_EXPLODED } from '../globalconstants.js'
+import { evaluateNexSafely } from '../evaluator.js'
 
 /**
  * Represents a line in a document.
@@ -58,11 +59,32 @@ class Line extends NexContainer {
 	}
 
 	toStringV2() {
-		return `[line]${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+		return `[line]${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
 
 	prettyPrintInternal(lvl, hdir) {
 		return this.standardListPrettyPrint(lvl, '[line]', hdir);
+	}
+	
+	serializePrivateData(data) {
+		return `${this.getCurrentStyle()}`;
+	}
+
+	deserializePrivateData(data) {
+		this.setCurrentStyle(data);
+	}
+
+	evaluate(env) {
+		// shallow copy, then evaluate children.
+		let linecopy = this.makeCopy(true);
+		let iterator = null;
+		this.doForEachChild(function(child) {
+			let newchild = evaluateNexSafely(child, env);
+			// we don't throw exceptions. We just embed them. We don't want to erase someone's doc
+			// because they put bad code in it.
+			iterator = linecopy.fastAppendChildAfter(child.evaluate(env), iterator);
+		})
+		return linecopy;
 	}
 
 	toggleDir() {} // can only be horizontal

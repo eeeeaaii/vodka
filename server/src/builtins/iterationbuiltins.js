@@ -87,7 +87,7 @@ function createIterationBuiltins() {
 				}
 				appendIterator = resultList.fastAppendChildAfter(result, appendIterator);
 				i++;
-			}
+			});
 		} catch (e) {
 			if (Utils.isFatalError(e)) {
 				return e;
@@ -122,8 +122,8 @@ function createIterationBuiltins() {
 					throw wrapError('&szlig;', `reduce-with-starting: error returned from item ${i+1}`, result);
 				}
 				p = result;
-				i++:
-			})
+				i++;
+			});
 		} catch(e) {
 			if (Utils.isFatalError(e)) {
 				return e;

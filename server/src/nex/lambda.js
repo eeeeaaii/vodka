@@ -26,7 +26,9 @@ import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js
 import { Editor } from '../editors.js'
 import { experiments } from '../globalappflags.js'
 
-
+/**
+ * Nex that represents a written (uncompiled) function.
+ */
 class Lambda extends NexContainer {
 	constructor(val) {
 		super();

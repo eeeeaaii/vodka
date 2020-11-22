@@ -53,7 +53,7 @@ let state = EXPECTING_FIRST_DOWN;
 
 function sessionPrefix() {
 	let flags = getExperimentsAsString();
-	flags = flags.replace(',', ',\n');
+	flags = flags.replace(/,/g, ',\n');
 	return `
 const experiment_flags = ${flags};
 	`;

@@ -19,6 +19,7 @@ import { NexContainer } from './nexcontainer.js'
 import { EError } from './eerror.js'
 import { ContextType } from '../contexttype.js'
 import { experiments } from '../globalappflags.js'
+import { evaluateNexSafely } from '../evaluator.js'
 
 class Doc extends NexContainer {
 	constructor() {
@@ -35,7 +36,7 @@ class Doc extends NexContainer {
 	}
 
 	toStringV2() {
-		return `[doc]${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+		return `[doc]${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
 
 
@@ -51,6 +52,14 @@ class Doc extends NexContainer {
 		this.doForEachChild(function(c) {
 			c.setPfont(pfstring);
 		})
+	}
+
+	serializePrivateData(data) {
+		return `${this.getCurrentStyle()}`;
+	}
+
+	deserializePrivateData(data) {
+		this.setCurrentStyle(data);
 	}
 
 	insertChildAt(c, i) {
@@ -88,6 +97,19 @@ class Doc extends NexContainer {
 		return s;
 	}
 
+	evaluate(env) {
+		// shallow copy, then evaluate children.
+		let doccopy = this.makeCopy(true);
+		let iterator = null;
+		this.doForEachChild(function(child) {
+			let newchild = evaluateNexSafely(child, env);
+			// we don't throw exceptions. We just embed them. We don't want to erase someone's doc
+			// because they put bad code in it.
+			iterator = doccopy.fastAppendChildAfter(child.evaluate(env), iterator);
+		})
+		return doccopy;
+	}
+
 	getContextType() {
 		return ContextType.DOC;
 	}
@@ -105,6 +127,8 @@ class Doc extends NexContainer {
 
 	getEventTable(context) {
 		return {
+//			'ShiftEnter': 'evaluate-nex-and-keep',
+//			'Enter': 'evaluate-nex',
 			'Enter': 'do-line-break-always',
 		}
 	}
