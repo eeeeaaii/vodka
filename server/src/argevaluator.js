@@ -23,7 +23,7 @@ import { ERROR_TYPE_FATAL} from './nex/eerror.js'
 
 
 
-class BuiltinArgEvaluator {
+class ArgEvaluator {
 	constructor(name, params, argContainer, executionEnvironment) {
 		this.name = name;
 		this.params = params;
@@ -109,7 +109,7 @@ class BuiltinArgEvaluator {
 				throw wrapError('&szlig;', `${this.name}: fatal error in argument ${i + 1} (expected type ${param.type}), cannot continue. Sorry!`, arg);
 			}
 		}
-		let typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[expectedType](arg);
+		let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[expectedType](arg);
 
 		if (!typeChecksOut) {
 			if (arg.getTypeName() == '-error-') {
@@ -176,7 +176,7 @@ class BuiltinArgEvaluator {
 }
 
 
-BuiltinArgEvaluator.ARG_VALIDATORS = {
+ArgEvaluator.ARG_VALIDATORS = {
 	'*': arg => true,
 	'NexContainer': arg => (arg.isNexContainer()),
 	'Bool': arg => (arg.getTypeName() == '-bool-'),
@@ -200,5 +200,5 @@ BuiltinArgEvaluator.ARG_VALIDATORS = {
 	'Closure': arg => (arg.getTypeName() == '-closure-'),
 };
 
-export { BuiltinArgEvaluator }
+export { ArgEvaluator }
 

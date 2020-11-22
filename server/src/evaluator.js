@@ -20,7 +20,7 @@ import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import { RenderNode } from './rendernode.js'
 import { manipulator } from './manipulator.js'
 import { EError } from './nex/eerror.js'
-import { BuiltinArgEvaluator } from './builtinargevaluator.js'
+import { ArgEvaluator } from './argevaluator.js'
 import { BINDINGS } from './environment.js'
 
 /** @module evaluator */
@@ -42,7 +42,7 @@ function evaluateNexSafely(nex, executionEnvironment, skipActivation /* TODO: re
 		result = nex.evaluate(executionEnvironment);
 
 		if (returnValueParam != null) {
-			let typeChecksOut = BuiltinArgEvaluator.ARG_VALIDATORS[returnValueParam.type](result);
+			let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[returnValueParam.type](result);
 			if (!typeChecksOut) {
 				return wrapError('&amp;', `${cmdname}: should return ${returnValueParam.type} but returned ${result.getTypeName()}`, result);
 				// if (arg.getTypeName() == '-error-') {

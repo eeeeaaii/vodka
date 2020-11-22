@@ -21,7 +21,7 @@ import { EError } from './eerror.js';
 import { NexContainer } from './nexcontainer.js';
 import { BUILTINS } from '../environment.js'
 import { ParamParser } from '../paramparser.js';
-import { BuiltinArgEvaluator } from '../builtinargevaluator.js'
+import { ArgEvaluator } from '../argevaluator.js'
 
 
 
@@ -74,7 +74,7 @@ class ForeignClosure extends Closure {
 	}
 
 	getArgEvaluator(cmdname, argContainer, executionEnvironment) {
-		return new BuiltinArgEvaluator(cmdname, this.paramsArray, argContainer, executionEnvironment);
+		return new ArgEvaluator(cmdname, this.paramsArray, argContainer, executionEnvironment);
 	}
 
 	copyFieldsTo(nex) {

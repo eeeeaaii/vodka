@@ -17,7 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { ValueNex } from './valuenex.js'
 import * as Utils from '../utils.js'
-import { BuiltinArgEvaluator } from '../builtinargevaluator.js'
+import { ArgEvaluator } from '../argevaluator.js'
 import { Nil } from './nil.js'
 import { wrapError, evaluateNexSafely } from '../evaluator.js'
 import { BINDINGS, BUILTINS } from '../environment.js'
@@ -112,7 +112,7 @@ class Closure extends ValueNex {
 	}
 
 	getArgEvaluator(cmdname, argContainer, executionEnvironment) {
-		return new BuiltinArgEvaluator(cmdname, this.lambda.paramsArray, argContainer, executionEnvironment);
+		return new ArgEvaluator(cmdname, this.lambda.paramsArray, argContainer, executionEnvironment);
 	}
 
 	renderValue() {
