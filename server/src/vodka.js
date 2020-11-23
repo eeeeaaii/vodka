@@ -62,6 +62,8 @@ let hiddenroot = null;
 let stackLevel = 0;
 let root = null;
 
+let sessionId = null;
+
 function dumpPerf() {
 	perfmon.dump();
 }
@@ -165,9 +167,72 @@ function doStartupWork() {
 	}
 }
 
+function getCookie(key) {
+	let cookies = document.cookie;
+	let a = cookies.split('; ');
+	for (let i = 0; i < a.length; i++) {
+		let b = a[i];
+		let c = b.split('=');
+		if (c[0] == key) {
+			return c[1];
+		}
+	}
+	return null;
+}
+
+function setCookie(key, val) {
+	document.cookie = `${key}=${val}`;
+}
+
+function getQSVal(k) {
+	var params = new URLSearchParams(window.location.search);
+	params.forEach(function(value, key) {
+		if (key == k) {
+			return value;
+		}
+	});
+	return null;
+}
+
+
+function setSessionId() {
+	sessionId = getQSVal('sessionId');
+	if (!!sessionId) {
+		setCookie('sessionId', sessionId);
+	} else {
+		sessionId = getCookie('sessionId');
+	}
+}
+
+function checkHelpMessage() {
+	document.getElementById('closeintro').onclick = function(c) {
+		document.getElementById('intro').style.visibility = 'hidden';
+		document.cookie = 'hasbeenhelped=true';
+	}
+	document.getElementById('sessionid').innerText = sessionId;
+	document.getElementById('sessionlink').href = ('http://vodka.church?sessionId=' + sessionId);
+	let foundIt = !!getCookie('hasbeenhelped');
+	let showIt = function() {
+		document.getElementById('intro').style.visibility = 'visible';
+	}
+	if (!foundIt) {
+		showIt();
+	} else {
+		var params = new URLSearchParams(window.location.search);
+		params.forEach(function(value, key) {
+			if (key == 'help') {
+				showIt();
+			}
+		})
+
+	}
+}
+
 // app main entry point
 
 function setup() {
+	setSessionId();
+	checkHelpMessage();
 	eventQueue.initialize();
 
 	// testharness.js needs this

@@ -32,29 +32,59 @@ function sendToServer(payload, cb) {
   	}
 }
 
-function saveNex(name, nex, callback) {
-	let payload = `save\t${name}\t${'v2:' + nex.toString('v2')}`;
-
-	sendToServer(payload, function(data) {
-		let e = new EError("success");
-		e.setErrorType(ERROR_TYPE_INFO);
-		callback(e);
-	});
-}
-
-function loadNex(name, callback) {
-	let payload = `load\t${name}`;
+function loadNex(name, method, callback) {
+	let payload = `${method}\t${name}`;
 
 	sendToServer(payload, function(data) {
 		document.title = name;
-		try {
-			let nex = parse(data);
+		parseReturnPayload(data, callback);
+	});
+}
+
+function loadRaw(name, method, callback) {
+	let payload = `${method}\t${name}`;
+
+	sendToServer(payload, function(data) {
+		callback(data);
+	});
+}
+
+function saveNex(name, nex, method, callback) {
+	let payload = `${method}\t${name}\t${'v2:' + nex.toString('v2')}`;
+
+	sendToServer(payload, function(data) {
+		parseReturnPayload(data, callback);
+	});
+}
+
+function saveRaw(name, data, method, callback) {
+	let payload = `${method}\t${name}\t${data}`;
+
+	sendToServer(payload, function(data) {
+		parseReturnPayload(data, callback);
+	});
+}
+
+function importNex(name, method, callback) {
+	let payload = `${method}\t${name}`;
+
+	sendToServer(payload, function(data) {
+		parseReturnPayload(data, function(nex) {
+			callback(evaluatePackage(nex));
+		})
+	});
+}
+
+
+function parseReturnPayload(data, callback) {
+	try {
+		let nex = parse(data);
+		callback(nex);
+	} catch (e) {
+		if (e instanceof EError) {
 			callback(nex);
-		} catch (e) {
-			if (e instanceof EError) {
-				callback(nex);
-			} else {
-				callback(new EError(
+		} else {
+			callback(new EError(
 `PEG PARSER PERROR
 full error message follows:
 ${e.name}
@@ -64,44 +94,27 @@ col: ${e.location.start.column}
 found: "${e.found}"
 expected: ${e.expected[0].type}
 ` + e));
-			}
 		}
-	});
+	}
 }
 
-function loadRaw(name, callback) {
-	let payload = `load\t${name}`;
-
-	sendToServer(payload, function(data) {
-		callback(data);
-	});
+function evaluatePackage(nex) {
+	if (nex.getTypeName() != '-command-' || nex.getCommandName() != 'package') {
+		let r = new EError('Cannot import a non-package, see file contents')
+		r.appendChild(nex);
+		return r;
+	}
+	let result = evaluateNexSafely(nex, BINDINGS);
+	if (result.getTypeName() == '-error-') {
+		let r = new EError("Import failed.");
+		r.setErrorType(ERROR_TYPE_WARN);
+		r.appendChild(result);
+		r.appendChild(nex);
+		return r;
+	}
+	let r = new EError("Import successful.");
+	r.setErrorType(ERROR_TYPE_INFO);
+	return r;
 }
 
-
-function importNex(name, callback) {
-	let payload = `load\t${name}`;
-
-	sendToServer(payload, function(data) {
-		let nex = parse(data);
-		if (!nex.getCommandName || nex.getCommandName() != 'package') {
-			let r = new EError('Cannot import a non-package, see file contents')
-			r.appendChild(nex);
-			callback(r);
-			return;
-		}
-		let result = evaluateNexSafely(nex, BINDINGS);
-		let r = null;
-		if (result.getTypeName() != '-error-') {
-			r = new EError("Import successful.");
-			r.setErrorType(ERROR_TYPE_INFO);
-		} else {
-			r = new EError("Import failed.");
-			r.setErrorType(ERROR_TYPE_WARN);
-			r.appendChild(result);
-			r.appendChild(nex);
-		}
-		callback(r);
-	});
-}
-
-export { saveNex, importNex, loadNex, loadRaw  }
+export { saveNex, importNex, loadNex, loadRaw, saveRaw  }

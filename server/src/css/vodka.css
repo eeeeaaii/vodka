@@ -94,3 +94,31 @@ body {
 	z-index: 100;
 }
 
+#intro {
+	font-family: Courier;
+	font-size: 9px;
+	border: 2px solid blue;
+	background-color: #ef99aa;
+	padding: 20px;
+	margin: 20px;
+	visibility: hidden;
+}
+
+#intro .introtitle {
+	padding: 0;
+	margin: 0;
+	font-size: 20px;
+}
+
+#intro .introversion {
+	padding: 0;
+	margin: 0;
+	font-size: 12px;	
+}
+
+#intro .introline {
+	padding: 0;
+	margin: 0;
+	font-size: 10px;	
+
+}

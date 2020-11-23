@@ -181,6 +181,59 @@ function createEnvironmentBuiltins() {
 		'replaces the lexical environment of |closure with the current lexical environment.'
 	);	
 
+	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
+
+	function $use(env, executionEnvironment) {
+		let packageName = env.lb('name').getTypedValue();
+		if (!BINDINGS.isKnownPackageName(packageName)) {
+			return new EError(`use: invalid package name ${packageName}. Sorry!`);
+		}
+		executionEnvironment.usePackage(packageName);
+		return new Nil();
+	}
+
+	Builtin.createBuiltin(
+		'use',
+		[ '_name@' ],
+		$use,
+		'makes it so bindings in the package |name can be dereferenced without the package identifier (effect lands for the remainder of the current scope).'
+	);	
+
+	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
+
+	function $using(env, executionEnvironment) {
+		let packageList = env.lb('namelist');
+		for (let i = 0; i < packageList.numChildren(); i++) {
+			let c = packageList.getChildAt(i);
+			if (!(c.getTypeName() == '-symbol-')) {
+				return new EError(`using: first arg must be a list of symbols that denote package names, but ${c.prettyPrint()} is not a symbol. Sorry!`);
+			}
+			let packageName = c.getTypedValue();
+			if (!BINDINGS.isKnownPackageName(packageName)) {
+				return new EError(`using: invalid package name ${packageName}. Sorry!`);
+			}
+			executionEnvironment.usePackage(packageName);
+		}
+		let lst = env.lb('nex');
+		let result = new Nil();
+		for (let j = 0; j < lst.numChildren(); j++) {
+			let c = lst.getChildAt(j);
+			result = evaluateNexSafely(c, executionEnvironment);
+			if (Utils.isFatalError(result)) {
+				result = wrapError('&szlig;', `using: error in expression ${j+1}, cannot continue. Sorry!`, result);
+				return result;
+			}
+		}
+		return result;
+	}
+
+	Builtin.createBuiltin(
+		'using',
+		[ '_namelist()', '_nex...' ],
+		$using,
+		'makes it so bindings in the packages in |namelist can be dereferenced without the package identifier when evaluating the rest of the arguments.'
+	);	
+
 }
 
 export { createEnvironmentBuiltins }

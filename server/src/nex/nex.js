@@ -51,9 +51,11 @@ class Nex {
 	}
 
     /**
-     * Returns this nex as a string.
+     * Converts this nex into its canonical string representation (for saving in a file,
+     * copy and paste between browser windows, etc). For pretty printing, see prettyPrint,
+     * for debugging see debugString.
+     * @todo sometimes a string is passed to this -- 'v2'?
      *
-     * @deprecated use debugString or prettyPrint instead.
      * @returns {string} string representation of the nex.
      */
 	toString() {}

@@ -27,11 +27,146 @@ import { Nil } from '../nex/nil.js'
 import { ESymbol } from '../nex/esymbol.js'
 import { ERROR_TYPE_INFO } from '../nex/eerror.js'
 import { wrapError } from '../evaluator.js'
-import { saveNex, loadNex, importNex, loadRaw } from '../servercommunication.js'
+import { saveNex, loadNex, importNex, loadRaw, saveRaw } from '../servercommunication.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { BINDINGS } from '../environment.js'
 
 function createFileBuiltins() {
+
+	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
+
+	function $load(env, executionEnvironment) {
+		let namesym = env.lb('name');
+		let nametype = namesym.getTypeName();
+		let nm = '';
+		let loadmethod = '';
+		if (nametype == '-symbol-') {
+			loadmethod = 'loadpackage';
+			nm = namesym.getTypedValue();
+		} else if (nametype == '-string-') {
+			loadmethod = 'load';
+			nm = namesym.getFullTypedValue();
+		} else {
+			return new EError(`load: name must be symbol or string. Sorry!`);
+		}
+		let exp = new Expectation();
+		exp.set(function(callback) {
+			return function() {
+				loadNex(nm, loadmethod, function(loadResult) {
+					callback(loadResult);
+				})
+			}
+		})
+		let loadingMessage = new EError(`loading the file ${nm}`);
+		loadingMessage.setErrorType(ERROR_TYPE_INFO);
+		exp.appendChild(loadingMessage)
+		return exp;
+	}
+
+	Builtin.createBuiltin(
+		'load',
+		[ '_name' ],
+		$load,
+		'loads the file |name as a Nex (parsing it)'
+	);
+
+	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
+
+	function $save(env, executionEnvironment) {
+		let namesym = env.lb('name');
+		let nametype = namesym.getTypeName();
+		let savemethod = '';
+		let nm = '';
+		if (nametype == '-symbol-') {
+			savemethod = 'savepackage';
+			nm = namesym.getTypedValue();
+		} else if (nametype == '-string-') {
+			savemethod = 'save';
+			nm = namesym.getFullTypedValue();
+		} else {
+			return new EError(`save: name must be symbol or string. Sorry!`);
+		}
+		let val = env.lb('nex');			
+		let exp = new Expectation();
+		exp.set(function(callback) {
+			return function() {
+				saveNex(nm, val, savemethod, function(saveResult) {
+					callback(saveResult);
+				})
+			}
+		});
+		let savingMessage = new EError(`saving (in the file ${nm}) this data: ${val.prettyPrint()}`);
+		savingMessage.setErrorType(ERROR_TYPE_INFO);
+		exp.appendChild(savingMessage)
+		return exp;
+	}
+
+	Builtin.createBuiltin(
+		'save',
+		[ '_name', '_nex' ],
+		$save,
+		'saves |nex in the file |name.'
+	);
+
+
+	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
+
+	function $loadFile(env, executionEnvironment) {
+		let namesym = env.lb('name');
+		let loadmethod = 'loadraw';
+		let nm = namesym.getFullTypedValue();
+		let exp = new Expectation();
+		exp.set(function(callback) {
+			return function() {
+				loadRaw(nm, loadmethod, function(loadResult) {
+					callback(new EString(loadResult));
+				})
+			}
+		})
+		let loadingMessage = new EError(`loading the file ${nm}`);
+		loadingMessage.setErrorType(ERROR_TYPE_INFO);
+		exp.appendChild(loadingMessage)
+		return exp;
+	}
+
+	Builtin.createBuiltin(
+		'load-file',
+		[ '_name$' ],
+		$loadFile,
+		'loads raw bytes from the file |name into a string.'
+	);
+
+	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
+
+	function $saveFile(env, executionEnvironment) {
+		let namesym = env.lb('name');
+		let nm = namesym.getFullTypedValue();
+
+		let val = env.lb('val');
+		let saveval = val.getFullTypedValue();			
+
+		let savemethod = 'saveraw';
+
+		let exp = new Expectation();
+		exp.set(function(callback) {
+			return function() {
+				saveRaw(nm, saveval, savemethod, function(saveResult) {
+					callback(saveResult);
+				})
+			}
+		});
+		let savingMessage = new EError(`saving (in the file ${nm}) this data: ${val}`);
+		savingMessage.setErrorType(ERROR_TYPE_INFO);
+		exp.appendChild(savingMessage)
+		return exp;
+	}
+
+	Builtin.createBuiltin(
+		'save-file',
+		[ '_name$', 'val$' ],
+		$saveFile,
+		'saves |nex in the file |name.'
+	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
@@ -59,15 +194,13 @@ function createFileBuiltins() {
 
 	Builtin.createBuiltin(
 		'import',
-		[ '_name@' ],
+		[ '_name' ],
 		$import,
 		'imports the package in file |name, loading the file and binding the package contents into memory.'
 	);
 
-	
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 	// this could be a util function I guess
-
 
 	function $withImports(env, executionEnvironment) {
 		let nexes = env.lb('nexes');
@@ -113,59 +246,6 @@ function createFileBuiltins() {
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
-	function $load(env, executionEnvironment) {
-		let namesym = env.lb('name');
-		let nm = namesym.getTypedValue();
-		let exp = new Expectation();
-		exp.set(function(callback) {
-			return function() {
-				loadNex(nm, function(loadResult) {
-					callback(loadResult);
-				})
-			}
-		})
-		let loadingMessage = new EError(`loading the file ${nm}`);
-		loadingMessage.setErrorType(ERROR_TYPE_INFO);
-		exp.appendChild(loadingMessage)
-		return exp;
-	}
-
-	Builtin.createBuiltin(
-		'load',
-		[ '_name@' ],
-		$load,
-		'loads the file |name as a Nex (parsing it)'
-	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $loadFile(env, executionEnvironment) {
-		let namesym = env.lb('name');
-		let nm = namesym.getTypedValue();
-		let exp = new Expectation();
-		exp.set(function(callback) {
-			return function() {
-				loadRaw(nm, function(loadResult) {
-					callback(new EString(loadResult));
-				})
-			}
-		})
-		let loadingMessage = new EError(`loading the file ${nm}`);
-		loadingMessage.setErrorType(ERROR_TYPE_INFO);
-		exp.appendChild(loadingMessage)
-		return exp;
-	}
-
-	Builtin.createBuiltin(
-		'load-file',
-		[ '_name@' ],
-		$loadFile,
-		'loads raw bytes from the file |name into a string.'
-	);
-
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
 	function $package(env, executionEnvironment) {
 		let packageName = env.lb('name').getTypedValue();
 		let lst = env.lb('nex');
@@ -192,6 +272,7 @@ function createFileBuiltins() {
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 	// need to make it so that if it fails you don't lose all your work.
 	function $packageEdit(env, executionEnvironment) {
+		throw new Error('deprecated');
 		// run part
 		let packageName = env.lb('name').getTypedValue();
 		let lst = env.lb('nex');
@@ -231,91 +312,6 @@ function createFileBuiltins() {
 		$packageEdit,
 		'creates the package |name, and also saves it in the the file "|name-functions".'
 	);
-
-	
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $save(env, executionEnvironment) {
-		let namesym = env.lb('name');
-		let nm = namesym.getTypedValue();
-		let val = env.lb('nex');			
-		let exp = new Expectation();
-		exp.set(function(callback) {
-			return function() {
-				saveNex(nm, val, function(saveResult) {
-					callback(saveResult);
-				})
-			}
-		});
-		let savingMessage = new EError(`saving (in the file ${nm}) this data: ${val.prettyPrint()}`);
-		savingMessage.setErrorType(ERROR_TYPE_INFO);
-		exp.appendChild(savingMessage)
-		return exp;
-	}
-
-	Builtin.createBuiltin(
-		'save',
-		[ '_name@', '_nex' ],
-		$save,
-		'saves |nex in the file |name.'
-	);
-
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $use(env, executionEnvironment) {
-		let packageName = env.lb('name').getTypedValue();
-		if (!BINDINGS.isKnownPackageName(packageName)) {
-			return new EError(`use: invalid package name ${packageName}. Sorry!`);
-		}
-		executionEnvironment.usePackage(packageName);
-		return new Nil();
-	}
-
-	Builtin.createBuiltin(
-		'use',
-		[ '_name@' ],
-		$use,
-		'makes it so bindings in the package |name can be dereferenced without the package identifier (effect lands for the remainder of the current scope).'
-	);	
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $using(env, executionEnvironment) {
-		let packageList = env.lb('namelist');
-		for (let i = 0; i < packageList.numChildren(); i++) {
-			let c = packageList.getChildAt(i);
-			if (!(c.getTypeName() == '-symbol-')) {
-				return new EError(`using: first arg must be a list of symbols that denote package names, but ${c.prettyPrint()} is not a symbol. Sorry!`);
-			}
-			let packageName = c.getTypedValue();
-			if (!BINDINGS.isKnownPackageName(packageName)) {
-				return new EError(`using: invalid package name ${packageName}. Sorry!`);
-			}
-			executionEnvironment.usePackage(packageName);
-		}
-		let lst = env.lb('nex');
-		let result = new Nil();
-		for (let j = 0; j < lst.numChildren(); j++) {
-			let c = lst.getChildAt(j);
-			result = evaluateNexSafely(c, executionEnvironment);
-			if (Utils.isFatalError(result)) {
-				result = wrapError('&szlig;', `using: error in expression ${j+1}, cannot continue. Sorry!`, result);
-				return result;
-			}
-		}
-		return result;
-	}
-
-	Builtin.createBuiltin(
-		'using',
-		[ '_namelist()', '_nex...' ],
-		$using,
-		'makes it so bindings in the packages in |namelist can be dereferenced without the package identifier when evaluating the rest of the arguments.'
-	);	
-
-
 }
 
 export { createFileBuiltins }
