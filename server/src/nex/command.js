@@ -32,6 +32,9 @@ import { Editor } from '../editors.js'
 import { experiments } from '../globalappflags.js'
 
 
+/**
+ * Nex that represents a command (a {@link NexContainer} that can be executed/run)
+ */
 class Command extends NexContainer {
 	constructor(val) {
 		super();

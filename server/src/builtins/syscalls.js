@@ -21,13 +21,30 @@ import { EError } from '../nex/eerror.js'
 import { EString } from '../nex/estring.js'
 import { Float } from '../nex/float.js'
 import { Integer } from '../nex/integer.js'
+import { Nil } from '../nex/nil.js'
 import { RenderNode } from '../rendernode.js'
+import { systemState } from '../systemstate.js'
 import { experiments } from '../globalappflags.js'
 
 /**
  * Creates all syscall builtins.
  */
 function createSyscalls() {
+
+	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
+
+	function $disconnectFunnel(env, executionEnvironment) {
+		systemState.setKeyFunnelActive(false);
+		systemState.setMouseFunnelActive(false);
+		return new Nil();
+	}
+
+	Builtin.createBuiltin(
+		'disconnect-funnel',
+		[ ],
+		$disconnectFunnel
+	);
+
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 

@@ -32,26 +32,28 @@ function respondToClickEvent(nex, renderNode, browserEvent) {
 		nex.extraClickHandler();
 		return;
 	}
-	let parentNexDomElt = getParentNexOfDomElement(browserEvent.target);
-	if (systemState.getGlobalSelectedNode().getDomNode() == parentNexDomElt) {
-		return;
-	}
-	let insertAfterRemove = false;
-	let oldSelectedNode = systemState.getGlobalSelectedNode();
-	if ((systemState.getGlobalSelectedNode().getNex().getTypeName() == '-estring-'
-		|| systemState.getGlobalSelectedNode().getNex().getTypeName() == '-eerror-')
-			&& systemState.getGlobalSelectedNode().getNex().getMode() == MODE_EXPANDED) {
-		systemState.getGlobalSelectedNode().getNex().finishInput();
-	} else if (systemState.getGlobalSelectedNode().getNex().getTypeName() == '-insertionpoint-') {
-		insertAfterRemove = true;
-	}
+	if (systemState.isMouseFunnelActive()) {
+		let parentNexDomElt = getParentNexOfDomElement(browserEvent.target);
+		if (systemState.getGlobalSelectedNode().getDomNode() == parentNexDomElt) {
+			return;
+		}
+		let insertAfterRemove = false;
+		let oldSelectedNode = systemState.getGlobalSelectedNode();
+		if ((systemState.getGlobalSelectedNode().getNex().getTypeName() == '-estring-'
+			|| systemState.getGlobalSelectedNode().getNex().getTypeName() == '-eerror-')
+				&& systemState.getGlobalSelectedNode().getNex().getMode() == MODE_EXPANDED) {
+			systemState.getGlobalSelectedNode().getNex().finishInput();
+		} else if (systemState.getGlobalSelectedNode().getNex().getTypeName() == '-insertionpoint-') {
+			insertAfterRemove = true;
+		}
 
-	browserEvent.stopPropagation();
-	renderNode.setSelected(false /*shallow-rerender*/);
-	if (insertAfterRemove && systemState.getGlobalSelectedNode() != oldSelectedNode) {
-		manipulator.removeNex(oldSelectedNode);
+		browserEvent.stopPropagation();
+		renderNode.setSelected(false /*shallow-rerender*/);
+		if (insertAfterRemove && systemState.getGlobalSelectedNode() != oldSelectedNode) {
+			manipulator.removeNex(oldSelectedNode);
+		}
+		eventQueueDispatcher.enqueueImportantTopLevelRender();
 	}
-	eventQueueDispatcher.enqueueImportantTopLevelRender();
 }
 
 export { respondToClickEvent }

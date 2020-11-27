@@ -18,6 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { Lambda } from './lambda.js'
 import { ForeignClosure } from './foreignclosure.js'
 
+// deprecated?
 class ForeignLambda extends Lambda {
 	constructor(val, foreignfunction) {
 		super(val);

@@ -22,6 +22,9 @@ import { Nex } from './nex.js'
 import { experiments } from '../globalappflags.js'
 
 
+/**
+ * Represents a Nex which can be customized to look or act a certain way (skinned).
+ */
 class CustomNex extends Nex {
 	constructor() {
 		super();

@@ -481,6 +481,8 @@ class RenderNode {
 		return this.insertionMode;
 	}
 
+	// TODO: this is confusing because you might think that the boolean passed in tells it whether
+	// or not to make the thing selected.
 	setSelected(rerender) {
 		let selectedNode = systemState.getGlobalSelectedNode();
 		if (selectedNode == this) return;

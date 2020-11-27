@@ -21,6 +21,9 @@ import { ContextType } from '../contexttype.js'
 import { experiments } from '../globalappflags.js'
 import { evaluateNexSafely } from '../evaluator.js'
 
+/**
+ * Represents a document with text in it.
+ */
 class Doc extends NexContainer {
 	constructor() {
 		super();

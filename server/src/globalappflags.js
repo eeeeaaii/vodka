@@ -59,6 +59,10 @@ const experiments = {
 	// used to be a const, now it is always passed in via flags.
 	'MAX_RENDER_DEPTH': 100,
 
+	// When true, this stops vodka from displaying the splash screen. That would
+	// of course interfere with screenshots.
+	'NO_SPLASH': false,
+
 	// See note above about changing testharness.js when adding new flags.
 };
 
@@ -86,6 +90,7 @@ const otherflags = {
 // way those legacy tests were originally recorded)
 const overrides = {
 	'DISABLE_ALERT_ANIMATIONS': true,
+	'NO_SPLASH': true,
 }
 
 // some hard coded things here
@@ -103,7 +108,7 @@ function tryToSetFlag(flagset, key, value) {
 }
 
 function setAppFlags() {
-	var params = new URLSearchParams(window.location.search);
+	let params = new URLSearchParams(window.location.search);
 	params.forEach(function(value, key) {
 		// don't throw an exception when an unknown flag
 		// is passed because old test configs could contain

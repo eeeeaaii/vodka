@@ -17,6 +17,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { ValueNex } from './valuenex.js'
 
+/**
+ * Represents an integer.
+ */
 class Integer extends ValueNex {
 	constructor(val) {
 		if (!val) {

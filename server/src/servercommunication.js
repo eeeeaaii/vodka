@@ -75,16 +75,25 @@ function importNex(name, method, callback) {
 	});
 }
 
+function loadAndRun(name, callback) {
+	let payload = `load\t${name}`;
+
+	sendToServer(payload, function(data) {
+		parseReturnPayload(data, function(parsed) {
+			let result = evaluateNexSafely(parsed, BINDINGS);
+			callback(result);
+		});
+	});	
+}
+
 
 function parseReturnPayload(data, callback) {
+	let result = null;
 	try {
-		let nex = parse(data);
-		callback(nex);
+		result = parse(data);
 	} catch (e) {
-		if (e instanceof EError) {
-			callback(nex);
-		} else {
-			callback(new EError(
+		if (!(e instanceof EError)) {
+			result = new EError(
 `PEG PARSER PERROR
 full error message follows:
 ${e.name}
@@ -93,9 +102,10 @@ line: ${e.location.start.line}
 col: ${e.location.start.column}
 found: "${e.found}"
 expected: ${e.expected[0].type}
-` + e));
+` + e);
 		}
 	}
+	callback(result);
 }
 
 function evaluatePackage(nex) {
@@ -117,4 +127,4 @@ function evaluatePackage(nex) {
 	return r;
 }
 
-export { saveNex, importNex, loadNex, loadRaw, saveRaw  }
+export { saveNex, importNex, loadNex, loadRaw, saveRaw, loadAndRun  }

@@ -70,7 +70,7 @@ testParse('${hel\tleo}');
 testParse('?"hello"');
 testParse('?"hello there wEF#@$R4twrgdgiortg4g$%^$&^%&(*"');
 testParse('?{hel"lo}');
-testParse('?{hel||\nleo}');
+testParse('?{hel\nleo}');
 testParse('?{hel|}leo}');
 testParse('?{hel\nleo}');
 testParse('?{hel\tleo}');
@@ -186,6 +186,9 @@ testParse('[word]"privatedata"(__)')
 testParse('[word]"privatedata"(_[letter]"a" [letter]"b" [letter]"c"_)')
 testParse('[word]{privatedata||pdata}(_[letter]"a" [letter]"b" [letter]"c"_)')
 testParse('[word]{private\ndatapdata}(_[letter]"a" [letter]"b" [letter]"c"_)')
+// private data in error
+testParse('?{2||whatever}');
+// large file parse
 testParse(
 `
 ~(|begin

@@ -23,7 +23,9 @@ import { Editor } from '../editors.js'
 import { autocomplete } from '../autocomplete.js'
 
 
-
+/**
+ * Represents a symbol.
+ */
 class ESymbol extends ValueNex {
 	constructor(val) {
 		super((val) ? val : '', '@', 'esymbol')

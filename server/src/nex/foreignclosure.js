@@ -23,8 +23,10 @@ import { BUILTINS } from '../environment.js'
 import { ParamParser } from '../paramparser.js';
 import { ArgEvaluator } from '../argevaluator.js'
 
-
-
+/**
+ * A closure that executes some javascript code directly instead of
+ * executing vodka code.
+ */
 class ForeignClosure extends Closure {
 	constructor(paramstr, foreignfunction, docstring) {
 		super(null /* lambda */, BUILTINS, 'foreignclosure');

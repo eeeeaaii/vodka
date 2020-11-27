@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+// unused?
+
 const hb = require("handlebars");
 const fs = require('fs');
 

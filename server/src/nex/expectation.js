@@ -36,6 +36,14 @@ import { Command } from './command.js'
 import { otherflags } from '../globalappflags.js'
 
 
+/**
+ * Helper class that introduces a level of indirection between
+ * an asynchronous process that will be completed sometime in the future
+ * and a set of expectations that is waiting for it to complete.
+ * Useful for the situation where an expectation is copied while 
+ * waiting for fulfillment: all the copies will be simultaneously
+ * fulfilled via this class.
+ */
 class CallbackRouter {
 	constructor() {
 		this.waitingExpectations = [];
@@ -52,6 +60,10 @@ class CallbackRouter {
 	}
 }
 
+/**
+ * Represents an asynchronous process of some kind, usually changing
+ * a value into some other value.
+ */
 class Expectation extends NexContainer {
 
 	constructor() {

@@ -102,6 +102,7 @@ body {
 	padding: 20px;
 	margin: 20px;
 	visibility: hidden;
+	position:absolute;
 }
 
 #intro .introtitle {

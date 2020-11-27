@@ -28,6 +28,9 @@ import { RENDER_FLAG_RERENDER, RENDER_FLAG_SHALLOW } from '../globalconstants.js
 import { Editor } from '../editors.js'
 import { experiments } from '../globalappflags.js'
 
+/**
+ * Represents a string.
+ */
 class EString extends ValueNex {
 	constructor(val, ch, t) {
 		if (typeof val === 'undefined') {

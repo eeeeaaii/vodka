@@ -29,6 +29,7 @@ class SystemState {
 		this.selectWhenYouFindIt = null;
 		this.root = null;
 		this.key_funnel_active = true;
+		this.mouse_funnel_active = true;
 		this.stackLevel = 0;
 	}
 
@@ -86,6 +87,14 @@ class SystemState {
 
 	setKeyFunnelActive(val) {
 		this.key_funnel_active = val;
+	}
+
+	isMouseFunnelActive() {
+		return this.mouse_funnel_active;
+	}
+
+	setMouseFunnelActive(val) {
+		this.mouse_funnel_active = val;
 	}
 
 	resetStack() {

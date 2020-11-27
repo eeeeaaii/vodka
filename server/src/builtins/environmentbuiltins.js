@@ -15,15 +15,20 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from '../utils.js'
+
 import { autocomplete } from '../autocomplete.js'
 import { Builtin } from '../nex/builtin.js'
 import { EError } from '../nex/eerror.js'
 import { Bool } from '../nex/bool.js'
 import { ESymbol } from '../nex/esymbol.js'
 import { Doc } from '../nex/doc.js'
+import { Nil } from '../nex/nil.js'
 import { BINDINGS } from '../environment.js'
 import { PERFORMANCE_MONITOR } from '../perfmon.js'
 import { UNBOUND } from '../environment.js'
+import { evaluateNexSafely } from '../evaluator.js'
+import { wrapError } from '../evaluator.js'
 
 function createEnvironmentBuiltins() {
 

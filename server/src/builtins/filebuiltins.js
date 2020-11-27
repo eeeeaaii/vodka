@@ -172,11 +172,23 @@ function createFileBuiltins() {
 
 	function $import(env, executionEnvironment) {
 		let namesym = env.lb('name');
-		let nm = namesym.getTypedValue();
+		let nametype = namesym.getTypeName();
+		let nm = '';
+		let loadmethod = '';
+		if (nametype == '-symbol-') {
+			loadmethod = 'loadpackage';
+			nm = namesym.getTypedValue();
+		} else if (nametype == '-string-') {
+			loadmethod = 'load';
+			nm = namesym.getFullTypedValue();
+		} else {
+			return new EError(`import: name must be symbol or string. Sorry!`);
+		}
+
 		let exp = new Expectation();
 		exp.set(function(callback) {
 			return function() {
-				importNex(nm, function(importResult) {
+				importNex(nm, loadmethod, function(importResult) {
 					callback(importResult);
 				})
 			}

@@ -123,6 +123,9 @@ function getLegacyDefaultFlags() {
 		// When true, makes it so that ctrl-enter always evaluates and does NOT open main editor.
 		// This breaks old tests that used this to open the editor.
 		'CTRL_ENTER_CHANGE': false, 
+
+		// splash screen was added later, we never want it in tests.
+		'NO_SPLASH': true,
 	};
 }
 

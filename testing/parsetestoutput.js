@@ -26,8 +26,15 @@ var passing_tests = [];
 var ignored_tests = [];
 jsonfiles.forEach((jsonfile) => {
 	let rawjson = fs.readFileSync(jsonfile);
+	let json = null;
 	try {
-		let json = JSON.parse(rawjson);
+		json = JSON.parse(rawjson);
+	} catch (e) {
+		console.log(`Deleting ${jsonfile} because it is broken. You will have to rerun this test.`);
+		fs.unlinkSync(jsonfile);
+		return;
+	}
+	try {
 		if (json.node_ignored) {
 			ignored_tests.push(json.test);
 		} else if (json.node_success
@@ -40,7 +47,6 @@ jsonfiles.forEach((jsonfile) => {
 		alljson.push(json);
 	} catch (e) {
 		console.log('' + e);
-		console.log(`broken json file ${jsonfile}, continuing`)
 	}
 })
 

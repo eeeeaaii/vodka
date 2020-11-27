@@ -90,12 +90,16 @@ function makeSymbol(letters, taglist) {
 	return addTagsToNex(new ESymbol(concatParserString(letters)), taglist);
 }
 
-function makeString(contents, taglist) {
-	return addTagsToNex(new EString(concatParserString(contents)), taglist);
+function makeString(privateData, taglist) {
+	let str = new EString();
+	setPrivateData(str, privateData);
+	return addTagsToNex(str, taglist);
 }
 
-function makeError(contents, taglist) {
-	return addTagsToNex(new EError(concatParserString(contents)), taglist);
+function makeError(privateData, taglist) {
+	let err = new EError();
+	setPrivateData(err, privateData);
+	return addTagsToNex(err, taglist);
 }
 
 function makeFloat(contents, taglist) {

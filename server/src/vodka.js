@@ -39,15 +39,16 @@ import { createSyscalls } from './builtins/syscalls.js'
 import { createTagBuiltins } from './builtins/tagbuiltins.js'
 import { createTestBuiltins } from './builtins/testbuiltins.js'
 import { createTypeConversionBuiltins } from './builtins/typeconversions.js'
+import { loadAndRun } from './servercommunication.js'
 import { RenderNode } from './rendernode.js'
 import { Root } from './nex/root.js'
 import { Command } from './nex/command.js'
-import { ESymbol } from './nex/esymbol.js'
+import { EString } from './nex/estring.js'
 import { Doc } from './nex/doc.js'
 import { NEXT_NEX_ID, setNextNexId } from './nex/nex.js'
 import { runTest } from './tests/unittests.js';
 import { checkRecordState } from './testrecorder.js'
-import { RENDER_FLAG_REMOVE_OVERRIDES, RENDER_FLAG_EXPLODED } from './globalconstants.js'
+import { RENDER_FLAG_REMOVE_OVERRIDES, RENDER_FLAG_EXPLODED, RENDER_FLAG_NORMAL } from './globalconstants.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { BINDINGS } from '../environment.js'
 
@@ -63,6 +64,7 @@ let stackLevel = 0;
 let root = null;
 
 let sessionId = null;
+let funnelConnected = true;
 
 function dumpPerf() {
 	perfmon.dump();
@@ -147,24 +149,24 @@ function setDocRootFromFile(filename) {
 		"ff",
 		Command.makeCommandWithArgs(
 			"load",
-			new ESymbol(filename)));
+			new EString(filename)));
 	let exp = evaluateNexSafely(cmd, BINDINGS);
 	let expNode = root.appendChild(exp);
 	expNode.setSelected(false);
 	systemState.setGlobalCurrentDefaultRenderFlags(RENDER_FLAG_EXPLODED);	
 }
 
+function setDocRootFromStart() {
+	loadAndRun(':start', function(result) {
+		let expNode = root.appendChild(result);
+		expNode.setSelected(false);
+		systemState.setGlobalCurrentDefaultRenderFlags(RENDER_FLAG_NORMAL);	
+	});
+}
+
 function setEmptyDocRoot() {
 	let docNode = root.appendChild(new Doc());
 	docNode.setSelected(false /* don't render yet */);
-}
-
-function doStartupWork() {
-	if (!!otherflags.FILE) {
-		setDocRootFromFile(otherflags.FILE);
-	} else {
-		setEmptyDocRoot();
-	}
 }
 
 function getCookie(key) {
@@ -185,7 +187,7 @@ function setCookie(key, val) {
 }
 
 function getQSVal(k) {
-	var params = new URLSearchParams(window.location.search);
+	let params = new URLSearchParams(window.location.search);
 	params.forEach(function(value, key) {
 		if (key == k) {
 			return value;
@@ -196,8 +198,9 @@ function getQSVal(k) {
 
 
 function setSessionId() {
-	sessionId = getQSVal('sessionId');
-	if (!!sessionId) {
+	let params = new URLSearchParams(window.location.search);
+	if (params.has('sessionId')) {
+		sessionId = params.get('sessionId');
 		setCookie('sessionId', sessionId);
 	} else {
 		sessionId = getCookie('sessionId');
@@ -207,15 +210,19 @@ function setSessionId() {
 function checkHelpMessage() {
 	document.getElementById('closeintro').onclick = function(c) {
 		document.getElementById('intro').style.visibility = 'hidden';
+	}
+	document.getElementById('closeintropermanently').onclick = function(c) {
+		document.getElementById('intro').style.visibility = 'hidden';
 		document.cookie = 'hasbeenhelped=true';
 	}
 	document.getElementById('sessionid').innerText = sessionId;
-	document.getElementById('sessionlink').href = ('http://vodka.church?sessionId=' + sessionId);
-	let foundIt = !!getCookie('hasbeenhelped');
+	document.getElementById('sessionlink').href = `http://${FEATURE_VECTOR.hostname}?sessionId=${sessionId}`;
+	document.getElementById('newsessionlink').href = `http://${FEATURE_VECTOR.hostname}?new=1`;
+	let userSaidDoNotRemind = !!getCookie('hasbeenhelped');
 	let showIt = function() {
 		document.getElementById('intro').style.visibility = 'visible';
 	}
-	if (!foundIt) {
+	if (!userSaidDoNotRemind && !experiments.NO_SPLASH) {
 		showIt();
 	} else {
 		var params = new URLSearchParams(window.location.search);
@@ -231,6 +238,7 @@ function checkHelpMessage() {
 // app main entry point
 
 function setup() {
+	setAppFlags();
 	setSessionId();
 	checkHelpMessage();
 	eventQueue.initialize();
@@ -244,7 +252,6 @@ function setup() {
 		throw new Error('too many builtins, increase starting nex ID');
 	}
 	setNextNexId(1000);
-	setAppFlags();
 	hiddenroot = new RenderNode(new Root(true));
 	let hiddenRootDomNode = document.getElementById('hiddenroot');
 	hiddenroot.setDomNode(hiddenRootDomNode);
@@ -268,10 +275,10 @@ function setup() {
 	}
 	document.onkeyup = function(e) {
 		checkRecordState(e, 'up');
-		if (justPressedShift) {
+		if (justPressedShift && systemState.isKeyFunnelActive()) {
 			return doKeyInputNotForTests('NakedShift', e.code, e.shiftKey, e.ctrlKey, e.metaKey, e.altKey);
+			justPressedShift = false;
 		}
-		justPressedShift = false;
 		return true;
 	}
 	document.onkeydown = function(e) {
@@ -287,7 +294,13 @@ function setup() {
 			return true;
 		}
 	}
-	doStartupWork();
+	if (!!otherflags.FILE) {
+		setDocRootFromFile(otherflags.FILE);
+	} else if (FEATURE_VECTOR.hasstart) {
+		setDocRootFromStart();
+	} else {
+		setEmptyDocRoot();
+	}
 	eventQueueDispatcher.enqueueTopLevelRender();
 }
 

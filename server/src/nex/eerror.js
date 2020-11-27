@@ -150,11 +150,21 @@ class EError extends NexContainer {
 
 
 	deserializePrivateData(data) {
-		this.setFullValue(data);
+		let a = data.split('|');
+		if (a.length == 2) {
+			this.setErrorType(Number(a[0]))
+			this.setFullValue(a[1]);
+		} else {
+			this.setFullValue(a[0]);
+		}
 	}
 
 	serializePrivateData() {
-		return this.getFullTypedValue();
+		if (this.getErrorType() != 0) {
+			return `${this.getErrorType()}|${this.getFullTypedValue()}`
+		} else {
+			return this.getFullTypedValue();
+		}
 	}
 
 	drawButton() {

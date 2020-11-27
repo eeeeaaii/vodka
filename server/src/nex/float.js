@@ -21,6 +21,9 @@ import { ValueNex } from './valuenex.js'
 import { experiments } from '../globalappflags.js'
 
 
+/**
+ * Represents a floating point number (decimal).
+ */
 class Float extends ValueNex {
 	constructor(val) {
 		super((val) ? val : '0', '%', 'float');
