@@ -261,16 +261,19 @@ function setRemoteWebEnv() {
 
 function loadWebEnv(cb) {
 	fs.readFile('webenv.txt', function(err, data) {
-		if (err) {
-			console.log('cant start server no webenv');
-		} else {
-			let webenv = String(data).trim();
+		if (!err || isFileNotFound(err)) {
+			let webenv = 'remote';
+			if (!err) {
+				webenv = String(data).trim();
+			}
 			if (webenv == 'local') {
 				setLocalWebEnv();
 			} else {
 				setRemoteWebEnv();
 			}
 			cb();
+		} else {
+			console.log('cant start server because ' + err);			
 		}
 	});	
 }
