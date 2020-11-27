@@ -9,5 +9,6 @@ server/src/favicon.ico
 server/sounds/*
 server/sessions/*
 server/docs/*
+server/webenv.txt
 soundcreation
 
