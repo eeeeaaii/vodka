@@ -91,33 +91,6 @@ class Expectation extends NexContainer {
 		gc.register(this);
 	}
 
-	copyFieldsTo(nex) {
-		super.copyFieldsTo(nex);
-		if (this.ffClosure) {
-			nex.ffClosure = this.ffClosure;		
-		}
-		if (this.ffExecutionEnvironment) {
-			nex.ffExecutionEnvironment = this.ffExecutionEnvironment;
-		}
-		if (this.callbackRouter) {
-			nex.callbackRouter = this.callbackRouter;
-			nex.callbackRouter.addExpecting(nex);
-		}
-		if (this.hasBeenSet) {
-			// generate a new activation function for my new baby expectation.
-			nex.set(this.activationFunctionGenerator);
-		}
-		// when copying a fulfilled expectation, we keep it fulfilled.
-		// it might be reset after being copied.
-		nex.setFulfilled(this.isFulfilled());
-		// we have checks to make sure you can't copy
-		// an exp while it's in flight, as a result
-		// we can copy all the flags.
-		nex.activated = this.activated;
-
-
-	}
-
 	evaluate() {
 		// we copy empty, dumb expectations because they are all equivalent anyway,
 		// and it means I can use them in code
@@ -482,16 +455,40 @@ class Expectation extends NexContainer {
 	}
 
 	makeCopy(shallow) {
-		if (this.activating) {
-			throw new EError('cannot copy an expectation while it is activating.');
-		}
-		if (this.isInFlight()) {
-			throw new EError('cannot copy an expectation whie it is in flight (pending fulfill)')
-		}
 		let r = new Expectation();
 		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
 		return r;
+	}
+
+	copyFieldsTo(nex) {
+		super.copyFieldsTo(nex);
+		if (this.activating || this.isInFlight()) {
+			// if we try to copy a exp in this state we just put it in a bare exp
+			// that has no set and no fff. We don't want to lose the children.
+			return;
+		}
+		if (this.ffClosure) {
+			nex.ffClosure = this.ffClosure;		
+		}
+		if (this.ffExecutionEnvironment) {
+			nex.ffExecutionEnvironment = this.ffExecutionEnvironment;
+		}
+		if (this.callbackRouter) {
+			nex.callbackRouter = this.callbackRouter;
+			nex.callbackRouter.addExpecting(nex);
+		}
+		if (this.hasBeenSet) {
+			// generate a new activation function for my new baby expectation.
+			nex.set(this.activationFunctionGenerator);
+		}
+		// when copying a fulfilled expectation, we keep it fulfilled.
+		// it might be reset after being copied.
+		nex.setFulfilled(this.isFulfilled());
+		// we have checks to make sure you can't copy
+		// an exp while it's in flight, as a result
+		// we can copy all the flags.
+		nex.activated = this.activated;
 	}
 
 	getContextType() {

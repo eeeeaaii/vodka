@@ -31,9 +31,16 @@ class Undo {
 	}
 
 	saveStateForUndo(nex) {
-		// Shallow copy for undo is going to have to be good enough.
-		// The fewer levels of undo the less chance of it being a problem.
-		this.undobuffer.unshift(nex.makeCopy(true /* shallow */));
+		let copy = null;
+		try {
+			copy = nex.makeCopy();
+		} catch(e) {
+			// if there's a cycle this will be an exception like this:
+			// word.js:26 Uncaught RangeError: Maximum call stack size exceeded
+			// if that happens we just bail out and don't bother saving the undo state.
+			return;
+		}
+		this.undobuffer.unshift(nex.makeCopy());
 		let selectedNode = systemState.getGlobalSelectedNode();
 		let selectedNodeId = selectedNode.getNex().getID();		
 		this.selectedNodeIdBuffer.unshift(selectedNodeId);

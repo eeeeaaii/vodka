@@ -1,0 +1,6 @@
+./runtests.sh copy_expectation
+./runtests.sh foreign_nestedargs
+./runtests.sh functions_basic_seeid
+./runtests.sh functions_environment_bind_tointeger
+./runtests.sh graphics_general_renderdepthexceeded
+./runtests.sh saveload_integer

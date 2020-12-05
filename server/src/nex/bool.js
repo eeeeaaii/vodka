@@ -20,6 +20,7 @@ import { isNormallyHandled } from '../keyresponsefunctions.js'
 import { experiments } from '../globalappflags.js'
 import { Editor } from '../editors.js'
 
+
 /**
  * Nex that represents a boolean value.
  */
@@ -85,10 +86,14 @@ class Bool extends ValueNex {
 	}
 
 	getEventTable(context) {
-		return {
-			// these 2 are questionable but make tests pass?
-			'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
-			'Backspace': 'remove-selected-and-select-previous-leaf-v2',
+		if (experiments.BETTER_KEYBINDINGS) {
+			return {};
+		} else {
+			return {
+				// these 2 are questionable but make tests pass?
+				'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
+				'Backspace': 'remove-selected-and-select-previous-leaf-v2',
+			}
 		}
 	}
 }

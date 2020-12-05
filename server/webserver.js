@@ -336,7 +336,7 @@ function serviceApiRequest(sessionId, resp, data) {
 }
 
 function containsIllegalFilenameCharacters(fn) {
-	let isIdentifier = /^[a-zA-Z0-9_.-]$/.test(fn);
+	let isIdentifier = /^[a-zA-Z0-9_.-]+$/.test(fn);
 	return !isIdentifier;
 }
 
