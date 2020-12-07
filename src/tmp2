@@ -33,8 +33,6 @@ import { Zlist } from './nex/zlist.js';
 import { EError } from './nex/eerror.js';
 import { Letter } from './nex/letter.js';
 import { Separator } from './nex/separator.js';
-import { Newline } from './nex/newline.js';
-import { InsertionPoint } from './nex/insertionpoint.js';
 import { Tag } from './tag.js'
 
 function concatParserString(arr) {
@@ -162,9 +160,6 @@ function makeInstanceAtom(instname, privatedata, taglist) {
 			break;
 		case 'separator':
 			t = new Separator(concatParserString(privatedata));
-			break;
-		case 'newline':
-			t = new Newline();
 			break;
 		default:
 			throw new Error('unrecognized instance type: ' + instname);

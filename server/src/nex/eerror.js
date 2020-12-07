@@ -251,13 +251,15 @@ class EError extends NexContainer {
 	}
 
 	getEventTable(context) {
-		return {
-			'Enter': 'do-line-break-always'
+		if (experiments.BETTER_KEYBINDINGS) {
+			return {};
+		} else {
+			return {
+				'Enter': 'do-line-break-always'
+			}
 		}
 	}
 }
-
-
 
 
 export { EError, ERROR_TYPE_FATAL, ERROR_TYPE_INFO, ERROR_TYPE_WARN }

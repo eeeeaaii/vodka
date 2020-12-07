@@ -77,7 +77,12 @@ class Zlist extends NexContainer {
 	}
 
 	getEventTable(context) {
-		return {
+		if (experiments.BETTER_KEYBINDINGS) {
+			return {
+				'ShiftSpace' : 'do-nothing',
+			}
+		} else {
+			return {};
 		}
 	}
 }

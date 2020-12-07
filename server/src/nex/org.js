@@ -19,6 +19,7 @@ import * as Utils from '../utils.js'
 
 import { NexContainer } from './nexcontainer.js'
 import { wrapError } from '../evaluator.js'
+import { experiments } from '../globalappflags.js'
 
 class Org extends NexContainer {
 	constructor() {
@@ -140,11 +141,15 @@ class Org extends NexContainer {
 	}
 
 	getEventTable(context) {
-		return {
-			'ShiftEnter': 'evaluate-nex-and-keep',
-			'Enter': 'evaluate-nex',
-			'ShiftSpace': 'toggle-dir',
-		};
+		if (experiments.BETTER_KEYBINDINGS) {
+			return {};
+		} else {
+			return {
+				'ShiftEnter': 'evaluate-nex-and-keep',
+				'Enter': 'evaluate-nex',
+				'ShiftSpace': 'toggle-dir',
+			};
+		}
 	}
 
 	static makeTaggedOrgWithContents(tag) {

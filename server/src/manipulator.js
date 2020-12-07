@@ -24,7 +24,6 @@ import { Root } from './nex/root.js'
 import { Lambda } from './nex/lambda.js'
 import { ESymbol } from './nex/esymbol.js' 
 import { EString } from './nex/estring.js' 
-import { InsertionPoint } from './nex/insertionpoint.js' 
 import { RenderNode } from './rendernode.js' 
 import { Word } from './nex/word.js' 
 import { Command } from './nex/command.js' 
@@ -39,7 +38,6 @@ import { Letter } from './nex/letter.js'
 import { Doc } from './nex/doc.js' 
 import { Separator } from './nex/separator.js' 
 import { Nil } from './nex/nil.js' 
-import { Newline } from './nex/newline.js' 
 import { experiments } from './globalappflags.js'
 import { isRecordingTest } from './testrecorder.js'
 import {
@@ -1631,13 +1629,6 @@ class Manipulator {
 		}
 		p.setSelected();
 		return true;
-	}
-
-	gatherRemainingSiblingsIntoNewLine() {
-		let ln = new Line();
-		ln.appendChild(new Newline());
-		this.moveRemainingSiblingsInto(ln);
-		return ln;
 	}
 
 	moveRemainingSiblingsInto(nex) {

@@ -125,9 +125,6 @@ testParse('[zlist](_[doc](||)_)');
 testParse('[letter]"a"');
 testParse('[word](_[letter]"a" [letter]"b" [letter]"c"_)');
 testParse('[separator]";"');
-// newline
-testParse('[newline]');
-testParse('(_[newline] [letter]"b" [newline]_)');
 // vertical command
 testParse('~"v"(__)');
 testParse('~"v"(_&{a@ b@ c@||v}(__) *"v"(__)_)');
@@ -175,8 +172,6 @@ testParse('[doc](|<`apple` `banana`>|)');
 testParse('[zlist](_<`apple` `banana`>_)');
 testParse('[letter]"a"<`apple` `banana`>');
 testParse('(_[letter]"a"<`apple` `banana`> [letter]"b" [letter]"c"_)');
-testParse('(_[letter]"a" [newline]_)');
-testParse('[newline]');
 testParse('[line](_<`apple` `banana`>_)');
 testParse('[separator]";"<`apple` `banana`>');
 // letter with brace private data

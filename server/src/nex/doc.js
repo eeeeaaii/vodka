@@ -129,10 +129,16 @@ class Doc extends NexContainer {
 	}
 
 	getEventTable(context) {
-		return {
-//			'ShiftEnter': 'evaluate-nex-and-keep',
-//			'Enter': 'evaluate-nex',
-			'Enter': 'do-line-break-always',
+		if (experiments.BETTER_KEYBINDINGS) {
+			return {
+				'ShiftSpace' : 'do-nothing',
+			}			
+		} else {
+			return {
+	//			'ShiftEnter': 'evaluate-nex-and-keep',
+	//			'Enter': 'evaluate-nex',
+				'Enter': 'do-line-break-always',
+			}			
 		}
 	}
 }

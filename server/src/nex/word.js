@@ -119,23 +119,21 @@ class Word extends NexContainer {
 		super.insertChildAt(c, i);
 	}
 
-
-	getEventOverrides() {
-		return {
-			'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
-			'Backspace': 'remove-selected-and-select-previous-leaf-v2'
-		}
-	}
-
 	getDefaultHandler() {
 		return 'insertAtWordLevel';
 	}
 
 	getEventTable(context) {
-		return {
-			'Enter': 'do-line-break-always',
-			'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
-			'ArrowDown': 'move-to-corresponding-letter-in-next-line',
+		if (experiments.BETTER_KEYBINDINGS) {
+			return {
+				'ShiftSpace' : 'do-nothing',
+			}
+		} else {
+			return {
+				'Enter': 'do-line-break-always',
+				'ArrowUp': 'move-to-corresponding-letter-in-previous-line-v2',
+				'ArrowDown': 'move-to-corresponding-letter-in-next-line-v2',
+			}
 		}
 	}
 }

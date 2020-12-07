@@ -81,6 +81,20 @@ class Separator extends Letter {
 			'ShiftBackspace': 'delete-separator-v2',
 			'Backspace': 'delete-separator-v2',
 			'Enter': 'do-line-break-for-separator-v2',
+
+			'!': 'insert-literal-!-at-insertion-point-from-separator',
+			'@': 'insert-literal-@-at-insertion-point-from-separator',
+			'#': 'insert-literal-#-at-insertion-point-from-separator',
+			'$': 'insert-literal-$-at-insertion-point-from-separator',
+			'%': 'insert-literal-%-at-insertion-point-from-separator',
+			'^': 'insert-literal-^-at-insertion-point-from-separator',
+			'&': 'insert-literal-&-at-insertion-point-from-separator',
+			'*': 'insert-literal-*-at-insertion-point-from-separator',
+			'(': 'insert-literal-(-at-insertion-point-from-separator',
+			')': 'insert-literal-)-at-insertion-point-from-separator',
+			'[': 'insert-literal-[-at-insertion-point-from-separator',
+			'{': 'insert-literal-{-at-insertion-point-from-separator',
+			'<': 'insert-literal-<-at-insertion-point-from-separator',
 		}
 	}
 }

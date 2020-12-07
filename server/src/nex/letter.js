@@ -126,14 +126,28 @@ class Letter extends Nex {
 
 	getEventTable(context) {
 		return {
-			'Tab': 'move-to-next-leaf',
+			'Tab': 'move-to-next-leaf-v2',
 			'ArrowUp': 'move-to-corresponding-letter-in-previous-line-v2',
 			'ArrowDown': 'move-to-corresponding-letter-in-next-line-v2',
 			'ArrowLeft': 'move-to-previous-leaf-v2',
 			'ArrowRight': 'move-to-next-leaf-v2',
 			'Backspace' : 'delete-letter-v2',
 			'ShiftBackspace' : 'delete-letter-v2',
-			'Enter': 'do-line-break-for-letter-v2'
+			'Enter': 'do-line-break-for-letter-v2',
+
+			'!': 'insert-literal-!-at-insertion-point-from-letter',
+			'@': 'insert-literal-@-at-insertion-point-from-letter',
+			'#': 'insert-literal-#-at-insertion-point-from-letter',
+			'$': 'insert-literal-$-at-insertion-point-from-letter',
+			'%': 'insert-literal-%-at-insertion-point-from-letter',
+			'^': 'insert-literal-^-at-insertion-point-from-letter',
+			'&': 'insert-literal-&-at-insertion-point-from-letter',
+			'*': 'insert-literal-*-at-insertion-point-from-letter',
+			'(': 'insert-literal-(-at-insertion-point-from-letter',
+			')': 'insert-literal-)-at-insertion-point-from-letter',
+			'[': 'insert-literal-[-at-insertion-point-from-letter',
+			'{': 'insert-literal-{-at-insertion-point-from-letter',
+			'<': 'insert-literal-<-at-insertion-point-from-letter',
 		}
 	}
 }

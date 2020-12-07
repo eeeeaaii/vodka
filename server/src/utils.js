@@ -26,7 +26,6 @@ import { Letter } from './nex/letter.js';
 import { EString } from './nex/estring.js';
 import { Command } from './nex/command.js';
 import { Lambda } from './nex/lambda.js';
-import { InsertionPoint } from './nex/insertionpoint.js';
 import { RenderNode } from './rendernode.js';
 
 import { ERROR_TYPE_FATAL} from './nex/eerror.js'
@@ -119,12 +118,6 @@ function isLambda(n) {
 	return n.getTypeName() == '-lambda-';
 }
 
-function isInsertionPoint(n) {
-	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
-	return n.getTypeName() == '-insertionpoint-';
-}
-
 function isRoot(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n) return false;
@@ -154,7 +147,6 @@ export {
 	isEString,
 	isCommand,
 	isLambda,
-	isInsertionPoint,
 	isRoot,
 	beep
 }

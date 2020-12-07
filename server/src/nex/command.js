@@ -477,15 +477,19 @@ class Command extends NexContainer {
 	}
 
 	getEventTable(context) {
-		return {
-			'ShiftEnter': 'evaluate-nex-and-keep',
-			'Enter': 'evaluate-nex',
-			'CtrlSpace': 'autocomplete',
-			'ShiftSpace': 'toggle-dir',
-			'Backspace': (experiments.BETTER_KEYBINDINGS
-				? 'start-main-editor'
-				: 'delete-last-command-letter-or-remove-selected-and-select-previous-sibling')
-		};
+		if (experiments.BETTER_KEYBINDINGS) {
+			return {
+				'CtrlSpace': 'autocomplete',
+			};
+		} else {
+			return {
+				'ShiftEnter': 'evaluate-nex-and-keep',
+				'Enter': 'evaluate-nex',
+				'CtrlSpace': 'autocomplete',
+				'ShiftSpace': 'toggle-dir',
+				'Backspace': 'delete-last-command-letter-or-remove-selected-and-select-previous-sibling'
+			};
+		}
 	}
 }
 

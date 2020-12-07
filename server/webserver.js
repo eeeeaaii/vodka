@@ -282,11 +282,18 @@ function isFileNotFound(error) {
 	return error.message.substr(0, 6) == "ENOENT";
 }
 
+function containsIllegalSessionCharacters(fn) {
+	let isIdentifier = /^[a-zA-Z0-9_-]+$/.test(fn);
+	return !isIdentifier;
+}
+
 function createSessionIdDirectory(sessionId, cb) {
+	if (containsIllegalSessionCharacters(sessionId)) {
+		return false;
+	}
 	let dirpath = `./sessions/${sessionId}`;
 	fs.mkdir(dirpath, function(err) {
 		if (err) {
-			console.log("session dir creation failed due to " + err)
 			cb(false);
 		} else {
 			cb(true);

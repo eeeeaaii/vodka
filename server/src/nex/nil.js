@@ -16,6 +16,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { ValueNex } from './valuenex.js'
+import { experiments } from '../globalappflags.js'
+
 
 class Nil extends ValueNex {
 	constructor() {
@@ -60,8 +62,13 @@ class Nil extends ValueNex {
 	}
 
 	getEventTable(context) {
-		return {
-			'Enter': 'do-line-break-always',
+		if (experiments.BETTER_KEYBINDINGS) {
+			return {
+			}
+		} else {
+			return {
+				'Enter': 'do-line-break-always',
+			}
 		}
 	}
 }

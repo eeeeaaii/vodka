@@ -137,7 +137,9 @@ class RenderNode {
 		let editor = this.getEditorForType(this.getNex());
 		if (editor) {
 			this.startEditor(editor);
+			return true;
 		}
+		return false;
 	}
 
 	startEditor(editor) {

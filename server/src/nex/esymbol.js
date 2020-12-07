@@ -130,7 +130,6 @@ class ESymbol extends ValueNex {
 	getEventTable(context) {
 		if (experiments.BETTER_KEYBINDINGS) {
 			return {
-				'Backspace': 'start-main-editor',
 				'CtrlSpace': 'autocomplete',
 			}
 		} else {

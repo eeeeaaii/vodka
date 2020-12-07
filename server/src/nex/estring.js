@@ -242,7 +242,6 @@ class EString extends ValueNex {
 	getEventTable(context) {
 		if (experiments.BETTER_KEYBINDINGS) {
 			return {
-				'Backspace': 'start-main-editor',
 			};
 		} else {
 			return {

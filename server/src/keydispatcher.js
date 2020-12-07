@@ -395,9 +395,13 @@ class KeyDispatcher {
 			'AltTab': (experiments.BETTER_KEYBINDINGS ? 'force-insert-inside' : null),
 			'ShiftAltTab': (experiments.BETTER_KEYBINDINGS ? 'force-insert-around' : null),
 
+			'ShiftEnter': (experiments.BETTER_KEYBINDINGS ? 'evaluate-nex-and-keep' : null),
+			'Enter': (experiments.BETTER_KEYBINDINGS ? 'evaluate-nex' : null),
+
+			'ShiftSpace': (experiments.BETTER_KEYBINDINGS ? 'toggle-dir' : null),
 
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
-			'Backspace': 'remove-selected-and-select-previous-sibling-v2',
+			'Backspace': (experiments.BETTER_KEYBINDINGS ? 'start-main-editor-or-delete' : 'remove-selected-and-select-previous-sibling-v2'),
 			'ShiftEscape': 'toggle-exploded',
 
 			'CtrlEnter': (experiments.CTRL_ENTER_CHANGE ? 'evaluate-v2' : 'start-main-editor'),
@@ -446,7 +450,7 @@ class KeyDispatcher {
 			'ShiftAltTab': (experiments.BETTER_KEYBINDINGS ? 'force-insert-around' : null),
 
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
-			'Backspace': 'remove-selected-and-select-previous-sibling-v2',
+			'Backspace': (experiments.BETTER_KEYBINDINGS ? 'start-main-editor-or-delete' : 'remove-selected-and-select-previous-sibling-v2'),
 
 			'ShiftEscape': 'toggle-exploded',
 			'Enter': 'evaluate-v2',
