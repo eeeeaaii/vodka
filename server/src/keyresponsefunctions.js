@@ -58,14 +58,6 @@ import {
 } from './rendernode.js'
 
 
-function insertOrAppend(s, obj) {
-	if (s.hasChildren()) {
-		return manipulator.insertAfterSelectedAndSelect(obj);
-	} else {
-		return manipulator.appendAndSelect(obj);
-	}
-}
-
 function isNormallyHandledInDocContext(key) {
 	if (!experiments.BETTER_KEYBINDINGS) {
 		return isNormallyHandled(key);
@@ -102,6 +94,7 @@ function isNormallyHandled(key) {
 // on Manipulator
 
 const DefaultHandlers = {
+
 	'zlistDefault': function(nex, txt, context) {
 		if (isNormallyHandled(txt)) {
 			return false;
@@ -205,45 +198,6 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	'insertionPointDefault': function(nex, txt, context, sourcenode) {
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-
-		let parent = sourcenode.getParent();
-
-		if (isSeparator) {
-			if (Utils.isWord(parent)) {
-				manipulator.selectParent()
-					&& manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt))
-					&& manipulator.removeNex(sourcenode);
-			} else {
-				manipulator.replaceSelectedWith(manipulator.newSeparator(txt));		
-			}
-		} else {
-			if (Utils.isDoc(parent)) {
-				let ln = manipulator.newLine();
-				let w = manipulator.newWord();
-				let lt = manipulator.newLetter(txt);
-				ln.appendChild(w);
-				w.appendChild(lt);
-				manipulator.replaceSelectedWith(ln);
-				lt.setSelected();
-			} else if (Utils.isLine(parent)) {
-				let w = manipulator.newWord();
-				let lt = manipulator.newLetter(txt);
-				w.appendChild(lt);
-				manipulator.replaceSelectedWith(w);
-				lt.setSelected();
-			} else {			
-				manipulator.replaceSelectedWith(manipulator.newLetter(txt));
-			}
-		}
-		return true;
-	},
-
 	'floatDefault': function(nex, txt, context, sourcenode) {
 		if (txt == 'Backspace') {
 			// do backspace hack
@@ -291,24 +245,6 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	'insertOrAddToESymbol': function(nex, txt) {
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let allowedKeyRegex = /^[a-zA-Z0-9-_:]$/;
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-
-		if (allowedKeyRegex.test(txt)) {
-			nex.appendText(txt);
-		} else if (isSeparator) {
-			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
-		} else {
-			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-		}
-		return true;
-	},
-
 	'insertAfterEString': function(nex, txt) {
 		if (isNormallyHandled(txt)) {
 			return false;
@@ -352,22 +288,6 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	'insertAfterCommandTabHack': function(nex, txt, context) {
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let isLetterRegex = /^.$/;
-		if (isLetterRegex.test(txt)) {
-			if (nex.hasChildren()) {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt))
-			} else {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-			}
-		}
-		return true;
-	},
-
-	// EVERYTHING SHOULD MIGRATE SLOWLY TO THIS.
 	'standardDefault': function(nex, txt, context) {
 		if (isNormallyHandled(txt)) {
 			return false;
@@ -383,24 +303,6 @@ const DefaultHandlers = {
 			manipulator.insertAtSelectedObjInsertionPoint(manipulator.newSeparator(txt));
 		} else {
 			manipulator.insertAtSelectedObjInsertionPoint(manipulator.newLetter(txt));
-		}
-		return true;
-	},
-
-	'insertAfterCommand': function(nex, txt, context) {
-		if (txt != '*' && isNormallyHandled(txt)) {
-			return false;
-		}
-		let allowedKeyRegex = /^[a-zA-Z0-9-_=+/*<>:]$/;
-		let isLetterRegex = /^.$/;
-		if (allowedKeyRegex.test(txt)) {
-			nex.appendCommandText(txt);
-		} else if (isLetterRegex.test(txt)) {
-			if (nex.hasChildren()) {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt))
-			} else {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-			}
 		}
 		return true;
 	},
@@ -473,31 +375,6 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	'modifyBoolOrInsert' : function(nex, txt) {
-		// old behavior is that you can't put a boolean inside a word,
-		// so it automatically makes a new word -- except you can, with things
-		// like cut and paste, and it should be possible anyway.
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-
-		if (isSeparator) {
-			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
-		} else if (txt == 'y' || txt == 'Y') {
-			nex.setValue('yes');
-		} else if (txt == 'n' || txt == 'N') {
-			nex.setValue('no');
-		} else {
-			let letter = manipulator.newLetter(txt);
-			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newWord())
-				&& manipulator.defaultInsertForV2(manipulator.selected(), letter);
-
-		}
-		return true;
-	},
-
 	'docHandle' : function(nex, txt) {
 		if (isNormallyHandledInDocContext(txt)) {
 			return false;
@@ -522,37 +399,6 @@ const KeyResponseFunctions = {
 
 	'do-nothing' : function(s) {},
 
-	// movement
-
-	'force-insert-up-v3' : function(s) {
-		manipulator.forceInsertUpV3(s);
-	},
-	'force-insert-down-v3' : function(s) {
-		manipulator.forceInsertDownV3(s);
-	},
-	'force-insert-left-v3' : function(s) {
-		manipulator.forceInsertLeftV3(s);
-	},
-	'force-insert-right-v3' : function(s) {
-		manipulator.forceInsertRightV3(s);
-	},
-
-	'move-right-v3': function(s) {
-		manipulator.moveRightV3(s);		
-	},
-
-	'move-left-v3': function(s) {
-		manipulator.moveLeftV3(s);
-	},
-
-	'move-up-v3': function(s) {
-		manipulator.moveUpV3(s);		
-	},
-
-	'move-down-v3': function(s) {
-		manipulator.moveDownV3(s);
-	},
-
 	'select-next-sibling': function(s) {
 		manipulator.selectNextSibling();
 	},
@@ -565,10 +411,6 @@ const KeyResponseFunctions = {
 		evaluateAndKeep(s);
 	},
 
-	'evaluate-and-copy': function(s) {
-		evaluateAndCopy(s);
-	},
-
 	'toggle-dir': function(s) {
 		s.getNex().toggleDir();
 	},
@@ -578,10 +420,6 @@ const KeyResponseFunctions = {
 	},
 
 	'select-parent': function(s) { manipulator.selectParent(); },
-
-	'select-first-child-or-fail': function(s) { manipulator.selectFirstChild(); },
-
-	'select-parent-and-remove-self': function(s) { manipulator.selectParent() && manipulator.removeNex(s); },
 
 	'start-modal-editing': function(s) {
 		s.getNex().startModalEditing();
@@ -595,10 +433,8 @@ const KeyResponseFunctions = {
 		s.getNex().autocomplete();
 	},
 
-	'no-op': function(s) {},
-
 	'start-main-editor': function(s) { s.possiblyStartMainEditor(); },
-	'start-main-editor-if-not-empty': function(s) { s.possiblyStartMainEditorIfNotEmpty(); },
+
 	'start-main-editor-or-delete': function(s) {
 		let didEditor = s.possiblyStartMainEditor();
 		if (!didEditor) {
@@ -606,12 +442,9 @@ const KeyResponseFunctions = {
 		}
 	},
 
-
 	'evaluate-v2': function(s) {
 		evaluateAndReplace(s);
 	},
-
-	// deletes
 
 	'delete-letter-v2': function(s) {
 		manipulator.deleteLeafV2(s);
@@ -621,10 +454,6 @@ const KeyResponseFunctions = {
 		manipulator.deleteLeafV2(s);
 	},
 
-	'delete-line-v2': function(s) {
-		manipulator.deleteLineV2(s);
-	},
-
 	'remove-selected-and-select-previous-leaf-v2': function(s) {
 		manipulator.removeSelectedAndSelectPreviousLeafV2(s);
 	},
@@ -632,17 +461,6 @@ const KeyResponseFunctions = {
 	'remove-selected-and-select-previous-sibling-v2': function(s) {
 		manipulator.removeAndSelectPreviousSiblingV2(s);
 	},
-
-	'delete-last-letter-or-remove-selected-and-select-previous-leaf-v2': function(s) {
-		if (!s.getNex().isEmpty()) {
-			s.getNex().deleteLastLetter();
-		} else {
-			manipulator.removeSelectedAndSelectPreviousLeafV2(s);
-		}
-	},
-
-	// movement
-
 
 	'move-left-up-v2': function(s) {
 		manipulator.moveLeftUpV2(s);
@@ -655,6 +473,7 @@ const KeyResponseFunctions = {
 	'move-to-previous-leaf-v2': function(s) {
 		manipulator.selectPreviousLeafV2(s);
 	},
+
 	'move-to-next-leaf-v2': function(s) {		
 		manipulator.selectNextLeafV2(s);
 	},
@@ -663,16 +482,9 @@ const KeyResponseFunctions = {
 		manipulator.selectFirstChildOrMoveInsertionPoint(s);
 	},
 
-	// line breaks
-
-	'do-line-break-always-v2': function(s) {
-		manipulator.doLineBreakAlwaysV2(s);
-	},
-
 	'do-line-break-from-line-v2': function(s) {
 		manipulator.doLineBreakForLine(s);
 	},
-
 
 	'do-line-break-for-letter-v2': function(s) {
 		manipulator.doLineBreakForLetter(s);
@@ -683,18 +495,12 @@ const KeyResponseFunctions = {
 	},
 
 	'move-to-corresponding-letter-in-previous-line-v2': function(s) {
-		manipulator.selectCorrespondingLetterInPreviousLineV2(s)
-//			 || manipulator.selectPreviousSibling()
-//			 ||  manipulator.forceInsertionModeForSelected(INSERT_BEFORE)
-			;
-	},
-	'move-to-corresponding-letter-in-next-line-v2': function(s) {
-		manipulator.selectCorrespondingLetterInNextLineV2(s)
-//			 || manipulator.selectNextSibling()
-//			 ||  manipulator.forceInsertionModeForSelected(INSERT_AFTER)
-			;
+		manipulator.selectCorrespondingLetterInPreviousLineV2(s);
 	},
 
+	'move-to-corresponding-letter-in-next-line-v2': function(s) {
+		manipulator.selectCorrespondingLetterInNextLineV2(s);
+	},
 
 	'insert-literal-!-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator('!')); },
 	'insert-literal-@-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator('@')); },
@@ -710,7 +516,6 @@ const KeyResponseFunctions = {
 	'insert-literal-{-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator('{')); },
 	'insert-literal-<-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator('<')); },
 
-
 	'insert-literal-!-at-insertion-point-from-letter': function(s) { manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator('!')); },
 	'insert-literal-@-at-insertion-point-from-letter': function(s) { manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator('@')); },
 	'insert-literal-#-at-insertion-point-from-letter': function(s) { manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator('#')); },
@@ -724,7 +529,6 @@ const KeyResponseFunctions = {
 	'insert-literal-[-at-insertion-point-from-letter': function(s) { manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator('[')); },
 	'insert-literal-{-at-insertion-point-from-letter': function(s) { manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator('{')); },
 	'insert-literal-<-at-insertion-point-from-letter': function(s) { manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator('<')); },
-
 
 	'insert-command-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newCommand()); },
 	'insert-bool-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newBool()); },
@@ -741,53 +545,9 @@ const KeyResponseFunctions = {
 	'insert-org-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newOrg()); },
 	'insert-zlist-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newZlist()); },
 
-
-	'replace-selected-with-command': function(s) { manipulator.replaceSelectedWith(manipulator.newCommand()); },
-	'replace-selected-with-bool': function(s) { manipulator.replaceSelectedWith(manipulator.newBool()); },
-	'replace-selected-with-symbol': function(s) { manipulator.replaceSelectedWith(manipulator.newESymbol()); },
-	'replace-selected-with-integer': function(s) { manipulator.replaceSelectedWith(manipulator.newInteger()); },
-	'replace-selected-with-string': function(s) { manipulator.replaceSelectedWith(manipulator.newEString()); },
-	'replace-selected-with-float': function(s) { manipulator.replaceSelectedWith(manipulator.newFloat()); },
-	'replace-selected-with-nil': function(s) { manipulator.replaceSelectedWith(manipulator.newNil()); },
-	'replace-selected-with-lambda': function(s) { manipulator.replaceSelectedWith(manipulator.newLambda()); },
-	'replace-selected-with-expectation': function(s) { manipulator.replaceSelectedWith(manipulator.newExpectation()); },
-	'replace-selected-with-word': function(s) { manipulator.replaceSelectedWith(manipulator.newWord()); },
-	'replace-selected-with-line': function(s) { manipulator.replaceSelectedWith(manipulator.newLine()); },
-	'replace-selected-with-doc': function(s) { manipulator.replaceSelectedWith(manipulator.newDoc()); },
-	'replace-selected-with-org': function(s) { manipulator.replaceSelectedWith(manipulator.newOrg()); },
-
 	'add-tag': function(s) { s.startTagEditor(); },
+
 	'remove-all-tags': function(s) { s.removeAllTags(); },
-
-	'insert-or-append-command': function(s) { insertOrAppend(s, manipulator.newCommand()); },
-	'insert-or-append-bool': function(s) { insertOrAppend(s, manipulator.newBool()); },
-	'insert-or-append-symbol': function(s) { insertOrAppend(s, manipulator.newESymbol()); },
-	'insert-or-append-integer': function(s) { insertOrAppend(s, manipulator.newInteger()); },
-	'insert-or-append-string': function(s) { insertOrAppend(s, manipulator.newEString()); },
-	'insert-or-append-float': function(s) { insertOrAppend(s, manipulator.newFloat()); },
-	'insert-or-append-nil': function(s) { insertOrAppend(s, manipulator.newNil()); },
-	'insert-or-append-lambda': function(s) { insertOrAppend(s, manipulator.newLambda()); },
-	'insert-or-append-expectation': function(s) { insertOrAppend(s, manipulator.newExpectation()); },
-	'insert-or-append-word': function(s) { insertOrAppend(s, manipulator.newWord()); },
-	'insert-or-append-line': function(s) { insertOrAppend(s, manipulator.newLine()); },
-	'insert-or-append-doc': function(s) { insertOrAppend(s, manipulator.newDoc()); },
-	'insert-or-append-org': function(s) { insertOrAppend(s, manipulator.newOrg()); },
-
-	'insert-command-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newCommand()); },
-	'insert-bool-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newBool()); },
-	'insert-symbol-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newESymbol()); },
-	'insert-integer-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newInteger()); },
-	'insert-string-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newEString()); },
-	'insert-float-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newFloat()); },
-	'insert-nil-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newNil()); },
-	'insert-lambda-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newLambda()); },
-	'insert-expectation-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newExpectation()); },
-	'insert-word-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newWord()); },
-	'insert-line-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newLine()); },
-	'insert-doc-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newDoc()); },
-	'insert-zlist-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newZlist()); },
-	'insert-org-as-next-sibling': function(s) { manipulator.insertAfterSelectedAndSelect(manipulator.newOrg()); },
-
 
 	'wrap-in-command': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newCommand()); },
 	'wrap-in-lambda': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newLambda()); },
@@ -802,57 +562,6 @@ const KeyResponseFunctions = {
 	'force-insert-after': function(s) { manipulator.forceInsertAfter(); },
 	'force-insert-before': function(s) { manipulator.forceInsertBefore(); },
 
-	// WIP
-	'insert-type-as-next-sibling': function(s) {
-		manipulator.insertAfterSelectedAndSelect(new Type());
-	},
-
-	'split-word-and-insert-separator': function(s) {
-		manipulator.splitCurrentWordIntoTwo()
-			&& manipulator.selectParent()
-			&& manipulator.insertAfterSelectedAndSelect(manipulator.newSeparator(s));
-	},
-
-	'remove-separator-and-possibly-join-words': function(s) {
-		manipulator.removeSelectedAndSelectPreviousLeaf();
-		let p = systemState.getGlobalSelectedNode().getParent();
-		manipulator.joinToSiblingIfSame(p);
-	},
-
-	// previously, inserting code objects in doc mode from a letter would append them to
-	// the parent in a weird way.
-	// all deprecated
-	'legacy-insert-command-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newCommand()); },
-	'legacy-insert-bool-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newBool()); },
-	'legacy-insert-symbol-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newESymbol()); },
-	'legacy-insert-integer-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newInteger()); },
-	'legacy-insert-string-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newEString()); },
-	'legacy-insert-float-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newFloat()); },
-	'legacy-insert-nil-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newNil()); },
-	'legacy-insert-lambda-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newLambda()); },
-	'legacy-insert-expectation-as-next-sibling-of-parent': function(s) { manipulator.selectParent() && manipulator.insertAfterSelectedAndSelect(manipulator.newExpectation()); },
-
-
-	'insert-letter-after-separator': function(s) {
-		let newword = manipulator.newWord();
-		let newletter = manipulator.newLetter(s);
-		newword.appendChild(newletter);
-		manipulator.insertAfterSelectedAndSelect(newword);
-		manipulator.joinToSiblingIfSame(newword);
-		newletter.setSelected();
-	},
-
-	'move-to-previous-leaf-and-remove-self': function(s) {		
-		manipulator.selectPreviousLeaf()
-		&& manipulator.removeNex(s);
-	},
-	'move-to-next-leaf-and-remove-self': function(s) {		
-		manipulator.selectNextLeaf()
-		&& manipulator.removeNex(s);
-	},
-
-
-	// this is doc-specific, will go away once we have classes
 	'append-letter-to-doc': function(s) {
 		manipulator.selectLastChild()
 			|| manipulator.appendAndSelect(manipulator.newLine());
@@ -876,10 +585,6 @@ const KeyResponseFunctions = {
 		manipulator.removeSelectedAndSelectPreviousSibling();
 	},
 
-	'remove-selected-and-select-previous-sibling': function(s) {
-		manipulator.removeSelectedAndSelectPreviousSibling();
-	},
-
 	'delete-last-command-letter-or-remove-selected-and-select-previous-sibling': function(s) {
 		if (!s.getNex().isEmpty()) {
 			s.getNex().deleteLastCommandLetter();
@@ -888,88 +593,9 @@ const KeyResponseFunctions = {
 		}
 	},
 
-	'delete-last-amp-letter-or-remove-selected-and-select-previous-sibling': function(s) {
-		if (!s.getNex().isEmpty()) {
-			s.getNex().deleteLastAmpLetter();
-		} else {
-			manipulator.removeSelectedAndSelectPreviousSibling();
-		}
-	},
-
-	'delete-last-letter-or-remove-selected-and-select-previous-leaf': function(s) {
-		if (!s.getNex().isEmpty()) {
-			s.getNex().deleteLastLetter();
-		} else {
-			manipulator.removeSelectedAndSelectPreviousLeaf();
-		}
-	},
-
-	'remove-selected-and-select-previous-leaf': function(s) {
-		let p = s.getParent();
-		manipulator.removeSelectedAndSelectPreviousLeaf();
-		if (!p.hasChildren()) {
-			manipulator.removeNex(p);
-		}
-	},
-
-	'legacy-unchecked-remove-selected-and-select-previous-leaf': function(s) {
-		manipulator.selectPreviousLeaf() || manipulator.selectParent();
-		manipulator.removeNex(s);
-	},
-
 	'do-line-break-always': function(s) {
 		manipulator.doLineBreakAlwaysV2(s);
 	},
-
-	'replace-selected-with-word-correctly': function(s) {
-		let selected = systemState.getGlobalSelectedNode();
-		let obj = manipulator.newWord();
-		if (Utils.isDoc(selected.getParent())) {
-			let ln = manipulator.newLine();
-			ln.appendChild(obj);
-			manipulator.replaceSelectedWith(ln);
-			obj.setSelected();
-		} else {
-			manipulator.replaceSelectedWith(obj);
-		}
-	},
-
-
-	'delete-newline': function(s) {
-		if (manipulator.selectPreviousLeaf()) {
-			let oldParent = s.getParent(); // may need later
-			manipulator.removeNex(s);
-			s = systemState.getGlobalSelectedNode();
-			let line;
-			let word;
-			// when we selected the previous sibling, we may be:
-			// 1. in a word that's inside a line
-			// 2. in a line
-			// 3. neither
-			let parent = s.getParent();
-			if (parent.getNex() instanceof Line) {
-				manipulator.joinToSiblingIfSame(parent);
-				return true;
-			}
-			let parent2 = parent.getParent();
-			if (parent2 != null) {
-				if (parent2.getNex() instanceof Line) {
-					manipulator.joinToSiblingIfSame(parent2);
-					// not done yet -- we also need to join words if applicable
-					if (parent.getNex() instanceof Word) {
-						manipulator.joinToSiblingIfSame(parent);
-					}
-					return true;
-				}
-			}
-			// if we aren't joining lines up, we at least need to delete the
-			// line we are *coming from* *if it's empty*
-			if (!oldParent.hasChildren()) {
-				manipulator.removeNex(oldParent);
-			}
-		}		
-	},
-
 
 	// I hate commas
 	'':''

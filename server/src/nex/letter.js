@@ -20,6 +20,7 @@ import { Nex } from './nex.js'
 import { otherflags } from '../globalappflags.js'
 import { RENDER_FLAG_INSERT_AFTER } from '../globalconstants.js'
 import { parametricFontManager } from '../pfonts/pfontmanager.js'
+import { experiments } from '../globalappflags.js'
 
 class Letter extends Nex {
 	constructor(letter) {
@@ -135,19 +136,19 @@ class Letter extends Nex {
 			'ShiftBackspace' : 'delete-letter-v2',
 			'Enter': 'do-line-break-for-letter-v2',
 
-			'!': 'insert-literal-!-at-insertion-point-from-letter',
-			'@': 'insert-literal-@-at-insertion-point-from-letter',
-			'#': 'insert-literal-#-at-insertion-point-from-letter',
-			'$': 'insert-literal-$-at-insertion-point-from-letter',
-			'%': 'insert-literal-%-at-insertion-point-from-letter',
-			'^': 'insert-literal-^-at-insertion-point-from-letter',
-			'&': 'insert-literal-&-at-insertion-point-from-letter',
-			'*': 'insert-literal-*-at-insertion-point-from-letter',
-			'(': 'insert-literal-(-at-insertion-point-from-letter',
-			')': 'insert-literal-)-at-insertion-point-from-letter',
-			'[': 'insert-literal-[-at-insertion-point-from-letter',
-			'{': 'insert-literal-{-at-insertion-point-from-letter',
-			'<': 'insert-literal-<-at-insertion-point-from-letter',
+			'!': (experiments.BETTER_KEYBINDINGS ? 'insert-literal-!-at-insertion-point-from-letter' : null),
+			'@': (experiments.BETTER_KEYBINDINGS ? 'insert-literal-@-at-insertion-point-from-letter' : null),
+			'#': (experiments.BETTER_KEYBINDINGS ? 'insert-literal-#-at-insertion-point-from-letter' : null),
+			'$': (experiments.BETTER_KEYBINDINGS ? 'insert-literal-$-at-insertion-point-from-letter' : null),
+			'%': (experiments.BETTER_KEYBINDINGS ? 'insert-literal-%-at-insertion-point-from-letter' : null),
+			'^': (experiments.BETTER_KEYBINDINGS ? 'insert-literal-^-at-insertion-point-from-letter' : null),
+			'&': (experiments.BETTER_KEYBINDINGS ? 'insert-literal-&-at-insertion-point-from-letter' : null),
+			'*': (experiments.BETTER_KEYBINDINGS ? 'insert-literal-*-at-insertion-point-from-letter' : null),
+			'(': (experiments.BETTER_KEYBINDINGS ? 'insert-literal-(-at-insertion-point-from-letter' : null),
+			')': (experiments.BETTER_KEYBINDINGS ? 'insert-literal-)-at-insertion-point-from-letter' : null),
+			'[': (experiments.BETTER_KEYBINDINGS ? 'insert-literal-[-at-insertion-point-from-letter' : null),
+			'{': (experiments.BETTER_KEYBINDINGS ? 'insert-literal-{-at-insertion-point-from-letter' : null),
+			'<': (experiments.BETTER_KEYBINDINGS ? 'insert-literal-<-at-insertion-point-from-letter' : null),
 		}
 	}
 }

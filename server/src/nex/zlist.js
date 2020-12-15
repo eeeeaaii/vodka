@@ -18,6 +18,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { NexContainer } from './nexcontainer.js'
 import { ContextType } from '../contexttype.js'
 import { RENDER_FLAG_EXPLODED } from '../globalconstants.js'
+import { experiments } from '../globalappflags.js'
+
 
 class Zlist extends NexContainer {
 	constructor() {

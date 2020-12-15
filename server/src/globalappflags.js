@@ -45,7 +45,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //    that, keep it here with a comment saying // UNUSED BUT DO NOT REUSE
 const experiments = {
 	'V2_INSERTION_LENIENT_DOC_FORMAT': true,
-	'NO_COPY_CSS': false,
+	'NO_COPY_CSS': true,
 	'DISABLE_ALERT_ANIMATIONS': false,
 	'BETTER_KEYBINDINGS': true,
 
