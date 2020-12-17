@@ -113,40 +113,6 @@ function createSyscalls() {
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
-	function $setCssOfEvaluated(env, executionEnvironment) {
-		let s = env.lb('style').getFullTypedValue();
-		let n = env.lb('nex');
-		n.setCurrentStyle(s);
-		return n;
-	}
-
-	Builtin.createBuiltin(
-		'set-css-of-evaluated',
-		[ 'style$', 'nex' ],
-		$setCssOfEvaluated,
-		'Sets the css style of the argument. Evaluates the argument but doesn\'t copy it.'
-
-	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $setCssOf(env, executionEnvironment) {
-		let s = env.lb('style').getFullTypedValue();
-		let n = env.lb('nex');
-		n.setCurrentStyle(s);
-		return n;
-	}
-
-	Builtin.createBuiltin(
-		'set-css-of',
-		[ 'style$', '_nex' ],
-		$setCssOf,
-		'Sets the css style of the argument. Does not evaluate the argument or copy it.'
-
-	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
 	function $applyPfontTo(env, executionEnvironment) {
 		let pf = env.lb('pfont').getFullTypedValue();
 		let n = env.lb('nex');

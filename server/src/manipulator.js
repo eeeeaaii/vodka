@@ -78,17 +78,38 @@ class Manipulator {
 		return l1 == l2;
 	}
 
-	_isInsertBefore(node) {
+	isInsertBefore(node) {
 		return (node.getInsertionMode() == INSERT_BEFORE);
 	}
 
-	_isInsertAfter(node) {
+	isInsertAfter(node) {
 		return (node.getInsertionMode() == INSERT_AFTER);
+	}
+
+	isInsertAround(node) {
+		return (node.getInsertionMode() == INSERT_AROUND);
+	}
+
+	isInsertInside(node) {
+		return (node.getInsertionMode() == INSERT_INSIDE);
 	}
 
 	_isEmpty(node) {
 		return node.numChildren() == 0;
 	}
+
+	_isLetterInDocFormatUpToLine(node) {
+		if (!Utils.isLetter(node)) return false;
+		let word = node.getParent();
+		if (!word) return false;
+		if (!Utils.isWord(word)) return false;
+		let line = word.getParent();
+		if (!line) return false;
+		if (!Utils.isLine(line)) return false;
+		return true;
+
+	}
+
 
 	_isLetterInDocFormat(node) {
 		if (!Utils.isLetter(node)) return false;
@@ -669,7 +690,7 @@ class Manipulator {
 
 	deleteLeafV2(s) {
 		if (this._isOnlyLeafInLine(s)) {
-			if (this._isInsertAfter(s)) {
+			if (this.isInsertAfter(s)) {
 				let line = this.getEnclosingLine(s);
 				this._deleteUpToLine(s);
 				line.setSelected();
@@ -678,7 +699,7 @@ class Manipulator {
 				this._deleteLineBreak(s);
 			}
 		} else if (this._isFirstLeafInLine(s)) {
-			if (this._isInsertAfter(s)) {
+			if (this.isInsertAfter(s)) {
 				let nextLeaf = this._getLeafAfter(s);
 				nextLeaf.setSelected();
 				this._forceInsertionMode(INSERT_BEFORE, nextLeaf);
@@ -689,7 +710,7 @@ class Manipulator {
 				this._deleteLineBreak(s);
 			}
 		} else if (this._isInDocFormat(s)) {
-			if (this._isInsertAfter(s)) {
+			if (this.isInsertAfter(s)) {
 				let toSelectNext = this._getLeafBefore(s);
 				toSelectNext.setSelected();
 				this._deleteCorrectlyAccordingToLeafType(s);
@@ -1026,6 +1047,13 @@ class Manipulator {
 
 	insertSeparatorBeforeOrAfterSelectedLetter(newSeparator) {
 		let s = this.selected();
+
+		let inDocFormat = this._isLetterInDocFormatUpToLine(s);
+		if (experiments.BETTER_KEYBINDINGS && !inDocFormat) {
+			this.defaultInsertForV2(s, newSeparator);
+			return;			
+		}
+
 		if (s.getInsertionMode() == INSERT_AFTER) {
 			let w = s.getParent();
 			// we always put the separator after the word
@@ -1134,7 +1162,7 @@ class Manipulator {
 			this._forceInsertionMode(INSERT_AFTER, lf);
 			return;
 		}
-		let putBefore = this._isInsertBefore(s);
+		let putBefore = this.isInsertBefore(s);
 		let targetX = s.getLeftX();
 		// I think the dot is 5 px
 		if (putBefore) targetX -= 5;
@@ -1188,7 +1216,7 @@ class Manipulator {
 			this._forceInsertionMode(INSERT_AFTER, lf);
 			return;
 		}
-		let putBefore = this._isInsertBefore(s);
+		let putBefore = this.isInsertBefore(s);
 		let targetX = s.getLeftX();
 		// I think the dot is 5 px
 		if (putBefore) targetX -= 5;
@@ -1896,6 +1924,33 @@ class Manipulator {
 	newLetter(txt) {
 		let r = new RenderNode(new Letter(txt));
 		return r;
+	}
+
+	newNexForKey(key) {
+		switch(key) {
+			case '~': return this.newCommand();
+			case '!': return this.newBool();
+			case '@': return this.newESymbol();
+			case '#': return this.newInteger();
+			case '$': return this.newEString();
+			case '%': return this.newFloat();
+			case '^': return this.newNil();
+			case '&': return this.newLambda();
+			case '*': return this.newExpectation();
+			case '(': return this.newWord();
+			case ')': return this.newOrg();
+			case '{': return this.newDoc();
+			case '[': return this.newLine();
+			case '<': return this.newZlist();
+		}
+		// either letter or separator
+		let letterRegex = /^[a-zA-Z0-9']$/;
+		let isSeparator = !letterRegex.test(key);
+		if (isSeparator) {
+			return this.newSeparator(key);
+		} else {
+			return this.newLetter(key)
+		}
 	}
 }
 

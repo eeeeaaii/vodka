@@ -159,16 +159,25 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	'lineDefault': function(nex, txt) {
+	'lineDefault': function(nex, txt, context) {
 		if (isNormallyHandledInDocContext(txt)) {
 			return false;
 		}
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
+		let isCommand = (context == ContextType.COMMAND);
 		if (isSeparator) {
-			manipulator.insertSeparatorFromLineV2(manipulator.newSeparator(txt), manipulator.selected())
+			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
+			} else {
+				manipulator.insertSeparatorFromLineV2(manipulator.newSeparator(txt), manipulator.selected())
+			}
 		} else {
-			manipulator.insertLetterFromLineV2(manipulator.newLetter(txt), manipulator.selected())
+			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
+			} else {
+				manipulator.insertLetterFromLineV2(manipulator.newLetter(txt), manipulator.selected())
+			}
 		}
 		return true;
 	},
@@ -176,7 +185,7 @@ const DefaultHandlers = {
 	'integerDefault': function(nex, txt, context, sourcenode) {
 		if (txt == 'Backspace') {
 			if (nex.value == '0') {
-				KeyResponseFunctions['remove-selected-and-select-previous-sibling-v2'](sourcenode);
+				manipulator.removeAndSelectPreviousSiblingV2(sourcenode);
 			} else {
 				nex.deleteLastLetter();
 			}
@@ -202,7 +211,7 @@ const DefaultHandlers = {
 		if (txt == 'Backspace') {
 			// do backspace hack
 			if (nex.value == '0') {
-				KeyResponseFunctions['remove-selected-and-select-previous-leaf-v2'](sourcenode);
+				manipulator.removeSelectedAndSelectPreviousLeafV2(sourcenode);
 			} else {
 				nex.deleteLastLetter();
 			}
@@ -357,34 +366,63 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	'insertAtWordLevel' : function(nex, txt) {
+	'insertAtWordLevel' : function(nex, txt, context) {
 		if (isNormallyHandledInDocContext(txt)) {
 			return false;
 		}
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
+		let isCommand = (context == ContextType.COMMAND);
 		if (isSeparator) {
-			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
-		} else {
-			if (manipulator.selectLastChild()) {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
 			} else {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt))
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
+			}
+		} else {
+			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
+			} else {
+				if (manipulator.selectLastChild()) {
+					manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+				} else {
+					manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt))
+				}
 			}
 		}
 		return true;
 	},
 
-	'docHandle' : function(nex, txt) {
+	'docHandle' : function(nex, txt, context) {
 		if (isNormallyHandledInDocContext(txt)) {
 			return false;
 		}
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
+		let isCommand = (context == ContextType.COMMAND);
 		if (isSeparator) {
-			KeyResponseFunctions['append-separator-to-doc'](txt);
+			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
+			} else {
+				manipulator.selectLastChild()
+					|| manipulator.appendAndSelect(manipulator.newLine());
+				manipulator.appendAndSelect(manipulator.newSeparator(txt));
+
+			}
 		} else {
-			KeyResponseFunctions['append-letter-to-doc'](txt);
+			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
+			} else {
+				manipulator.selectLastChild()
+					|| manipulator.appendAndSelect(manipulator.newLine());
+				manipulator.selectLastChild()
+					|| manipulator.appendAndSelect(manipulator.newWord());
+				if (manipulator.selectLastChild()) {
+					manipulator.insertAfterSelectedAndSelect(manipulator.newLetter(txt));
+				} else {
+					manipulator.appendAndSelect(manipulator.newLetter(txt))
+				}
+			}
 		}
 		return true;
 	}

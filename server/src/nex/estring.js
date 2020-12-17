@@ -44,6 +44,11 @@ class EString extends ValueNex {
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val);// will call render
 		this.attachedJS = null;
+		// this.textAreaValue = "";
+		// this.textAreaSelStart = 0;
+		// this.textAreaSelEnd = 0;
+		// this.textAreaSel = "forward";
+
 	}
 
 	/**
@@ -105,10 +110,6 @@ class EString extends ValueNex {
 
 	debugString() {
 		return '$"' + this.getFullTypedValue() + '"';
-	}
-
-	unScrewUp() {
-		this.setFullValue(this.getFullTypedValue().replace(new RegExp(QUOTE_ESCAPE, "g"), '"'));
 	}
 
 	escapeContents() {
@@ -181,7 +182,6 @@ class EString extends ValueNex {
 	}
 
 	drawExpanded(renderNode) {
-		this.cachedRenderNodeHack = renderNode;
 		this.drawTextField(renderNode);
 		this.drawButton(renderNode);
 		this.inputfield.focus();
@@ -189,11 +189,23 @@ class EString extends ValueNex {
 
 	drawTextField(renderNode) {
 		let domNode = renderNode.getDomNode();
-		this.inputfield = document.createElement("textarea");	
-		this.inputfield.classList.add('stringta');	
+		this.inputfield = document.createElement("textarea");
 		if (this.fullValue) {
 			this.inputfield.value = this.fullValue;
 		}
+		this.inputfield.classList.add('stringta');
+		// this.inputfield.innerText = this.textAreaValue;
+		// this.inputfield.selectionStart = this.textAreaSelStart;
+		// this.inputfield.selectionEnd = this.textAreaSelEnd;
+		// this.inputfield.selectionDirection = this.textAreaSel;
+		// let t = this;
+		// this.inputfield.oninput = function(txt) {
+		// 	t.textAreaValue = this.value;
+		// 	t.textAreaSelStart = this.selectionStart;
+		// 	t.textAreaSelEnd = this.selectionEnd;
+		// 	t.textAreaSel = this.selectionDirection;
+		// }
+
 		domNode.appendChild(this.inputfield);
 		this.inputfield.classList.add('stringinput');
 	}
@@ -221,9 +233,6 @@ class EString extends ValueNex {
 	}
 
 	finishInput(renderNode) {
-		if (!renderNode && this.cachedRenderNodeHack) {
-			renderNode = this.cachedRenderNodeHack;
-		}
 		let val = this.inputfield.value;
 		systemState.setKeyFunnelActive(true);
 		this.mode = MODE_NORMAL;

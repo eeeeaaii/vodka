@@ -95,10 +95,6 @@ class EError extends NexContainer {
 		return fv;
 	}
 
-	unScrewUp() {
-		this.setFullValue(this.getFullTypedValue().replace(new RegExp(QUOTE_ESCAPE, "g"), '"'));
-	}
-	
 	setMode(m) {
 		this.mode = m;
 	}
