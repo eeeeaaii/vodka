@@ -454,7 +454,7 @@ const KeyResponseFunctions = {
 	},
 
 	'toggle-exploded': function(s) {
-		s.toggleExplodedOverride();
+		s.toggleRenderMode();
 	},
 
 	'select-parent': function(s) { manipulator.selectParent(); },

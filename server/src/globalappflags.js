@@ -63,6 +63,9 @@ const experiments = {
 	// of course interfere with screenshots.
 	'NO_SPLASH': false,
 
+	// When true, we use the "dirty only rendering" algorithm.
+	'DIRTY_ONLY_RENDERING': true,
+
 	// See note above about changing testharness.js when adding new flags.
 };
 

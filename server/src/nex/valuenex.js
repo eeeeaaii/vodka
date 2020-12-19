@@ -59,6 +59,7 @@ class ValueNex extends Nex {
 
 	setValue(v) {
 		this.value = v;
+		this.setDirtyForRendering(true);
 	}
 
 	getValue() {
@@ -69,6 +70,7 @@ class ValueNex extends Nex {
 		let v = this.value;
 		v = v + txt;
 		this.value = v;
+		this.setDirtyForRendering(true);
 	}
 
 	deleteLastLetter() {
@@ -76,6 +78,7 @@ class ValueNex extends Nex {
 		if (v == '') return;
 		v = v.substr(0, v.length - 1);
 		this.value = v;
+		this.setDirtyForRendering(true);
 	}
 }
 

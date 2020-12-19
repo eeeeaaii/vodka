@@ -16,7 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-import { UNHANDLED_KEY, RENDER_FLAG_EXPLODED } from './globalconstants.js';
+import { UNHANDLED_KEY, RENDER_MODE_EXPLO, RENDER_MODE_NORM } from './globalconstants.js';
 import { systemState } from './systemstate.js';
 import { BINDINGS } from './environment.js';
 import { manipulator } from './manipulator.js';
@@ -317,14 +317,8 @@ class KeyDispatcher {
 	}
 
 	doEscape() {
-		let current_default_render_flags = systemState.getGlobalCurrentDefaultRenderFlags();
-		if (current_default_render_flags & RENDER_FLAG_EXPLODED) {
-			current_default_render_flags &= (~RENDER_FLAG_EXPLODED);
-		} else {
-			current_default_render_flags |= RENDER_FLAG_EXPLODED;
-		}
-		systemState.setGlobalOverrideOnNextRender(true);
-		systemState.setGlobalCurrentDefaultRenderFlags(current_default_render_flags);
+		let root = systemState.getRoot();
+		root.toggleRenderMode();
 	}
 
 	doMetaEnter() {

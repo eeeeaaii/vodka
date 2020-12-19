@@ -48,6 +48,7 @@ class Nex {
 		this.extraClickHandler = null;
 		this.closure = null; // only lambdas have closures but just copying is prob cheaper than testing?
 		this.inPackage = null; // well here we go with more things in the env I guess.
+		this.dirtyForRendering = true;
 	}
 
     /**
@@ -179,6 +180,14 @@ class Nex {
 		throw new Error("only leaf types have names");
 	}
 
+	setDirtyForRendering(val) {
+		this.dirtyForRendering = val;
+	}
+
+	getDirtyForRendering() {
+		return this.dirtyForRendering;
+	}
+
 	addReference() {
 		this.references++;
 	}
@@ -218,17 +227,8 @@ class Nex {
 	}
 
 	renderOnlyThisNex() {
-		for (let i = 0; i < this.rendernodes.length; i++) {
-			let flags = systemState.getGlobalCurrentDefaultRenderFlags();
-			flags &= (~RENDER_FLAG_NORMAL);
-			flags &= (~RENDER_FLAG_EXPLODED);
-
-			eventQueueDispatcher.enqueueRenderNodeRender(
-					this.rendernodes[i],
-					flags
-					| (this.rendernodes[i].isExploded() ? RENDER_FLAG_EXPLODED : RENDER_FLAG_NORMAL)
-					);
-		}
+		this.setDirtyForRendering(true);
+		eventQueueDispatcher.enqueueRenderOnlyDirty()
 	}
 
 	getRenderNodes() {
@@ -289,11 +289,13 @@ class Nex {
 	addTag(tag) {
 		if (this.hasTag(tag)) return;
 		this.tags.push(tag);
+		this.setDirtyForRendering(true);
 	}
 
 	addTagAtStart(tag) {
 		if (this.hasTag(tag)) return;
 		this.tags.unshift(tag);		
+		this.setDirtyForRendering(true);
 	}
 
 	hasTag(tag) {
@@ -307,6 +309,7 @@ class Nex {
 		for (let i = 0; i < this.tags.length; i++) {
 			if (this.tags[i].equals(tag)) {
 				this.tags.splice(i, 1);
+				this.setDirtyForRendering(true);
 			}
 		}
 	}
@@ -315,6 +318,7 @@ class Nex {
 		for (let i = 0; i < this.tags.length; i++) {
 			if (this.tags[i] == tag) {
 				this.tags.splice(i, 1);
+				this.setDirtyForRendering(true);
 				return;
 			}
 		}
@@ -375,6 +379,7 @@ class Nex {
 
 	clearTags() {
 		this.tags = [];		
+		this.setDirtyForRendering(true);
 	}
 
 	// evaluation flow
@@ -425,6 +430,9 @@ class Nex {
 	}
 
 	setCurrentStyle(s) {
+		if (s != this.currentStyle) {
+			this.setDirtyForRendering(true);
+		}
 		this.currentStyle = s;
 	}
 

@@ -74,6 +74,7 @@ class Editor {
 	}
 
 	routeKey(text) {
+		this.nex.setDirtyForRendering(true);
 		if (this.shouldIgnore(text)) {
 			return false;
 		} else if (this.shouldBackspace(text)) {
@@ -100,7 +101,8 @@ class Editor {
 
 	finish() {
 		this._isEditing = false;
-		this.nex.isEditing = false;		
+		this.nex.isEditing = false;
+		this.nex.setDirtyForRendering(true);
 	}
 
 	isEditing() {

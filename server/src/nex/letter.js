@@ -61,6 +61,7 @@ class Letter extends Nex {
 			this.pfont = parametricFontManager.getFontForString(pfstring);
 			this.pfont.setLetter(this.value);		
 		}
+		this.setDirtyForRendering(true);
 	}
 
 	toString(version) {

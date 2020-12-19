@@ -144,7 +144,8 @@ function evaluateAndKeep(s) {
 			if (n.hasChildren() && Utils.isFatalError(n.getChildAt(0))) {
 				Utils.beep();
 				manipulator.insertBeforeSelectedAndSelect(n);
-				eventQueueDispatcher.enqueueTopLevelRender();
+				//eventQueueDispatcher.enqueueTopLevelRender();
+				eventQueueDispatcher.enqueueRenderOnlyDirty()
 			}
 		})
 	}

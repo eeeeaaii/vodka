@@ -126,6 +126,8 @@ function getLegacyDefaultFlags() {
 
 		// splash screen was added later, we never want it in tests.
 		'NO_SPLASH': true,
+
+		'DIRTY_ONLY_RENDERING': false,
 	};
 }
 

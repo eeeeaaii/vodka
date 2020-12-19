@@ -112,6 +112,16 @@ class NativeOrg extends Org {
 		return r;
 	}
 
+	getDirtyForRendering() {
+		if (this.drawfunction) {
+			// we are doing custom drawing, which means figuring out whether this is dirty or not
+			// is more or less intractable.
+			return true;
+		} else {
+			return super.getDirtyForRendering();
+		}
+	}
+
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		super.renderInto(renderNode, renderFlags, withEditor);

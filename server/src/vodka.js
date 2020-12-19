@@ -48,7 +48,12 @@ import { Doc } from './nex/doc.js'
 import { NEXT_NEX_ID, setNextNexId } from './nex/nex.js'
 import { runTest } from './tests/unittests.js';
 import { checkRecordState } from './testrecorder.js'
-import { RENDER_FLAG_REMOVE_OVERRIDES, RENDER_FLAG_EXPLODED, RENDER_FLAG_NORMAL } from './globalconstants.js'
+import {
+	RENDER_FLAG_EXPLODED,
+	RENDER_FLAG_NORMAL,
+	RENDER_FLAG_RENDER_IF_DIRTY,
+	RENDER_MODE_NORM,
+	RENDER_MODE_EXPLO } from './globalconstants.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { BINDINGS } from '../environment.js'
 
@@ -80,7 +85,8 @@ function doRealKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
 	// if it returns false, it means we handled the keystroke and we are
 	// canceling the browser event - this also means something 'happened' so we render.
 	if (!r) {
-		eventQueueDispatcher.enqueueTopLevelRender();
+		//eventQueueDispatcher.enqueueTopLevelRender();
+		eventQueueDispatcher.enqueueRenderOnlyDirty()
 	}
 	return r;	
 }
@@ -136,12 +142,16 @@ function nodeLevelRender(node) {
 function topLevelRender() {
 	systemState.setGlobalRenderPassNumber(systemState.getGlobalRenderPassNumber() + 1);
 	let flags = systemState.getGlobalCurrentDefaultRenderFlags();
-	if (systemState.getGlobalOverrideOnNextRender()) {
-		systemState.setGlobalOverrideOnNextRender(false);
-		flags |= RENDER_FLAG_REMOVE_OVERRIDES;
-	}
 	systemState.getRoot().setRenderDepth(0);
 	systemState.getRoot().render(flags);
+}
+
+function renderOnlyDirty() {
+	systemState.setGlobalRenderPassNumber(systemState.getGlobalRenderPassNumber() + 1);
+	let flags = systemState.getGlobalCurrentDefaultRenderFlags();
+	systemState.getRoot().setRenderDepth(0);
+	systemState.getRoot().render(flags | RENDER_FLAG_RENDER_IF_DIRTY);
+	systemState.getRoot().setAllNotDirty();
 }
 
 function setDocRootFromFile(filename) {
@@ -153,14 +163,16 @@ function setDocRootFromFile(filename) {
 	let exp = evaluateNexSafely(cmd, BINDINGS);
 	let expNode = root.appendChild(exp);
 	expNode.setSelected(false);
-	systemState.setGlobalCurrentDefaultRenderFlags(RENDER_FLAG_EXPLODED);	
+	root.setRenderMode(RENDER_MODE_EXPLO);
+	systemState.setGlobalCurrentDefaultRenderFlags(0);	
 }
 
 function setDocRootFromStart() {
 	loadAndRun(':start', function(result) {
 		let expNode = root.appendChild(result);
 		expNode.setSelected(false);
-		systemState.setGlobalCurrentDefaultRenderFlags(RENDER_FLAG_NORMAL);	
+		root.setRenderMode(RENDER_MODE_NORM);
+		systemState.setGlobalCurrentDefaultRenderFlags(0);	
 	});
 }
 
@@ -261,6 +273,7 @@ function setup() {
 	// note this is duplicated in undo.js
 	let rootnex = new Root(true /* attached */);
 	root = new RenderNode(rootnex);
+	root.setRenderMode(RENDER_MODE_NORM);
 	document.vodkaroot = root; // for debugging in chrome dev tools
 	let rootDomNode = document.getElementById('mixroot');
 	root.setDomNode(rootDomNode);
@@ -301,7 +314,8 @@ function setup() {
 	} else {
 		setEmptyDocRoot();
 	}
-	eventQueueDispatcher.enqueueTopLevelRender();
+	//eventQueueDispatcher.enqueueTopLevelRender();
+	eventQueueDispatcher.enqueueRenderOnlyDirty()
 }
 
 
@@ -313,4 +327,5 @@ export {
 	nodeLevelRender,
 	doRealKeyInput,
 	doKeyInput,
+	renderOnlyDirty,
 }

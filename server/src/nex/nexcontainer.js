@@ -113,6 +113,7 @@ class NexContainer extends Nex {
 		for (let p = this.firstChildNex; p; p = p.next) {
 			p.n.addReference();
 		}
+		this.setDirtyForRendering(true);
 	}
 
 	getChildrenForCdr(newContainer) {
@@ -198,15 +199,9 @@ class NexContainer extends Nex {
 		return r;				
 	}
 
-	setRenderType(newType) {
-		super.setRenderType(newType);
-		for (let p = this.firstChildNex; p != null; p = p.next) {
-			p.n.setRenderType(newType);
-		}
-	}
-
 	toggleDir() {
 		this.vdir = !this.vdir;
+		this.setDirtyForRendering(true);
 	}
 
 	setVertical() {
@@ -295,6 +290,7 @@ class NexContainer extends Nex {
 		}
 		this.numChildNexes--;
 		r.removeReference();
+		this.setDirtyForRendering(true);
 		return r;
 	}
 
@@ -309,6 +305,7 @@ class NexContainer extends Nex {
 		}
 		c.addReference();
 		this.numChildNexes++;
+		this.setDirtyForRendering(true);
 		return newP;
 	}
 
@@ -335,6 +332,7 @@ class NexContainer extends Nex {
 		}
 		c.addReference();
 		this.numChildNexes++;
+		this.setDirtyForRendering(true);
 	}
 
 	replaceChildAt(c, i) {
@@ -345,6 +343,7 @@ class NexContainer extends Nex {
 		if (p.n == c) return;
 		this.removeChildAt(i);
 		this.insertChildAt(c, i);
+		this.setDirtyForRendering(true);
 	}
 
 	replaceChildWith(c, c2) {

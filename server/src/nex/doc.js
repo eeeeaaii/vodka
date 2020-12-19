@@ -135,8 +135,6 @@ class Doc extends NexContainer {
 			}			
 		} else {
 			return {
-	//			'ShiftEnter': 'evaluate-nex-and-keep',
-	//			'Enter': 'evaluate-nex',
 				'Enter': 'do-line-break-always',
 			}			
 		}

@@ -159,37 +159,17 @@ function TEST_eventqueue_events_gc() {
 	assertEqual(item.shouldDedupe, correctItem.shouldDedupe);
 }
 
-function TEST_eventqueue_events_importanttoplevelrender() {
-	eventQueueDispatcher.enqueueImportantTopLevelRender();
+function TEST_eventqueue_events_renderonlydirty() {
+	eventQueueDispatcher.enqueueRenderOnlyDirty();
 	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
-		action: 'importantTopLevelRender',
+		action: 'renderOnlyDirty',
 		shouldDedupe: true,
 	}
 	assertTruthy(item);
 	assertTruthy(item.equals(correctItem));
 	assertEqual(item.action, correctItem.action);
 	assertEqual(item.shouldDedupe, correctItem.shouldDedupe);
-}
-
-
-function TEST_eventqueue_events_rendernoderender() {
-	let fakeRenderNode = new Object();
-	let flags = 3249;
-	eventQueueDispatcher.enqueueRenderNodeRender(fakeRenderNode, flags);
-	let item = eventQueue.retrieveNextItem();
-	let correctItem = {
-		action: 'renderNodeRender',
-		renderNode: fakeRenderNode,
-		shouldDedupe: true,
-		flags: flags
-	}
-	assertTruthy(item);
-	assertTruthy(item.equals(correctItem));
-	assertEqual(item.action, correctItem.action);
-	assertEqual(item.shouldDedupe, correctItem.shouldDedupe);
-	assertEqual(item.renderNode, correctItem.renderNode);
-	assertEqual(item.flags, correctItem.flags);
 }
 
 function TEST_eventqueue_events_toplevelrender() {
@@ -209,12 +189,12 @@ function TEST_eventqueue_priority_inverseordering() {
 	let obj = new Object();
 	eventQueueDispatcher.enqueueGC();
 	eventQueueDispatcher.enqueueAlertAnimation(obj);
-	eventQueueDispatcher.enqueueRenderNodeRender(obj, obj);
+	eventQueueDispatcher.enqueueRenderOnlyDirty();
 	eventQueueDispatcher.enqueueExpectationFulfill(obj, obj)
 	eventQueueDispatcher.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
 	assertEqual(eventQueue.retrieveNextItem().action, 'doKeyInput');
 	assertEqual(eventQueue.retrieveNextItem().action, 'expectationFulfill');
-	assertEqual(eventQueue.retrieveNextItem().action, 'renderNodeRender');
+	assertEqual(eventQueue.retrieveNextItem().action, 'renderOnlyDirty');
 	assertEqual(eventQueue.retrieveNextItem().action, 'doAlertAnimation');
 	assertEqual(eventQueue.retrieveNextItem().action, 'gc');
 }
@@ -224,14 +204,14 @@ function TEST_eventqueue_priority_addedwhiledequeueing() {
 	let obj = new Object();
 	eventQueueDispatcher.enqueueGC();
 	eventQueueDispatcher.enqueueAlertAnimation(obj);
-	eventQueueDispatcher.enqueueRenderNodeRender(obj, obj);
+	eventQueueDispatcher.enqueueRenderOnlyDirty();
 	eventQueueDispatcher.enqueueExpectationFulfill(obj, obj)
 	eventQueueDispatcher.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
 	assertEqual(eventQueue.retrieveNextItem().action, 'doKeyInput');
 	assertEqual(eventQueue.retrieveNextItem().action, 'expectationFulfill');
 	eventQueueDispatcher.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
 	assertEqual(eventQueue.retrieveNextItem().action, 'doKeyInput');
-	assertEqual(eventQueue.retrieveNextItem().action, 'renderNodeRender');
+	assertEqual(eventQueue.retrieveNextItem().action, 'renderOnlyDirty');
 	assertEqual(eventQueue.retrieveNextItem().action, 'doAlertAnimation');
 	assertEqual(eventQueue.retrieveNextItem().action, 'gc');
 }
@@ -268,25 +248,25 @@ function TEST_eventqueue_deduping() {
 	eventQueueDispatcher.enqueueAlertAnimation(obj);
 	eventQueueDispatcher.enqueueAlertAnimation(obj);
 	eventQueueDispatcher.enqueueAlertAnimation(obj);
-	eventQueueDispatcher.enqueueRenderNodeRender();
-	eventQueueDispatcher.enqueueRenderNodeRender();
-	eventQueueDispatcher.enqueueRenderNodeRender();
-	eventQueueDispatcher.enqueueRenderNodeRender();
+	eventQueueDispatcher.enqueueRenderOnlyDirty();
+	eventQueueDispatcher.enqueueRenderOnlyDirty();
+	eventQueueDispatcher.enqueueRenderOnlyDirty();
+	eventQueueDispatcher.enqueueRenderOnlyDirty();
 	eventQueueDispatcher.enqueueTopLevelRender();
 	eventQueueDispatcher.enqueueTopLevelRender();
 	eventQueueDispatcher.enqueueTopLevelRender();
 	eventQueueDispatcher.enqueueTopLevelRender();
 	eventQueueDispatcher.enqueueTopLevelRender();
-	eventQueueDispatcher.enqueueRenderNodeRender();
+	eventQueueDispatcher.enqueueRenderOnlyDirty();
 	eventQueueDispatcher.enqueueTopLevelRender();
 	eventQueueDispatcher.enqueueImportantTopLevelRender();
 	eventQueueDispatcher.enqueueImportantTopLevelRender();
 	eventQueueDispatcher.enqueueImportantTopLevelRender();
 	eventQueueDispatcher.enqueueImportantTopLevelRender();
 	assertEqual(eventQueue.retrieveNextItem().action, 'importantTopLevelRender');
-	assertEqual(eventQueue.retrieveNextItem().action, 'renderNodeRender');
+	assertEqual(eventQueue.retrieveNextItem().action, 'renderOnlyDirty');
 	assertEqual(eventQueue.retrieveNextItem().action, 'topLevelRender');
-	assertEqual(eventQueue.retrieveNextItem().action, 'renderNodeRender');
+	assertEqual(eventQueue.retrieveNextItem().action, 'renderOnlyDirty');
 	assertEqual(eventQueue.retrieveNextItem().action, 'topLevelRender');
 	assertEqual(eventQueue.retrieveNextItem().action, 'doAlertAnimation');
 	assertEqual(eventQueue.retrieveNextItem().action, 'gc');

@@ -51,8 +51,6 @@ class EError extends NexContainer {
 			this.prefix = prefix;
 		}
 		this.className = 'eerror';
-		this.mode = MODE_NORMAL;
-//		super(val, '?', 'eerror')
 		this.setFullValue(val); // will call render
 		this.errorType = ERROR_TYPE_FATAL; // default
 		this.suppress = false;
@@ -101,10 +99,6 @@ class EError extends NexContainer {
 
 	getMode() {
 		return this.mode;
-	}
-
-	toggleRendering() {
-		this.mode = (this.mode == MODE_NORMAL) ? MODE_EXPANDED : MODE_NORMAL;
 	}
 
 	getTypedValue() {
@@ -163,28 +157,6 @@ class EError extends NexContainer {
 		}
 	}
 
-	drawButton() {
-	}
-
-	// bork, does it bork the test tho?
-	drawTextField(renderNode) {
-		let domNode = renderNode.getDomNode();
-		this.inputfield = document.createElement("textarea");	
-		this.inputfield.classList.add('stringta');	
-		if (this.fullValue) {
-			this.inputfield.value = this.fullValue;
-		}
-		domNode.appendChild(this.inputfield);
-		this.inputfield.classList.add('stringinput');
-		this.inputfield.setAttribute("readonly", '');
-	}
-
-
-	startModalEditing() {
-		this.mode = MODE_EXPANDED;
-		systemState.setKeyFunnelActive(false);
-	}
-
 	drawNormal(renderNode) {
 		let domNode = renderNode.getDomNode();
 		if (this.displayValue !== '') {
@@ -193,28 +165,6 @@ class EError extends NexContainer {
 			this.innerspan.innerHTML = '? ' + this.escape('' + this.displayValue);
 			domNode.appendChild(this.innerspan);
 		}
-	}
-
-	finishInput(renderNode) {
-		if (!renderNode && this.cachedRenderNodeHack) {
-			renderNode = this.cachedRenderNodeHack;
-		}
-		let val = this.inputfield.value;
-		systemState.setKeyFunnelActive(true);
-		this.mode = MODE_NORMAL;
-		this.setFullValue(val);
-		eventQueueDispatcher.enqueueRenderNodeRender(
-				renderNode,
-				current_default_render_flags
-					| RENDER_FLAG_RERENDER
-					| RENDER_FLAG_SHALLOW);
-	}
-
-	drawExpanded(renderNode) {
-		this.cachedRenderNodeHack = renderNode;
-		this.drawTextField(renderNode);
-		this.drawButton(renderNode);
-		this.inputfield.focus();
 	}
 
 	renderInto(renderNode, renderFlags, withEditor) {
@@ -235,11 +185,7 @@ class EError extends NexContainer {
 				domNode.classList.add('info');
 				break;
 		}
-		if (this.mode == MODE_NORMAL) {
-			this.drawNormal(renderNode);
-		} else {
-			this.drawExpanded(renderNode);
-		}
+		this.drawNormal(renderNode);
 	}
 
 	getDefaultHandler() {

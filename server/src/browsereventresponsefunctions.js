@@ -48,7 +48,7 @@ function respondToClickEvent(nex, renderNode, browserEvent) {
 		}
 
 		browserEvent.stopPropagation();
-		renderNode.setSelected(false /*shallow-rerender*/);
+		renderNode.setSelected();
 		if (insertAfterRemove && systemState.getGlobalSelectedNode() != oldSelectedNode) {
 			manipulator.removeNex(oldSelectedNode);
 		}

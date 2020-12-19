@@ -31,7 +31,7 @@ class Org extends NexContainer {
 		// temporary storage slot for drawfunction used during instantiation
 		this.drawcheat = null;
 
-		this.drawFunction = null;
+		this.drawfunction = null;
 		this.setVertical();
 	}
 
@@ -55,7 +55,7 @@ class Org extends NexContainer {
 	}
 
 	setDrawFunction(f) {
-		this.drawFunction = f;
+		this.drawfunction = f;
 	}
 
 	toStringV2() {
@@ -103,13 +103,23 @@ class Org extends NexContainer {
 		return false;
 	}
 
+	getDirtyForRendering() {
+		if (this.drawfunction) {
+			// we are doing custom drawing, which means figuring out whether this is dirty or not
+			// is more or less intractable.
+			return true;
+		} else {
+			return super.getDirtyForRendering();
+		}
+	}
+
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('org');
 		domNode.classList.add('data');
-		if (this.drawFunction) {
-			let r = this.drawFunction(domNode.innerHTML);
+		if (this.drawfunction) {
+			let r = this.drawfunction(domNode.innerHTML);
 			if (typeof(r) == 'string') {
 				domNode.innerHTML = r;
 			} else {

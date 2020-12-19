@@ -208,9 +208,8 @@ class Expectation extends NexContainer {
 		// We only notify after we fulfill AND after calling ffClosure.
 		this.notifyPending();
 
- 		eventQueueDispatcher.enqueueTopLevelRender();
-		// we used to render only this node but https://github.com/eeeeaaii/vodka/issues/115
-//	 	this.renderOnlyThisNex(null);		
+		//eventQueueDispatcher.enqueueTopLevelRender();
+		eventQueueDispatcher.enqueueRenderOnlyDirty()
 	}
 
 	testForReactivationAfterFFClosure() {
@@ -315,9 +314,8 @@ class Expectation extends NexContainer {
 		this.activated = true;
 		this.activating = false;
 		// render because activated exps look different
- 		eventQueueDispatcher.enqueueTopLevelRender();
-		// we used to render only this node but https://github.com/eeeeaaii/vodka/issues/115
-//	 	this.renderOnlyThisNex(null);		
+		//eventQueueDispatcher.enqueueTopLevelRender();
+		eventQueueDispatcher.enqueueRenderOnlyDirty()
 		if (this.activationFunction != null) {
 			// this means the expectation has been set. We call the asynchronous method
 			// and when the callback happens, we will fulfill.

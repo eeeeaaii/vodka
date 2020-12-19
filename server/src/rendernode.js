@@ -27,7 +27,6 @@ import { TagEditor } from './tag.js'
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import {
 	RENDER_FLAG_SELECTED,
-	RENDER_FLAG_REMOVE_OVERRIDES,
 	RENDER_FLAG_SHALLOW,
 	RENDER_FLAG_NORMAL,
 	RENDER_FLAG_RERENDER,
@@ -36,6 +35,11 @@ import {
 	RENDER_FLAG_INSERT_AFTER,
 	RENDER_FLAG_INSERT_BEFORE,
 	RENDER_FLAG_INSERT_AROUND,
+	RENDER_FLAG_RENDER_IF_DIRTY,
+
+	RENDER_MODE_NORM,
+	RENDER_MODE_EXPLO,
+	RENDER_MODE_INHERIT,
 } from './globalconstants.js'
 
 import { experiments } from './globalappflags.js'
@@ -59,12 +63,25 @@ class RenderNode {
 		this.childnodes = [];
 		this.wrapperDomNodes = [];
 		this.domNode = document.createElement("div");
+
+		this.renderMode = RENDER_MODE_INHERIT;
+
 		this.isCurrentlyExploded = false;
 		this.explodedOverride = -1;
 		this.firstToggleOnNexRender = false;
 		this.currentEd = null;
 		this.wrapperDomNode = null;
 		this.setInsertionMode(INSERT_UNSPECIFIED);
+
+		this.renderNodeIsDirty = true;
+	}
+
+	setRenderNodeDirtyForRendering(v) {
+		this.renderNodeIsDirty = v;
+	}
+
+	getRenderNodeDirtyForRendering() {
+		return this.renderNodeIsDirty;
 	}
 
 	debugString() {
@@ -196,6 +213,30 @@ class RenderNode {
 		return this.isCurrentlyExploded;
 	}
 
+	getRenderMode() {
+		if (this.renderMode == RENDER_MODE_INHERIT) {
+			this.renderMode = this.getParent().getRenderMode();
+		}
+		return this.renderMode;
+	}
+
+	setRenderMode(newRenderMode) {
+		this.renderMode = newRenderMode;
+		for (let i = 0; i < this.childnodes.length; i++) {
+			this.childnodes[i].setRenderMode(newRenderMode);
+		}
+		this.setRenderNodeDirtyForRendering(true);
+	}
+
+	toggleRenderMode() {
+		let renderMode = this.getRenderMode();
+		if (renderMode == RENDER_MODE_EXPLO) {
+			this.setRenderMode(RENDER_MODE_NORM);
+		} else {
+			this.setRenderMode(RENDER_MODE_EXPLO);			
+		}
+	}
+
 	createChildRenderNodes(nex) {
 		if (!(nex.isNexContainer())) return;
 		for (let i = 0; i < nex.numChildren(); i++) {
@@ -279,49 +320,48 @@ class RenderNode {
 		}
 	}
 
-	toggleExplodedOverride() {
-		// it's not really a toggle, it's more like
-		// we tell it to toggle, then on the next
-		// render it wakes up, figures out whether it's
-		// a normal or exploded render, and then
-		// does the opposite from then until it's reset.
-		this.firstToggleOnNexRender = true;
-	}
-
-	applyExplodedOverride(renderFlags) {
-		if (renderFlags & RENDER_FLAG_REMOVE_OVERRIDES) {
-			this.firstToggleOnNexRender = false;
-			this.explodedOverride = -1;
-			return renderFlags;
-		}
-		if (this.firstToggleOnNexRender) {
-			this.firstToggleOnNexRender = false;
-			if (renderFlags & RENDER_FLAG_NORMAL) {
-				this.explodedOverride = RENDER_FLAG_EXPLODED;
-			} else if (renderFlags & RENDER_FLAG_EXPLODED) {
-				this.explodedOverride = RENDER_FLAG_NORMAL;
-			}
-		}
-		if (this.explodedOverride != -1) {
-			renderFlags &= (~RENDER_FLAG_NORMAL);
-			renderFlags &= (~RENDER_FLAG_EXPLODED);
-			renderFlags |= this.explodedOverride;
-		}
-		return renderFlags;
-	}
-
 	renderDepthExceeded() {
 		let domNode = this.getDomNode();
 		domNode.innerHTML = '&#8253;&#8253;&#8253;';
 		domNode.classList.add('render-depth-exceeded')
 	}
 
+	setAllNotDirty() {
+		this.nex.setDirtyForRendering(false);
+		for (let i = 0; i < this.childnodes.length; i++) {
+			let child = this.childnodes[i];
+			child.setAllNotDirty();
+		}
+	}
+
+	getEffectiveFlags(flags) {
+		flags = (this.selected ? (flags | RENDER_FLAG_SELECTED) : flags);
+		let renderMode = this.getRenderMode();
+		if (renderMode == RENDER_MODE_EXPLO) {
+			flags |= RENDER_FLAG_EXPLODED;
+		} else {
+			flags |= RENDER_FLAG_NORMAL;
+		}
+		return flags;
+	}
+
 	render(renderFlags) {
-		renderFlags = this.applyExplodedOverride(renderFlags);
-		this.clearDomNode(renderFlags);
-		let useFlags = this.selected
-				? renderFlags | RENDER_FLAG_SELECTED
-				: renderFlags;
+		let useFlags = this.getEffectiveFlags(renderFlags);
+		let childFlags = renderFlags;
+		if (useFlags & RENDER_FLAG_RENDER_IF_DIRTY) {
+			if (this.nex.getDirtyForRendering() || this.getRenderNodeDirtyForRendering()) {
+				// from here on down, normal rendering.
+				childFlags &= (~RENDER_FLAG_RENDER_IF_DIRTY);
+			} else {
+				// not dirty but children might be!
+				for (let i = 0; i < this.childnodes.length; i++) {
+					let child = this.childnodes[i];
+					child.render(renderFlags);
+				}
+				return;
+			}
+		}
+		this.clearDomNode(useFlags);
 		if (this.renderDepth > experiments.MAX_RENDER_DEPTH) {
 			this.renderDepthExceeded();
 			return;
@@ -335,15 +375,15 @@ class RenderNode {
 
 		this.nex.renderInto(this, useFlags, this.getCurrentEditor());
 		this.nex.doRenderSequencing(this);
-		this.isCurrentlyExploded = !!(renderFlags & RENDER_FLAG_EXPLODED);
+		this.isCurrentlyExploded = !!(useFlags & RENDER_FLAG_EXPLODED);
 
-		if (!(renderFlags & RENDER_FLAG_EXPLODED)
+		if (!(useFlags & RENDER_FLAG_EXPLODED)
 				&& this.nex.isNexContainer()
 				&& !this.nex.renderChildrenIfNormal()) {
 			return;
 		}
-		if (this.getNex().isNexContainer() && this.getNex().getTypeName() != '-nativeorg-' && !(renderFlags & RENDER_FLAG_SHALLOW)) {
-			if ((renderFlags & RENDER_FLAG_EXPLODED) && this.insertionMode == INSERT_INSIDE) {
+		if (this.getNex().isNexContainer() && this.getNex().getTypeName() != '-nativeorg-' && !(useFlags & RENDER_FLAG_SHALLOW)) {
+			if ((useFlags & RENDER_FLAG_EXPLODED) && this.insertionMode == INSERT_INSIDE) {
 				this.domNode.appendChild(this.getInsertionPointDomNode(this.insertionMode));			
 			}
 			let i = 0;
@@ -370,11 +410,11 @@ class RenderNode {
 				}
 				childRenderNode.setRenderDepth(this.renderDepth + 1);
 
-				if ((renderFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_BEFORE) {
+				if ((useFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_BEFORE) {
 					this.domNode.appendChild(this.getInsertionPointDomNode(childRenderNode.insertionMode));			
 				}
 				// need to append child before drawing so things like focus() work right
-				if ((renderFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_AROUND) {
+				if ((useFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_AROUND) {
 					this.wrapperDomNodes[i] = this.getInsertionPointDomNode(childRenderNode.insertionMode);
 					this.domNode.appendChild(this.wrapperDomNodes[i]);
 					this.wrapperDomNodes[i].appendChild(childRenderNode.getDomNode());
@@ -382,11 +422,10 @@ class RenderNode {
 					this.wrapperDomNodes[i] = null;
 					this.domNode.appendChild(childRenderNode.getDomNode());
 				}
-				childRenderNode.render(renderFlags);
-				if ((renderFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_AFTER) {
+				childRenderNode.render(childFlags);
+				if ((useFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_AFTER) {
 					this.domNode.appendChild(this.getInsertionPointDomNode(childRenderNode.insertionMode));			
 				}
-
 			}
 			if (i < (this.getNex().numChildren())) {
 				// oops, more nodes added since the last time we rendered.
@@ -396,7 +435,7 @@ class RenderNode {
 					newNode.setRenderDepth(this.renderDepth + 1);
 					this.childnodes[i] = newNode;
 					this.domNode.appendChild(newNode.getDomNode());
-					newNode.render(renderFlags);
+					newNode.render(childFlags);
 				}
 			}
 
@@ -407,7 +446,8 @@ class RenderNode {
 				this.domNode.appendChild(postNode);
 			}
 		}
-		this.nex.renderTags(this.domNode, renderFlags, this.getCurrentEditor());
+		this.nex.renderTags(this.domNode, useFlags, this.getCurrentEditor());
+		this.setRenderNodeDirtyForRendering(false);
 	}
 
 	getInsertionPointDomNode(insertionMode) {
@@ -486,13 +526,17 @@ class RenderNode {
 	// TODO: this is confusing because you might think that the boolean passed in tells it whether
 	// or not to make the thing selected.
 	setSelected(rerender) {
+		// when we change the selection state we have to set the parent dirty because the parent
+		// render node of the selected render node is responsible for drawing the insertion pip
 		let selectedNode = systemState.getGlobalSelectedNode();
 		if (selectedNode == this) return;
 		if (selectedNode) {
 			selectedNode.setUnselected();
-			if (rerender) {
-				eventQueue.renderNodeRender(selectedNode, RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | systemState.getGlobalCurrentDefaultRenderFlags());
+			selectedNode.setRenderNodeDirtyForRendering(true);
+			if (selectedNode.getParent()) {
+				selectedNode.getParent().setRenderNodeDirtyForRendering(true);
 			}
+			eventQueueDispatcher.enqueueRenderOnlyDirty()
 		}
 		selectedNode = this;
 		this.selected = true;
@@ -509,9 +553,11 @@ class RenderNode {
 		} else {
 			this.setInsertionMode(INSERT_AFTER);
 		}
-		if (rerender) {
-			eventQueue.renderNodeRender(this, RENDER_FLAG_RERENDER | RENDER_FLAG_SHALLOW | systemState.getGlobalCurrentDefaultRenderFlags());
+		selectedNode.setRenderNodeDirtyForRendering(true);
+		if (selectedNode.getParent()) {
+			selectedNode.getParent().setRenderNodeDirtyForRendering(true);
 		}
+		eventQueueDispatcher.enqueueRenderOnlyDirty()
 		systemState.setGlobalSelectedNode(selectedNode);
 	}
 

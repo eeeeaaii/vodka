@@ -94,6 +94,7 @@ class Integer extends ValueNex {
 			}
 		};
 		this.minusPressed = false;
+		this.setDirtyForRendering(true);
 	}
 
 	deleteLastLetter() {
@@ -106,17 +107,13 @@ class Integer extends ValueNex {
 			return;
 		}
 		this.value = v.substr(0, v.length - 1);
+		this.setDirtyForRendering(true);
 	}
 
 	getDefaultHandler() {
 		return 'integerDefault';
 	}
 
-//	getEventTable(context) {
-//		return {
-//			'Enter': 'do-line-break-always',
-//		}
-//	}
 }
 
 

@@ -105,6 +105,7 @@ class Float extends ValueNex {
 		} else {
 			this.appendDigit(text);
 		}
+		this.setDirtyForRendering(true);
 	}
 
 	deleteLastLetter() {
@@ -124,6 +125,7 @@ class Float extends ValueNex {
 		if (isNegative && isZero) {
 			this.value = this.value.substring(1);
 		}
+		this.setDirtyForRendering(true);
 	}
 
 	getDefaultHandler() {

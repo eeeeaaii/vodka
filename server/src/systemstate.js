@@ -57,14 +57,6 @@ class SystemState {
 		return this.selectWhenYouFindIt;
 	}
 
-	setGlobalOverrideOnNextRender(t) {
-		this.overrideOnNextRender = t;
-	}
-
-	getGlobalOverrideOnNextRender() {
-		return this.overrideOnNextRender;
-	}
-
 	setGlobalRenderPassNumber(n) {
 		this.renderPassNumber = n;
 	}

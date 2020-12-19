@@ -44,10 +44,9 @@ class EString extends ValueNex {
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val);// will call render
 		this.attachedJS = null;
-		// this.textAreaValue = "";
-		// this.textAreaSelStart = 0;
-		// this.textAreaSelEnd = 0;
-		// this.textAreaSel = "forward";
+		this.submitbuttonisfocussed = false;
+		this.submitbutton = null;
+		this.inputfield = null;
 
 	}
 
@@ -154,6 +153,7 @@ class EString extends ValueNex {
 		if (this.displayValue.length > ESTRING_LIMIT) {
 			this.displayValue = this.displayValue.substr(0, (ESTRING_LIMIT - 3)) + '...';
 		}
+		this.setDirtyForRendering(true);
 	}
 
 	renderInto(renderNode, renderFlags, withEditor) {
@@ -189,59 +189,81 @@ class EString extends ValueNex {
 
 	drawTextField(renderNode) {
 		let domNode = renderNode.getDomNode();
+		if (this.inputfield) {
+			domNode.appendChild(this.inputfield);
+			return;
+		}
 		this.inputfield = document.createElement("textarea");
 		if (this.fullValue) {
 			this.inputfield.value = this.fullValue;
 		}
 		this.inputfield.classList.add('stringta');
-		// this.inputfield.innerText = this.textAreaValue;
-		// this.inputfield.selectionStart = this.textAreaSelStart;
-		// this.inputfield.selectionEnd = this.textAreaSelEnd;
-		// this.inputfield.selectionDirection = this.textAreaSel;
-		// let t = this;
-		// this.inputfield.oninput = function(txt) {
-		// 	t.textAreaValue = this.value;
-		// 	t.textAreaSelStart = this.selectionStart;
-		// 	t.textAreaSelEnd = this.selectionEnd;
-		// 	t.textAreaSel = this.selectionDirection;
-		// }
-
-		domNode.appendChild(this.inputfield);
 		this.inputfield.classList.add('stringinput');
+		domNode.appendChild(this.inputfield);
 	}
 
 	drawButton(renderNode) {
 		let domNode = renderNode.getDomNode();
+		let t = this;
+		if (this.submitbutton) {
+			domNode.appendChild(this.submitbutton);
+			if (t.submitbuttonisfocussed) {
+				this.submitbutton.focus();
+			} else {
+				this.submitbutton.blur();
+			}
+			return;
+		}
 		this.submitbutton = document.createElement("button");
 		this.submitbutton.textContent = 'done'
 		this.submitbutton.classList.add('stringinputsubmit');			
-		let t = this;
+		this.submitbutton.onmousedown = function() {
+			t.doUserCloseAction(renderNode);
+		}.bind(this)
 		this.submitbutton.onclick = function() {
-			if (experiments.BETTER_KEYBINDINGS) {
-				renderNode.forceCloseEditor();
-
-			} else {
-				t.finishInput(renderNode);
-			}
-		}
+			this.doUserCloseAction(renderNode);
+		}.bind(this)
+		// removing these html elements from the dom and then
+		// re-adding them seems to keep the selection state of
+		// the text area and its content but the focus state of
+		// the button is not restored
+		this.submitbutton.onfocus = function() {
+			this.submitbuttonisfocussed = true;
+		}.bind(this)
+		this.submitbutton.onblur = function() {
+//			this.submitbuttonisfocussed = false;
+		}.bind(this)
 		domNode.appendChild(this.submitbutton);
 	}
 
 	startModalEditing() {
 		this.mode = MODE_EXPANDED;
 		systemState.setKeyFunnelActive(false);
+		this.setDirtyForRendering(true);
+	}
+
+	doUserCloseAction(renderNode) {
+		if (this.mode == MODE_NORMAL) {
+			// already closed
+			return;
+		}
+		if (experiments.BETTER_KEYBINDINGS) {
+			renderNode.forceCloseEditor();
+
+		} else {
+			this.finishInput(renderNode);
+		}
 	}
 
 	finishInput(renderNode) {
 		let val = this.inputfield.value;
+		this.inputfield = null;
+		this.submitbutton = null;
+		this.submitbuttonisfocussed = false;
 		systemState.setKeyFunnelActive(true);
 		this.mode = MODE_NORMAL;
 		this.setFullValue(val);
-		eventQueueDispatcher.enqueueRenderNodeRender(
-				renderNode,
-				systemState.getGlobalCurrentDefaultRenderFlags()
-					| RENDER_FLAG_RERENDER
-					| RENDER_FLAG_SHALLOW);
+		this.renderOnlyThisNex();
 	}
 
 	getDefaultHandler() {

@@ -60,7 +60,7 @@ class EventQueue {
 
 	initialize() {
 		eventQueueDispatcher.createDelegate('enqueueAlertAnimation', this);
-		eventQueueDispatcher.createDelegate('enqueueRenderNodeRender', this);
+		eventQueueDispatcher.createDelegate('enqueueRenderOnlyDirty', this);
 		eventQueueDispatcher.createDelegate('enqueueDoKeyInput', this);
 		eventQueueDispatcher.createDelegate('enqueueDoClickHandlerAction', this);
 		eventQueueDispatcher.createDelegate('enqueueImportantTopLevelRender', this);
@@ -94,33 +94,6 @@ class EventQueue {
 	}
 
 	/**
-	 * @param {RenderNode} renderNode
-	 * @param {number} flags
-	 */
-	enqueueRenderNodeRender(renderNode, flags) {
-		EVENT_DEBUG ? console.log('enqueueing: RenderNodeRender'):null;
-		let item = {
-			action: "renderNodeRender",
-			renderNode: renderNode,
-			shouldDedupe: true,
-			flags: flags,
-			equals: function(other) {
-				 // ref equals is okay?
-				return (
-					other.action == this.action
-					&& other.renderNode == this.renderNode
-					&& other.flags == this.flags);
-			},
-			do: function doRenderNodeRender() {
-				systemState.setGlobalRenderPassNumber(systemState.getGlobalRenderPassNumber() + 1);
-				this.renderNode.render(this.flags);
-			}
-		};
-		this.queueSet[RENDER_PRIORITY].push(item);
-		this.setTimeoutForProcessingNextItem(item);
-	}
-
-	/**
 	 * @param {string} keycode
 	 * @param {string} whichkey
 	 * @param {boolean} hasShift
@@ -145,6 +118,28 @@ class EventQueue {
 			}
 		};
 		this.queueSet[USER_EVENT_PRIORITY].push(item);
+		this.setTimeoutForProcessingNextItem(item);
+	}
+
+
+	/**
+	 * Enqueues an event that renders only nexes that are marked as dirty.
+	 */
+	enqueueRenderOnlyDirty() {
+		EVENT_DEBUG ? console.log('enqueueing: RenderOnlyDirty'):null;
+		let item = {
+			action: "renderOnlyDirty",
+			shouldDedupe: true,
+			equals: function(other) {
+				 // ref equals is okay?
+				return (
+					other.action == this.action);
+			},
+			do: function doRenderNodeRender() {
+				Vodka.renderOnlyDirty();
+			}
+		};
+		this.queueSet[RENDER_PRIORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 

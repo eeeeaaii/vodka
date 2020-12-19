@@ -128,10 +128,14 @@ do_test() {
 		fi
 		echo "  }" >> ${TESTOUTPUT_JSON}
 	fi
+	echo " ---- ran ${CURRENTTESTNUM}/${NUMTESTS} tests ----"
+	CURRENTTESTNUM=$((CURRENTTESTNUM+1))
 }
 
 run() {
 	if [ "$TESTFILE" == "*" ]; then
+		NUMTESTS=$(ls ./${TESTDIR}/*.js | wc | awk '{ print $1 }')
+		CURRENTTESTNUM=1
 		for CTESTFILE in ./${TESTDIR}/*.js; do
 			BASENAME="${CTESTFILE}"
 			BASENAME="${BASENAME#./${TESTDIR}/}"
@@ -140,6 +144,8 @@ run() {
 			do_test ${BASENAME}
 		done
 	else
+		NUMTESTS=1
+		CURRENTTESTNUM=1
 		BASENAME="${TESTFILE}"
 		BASENAME="${BASENAME#./${TESTDIR}/}"
 		BASENAME="${BASENAME%.js}"
