@@ -159,11 +159,18 @@ function evaluateAndCopy(s) {
 	}
 }
 
+// used by the repl
+function evaluateAndReturn(nex) {
+	let n = evaluateNexSafely(nex, BINDINGS);
+	return n;
+}
+
 export {
 	evaluateAndReplace,
 	evaluateAndCopy,
 	evaluateAndKeep,
 	evaluateNexSafely,
-	wrapError
+	wrapError,
+	evaluateAndReturn
 }
 

@@ -26,34 +26,42 @@ list
  ;
 
 instance_list
- = INST_NAME:instance_name PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ '_)' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ = INST_NAME:instance_name PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ ')' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ / INST_NAME:instance_name PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ '_)' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / INST_NAME:instance_name PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ '|)' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'v'); }
  ;
 
 org_list
- = PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ = PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ / PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'v'); }
  ;
 
 exp_list
- = '*' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ = '*' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ / '*' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '*' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'v'); }
  ;
 
 lambda_list
- = '&' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ = '&' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ / '&' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '&' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'v'); }
  ;
 
 cmd_list
- = '~' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ = '~' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ / '~' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '~' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'v'); }
+ / '~' PRIVATE:private_data_section '(' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  ')' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '~' PRIVATE:private_data_section '(_' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  '_)' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '~' PRIVATE:private_data_section '(|' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  '|)' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'v'); }
  ;
 
 cmd_name
- = [a-zA-Z0-9:-]*
+ = SYM:(':' [+=*/<>] [+=*/<>]) { return SYM; }
+ / SYM:(':' [+=*/<>]) { return SYM; }
+ / NAME:([a-zA-Z0-9:-]*) { return NAME; }
  ;
 
 children_in_parens

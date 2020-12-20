@@ -24,7 +24,7 @@ import { undo } from './undo.js';
 import { ContextType } from './contexttype.js';
 import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
 import { evaluateNexSafely } from './evaluator.js';
-import { experiments } from '../globalappflags.js'
+import { experiments } from './globalappflags.js'
 
 class KeyDispatcher {
 	dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {

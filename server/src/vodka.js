@@ -55,7 +55,7 @@ import {
 	RENDER_MODE_NORM,
 	RENDER_MODE_EXPLO } from './globalconstants.js'
 import { evaluateNexSafely } from './evaluator.js'
-import { BINDINGS } from '../environment.js'
+import { BINDINGS } from './environment.js'
 
 
 // EXPERIMENTS
@@ -247,6 +247,16 @@ function checkHelpMessage() {
 	}
 }
 
+function replSetup() {
+	eventQueue.initialize();
+	createBuiltins();
+	// because of https://github.com/eeeeaaii/vodka/issues/29
+	if (NEXT_NEX_ID > 1000) {
+		throw new Error('too many builtins, increase starting nex ID');
+	}
+	setNextNexId(1000);
+}
+
 // app main entry point
 
 function setup() {
@@ -328,4 +338,5 @@ export {
 	doRealKeyInput,
 	doKeyInput,
 	renderOnlyDirty,
+	replSetup
 }

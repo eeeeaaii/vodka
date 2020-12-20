@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Utils from '../utils.js'
+import * as Utils from './utils.js'
 
 import { Command } from './nex/command.js'
 import { Nex } from './nex/nex.js'
@@ -26,7 +26,7 @@ import { Tag } from './tag.js'
 import { Org } from './nex/org.js'
 import { ForeignClosure } from './nex/foreignclosure.js'
 import { evaluateNexSafely } from './evaluator.js'
-import { BUILTINS, BINDINGS } from '../environment.js'
+import { BUILTINS, BINDINGS } from './environment.js'
 
 
 class TemplateStore  {

@@ -123,6 +123,17 @@ class Command extends NexContainer {
 			case '::lte::': return '<=' ;
 			case '::gte::': return '>=' ;
 			case '::ne::': return '<>' ;
+
+			case ':*': return '*' ;
+			case ':/': return '/' ;
+			case ':+': return '+' ;
+			case ':-': return '-' ;
+			case ':=': return '=' ;
+			case ':<': return '<' ;
+			case ':>': return '>' ;
+			case ':<=': return '<=' ;
+			case ':>=': return '>=' ;
+			case ':<>': return '<>' ;
 			default: return val;
 		}
 	}

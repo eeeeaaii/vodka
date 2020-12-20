@@ -183,6 +183,24 @@ testParse('[word]{privatedata||pdata}(_[letter]"a" [letter]"b" [letter]"c"_)')
 testParse('[word]{private\ndatapdata}(_[letter]"a" [letter]"b" [letter]"c"_)')
 // private data in error
 testParse('?{2||whatever}');
+// test that you can omit the _ on input
+testParse('(#10)', '(_#10_)')
+testParse('~(#10)', '~(_#10_)')
+testParse('*(#10)', '*(_#10_)')
+testParse('&(#10)', '&(_#10_)')
+testParse('~(car #10)', '~(_car #10_)')
+// alternate math input
+testParse('~(_:+ #10 #10_)', '~(_::pl:: #10 #10_)')
+testParse('~(_:* #10 #10_)', '~(_::ti:: #10 #10_)')
+testParse('~(_:/ #10 #10_)', '~(_::ov:: #10 #10_)')
+testParse('~(_:- #10 #10_)', '~(_- #10 #10_)')
+testParse('~(_:< #10 #10_)', '~(_::lt:: #10 #10_)')
+testParse('~(_:> #10 #10_)', '~(_::gt:: #10 #10_)')
+testParse('~(_:<= #10 #10_)', '~(_::lte:: #10 #10_)')
+testParse('~(_:>= #10 #10_)', '~(_::gte:: #10 #10_)')
+testParse('~(_:<> #10 #10_)', '~(_::ne:: #10 #10_)')
+
+
 // large file parse
 testParse(
 `
