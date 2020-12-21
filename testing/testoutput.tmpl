@@ -165,6 +165,11 @@
 	<div class="testout">
 		<div class="testname">
 			<a name="a_{{test}}">{{test}}</a>
+			{{#if is_repl}}
+				<div class="testtypebadge vktype">vk</div>
+			{{else}}
+				<div class="testtypebadge jstype">js</div>
+			{{/if}}
 		</div>
 		{{#if docstring}}
 		<div class="testdescription">
@@ -177,9 +182,15 @@
 			<a class="copyclick" onclick="doClip(event, 'runtests.sh {{test}}')">(copy)</a>
 		</div>
 		<div class="commandblock">
-			<input type="checkbox" data-command="subl alltests/{{test}}.js">
-			to edit: <textarea class="regencommand">subl alltests/{{test}}.js</textarea>
-			<a class="copyclick" onclick="doClip(event, 'subl alltests/{{test}}.js')">(copy)</a>
+			{{#if is_repl}}
+				<input type="checkbox" data-command="subl alltests/{{test}}.vk">
+				to edit: <textarea class="regencommand">subl alltests/{{test}}.vk</textarea>
+				<a class="copyclick" onclick="doClip(event, 'subl alltests/{{test}}.vk')">(copy)</a>
+			{{else}}
+				<input type="checkbox" data-command="subl alltests/{{test}}.js">
+				to edit: <textarea class="regencommand">subl alltests/{{test}}.js</textarea>
+				<a class="copyclick" onclick="doClip(event, 'subl alltests/{{test}}.js')">(copy)</a>
+			{{/if}}
 		</div>
 		<div id="testvariants{{test}}">
 			{{#if node_ignored}}
@@ -187,64 +198,103 @@
 					<div class="testvariantname ignored tall">TEST IGNORED</div>
 				</div>
 			{{else}}
-				{{#if node_success}}
-					{{#each diffs}}
-
-					<div class="testvariant">
-						{{#if regenerated_golden}}
-							<div class="testvariantname newgolden">{{diff_type}} (recreated golden)</div>
-						{{else}}
-							{{#if diff_succeeded}}
-								<div class="testvariantname passed">{{diff_type}} (passing)</div>
-							{{else}}
-								<div class="testvariantname failed">{{diff_type}} (FAILING)</div>
-								<div class="regengolden">
-									<input type="checkbox" data-command="{{regenerate_command}}">
-									to regenerate golden:								
-									<textarea class="regencommand">{{regenerate_command}}</textarea>
-									<a class="copyclick" onclick="doClip(event, '{{regenerate_command}}')">(copy)</a>
+				{{#if is_repl}}
+					{{#if node_success}}
+						<div class="testvariant">
+							<div class="testvariantname passed">TEST PASSED</div>
+							<div class="testoutputs">
+								<div class="codeframe" onclick="togglestyleCodeframe(this);">
+									<div class="outimgname">code</div>
+									<iframe class="ifr" id="{{../test}}_ifr0" src="./alltests/{{./test}}/{{./test}}_code.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+									</iframe>
 								</div>
-							{{/if}}
-						{{/if}}
-						<div class="testoutputs">
-							<div class="outimg" onclick="togglestyle(this);">
-								<div class="outimgname">screenshot</div>
-								<img src="alltests/{{../test}}/{{../test}}_OUT_{{diff_type}}.png">
-							</div>
-							<div class="outimg" onclick="togglestyle(this);">
-								<div class="outimgname">golden</div>
-								<img src="alltests/{{../test}}/{{../test}}_GOLDEN_{{diff_type}}.png">
-							</div>
-							<div class="outimg" onclick="togglestyle(this);">
-								<div class="outimgname">diff</div>
-								<img src="alltests/{{../test}}/{{../test}}_DIFF_{{diff_type}}.png">
-							</div>
-							<div class="codeframe" onclick="togglestyleCodeframe(this);">
-								<div class="outimgname">code</div>
-								<iframe class="ifr" id="{{../test}}_ifr0" src="./alltests/{{../test}}/{{../test}}_code.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
-								</iframe>
+								<div class="codeframe" onclick="togglestyleCodeframe(this);">
+									<div class="outimgname">output</div>
+									<iframe class="ifr" id="{{../test}}_ifr0" src="./alltests/{{./test}}/{{./test}}.out" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+									</iframe>
+								</div>
 							</div>
 						</div>
-					</div>
-					{{/each}}
+					{{else}}
+						<div class="testvariant">
+							<div class="testvariantname failed">TEST FAILED</div>
+							<div class="testoutputs">
+								<div class="codeframe" onclick="togglestyleCodeframe(this);">
+									<div class="outimgname">code</div>
+									<iframe class="ifr" id="{{../test}}_ifr0" src="./alltests/{{./test}}/{{./test}}_code.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+									</iframe>
+								</div>
+								<div class="codeframe" onclick="togglestyleCodeframe(this);">
+									<div class="outimgname">output</div>
+									<iframe class="ifr" id="{{../test}}_ifr0" src="./alltests/{{./test}}/{{./test}}.out" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+									</iframe>
+								</div>
+								<div class="codeframe" onclick="togglestyleCodeframe(this);">
+									<div class="outimgname">diff</div>
+									<iframe class="ifr" id="{{../test}}_ifr0" src="./alltests/{{./test}}/{{./test}}_DIFF.out" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+									</iframe>
+								</div>
+							</div>
+						</div>
+					{{/if}}
 				{{else}}
-					<div class="testvariant">
-						<div class="testvariantname failed">TEST CRASHED</div>
-						<div class="testoutputs">
-							<div class="codeframe" onclick="togglestyleCodeframe(this);">
-								<div class="outimgname">output</div>
-								<iframe class="ifr" id="{{test}}_ifr1" src="./alltests/{{test}}/output.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
-								</iframe>
+					{{#if node_success}}
+						{{#each diffs}}
+							<div class="testvariant">
+								{{#if regenerated_golden}}
+									<div class="testvariantname newgolden">{{diff_type}} (recreated golden)</div>
+								{{else}}
+									{{#if diff_succeeded}}
+										<div class="testvariantname passed">{{diff_type}} (passing)</div>
+									{{else}}
+										<div class="testvariantname failed">{{diff_type}} (FAILING)</div>
+										<div class="regengolden">
+											<input type="checkbox" data-command="{{regenerate_command}}">
+											to regenerate golden:								
+											<textarea class="regencommand">{{regenerate_command}}</textarea>
+											<a class="copyclick" onclick="doClip(event, '{{regenerate_command}}')">(copy)</a>
+										</div>
+									{{/if}}
+								{{/if}}
+								<div class="testoutputs">
+									<div class="outimg" onclick="togglestyle(this);">
+										<div class="outimgname">screenshot</div>
+										<img src="alltests/{{../test}}/{{../test}}_OUT_{{diff_type}}.png">
+									</div>
+									<div class="outimg" onclick="togglestyle(this);">
+										<div class="outimgname">golden</div>
+										<img src="alltests/{{../test}}/{{../test}}_GOLDEN_{{diff_type}}.png">
+									</div>
+									<div class="outimg" onclick="togglestyle(this);">
+										<div class="outimgname">diff</div>
+										<img src="alltests/{{../test}}/{{../test}}_DIFF_{{diff_type}}.png">
+									</div>
+									<div class="codeframe" onclick="togglestyleCodeframe(this);">
+										<div class="outimgname">code</div>
+										<iframe class="ifr" id="{{../test}}_ifr0" src="./alltests/{{../test}}/{{../test}}_code.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+										</iframe>
+									</div>
+								</div>
 							</div>
-							<div class="codeframe" onclick="togglestyleCodeframe(this);">
-								<div class="outimgname">code</div>
-								<iframe class="ifr" id="{{test}}_ifr2" src="./alltests/{{test}}/{{test}}_code.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
-								</iframe>
+						{{/each}}
+					{{else}}
+						<div class="testvariant">
+							<div class="testvariantname failed">TEST CRASHED</div>
+							<div class="testoutputs">
+								<div class="codeframe" onclick="togglestyleCodeframe(this);">
+									<div class="outimgname">output</div>
+									<iframe class="ifr" id="{{test}}_ifr1" src="./alltests/{{test}}/output.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+									</iframe>
+								</div>
+								<div class="codeframe" onclick="togglestyleCodeframe(this);">
+									<div class="outimgname">code</div>
+									<iframe class="ifr" id="{{test}}_ifr2" src="./alltests/{{test}}/{{test}}_code.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+									</iframe>
+								</div>
 							</div>
 						</div>
-					</div>
+					{{/if}}
 				{{/if}}
-				</div>
 			{{/if}}
 		</div>
 	</div>

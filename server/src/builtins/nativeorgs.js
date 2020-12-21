@@ -15,7 +15,11 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+// sort of want to not import other nex types because someday
+// this will be a totally separate package thing
 import { templateStore } from '../templates.js'
+import { Integer } from '../nex/integer.js'
+import { Org } from '../nex/org.js'
 
 class ForeignGlobalData {
 	constructor() {
@@ -115,6 +119,49 @@ function createNativeOrgs() {
 						this.ctx.strokeStyle = '#' + this.toHex(r) + this.toHex(g) + this.toHex(b);
 					}
 				}
+			},
+ 			{
+				'name': 'copy-from-clipboard',
+				'args': '',
+				'docs': 'copies data out of the clipboard into the canvas',
+				'func': function(args) {
+					navigator.clipboard.read().then(data => {
+						if (data.length != 1) return;
+						let item = data[0];
+						if (item.types[0] != 'image/png') return;
+						item.getType('image/png').then(blob => {
+							let image = document.createElement('img');
+			                image.src = URL.createObjectURL(blob);
+			                let body = document.getElementsByTagName('body')[0];
+			                body.appendChild(image);
+			                let t = this;
+			                setTimeout(function() {
+								t.ctx.drawImage(image, 0, 0);
+								body.removeChild(image);
+			                }, 10);
+						})
+					});
+			    }
+			},
+ 			{
+				'name': 'color-at',
+				'args': '() x# y#',
+				'docs': 'retrieves the color at a position x or y',
+				'func': function(args) {
+					let x = args[0];
+					let y = args[1];
+					let imgdata = this.ctx.getImageData(x, y, 1, 1)
+					let r = imgdata.data[0];
+					let g = imgdata.data[1];
+					let b = imgdata.data[2];
+					let a = imgdata.data[3];
+					let ret = new Org();
+					ret.appendChild(new Integer(r))
+					ret.appendChild(new Integer(g))
+					ret.appendChild(new Integer(b))
+					ret.appendChild(new Integer(a))
+					return ret;
+			    }
 			},
 			{
 				'name': 'dot',

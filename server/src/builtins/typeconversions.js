@@ -50,219 +50,226 @@ function createTypeConversionBuiltins() {
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 	// TODO: actually what I should do is tag it with something like "not fatal"
 
-	function $convertTypeIfError(env, executionEnvironment) {
-		let expr = env.lb('nex');
-		let newresult = evaluateNexSafely(expr, executionEnvironment);
-		if (newresult.getTypeName() != '-error-') {
-			// you might think this function would throw an
-			// error if you tried to pass it something that's
-			// not an error, but the problem with doing that
-			// is that you can't test for whether something is
-			// an error WITHOUT using this function. So non-errors
-			// are passed unchanged.
-			return newresult;
-		}
-
-		let etstring = env.lb('errtype').getFullTypedValue();
-		let errtype = ERROR_TYPE_FATAL;
-		switch(etstring) {
-			case "warn":
-				errtype = ERROR_TYPE_WARN;
-				break;
-			case "info":
-				errtype = ERROR_TYPE_INFO;
-				break;
-			case "fatal":
-				break;
-			default:
-				return new EError(`convert-type-if-error: cannot continue because unrecognized type ${etstring} (valid types are 'info', 'warn', and 'fatal'). Sorry!`);
-		}
-
-		newresult.setErrorType(errtype);
-		return newresult;
-	}
-
 	Builtin.createBuiltin(
 		'convert-type-if-error',
 		[ 'errtype$', '_nex' ],
-		$convertTypeIfError
+		function $convertTypeIfError(env, executionEnvironment) {
+			let expr = env.lb('nex');
+			let newresult = evaluateNexSafely(expr, executionEnvironment);
+			if (newresult.getTypeName() != '-error-') {
+				// you might think this function would throw an
+				// error if you tried to pass it something that's
+				// not an error, but the problem with doing that
+				// is that you can't test for whether something is
+				// an error WITHOUT using this function. So non-errors
+				// are passed unchanged.
+				return newresult;
+			}
+
+			let etstring = env.lb('errtype').getFullTypedValue();
+			let errtype = ERROR_TYPE_FATAL;
+			switch(etstring) {
+				case "warn":
+					errtype = ERROR_TYPE_WARN;
+					break;
+				case "info":
+					errtype = ERROR_TYPE_INFO;
+					break;
+				case "fatal":
+					break;
+				default:
+					return new EError(`convert-type-if-error: cannot continue because unrecognized type ${etstring} (valid types are 'info', 'warn', and 'fatal'). Sorry!`);
+			}
+
+			newresult.setErrorType(errtype);
+			return newresult;
+		},
+		'if |nex is an error, converts the error type to |errtype (allowed values are "warn", "info", and "fatal"), otherwise just returns |nex.'
 	);
 
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  	);
 
-	function $toFloat(env, executionEnvironment) {
-		let v = env.lb('nex');
-		if (v instanceof Float) {
-			return v;
-		} else if (v instanceof Integer) {
-			return new Float(v.getTypedValue());
-		} else if (v instanceof Bool) {
-			return v.getTypedValue() ? new Float(1): new Float(0);
-		} else if (v instanceof EString) {
-			let s = v.getFullTypedValue();
-			let mayben = parseFloat(s);
-			if (Number.isNaN(mayben)) {
-				return new EError(`to-float: could not convert "${s}". Sorry!`);
-			} else {
-				return new Float(mayben);
-			}
-		} else if (v instanceof Letter) {
-			// could be a number.
-			let s = v.getText();
-			let mayben = parseFloat(s);
-			if (Number.isNaN(mayben)) {
-				return new EError(`to-float: could not convert "${s}". Sorry!`);
-			} else {
-				return new Float(mayben);
-			}
-		} else if (v instanceof Word || v instanceof Line || v instanceof Doc) {
-			// could be a number.
-			let s = v.getValueAsString();
-			let mayben = parseFloat(s);
-			if (Number.isNaN(mayben)) {
-				// rofl
-				let errstr = v instanceof Word
-					? 'word'
-					: ((v instanceof Line)
-						? 'line'
-						: 'doc');
-				return new EError(`to-float: could not convert "${s}" (object of type ${v.getTypeName()}). Sorry!`);
-			} else {
-				return new Float(mayben);
-			}
-		} else {
-			return new EError(`to-float: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
-		}
-	}
+	
 
 	Builtin.createBuiltin(
 		'to-float',
 		[ 'nex' ],
-		$toFloat
+		function $toFloat(env, executionEnvironment) {
+			let v = env.lb('nex');
+			if (v instanceof Float) {
+				return v;
+			} else if (v instanceof Integer) {
+				return new Float(v.getTypedValue());
+			} else if (v instanceof Bool) {
+				return v.getTypedValue() ? new Float(1): new Float(0);
+			} else if (v instanceof EString) {
+				let s = v.getFullTypedValue();
+				let mayben = parseFloat(s);
+				if (Number.isNaN(mayben)) {
+					return new EError(`to-float: could not convert "${s}". Sorry!`);
+				} else {
+					return new Float(mayben);
+				}
+			} else if (v instanceof Letter) {
+				// could be a number.
+				let s = v.getText();
+				let mayben = parseFloat(s);
+				if (Number.isNaN(mayben)) {
+					return new EError(`to-float: could not convert "${s}". Sorry!`);
+				} else {
+					return new Float(mayben);
+				}
+			} else if (v instanceof Word || v instanceof Line || v instanceof Doc) {
+				// could be a number.
+				let s = v.getValueAsString();
+				let mayben = parseFloat(s);
+				if (Number.isNaN(mayben)) {
+					// rofl
+					let errstr = v instanceof Word
+						? 'word'
+						: ((v instanceof Line)
+							? 'line'
+							: 'doc');
+					return new EError(`to-float: could not convert "${s}" (object of type ${v.getTypeName()}). Sorry!`);
+				} else {
+					return new Float(mayben);
+				}
+			} else {
+				return new EError(`to-float: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
+			}
+		},
+		'converts |nex to a float, or returns an error if this is impossible.'
 	);
 
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
-	function $toInteger(env, executionEnvironment) {
-		let v = env.lb('nex');
-		if (v instanceof Integer) {
-			return v;
-		} else if (v instanceof Float) {
-			return new Integer(Math.floor(v.getTypedValue()));
-		} else if (v instanceof Bool) {
-			return v.getTypedValue() ? new Integer(1): new Integer(0);
-		} else if (v instanceof EString) {
-			let s = v.getFullTypedValue();
-			let mayben = parseInt(s);
-			if (Number.isNaN(mayben)) {
-				return new EError(`to-integer: could not convert "${s}". Sorry!`);
-			} else {
-				return new Integer(mayben);
-			}
-		} else if (v instanceof Letter) {
-			// could be a number.
-			let s = v.getText();
-			let mayben = parseInt(s);
-			if (Number.isNaN(mayben)) {
-				return new EError(`to-integer: could not convert "${s}". Sorry!`);
-			} else {
-				return new Integer(mayben);
-			}
-		} else if (v instanceof Word || v instanceof Line || v instanceof Doc) {
-			// could be a number.
-			let s = v.getValueAsString();
-			let mayben = parseInt(s);
-			if (Number.isNaN(mayben)) {
-				// rofl
-				return new EError(`to-integer: could not convert "${s}" (object of type ${v.getTypeName()}). Sorry!`);
-			} else {
-				return new Integer(mayben);
-			}
-		} else {
-			return new EError(`to-integer: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
-		}
-	}
+	
 
 	Builtin.createBuiltin(
 		'to-integer',
 		[ 'nex' ],
-		$toInteger
+		function $toInteger(env, executionEnvironment) {
+			let v = env.lb('nex');
+			if (v instanceof Integer) {
+				return v;
+			} else if (v instanceof Float) {
+				return new Integer(Math.floor(v.getTypedValue()));
+			} else if (v instanceof Bool) {
+				return v.getTypedValue() ? new Integer(1): new Integer(0);
+			} else if (v instanceof EString) {
+				let s = v.getFullTypedValue();
+				let mayben = parseInt(s);
+				if (Number.isNaN(mayben)) {
+					return new EError(`to-integer: could not convert "${s}". Sorry!`);
+				} else {
+					return new Integer(mayben);
+				}
+			} else if (v instanceof Letter) {
+				// could be a number.
+				let s = v.getText();
+				let mayben = parseInt(s);
+				if (Number.isNaN(mayben)) {
+					return new EError(`to-integer: could not convert "${s}". Sorry!`);
+				} else {
+					return new Integer(mayben);
+				}
+			} else if (v instanceof Word || v instanceof Line || v instanceof Doc) {
+				// could be a number.
+				let s = v.getValueAsString();
+				let mayben = parseInt(s);
+				if (Number.isNaN(mayben)) {
+					// rofl
+					return new EError(`to-integer: could not convert "${s}" (object of type ${v.getTypeName()}). Sorry!`);
+				} else {
+					return new Integer(mayben);
+				}
+			} else {
+				return new EError(`to-integer: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
+			}
+		},
+		'converts |nex to an integer, or returns an error if this is impossible.'
+
 	);
 
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
-	function $toString(env, executionEnvironment) {
-		let v = env.lb('nex');
-		if (v instanceof EString) {
-			return new EString(v.getFullTypedValue());
-		} else if (v instanceof Bool) {
-			return new EString(v.getTypedValue() ? 'yes' : 'no');
-		} else if (v instanceof Float) {
-			return new EString('' + v.getTypedValue());
-		} else if (v instanceof Integer) {
-			return new EString('' + v.getTypedValue());
-		} else if (v instanceof Letter) {
-			return new EString('' + v.getText());
-		} else if (v instanceof Separator) {
-			return new EString('' + v.getText());
-		} else if (v instanceof Word || v instanceof Line || v instanceof Doc) {
-			let ss = v.getValueAsString();
-			if (typeof(ss) == 'string') {
-				return new EString(ss);
-			} else {
-				return new EError(`to-string: could not convert "${ss}" (object of type ${v.getTypeName()}). Sorry!`);
-			}
-		} else {
-			return new EError(`to-string: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
-
-		}
-	}
+	
 
 	Builtin.createBuiltin(
 		'to-string',
 		[ 'nex' ],
-		$toString
+		function $toString(env, executionEnvironment) {
+			let v = env.lb('nex');
+			if (v instanceof EString) {
+				return new EString(v.getFullTypedValue());
+			} else if (v instanceof Bool) {
+				return new EString(v.getTypedValue() ? 'yes' : 'no');
+			} else if (v instanceof Float) {
+				return new EString('' + v.getTypedValue());
+			} else if (v instanceof Integer) {
+				return new EString('' + v.getTypedValue());
+			} else if (v instanceof Letter) {
+				return new EString('' + v.getText());
+			} else if (v instanceof Separator) {
+				return new EString('' + v.getText());
+			} else if (v instanceof Word || v instanceof Line || v instanceof Doc) {
+				let ss = v.getValueAsString();
+				if (typeof(ss) == 'string') {
+					return new EString(ss);
+				} else {
+					return new EError(`to-string: could not convert "${ss}" (object of type ${v.getTypeName()}). Sorry!`);
+				}
+			} else if (v instanceof Org) {
+				return new EString('' + v.getValueAsString());
+			} else {
+				return new EError(`to-string: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
+
+			}
+		},
+		'converts |nex to a string, or returns an error if this is impossible.'
+
 	);
 
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
-	function $toWord(env, executionEnvironment) {
-		let v = env.lb('nex');
-
-		let jsStringToDoc = (function(str) {
-			var w = new Word();
-			for (let i = 0; i < str.length; i++) {
-				let lt = new Letter(str.charAt(i));
-				w.appendChild(lt);
-			}
-			return w;
-		});
-		if (v instanceof Integer
-			|| v instanceof Float
-			|| v instanceof Bool
-			) {
-			return jsStringToDoc('' + v.getTypedValue())
-		} else if (v instanceof EString) {
-			return jsStringToDoc('' + v.getFullTypedValue())
-		} else if (v instanceof Letter) {
-			let w = new Word();
-			w.appendChild(v.makeCopy());
-			return w;
-		} else {
-			// should at least be able to do lines and docs.
-			// I feel like maybe to-word should just be in util-functions tho.
-			return new EError(`to-word: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
-		}
-	}
+	
 
 	Builtin.createBuiltin(
 		'to-word',
 		[ 'nex' ],
-		$toWord
+		function $toWord(env, executionEnvironment) {
+			let v = env.lb('nex');
+
+			let jsStringToDoc = (function(str) {
+				var w = new Word();
+				for (let i = 0; i < str.length; i++) {
+					let lt = new Letter(str.charAt(i));
+					w.appendChild(lt);
+				}
+				return w;
+			});
+			if (v instanceof Integer
+				|| v instanceof Float
+				|| v instanceof Bool
+				) {
+				return jsStringToDoc('' + v.getTypedValue())
+			} else if (v instanceof EString) {
+				return jsStringToDoc('' + v.getFullTypedValue())
+			} else if (v instanceof Letter) {
+				let w = new Word();
+				w.appendChild(v.makeCopy());
+				return w;
+			} else {
+				// should at least be able to do lines and docs.
+				// I feel like maybe to-word should just be in util-functions tho.
+				return new EError(`to-word: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
+			}
+		},
+		'converts |nex to a word, or returns an error if this is impossible.'
 	);
 
 }

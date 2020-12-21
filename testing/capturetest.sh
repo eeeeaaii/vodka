@@ -15,6 +15,18 @@
 
 #!/bin/bash
 
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+LIGHTBLUE='\033[0;36m'
+GRAY='\033[0;37m'
+NC='\033[0m' # No Color
+
+
+echo "Capturing SCREENSHOT test"
 if [ "$1" == "" ]; then
 	echo "Type name of the new test:"
 	read NAME
@@ -23,7 +35,7 @@ else
 fi
 pbpaste
 echo ""
-echo "Is this the test you want to save? (y/n)"
+echo "Is this the SCREENSHOT test you want to save? (y/n)"
 read CONFIRM
 if [ "$CONFIRM" == "y" ]; then
 	pbpaste > "____tmpfile.txt"

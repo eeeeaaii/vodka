@@ -165,6 +165,7 @@ class RenderNode {
 		}
 		this.setCurrentEditor(editor);
 		this.getCurrentEditor().startEditing();
+		this.nex.setDirtyForRendering(true);
 	}
 
 	startTagEditor() {
@@ -215,7 +216,12 @@ class RenderNode {
 
 	getRenderMode() {
 		if (this.renderMode == RENDER_MODE_INHERIT) {
-			this.renderMode = this.getParent().getRenderMode();
+			let p = this.getParent();
+			if (p) {
+				this.renderMode = p.getRenderMode();
+			} else {
+				this.renderMode = RENDER_MODE_NORM;
+			}
 		}
 		return this.renderMode;
 	}
@@ -487,6 +493,14 @@ class RenderNode {
 	}
 
 	setInsertionMode(mode) {
+		if (mode != this.insertionMode) {
+			let p = this.getParent();
+			if (p) {
+				p.setRenderNodeDirtyForRendering(true);
+			} else {
+				this.setRenderNodeDirtyForRendering(true);
+			}
+		}
 		this.insertionMode = mode;
 	}
 

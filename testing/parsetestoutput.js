@@ -37,9 +37,10 @@ jsonfiles.forEach((jsonfile) => {
 	try {
 		if (json.node_ignored) {
 			ignored_tests.push(json.test);
-		} else if (json.node_success
-				&& json.diffs[0].diff_succeeded
-				&& json.diffs[1].diff_succeeded) {
+		} else if (json.node_success && (
+			json.is_repl || (
+				json.diffs[0].diff_succeeded &&
+				json.diffs[1].diff_succeeded))) {
 			passing_tests.push(json.test);
 		} else {
 			failing_tests.push(json.test);

@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from '../utils.js'
+
 import { Closure } from './closure.js';
 import { Nil } from './nil.js';
 import { EError } from './eerror.js';
@@ -122,6 +124,9 @@ class ForeignClosure extends Closure {
 	convertToVodkaReturnValue(returnValue) {
 		if (!returnValue) {
 			return new Nil();
+		}
+		if (Utils.isNex(returnValue)) {
+			return returnValue;
 		}
 		switch (this.returnValueParam.typeString) {
 			case '$':

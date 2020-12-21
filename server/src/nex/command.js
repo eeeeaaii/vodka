@@ -396,6 +396,7 @@ class Command extends NexContainer {
 		this.setCommandText(match);
 		this.searchingOn = searchText;
 		this.previousMatch = match;
+		this.setDirtyForRendering(true);
 	}
 
 	static quote(item) {

@@ -15,28 +15,6 @@
 
 #!/bin/bash
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-LIGHTBLUE='\033[0;36m'
-GRAY='\033[0;37m'
-NC='\033[0m' # No Color
-
-if [ "$1" == "" ]; then
-	echo "requires TESTNAME argument"
-	exit 1
-fi
-
-BASENAME=$1
-echo -e "${BLUE}[$BASENAME]${NC} Deleting test ${BASENAME}, are you sure? (y/n)"
-read CONFIRM
-if [ "$CONFIRM" == "y" ]; then
-	rm ./alltests/${BASENAME}.js 2> /dev/null
-	rm ./alltests/${BASENAME}.vk 2> /dev/null
-	rm -rf ./alltests/${BASENAME}/
-fi
-
-
-
+pushd ../server/sessions
+rm -rf *
+popd

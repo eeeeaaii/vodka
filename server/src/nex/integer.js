@@ -73,6 +73,7 @@ class Integer extends ValueNex {
 				// this hack allows you to type a minus before typing digits
 				// if the thing is zero
 				this.minusPressed = true;
+				this.setDirtyForRendering(true);
 				return;
 			}
 			if (this.value.charAt(0) == '-') {
@@ -104,6 +105,7 @@ class Integer extends ValueNex {
 		let realLength = isNegative ? v.length == 2 : v.length == 1;
 		if (realLength == 1) {
 			this.value = '0';
+			this.setDirtyForRendering(true);
 			return;
 		}
 		this.value = v.substr(0, v.length - 1);

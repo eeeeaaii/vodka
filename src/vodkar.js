@@ -5,6 +5,7 @@ import { evaluateAndReturn } from '../server/src/evaluator.js';
 import { replSetup } from '../server/src/vodka.js';
 
 import repl from 'repl'
+import process from 'process'
 
 replSetup();
 
@@ -12,6 +13,14 @@ function evalVodka(rawinput, context, filename, callback) {
 	let input = rawinput.trim();
 	if (input == '') {
 		callback('');
+		return;
+	}
+	if (input.charAt(0) == '|') {
+		if (input.length > 1 && input.charAt(1) == '|') {
+			callback(null, input);
+		} else {
+			callback('');
+		}
 		return;
 	}
 	let parsed = '';
@@ -27,8 +36,18 @@ function evalVodka(rawinput, context, filename, callback) {
 
 }
 
+function writeVodka(str) {
+	return str;
+}
+
+let prompt = '| ';
+if (process.argv[2] == '--noprompt') {
+	prompt = '';
+}
+
 repl.start({
-	'prompt': '>>> ',
-	'eval':evalVodka
+	'prompt': prompt,
+	'eval':evalVodka,
+	'writer': writeVodka
 });
 

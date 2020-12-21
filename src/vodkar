@@ -1,4 +1,4 @@
 #!/bin/bash
 
 
-node --experimental-modules vodkar.js
+node --experimental-modules vodkar.js "$@"

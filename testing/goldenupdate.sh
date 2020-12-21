@@ -15,10 +15,25 @@
 
 #!/bin/bash
 
+is_vk() {
+	FILE=$1
+	find ./alltests/$FILE.vk > /dev/null 2> /dev/null
+}
+
 BASENAME=$1
 if [ "${BASENAME}" == "" ]; then
 	echo "requires test name."
 	exit 1
+fi
+
+if is_vk $BASENAME ; then
+	TESTOUT="./alltests/${BASENAME}/${BASENAME}.out"
+	GOLDEN="./alltests/${BASENAME}/${BASENAME}_GOLDEN.out"
+	cp ${TESTOUT} ${GOLDEN}
+	echo "[${BASENAME}] golden updated"
+	runtests.sh ${BASENAME}
+	node parsetestoutput.js
+	exit 0
 fi
 
 shift
@@ -51,13 +66,9 @@ if [ "${VARIANT}" == "-n" -o "${VARIANT}" == "-b" ]; then
 		exit 1
 	fi
 
-#	echo "[${BASENAME}] changing NORMAL golden to reflect most recent test output. Are you sure? (y/n)"
-#	read INP
-#	if [ "$INP" == "y" ]; then
-		cp ${GOLDEN_NORMAL} ${GOLDEN_NORMAL_BACKUP}
-		cp ${TESTOUT_NORMAL} ${GOLDEN_NORMAL}
-		echo "[${BASENAME}] NORMAL golden updated"
-#	fi
+	cp ${GOLDEN_NORMAL} ${GOLDEN_NORMAL_BACKUP}
+	cp ${TESTOUT_NORMAL} ${GOLDEN_NORMAL}
+	echo "[${BASENAME}] NORMAL golden updated"
 fi
 
 if [ "${VARIANT}" == "-e"  -o "${VARIANT}" == "-b" ]; then
@@ -66,13 +77,9 @@ if [ "${VARIANT}" == "-e"  -o "${VARIANT}" == "-b" ]; then
 		exit 1
 	fi
 
-#	echo "[${BASENAME}] changing EXPLODED golden to reflect most recent test output. Are you sure? (y/n)"
-#	read INP
-#	if [ "$INP" == "y" ]; then
-		cp ${GOLDEN_EXPLODED} ${GOLDEN_EXPLODED_BACKUP}
-		cp ${TESTOUT_EXPLODED} ${GOLDEN_EXPLODED}
-		echo "[${BASENAME}] EXPLODED golden updated"
-#	fi
+	cp ${GOLDEN_EXPLODED} ${GOLDEN_EXPLODED_BACKUP}
+	cp ${TESTOUT_EXPLODED} ${GOLDEN_EXPLODED}
+	echo "[${BASENAME}] EXPLODED golden updated"
 fi
 
 runtests.sh ${BASENAME}

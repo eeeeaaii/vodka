@@ -63,6 +63,21 @@ class Org extends NexContainer {
 
 	}
 
+	/**
+	 * Used by string conversion builtins.
+	 */
+	getValueAsString() {
+		let s = '';
+		for (let i = 0; i < this.numChildren(); i++) {
+			if (s != '') {
+				s += (this.vdir ? '\n' : ' ');
+			}
+			let c = this.getChildAt(i);
+			s += c.toString('v2');
+		}
+		return s;
+	}
+
 	deserializePrivateData(data) {
 		this.privateData = data;
 	}
