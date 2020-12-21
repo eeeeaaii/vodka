@@ -1,0 +1,37 @@
+| This file is part of Vodka.
+
+| Vodka is free software: you can redistribute it and/or modify
+| it under the terms of the GNU General Public License as published by
+| the Free Software Foundation, either version 3 of the License, or
+| (at your option) any later version.
+
+| Vodka is distributed in the hope that it will be useful,
+| but WITHOUT ANY WARRANTY; without even the implied warranty of
+| MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+| GNU General Public License for more details.
+
+| You should have received a copy of the GNU General Public License
+| along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+
+| testname: 
+| description: tests isletter against different data types
+
+~(_is-letter ~(_quote ~(_car _)_)_)
+~(_is-letter !no_)
+~(_is-letter ~(_quote @a_)_)
+~(_is-letter #0_)
+~(_is-letter $"a"_)
+~(_is-letter %0_)
+~(_is-letter ^_)
+~(_is-letter &(__)_)
+~(_is-letter ~(_quote &(__)_)_)
+~(_is-letter [letter]"a"_)
+~(_is-letter [separator]";"_)
+~(_is-letter *(__)_)
+~(_is-letter [word](__)_)
+~(_is-letter (||)_)
+~(_is-letter [doc](||)_)
+~(_is-letter [line](__)_)
+~(_is-letter ~(_convert-type-if-error $"warn" ~(_car _)_)_)
+
+

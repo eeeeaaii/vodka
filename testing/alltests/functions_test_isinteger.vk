@@ -1,0 +1,35 @@
+| This file is part of Vodka.
+
+| Vodka is free software: you can redistribute it and/or modify
+| it under the terms of the GNU General Public License as published by
+| the Free Software Foundation, either version 3 of the License, or
+| (at your option) any later version.
+
+| Vodka is distributed in the hope that it will be useful,
+| but WITHOUT ANY WARRANTY; without even the implied warranty of
+| MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+| GNU General Public License for more details.
+
+| You should have received a copy of the GNU General Public License
+| along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+
+| testname: 
+| description: tests is-integer against all data types
+
+~(_is-integer ~(_quote ~(_car _)_)_)
+~(_is-integer !no_)
+~(_is-integer ~(_quote @a_)_)
+~(_is-integer #0_)
+~(_is-integer $"a"_)
+~(_is-integer %0_)
+~(_is-integer ^_)
+~(_is-integer &(__)_)
+~(_is-integer ~(_quote &(__)_)_)
+~(_is-integer *(__)_)
+~(_is-integer [word](__)_)
+~(_is-integer (||)_)
+~(_is-integer [doc](||)_)
+~(_is-integer [line](__)_)
+~(_is-integer ~(_convert-type-if-error $"warn" ~(_car _)_)_)
+
+

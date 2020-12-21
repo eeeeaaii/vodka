@@ -1,0 +1,37 @@
+| This file is part of Vodka.
+
+| Vodka is free software: you can redistribute it and/or modify
+| it under the terms of the GNU General Public License as published by
+| the Free Software Foundation, either version 3 of the License, or
+| (at your option) any later version.
+
+| Vodka is distributed in the hope that it will be useful,
+| but WITHOUT ANY WARRANTY; without even the implied warranty of
+| MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+| GNU General Public License for more details.
+
+| You should have received a copy of the GNU General Public License
+| along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+
+| testname: 
+| description: test isstring against other types
+
+~(_is-string ~(_quote ~(_car _)_)_)
+~(_is-string !no_)
+~(_is-string ~(_quote @a_)_)
+~(_is-string #0_)
+~(_is-string $"a"_)
+~(_is-string %0_)
+~(_is-string ^_)
+~(_is-string &(__)_)
+~(_is-string ~(_quote &(__)_)_)
+~(_is-string [letter]"a"_)
+~(_is-string [separator]";"_)
+~(_is-string *(__)_)
+~(_is-string [word](__)_)
+~(_is-string (||)_)
+~(_is-string [doc](||)_)
+~(_is-string [line](__)_)
+~(_is-string ~(_convert-type-if-error $"warn" ~(_car _)_)_)
+
+

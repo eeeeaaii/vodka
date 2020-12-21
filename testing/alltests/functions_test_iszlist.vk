@@ -1,0 +1,37 @@
+| This file is part of Vodka.
+
+| Vodka is free software: you can redistribute it and/or modify
+| it under the terms of the GNU General Public License as published by
+| the Free Software Foundation, either version 3 of the License, or
+| (at your option) any later version.
+
+| Vodka is distributed in the hope that it will be useful,
+| but WITHOUT ANY WARRANTY; without even the implied warranty of
+| MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+| GNU General Public License for more details.
+
+| You should have received a copy of the GNU General Public License
+| along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+
+| testname: 
+| description: tst is-zlist
+
+~(_is-zlist ~(_quote ~(_car _)_)_)
+~(_is-zlist !no_)
+~(_is-zlist ~(_quote @a_)_)
+~(_is-zlist #0_)
+~(_is-zlist $"a"_)
+~(_is-zlist %0_)
+~(_is-zlist ^_)
+~(_is-zlist &(__)_)
+~(_is-zlist ~(_quote &(__)_)_)
+~(_is-zlist [letter]"a"_)
+~(_is-zlist [separator]";"_)
+~(_is-zlist *(__)_)
+~(_is-zlist [word](__)_)
+~(_is-zlist (||)_)
+~(_is-zlist [doc](||)_)
+~(_is-zlist [line](__)_)
+~(_is-zlist ~(_convert-type-if-error $"warn" ~(_car _)_)_)
+
+

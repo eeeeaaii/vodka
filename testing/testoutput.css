@@ -50,6 +50,15 @@ body {
 	margin-bottom: 15px;
 }
 
+.summarybody {
+	font-family: Courier;
+	font-size: 16px;
+	margin-left: 10px;
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+
+
 .printcommands {
 	font-family: Courier;
 	font-size: 16px;
@@ -155,6 +164,11 @@ body {
 .passed {
 	background-color: green;
 	color: white;
+}
+
+.neededgolden {
+	background-color: yellow;
+	color: black;
 }
 
 .ignored {

@@ -1,0 +1,33 @@
+| This file is part of Vodka.
+
+| Vodka is free software: you can redistribute it and/or modify
+| it under the terms of the GNU General Public License as published by
+| the Free Software Foundation, either version 3 of the License, or
+| (at your option) any later version.
+
+| Vodka is distributed in the hope that it will be useful,
+| but WITHOUT ANY WARRANTY; without even the implied warranty of
+| MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+| GNU General Public License for more details.
+
+| You should have received a copy of the GNU General Public License
+| along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+
+| testname: 
+| description: Tests the isdoc builtin against all data types
+
+~(_is-doc ~(_quote ~(_car _)_)_)
+~(_is-doc !no_)
+~(_is-doc ~(_quote @a_)_)
+~(_is-doc #0_)
+~(_is-doc $_)
+~(_is-doc %0_)
+~(_is-doc ^_)
+~(_is-doc &(__)_)
+~(_is-doc ~(_quote &(__)_)_)
+~(_is-doc *(__)_)
+~(_is-doc [word](__)_)
+~(_is-doc (||)_)
+~(_is-doc [doc](||)_)
+~(_is-doc [line](__)_)
+~(_is-doc [zlist](__)_)

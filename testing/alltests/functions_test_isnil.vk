@@ -1,0 +1,37 @@
+| This file is part of Vodka.
+
+| Vodka is free software: you can redistribute it and/or modify
+| it under the terms of the GNU General Public License as published by
+| the Free Software Foundation, either version 3 of the License, or
+| (at your option) any later version.
+
+| Vodka is distributed in the hope that it will be useful,
+| but WITHOUT ANY WARRANTY; without even the implied warranty of
+| MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+| GNU General Public License for more details.
+
+| You should have received a copy of the GNU General Public License
+| along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+
+| testname: 
+| description: test is-nil against diff data types
+
+~(_is-nil ~(_quote ~(_car _)_)_)
+~(_is-nil !no_)
+~(_is-nil ~(_quote @a_)_)
+~(_is-nil #0_)
+~(_is-nil $"a"_)
+~(_is-nil %0_)
+~(_is-nil ^_)
+~(_is-nil &(__)_)
+~(_is-nil ~(_quote &(__)_)_)
+~(_is-nil [letter]"a"_)
+~(_is-nil [separator]";"_)
+~(_is-nil *(__)_)
+~(_is-nil [word](__)_)
+~(_is-nil (||)_)
+~(_is-nil [doc](||)_)
+~(_is-nil [line](__)_)
+~(_is-nil ~(_convert-type-if-error $"warn" ~(_car _)_)_)
+
+

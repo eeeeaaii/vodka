@@ -18,51 +18,157 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 var hb = require("handlebars");
 var fs = require("fs");
 var glob = require("glob")
+var path = require("path")
+
+function tpath(output_suffix) {
+	return `./alltests/${basename}/${basename}${output_suffix}`;
+}
+
+function getContentsOfFile(fname) {
+	try {
+		return fs.readFileSync(fname, {encoding: 'utf8'}).trim();
+	} catch(e) {
+		return null;
+	}
+}
+
+function testDiff(type) {
+	let goldenStatus = getContentsOfFile(tpath(`_${type}.goldenstatus`));
+	let regeneratedGolden = (goldenStatus != 'found');
+	let diffStatus = getContentsOfFile(tpath(`_${type}.comparisonstatus`));
+	let diffSucceeded = (diffStatus == 'success')
+	let goldenUpdateExtension = (type == 'EXPLODED' ? '-e' : '-n');
+	return {
+		'test': basename,
+		'diff_type': type,
+		'regenerate_golden_ext': goldenUpdateExtension,
+		'regenerated_golden': regeneratedGolden,
+		'diff_succeeded': diffSucceeded,
+		'regenerate_command': 'foo'
+	}
+}
+
+function allTestDiffs() {
+	return [
+		testDiff('EXPLODED'),
+		testDiff('NORMAL')
+		];
+}
+
+function passingTestOutput() {
+	let docstring = getContentsOfFile(tpath('.docstring'));
+	let testtype = getContentsOfFile(tpath('.testtype'));
+	let isrepl = (testtype == 'vk');
+	let json = {
+		'test': basename,
+		'is_repl': isrepl,
+		'docstring': docstring,
+		'node_ignored': false,
+		'node_success': true
+	}
+	if (!isrepl) {
+		json.diffs = allTestDiffs();
+	}
+	return json;
+}
+
+function failingTestOutput() {
+	let docstring = getContentsOfFile(tpath('.docstring'));
+	let testtype = getContentsOfFile(tpath('.testtype'));
+	let goldenstatus = getContentsOfFile(tpath('.goldenstatus'))
+	let isrepl = (testtype == 'vk');	
+	return {
+		'test': basename,
+		'is_repl': isrepl,
+		'docstring': docstring,
+		'goldenmissing': (goldenstatus == 'missing'),
+		'node_ignored': false,
+		'node_success': false
+	}
+}
+
+function ignoredTestOutput() {
+	return {
+		'test': basename,
+		'node_ignored': true,
+		'node_success': false
+	}
+}
 
 var alljson = [];
-var jsonfiles = glob.sync("./alltests/*/*.json")
+var testnames = glob.sync("./alltests/*/")
 var failing_tests = [];
 var passing_tests = [];
 var ignored_tests = [];
-jsonfiles.forEach((jsonfile) => {
-	let rawjson = fs.readFileSync(jsonfile);
-	let json = null;
-	try {
-		json = JSON.parse(rawjson);
-	} catch (e) {
-		console.log(`Deleting ${jsonfile} because it is broken. You will have to rerun this test.`);
-		fs.unlinkSync(jsonfile);
-		return;
-	}
-	try {
-		if (json.node_ignored) {
-			ignored_tests.push(json.test);
-		} else if (json.node_success && (
-			json.is_repl || (
-				json.diffs[0].diff_succeeded &&
-				json.diffs[1].diff_succeeded))) {
-			passing_tests.push(json.test);
+var goldens_needed = [];
+
+let basename = '';
+
+testnames.forEach((testpath) => {
+	basename = path.basename(testpath);
+	let testjson = {};
+
+	let ignore = getContentsOfFile(tpath('.ignore'));
+	if (ignore && ignore == '1') {
+		ignored_tests.push(basename)
+		testjson = ignoredTestOutput();
+	} else {
+		let success = getContentsOfFile(tpath('.testsuccess'));
+		if (success == 'true') {
+			testjson = passingTestOutput(basename);
+			// we don't count it as a REAL passing test unless both diffs succeeded
+			if (testjson.diffs) {
+				// only add it once even if both diffs are passing etc etc
+				let ispassing = false;
+				let isfailing = false;
+				let neededgolden = false;
+				for (let i = 0; i < testjson.diffs.length; i++) {
+					let diff = testjson.diffs[i];
+					if (diff.diff_succeeded) {
+						ispassing = true;
+					} else {
+						isfailing = true;
+					}
+					if (diff.regenerated_golden) {
+						neededgolden = true;
+					}
+				}
+				// but can add in more than one place if one test passes and one fails
+				if (ispassing) passing_tests.push(basename);
+				if (isfailing) failing_tests.push(basename);
+				if (neededgolden) goldens_needed.push(basename);
+			} else {
+				passing_tests.push(basename);
+			}
 		} else {
-			failing_tests.push(json.test);
+			testjson = failingTestOutput(basename);
+			if (testjson.goldenmissing) {
+				goldens_needed.push(basename);
+			} else {
+				failing_tests.push(basename);
+			}
 		}
-		alljson.push(json);
-	} catch (e) {
-		console.log('' + e);
 	}
+	let rawtemplate = getContentsOfFile("./onetestresult.tmpl");
+	let template = hb.compile(rawtemplate);
+	var html = template(testjson);
+	fs.writeFileSync(tpath('_testresults.html'), html);
 })
 
 var summary = {
 	num_passing: passing_tests.length,
 	num_failing: failing_tests.length,
 	num_ignored: ignored_tests.length,
+	num_goldenneeded: goldens_needed.length,
 	passing: passing_tests,
 	failing: failing_tests,
-	ignored: ignored_tests
+	ignored: ignored_tests,
+	neededgolden: goldens_needed
 }
 
 var data = { summary: summary, testresults: alljson };
-var rawtemplate = fs.readFileSync("./testoutput.tmpl");
+var rawtemplate = fs.readFileSync("./testresults.tmpl");
 var template = hb.compile('' + rawtemplate);
 var html = template(data);
-fs.writeFileSync('./testoutput.html', html);
+fs.writeFileSync('./testresults.html', html);
 

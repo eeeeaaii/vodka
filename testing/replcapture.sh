@@ -73,7 +73,10 @@ HERE
 		echo "" >> ${FILENAME}
 		cat "____tmpfile.txt" >> ${FILENAME}
 		echo "" >> ${FILENAME}
+		echo "" >> ${FILENAME}
+		echo "" >> ${FILENAME}
 		rm "____tmpfile.txt"
+		# first run will generate goldens
 		runtests.sh ${BASENAME}
 	fi
 }
@@ -88,10 +91,8 @@ for A in $(find ../server/sessions | grep '.vk') ; do
 	BASENAME=${BASENAME%.vk}
 	echo -e "${BLUE}[$BASENAME]${NC} Capturing REPL test."
 	capture_test $BASENAME $A
-	echo -e "${BLUE}[$BASENAME]${NC} Do you want to delete the file ${A} from the sessions directory?"
-	read CONFIRM
-	if [ "$CONFIRM" == "y" ]; then
-		rm $A
+	echo -e "${BLUE}[$BASENAME]${NC} Deleting the file ${A} from the sessions directory"
+	rm $A
 	fi
 done
 node parsetestoutput.js

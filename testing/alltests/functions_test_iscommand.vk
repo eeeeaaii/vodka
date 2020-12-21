@@ -1,0 +1,31 @@
+| This file is part of Vodka.
+
+| Vodka is free software: you can redistribute it and/or modify
+| it under the terms of the GNU General Public License as published by
+| the Free Software Foundation, either version 3 of the License, or
+| (at your option) any later version.
+
+| Vodka is distributed in the hope that it will be useful,
+| but WITHOUT ANY WARRANTY; without even the implied warranty of
+| MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+| GNU General Public License for more details.
+
+| You should have received a copy of the GNU General Public License
+| along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+
+| testname: 
+| description: Test the is-command primitive against all data types.
+
+~(_is-command ~(_quote ~(_car _)_)_)
+~(_is-command !no_)
+~(_is-command ~(_quote @apple_)_)
+~(_is-command #0_)
+~(_is-command $_)
+~(_is-command %0_)
+~(_is-command ^_)
+~(_is-command &(__)_)
+~(_is-command *(__)_)
+~(_is-command [word](__)_)
+~(_is-command (||)_)
+~(_is-command [doc](||)_)
+~(_is-command [line](__)_)

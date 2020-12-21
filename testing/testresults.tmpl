@@ -1,0 +1,151 @@
+<html>
+<head>
+	<title>test results</title>
+<link rel="stylesheet" href="testoutput.css">
+<script>
+  function selectAllThatNeededGolden(cb) {
+    let elts = document.getElementsByClassName('neededgolden');
+    for (let i = 0; i < elts.length; i++) {
+      elts[i].checked = cb.checked;
+    }
+  }
+
+  function selectAllPassing(cb) {
+  	let elts = document.getElementsByClassName('passinginput');
+  	for (let i = 0; i < elts.length; i++) {
+  		elts[i].checked = cb.checked;
+  	}
+  }
+
+  function selectAllFailing(cb) {
+  	let elts = document.getElementsByClassName('failinginput');
+  	for (let i = 0; i < elts.length; i++) {
+  		elts[i].checked = cb.checked;
+  	}
+  }
+
+  function selectAllIgnored(cb) {
+  	let elts = document.getElementsByClassName('ignoredinput');
+  	for (let i = 0; i < elts.length; i++) {
+  		elts[i].checked = cb.checked;
+  	}
+  }
+
+  function printSelectedCommands() {
+  	let elts = document.getElementsByTagName('input');
+  	let cmdlist = '';
+  	out = document.getElementById('goldenoutput');
+  	let thing = document.createElement('textarea');
+  	thing.classList.add('goldenoutputtextarea')
+
+  	let val = '';
+
+  	let rows = 0;
+  	for (let i = 0; i < elts.length; i++) {
+  		let elt = elts[i];
+  		if (elt.checked) {
+  			cmd = document.getElementsByTagName('input')[i].dataset['command'];
+  			if (!cmd) {
+  				continue;
+  			}
+  			rows++;
+  			val += cmd;
+  			val += '\n';
+  		}
+  	}
+  	val += '\n'
+  	val += 'echo "REMEMBER TO RUN ALL TESTS BEFORE GIT PUSH';
+  	thing.rows = rows + 2;
+  	thing.defaultValue = val;
+  	out.appendChild(thing);
+  }
+
+  function doClip(event, txt) {
+  	let x = event.pageX;
+  	let y = event.pageY;
+  	navigator.permissions.query({name: "clipboard-write"}).then(result => {
+  		if (result.state == "granted" || result.state == "prompt") {
+  			navigator.clipboard.writeText(txt);
+  			showToastAt("Copied!", x, y);
+  		}
+  	});
+  }
+
+  function showToastAt(content, x, y) {
+  	let elt = document.createElement('div');
+  	elt.appendChild(document.createTextNode(content));
+  	elt.style.position = 'absolute';
+  	elt.style.left = '' + x + 'px';
+  	elt.style.top = '' + y + 'px';
+  	elt.classList.add('toast');
+  	document.body.appendChild(elt);
+  	setTimeout(function() {
+  		document.body.removeChild(elt);
+  	}, 1000);
+  }
+
+</script>
+</head>
+<body>
+	<div class="summary">
+		<div class="summaryheader">Test Summary</div>
+    <div class="summarybody">If a test has multiple variants it may appear in more than one list (example: normal diff succeeds, exploded diff fails)</div>
+		<div class="printcommands">
+			<button type="button" onclick="printSelectedCommands();">Print Commands</button>
+			<div id="goldenoutput"></div>
+		</div>
+		<div class="summarylist">
+			<div class="summaryname failed">Failing Tests: {{summary.num_failing}}</div>
+				<div class="summarylistitem">
+					<input type="checkbox" onclick="selectAllFailing(this)">
+					(select all)
+				</div>
+				{{#each summary.failing}}
+				<div class="summarylistitem"> 
+					<input type="checkbox" class="failinginput" data-command="./runtests.sh {{this}}">
+					 <a href="./alltests/{{this}}/{{this}}_testresults.html">{{this}}</a>
+				</div>
+				{{/each}}
+		</div>
+    <div class="summarylist">
+      <div class="summaryname neededgolden">Tests that Needed New Goldens: {{summary.num_goldenneeded}}</div>
+        <div class="summarylistitem">
+          <input type="checkbox" onclick="selectAllThatNeededGolden(this)">
+          (select all)
+        </div>
+        {{#each summary.neededgolden}}
+        <div class="summarylistitem">
+          <input type="checkbox" class="neededgolden" data-command="./runtests.sh {{this}}">
+          <a href="./alltests/{{this}}/{{this}}_testresults.html">{{this}}</a>
+        </div>
+        {{/each}}
+    </div>
+		<div class="summarylist">
+			<div class="summaryname passed">Passing Tests: {{summary.num_passing}}</div>
+				<div class="summarylistitem">
+					<input type="checkbox" onclick="selectAllPassing(this)">
+					(select all)
+				</div>
+				{{#each summary.passing}}
+				<div class="summarylistitem">
+					<input type="checkbox" class="passinginput" data-command="./runtests.sh {{this}}">
+					<a href="./alltests/{{this}}/{{this}}_testresults.html">{{this}}</a>
+				</div>
+				{{/each}}
+		</div>
+		<div class="summarylist">
+			<div class="summaryname ignored">Ignored Tests: {{summary.num_ignored}}</div>
+				<div class="summarylistitem">
+					<input type="checkbox" onclick="selectAllIgnored(this)">
+					(select all)
+				</div>
+				{{#each summary.ignored}}
+				<div class="summarylistitem">
+					<input type="checkbox" class="ignoredinput" data-command="./runtests.sh {{this}}">
+					<a href="./alltests/{{this}}/{{this}}_testresults.html">{{this}}</a>
+				</div>
+				{{/each}}
+		</div>
+	</div>
+</body>
+</html>

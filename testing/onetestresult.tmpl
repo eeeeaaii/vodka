@@ -1,0 +1,216 @@
+<html>
+<head>
+	<title>test output</title>
+<link rel="stylesheet" href="../../testoutput.css">
+<script>
+  function togglestyle(e) {
+  	if (e.classList.contains('outimgexpanded')) {
+  		e.classList.remove('outimgexpanded');
+  	} else {
+  		e.classList.add('outimgexpanded');
+  	}
+  }
+
+  function togglestyleCodeframe(e) {
+  	if (e.classList.contains('codeframeexpanded')) {
+  		e.classList.remove('codeframeexpanded');
+  	} else {
+  		e.classList.add('codeframeexpanded');
+  	}
+  }
+
+  function iframeOnload(obj) {
+  }
+
+  function showhide(id) {
+  	var e = document.getElementById(id);
+  	if (e.style.display == 'none') {
+  		e.style.display = 'block';
+  	} else {
+  		e.style.display = 'none';
+  	}
+  }
+
+  function doClip(event, txt) {
+  	let x = event.pageX;
+  	let y = event.pageY;
+  	navigator.permissions.query({name: "clipboard-write"}).then(result => {
+  		if (result.state == "granted" || result.state == "prompt") {
+  			navigator.clipboard.writeText(txt);
+  			showToastAt("Copied!", x, y);
+  		}
+  	});
+  }
+
+  function showToastAt(content, x, y) {
+  	let elt = document.createElement('div');
+  	elt.appendChild(document.createTextNode(content));
+  	elt.style.position = 'absolute';
+  	elt.style.left = '' + x + 'px';
+  	elt.style.top = '' + y + 'px';
+  	elt.classList.add('toast');
+  	document.body.appendChild(elt);
+  	setTimeout(function() {
+  		document.body.removeChild(elt);
+  	}, 1000);
+  }
+
+</script>
+</head>
+<body>
+	<div class="testout">
+		<div class="testname">
+			<a name="a_{{test}}">{{test}}</a>
+			{{#if is_repl}}
+				<div class="testtypebadge vktype">vk</div>
+			{{else}}
+				<div class="testtypebadge jstype">js</div>
+			{{/if}}
+		</div>
+		{{#if docstring}}
+		<div class="testdescription">
+			{{{docstring}}}
+		</div>
+		{{/if}}
+		<div class="commandblock">
+			<input type="checkbox" data-command="./runtests.sh {{test}}">
+			to rerun: <textarea class="regencommand">./runtests.sh {{test}}</textarea>
+			<a class="copyclick" onclick="doClip(event, 'runtests.sh {{test}}')">(copy)</a>
+		</div>
+		<div class="commandblock">
+			{{#if is_repl}}
+				<input type="checkbox" data-command="subl alltests/{{test}}.vk">
+				to edit: <textarea class="regencommand">subl alltests/{{test}}.vk</textarea>
+				<a class="copyclick" onclick="doClip(event, 'subl alltests/{{test}}.vk')">(copy)</a>
+			{{else}}
+				<input type="checkbox" data-command="subl alltests/{{test}}.js">
+				to edit: <textarea class="regencommand">subl alltests/{{test}}.js</textarea>
+				<a class="copyclick" onclick="doClip(event, 'subl alltests/{{test}}.js')">(copy)</a>
+			{{/if}}
+		</div>
+		<div id="testvariants{{test}}">
+			{{#if node_ignored}}
+				<div class="testvariant">
+					<div class="testvariantname ignored tall">TEST IGNORED</div>
+				</div>
+			{{else}}
+				{{#if is_repl}}
+					{{#if node_success}}
+						<div class="testvariant">
+							<div class="testvariantname passed">TEST PASSED</div>
+							<div class="testoutputs">
+								<div class="codeframe" onclick="togglestyleCodeframe(this);">
+									<div class="outimgname">code</div>
+									<iframe class="ifr" id="{{../test}}_ifr0" src="./{{./test}}_code.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+									</iframe>
+								</div>
+								<div class="codeframe" onclick="togglestyleCodeframe(this);">
+									<div class="outimgname">output</div>
+									<iframe class="ifr" id="{{../test}}_ifr0" src="./{{./test}}.out" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+									</iframe>
+								</div>
+							</div>
+						</div>
+					{{else}}
+						{{#if goldenmissing}}
+							<div class="testvariant">
+								<div class="testvariantname newgolden">TEST MISSING GOLDEN</div>
+								<div class="testoutputs">
+									<div class="codeframe" onclick="togglestyleCodeframe(this);">
+										<div class="outimgname">code</div>
+										<iframe class="ifr" id="{{../test}}_ifr0" src="./{{./test}}_code.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+										</iframe>
+									</div>
+									<div class="codeframe" onclick="togglestyleCodeframe(this);">
+										<div class="outimgname">output</div>
+										<iframe class="ifr" id="{{../test}}_ifr0" src="./{{./test}}.out" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+										</iframe>
+									</div>
+								</div>
+							</div>
+						{{else}}
+							<div class="testvariant">
+								<div class="testvariantname failed">TEST FAILED</div>
+								<div class="testoutputs">
+									<div class="codeframe" onclick="togglestyleCodeframe(this);">
+										<div class="outimgname">code</div>
+										<iframe class="ifr" id="{{../test}}_ifr0" src="./{{./test}}_code.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+										</iframe>
+									</div>
+									<div class="codeframe" onclick="togglestyleCodeframe(this);">
+										<div class="outimgname">output</div>
+										<iframe class="ifr" id="{{../test}}_ifr0" src="./{{./test}}.out" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+										</iframe>
+									</div>
+									<div class="codeframe" onclick="togglestyleCodeframe(this);">
+										<div class="outimgname">diff</div>
+										<iframe class="ifr" id="{{../test}}_ifr0" src="./{{./test}}_DIFF.out" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+										</iframe>
+									</div>
+								</div>
+							</div>
+						{{/if}}
+					{{/if}}
+				{{else}}
+					{{#if node_success}}
+						{{#each diffs}}
+							<div class="testvariant">
+								{{#if regenerated_golden}}
+									<div class="testvariantname newgolden">{{diff_type}} (recreated golden)</div>
+								{{else}}
+									{{#if diff_succeeded}}
+										<div class="testvariantname passed">{{diff_type}} (passing)</div>
+									{{else}}
+										<div class="testvariantname failed">{{diff_type}} (FAILING)</div>
+										<div class="regengolden">
+											<input type="checkbox" data-command="./goldenupdate.sh {{test}} {{regenerate_golden_ext}}">
+											to regenerate golden:								
+											<textarea class="regencommand">./goldenupdate.sh {{test}} {{regenerate_golden_ext}}</textarea>
+											<a class="copyclick" onclick="doClip(event, './goldenupdate.sh {{test}} {{regenerate_golden_ext}}')">(copy)</a>
+										</div>
+									{{/if}}
+								{{/if}}
+								<div class="testoutputs">
+									<div class="outimg" onclick="togglestyle(this);">
+										<div class="outimgname">screenshot</div>
+										<img src="./{{../test}}_OUT_{{diff_type}}.png">
+									</div>
+									<div class="outimg" onclick="togglestyle(this);">
+										<div class="outimgname">golden</div>
+										<img src="./{{../test}}_GOLDEN_{{diff_type}}.png">
+									</div>
+									<div class="outimg" onclick="togglestyle(this);">
+										<div class="outimgname">diff</div>
+										<img src="./{{../test}}_DIFF_{{diff_type}}.png">
+									</div>
+									<div class="codeframe" onclick="togglestyleCodeframe(this);">
+										<div class="outimgname">code</div>
+										<iframe class="ifr" id="{{../test}}_ifr0" src="./{{../test}}_code.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+										</iframe>
+									</div>
+								</div>
+							</div>
+						{{/each}}
+					{{else}}
+						<div class="testvariant">
+							<div class="testvariantname failed">TEST CRASHED</div>
+							<div class="testoutputs">
+								<div class="codeframe" onclick="togglestyleCodeframe(this);">
+									<div class="outimgname">output</div>
+									<iframe class="ifr" id="{{test}}_ifr1" src="./{{test}}_output.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+									</iframe>
+								</div>
+								<div class="codeframe" onclick="togglestyleCodeframe(this);">
+									<div class="outimgname">code</div>
+									<iframe class="ifr" id="{{test}}_ifr2" src="./{{test}}_code.txt" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+									</iframe>
+								</div>
+							</div>
+						</div>
+					{{/if}}
+				{{/if}}
+			{{/if}}
+		</div>
+	</div>
+</body>
+</html>

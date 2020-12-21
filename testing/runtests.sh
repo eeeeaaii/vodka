@@ -34,15 +34,16 @@ PARAMS=""
 do_image_comparison() {
 	DIFF_MODE=$1
 	BASENAME=$2
-	OUTFILE=$3
+	RVAL=0
 
-	TESTOUTPUT="$SSDIR/${BASENAME}_OUT_${DIFF_MODE}.png"
-	GOLDEN="$SSDIR/${BASENAME}_GOLDEN_${DIFF_MODE}.png"
-	DIFF="$SSDIR/${BASENAME}_DIFF_${DIFF_MODE}.png"
+	TESTOUTPUT="$OUTDIR/${BASENAME}_OUT_${DIFF_MODE}.png"
+	GOLDEN="$OUTDIR/${BASENAME}_GOLDEN_${DIFF_MODE}.png"
+	DIFF="$OUTDIR/${BASENAME}_DIFF_${DIFF_MODE}.png"
 
 	REGENERATED_GOLDEN=false
 	DIFF_SUCCEEDED=false
 	if [ -e ${GOLDEN} ]; then
+		echo "found" > "${OUTDIR}/${BASENAME}_${DIFF_MODE}.goldenstatus"
 		# compare
 		echo -e "${BLUE}[${BASENAME}]${NC} ${DIFF_MODE} golden exists, comparing"
 		# fuzz syntax:
@@ -53,11 +54,14 @@ do_image_comparison() {
 		# if I set the fuzz to .1% it will fail.
 		if ( magick compare -metric ae -fuzz .1% ${TESTOUTPUT} ${GOLDEN} ${DIFF} > /dev/null 2> /dev/null ); then
 			echo -e "${GREEN}[${BASENAME}]${NC} ${DIFF_MODE} diff passed"
+			echo "success" > "${OUTDIR}/${BASENAME}_${DIFF_MODE}.comparisonstatus"
 			DIFF_SUCCEEDED=true
 		else
 			echo -e "${RED}[${BASENAME}]${NC} ${DIFF_MODE} diff failed!!!!! check diff at ${DIFF}"
+			echo "failure" > "${OUTDIR}/${BASENAME}_${DIFF_MODE}.comparisonstatus"
 		fi
 	else
+		echo "missing" > "${OUTDIR}/${BASENAME}_${DIFF_MODE}.goldenstatus"
 		echo -e "${YELLOW}[${BASENAME}]${NC} was missing ${DIFF_MODE} golden. Check new golden at ${GOLDEN}"
 		cp ${TESTOUTPUT} ${GOLDEN}
 		REGENERATED_GOLDEN=true
@@ -67,12 +71,6 @@ do_image_comparison() {
 	else
 		EXT="-e"
 	fi
-	echo "      {" >> ${OUTFILE}
-	echo "        \"diff_type\": \"${DIFF_MODE}\"," >> ${OUTFILE}
-	echo "        \"regenerated_golden\": ${REGENERATED_GOLDEN}," >> ${OUTFILE}
-	echo "        \"regenerate_command\": \"./goldenupdate.sh ${BASENAME} ${EXT}\"," >> ${OUTFILE}
-	echo "        \"diff_succeeded\": ${DIFF_SUCCEEDED}" >> ${OUTFILE}
-	echo "      }" >> ${OUTFILE}
 }
 
 do_vk_test() {
@@ -83,17 +81,13 @@ do_vk_test() {
 	GOLDEN=${OUTDIR}/${BASENAME}_GOLDEN.out
 	DIFF=${OUTDIR}/${BASENAME}_DIFF.out
 	TESTFILE_ASHTML="${OUTDIR}/${BASENAME}_code.txt"
-	TESTOUTPUT_JSON="${OUTDIR}/${BASENAME}_testresults.json"
 	IGNOREFILE="${OUTDIR}/${BASENAME}.ignore"
 	test -d "$OUTDIR" || mkdir "$OUTDIR"
+	echo "started" > "${OUTDIR}/${BASENAME}.teststatus"
+	echo "vk" > "${OUTDIR}/${BASENAME}.testtype"
+	echo "-no docs-" > "${OUTDIR}/${BASENAME}.docstring"
 	if [ -e ${IGNOREFILE} ]; then
 		echo -e "${GRAY}[${BASENAME}]${NC} ignoring test"
-		echo "{ " > ${TESTOUTPUT_JSON}
-		echo "    \"test\": \"${BASENAME}\"," >> ${TESTOUTPUT_JSON}
-		echo "    \"is_repl\": \"true\"," >> ${TESTOUTPUT_JSON}
-		echo "    \"node_ignored\": true," >> ${TESTOUTPUT_JSON}
-		echo "    \"node_success\": false" >> ${TESTOUTPUT_JSON}
-		echo "  }" >> ${TESTOUTPUT_JSON}
 	else
 		pushd ../src > /dev/null
 		echo -e "${BLUE}[${BASENAME}]${NC} running test"
@@ -102,64 +96,43 @@ do_vk_test() {
 		TEST_SUCCESS=false
 		DOCSTRING="eh?"
 		cp "$INPUT" ${TESTFILE_ASHTML}
-		echo "{ " > ${TESTOUTPUT_JSON}
 		diff "${OUTPUT}" ${GOLDEN} > $DIFF 2> /dev/null && TEST_SUCCESS=true
+		echo $TEST_SUCCESS > "${OUTDIR}/${BASENAME}.testsuccess"
 		if [ ! -e ${GOLDEN} ]; then
 			echo -e "${YELLOW}[$BASENAME]${NC} was missing golden, creating"
+			echo "missing" > "${OUTDIR}/${BASENAME}.goldenstatus"
 			cp "${OUTPUT}" ${GOLDEN}
-			diff "${OUTPUT}" ${GOLDEN} > $DIFF 2> /dev/null && TEST_SUCCESS=true
-		fi
-		if [ "$TEST_SUCCESS" == "false" ]; then
-			echo -e "${RED}[${BASENAME}]${NC} REPL test failed"
-			echo "    \"test\": \"${BASENAME}\"," >> ${TESTOUTPUT_JSON}
-			echo "    \"is_repl\": \"true\"," >> ${TESTOUTPUT_JSON}
-			echo "    \"docstring\": \"${DOCSTRING}\"," >> ${TESTOUTPUT_JSON}
-			echo "    \"node_ignored\": false," >> ${TESTOUTPUT_JSON}
-			echo "    \"node_success\": ${TEST_SUCCESS}" >> ${TESTOUTPUT_JSON}
 		else
-			echo -e "${GREEN}[${BASENAME}]${NC} REPL test passed"
-			echo "    \"test\": \"${BASENAME}\"," >> ${TESTOUTPUT_JSON}
-			echo "    \"is_repl\": \"true\"," >> ${TESTOUTPUT_JSON}
-			echo "    \"docstring\": \"${DOCSTRING}\"," >> ${TESTOUTPUT_JSON}
-			echo "    \"node_ignored\": false," >> ${TESTOUTPUT_JSON}
-			echo "    \"node_success\": ${TEST_SUCCESS}" >> ${TESTOUTPUT_JSON}
+			if [ "$TEST_SUCCESS" == "false" ]; then
+				echo -e "${RED}[${BASENAME}]${NC} REPL test failed"
+			else
+				echo -e "${GREEN}[${BASENAME}]${NC} REPL test passed"
+			fi
 		fi
-		echo "  }" >> ${TESTOUTPUT_JSON}
-
 	fi
-
-	# if diff repltests.out repltests.golden; then
-	# 	echo "SUCCESS: repl tests passed"
-	# else
-	# 	echo "ERROR: repl tests failed, outputs do not match"
-	# fi
-
+	echo "completed" > "${OUTDIR}/${BASENAME}.teststatus"
 }
 
 do_js_test() {
 	BASENAME=$1
-	SSDIR="./${TESTDIR}/${BASENAME}"
+	OUTDIR="./${TESTDIR}/${BASENAME}"
 	TESTFILE="./${TESTDIR}/${BASENAME}.js"
-	TESTOUTPUT="./${TESTDIR}/${BASENAME}/output.txt"
-	TESTOUTPUT_NORMAL="${SSDIR}/${BASENAME}_OUT_NORMAL.png"
-	TESTOUTPUT_EXPLODED="${SSDIR}/${BASENAME}_OUT_EXPLODED.png"
-	TESTFILE_ASHTML="${SSDIR}/${BASENAME}_code.txt"
-	TESTOUTPUT_JSON="${SSDIR}/${BASENAME}_testresults.json"
-	IGNOREFILE="${SSDIR}/${BASENAME}.ignore"
+	TESTOUTPUT="./${TESTDIR}/${BASENAME}/${BASENAME}_output.txt"
+	TESTOUTPUT_NORMAL="${OUTDIR}/${BASENAME}_OUT_NORMAL.png"
+	TESTOUTPUT_EXPLODED="${OUTDIR}/${BASENAME}_OUT_EXPLODED.png"
+	TESTFILE_ASHTML="${OUTDIR}/${BASENAME}_code.txt"
+	IGNOREFILE="${OUTDIR}/${BASENAME}.ignore"
 
-	test -d $SSDIR || mkdir $SSDIR
+	echo "js" > "${OUTDIR}/${BASENAME}.testtype"
+	echo "started" > "${OUTDIR}/${BASENAME}.teststatus"
+
+	test -d $OUTDIR || mkdir $OUTDIR
 	if [ -e ${IGNOREFILE} ]; then
 		echo -e "${GRAY}[${BASENAME}]${NC} ignoring test"
-		echo "{ " > ${TESTOUTPUT_JSON}
-		echo "    \"test\": \"${BASENAME}\"," >> ${TESTOUTPUT_JSON}
-		echo "    \"node_ignored\": true," >> ${TESTOUTPUT_JSON}
-		echo "    \"node_success\": false" >> ${TESTOUTPUT_JSON}
-		echo "  }" >> ${TESTOUTPUT_JSON}
 	else
 		echo -e "${BLUE}[${BASENAME}]${NC} running test"
 		TEST_SUCCESS=false
-
-		echo "{ " > ${TESTOUTPUT_JSON}
+		# echo "{ " > ${TESTOUTPUT_JSON}
 		cp $TESTFILE ${TESTFILE_ASHTML}
 		DOCSTRING=$(cat $TESTFILE | awk '
 			BEGIN {insection="no"}
@@ -170,28 +143,17 @@ do_js_test() {
 			/\/\/startdescription\/\// { insection="yes" }
 			')
 		DOCSTRING=${DOCSTRING//$'\n'/'<br>'}
+		echo $DOCSTRING > "${OUTDIR}/${BASENAME}.docstring"
 		node $TESTFILE ${TESTOUTPUT_NORMAL} ${TESTOUTPUT_EXPLODED} ${HEADFUL} ${PARAMS} 2> ${TESTOUTPUT} && TEST_SUCCESS=true
+		echo $TEST_SUCCESS > "${OUTDIR}/${BASENAME}.testsuccess"
 		if [ "$TEST_SUCCESS" == "false" ]; then
 			echo -e "${RED}[${BASENAME}]${NC} test crashed!!!!! check console for error."
-			echo "    \"test\": \"${BASENAME}\"," >> ${TESTOUTPUT_JSON}
-			echo "    \"is_repl\": \"false\"," >> ${TESTOUTPUT_JSON}
-			echo "    \"docstring\": \"${DOCSTRING}\"," >> ${TESTOUTPUT_JSON}
-			echo "    \"node_ignored\": false," >> ${TESTOUTPUT_JSON}
-			echo "    \"node_success\": ${TEST_SUCCESS}" >> ${TESTOUTPUT_JSON}
 		else
-			echo "    \"test\": \"${BASENAME}\"," >> ${TESTOUTPUT_JSON}
-			echo "    \"is_repl\": \"false\"," >> ${TESTOUTPUT_JSON}
-			echo "    \"docstring\": \"${DOCSTRING}\"," >> ${TESTOUTPUT_JSON}
-			echo "    \"node_ignored\": false," >> ${TESTOUTPUT_JSON}
-			echo "    \"node_success\": ${TEST_SUCCESS}," >> ${TESTOUTPUT_JSON}
-			echo "    \"diffs\": [" >> ${TESTOUTPUT_JSON}
-			do_image_comparison "NORMAL" ${BASENAME} ${TESTOUTPUT_JSON}
-			echo "    ," >> ${TESTOUTPUT_JSON}
-			do_image_comparison "EXPLODED" ${BASENAME} ${TESTOUTPUT_JSON}
-			echo "    ]" >> ${TESTOUTPUT_JSON}
+			do_image_comparison "NORMAL" ${BASENAME}
+			do_image_comparison "EXPLODED" ${BASENAME}
 		fi
-		echo "  }" >> ${TESTOUTPUT_JSON}
 	fi
+	echo "completed" > "${OUTDIR}/${BASENAME}.teststatus"
 }
 
 do_test() {
@@ -220,7 +182,7 @@ is_vk() {
 
 run() {
 	if [ "$TESTFILE" == "*" ]; then
-		NUMTESTS=$(ls ./${TESTDIR}/*.js | wc | awk '{ print $1 }')
+		NUMTESTS=$(ls ./${TESTDIR}/*.js ./${TESTDIR}/*.js | wc | awk '{ print $1 }')
 		CURRENTTESTNUM=1
 		for CTESTFILE in ./${TESTDIR}/*.js; do
 			BASENAME="${CTESTFILE}"

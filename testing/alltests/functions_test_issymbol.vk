@@ -1,0 +1,37 @@
+| This file is part of Vodka.
+
+| Vodka is free software: you can redistribute it and/or modify
+| it under the terms of the GNU General Public License as published by
+| the Free Software Foundation, either version 3 of the License, or
+| (at your option) any later version.
+
+| Vodka is distributed in the hope that it will be useful,
+| but WITHOUT ANY WARRANTY; without even the implied warranty of
+| MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+| GNU General Public License for more details.
+
+| You should have received a copy of the GNU General Public License
+| along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+
+| testname: 
+| description: test is symbol
+
+~(_is-symbol ~(_quote ~(_car _)_)_)
+~(_is-symbol !no_)
+~(_is-symbol ~(_quote @a_)_)
+~(_is-symbol #0_)
+~(_is-symbol $"a"_)
+~(_is-symbol %0_)
+~(_is-symbol ^_)
+~(_is-symbol &(__)_)
+~(_is-symbol ~(_quote &(__)_)_)
+~(_is-symbol [letter]"a"_)
+~(_is-symbol [separator]";"_)
+~(_is-symbol *(__)_)
+~(_is-symbol [word](__)_)
+~(_is-symbol (||)_)
+~(_is-symbol [doc](||)_)
+~(_is-symbol [line](__)_)
+~(_is-symbol ~(_convert-type-if-error $"warn" ~(_car _)_)_)
+
+
