@@ -182,7 +182,7 @@ is_vk() {
 
 run() {
 	if [ "$TESTFILE" == "*" ]; then
-		NUMTESTS=$(ls ./${TESTDIR}/*.js ./${TESTDIR}/*.js | wc | awk '{ print $1 }')
+		NUMTESTS=$(ls ./${TESTDIR}/*.js ./${TESTDIR}/*.vk | wc | awk '{ print $1 }')
 		CURRENTTESTNUM=1
 		for CTESTFILE in ./${TESTDIR}/*.js; do
 			BASENAME="${CTESTFILE}"

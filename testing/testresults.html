@@ -95,73 +95,25 @@
 			<div id="goldenoutput"></div>
 		</div>
 		<div class="summarylist">
-			<div class="summaryname failed">Failing Tests: 0</div>
+			<div class="summaryname failed">Failing Tests: 1</div>
 				<div class="summarylistitem">
 					<input type="checkbox" onclick="selectAllFailing(this)">
 					(select all)
 				</div>
+				<div class="summarylistitem"> 
+					<input type="checkbox" class="failinginput" data-command="./runtests.sh execution_eval_andkeep_expectation_error">
+					 <a href="./alltests/execution_eval_andkeep_expectation_error/execution_eval_andkeep_expectation_error_testresults.html">execution_eval_andkeep_expectation_error</a>
+				</div>
 		</div>
     <div class="summarylist">
-      <div class="summaryname neededgolden">Tests that Needed New Goldens: 13</div>
+      <div class="summaryname neededgolden">Tests that Needed New Goldens: 0</div>
         <div class="summarylistitem">
           <input type="checkbox" onclick="selectAllThatNeededGolden(this)">
           (select all)
         </div>
-        <div class="summarylistitem">
-          <input type="checkbox" class="neededgolden" data-command="./runtests.sh functions_basic_cram">
-          <a href="./alltests/functions_basic_cram/functions_basic_cram_testresults.html">functions_basic_cram</a>
-        </div>
-        <div class="summarylistitem">
-          <input type="checkbox" class="neededgolden" data-command="./runtests.sh functions_test_isexpectation">
-          <a href="./alltests/functions_test_isexpectation/functions_test_isexpectation_testresults.html">functions_test_isexpectation</a>
-        </div>
-        <div class="summarylistitem">
-          <input type="checkbox" class="neededgolden" data-command="./runtests.sh functions_test_isfloat">
-          <a href="./alltests/functions_test_isfloat/functions_test_isfloat_testresults.html">functions_test_isfloat</a>
-        </div>
-        <div class="summarylistitem">
-          <input type="checkbox" class="neededgolden" data-command="./runtests.sh functions_test_isinteger">
-          <a href="./alltests/functions_test_isinteger/functions_test_isinteger_testresults.html">functions_test_isinteger</a>
-        </div>
-        <div class="summarylistitem">
-          <input type="checkbox" class="neededgolden" data-command="./runtests.sh functions_test_islambda">
-          <a href="./alltests/functions_test_islambda/functions_test_islambda_testresults.html">functions_test_islambda</a>
-        </div>
-        <div class="summarylistitem">
-          <input type="checkbox" class="neededgolden" data-command="./runtests.sh functions_test_isletter">
-          <a href="./alltests/functions_test_isletter/functions_test_isletter_testresults.html">functions_test_isletter</a>
-        </div>
-        <div class="summarylistitem">
-          <input type="checkbox" class="neededgolden" data-command="./runtests.sh functions_test_islist">
-          <a href="./alltests/functions_test_islist/functions_test_islist_testresults.html">functions_test_islist</a>
-        </div>
-        <div class="summarylistitem">
-          <input type="checkbox" class="neededgolden" data-command="./runtests.sh functions_test_isnil">
-          <a href="./alltests/functions_test_isnil/functions_test_isnil_testresults.html">functions_test_isnil</a>
-        </div>
-        <div class="summarylistitem">
-          <input type="checkbox" class="neededgolden" data-command="./runtests.sh functions_test_isseparator">
-          <a href="./alltests/functions_test_isseparator/functions_test_isseparator_testresults.html">functions_test_isseparator</a>
-        </div>
-        <div class="summarylistitem">
-          <input type="checkbox" class="neededgolden" data-command="./runtests.sh functions_test_isstring">
-          <a href="./alltests/functions_test_isstring/functions_test_isstring_testresults.html">functions_test_isstring</a>
-        </div>
-        <div class="summarylistitem">
-          <input type="checkbox" class="neededgolden" data-command="./runtests.sh functions_test_issymbol">
-          <a href="./alltests/functions_test_issymbol/functions_test_issymbol_testresults.html">functions_test_issymbol</a>
-        </div>
-        <div class="summarylistitem">
-          <input type="checkbox" class="neededgolden" data-command="./runtests.sh functions_test_isword">
-          <a href="./alltests/functions_test_isword/functions_test_isword_testresults.html">functions_test_isword</a>
-        </div>
-        <div class="summarylistitem">
-          <input type="checkbox" class="neededgolden" data-command="./runtests.sh functions_test_iszlist">
-          <a href="./alltests/functions_test_iszlist/functions_test_iszlist_testresults.html">functions_test_iszlist</a>
-        </div>
     </div>
 		<div class="summarylist">
-			<div class="summaryname passed">Passing Tests: 274</div>
+			<div class="summaryname passed">Passing Tests: 287</div>
 				<div class="summarylistitem">
 					<input type="checkbox" onclick="selectAllPassing(this)">
 					(select all)
@@ -731,6 +683,10 @@
 					<a href="./alltests/functions_basic_cons/functions_basic_cons_testresults.html">functions_basic_cons</a>
 				</div>
 				<div class="summarylistitem">
+					<input type="checkbox" class="passinginput" data-command="./runtests.sh functions_basic_cram">
+					<a href="./alltests/functions_basic_cram/functions_basic_cram_testresults.html">functions_basic_cram</a>
+				</div>
+				<div class="summarylistitem">
 					<input type="checkbox" class="passinginput" data-command="./runtests.sh functions_basic_first">
 					<a href="./alltests/functions_basic_first/functions_basic_first_testresults.html">functions_basic_first</a>
 				</div>
@@ -1059,8 +1015,56 @@
 					<a href="./alltests/functions_test_iserror/functions_test_iserror_testresults.html">functions_test_iserror</a>
 				</div>
 				<div class="summarylistitem">
+					<input type="checkbox" class="passinginput" data-command="./runtests.sh functions_test_isexpectation">
+					<a href="./alltests/functions_test_isexpectation/functions_test_isexpectation_testresults.html">functions_test_isexpectation</a>
+				</div>
+				<div class="summarylistitem">
+					<input type="checkbox" class="passinginput" data-command="./runtests.sh functions_test_isfloat">
+					<a href="./alltests/functions_test_isfloat/functions_test_isfloat_testresults.html">functions_test_isfloat</a>
+				</div>
+				<div class="summarylistitem">
+					<input type="checkbox" class="passinginput" data-command="./runtests.sh functions_test_isinteger">
+					<a href="./alltests/functions_test_isinteger/functions_test_isinteger_testresults.html">functions_test_isinteger</a>
+				</div>
+				<div class="summarylistitem">
+					<input type="checkbox" class="passinginput" data-command="./runtests.sh functions_test_islambda">
+					<a href="./alltests/functions_test_islambda/functions_test_islambda_testresults.html">functions_test_islambda</a>
+				</div>
+				<div class="summarylistitem">
+					<input type="checkbox" class="passinginput" data-command="./runtests.sh functions_test_isletter">
+					<a href="./alltests/functions_test_isletter/functions_test_isletter_testresults.html">functions_test_isletter</a>
+				</div>
+				<div class="summarylistitem">
 					<input type="checkbox" class="passinginput" data-command="./runtests.sh functions_test_isline">
 					<a href="./alltests/functions_test_isline/functions_test_isline_testresults.html">functions_test_isline</a>
+				</div>
+				<div class="summarylistitem">
+					<input type="checkbox" class="passinginput" data-command="./runtests.sh functions_test_islist">
+					<a href="./alltests/functions_test_islist/functions_test_islist_testresults.html">functions_test_islist</a>
+				</div>
+				<div class="summarylistitem">
+					<input type="checkbox" class="passinginput" data-command="./runtests.sh functions_test_isnil">
+					<a href="./alltests/functions_test_isnil/functions_test_isnil_testresults.html">functions_test_isnil</a>
+				</div>
+				<div class="summarylistitem">
+					<input type="checkbox" class="passinginput" data-command="./runtests.sh functions_test_isseparator">
+					<a href="./alltests/functions_test_isseparator/functions_test_isseparator_testresults.html">functions_test_isseparator</a>
+				</div>
+				<div class="summarylistitem">
+					<input type="checkbox" class="passinginput" data-command="./runtests.sh functions_test_isstring">
+					<a href="./alltests/functions_test_isstring/functions_test_isstring_testresults.html">functions_test_isstring</a>
+				</div>
+				<div class="summarylistitem">
+					<input type="checkbox" class="passinginput" data-command="./runtests.sh functions_test_issymbol">
+					<a href="./alltests/functions_test_issymbol/functions_test_issymbol_testresults.html">functions_test_issymbol</a>
+				</div>
+				<div class="summarylistitem">
+					<input type="checkbox" class="passinginput" data-command="./runtests.sh functions_test_isword">
+					<a href="./alltests/functions_test_isword/functions_test_isword_testresults.html">functions_test_isword</a>
+				</div>
+				<div class="summarylistitem">
+					<input type="checkbox" class="passinginput" data-command="./runtests.sh functions_test_iszlist">
+					<a href="./alltests/functions_test_iszlist/functions_test_iszlist_testresults.html">functions_test_iszlist</a>
 				</div>
 				<div class="summarylistitem">
 					<input type="checkbox" class="passinginput" data-command="./runtests.sh functions_typeconversion_tointeger">

@@ -93,6 +93,5 @@ for A in $(find ../server/sessions | grep '.vk') ; do
 	capture_test $BASENAME $A
 	echo -e "${BLUE}[$BASENAME]${NC} Deleting the file ${A} from the sessions directory"
 	rm $A
-	fi
 done
 node parsetestoutput.js
