@@ -95,29 +95,38 @@ body {
 }
 
 #intro {
+	visibility: hidden;
+}
+
+#hotkeyreference {
+	visibility: hidden;
+}
+
+.infopanel {
 	font-family: Courier;
 	font-size: 9px;
-	border: 2px solid blue;
+	border: 2px solid #88003f;
 	background-color: #ef99aa;
 	padding: 20px;
 	margin: 20px;
 	visibility: hidden;
 	position:absolute;
+	z-index: 1000;
 }
 
-#intro .introtitle {
+.infopanel .infotitle {
 	padding: 0;
 	margin: 0;
 	font-size: 20px;
 }
 
-#intro .introversion {
+.infopanel .infoversion {
 	padding: 0;
 	margin: 0;
 	font-size: 12px;	
 }
 
-#intro .introline {
+.infopanel .infoline {
 	padding: 0;
 	margin: 0;
 	font-size: 10px;	
@@ -125,4 +134,28 @@ body {
 
 .alwaysvisible {
 	visibility: visible !important;
+}
+
+.infopanel .qmark {
+	display: inline-block;
+	font-size:26px;
+	padding: 6px;
+	margin: 0;
+	font-family: Georgia;
+	background-color: #f1dce5;
+	border: 1px solid #88003f;
+}
+
+.infopanel .infohotkey {
+	display: inline-block;
+	font-size: 1.2em;
+	font-weight: bold;
+	margin-right: 5px;
+	margin-top: 1px;
+	margin-bottom: 1px;
+	padding-left: 3px;
+	padding-right: 3px;
+	padding-bottom: 2px;
+	border: 1px solid #88003f;	
+	background-color: #f1dce5;
 }

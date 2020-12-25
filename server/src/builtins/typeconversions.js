@@ -126,11 +126,6 @@ function createTypeConversionBuiltins() {
 				let mayben = parseFloat(s);
 				if (Number.isNaN(mayben)) {
 					// rofl
-					let errstr = v instanceof Word
-						? 'word'
-						: ((v instanceof Line)
-							? 'line'
-							: 'doc');
 					return new EError(`to-float: could not convert "${s}" (object of type ${v.getTypeName()}). Sorry!`);
 				} else {
 					return new Float(mayben);

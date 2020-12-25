@@ -43,15 +43,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 // 6. There will be tests saved with this flag in the test config. This
 //    means it's probably a bad idea to reuse flag key names. To prevent
 //    that, keep it here with a comment saying // UNUSED BUT DO NOT REUSE
+
 const experiments = {
 	'V2_INSERTION_LENIENT_DOC_FORMAT': true,
 	'NO_COPY_CSS': true,
 	'DISABLE_ALERT_ANIMATIONS': false,
 	'BETTER_KEYBINDINGS': true,
-
-	// When true, makes it so that ctrl-enter always evaluates and does NOT open main editor.
-	// This breaks old tests that used this to open the editor.
-	'CTRL_ENTER_CHANGE': true, 
 
 	// This is the max render depth. We want some tests to be saved with a small
 	// max render depth, because test screenshots are small (example, see
@@ -63,8 +60,21 @@ const experiments = {
 	// of course interfere with screenshots.
 	'NO_SPLASH': false,
 
-	// When true, we use the "dirty only rendering" algorithm.
-	'DIRTY_ONLY_RENDERING': true,
+	// editors for the rest of the nexes.
+	'REMAINING_EDITORS': true,
+
+	// can delete last thing in root
+	'CAN_HAVE_EMPTY_ROOT': true,
+
+	// new closure display
+	'NEW_CLOSURE_DISPLAY': true,
+
+	// ugh why did I use both ctrl and option?
+	'THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO': true,
+
+
+	// save evaluates contents
+	'SAVE_EVALUATES_CONTENTS': true,
 
 	// See note above about changing testharness.js when adding new flags.
 };
@@ -136,7 +146,13 @@ function getExperimentsAsString() {
 	for (let key in overrides) {
 		exps[key] = overrides[key];
 	}
-	return JSON.stringify(exps);
+	let s = JSON.stringify(exps);
+	s = s.replace(/,/g, ',\n');
+	s = s.replace(/{/g, '{\n');
+	s = s.replace(/}/g, '\n}');
+	return `
+const experiment_flags = ${s};
+	`;
 }
 
 

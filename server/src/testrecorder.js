@@ -27,15 +27,19 @@ var testactions = [];
 `
 
 let session_end = `
+
 harness.runTestWithFlags(testactions, 'direct', experiment_flags);
 `
 let shorthand = '';
 
 function captureRecording() {
-	let session_output = `//testspec// ${shorthand}
-//starttest//` + sessionPrefix() + recorded_session + session_end + `//endtest//
-`;
-	navigator.clipboard.writeText(session_output);
+	navigator.clipboard.writeText(getSessionOutput());
+}
+
+function getSessionOutput() {
+	return `//testspec// ${shorthand}
+//starttest//` + recorded_session + getExperimentsAsString() + session_end + `//endtest//
+`;	
 }
 
 const EXPECTING_FIRST_DOWN  = 0;
@@ -50,14 +54,6 @@ const RECORDING_DONE_EXPECTING_UP    = 8;
 const RECORDING_DONE    = 9;
 
 let state = EXPECTING_FIRST_DOWN;
-
-function sessionPrefix() {
-	let flags = getExperimentsAsString();
-	flags = flags.replace(/,/g, ',\n');
-	return `
-const experiment_flags = ${flags};
-	`;
-}
 
 function checkRecordState(event, type) {
 	let kc = event.code;
@@ -128,7 +124,7 @@ function checkRecordState(event, type) {
 				state = RECORDING_DONE;
 				captureRecording();
 				setTimeout(function() {
-					alert('finished recording test.' + recorded_session);
+					alert('finished recording test\n\n' + getSessionOutput());
 				}, 1);
 			} else {
 				state = WILL_NOT_RECORD;

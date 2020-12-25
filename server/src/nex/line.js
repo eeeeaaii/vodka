@@ -23,6 +23,13 @@ import { EError } from './eerror.js'
 import { experiments } from '../globalappflags.js'
 import { RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 import { evaluateNexSafely } from '../evaluator.js'
+import {
+	RENDER_FLAG_INSERT_AFTER,
+	RENDER_FLAG_INSERT_BEFORE,
+	RENDER_FLAG_INSERT_INSIDE,
+	RENDER_FLAG_INSERT_AROUND,
+ } from '../globalconstants.js'
+
 
 /**
  * Represents a line in a document.
@@ -143,6 +150,15 @@ class Line extends NexContainer {
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('line');
 		domNode.classList.add('data');
+		if (renderFlags & RENDER_FLAG_INSERT_AFTER) {
+			domNode.classList.add('rightinsert');
+		} else if (renderFlags & RENDER_FLAG_INSERT_BEFORE) {
+			domNode.classList.add('leftinsert');			
+		} else if (renderFlags & RENDER_FLAG_INSERT_AROUND) {
+			domNode.classList.add('topinsert');			
+		} else if (renderFlags & RENDER_FLAG_INSERT_INSIDE) {
+			domNode.classList.add('bottominsert');			
+		}
 		// weird
 		let hasDocChild = false;
 		for (let i = 0; i < this.numChildren() ;i++) {
@@ -167,6 +183,7 @@ class Line extends NexContainer {
 		if (experiments.BETTER_KEYBINDINGS) {
 			return {
 				'ShiftSpace' : 'do-nothing',
+				'Enter': 'do-line-break-or-eval',
 			}
 		} else {
 			return {

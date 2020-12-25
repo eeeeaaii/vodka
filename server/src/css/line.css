@@ -43,3 +43,55 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	background-color: black;
 	width:1px;
 }
+
+
+@keyframes show-line-execution-selected-1 {
+	0% {border-color: var(--selected-border);}
+	5% {border-color: #ffff77;}
+	100% {border-color: #a7a7de;}
+}
+
+@keyframes show-line-execution-selected-2 {
+	0% {border-color: var(--selected-border);}
+	5% {border-color: #ffff77;}
+	100% {border-color: #a7a7de;}
+}
+
+.animating-selected-line-executable-1 {
+	animation-duration: .7s;
+	animation-name: show-line-execution-selected-1;
+}
+
+.animating-selected-line-executable-2 {
+	animation-duration: .70s;
+	animation-name: show-line-execution-selected-2;
+}
+
+
+.line.selected.leftinsert {
+	animation-duration: 2s;
+	animation-name: letterblinkleft;
+	animation-iteration-count: 1;
+}
+
+.line.selected.rightinsert {
+	animation-duration: 2s;
+	animation-name: letterblinkright;
+	animation-iteration-count: 1;
+}
+
+.line.selected.topinsert {
+	animation-duration: 2s;
+	animation-name: letterblinktop;
+	animation-iteration-count: 1;
+}
+
+.line.selected.bottominsert {
+	animation-duration: 2s;
+	animation-name: letterblinkbottom;
+	animation-iteration-count: 1;
+}
+
+.line.selected.exploded {
+	animation-name: none;
+}

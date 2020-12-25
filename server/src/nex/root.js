@@ -43,6 +43,10 @@ class Root extends NexContainer {
 		return 1;
 	}
 
+	getDefaultHandler() {
+		return 'rootDefault';
+	}
+
 	// dead code?
 	debug() {
 		this.doForEachChild(c => {

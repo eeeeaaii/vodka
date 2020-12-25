@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from './utils.js'
+
 import { setAppFlags, otherflags, experiments } from './globalappflags.js'
 import { perfmon } from './perfmon.js'
 
@@ -220,12 +222,22 @@ function setSessionId() {
 }
 
 function checkHelpMessage() {
+	document.getElementById('showhotkeys').onclick = function(c) {
+		document.getElementById('intro').style.visibility = 'hidden';
+		document.getElementById('hotkeyreference').style.visibility = 'visible';
+	}
+	document.getElementById('closehotkeyreference').onclick = function(c) {
+		document.getElementById('hotkeyreference').style.visibility = 'hidden';
+		window.scrollTo(0,0);
+	}
 	document.getElementById('closeintro').onclick = function(c) {
 		document.getElementById('intro').style.visibility = 'hidden';
+		window.scrollTo(0,0);
 	}
 	document.getElementById('closeintropermanently').onclick = function(c) {
 		document.getElementById('intro').style.visibility = 'hidden';
 		document.cookie = 'hasbeenhelped=true';
+		window.scrollTo(0,0);
 	}
 	document.getElementById('sessionid').innerText = sessionId;
 	document.getElementById('sessionlink').href = `http://${FEATURE_VECTOR.hostname}?sessionId=${sessionId}`;
@@ -234,13 +246,20 @@ function checkHelpMessage() {
 	let showIt = function() {
 		document.getElementById('intro').style.visibility = 'visible';
 	}
+	let showIt2 = function() {
+		document.getElementById('hotkeyreference').style.visibility = 'visible';
+	}
 	if (!userSaidDoNotRemind && !experiments.NO_SPLASH) {
 		showIt();
 	} else {
 		var params = new URLSearchParams(window.location.search);
 		params.forEach(function(value, key) {
 			if (key == 'help') {
-				showIt();
+				if (value == 'hotkeys') {
+					showIt2();
+				} else {
+					showIt();
+				}
 			}
 		})
 
@@ -257,13 +276,40 @@ function replSetup() {
 	setNextNexId(1000);
 }
 
+function macSubst() {
+	if (!Utils.isMac()) {
+		let opts = document.getElementsByClassName('optionkey');
+		for (let i = 0; i < opts.length; i++) {
+			opts[i].textContent = 'ctrl';
+		}		
+		let metas = document.getElementsByClassName('metakey');
+		for (let i = 0; i < metas.length; i++) {
+			metas[i].textContent = 'ctrl';
+		}		
+	}
+}
+
 // app main entry point
 
 function setup() {
 	setAppFlags();
 	setSessionId();
+	macSubst();
 	checkHelpMessage();
 	eventQueue.initialize();
+
+	keyDispatcher.setCloseHelp(function() {
+		document.getElementById('intro').style.visibility = 'hidden';
+		document.getElementById('hotkeyreference').style.visibility = 'hidden';
+		window.scrollTo(0,0);
+	})
+	keyDispatcher.setHelpCallback(function() {
+		document.getElementById('intro').style.visibility = 'visible';
+	})
+	keyDispatcher.setHelp2Callback(function() {
+		document.getElementById('intro').style.visibility = 'hidden';
+		document.getElementById('hotkeyreference').style.visibility = 'visible';
+	})
 
 	// testharness.js needs this
 	window.doKeyInput = doKeyInput;

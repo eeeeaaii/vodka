@@ -20,6 +20,8 @@ import * as Utils from './utils.js'
 import { systemState } from './systemstate.js'
 import { LambdaEditor } from './nex/lambda.js'
 import { BoolEditor } from './nex/bool.js'
+import { FloatEditor } from './nex/float.js'
+import { IntegerEditor } from './nex/integer.js'
 import { ESymbolEditor } from './nex/esymbol.js'
 import { EStringEditor } from './nex/estring.js'
 import { CommandEditor } from './nex/command.js'
@@ -43,6 +45,7 @@ import {
 } from './globalconstants.js'
 
 import { experiments } from './globalappflags.js'
+import { alertAnimator } from './alertanimator.js'
 
 const INSERT_UNSPECIFIED = 0;
 const INSERT_AFTER = 1;
@@ -137,6 +140,10 @@ class RenderNode {
 				return new BoolEditor(nex);
 			case '-command-':
 				return new CommandEditor(nex);
+			case '-float-':
+				return (experiments.REMAINING_EDITORS ? new FloatEditor(nex) : null);
+			case '-integer-':
+				return (experiments.REMAINING_EDITORS ? new IntegerEditor(nex) : null);
 			case '-symbol-':
 				return new ESymbolEditor(nex);
 			case '-string-':
@@ -154,9 +161,9 @@ class RenderNode {
 		let editor = this.getEditorForType(this.getNex());
 		if (editor) {
 			this.startEditor(editor);
-			return true;
+			return editor;
 		}
-		return false;
+		return null;
 	}
 
 	startEditor(editor) {
@@ -176,34 +183,8 @@ class RenderNode {
 		this.nex.clearTags();
 	}
 
-	setAlertStyle(node, codespan) {
-		let sel = this.selected ? `selected` : `unselected`;
-		let currentNumber = node.classList.contains(`animating-${sel}-executable-1`) ? "1" : "2"
-		let newNumber = currentNumber == "1" ? "2" : "1";
-		node.classList.remove(`animating-${sel}-executable-${currentNumber}`);
-		node.classList.add(`animating-${sel}-executable-${newNumber}`);
-		codespan.classList.remove(`animating-${sel}-bg-executable-${currentNumber}`);
-		codespan.classList.add(`animating-${sel}-bg-executable-${newNumber}`);
-	}
-
-	getCodespanForAlertAnimation() {
-		let codespan = null;
-		for (let i = 0; i < this.domNode.childNodes.length; i++) {
-			let child = this.domNode.childNodes[i];
-			if (child.classList && child.classList.contains('codespan')) {
-				// this is the part of the lambda that has the params etc
-				codespan = child;
-			}
-		}
-		if (codespan == null) {
-			throw new Error('tried to call doAlertAnimation on something thats not a lambda or command');
-		}
-		return codespan;
-	}
-
 	doAlertAnimation() {
-		// nex should only be a lambda or command.
-		this.setAlertStyle(this.domNode, this.getCodespanForAlertAnimation());
+		alertAnimator.doAlertAnimation(this.selected, this.domNode);
 	}
 
 	setRenderDepth(depth) {
@@ -493,6 +474,10 @@ class RenderNode {
 	}
 
 	setInsertionMode(mode) {
+		if (Utils.isRoot(this.nex)) {
+			this.insertionMode = (mode == INSERT_UNSPECIFIED) ? mode : INSERT_INSIDE;
+			return;
+		}
 		if (mode != this.insertionMode) {
 			let p = this.getParent();
 			if (p) {
@@ -537,6 +522,24 @@ class RenderNode {
 		return this.insertionMode;
 	}
 
+	getDefaultInsertionMode(nex) {
+		if (Utils.isRoot(this.nex)) {
+			return INSERT_INSIDE;
+		}
+		if (nex.isNexContainer() && nex.numChildren() == 0) {
+			// for commands that we know have no args, we don't do insert inside by default.
+			if (Utils.isCommand(nex)
+					&& nex.hasCachedClosure()
+					&& nex.getLambdaFromCachedClosure().getParams().length == 0) {
+				return INSERT_AFTER;
+			} else {
+				return INSERT_INSIDE;
+			}
+		} else {
+			return INSERT_AFTER;			
+		}
+	}
+
 	// TODO: this is confusing because you might think that the boolean passed in tells it whether
 	// or not to make the thing selected.
 	setSelected(rerender) {
@@ -555,18 +558,7 @@ class RenderNode {
 		selectedNode = this;
 		this.selected = true;
 		let nex = this.getNex();
-		if (nex.isNexContainer() && nex.numChildren() == 0) {
-			// for commands that we know have no args, we don't do insert inside by default.
-			if (Utils.isCommand(nex)
-					&& nex.hasCachedClosure()
-					&& nex.getLambdaFromCachedClosure().getParams().length == 0) {
-				this.setInsertionMode(INSERT_AFTER);
-			} else {
-				this.setInsertionMode(INSERT_INSIDE);
-			}
-		} else {
-			this.setInsertionMode(INSERT_AFTER);
-		}
+		this.setInsertionMode(this.getDefaultInsertionMode(nex));
 		selectedNode.setRenderNodeDirtyForRendering(true);
 		if (selectedNode.getParent()) {
 			selectedNode.getParent().setRenderNodeDirtyForRendering(true);

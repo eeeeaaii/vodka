@@ -166,6 +166,23 @@ class Lambda extends NexContainer {
 		return '&#8907;';
 	}
 
+	getArgString(name) {
+		let r = '';
+		if (this.returnValueParam) {
+			r += this.returnValueParam.debugName.substr(1);
+		}
+		r += name;
+		r += ' ';
+		for (let i = 0; i < this.paramsArray.length; i++) {
+			let param = this.paramsArray[i];
+			if (i > 0) {
+				r += ' ';
+			}
+			r += '|' + param.debugName;
+		}
+		return r;
+	}
+
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		let codespan = null;

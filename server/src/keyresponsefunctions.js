@@ -95,6 +95,20 @@ function isNormallyHandled(key) {
 
 const DefaultHandlers = {
 
+	'rootDefault': function(nex, txt) {
+		if (isNormallyHandled(txt)) {
+			return false;
+		}
+		let letterRegex = /^[a-zA-Z0-9']$/;
+		let isSeparator = !letterRegex.test(txt);
+		if (isSeparator) {
+			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt))
+		} else {
+			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt))
+		}
+		return true;
+	},
+
 	'zlistDefault': function(nex, txt, context) {
 		if (isNormallyHandled(txt)) {
 			return false;
@@ -159,78 +173,84 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	'lineDefault': function(nex, txt, context) {
-		if (isNormallyHandledInDocContext(txt)) {
-			return false;
-		}
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-		let isCommand = (context == ContextType.COMMAND);
-		if (isSeparator) {
-			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
-			} else {
-				manipulator.insertSeparatorFromLineV2(manipulator.newSeparator(txt), manipulator.selected())
-			}
-		} else {
-			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
-			} else {
-				manipulator.insertLetterFromLineV2(manipulator.newLetter(txt), manipulator.selected())
-			}
-		}
-		return true;
-	},
-
 	'integerDefault': function(nex, txt, context, sourcenode) {
-		if (txt == 'Backspace') {
-			if (nex.value == '0') {
-				manipulator.removeAndSelectPreviousSiblingV2(sourcenode);
+		if (experiments.REMAINING_EDITORS) {
+			if (isNormallyHandled(txt)) {
+				return false;
+			}
+			let letterRegex = /^[a-zA-Z0-9']$/;
+			let isSeparator = !letterRegex.test(txt);
+			if (isSeparator) {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
 			} else {
-				nex.deleteLastLetter();
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+			}
+			return true;
+
+		} else {
+			if (txt == 'Backspace') {
+				if (nex.value == '0') {
+					manipulator.removeAndSelectPreviousSiblingV2(sourcenode);
+				} else {
+					nex.deleteLastLetter();
+				}
+				return true;
+			}
+			if (isNormallyHandled(txt)) {
+				return false;
+			}
+			let okRegex = /^[0-9-]$/;
+			let letterRegex = /^[a-zA-Z0-9']$/;
+			let isSeparator = !letterRegex.test(txt);
+			if (okRegex.test(txt)) {
+				nex.appendText(txt);
+			} else if (isSeparator) {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
+			} else {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
 			}
 			return true;
 		}
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let okRegex = /^[0-9-]$/;
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-		if (okRegex.test(txt)) {
-			nex.appendText(txt);
-		} else if (isSeparator) {
-			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
-		} else {
-			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-		}
-		return true;
 	},
 
 	'floatDefault': function(nex, txt, context, sourcenode) {
-		if (txt == 'Backspace') {
-			// do backspace hack
-			if (nex.value == '0') {
-				manipulator.removeSelectedAndSelectPreviousLeafV2(sourcenode);
+		if (experiments.REMAINING_EDITORS) {
+			if (isNormallyHandled(txt)) {
+				return false;
+			}
+			let letterRegex = /^[a-zA-Z0-9']$/;
+			let isSeparator = !letterRegex.test(txt);
+			if (isSeparator) {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
 			} else {
-				nex.deleteLastLetter();
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+			}
+			return true;
+		} else {
+			if (txt == 'Backspace') {
+				// do backspace hack
+				if (nex.value == '0') {
+					manipulator.removeSelectedAndSelectPreviousLeafV2(sourcenode);
+				} else {
+					nex.deleteLastLetter();
+				}
+				return true;
+			}
+			if (isNormallyHandled(txt)) {
+				return false;
+			}
+			let okRegex = /^[e0-9.-]$/;
+			let letterRegex = /^[a-zA-Z0-9']$/;
+			let isSeparator = !letterRegex.test(txt);
+			if (okRegex.test(txt)) {
+				nex.appendText(txt);
+			} else if (isSeparator) {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
+			} else {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
 			}
 			return true;
 		}
-		if (isNormallyHandled(txt)) {
-			return false;
-		}
-		let okRegex = /^[e0-9.-]$/;
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-		if (okRegex.test(txt)) {
-			nex.appendText(txt);
-		} else if (isSeparator) {
-			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
-		} else {
-			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-		}
-		return true;
 	},
 
 	'expectationDefault': function(nex, txt) {
@@ -254,7 +274,7 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	'insertAfterEString': function(nex, txt) {
+	'estringDefault': function(nex, txt) {
 		if (isNormallyHandled(txt)) {
 			return false;
 		}
@@ -393,6 +413,51 @@ const DefaultHandlers = {
 		return true;
 	},
 
+	'lineDefault': function(nex, txt, context) {
+		if (isNormallyHandledInDocContext(txt)) {
+			return false;
+		}
+		let letterRegex = /^[a-zA-Z0-9']$/;
+		let isSeparator = !letterRegex.test(txt);
+		let isCommand = (context == ContextType.COMMAND);
+		if (isSeparator) {
+			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
+			} else {
+				if (experiments.BETTER_KEYBINDINGS) {
+					if (manipulator.selectLastChild()) {
+						manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
+					} else {
+						manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt))
+					}
+				} else {
+					manipulator.insertSeparatorFromLineV2(manipulator.newSeparator(txt), manipulator.selected())
+				}
+			}
+		} else {
+			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
+				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
+			} else {
+				if (experiments.BETTER_KEYBINDINGS) {
+					if (manipulator.selectLastChild()) {
+						if (manipulator.selectLastChild()) {
+							manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+						} else {
+							manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newWord());
+							manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+						}
+					} else {
+						manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newWord());
+						manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+					}
+				} else {
+					manipulator.insertLetterFromLineV2(manipulator.newLetter(txt), manipulator.selected())
+				}
+			}
+		}
+		return true;
+	},
+
 	'docHandle' : function(nex, txt, context) {
 		if (isNormallyHandledInDocContext(txt)) {
 			return false;
@@ -474,9 +539,13 @@ const KeyResponseFunctions = {
 	'start-main-editor': function(s) { s.possiblyStartMainEditor(); },
 
 	'start-main-editor-or-delete': function(s) {
-		let didEditor = s.possiblyStartMainEditor();
-		if (!didEditor) {
+		let editor = s.possiblyStartMainEditor();
+		if (!editor) {
 			manipulator.removeAndSelectPreviousSiblingV2(s);
+		} else {
+			if (editor.hasContent()) {
+				editor.routeKey('Backspace');
+			}
 		}
 	},
 
@@ -518,6 +587,14 @@ const KeyResponseFunctions = {
 
 	'select-first-child-or-force-insert-inside-insertion-mode': function(s) {
 		manipulator.selectFirstChildOrMoveInsertionPoint(s);
+	},
+
+	'do-line-break-or-eval': function(s, context) {
+		if (context == ContextType.DOC) {
+			manipulator.doLineBreakForLine(s);
+		} else {
+			evaluateAndReplace(s);
+		}
 	},
 
 	'do-line-break-from-line-v2': function(s) {

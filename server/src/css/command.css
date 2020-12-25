@@ -30,3 +30,31 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 }
 
+.ghost {
+	flex-direction:column;
+	align-items: flex-start;
+	position: absolute;
+	left: 22px;
+	top: 48px;
+	width: 400px;
+	display: flex;
+	font-family: Courier;
+	color: #444444;
+	font-style: italic;
+	font-size: 11px;
+	background-color: #e8e8e8;
+	border: 1px solid var(--unselected-border);
+	padding: 5px;	
+	z-index: 100;
+	font-weight: normal;
+}
+
+.ghostline {
+	position:absolute;
+	width: 35px;
+	height: 1px;
+	background-color: var(--unselected-border);
+	transform: rotate(60deg);
+	left:-20px;
+	top: -16px;
+}

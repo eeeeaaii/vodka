@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from './utils.js'
 
 import { UNHANDLED_KEY, RENDER_MODE_EXPLO, RENDER_MODE_NORM } from './globalconstants.js';
 import { systemState } from './systemstate.js';
@@ -27,6 +28,25 @@ import { evaluateNexSafely } from './evaluator.js';
 import { experiments } from './globalappflags.js'
 
 class KeyDispatcher {
+	constructor() {
+		this.nqmarks = 0;
+		this.helpcallback = null;
+		this.help2callback = null;
+		this.closeHelp = null;
+	}
+
+	setHelpCallback(cb) {
+		this.helpcallback = cb;
+	}
+
+	setHelp2Callback(cb) {
+		this.help2callback = cb;
+	}
+
+	setCloseHelp(cb) {
+		this.closeHelp = cb;
+	}
+
 	dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
 		let keyContext = ContextType.COMMAND;
 		let p = systemState.getGlobalSelectedNode().getParent();
@@ -36,6 +56,22 @@ class KeyDispatcher {
 			}
 		}
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
+		if (eventName == '?') {
+			if (this.nqmarks == 2) {
+				this.helpcallback();
+				this.nqmarks++
+			} else if (this.nqmarks == 3) {
+				this.help2callback();
+				this.nqmarks = 0;
+			} else {
+				if (eventName != 'Shift') this.closeHelp();
+				this.nqmarks++;
+			}
+		} else {
+			if (eventName != 'Shift') this.closeHelp();
+			this.nqmarks = 0;
+		}
+
 
 		if (!experiments.BETTER_KEYBINDINGS) {
 			if (eventName == 'NakedShift') {
@@ -111,9 +147,8 @@ class KeyDispatcher {
 				}
 				// returning false here means we tell the browser not to process the event.
 				if (this.runDefaultHandle(sourceNex, eventName, keyContext, systemState.getGlobalSelectedNode())) return false;
-				if (this.runFunctionFromOverrideTable(sourceNex, parentNex, eventName)) return false;
 				if (this.runFunctionFromRegularTable(sourceNex, eventName, keyContext)) return false;
-				if (this.runFunctionFromGenericTable(sourceNex, eventName)) return false;
+				if (this.runFunctionFromGenericTable(sourceNex, eventName, keyContext)) return false;
 				this.eraseLastUndo();
 				return true; // didn't handle it.
 			} catch (e) {
@@ -149,11 +184,27 @@ class KeyDispatcher {
 	}
 
 	getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichKey) {
+		let eventName = this.getEventNameImpl(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichKey);
+		if (experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) {
+			eventName = eventName.replace(/^Ctrl/, 'Alt');
+		}
+		return eventName;
+	}
+
+
+	getEventNameImpl(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichKey) {
 		// maybe I should rewrite this to do something like this:
 		// return `${shiftPrefix}${MetaPrefix}${keycode}`
 		// the only thing is I don't want it to return 'Shift!' or 'Shift$'
 		if (keycode == 'Enter' && hasMeta && hasShift) {
 			return 'ShiftMetaEnter';
+		} else if (keycode == 'Enter' && hasMeta) {
+			return 'MetaEnter';
+		} else if (keycode == 'Enter' && hasCtrl) {
+			return 'CtrlEnter';
+		} else if (keycode == 'Enter' && hasShift) {
+			return 'ShiftEnter';
+
 		} else if (keycode == 'ArrowDown' && hasAlt) {
 			return 'AltArrowDown';
 		} else if (keycode == 'ArrowUp' && hasAlt) {
@@ -162,6 +213,16 @@ class KeyDispatcher {
 			return 'AltArrowRight';
 		} else if (keycode == 'ArrowLeft' && hasAlt) {
 			return 'AltArrowLeft';
+
+		} else if (keycode == 'ArrowDown' && hasCtrl) {
+			return 'CtrlArrowDown';
+		} else if (keycode == 'ArrowUp' && hasCtrl) {
+			return 'CtrlArrowUp';
+		} else if (keycode == 'ArrowRight' && hasCtrl) {
+			return 'CtrlArrowRight';
+		} else if (keycode == 'ArrowLeft' && hasCtrl) {
+			return 'CtrlArrowLeft';
+
 		} else if (keycode == 'ArrowDown' && hasShift) {
 			return 'ShiftArrowDown';
 		} else if (keycode == 'ArrowUp' && hasShift) {
@@ -170,28 +231,31 @@ class KeyDispatcher {
 			return 'ShiftArrowRight';
 		} else if (keycode == 'ArrowLeft' && hasShift) {
 			return 'ShiftArrowLeft';
-		} else if (keycode == 'Enter' && hasMeta) {
-			return 'MetaEnter';
-		} else if (keycode == 'Enter' && hasCtrl) {
-			return 'CtrlEnter';
+
+
 		} else if (keycode == 'Escape' && hasShift) {
 			return 'ShiftEscape';
-		} else if (keycode == 'Enter' && hasShift) {
-			return 'ShiftEnter';
+
 		} else if (keycode == 'Tab' && hasShift && hasAlt) {
 			return 'ShiftAltTab';
-		} else if (keycode == 'Tab' && hasShift) {
-			return 'ShiftTab';
+		} else if (keycode == 'Tab' && hasShift && hasCtrl) {
+			return 'ShiftCtrlTab';
 		} else if (keycode == 'Tab' && hasAlt) {
 			return 'AltTab';
+		} else if (keycode == 'Tab' && hasCtrl) {
+			return 'CtrlTab';
+		} else if (keycode == 'Tab' && hasShift) {
+			return 'ShiftTab';
+
 		} else if (keycode == ' ' && hasShift) {
 			return 'ShiftSpace';
 		} else if (keycode == ' ' && hasCtrl) {
 			return 'CtrlSpace';
+		} else if ((keycode == ' ' || whichKey == 'Space') && hasAlt) { // on a mac, option-space inserts ascii 160, non-breaking space
+			return 'AltSpace';
 		} else if (keycode == ' ' && hasMeta) {
 			return 'MetaSpace';
 
-		// this stuff only works on a mac AFAIK
 		} else if (keycode == '`' && hasAlt && hasShift) {
 			return 'Alt~';
 		} else if (keycode == 'Dead' && whichKey == 'Backquote' && hasAlt && !hasShift) {
@@ -208,8 +272,43 @@ class KeyDispatcher {
 			return 'Alt[';
 		} else if (whichKey == 'BracketLeft' && hasAlt && hasShift) {
 			return 'Alt{';
+
+		} else if (keycode == '`' && hasCtrl && hasShift) {
+			return 'Ctrl~';
+		} else if (keycode == 'Dead' && whichKey == 'Backquote' && hasCtrl && !hasShift) {
+			return 'Ctrl`';
+		} else if (whichKey == 'Digit7' && hasCtrl && hasShift) {
+			return 'Ctrl&';
+		} else if (whichKey == 'Digit8' && hasCtrl && hasShift) {
+			return 'Ctrl*';
+		} else if (whichKey == 'Digit9' && hasCtrl && hasShift) {
+			return 'Ctrl(';
+		} else if (whichKey == 'Digit0' && hasCtrl && hasShift) {
+			return 'Ctrl)';
+		} else if (whichKey == 'BracketLeft' && hasCtrl && !hasShift) {
+			return 'Ctrl[';
+		} else if (whichKey == 'BracketLeft' && hasCtrl && hasShift) {
+			return 'Ctrl{';
+
+		} else if (keycode == 'Backspace' && hasShift && hasAlt) {
+			return 'AltShiftBackspace';
+		} else if (keycode == 'Backspace' && hasShift && hasCtrl) {
+			return 'CtrlShiftBackspace';
 		} else if (keycode == 'Backspace' && hasShift) {
 			return 'ShiftBackspace';
+		} else if (keycode == 'Backspace' && hasCtrl) {
+			return 'CtrlBackspace';
+		} else if (keycode == 'Backspace' && hasAlt) {
+			return 'AltBackspace';
+
+		} else if (keycode == 'z' && hasCtrl) {
+			return 'Meta-z';
+		} else if (keycode == 'x' && hasCtrl) {
+			return 'Meta-x';
+		} else if (keycode == 'c' && hasCtrl) {
+			return 'Meta-c';
+		} else if (keycode == 'v' && hasCtrl) {
+			return 'Meta-v';
 		} else if (keycode == 'z' && hasMeta) {
 			return 'Meta-z';
 		} else if (keycode == 'x' && hasMeta) {
@@ -236,7 +335,7 @@ class KeyDispatcher {
 		return false;
 	}
 
-	runFunctionFromGenericTable(sourceNex, eventName) {
+	runFunctionFromGenericTable(sourceNex, eventName, context) {
 		let table = null;
 		if (sourceNex.isNexContainer()) {
 			table = this.getNexContainerGenericTable();
@@ -244,7 +343,7 @@ class KeyDispatcher {
 			table = this.getNexGenericTable();
 		}
 		let f = table[eventName];
-		if (f && this.actOnFunction(f)) {
+		if (f && this.actOnFunction(f, context)) {
 			return true;
 		}
 		return false;
@@ -262,41 +361,13 @@ class KeyDispatcher {
 		return false;
 	}
 
-	runFunctionFromOverrideTable(sourceNex, parentNex, eventName) {
-		if (!parentNex) {
-			return false;
-		}
-		let table = parentNex.getEventOverride();
-		let nexTypeName = sourceNex.getTypeName();
-		if (!table) {
-			return false;
-		}
-		let subtable = null;
-		let f = null;
-		subtable = table[parentTypeName];
-		if (subtable) {
-			let f = subtable[eventName];
-			if (f && this.actOnFunction(f)) {
-				return true;
-			}
-		}
-		subtable = table['*'];
-		if (subtable) {
-			let f = subtable[eventName];
-			if (f && this.actOnFunction(f)) {
-				return true;
-			}
-		}
-		return null;
-	}
-
 	// returns true if it was a valid function that could be run
 	actOnFunction(f, context) {
 		if ((typeof f) == 'string') {
-			KeyResponseFunctions[f](systemState.getGlobalSelectedNode());
+			KeyResponseFunctions[f](systemState.getGlobalSelectedNode(), context);
 			return true;
 		} else if ((typeof f) == 'function') {
-			f(systemState.getGlobalSelectedNode());
+			f(systemState.getGlobalSelectedNode(), context);
 			return true;
 		} else if ((typeof f) == 'object') {
 			// contains different functions for different contexts
@@ -307,7 +378,7 @@ class KeyDispatcher {
 					throw new Error('must specify a default context if associating a key with a map')
 				}
 			}
-			KeyResponseFunctions[f2](systemState.getGlobalSelectedNode());
+			KeyResponseFunctions[f2](systemState.getGlobalSelectedNode(), context);
  			return true;
 		} else if (f instanceof Nex) {
 			evaluateNexSafely(f, BINDINGS)
@@ -381,10 +452,10 @@ class KeyDispatcher {
 			'ArrowDown': 'move-right-down-v2',
 			'ArrowRight': 'move-right-down-v2',
 
-			'ShiftArrowUp': (experiments.BETTER_KEYBINDINGS ? 'force-insert-before' : null),
-			'ShiftArrowDown': (experiments.BETTER_KEYBINDINGS ? 'force-insert-after' : null),
-			'ShiftArrowLeft': (experiments.BETTER_KEYBINDINGS ? 'force-insert-before' : null),
-			'ShiftArrowRight': (experiments.BETTER_KEYBINDINGS ? 'force-insert-after' : null),
+			'AltArrowUp': (experiments.BETTER_KEYBINDINGS ? 'force-insert-before' : null),
+			'AltArrowDown': (experiments.BETTER_KEYBINDINGS ? 'force-insert-after' : null),
+			'AltArrowLeft': (experiments.BETTER_KEYBINDINGS ? 'force-insert-before' : null),
+			'AltArrowRight': (experiments.BETTER_KEYBINDINGS ? 'force-insert-after' : null),
 
 			'AltTab': (experiments.BETTER_KEYBINDINGS ? 'force-insert-inside' : null),
 			'ShiftAltTab': (experiments.BETTER_KEYBINDINGS ? 'force-insert-around' : null),
@@ -396,9 +467,24 @@ class KeyDispatcher {
 
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
 			'Backspace': (experiments.BETTER_KEYBINDINGS ? 'start-main-editor-or-delete' : 'remove-selected-and-select-previous-sibling-v2'),
+
+			'CtrlBackspace': (
+				experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null
+				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
+			'AltBackspace': (
+				(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
+				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
+
 			'ShiftEscape': 'toggle-exploded',
 
-			'CtrlEnter': (experiments.CTRL_ENTER_CHANGE ? 'evaluate-v2' : 'start-main-editor'),
+			'CtrlEnter': (
+				experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null
+				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
+			'AltEnter': (
+				(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
+				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
+
+
 
 			'~': 'insert-command-at-insertion-point-v2',
 			'!': 'insert-bool-at-insertion-point-v2',
@@ -436,19 +522,34 @@ class KeyDispatcher {
 			'ArrowLeft': 'move-left-up-v2',
 			'ArrowRight': 'move-right-down-v2',
 
-			'ShiftArrowUp': (experiments.BETTER_KEYBINDINGS ? 'force-insert-before' : null),
-			'ShiftArrowDown': (experiments.BETTER_KEYBINDINGS ? 'force-insert-after': null),
-			'ShiftArrowLeft': (experiments.BETTER_KEYBINDINGS ? 'force-insert-before': null),
-			'ShiftArrowRight': (experiments.BETTER_KEYBINDINGS ? 'force-insert-after': null),
+			'AltArrowUp': (experiments.BETTER_KEYBINDINGS ? 'force-insert-before' : null),
+			'AltArrowDown': (experiments.BETTER_KEYBINDINGS ? 'force-insert-after': null),
+			'AltArrowLeft': (experiments.BETTER_KEYBINDINGS ? 'force-insert-before': null),
+			'AltArrowRight': (experiments.BETTER_KEYBINDINGS ? 'force-insert-after': null),
 
 			'ShiftAltTab': (experiments.BETTER_KEYBINDINGS ? 'force-insert-around' : null),
 
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
 			'Backspace': (experiments.BETTER_KEYBINDINGS ? 'start-main-editor-or-delete' : 'remove-selected-and-select-previous-sibling-v2'),
 
+			'CtrlBackspace': (
+				experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null
+				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
+			'AltBackspace': (
+				(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
+				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
+
+			'ShiftEscape': 'toggle-exploded',
+
+			'CtrlEnter': (
+				experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null
+				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
+			'AltEnter': (
+				(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
+				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
+
 			'ShiftEscape': 'toggle-exploded',
 			'Enter': 'evaluate-v2',
-			'CtrlEnter': (experiments.CTRL_ENTER_CHANGE ? 'evaluate-v2' : 'start-main-editor'),
 			'~': 'insert-command-at-insertion-point-v2',
 			'!': 'insert-bool-at-insertion-point-v2',
 			'@': 'insert-symbol-at-insertion-point-v2',

@@ -29,7 +29,6 @@ const experiment_flags = {
 "NO_COPY_CSS":false,
 "DISABLE_ALERT_ANIMATIONS":true,
 "BETTER_KEYBINDINGS":false,
-"CTRL_ENTER_CHANGE":false,
 "MAX_RENDER_DEPTH":40,
 'NO_SPLASH': true,
 

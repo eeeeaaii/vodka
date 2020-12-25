@@ -19,6 +19,13 @@ import { NexContainer } from './nexcontainer.js'
 import { ContextType } from '../contexttype.js'
 import { experiments } from '../globalappflags.js'
 import { evaluateNexSafely } from '../evaluator.js'
+import {
+	RENDER_FLAG_INSERT_AFTER,
+	RENDER_FLAG_INSERT_BEFORE,
+	RENDER_FLAG_INSERT_INSIDE,
+	RENDER_FLAG_INSERT_AROUND,
+ } from '../globalconstants.js'
+
 
 
 class Word extends NexContainer {
@@ -98,11 +105,23 @@ class Word extends NexContainer {
 		this.setCurrentStyle(data);
 	}
 
+
+
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('word');
 		domNode.classList.add('data');
+		if (renderFlags & RENDER_FLAG_INSERT_AFTER) {
+			domNode.classList.add('rightinsert');
+		} else if (renderFlags & RENDER_FLAG_INSERT_BEFORE) {
+			domNode.classList.add('leftinsert');			
+		} else if (renderFlags & RENDER_FLAG_INSERT_AROUND) {
+			domNode.classList.add('topinsert');			
+		} else if (renderFlags & RENDER_FLAG_INSERT_INSIDE) {
+			domNode.classList.add('bottominsert');			
+		}
+
 	}
 
 	setPfont(pfstring) {

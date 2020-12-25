@@ -16,6 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 var CLIPBOARD = null;
+var CLIPBOARD_INSERTION_MODE = null;
 
 import * as Utils from './utils.js'
 import { systemState } from './systemstate.js'
@@ -393,8 +394,10 @@ class Manipulator {
 	_deleteNode(node) {
 		let p = node.getParent();
 		if (!p) return false;
-		if (Utils.isRoot(p) && p.getNex().numChildren() == 1) {
-			return false; // can't remove last child of root
+		if (!experiments.CAN_HAVE_EMPTY_ROOT) {
+			if (Utils.isRoot(p) && p.getNex().numChildren() == 1) {
+				return false; // can't remove last child of root
+			}			
 		}
 		if (node.isSelected()) {
 			p.setSelected();
@@ -1591,6 +1594,8 @@ class Manipulator {
 		let p = toDel.getParent();
 		if (!p) return false;
 		if (
+			!experiments.CAN_HAVE_EMPTY_ROOT
+			&&
 			((p.getNex()) instanceof Root)
 			&&
 			(p.getNex()).numChildren() == 1
@@ -1787,7 +1792,6 @@ class Manipulator {
 		return true;
 	}
 
-
 	copyTextToSystemClipboard(txt) {
 		navigator.permissions.query({name: "clipboard-write"}).then(result => {
 			if (result.state == "granted" || result.state == "prompt") {
@@ -1799,6 +1803,7 @@ class Manipulator {
 	// used in keydispatcher.js
 	doCut() {
 		CLIPBOARD = systemState.getGlobalSelectedNode().getNex();
+		CLIPBOARD_INSERTION_MODE = systemState.getGlobalSelectedNode().getInsertionMode();
 		if (!isRecordingTest()) {
 			this.copyTextToSystemClipboard(CLIPBOARD.prettyPrint());
 		}
@@ -1811,6 +1816,7 @@ class Manipulator {
 	doCopy() {
 		try {
 			CLIPBOARD = systemState.getGlobalSelectedNode().getNex().makeCopy();
+			CLIPBOARD_INSERTION_MODE = systemState.getGlobalSelectedNode().getInsertionMode();
 			if (!isRecordingTest()) {
 				this.copyTextToSystemClipboard(CLIPBOARD.prettyPrint());
 			}
@@ -1828,13 +1834,16 @@ class Manipulator {
 		switch(s.getInsertionMode()) {
 			case INSERT_AFTER:
 				this.insertAfterSelectedAndSelect(CLIPBOARD.makeCopy());
+				this.selected().setInsertionMode(CLIPBOARD_INSERTION_MODE);
 				break;
 			case INSERT_BEFORE:
 			case INSERT_AROUND:
 				this.insertBeforeSelectedAndSelect(CLIPBOARD.makeCopy());
+				this.selected().setInsertionMode(CLIPBOARD_INSERTION_MODE);
 				break;
 			case INSERT_INSIDE:
 				this.insertAsFirstChild(CLIPBOARD.makeCopy());
+				this.selected().setInsertionMode(CLIPBOARD_INSERTION_MODE);
 				break;
 		}
 	}

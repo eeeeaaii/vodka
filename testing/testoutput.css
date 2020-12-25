@@ -24,11 +24,8 @@ body {
 	padding: 14px;
 	font-family: Courier;
 	font-size: 16px;
-}
-
-.goldenoutputtextarea {
-	width:800px;
-	padding: 5px;
+	display: none;
+	width: 100%;
 }
 
 .copyclick {
@@ -97,10 +94,6 @@ body {
 }
 
 .testout {
-	border: 3px solid black;
-	margin-bottom: 10px;
-	margin-left: 10px;
-	margin-right: 10px;
 }
 
 .testname {
@@ -281,3 +274,27 @@ body {
 	background-color: lightblue;
 }
 
+.listtestname {
+	font-size: 1.3em;
+}
+
+.detail {
+	display: none;
+	margin-left: 30px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	padding-right: 10px;
+}
+
+.detailiframe {
+	padding: 0px;
+	width: 100%;
+	height: 300px;
+	border: 2px solid black;
+}
+
+.cbhint {
+	padding-left:2px;
+	width: 17px;
+	display: inline-block;
+}

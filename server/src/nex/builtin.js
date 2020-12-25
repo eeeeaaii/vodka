@@ -19,6 +19,7 @@ import { Lambda } from './lambda.js'
 import { ParamParser } from '../paramparser.js'
 import { BUILTINS } from '../environment.js'
 import { PERFORMANCE_MONITOR, perfmon } from '../perfmon.js'
+import { experiments } from '../globalappflags.js'
 
 /**
  * Nex that represents an *uncompiled* builtin function. Compiled builtins
@@ -32,9 +33,19 @@ class Builtin extends Lambda {
 		this.returnValueParam = retval;
 		this.internaljs = null;
 		this.docstring = docstring ? docstring : ' - no docs - ';
-		let amp = name;
-		for (let i = 0; i < params.length; i++) {
-			amp += ' ' + params[i].name;
+		let amp = '';
+		if (experiments.NEW_CLOSURE_DISPLAY) {
+			for (let i = 0; i < params.length; i++) {
+				if (amp != '') {
+					amp += ' ';
+				}
+				amp += params[i].name;
+			}
+		} else {
+			amp = name;
+			for (let i = 0; i < params.length; i++) {
+				amp += ' ' + params[i].name;
+			}
 		}
 		this.amptext = amp;
 		this.f = null;

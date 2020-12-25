@@ -24,13 +24,14 @@ tests the loadfile primitive, just save a nex then load it raw.
 //enddescription//
 //testspec// |Shift|~|s|a|v|e|Shift|$|t|Tab|Enter|Shift|{|Shift|W|h|a|t| |i|s| |u|p| |m|y| |d|u|d|e|s|Shift|Tab|Tab|Tab|Tab|Enter|Shift|~|l|o|a|d|-|f|i|l|e|Shift|$|t|Tab|Enter|Shift|Tab|Enter
 //starttest//
-const experiment_flags = {"V2_INSERTION_LENIENT_DOC_FORMAT":true,
+const experiment_flags = {
+"V2_INSERTION_LENIENT_DOC_FORMAT":true,
 "NO_COPY_CSS":false,
 "DISABLE_ALERT_ANIMATIONS":true,
 "BETTER_KEYBINDINGS":true,
-"CTRL_ENTER_CHANGE":true,
 "MAX_RENDER_DEPTH":100,
-"NO_SPLASH":true};
+"NO_SPLASH":true
+};
 	
 var harness = require('../testharness');
 

@@ -19,6 +19,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { ValueNex } from './valuenex.js'
 import { experiments } from '../globalappflags.js'
+import { Editor } from '../editors.js'
 
 
 /**
@@ -47,6 +48,18 @@ class Float extends ValueNex {
 			return this.toStringV2();
 		}
 		return super.toString(version);
+	}
+
+	renderInto(renderNode, renderFlags, withEditor) {
+		super.renderInto(renderNode, renderFlags, withEditor);
+		if (experiments.REMAINING_EDITORS) {
+			let domNode = renderNode.getDomNode();
+			if (this.isEditing) {
+				domNode.classList.add('editing');
+			} else {
+				domNode.classList.remove('editing');
+			}
+		}
 	}
 
 	toStringV2() {
@@ -148,6 +161,32 @@ class Float extends ValueNex {
 }
 
 
+class FloatEditor extends Editor {
+	constructor(nex) {
+		super(nex, 'FloatEditor');
+	}
 
-export { Float }
+	hasContent() {
+		return this.nex.renderValue() != '0';
+	}
+
+	doBackspaceEdit() {
+		this.nex.deleteLastLetter();
+	}
+
+	doAppendEdit(text) {
+		this.nex.appendText(text);
+	}
+
+	shouldAppend(text) {
+		return /^[0-9-.e]$/.test(text);
+	}
+
+	shouldTerminateAndReroute(text) {
+		return super.shouldTerminateAndReroute()
+			|| !this.shouldAppend(text);
+	}
+}
+
+export { Float, FloatEditor }
 

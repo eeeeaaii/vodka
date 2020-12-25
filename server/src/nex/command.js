@@ -20,7 +20,7 @@ import { INDENT, systemState } from '../systemstate.js'
 import { autocomplete } from '../autocomplete.js'
 import { NexContainer } from './nexcontainer.js'
 import { isNormallyHandled } from '../keyresponsefunctions.js'
-import { BUILTINS } from '../environment.js'
+import { BUILTINS, BINDINGS } from '../environment.js'
 import { perfmon, PERFORMANCE_MONITOR } from '../perfmon.js'
 import { EError } from './eerror.js'
 import { CopiedArgContainer } from '../argcontainer.js'
@@ -327,6 +327,36 @@ class Command extends NexContainer {
 		return this.notReallyCachedClosure.shouldActivateReturnedExpectations();
 	}
 
+	getClosureForGhost() {
+		if (this.cachedClosure) {
+			return this.cachedClosure;
+		} else {
+			// cachedClosure only contains builtins, not bindings.
+			// The full eval commandname resolution takes into account the lexical
+			// environment, etc.
+			// for ghost display of command info, we do want to consult bindings,
+			// but lexical env is not gonna happen (yet?)
+			if (BINDINGS.hasBinding(this.commandtext)) {
+				let closure = BINDINGS.lookupBinding(this.commandtext);
+				if (closure) {
+					return closure;
+				}
+			}			
+		}
+		return null;
+	}
+
+	getGhostDiv(gclosure) {
+		let ghost = document.createElement('div');
+		ghost.classList.add('ghost');
+		let val = gclosure.getInnerHTMLForDisplay();
+		ghost.innerHTML = val;
+		let ghostline = document.createElement('div');
+		ghostline.classList.add('ghostline')
+		ghost.appendChild(ghostline);
+		return ghost;
+	}
+
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		let codespan = null;
@@ -350,6 +380,12 @@ class Command extends NexContainer {
 				codespan.classList.remove('editing');
 			}
 			codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
+			if (experiments.NEW_CLOSURE_DISPLAY && this.isEditing && renderNode.isSelected()) {
+				let gclosure = this.getClosureForGhost();
+				if (gclosure) {
+					codespan.appendChild(this.getGhostDiv(gclosure));
+				}
+			}
 		}
 	}
 
@@ -491,7 +527,12 @@ class Command extends NexContainer {
 	getEventTable(context) {
 		if (experiments.BETTER_KEYBINDINGS) {
 			return {
-				'CtrlSpace': 'autocomplete',
+				'CtrlSpace': (
+					experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null
+					: (experiments.BETTER_KEYBINDINGS ? 'autocomplete' : null)),
+				'AltSpace': (
+					(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
+					: (experiments.BETTER_KEYBINDINGS ? 'autocomplete' : null)),
 			};
 		} else {
 			return {

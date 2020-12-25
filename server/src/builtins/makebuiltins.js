@@ -74,11 +74,13 @@ function createMakeBuiltins() {
 	}
 
 	Builtin.createBuiltin(
-		'make-doc',
+		'make-page',
 		['nex...'],
 		$makeDoc,
-		'creates a new doc containing the args as children.'
+		'creates a new page containing the args as children.'
 	);
+
+	Builtin.aliasBuiltin('make-doc', 'make-page');
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 

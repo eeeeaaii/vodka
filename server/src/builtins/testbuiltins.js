@@ -73,10 +73,12 @@ function createTestBuiltins() {
 	}
 
 	Builtin.createBuiltin(
-		'is-doc',
+		'is-page',
 		[ 'nex' ],
 		$isDoc
 	);
+
+	Builtin.aliasBuiltin('is-doc', 'is-page');
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 

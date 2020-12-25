@@ -1,0 +1,41 @@
+
+
+
+.closure.exploded {
+	flex-direction:column;
+	align-items: flex-start;
+	width: 400px;
+}
+
+.closureline0 {
+	font-weight: bold;
+	font-size: 1.5em;
+}
+
+.closureline1 {
+	font-weight: bold;
+	font-size: 1.2em;
+}
+
+.closureline2 {
+	font-weight: bold;
+	margin-top: 2px;
+	margin-left: 15px;
+}
+
+.closureline3 {
+	margin-top: 2px;
+	margin-left: 15px;
+}
+
+.closureline4 {
+	margin-top: 9px;
+	margin-left: 15px;
+	font-size: .8em;
+}
+
+.closureline5 {
+	margin-top: 2px;
+	margin-left: 15px;
+	font-size: .8em;
+}

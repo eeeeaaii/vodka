@@ -30,6 +30,7 @@ import { wrapError } from '../evaluator.js'
 import { saveNex, loadNex, importNex, loadRaw, saveRaw } from '../servercommunication.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { BINDINGS } from '../environment.js'
+import { experiments } from '../globalappflags.js'
 
 function createFileBuiltins() {
 
@@ -70,41 +71,80 @@ function createFileBuiltins() {
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
-	
+	if (experiments.SAVE_EVALUATES_CONTENTS) {
 
-	Builtin.createBuiltin(
-		'save',
-		[ '_name', '_nex' ],
-		function $save(env, executionEnvironment) {
-			let namesym = env.lb('name');
-			let nametype = namesym.getTypeName();
-			let savemethod = '';
-			let nm = '';
-			if (nametype == '-symbol-') {
-				savemethod = 'savepackage';
-				nm = namesym.getTypedValue();
-			} else if (nametype == '-string-') {
-				savemethod = 'save';
-				nm = namesym.getFullTypedValue();
-			} else {
-				return new EError(`save: name must be symbol or string. Sorry!`);
-			}
-			let val = env.lb('nex');			
-			let exp = new Expectation();
-			exp.set(function(callback) {
-				return function() {
-					saveNex(nm, val, savemethod, function(saveResult) {
-						callback(saveResult);
-					})
+		Builtin.createBuiltin(
+			'save',
+			[ '_name', 'nex' ],
+			function $save(env, executionEnvironment) {
+				let namesym = env.lb('name');
+				let nametype = namesym.getTypeName();
+				let savemethod = '';
+				let nm = '';
+				if (nametype == '-symbol-') {
+					savemethod = 'savepackage';
+					nm = namesym.getTypedValue();
+				} else if (nametype == '-string-') {
+					savemethod = 'save';
+					nm = namesym.getFullTypedValue();
+				} else {
+					return new EError(`save: name must be symbol or string. Sorry!`);
 				}
-			});
-			let savingMessage = new EError(`saving (in the file ${nm}) this data: ${val.prettyPrint()}`);
-			savingMessage.setErrorType(ERROR_TYPE_INFO);
-			exp.appendChild(savingMessage)
-			return exp;
-		},
-		'saves |nex in the file |name.'
-	);
+				let val = env.lb('nex');			
+				let exp = new Expectation();
+				exp.set(function(callback) {
+					return function() {
+						saveNex(nm, val, savemethod, function(saveResult) {
+							saveResult.appendChild(val);
+							callback(saveResult);
+						})
+					}
+				});
+				let savingMessage = new EError(`saving (in the file ${nm}) this data: ${val.prettyPrint()}`);
+				savingMessage.setErrorType(ERROR_TYPE_INFO);
+				exp.appendChild(savingMessage)
+				return exp;
+			},
+			'saves |nex in the file |name.'
+		);
+
+	} else {
+
+		Builtin.createBuiltin(
+			'save',
+			[ '_name', '_nex' ],
+			function $save(env, executionEnvironment) {
+				let namesym = env.lb('name');
+				let nametype = namesym.getTypeName();
+				let savemethod = '';
+				let nm = '';
+				if (nametype == '-symbol-') {
+					savemethod = 'savepackage';
+					nm = namesym.getTypedValue();
+				} else if (nametype == '-string-') {
+					savemethod = 'save';
+					nm = namesym.getFullTypedValue();
+				} else {
+					return new EError(`save: name must be symbol or string. Sorry!`);
+				}
+				let val = env.lb('nex');			
+				let exp = new Expectation();
+				exp.set(function(callback) {
+					return function() {
+						saveNex(nm, val, savemethod, function(saveResult) {
+							callback(saveResult);
+						})
+					}
+				});
+				let savingMessage = new EError(`saving (in the file ${nm}) this data: ${val.prettyPrint()}`);
+				savingMessage.setErrorType(ERROR_TYPE_INFO);
+				exp.appendChild(savingMessage)
+				return exp;
+			},
+			'saves |nex in the file |name.'
+		);
+
+	}
 
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -281,46 +321,93 @@ function createFileBuiltins() {
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 	// need to make it so that if it fails you don't lose all your work.
 
-
-	Builtin.createBuiltin(
-		'package-edit',
-		[ '_name@', '_nex...' ],
-		function $packageEdit(env, executionEnvironment) {
-			throw new Error('deprecated');
-			// run part
-			let packageName = env.lb('name').getTypedValue();
-			let lst = env.lb('nex');
-			BINDINGS.setPackageForBinding(packageName);
-			let lastresult = new Nil();
-			for (let i = 0; i < lst.numChildren(); i++) {
-				let c = lst.getChildAt(i);
-				lastresult = evaluateNexSafely(c, executionEnvironment);
-				// not sure what to do about errors yet?
-			}
-			BINDINGS.setPackageForBinding(null);
-
-			// save part
-			// package file name is the name plus "-functions"
-			let nm = packageName + '-functions';
-			// in the file, we have to, of course, include the package itself.
-			let args = [ new ESymbol(packageName) ];
-			Command.pushListContentsIntoArray(lst);
-			let val = Command.makeCommandWithArgs('package', args);
-			let exp = new Expectation();
-			exp.set(function(callback) {
-				return function() {
-					saveNex(nm, val, function(saveResult) {
-						callback(saveResult);
-					})
+	if (experiments.SAVE_EVALUATES_CONTENTS) {
+		Builtin.createBuiltin(
+			'save-package',
+			[ '_name@', '_nex' ],
+			function $savePackage(env, executionEnvironment) {
+				// figure out the real name
+				let namesym = env.lb('name');
+				let nametype = namesym.getTypeName();
+				let savemethod = '';
+				let nm = '';
+				if (nametype == '-symbol-') {
+					savemethod = 'savepackage';
+					nm = namesym.getTypedValue();
+				} else if (nametype == '-string-') {
+					savemethod = 'save';
+					nm = namesym.getFullTypedValue();
+				} else {
+					return new EError(`save-package: name must be symbol or string. Sorry!`);
 				}
-			});
-			let savingMessage = new EError(`editing package (in the file ${nm}) this data: ${val.prettyPrint()}`);
-			savingMessage.setErrorType(ERROR_TYPE_INFO);
-			exp.appendChild(savingMessage)
-			return exp;
-		},
-		'creates the package |name, and also saves it in the the file "|name-functions".'
-	);
+				let val = env.lb('nex');
+				// evaluate the thing. It's probably a package but doesn't have to be.
+				let result = evaluateNexSafely(val, executionEnvironment);
+				if (Utils.isFatalError(result)) {
+					let r = new EError(`save-package: error evaluating package, see contents of this error`);
+					r.appendChild(result);					
+					r.appendChild(val);
+					return r;					
+				}
+
+				let exp = new Expectation();
+				exp.set(function(callback) {
+					return function() {
+						saveNex(nm, val, savemethod, function(saveResult) {
+							callback(saveResult);
+						})
+					}
+				});
+				let savingMessage = new EError(`saving (in the file ${nm}) this data: ${val.prettyPrint()}`);
+				savingMessage.setErrorType(ERROR_TYPE_INFO);
+				exp.appendChild(savingMessage)
+				exp.appendChild(val)
+				return exp;
+			},
+			'saves |nex in the file |name without evaluating it, and also evaluates it.'
+		);
+	} else {
+
+		Builtin.createBuiltin(
+			'package-edit',
+			[ '_name@', '_nex...' ],
+			function $packageEdit(env, executionEnvironment) {
+				throw new Error('deprecated');
+				// run part
+				let packageName = env.lb('name').getTypedValue();
+				let lst = env.lb('nex');
+				BINDINGS.setPackageForBinding(packageName);
+				let lastresult = new Nil();
+				for (let i = 0; i < lst.numChildren(); i++) {
+					let c = lst.getChildAt(i);
+					lastresult = evaluateNexSafely(c, executionEnvironment);
+					// not sure what to do about errors yet?
+				}
+				BINDINGS.setPackageForBinding(null);
+
+				// save part
+				// package file name is the name plus "-functions"
+				let nm = packageName + '-functions';
+				// in the file, we have to, of course, include the package itself.
+				let args = [ new ESymbol(packageName) ];
+				Command.pushListContentsIntoArray(lst);
+				let val = Command.makeCommandWithArgs('package', args);
+				let exp = new Expectation();
+				exp.set(function(callback) {
+					return function() {
+						saveNex(nm, val, function(saveResult) {
+							callback(saveResult);
+						})
+					}
+				});
+				let savingMessage = new EError(`editing package (in the file ${nm}) this data: ${val.prettyPrint()}`);
+				savingMessage.setErrorType(ERROR_TYPE_INFO);
+				exp.appendChild(savingMessage)
+				return exp;
+			},
+			'creates the package |name, and also saves it in the the file "|name-functions".'
+		);
+	}
 }
 
 export { createFileBuiltins }

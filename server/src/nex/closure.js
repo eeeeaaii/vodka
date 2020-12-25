@@ -21,6 +21,7 @@ import { ArgEvaluator } from '../argevaluator.js'
 import { Nil } from './nil.js'
 import { wrapError, evaluateNexSafely } from '../evaluator.js'
 import { BINDINGS, BUILTINS } from '../environment.js'
+import { experiments } from '../globalappflags.js'
 
 /**
  * Nex that represents a "compiled" or evaluated function. Both
@@ -92,7 +93,11 @@ class Closure extends ValueNex {
 	}
 
 	getLambdaDebugString() {
-		return this.lambda.prettyPrint();
+		return this.escape(this.lambda.prettyPrint());
+	}
+
+	getLambdaArgString() {
+		return this.escape(this.lambda.getArgString(this.cmdname));
 	}
 
 	setCmdName(nm) {
@@ -108,11 +113,48 @@ class Closure extends ValueNex {
 	}
 
 	getDocString() {
-		return this.getLambda().getDocString();
+		return this.escape(this.getLambda().getDocString(), true);
 	}
 
 	getArgEvaluator(cmdname, argContainer, executionEnvironment) {
 		return new ArgEvaluator(cmdname, this.lambda.paramsArray, argContainer, executionEnvironment);
+	}
+
+	closureline(n, s) {
+		return `<div class="closureline${n}">${s.trim()}</div>`
+	}
+
+	getSummaryLine() {
+		// the cmdname and tags
+		let r = this.cmdname;
+		for (let i = 0; i < this.numTags(); i++) {
+			r += '[' + this.getTag(i).getName(i) + ']';
+		}
+		return this.escape(r);		
+	}
+
+	getEnvironmentLine() {
+		if (this.lexicalEnvironment == BUILTINS) {
+			return 'BUILTINS';
+		} else if (this.lexicalEnvironment == BINDINGS) {
+			return 'BINDINGS';
+		} else {
+			let r = '{\n';
+			this.lexicalEnvironment.doForEachBinding(function(binding) {
+				r += '  ' + binding.name + ': ' + binding.val.debugString() + '\n';
+			})
+			r += '}';
+			return this.escape(r);
+		}
+	}
+
+	getRenderedHTML() {
+		return this.closureline('0', this.prefix) +
+		    this.closureline('1', this.getSummaryLine()) +
+			this.closureline('2', this.getLambdaArgString()) +
+			this.closureline('3', this.getDocString()) +
+			this.closureline('4', this.getLambdaDebugString()) +
+			this.closureline('5', this.getEnvironmentLine());
 	}
 
 	renderValue() {
@@ -135,6 +177,22 @@ class Closure extends ValueNex {
 			r += '  }';
 		}
 		return r;
+	}
+
+	getInnerHTMLForDisplay() {
+		if (experiments.NEW_CLOSURE_DISPLAY) {
+			return this.getRenderedHTML();
+		} else {
+			return '' + this.prefix + this.escape(this.renderValue());
+		}		
+	}
+
+	renderInto(renderNode, renderFlags, withEditor) {
+		let domNode = renderNode.getDomNode();
+		super.renderInto(renderNode, renderFlags, withEditor);
+		domNode.classList.add(this.className);
+		domNode.classList.add('valuenex');
+		domNode.innerHTML = this.getInnerHTMLForDisplay();
 	}
 
 	shouldActivateReturnedExpectations() {

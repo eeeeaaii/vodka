@@ -103,10 +103,6 @@ class BoolEditor extends Editor {
 		super(nex, 'BoolEditor');
 	}
 
-	hasContent() {
-		return true;
-	}
-
 	doBackspaceEdit() {
 	}
 
@@ -120,10 +116,6 @@ class BoolEditor extends Editor {
 
 	shouldAppend(text) {
 		return /^[yYnN]$/.test(text);
-	}
-
-	shouldTerminate(text) {
-		return false; // always reroute if not editing
 	}
 
 	shouldTerminateAndReroute(text) {

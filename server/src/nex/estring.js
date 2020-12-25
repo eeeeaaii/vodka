@@ -267,7 +267,7 @@ class EString extends ValueNex {
 	}
 
 	getDefaultHandler() {
-		return 'insertAfterEString';
+		return 'estringDefault';
 	}
 
 	getEventTable(context) {

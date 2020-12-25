@@ -35,3 +35,57 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	padding: 3px;
 	border-width: 3px;
 }
+
+
+@keyframes show-word-execution-selected-1 {
+	0% {border-color: var(--selected-border);}
+	5% {border-color: #ffff77;}
+	100% {border-color: #c7c747;}
+}
+
+@keyframes show-word-execution-selected-2 {
+	0% {border-color: var(--selected-border);}
+	5% {border-color: #ffff77;}
+	100% {border-color: #c7c747;}
+}
+
+.animating-selected-word-executable-1 {
+	animation-duration: .7s;
+	animation-name: show-word-execution-selected-1;
+}
+
+.animating-selected-word-executable-2 {
+	animation-duration: .70s;
+	animation-name: show-word-execution-selected-2;
+}
+
+
+
+.word.selected.leftinsert {
+	animation-duration: 2s;
+	animation-name: letterblinkleft;
+	animation-iteration-count: 1;
+}
+.word.selected.rightinsert {
+	animation-duration: 2s;
+	animation-name: letterblinkright;
+	animation-iteration-count: 1;
+}
+
+.word.selected.topinsert {
+	animation-duration: 2s;
+	animation-name: letterblinktop;
+	animation-iteration-count: 1;
+}
+
+.word.selected.bottominsert {
+	animation-duration: 2s;
+	animation-name: letterblinkbottom;
+	animation-iteration-count: 1;
+}
+
+.word.selected.exploded {
+	animation-name: none;
+}
+
+

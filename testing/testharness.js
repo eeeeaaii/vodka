@@ -120,14 +120,20 @@ function getLegacyDefaultFlags() {
 		'NO_COPY_CSS': false,
 		'BETTER_KEYBINDINGS': false,
 
-		// When true, makes it so that ctrl-enter always evaluates and does NOT open main editor.
-		// This breaks old tests that used this to open the editor.
-		'CTRL_ENTER_CHANGE': false, 
-
 		// splash screen was added later, we never want it in tests.
 		'NO_SPLASH': true,
 
-		'DIRTY_ONLY_RENDERING': false,
+		'REMAINING_EDITORS': false,
+		'CAN_HAVE_EMPTY_ROOT': false,
+
+		'NEW_CLOSURE_DISPLAY' : false,
+
+		// ugh why did I use both ctrl and option?
+		'THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO': false,
+
+		// save evaluates contents
+		'SAVE_EVALUATES_CONTENTS': false,
+
 	};
 }
 

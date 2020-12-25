@@ -48,6 +48,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .codespan.exploded {
+	position: relative;
 	display: flex;
 	flex-direction: row;
 	align-items: flex-start;

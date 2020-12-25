@@ -182,7 +182,7 @@ ArgEvaluator.ARG_VALIDATORS = {
 	'Bool': arg => (arg.getTypeName() == '-bool-'),
 	'Command': arg => (arg.getTypeName() == '-command-'),
 	'Expectation': arg => (arg.getTypeName() == '-expectation-'),
-	'Doc': arg => (arg.getTypeName() == '-doc-'),
+	'Doc': arg => (arg.getTypeName() == '-page-'),
 	'EString': arg => (arg.getTypeName() == '-string-'),
 	'ESymbol': arg => (arg.getTypeName() == '-symbol-'),
 	'EError': arg => {

@@ -63,7 +63,7 @@ if (!n) return false;
 function isDoc(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n) return false;
-	return n.getTypeName() == '-doc-';
+	return n.getTypeName() == '-page-';
 }
 
 function isLine(n) {
@@ -133,6 +133,9 @@ function beep() {
     snd.play();
 }
 
+function isMac() {
+	return ('' + navigator.platform).substring(0, 3) == 'Mac';
+}
 
 export {
 	isError,
@@ -153,5 +156,6 @@ export {
 	isLambda,
 	isRoot,
 	isNex,
-	beep
+	beep,
+	isMac
 }

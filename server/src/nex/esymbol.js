@@ -130,8 +130,13 @@ class ESymbol extends ValueNex {
 	getEventTable(context) {
 		if (experiments.BETTER_KEYBINDINGS) {
 			return {
-				'CtrlSpace': 'autocomplete',
-			}
+				'CtrlSpace': (
+					experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null
+					: (experiments.BETTER_KEYBINDINGS ? 'autocomplete' : null)),
+				'AltSpace': (
+					(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
+					: (experiments.BETTER_KEYBINDINGS ? 'autocomplete' : null)),
+			};
 		} else {
 			return {
 				'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',

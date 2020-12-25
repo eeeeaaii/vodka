@@ -33,9 +33,9 @@ class Editor {
 	}
 
 	shouldTerminate(text) {
-		if (experiments.BETTER_KEYBINDINGS) {
-			return text == 'Enter'
-		}
+		// if (experiments.BETTER_KEYBINDINGS) {
+		// 	return text == 'Enter'
+		// }
 		return text == 'Enter'
 			|| (
 				text == 'Backspace'
@@ -58,6 +58,15 @@ class Editor {
 			|| text == 'Control'
 			|| text == 'Meta'
 			|| text == 'Alt';
+	}
+
+	shouldReroute(text) {
+		if (!experiments.BETTER_KEYBINDINGS) {
+			return false;
+		}
+		return text == 'ShiftSpace'
+			|| text == 'CtrlSpace'
+			|| text == 'AltSpace'
 	}
 
 	shouldTerminateAndReroute(text) {
@@ -83,6 +92,8 @@ class Editor {
 		} else if (this.shouldTerminate(text)) {
 			this.finish();
 			return false;
+		} else if (this.shouldReroute(text)) {
+			return true;
 		} else if (this.shouldTerminateAndReroute(text)) {
 			this.finish();
 			return true;

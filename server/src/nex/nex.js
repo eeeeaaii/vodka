@@ -20,7 +20,6 @@ let NEXT_NEX_ID = 0;
 function setNextNexId(val) {
 	NEXT_NEX_ID = val;
 }
-
 import { systemState } from '../systemstate.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { RENDER_FLAG_SELECTED, RENDER_FLAG_SHALLOW, RENDER_FLAG_NORMAL, RENDER_FLAG_RERENDER, RENDER_FLAG_EXPLODED, RENDER_FLAG_DEPTH_EXCEEDED } from '../globalconstants.js'
@@ -94,13 +93,15 @@ class Nex {
 		return this.doTabs(lvl, hdir) + str;// exp // + '\n';
 	}
 
-	escape(str) {
+	escape(str, skipNbsp) {
 		str = str.replace(/&/g, "&amp;");
 		str = str.replace(/</g, "&lt;");
 		str = str.replace(/>/g, "&gt;");
 		str = str.replace(/"/g, "&quot;");
 		str = str.replace(/'/g, "&apos;");
-		str = str.replace(/ /g, "&nbsp;");
+		if (!skipNbsp) {
+			str = str.replace(/ /g, "&nbsp;");
+		}
 		str = str.replace(/\n/g, "<br>");
 		str = str.replace(/\r/g, "<br>");
 		return str;
@@ -504,10 +505,6 @@ class Nex {
 	}
 
 	getEventTable(context) {
-		return null;
-	}
-
-	getEventOverride() {
 		return null;
 	}
 }
