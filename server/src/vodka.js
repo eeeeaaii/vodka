@@ -299,9 +299,18 @@ function setup() {
 	eventQueue.initialize();
 
 	keyDispatcher.setCloseHelp(function() {
-		document.getElementById('intro').style.visibility = 'hidden';
-		document.getElementById('hotkeyreference').style.visibility = 'hidden';
-		window.scrollTo(0,0);
+		let closedIt = false;
+		if (document.getElementById('intro').style.visibility != 'hidden') {
+			document.getElementById('intro').style.visibility = 'hidden';
+			closedIt = true;
+		}
+		if (document.getElementById('hotkeyreference').style.visibility != 'hidden') {
+			document.getElementById('hotkeyreference').style.visibility = 'hidden';
+			closedIt = true;
+		}
+		if (closedIt) {
+			window.scrollTo(0,0);
+		}
 	})
 	keyDispatcher.setHelpCallback(function() {
 		document.getElementById('intro').style.visibility = 'visible';

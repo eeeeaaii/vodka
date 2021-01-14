@@ -47,9 +47,17 @@ import { ERROR_TYPE_WARN, ERROR_TYPE_FATAL, ERROR_TYPE_INFO } from '../nex/eerro
 
 function createTypeConversionBuiltins() {
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-	// TODO: actually what I should do is tag it with something like "not fatal"
+	Builtin.createBuiltin(
+		'get-lambda',
+		[ 'nex&' ],
+		function $getLambda(env, executionEnvironment) {
+			let n = env.lb('nex');
+			return n.getLambda().makeCopy();
+		},
+		'returns a lambda expression identical to the one used to create the passed-in closure (does not modify the closure)'
+		)
 
+	// TODO: actually what I should do is tag it with something like "not fatal"
 	Builtin.createBuiltin(
 		'convert-type-if-error',
 		[ 'errtype$', '_nex' ],
@@ -86,11 +94,6 @@ function createTypeConversionBuiltins() {
 		},
 		'if |nex is an error, converts the error type to |errtype (allowed values are "warn", "info", and "fatal"), otherwise just returns |nex.'
 	);
-
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  	);
-
-	
 
 	Builtin.createBuiltin(
 		'to-float',
@@ -136,11 +139,6 @@ function createTypeConversionBuiltins() {
 		},
 		'converts |nex to a float, or returns an error if this is impossible.'
 	);
-
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	
 
 	Builtin.createBuiltin(
 		'to-integer',
@@ -188,11 +186,6 @@ function createTypeConversionBuiltins() {
 
 	);
 
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	
-
 	Builtin.createBuiltin(
 		'to-string',
 		[ 'nex' ],
@@ -227,11 +220,6 @@ function createTypeConversionBuiltins() {
 		'converts |nex to a string, or returns an error if this is impossible.'
 
 	);
-
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	
 
 	Builtin.createBuiltin(
 		'to-word',

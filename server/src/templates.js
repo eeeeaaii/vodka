@@ -27,7 +27,7 @@ import { Org } from './nex/org.js'
 import { ForeignClosure } from './nex/foreignclosure.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { BUILTINS, BINDINGS } from './environment.js'
-
+import { experiments } from './globalappflags.js'
 
 class TemplateStore  {
 	constructor() {
@@ -40,17 +40,26 @@ class TemplateStore  {
 		BUILTINS.bind(name, fc);
 	}
 
+	getTemplate(name) {
+		return this.templates[name];
+	}
+
 	createTemplate(nonce, org, env) {
-		if (nonce.numTags() != 1) {
-			throw new EError('Cannot create template, need a single name tag.');
+		let name = '';
+		if (experiments.ORG_OVERHAUL) {
+			name = nonce.getTypedValue();
+		} else {
+			if (nonce.numTags() != 1) {
+				throw new EError('Cannot create template, need a single name tag.');
+			}
+			let name = nonce.getTag(0);
 		}
-		let name = nonce.getTag(0);
 		let template = new Template(name, org, env);
 		this.templates[name] = template;
 		return template;
 	}
 
-	createForeignTemplate(tagname, spec) {
+	createForeignTemplate(tagname, docs, spec) {
 		let org = new Org();
 		org.addTag(new Tag(tagname));
 		let drawCheat = null;
@@ -69,7 +78,7 @@ class TemplateStore  {
 				}
 			}
 		}
-		let template = new Template(tagname, org, BINDINGS, drawCheat);
+		let template = new Template(tagname, org, BINDINGS, drawCheat, docs);
 		this.templates[tagname] = template;
 		return template;
 	}
@@ -86,7 +95,7 @@ class TemplateStore  {
 		}
 	}
 
-	getChildTagged(org, tagname) {
+	static getChildTagged(org, tagname) {
 		for (let i = 0; i < org.numChildren() ; i++) {
 			let c = org.getChildAt(i);
 			if (c.numTags() == 1 && c.getTag(0).getName() == tagname) {
@@ -100,6 +109,20 @@ class TemplateStore  {
 			return null;
 		}
 		return nex.getTag(0).getName();
+	}
+
+	// kind of temporary because I have to figure out subclassing I guess
+	instantiateWithNameString(str, args) {
+		let dst = new Org();
+		let template = this.templates[str];
+		if (!template) {
+		  throw new EError(`cannot instantiate unknown template ${str}. Sorry!`);
+		}
+		this.copyMembersInto(template.getOrg(), dst);
+		if (template.getDrawCheat()) {
+			dst.setDrawCheat(template.getDrawCheat());
+		}
+		return this.instantiate(dst, args);
 	}
 
 	// merge: takes a bunch of nonces and initializers and makes an initializer
@@ -181,11 +204,12 @@ class TemplateStore  {
 class Template {
 	// we don't do anything with the env yet but I think we will need it
 	// should write a test for it WHEN we do something with it
-	constructor(name, org, env, drawCheat) {
+	constructor(name, org, env, drawCheat, docs) {
 		this.name = name;
 		this.org = org;
 		this.env = env;
 		this.drawCheat = drawCheat;
+		this.docs = docs;
 	}
 
 	getName() {
@@ -202,6 +226,38 @@ class Template {
 
 	getDrawCheat() {
 		return this.drawCheat;
+	}
+
+	line(n, s) {
+		return `<div class="templateline${n}">${s.trim()}</div>`
+	}
+
+	getDocs() {
+		let firstline = '';
+		if (!this.docs) {
+			let docs = TemplateStore.getChildTagged(this.org, ':info');
+			if (docs.getTypeName() == '-page-') {
+				firstline = docs.getValueAsString();
+			}
+		} else {
+			firstline = this.docs;
+		}
+		let initializer = TemplateStore.getChildTagged(this.org, ':init');
+		if (initializer) {
+			let secondline = ''
+			if (initializer.getTypeName() == '-closure-') {
+				secondline = ''
+						+ initializer.getSummaryLine()
+						+ ' '
+						+ initializer.getLambdaArgString();
+			} else {
+				secondline = initializer.getArgString(':init');
+			}
+
+			return this.line(0, '&#x25F0') + this.line(1, firstline) + this.line(2, secondline);
+		} else {
+			return this.line(0, '&#x25F0') + this.line(1, firstline);
+		}
 	}
 }
 

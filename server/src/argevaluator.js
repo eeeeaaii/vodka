@@ -195,6 +195,7 @@ ArgEvaluator.ARG_VALIDATORS = {
 	'Letter': arg => (arg.getTypeName() == '-letter-'),
 	'Line': arg => (arg.getTypeName() == '-line-'),
 	'Nil': arg => (arg.getTypeName() == '-nil-'),
+	'Instantiator': arg => (arg.getTypeName() == '-instantiator-'),
 	'Word': arg => (arg.getTypeName() == '-word-'),
 	'Lambda': arg => (arg.getTypeName() == '-lambda-'),
 	'Closure': arg => (arg.getTypeName() == '-closure-'),

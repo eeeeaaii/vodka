@@ -43,6 +43,7 @@ function createLogicBuiltins() {
 	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
 
 	function $firstNonNil(env, executionEnvironment) {
+		throw new Error('deprecated');
 		let nex = env.lb('nex');
 		for (let i = 0; i < nex.numChildren(); i++) {
 			let c = nex.getChildAt(i);

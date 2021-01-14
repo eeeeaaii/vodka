@@ -19,11 +19,14 @@ import * as Utils from '../utils.js'
 
 import { Closure } from './closure.js';
 import { Nil } from './nil.js';
+import { Org } from './org.js'
 import { EError } from './eerror.js';
 import { NexContainer } from './nexcontainer.js';
 import { BUILTINS } from '../environment.js'
 import { ParamParser } from '../paramparser.js';
 import { ArgEvaluator } from '../argevaluator.js'
+import { experiments } from '../globalappflags.js'
+
 
 /**
  * A closure that executes some javascript code directly instead of
@@ -66,6 +69,10 @@ class ForeignClosure extends Closure {
 		return ' &"' + this.paramstr + '"';
 	}
 
+	getLambdaArgString() {
+		return this.escape(this.paramstr);
+	}
+
 	getDocString() {
 		return this.docstring;
 	}
@@ -75,6 +82,12 @@ class ForeignClosure extends Closure {
 	getReturnValueParam() {
 		return this.returnValueParam;
 
+	}
+
+	renderInto(renderNode, renderFlags, withEditor) {
+		let domNode = renderNode.getDomNode();
+		super.renderInto(renderNode, renderFlags, withEditor);
+		domNode.classList.add('closure');
 	}
 
 	getArgEvaluator(cmdname, argContainer, executionEnvironment) {
@@ -122,7 +135,7 @@ class ForeignClosure extends Closure {
 	}
 
 	convertToVodkaReturnValue(returnValue) {
-		if (!returnValue) {
+		if (typeof(returnValue) == 'undefined') {
 			return new Nil();
 		}
 		if (Utils.isNex(returnValue)) {
@@ -132,7 +145,10 @@ class ForeignClosure extends Closure {
 			case '$':
 				return new EString(returnValue);
 			case '^':
-				return new Nil();
+				if (!experiments.ORG_OVERHAUL) {
+					return new Nil();
+				}
+				// fall through, nil already taken care of by first line
 			default:
 				throw new Error('unsupported return value');
 		}
@@ -148,9 +164,9 @@ class ForeignClosure extends Closure {
 		return this.convertToVodkaReturnValue(rval);
 	}
 
-	getTypeName() {
-		return '-foreignclosure-';
-	}
+	// we don't override getTypeName because from the perspective of
+	// vodka's type system these are just closures.
+
 }
 
 

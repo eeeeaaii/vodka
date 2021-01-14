@@ -76,6 +76,9 @@ const experiments = {
 	// save evaluates contents
 	'SAVE_EVALUATES_CONTENTS': true,
 
+	// massive overhaul of orgs
+	'ORG_OVERHAUL': true,
+
 	// See note above about changing testharness.js when adding new flags.
 };
 

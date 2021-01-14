@@ -58,10 +58,23 @@ cmd_list
  / '~' PRIVATE:private_data_section '(|' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  '|)' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'v'); }
  ;
 
+instantiator_list
+ = '^' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeInstantiatorList(null, CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ / '^' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeInstantiatorList(null, CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ / '^' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeInstantiatorList(null, CHILDREN, PRIVATE, TAGLIST, 'v'); }
+ / '^' PRIVATE:private_data_section '(' TAGLIST:taglist? NAME:instantiator_org_name ( ws + ) CHILDREN:(nex_with_space *) _  ')' { return PF.makeInstantiatorList(NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ / '^' PRIVATE:private_data_section '(_' TAGLIST:taglist? NAME:instantiator_org_name ( ws + ) CHILDREN:(nex_with_space *) _  '_)' { return PF.makeInstantiatorList(NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ / '^' PRIVATE:private_data_section '(|' TAGLIST:taglist? NAME:instantiator_org_name ( ws + ) CHILDREN:(nex_with_space *) _  '|)' { return PF.makeInstantiatorList(NAME, CHILDREN, PRIVATE, TAGLIST, 'v'); }
+ ;
+
 cmd_name
  = SYM:(':' [+=*/<>] [+=*/<>]) { return SYM; }
  / SYM:(':' [+=*/<>]) { return SYM; }
- / NAME:([a-zA-Z0-9:-]*) { return NAME; }
+ / NAME:([a-zA-Z0-9:.-]*) { return NAME; }
+ ;
+
+instantiator_org_name
+ = NAME:([a-zA-Z0-9-]*) { return NAME; }
  ;
 
 children_in_parens
@@ -104,7 +117,7 @@ symbol_expression
   ;
 
 symbol_char
-  = SYMBOL_CHAR:[a-zA-Z0-9:-] { return SYMBOL_CHAR; }
+  = SYMBOL_CHAR:[a-zA-Z0-9:.-] { return SYMBOL_CHAR; }
   / '_' ! ')'                { return '_'; }
   ;
 
@@ -125,7 +138,9 @@ float_expression
   ;
 
 nil_expression
-  = '^' TAGLIST:taglist? { return PF.makeNil(TAGLIST) }
+  = '^' TAGLIST:taglist? ! '(' { return PF.makeNil(TAGLIST) }
+  / '^' TAGLIST:taglist? ! '"' { return PF.makeNil(TAGLIST) }
+  / '^' TAGLIST:taglist? ! '{' { return PF.makeNil(TAGLIST) }
   ;
 
 float_digits

@@ -19,7 +19,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testname// actions_autocomplete_symbol
 //startdescription//
 /*
-tests that autocomplete works for symbols also (the other autocomplete test only tests it in commands)
+Tests autocomplete for symbols. First creates a symbol and uses autocomplete to fill in a builtin (cancel-ff). Then binds a symbol to a value, then uses autocomplete to find that symbol.
 */
 //enddescription//
 //testspec// |Shift|@|c|a|n|c|Control| |Shift|~|b|i|n|d|Shift|@|f|o|o|b|a|r|Shift|(|h|e|l|l|o|Shift|Tab|Tab|Enter|Shift|@|f|o|o|Control| 
@@ -28,6 +28,8 @@ var harness = require('../testharness');
 
 var testactions = [];
 
+testactions.push({type:'keydown',code:'Backspace'});
+testactions.push({type:'keyup',code:'Backspace'});
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Digit2'});
 testactions.push({type:'keyup',code:'Digit2'});
@@ -108,6 +110,22 @@ testactions.push({type:'keydown',code:'ControlLeft'});
 testactions.push({type:'keydown',code:'Space'});
 testactions.push({type:'keyup',code:'Space'});
 testactions.push({type:'keyup',code:'ControlLeft'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
 
-harness.runTestNew(testactions, 'direct');
+const experiment_flags = {
+"V2_INSERTION_LENIENT_DOC_FORMAT":true,
+"NO_COPY_CSS":true,
+"DISABLE_ALERT_ANIMATIONS":true,
+"BETTER_KEYBINDINGS":true,
+"MAX_RENDER_DEPTH":100,
+"NO_SPLASH":true,
+"REMAINING_EDITORS":true,
+"CAN_HAVE_EMPTY_ROOT":true,
+"NEW_CLOSURE_DISPLAY":true,
+"THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO":true,
+"SAVE_EVALUATES_CONTENTS":true,
+"ORG_OVERHAUL":true
+};
+harness.runTestWithFlags(testactions, 'direct', experiment_flags);
 //endtest//

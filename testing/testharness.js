@@ -134,6 +134,9 @@ function getLegacyDefaultFlags() {
 		// save evaluates contents
 		'SAVE_EVALUATES_CONTENTS': false,
 
+		// org overhaul
+		'ORG_OVERHAUL': false
+
 	};
 }
 

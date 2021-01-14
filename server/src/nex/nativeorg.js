@@ -24,6 +24,7 @@ import { ESymbol } from './esymbol.js'
 import { Tag } from '../tag.js'
 import { BUILTINS } from '../environment.js'
 import { ParamParser } from '../paramparser.js'
+import { experiments } from '../globalappflags.js'
 
 class NativeOrg extends Org {
 	constructor(name, methods, creator, drawfunction) {
@@ -91,9 +92,17 @@ class NativeOrg extends Org {
 			case '$':
 				return new EString(returnValue);
 			case '^':
-				return new Nil();
+				if (!experiments.ORG_OVERHAUL) {
+					return new Nil();
+				}
+				// otherwise FALL THROUGH
 			default:
-				throw new Error('unsupported return value');
+				if (experiments.ORG_OVERHAUL && typeof(returnValue) == 'undefined') {
+					// function didn't return anything, vodka needs a nil.
+					return new Nil();
+				} else {
+					throw new Error('unsupported return value');
+				}
 		}
 	}
 

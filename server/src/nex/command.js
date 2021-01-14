@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from '../utils.js';
+
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { INDENT, systemState } from '../systemstate.js'
 import { autocomplete } from '../autocomplete.js'
@@ -25,6 +27,8 @@ import { perfmon, PERFORMANCE_MONITOR } from '../perfmon.js'
 import { EError } from './eerror.js'
 import { CopiedArgContainer } from '../argcontainer.js'
 import { Closure } from './closure.js'
+import { Org } from './org.js'
+import { NativeOrg } from './nativeorg.js'
 import { ContextType } from '../contexttype.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED, CONSOLE_DEBUG } from '../globalconstants.js'
@@ -204,6 +208,22 @@ class Command extends NexContainer {
 		return true;
 	}
 
+	getEvaluatedFirstChild() {
+		let c = this.getChildAt(0);
+		// if it's a symbol we can incidentally get the command name
+		if (c.getTypeName() == '-symbol-') {
+			cmdname = c.getTypedValue();
+		}
+		// evaluate the first arg, could be a symbol bound to a closure, a lamba, a command that returns a closure, etc.
+		closure = evaluateNexSafely(c, executionEnv);
+		if (!(closure instanceof Closure)) {
+			// oops it's not a closure.
+			throw new EError(`command: stopping because first child "${c.debugString()}" of unnamed command does not evaluate to a closure. Sorry! Debug string for evaluted value of type ${closure.getTypeName()} follows: ${closure.debugString()}`)
+		}				
+		// we already evaluated the first arg, we don't pass it to the arg evaluator
+		skipFirstArg = true;
+	}
+
 	evalSetup(executionEnv) {
 		// do not cache the entire eval state by doing
 		// something like if (this.evalState) return;
@@ -217,17 +237,33 @@ class Command extends NexContainer {
 
 		// we need a closure, we need a name to use for error messages, and we need to know if skip first arg.
 		let closure = null;
-		let cmdname = null;
+		let cmdname = this.getCommandText();
 		let skipFirstArg = false;
 		if (this.cachedClosure) {
 			// it's cached, great. This is a builtin, so not skipping first arg.
 			closure = this.cachedClosure;
-			cmdname = this.getCommandText();
-		} else if (!!this.getCommandText()) {
-			// there is command text -- look this up and see if it's bound to something.
-			cmdname = this.getCommandText();
+		} else if (!!cmdname && cmdname.charAt(0) == '.') {
+			// we are dereferencing the first child!
+			if (this.numChildren() == 0) {
+				throw new EError(`command: cannot dereference with expression "${cmdname}" without a first child to dereference into. Sorry!`)
+			}
+			let c = this.getChildAt(0);
+			// evaluate the first arg, must eval to an org to deref
+			let org = evaluateNexSafely(c, executionEnv);
+			if (!(org instanceof Org || org instanceof NativeOrg)) {
+				// oops it's not an org, can't dereference.
+				throw new EError(`command: stopping because first child "${c.debugString()}" of is not an org so cannot be dereferenced by expression ${cmdname}. Sorry! Debug string for evaluted value of type ${org.getTypeName()} follows: ${org.debugString()}`)
+			}				
+			let derefArray = cmdname.substr(1).split('.');
+			closure = executionEnv.dereference(org, derefArray);
+			if (!(closure.getTypeName() == '-closure-')) {
+				throw new EError(`command: stopping because org member dereferenced by "${cmdname}" is not a closure, so cannot execute. Sorry! Debug string for org follows: ${org.debugString()}`)
+			}
+			// we already evaluated the first arg, we don't pass it to the arg evaluator
+			skipFirstArg = true;
+		} else if (!!cmdname) {
 			// environment will throw an exception if unbound
-			closure = executionEnv.lookupBinding(this.getCommandText());
+			closure = executionEnv.lookupBinding(cmdname);
 			// but we also have to make sure it's bound to a closure
 			if (!(closure.getTypeName() == '-closure-')) {
 				throw new EError(`command: stopping because "${cmdname}" not bound to closure, so cannot execute. Sorry! Debug string for object bound to ${cmdname} of type ${closure.getTypeName()} follows: ${closure.debugString()}`)
@@ -251,11 +287,11 @@ class Command extends NexContainer {
 			// someone tried to evaluate (~ )
 			throw new EError(`command: command with no name and no children has nothing to execute. Sorry!`)			
 		}
-		if (cmdname == null) {
+		if (!cmdname) {
 			// last ditch attempt to figure out command name, using boundName hack
 			cmdname = closure.getBoundName();
 		}
-		if (cmdname == null) {
+		if (!cmdname) {
 			// we have to give them something
 			cmdname = `<br>*** unnamed function, function body follows **** <br>${closure.getLambdaDebugString()}<br>*** end function body ***<br>`;
 		}
@@ -382,12 +418,22 @@ class Command extends NexContainer {
 			codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
 			if (experiments.NEW_CLOSURE_DISPLAY && this.isEditing && renderNode.isSelected()) {
 				let gclosure = this.getClosureForGhost();
-				if (gclosure) {
+				if (gclosure && Utils.isClosure(gclosure)) {
 					codespan.appendChild(this.getGhostDiv(gclosure));
 				}
 			}
 		}
 	}
+
+	renderTags(domNode, renderFlags, editor) {
+		if (experiments.ORG_OVERHAUL) {
+			let codespan = domNode.firstChild;
+			super.renderTags(codespan, renderFlags, editor);			
+		} else {
+			super.renderTags(domNode, renderFlags, editor);
+		}
+	}
+
 
 	renderChildrenIfNormal() {
 		return false;
@@ -565,7 +611,7 @@ class CommandEditor extends Editor {
 	}
 
 	shouldAppend(text) {
-		if (/^[a-zA-Z0-9:_-]$/.test(text)) return true; // normal chars
+		if (/^[a-zA-Z0-9:.-]$/.test(text)) return true; // normal chars
 		if (/^[/<>=+*]$/.test(text)) return true;
 		return false;
 	}
@@ -576,7 +622,7 @@ class CommandEditor extends Editor {
 		if (/^[/<>=+*]$/.test(input)) return false;
 
 		// command-friendly characters
-		if (/^[a-zA-Z0-9:_-]$/.test(input)) return false;
+		if (/^[a-zA-Z0-9:.-]$/.test(input)) return false;
 
 		// anything else, pop out
 		return true;

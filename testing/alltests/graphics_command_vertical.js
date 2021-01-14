@@ -194,5 +194,20 @@ testactions.push({type:'keydown',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'Space'});
 testactions.push({type:'keyup',code:'Space'});
 testactions.push({type:'keyup',code:'ShiftLeft'});
-harness.runTest(testactions, 'direct');
+
+const experiment_flags = {
+"V2_INSERTION_LENIENT_DOC_FORMAT":true,
+"NO_COPY_CSS":true,
+"DISABLE_ALERT_ANIMATIONS":true,
+"BETTER_KEYBINDINGS":true,
+"MAX_RENDER_DEPTH":100,
+"NO_SPLASH":true,
+"REMAINING_EDITORS":true,
+"CAN_HAVE_EMPTY_ROOT":true,
+"NEW_CLOSURE_DISPLAY":true,
+"THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO":true,
+"SAVE_EVALUATES_CONTENTS":true
+};
+
+harness.runTestWithFlags(testactions, 'direct', experiment_flags);
 //endtest//

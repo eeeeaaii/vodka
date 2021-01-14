@@ -21,7 +21,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	display: flex;
 	flex-direction: row;
 	flex-wrap:wrap;
-	align-items: flex-start;
+	align-items: center;
 }
 
 .line.exploded {

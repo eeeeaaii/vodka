@@ -24,6 +24,7 @@ import { EError } from '../nex/eerror.js'
 import { EString } from '../nex/estring.js'
 import { Expectation } from '../nex/expectation.js'
 import { Nil } from '../nex/nil.js'
+import { Org } from '../nex/org.js'
 import { ESymbol } from '../nex/esymbol.js'
 import { ERROR_TYPE_INFO } from '../nex/eerror.js'
 import { wrapError } from '../evaluator.js'
@@ -364,7 +365,7 @@ function createFileBuiltins() {
 				exp.appendChild(val)
 				return exp;
 			},
-			'saves |nex in the file |name without evaluating it, and also evaluates it.'
+			'evaluates |nex for its side effects, but saves the unevaluated version in the file |name.'
 		);
 	} else {
 

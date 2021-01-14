@@ -39,6 +39,7 @@ import { Letter } from './nex/letter.js'
 import { Doc } from './nex/doc.js' 
 import { Separator } from './nex/separator.js' 
 import { Nil } from './nex/nil.js' 
+import { Instantiator } from './nex/instantiator.js' 
 import { experiments } from './globalappflags.js'
 import { isRecordingTest } from './testrecorder.js'
 import {
@@ -1901,6 +1902,12 @@ class Manipulator {
 
 	newFloat() {
 		let r = new RenderNode(new Float());
+		r.possiblyStartMainEditor();
+		return r;		
+	}
+
+	newInstantiator() {
+		let r = new RenderNode(new Instantiator());
 		r.possiblyStartMainEditor();
 		return r;		
 	}

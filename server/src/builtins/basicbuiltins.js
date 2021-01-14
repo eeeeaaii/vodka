@@ -46,294 +46,234 @@ import { evaluateNexSafely, wrapError } from '../evaluator.js'
 
 function createBasicBuiltins() {
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $dumpMemory(env, executionEnvironment) {
-		let closure = env.lb('closure');
-		let lexenv = closure.getLexicalEnvironment();
-		let doLevel = function(envAtLevel) {
-			let r = new Org();
-			envAtLevel.doForEachBinding(function(binding) {
-				let rec = new Org();
-				rec.appendChild(new ESymbol(binding.name));
-				rec.appendChild(binding.val);
-				r.appendChild(rec);
-			})
-			if (envAtLevel.getParent()) {
-				r.appendChild(doLevel(envAtLevel.getParent()));
-			}
-			return r;
-		}
-		return doLevel(lexenv);
-	}
-
 	Builtin.createBuiltin(
 		'dump-memory',
 		[ 'closure&' ],
-		$dumpMemory,
+		function $dumpMemory(env, executionEnvironment) {
+			let closure = env.lb('closure');
+			let lexenv = closure.getLexicalEnvironment();
+			let doLevel = function(envAtLevel) {
+				let r = new Org();
+				envAtLevel.doForEachBinding(function(binding) {
+					let rec = new Org();
+					rec.appendChild(new ESymbol(binding.name));
+					rec.appendChild(binding.val);
+					r.appendChild(rec);
+				})
+				if (envAtLevel.getParent()) {
+					r.appendChild(doLevel(envAtLevel.getParent()));
+				}
+				return r;
+			}
+			return doLevel(lexenv);
+		},
 		'returns the memory environment of |exp, in the form of a list containing all bound symbols along with their values.'
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $seeId(env, executionEnvironment) {
-		let nex = env.lb('nex');
-		return new EString('' + nex.getID());
-	}
 
 	Builtin.createBuiltin(
 		'see-id',
 		[ 'nex' ],
-		$seeId,
+		function $seeId(env, executionEnvironment) {
+			let nex = env.lb('nex');
+			return new EString('' + nex.getID());
+		},
 		'returns the ID of |nex as a string.'
 	);
-
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $begin(env, executionEnvironment) {
-		let lst = env.lb('nex');
-		if (lst.numChildren() == 0) {
-			return new Nil();
-		} else {
-			return lst.getChildAt(lst.numChildren() - 1);
-		}
-	}
 
 	Builtin.createBuiltin(
 		'begin',
 		[ 'nex...' ],
-		$begin,
+		function $begin(env, executionEnvironment) {
+			let lst = env.lb('nex');
+			if (lst.numChildren() == 0) {
+				return new Nil();
+			} else {
+				return lst.getChildAt(lst.numChildren() - 1);
+			}
+		},
 		'all arguments are evaluated in order from first to last, and the result of the last evaluation is returned.'
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $cap(env, executionEnvironment) {
-		let c = env.lb('list');
-		if (c.numChildren() == 0) {
-			return new EError("cap: cannot get first element of empty list. Sorry!");
-		}
-		let r = c.getChildAt(0);
-		c.removeChild(c.getChildAt(0));
-		return r;
-	}
 
 	Builtin.createBuiltin(
 		'cap',
 		[ 'list()' ],
-		$cap,
+		function $cap(env, executionEnvironment) {
+			let c = env.lb('list');
+			if (c.numChildren() == 0) {
+				return new EError("cap: cannot get first element of empty list. Sorry!");
+			}
+			let r = c.getChildAt(0);
+			c.removeChild(c.getChildAt(0));
+			return r;
+		},
 		'destructively and permanently removes the first element of |list, and returns the removed element.'
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $car(env, executionEnvironment) {
-		let lst = env.lb('list');
-		if (lst.numChildren() == 0) {
-			return new EError('first/car: cannot get first element of empty list. Sorry!');
-		}
-		return lst.getFirstChild();
-	}
 
 	Builtin.createBuiltin(
 		'car',
 		[ 'list()' ],
-		$car,
+		function $car(env, executionEnvironment) {
+			let lst = env.lb('list');
+			if (lst.numChildren() == 0) {
+				return new EError('first/car: cannot get first element of empty list. Sorry!');
+			}
+			return lst.getFirstChild();
+		},
 		'returns the first element of |list, without altering |list in any way.'
 	);
 
 	Builtin.aliasBuiltin('first', 'car');
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $cdr(env, executionEnvironment) {
-		let c = env.lb('list');
-		if (c.numChildren() == 0) {
-			return new EError("rest/cdr: given an empty list, cannot make a new list with first element removed. Sorry!");
-		}
-		let newOne = c.makeCopy(true);
-		c.getChildrenForCdr(newOne);
-		return newOne;
-	}
-
 	Builtin.createBuiltin(
 		'cdr',
 		[ 'list()' ],
-		$cdr,
+		function $cdr(env, executionEnvironment) {
+			let c = env.lb('list');
+			if (c.numChildren() == 0) {
+				return new EError("rest/cdr: given an empty list, cannot make a new list with first element removed. Sorry!");
+			}
+			let newOne = c.makeCopy(true);
+			c.getChildrenForCdr(newOne);
+			return newOne;
+		},
 		'returns a new list containing all elements of |list except the first one.'
 	);
 
 	Builtin.aliasBuiltin('rest', 'cdr');
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $chop(env, executionEnvironment) {
-		let c = env.lb('list');
-		if (c.numChildren() == 0) {
-			return new EError("chop: cannot remove first element of empty list. Sorry!");
-		}
-		c.removeChild(c.getChildAt(0));
-		return c;
-	}
-
 	Builtin.createBuiltin(
 		'chop',
 		[ 'list()' ],
-		$chop,
+		function $chop(env, executionEnvironment) {
+			let c = env.lb('list');
+			if (c.numChildren() == 0) {
+				return new EError("chop: cannot remove first element of empty list. Sorry!");
+			}
+			c.removeChild(c.getChildAt(0));
+			return c;
+		},
 		'destructively and permanently removes the first element of |list, and returns |list.'
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $cons(env, executionEnvironment) {
-		let nex = env.lb('nex');
-		let lst = env.lb('list');
-		let newOne = lst.makeCopy(true);
-		lst.setChildrenForCons(nex, newOne);
-		return newOne;
-	}
 
 	Builtin.createBuiltin(
 		'cons',
 		[ 'nex', 'list()' ],
-		$cons,
+		function $cons(env, executionEnvironment) {
+			let nex = env.lb('nex');
+			let lst = env.lb('list');
+			let newOne = lst.makeCopy(true);
+			lst.setChildrenForCons(nex, newOne);
+			return newOne;
+		},
 		'creates a new list by prepending |nex to |list, and returns the new list.'
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $copy(env, executionEnvironment) {
-		return env.lb('nex').makeCopy();
-	}
 
 	Builtin.createBuiltin(
 		'copy',
 		[ 'nex' ],
-		$copy,
+		function $copy(env, executionEnvironment) {
+			return env.lb('nex').makeCopy();
+		},
 		'returns a deep copy of |nex (if |nex is a list, list elements are also copied).'
 	);
-
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $cram(env, executionEnvironment) {
-		let lst = env.lb('list');
-		lst.prependChild(env.lb('nex'));
-		return lst;
-	}
 
 	Builtin.createBuiltin(
 		'cram',
 		[ 'nex', 'list()' ],
-		$cram,
+		function $cram(env, executionEnvironment) {
+			let lst = env.lb('list');
+			lst.prependChild(env.lb('nex'));
+			return lst;
+		},
 		'permanently alters |list by prepending |nex to it.'
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $eq(env, executionEnvironment) {
-		let lhs = env.lb('lhs');
-		let rhs = env.lb('rhs');
-		return new Bool(rhs.getID() == lhs.getID());
-	}
 
 	Builtin.createBuiltin(
 		'eq',
 		[ 'lhs', 'rhs' ],
-		$eq,
+		function $eq(env, executionEnvironment) {
+			let lhs = env.lb('lhs');
+			let rhs = env.lb('rhs');
+			return new Bool(rhs.getID() == lhs.getID());
+		},
 		'returns true if |lhs and |rhs refer to the same in-memory object.'
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $equal(env, executionEnvironment) {
-		let lhs = env.lb('lhs');
-		let rhs = env.lb('rhs');
-		if (lhs instanceof Bool && rhs instanceof Bool) {
-			return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
-		} else if (lhs instanceof Builtin && rhs instanceof Builtin) {
-			return new Bool(lhs.getID() == rhs.getID());
-		} else if (lhs instanceof EString && rhs instanceof EString) {
-			return new Bool(lhs.getFullTypedValue() == rhs.getFullTypedValue());
-		} else if (lhs instanceof ESymbol && rhs instanceof ESymbol) {
-			return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
-		} else if (lhs instanceof Float && rhs instanceof Float) {
-			return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
-		} else if (lhs instanceof Integer && rhs instanceof Integer) {
-			return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
-
-		// mixing numeric types should work though
-		} else if (lhs instanceof Float && rhs instanceof Integer) {
-			return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
-		} else if (lhs instanceof Integer && rhs instanceof Float) {
-			return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
-
-
-		} else if (lhs instanceof Letter && rhs instanceof Letter) {
-			return new Bool(lhs.getText() == rhs.getText());
-		} else if (lhs instanceof Separator && rhs instanceof Separator) {
-			return new Bool(lhs.getText() == rhs.getText());
-		} else if (lhs instanceof Nil && rhs instanceof Nil) {
-			return new Bool(true);
-
-
-		} else if (lhs instanceof Command && rhs instanceof Command) {
-			return new EError('equal: equal for lists is not implemented yet. Sorry!')
-		} else if (lhs instanceof Lambda && rhs instanceof Lambda) {
-			return new EError('equal: equal for lists is not implemented yet. Sorry!')
-		} else if (lhs instanceof Doc && rhs instanceof Doc) {
-			return new EError('equal: equal for lists is not implemented yet. Sorry!')
-		} else if (lhs instanceof Line && rhs instanceof Line) {
-			return new EError('equal: equal for lists is not implemented yet. Sorry!')
-		} else if (lhs instanceof Word && rhs instanceof Word) {
-			return new EError('equal: equal for lists is not implemented yet. Sorry!')
-		} else if (lhs instanceof Zlist && rhs instanceof Zlist) {
-			return new EError('equal: equal for lists is not implemented yet. Sorry!')
-		} else if (lhs instanceof Expectation && rhs instanceof Expectation) {
-			return new EError('equal: equal for lists is not implemented yet. Sorry!')
-		} else {
-			return new Bool(false);
-		}
-	}
 
 	Builtin.createBuiltin(
 		'equal',
 		[ 'lhs', 'rhs' ],
-		$equal,
+		function $equal(env, executionEnvironment) {
+			let lhs = env.lb('lhs');
+			let rhs = env.lb('rhs');
+			if (lhs instanceof Bool && rhs instanceof Bool) {
+				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
+			} else if (lhs instanceof Builtin && rhs instanceof Builtin) {
+				return new Bool(lhs.getID() == rhs.getID());
+			} else if (lhs instanceof EString && rhs instanceof EString) {
+				return new Bool(lhs.getFullTypedValue() == rhs.getFullTypedValue());
+			} else if (lhs instanceof ESymbol && rhs instanceof ESymbol) {
+				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
+			} else if (lhs instanceof Float && rhs instanceof Float) {
+				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
+			} else if (lhs instanceof Integer && rhs instanceof Integer) {
+				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
+
+			// mixing numeric types should work though
+			} else if (lhs instanceof Float && rhs instanceof Integer) {
+				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
+			} else if (lhs instanceof Integer && rhs instanceof Float) {
+				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
+
+
+			} else if (lhs instanceof Letter && rhs instanceof Letter) {
+				return new Bool(lhs.getText() == rhs.getText());
+			} else if (lhs instanceof Separator && rhs instanceof Separator) {
+				return new Bool(lhs.getText() == rhs.getText());
+			} else if (lhs instanceof Nil && rhs instanceof Nil) {
+				return new Bool(true);
+
+
+			} else if (lhs instanceof Command && rhs instanceof Command) {
+				return new EError('equal: equal for lists is not implemented yet. Sorry!')
+			} else if (lhs instanceof Lambda && rhs instanceof Lambda) {
+				return new EError('equal: equal for lists is not implemented yet. Sorry!')
+			} else if (lhs instanceof Doc && rhs instanceof Doc) {
+				return new EError('equal: equal for lists is not implemented yet. Sorry!')
+			} else if (lhs instanceof Line && rhs instanceof Line) {
+				return new EError('equal: equal for lists is not implemented yet. Sorry!')
+			} else if (lhs instanceof Word && rhs instanceof Word) {
+				return new EError('equal: equal for lists is not implemented yet. Sorry!')
+			} else if (lhs instanceof Zlist && rhs instanceof Zlist) {
+				return new EError('equal: equal for lists is not implemented yet. Sorry!')
+			} else if (lhs instanceof Expectation && rhs instanceof Expectation) {
+				return new EError('equal: equal for lists is not implemented yet. Sorry!')
+			} else {
+				return new Bool(false);
+			}
+		},
 		'returns true if |lhs and |rhs have the same semantic value (specific implementation depends on the type |lhs and |rhs).'
 	);
 
-	
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	// 'eval' is really `eval again` because args to functions are evaled
-	
-	function $eval(env, executionEnvironment) {
-		let expr = env.lb('nex');
-		let newresult = evaluateNexSafely(expr, executionEnvironment);
-		// we do not wrap errors for eval - we let
-		// the caller deal with it
-		return newresult;				
-	}
-
+	// Note the args to the eval function are evaluated.
 	Builtin.createBuiltin(
 		'eval',
 		[ 'nex' ],
-		$eval,
+		function $eval(env, executionEnvironment) {
+			let expr = env.lb('nex');
+			let newresult = evaluateNexSafely(expr, executionEnvironment);
+			// we do not wrap errors for eval - we let
+			// the caller deal with it
+			return newresult;				
+		},
 		'returns the result of evaluating |nex.'
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $quote(env, executionEnvironment) {
-		return env.lb('nex');
-	}
 
 	Builtin.createBuiltin(
 		'quote',
 		[ '_nex' ],
-		$quote,
+		function $quote(env, executionEnvironment) {
+			return env.lb('nex');
+		},
 		'returns the unevaluated form of |nex.'
 	);
 

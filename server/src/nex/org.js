@@ -99,23 +99,23 @@ class Org extends NexContainer {
 	}
 
 	hasChildTag(tag) {
-		// TODO: make more efficient I guess
-		for (let i = 0; i < this.numChildren(); i++) {
-			if (this.getChildAt(i).hasTag(tag)) {
-				return true;
+		let r = false;
+		this.doForEachChild(function(c) {
+			if (c.hasTag(tag)) {
+				r = true;
 			}
-		}
-		return false;
+		});
+		return r;
 	}
 
 	getChildWithTag(tag) {
-		// TODO: make more efficient
-		for (let i = 0; i < this.numChildren(); i++) {
-			if (this.getChildAt(i).hasTag(tag)) {
-				return this.getChildAt(i);
+		let r = null;
+		this.doForEachChild(function(c) {
+			if (c.hasTag(tag)) {
+				r = c;
 			}
-		}
-		return false;
+		});
+		return r;
 	}
 
 	getDirtyForRendering() {

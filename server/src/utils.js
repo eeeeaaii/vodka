@@ -118,6 +118,12 @@ function isLambda(n) {
 	return n.getTypeName() == '-lambda-';
 }
 
+function isClosure(n) {
+	if (n instanceof RenderNode) n = n.getNex();
+	if (!n) return false;
+	return n.getTypeName() == '-closure-';
+}
+
 function isRoot(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n) return false;
@@ -156,6 +162,7 @@ export {
 	isLambda,
 	isRoot,
 	isNex,
+	isClosure,
 	beep,
 	isMac
 }

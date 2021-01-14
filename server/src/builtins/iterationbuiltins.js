@@ -25,6 +25,7 @@ import { Org } from '../nex/org.js';
 import { Integer } from '../nex/integer.js';
 import { evaluateNexSafely, wrapError } from '../evaluator.js'
 import { UNBOUND } from '../environment.js'
+import { experiments } from '../globalappflags.js'
 
 
 function createIterationBuiltins() {

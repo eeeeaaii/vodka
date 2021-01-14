@@ -21,7 +21,7 @@ import { experiments } from '../globalappflags.js'
 
 class Nil extends ValueNex {
 	constructor() {
-		super('', '^', 'nil')
+		super('', '&#8709;', 'nil')
 	}
 
 	getTypeName() {
@@ -59,6 +59,12 @@ class Nil extends ValueNex {
 
 	getDefaultHandler() {
 		return 'nilDefault';
+	}
+
+	renderInto(renderNode, renderFlags, withEditor) {
+		super.renderInto(renderNode, renderFlags, withEditor);
+		let domNode = renderNode.getDomNode();
+		domNode.classList.add('nil');
 	}
 
 	getEventTable(context) {

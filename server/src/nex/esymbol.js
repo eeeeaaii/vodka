@@ -167,7 +167,11 @@ class ESymbolEditor extends Editor {
 	}
 
 	shouldAppend(text) {
-		return /^[a-zA-Z0-9:_-]$/.test(text);
+		if (experiments.ORG_OVERHAUL) {
+			return /^[a-zA-Z0-9:.-]$/.test(text);
+		} else {
+			return /^[a-zA-Z0-9:-]$/.test(text);
+		}
 	}
 
 	shouldTerminateAndReroute(text) {

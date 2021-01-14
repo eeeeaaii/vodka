@@ -24,17 +24,6 @@ tests that circular nested structures don't break the browser. at max render dep
 //enddescription//
 //testspec// |Shift|~|b|i|n|d|Shift|@|a|Shift|(|Shift|Tab|Shift|~|b|i|n|d|Shift|@|b|Shift|(|Shift|Tab|Shift|~|b|i|n|d|Shift|@|c|Shift|(|Shift|Tab|ArrowLeft|ArrowLeft|Enter|ArrowRight|Enter|ArrowRight|Enter|Shift|Backspace|Backspace|Backspace|Shift|~|c|r|e|a|m|Backspace|Backspace|Backspace|a|m|Shift|@|a|Shift|(|Backspace|Shift|@|b|Shift|Tab|Shift|~|c|r|e|a|m|Backspace|Backspace|Backspace|a|m|Shift|@|b|Shift|@|c|Shift|Tab|Shift|~|c|r|a|m|Shift|@|c|Shift|@|a|Shift|Tab|ArrowLeft|ArrowLeft|Enter|Shift|Backspace|Tab|Enter|Shift|Backspace|Tab|Enter
 //starttest//
-const experiment_flags = {
-"V2_INSERTION_LENIENT_DOC_FORMAT":true,
-"NO_COPY_CSS":false,
-"DISABLE_ALERT_ANIMATIONS":true,
-"BETTER_KEYBINDINGS":false,
-"MAX_RENDER_DEPTH":40,
-'NO_SPLASH': true,
-
-};
-
-
 var harness = require('../testharness');
 
 var testactions = [];
@@ -277,6 +266,20 @@ testactions.push({type:'keyup',code:'Backspace'});
 testactions.push({type:'keyup',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
+
+const experiment_flags = {
+"V2_INSERTION_LENIENT_DOC_FORMAT":true,
+"NO_COPY_CSS":true,
+"DISABLE_ALERT_ANIMATIONS":true,
+"BETTER_KEYBINDINGS":true,
+"MAX_RENDER_DEPTH":100,
+"NO_SPLASH":true,
+"REMAINING_EDITORS":true,
+"CAN_HAVE_EMPTY_ROOT":true,
+"NEW_CLOSURE_DISPLAY":true,
+"THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO":true,
+"SAVE_EVALUATES_CONTENTS":true
+};
 
 harness.runTestWithFlags(testactions, 'direct', experiment_flags);
 //endtest//

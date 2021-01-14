@@ -25,7 +25,9 @@ adds tags to each type of valuenex, to verify that they all support displaying t
 //testspec// |Shift|~|a|d|d|-|t|a|g|Shift|!|Shift|$|Shift|Enter|f|o|o|b|a|r|Tab|Enter|Shift|Tab|Shift|Enter|Shift|~|a|d|d|-|t|a|g|Shift|$|Shift|Enter|p|h|i|l|c|o|l|l|i|n|s|Tab|Enter|Shift|$|Shift|Enter|f|o|o|b|a|r|Tab|Enter|Shift|Tab|Shift|Enter|Shift|~|a|d|d|-|t|a|g|Shift|@|b|a|z|q|u|x|Shift|$|Shift|Enter|f|o|o|b|a|r|Tab|Enter|Shift|Tab|Shift|Enter|Shift|~|Shift|%|Backspace|a|Backspace|Backspace|a|d|d|-|t|a|g|Shift|%|3|4|3|.|5|3|Shift|$|Shift|Enter|o|Backspace|f|o|o|b|a|r|Tab|Enter|Shift|Tab|Shift|Enter|Shift|~|a|d|d|-|t|a|g|Shift|#|1|0|0|Shift|$|Shift|Enter|f|o|o|b|a|r|Tab|Enter|Shift|Tab|Shift|Enter|Shift|~|a|d|d|-|t|a|g|Shift|^|Shift|$|Shift|Enter|f|o|o|b|a|r|Tab|Enter|Shift|Tab|Shift|Enter|Shift|~|a|d|d|-|t|a|g|Shift|Backspace
 //starttest//
 var harness = require('../testharness');
+
 var testactions = [];
+
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Backquote'});
 testactions.push({type:'keyup',code:'Backquote'});
@@ -182,20 +184,21 @@ testactions.push({type:'keyup',code:'KeyT'});
 testactions.push({type:'keyup',code:'KeyA'});
 testactions.push({type:'keydown',code:'KeyG'});
 testactions.push({type:'keyup',code:'KeyG'});
-	testactions.push({type:'keydown',code:'ShiftRight'});
-	testactions.push({type:'keydown',code:'Backquote'});
-	testactions.push({type:'keyup',code:'Backquote'});
-	testactions.push({type:'keyup',code:'ShiftRight'});
-	testactions.push({type:'keydown',code:'KeyQ'});
-	testactions.push({type:'keyup' ,code:'KeyQ'});
-	testactions.push({type:'keydown',code:'KeyU'});
-	testactions.push({type:'keyup' ,code:'KeyU'});
-	testactions.push({type:'keydown',code:'KeyO'});
-	testactions.push({type:'keyup' ,code:'KeyO'});
-	testactions.push({type:'keydown',code:'KeyT'});
-	testactions.push({type:'keyup' ,code:'KeyT'});
-	testactions.push({type:'keydown',code:'KeyE'});
-	testactions.push({type:'keyup' ,code:'KeyE'});testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Backquote'});
+testactions.push({type:'keyup',code:'Backquote'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'KeyQ'});
+testactions.push({type:'keyup' ,code:'KeyQ'});
+testactions.push({type:'keydown',code:'KeyU'});
+testactions.push({type:'keyup' ,code:'KeyU'});
+testactions.push({type:'keydown',code:'KeyO'});
+testactions.push({type:'keyup' ,code:'KeyO'});
+testactions.push({type:'keydown',code:'KeyT'});
+testactions.push({type:'keyup' ,code:'KeyT'});
+testactions.push({type:'keydown',code:'KeyE'});
+testactions.push({type:'keyup' ,code:'KeyE'});
+testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Digit2'});
 testactions.push({type:'keyup',code:'Digit2'});
 testactions.push({type:'keyup',code:'ShiftRight'});
@@ -211,10 +214,10 @@ testactions.push({type:'keydown',code:'KeyU'});
 testactions.push({type:'keyup',code:'KeyU'});
 testactions.push({type:'keydown',code:'KeyX'});
 testactions.push({type:'keyup',code:'KeyX'});
-	testactions.push({type:'keydown',code:'ShiftLeft'});
-	testactions.push({type:'keydown',code:'Tab'});
-	testactions.push({type:'keyup',code:'Tab'});
-	testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Tab'});
+testactions.push({type:'keyup',code:'Tab'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Digit4'});
 testactions.push({type:'keyup',code:'Digit4'});
@@ -467,5 +470,20 @@ testactions.push({type:'keydown',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'Backspace'});
 testactions.push({type:'keyup',code:'Backspace'});
 testactions.push({type:'keyup',code:'ShiftLeft'});
-harness.runTest(testactions, 'direct');
+
+const experiment_flags = {
+"V2_INSERTION_LENIENT_DOC_FORMAT":true,
+"NO_COPY_CSS":true,
+"DISABLE_ALERT_ANIMATIONS":true,
+"BETTER_KEYBINDINGS":true,
+"MAX_RENDER_DEPTH":100,
+"NO_SPLASH":true,
+"REMAINING_EDITORS":true,
+"CAN_HAVE_EMPTY_ROOT":true,
+"NEW_CLOSURE_DISPLAY":true,
+"THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO":true,
+"SAVE_EVALUATES_CONTENTS":true
+};
+
+harness.runTestWithFlags(testactions, 'direct', experiment_flags);
 //endtest//

@@ -25,6 +25,7 @@ import { IntegerEditor } from './nex/integer.js'
 import { ESymbolEditor } from './nex/esymbol.js'
 import { EStringEditor } from './nex/estring.js'
 import { CommandEditor } from './nex/command.js'
+import { InstantiatorEditor } from './nex/instantiator.js'
 import { TagEditor } from './tag.js'
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import {
@@ -146,6 +147,8 @@ class RenderNode {
 				return (experiments.REMAINING_EDITORS ? new IntegerEditor(nex) : null);
 			case '-symbol-':
 				return new ESymbolEditor(nex);
+			case '-instantiator-':
+				return new InstantiatorEditor(nex);
 			case '-string-':
 				if (experiments.BETTER_KEYBINDINGS) {
 					return new EStringEditor(nex);

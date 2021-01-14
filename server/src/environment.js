@@ -22,6 +22,7 @@ const UNBOUND = "****UNBOUND****"
 import { EError } from './nex/eerror.js'
 import { NexContainer } from './nex/nexcontainer.js'
 import { systemState } from './systemstate.js'
+import { Tag } from './tag.js'
 
 /** @module environment */
 
@@ -48,11 +49,7 @@ class Environment {
 		let newEnv = new Environment(null);
 		for (let sym in this.symbols) {
 			let rec = this.symbols[sym];
-			let copiedRecord = {
-				name: rec.name,
-				val: rec.val,
-				packagename: rec.packageName,
-			}
+			let copiedRecord = this.copyBindingRecord(rec);
 			newEnv.symbols[sym] = copiedRecord;
 		}
 		newEnv.currentPackageForBinding = this.currentPackageForBinding;
@@ -174,6 +171,14 @@ class Environment {
 		}
 	}
 
+	copyBindingRecord(record) {
+		return {
+			name: record.name,
+			val: record.val,
+			packagename: record.packagename
+		}
+	}
+
 	bind(name, val, packageName) {
 		if (this.symbols[name]) {
 			this.symbols[name].val = val;
@@ -270,13 +275,48 @@ class Environment {
 		return null;
 	}
 
+	getNextReference(org, name) {
+		let c = org.getChildWithTag(name);
+	}
+
+ 	isDereferenceable(n) {
+		return n.getTypeName() == '-org-' || n.getTypeName() == '-nativeorg-';
+	}
+
+	dereference(val, dereferencingPart) {
+		if (dereferencingPart.length == 0) {
+			return val;
+		} else {
+			let refName = dereferencingPart[0];
+			let thisReferenceTag = new Tag(refName);
+			if (!this.isDereferenceable(val)) {
+				throw new EError(`cannot dereference this thing: [${val.debugString()}]. Sorry!`);
+			}
+			let newval = val.getChildWithTag(thisReferenceTag);
+			if (!newval) {
+				throw new EError(`unknown reference ${refName}. Sorry!`);
+			}
+			dereferencingPart.shift();
+			return this.dereference(newval, dereferencingPart)
+		}
+	}
+
 	// returns the full binding struct
 	lookupFullBinding(name) {
+		let dereferencingPart = null;
+		if (name.indexOf('.') >= 0) {
+			dereferencingPart = name.substr(name.indexOf('.') + 1).split('.');
+			name = name.substr(0, name.indexOf('.'));
+		}
 		let binding = this._recursiveLookup(name, [this.listOfPackagesUsed]);
 		if (!binding) {
 			throw new EError(`undefined symbol: ${name}. Sorry!`);
 		}
 		binding.val.packageName = binding.packageName;
+		if (dereferencingPart) {
+			binding = this.copyBindingRecord(binding);
+			binding.val = this.dereference(binding.val, dereferencingPart);
+		}
 		return binding;
 	}
 

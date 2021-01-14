@@ -30,6 +30,7 @@ variadics are packaged up inside a list of some type (maybe a word)
 */
 
 import { BUILTIN_ARG_PREFIX } from './environment.js'
+import { experiments } from './globalappflags.js'
 
 class ParamParser {
 	constructor(isBuiltin) {
@@ -155,7 +156,7 @@ class ParamParser {
 			case '#%': return 'Number';
 			case '%#': return 'Number';
 			case '#': return 'Integer';
-			case '^': return 'Nil';
+			case '^': return experiments.ORG_OVERHAUL ? 'Instantiator' : 'Nil';
 			case '&': return 'Closure';
 		}
 		return '*';

@@ -20,6 +20,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { templateStore } from '../templates.js'
 import { Integer } from '../nex/integer.js'
 import { Org } from '../nex/org.js'
+import { experiments } from '../globalappflags.js'
 
 class ForeignGlobalData {
 	constructor() {
@@ -28,34 +29,41 @@ class ForeignGlobalData {
 
 }
 
+
 const foreignGlobalData = new ForeignGlobalData();
 
 function createNativeOrgs() {
+	let nillynil = experiments.ORG_OVERHAUL ? '' : '^ ';
+
 	// this works
 	templateStore.bindForeignClosure('alert', ' =a', 'pops up an alert.', function(a) {
 		alert(a[0].prettyPrint());
 	});
 
 	templateStore.createForeignTemplate(
-		'Notification', [
+		'Notification',
+		'Represents a notification.',
+		[
 			{
 				'name': 'show',
-				'args': '^ a$',
+				'args': `${nillynil}a$`,
 				'docs': 'shows a notification with |a in it.',
 				'func': function(a) {
-					Notification.requestPermission().then(function (permission) {
+					Notification.requestPermission().then(
+						function (permission) {
 			    		if (permission === "granted") {
 							var notification = new Notification(a);
-			      		}
-		    		});
-		    		return null;		
+			    	}
+		    	});
 				}
 			}
 		]
 	);
 
 	templateStore.createForeignTemplate(
-		'Canvas', [
+		'Canvas',
+		'Canvas that can be drawn on',
+		[
 			{
 				'name': ':draw',
 				'args': 'nex',
@@ -65,7 +73,7 @@ function createNativeOrgs() {
 			},
 			{
 				'name': ':init',
-				'args': '^ w# h#',
+				'args': `${nillynil}w# h#`,
 				'docs': 'initializes the Canvas.',
 				'func': function(args) {
 					// we don't want the contents of the canvas to get destroyed in between calls to draw
@@ -165,7 +173,7 @@ function createNativeOrgs() {
 			},
 			{
 				'name': 'dot',
-				'args': '^ color() x# y#',
+				'args': `${nillynil}color() x# y#`,
 				'docs': 'draws a dot with color |color at |x and |y.',
 				'func': function(args) {
 					this.setFillFromColor(args[0]);
@@ -176,7 +184,7 @@ function createNativeOrgs() {
 			},
 			{
 				'name': 'rect',
-				'args': '^ color() x# y# w# h#',
+				'args': `${nillynil}color() x# y# w# h#`,
 				'docs': 'draws a rectangle with color |color at |x, |y with width |w and height |h.',
 				'func': function(args) {
 					this.setFillFromColor(args[0]);
@@ -189,7 +197,7 @@ function createNativeOrgs() {
 			},
 			{
 				'name': 'line',
-				'args': '^ color() a0# a1# a2# a3#',
+				'args': `${nillynil}color() a0# a1# a2# a3#`,
 				'docs': 'draws a line with color |color from point |a0, |a1 to point |a2, |a3.',
 				'func': function(args) {
 					this.setStrokeFromColor(args[0]);
@@ -201,7 +209,7 @@ function createNativeOrgs() {
 			},
 			{
 				'name': 'fill-background',
-				'args': '^ color()',
+				'args': `${nillynil}color()`,
 				'docs': 'fills the background of the canvas with color |color.',
 				'func': function(args) {
 					let color = args[0];
@@ -217,7 +225,9 @@ function createNativeOrgs() {
 
 
 	templateStore.createForeignTemplate(
-		'Oscillator', [
+		'Oscillator',
+		'Generates a tone.',
+		[
 			{
 				'name': ':draw',
 				'args': 'nex',

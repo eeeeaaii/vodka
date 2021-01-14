@@ -23,6 +23,7 @@ import { EString } from '../server/src/nex/estring.js';
 import { Float } from '../server/src/nex/float.js';
 import { Nil } from '../server/src/nex/nil.js';
 import { Org } from '../server/src/nex/org.js';
+import { Instantiator } from '../server/src/nex/instantiator.js';
 import { Expectation } from '../server/src/nex/expectation.js';
 import { Lambda } from '../server/src/nex/lambda.js';
 import { Command } from '../server/src/nex/command.js';
@@ -34,6 +35,7 @@ import { EError } from '../server/src/nex/eerror.js';
 import { Letter } from '../server/src/nex/letter.js';
 import { Separator } from '../server/src/nex/separator.js';
 import { Tag } from '../server/src/tag.js'
+
 
 function concatParserString(arr) {
 	if (arr == null) {
@@ -149,12 +151,24 @@ function makeCommandList(name, children, privateData, taglist, verthoriz) {
 	return t;
 }
 
+function makeInstantiatorList(name, children, privateData, taglist, verthoriz) {
+	let t = new Instantiator(name);
+	appendChildrenToListType(t, children);
+	setPrivateData(t, privateData);
+	addTagsToNex(t, taglist);
+	setVertHoriz(t, verthoriz);
+	return t;
+}
+
 function makeInstanceAtom(instname, privatedata, taglist) {
 	// currently only letter, separator, and newline supported
 	let name = concatParserString(instname);
 	let t = null;
 	let isList = false;
 	switch(name) {
+		case 'nil':
+			t = new Nil();
+			break;
 		case 'letter':
 			t = new Letter(concatParserString(privatedata));
 			break;

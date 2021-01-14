@@ -19,6 +19,7 @@ import { ValueNex } from './valuenex.js'
 import * as Utils from '../utils.js'
 import { ArgEvaluator } from '../argevaluator.js'
 import { Nil } from './nil.js'
+import { Org } from './org.js'
 import { wrapError, evaluateNexSafely } from '../evaluator.js'
 import { BINDINGS, BUILTINS } from '../environment.js'
 import { experiments } from '../globalappflags.js'
@@ -158,6 +159,11 @@ class Closure extends ValueNex {
 	}
 
 	renderValue() {
+		// this is called by the superclass but we rewrite the contents later.
+		return '';
+	}
+
+	oldRenderValue() {
 		let r = this.cmdname;
 		for (let i = 0; i < this.numTags(); i++) {
 			r += '[' + this.getTag(i).getName(i) + ']';
@@ -183,7 +189,7 @@ class Closure extends ValueNex {
 		if (experiments.NEW_CLOSURE_DISPLAY) {
 			return this.getRenderedHTML();
 		} else {
-			return '' + this.prefix + this.escape(this.renderValue());
+			return '' + this.prefix + this.escape(this.oldRenderValue());
 		}		
 	}
 
@@ -220,7 +226,7 @@ class Closure extends ValueNex {
 	lambdaClosureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags) {
 		let scope = this.lexicalEnvironment.pushEnv();
 		argEvaluator.bindArgs(scope);
-		let r = new Nil();
+		let r = experiments.ORG_OVERHAUL ? new Org() : new Nil();
 		let i = 0;
 		let numc = this.lambda.numChildren();
 		for (let i = 0; i < numc; i++) {

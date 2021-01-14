@@ -51,7 +51,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	position: relative;
 	display: flex;
 	flex-direction: row;
-	align-items: flex-start;
+	align-items: center;
 	font-family: Courier;
 	color: #444444;
 	font-style: italic;

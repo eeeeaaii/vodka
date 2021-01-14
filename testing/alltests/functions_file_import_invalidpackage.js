@@ -138,6 +138,20 @@ testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Backquote'});
 testactions.push({type:'keyup',code:'Backquote'});
 testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'KeyQ'});
+testactions.push({type:'keyup',code:'KeyQ'});
+testactions.push({type:'keydown',code:'KeyU'});
+testactions.push({type:'keyup',code:'KeyU'});
+testactions.push({type:'keydown',code:'KeyO'});
+testactions.push({type:'keyup',code:'KeyO'});
+testactions.push({type:'keydown',code:'KeyT'});
+testactions.push({type:'keyup',code:'KeyT'});
+testactions.push({type:'keydown',code:'KeyE'});
+testactions.push({type:'keyup',code:'KeyE'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Backquote'});
+testactions.push({type:'keyup',code:'Backquote'});
+testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'KeyP'});
 testactions.push({type:'keyup',code:'KeyP'});
 testactions.push({type:'keydown',code:'KeyA'});
@@ -152,6 +166,12 @@ testactions.push({type:'keydown',code:'KeyG'});
 testactions.push({type:'keydown',code:'KeyE'});
 testactions.push({type:'keyup',code:'KeyG'});
 testactions.push({type:'keyup',code:'KeyE'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Digit2'});
+testactions.push({type:'keyup',code:'Digit2'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'KeyP'});
+testactions.push({type:'keyup',code:'KeyP'});
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Backquote'});
 testactions.push({type:'keyup',code:'Backquote'});
@@ -177,6 +197,8 @@ testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'KeyB'});
 testactions.push({type:'keyup',code:'KeyB'});
 testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Tab'});
+testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keydown',code:'Tab'});
@@ -253,5 +275,19 @@ testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
 
-harness.runTestNew(testactions, 'direct');
+const experiment_flags = {
+"V2_INSERTION_LENIENT_DOC_FORMAT":true,
+"NO_COPY_CSS":true,
+"DISABLE_ALERT_ANIMATIONS":true,
+"BETTER_KEYBINDINGS":true,
+"MAX_RENDER_DEPTH":100,
+"NO_SPLASH":true,
+"REMAINING_EDITORS":true,
+"CAN_HAVE_EMPTY_ROOT":true,
+"NEW_CLOSURE_DISPLAY":true,
+"THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO":true,
+"SAVE_EVALUATES_CONTENTS":true
+};
+
+harness.runTestWithFlags(testactions, 'direct', experiment_flags);
 //endtest//

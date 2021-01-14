@@ -16,10 +16,10 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 //endgnumessage//
-//testname// actions_autocomplete
+//testname// actions_autocomplete_command
 //startdescription//
 /*
-This test tests both builtin and bound symbols against the autocomplete engine, including a case where a particular symbol is both bound in a package and outside of a package.
+This tests autocomplete inside a command editor. It creates a package and binds a symbol in that package, then binds the same symbol again outside the package, then verifies that autocomplete will find the in-package version and also the out-of-package version. It then also attempts to use autocomplete to find a builtin (string-cat).
 */
 //enddescription//
 //testspec// |Shift|~|p|a|c|k|a|g|e|Shift| |Shift|@|f|o|o|b|a|r|Shift|~|b|i|n|d|Shift|@|b|a|z|Shift|#|1|0|0|Shift|Tab|Tab|Shift|Enter|Shift|~|b|i|n|d|Shift|@|b|a|z|Shift|#|2|0|0|Shift|Tab|Shift|Enter|Shift|~|b|a|Control| |Shift|ArrowRight|Shift|~|b|a|Control| | |ArrowRight|Shift|~|s|t|r|i|n|g|-|c|a|Control| 
@@ -206,6 +206,23 @@ testactions.push({type:'keydown',code:'ControlLeft'});
 testactions.push({type:'keydown',code:'Space'});
 testactions.push({type:'keyup',code:'Space'});
 testactions.push({type:'keyup',code:'ControlLeft'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
 
-harness.runTestNew(testactions, 'direct');
+
+const experiment_flags = {
+"V2_INSERTION_LENIENT_DOC_FORMAT":true,
+"NO_COPY_CSS":true,
+"DISABLE_ALERT_ANIMATIONS":true,
+"BETTER_KEYBINDINGS":true,
+"MAX_RENDER_DEPTH":100,
+"NO_SPLASH":true,
+"REMAINING_EDITORS":true,
+"CAN_HAVE_EMPTY_ROOT":true,
+"NEW_CLOSURE_DISPLAY":true,
+"THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO":true,
+"SAVE_EVALUATES_CONTENTS":true,
+"ORG_OVERHAUL":true
+};
+harness.runTestWithFlags(testactions, 'direct', experiment_flags);
 //endtest//

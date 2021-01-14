@@ -56,6 +56,7 @@ testParse('#0');
 testParse('@foobar');
 testParse('@foo:bar');
 testParse('@foo-bar');
+testParse('@foo.bar');
 testParse('@foo_bar');
 testParse('@zbcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
 // string
@@ -116,6 +117,7 @@ testParse(
    #5 _)  `, '~(_bar #9 #5 $"ack" #5_)');
 testParse('~(|::pl:: #4 #5 #5|)');
 // word/doc/line/letter
+testParse('[word](_[nil] [nil]_)');
 testParse('[word](__)');
 testParse('[word](_#4 #4 #4_)');
 testParse('[doc](|#4 #4 #4|)');
@@ -153,6 +155,7 @@ testParse('*{p\trivatedata}(_#3 #3 #3_)');
 testParse('*"privatedata"(_<`apple` `banana`>#3 #3 #3_)');
 testParse('*{privat\tedata}(_<`apple` `banana`>#3 #3 #3_)');
 testParse('*(_<`apple` `banana`>#3 #3 #3_)');
+testParse('~"private.data"(_foobar #3 #3 #3_)');
 testParse('~"privatedata"(_foobar #3 #3 #3_)');
 testParse('~{p\trivatedata}(_foobar #3 #3 #3_)');
 testParse('~"privatedata"(_<`apple` `banana`>foobar #3 #3 #3_)');

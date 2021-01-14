@@ -26,6 +26,13 @@ NC='\033[0m' # No Color
 
 NC='\033[0m' # No Color
 
+# to make a repl test:
+# 1. write the code in vodka
+# 2. put everything you want to be in the test into an org
+# 3. put the org in a to-string conversion
+# 4. save that string in a file called the_test_name.vk
+# run this to grab all those files
+
 capture_test() {
 	BASENAME=$1
 	SRCFILE=$2
