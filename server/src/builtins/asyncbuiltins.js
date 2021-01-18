@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from '../utils.js'
 
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { Builtin } from '../nex/builtin.js'
@@ -154,6 +155,36 @@ function createAsyncBuiltins() {
 		'sets |exp to fulfill after the specified delay.'
 	);
 
+	Builtin.createBuiltin(
+		'set-contents-changed',
+		[ 'exp*' ],
+		function $setContentsChanged(env, executionEnvironment) {
+			let exp = env.lb('exp');
+			exp.set(function(callback) {
+				return function(exp) {
+					// the expectation will fulfill when its first child's contents
+					// change in any way. We ignore 2nd and later children.
+					// we fulfill immediately if there are no children, or if the
+					// first child is not a container.
+					let n = exp.numChildren();
+					if (n == 0) {
+						callback(null);
+					} else {
+						let c1 = exp.getChildAt(0);
+						if (!Utils.isNexContainer(c1)) {
+							callback(null);
+						} else {
+							c1.setOnContentsChangedCallback(function() {
+								callback(null);
+							})
+						}
+					}
+				}
+			});
+			return exp;
+		},
+		'sets |exp to fulfill when the contents of its children change.'
+	);
 
 	Builtin.createBuiltin(
 		'set-immediate',

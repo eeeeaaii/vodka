@@ -17,6 +17,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { systemState } from './systemstate.js'
 import { RenderNode } from './rendernode.js'
+import { rootManager } from './rootmanager.js';
+import {
+	RENDER_MODE_EXPLO,
+	RENDER_MODE_NORM
+} from './globalconstants.js'
 
 const UNDO_LIMIT = 10;
 
@@ -30,17 +35,26 @@ class Undo {
 		return this.undobuffer.length > 0;
 	}
 
-	saveStateForUndo(nex) {
-		let copy = null;
+	// so really we should be copying the RENDERNODES not the NEXES
+	// so this is more or less ALL WRONG.
+	// And it's ESPECIALLY wrong because copying nexes is potentially
+	// massively expensive whereas copying rendernodes is potentially not.
+	// so until this is fixed we will continue to have a problem where
+	// after you undo, nothing is selected.
+	// for example, if there's a nex that represents a massive array of binary data
+	// this would be a big issue.
+
+	saveStateForUndo() {
+		let copyOfRoot = null;
 		try {
-			copy = nex.makeCopy();
+			copyOfRoot = systemState.getRoot().getNex().makeCopy();
 		} catch(e) {
 			// if there's a cycle this will be an exception like this:
 			// word.js:26 Uncaught RangeError: Maximum call stack size exceeded
 			// if that happens we just bail out and don't bother saving the undo state.
 			return;
 		}
-		this.undobuffer.unshift(nex.makeCopy());
+		this.undobuffer.unshift(copyOfRoot);
 		let selectedNode = systemState.getGlobalSelectedNode();
 		let selectedNodeId = selectedNode.getNex().getID();		
 		this.selectedNodeIdBuffer.unshift(selectedNodeId);
@@ -54,13 +68,17 @@ class Undo {
 	}
 
 	performUndo() {
-		let r = this.undobuffer.shift();
+		let savedRoot = this.undobuffer.shift();
 		let idToSelect = this.selectedNodeIdBuffer.shift();
 
-		var newRoot = new RenderNode(r);
-		let rootDomNode = document.getElementById('mixroot');
-		newRoot.setDomNode(rootDomNode);	
-		systemState.setRoot(newRoot);
+		// we store the root on the undobuffer but we will be creating a new root,
+		// so we'll append all the contents of the old root into the new root.
+
+		let newRoot = rootManager.createNewRoot({
+			mode: RENDER_MODE_EXPLO,
+		});
+
+		savedRoot.putContentsIntoOtherList(newRoot);
 
 		// the id will actually be in copiedFromID
 		newRoot.doOnRenderNodeTree(function(node) {

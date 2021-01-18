@@ -29,42 +29,50 @@ instance_list
  = INST_NAME:instance_name PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ ')' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / INST_NAME:instance_name PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ '_)' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / INST_NAME:instance_name PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ '|)' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'v'); }
+ / INST_NAME:instance_name PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ ',)' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'z'); }
  ;
 
 org_list
  = PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'v'); }
+ / PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'z'); }
  ;
 
 exp_list
  = '*' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '*' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '*' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'v'); }
+ / '*' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'z'); }
  ;
 
 lambda_list
  = '&' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '&' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '&' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'v'); }
+ / '&' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'z'); }
  ;
 
 cmd_list
  = '~' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '~' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '~' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'v'); }
+ / '~' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'z'); }
  / '~' PRIVATE:private_data_section '(' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  ')' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '~' PRIVATE:private_data_section '(_' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  '_)' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '~' PRIVATE:private_data_section '(|' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  '|)' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'v'); }
+ / '~' PRIVATE:private_data_section '(,' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  ',)' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'z'); }
  ;
 
 instantiator_list
  = '^' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeInstantiatorList(null, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '^' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeInstantiatorList(null, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '^' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeInstantiatorList(null, CHILDREN, PRIVATE, TAGLIST, 'v'); }
+ / '^' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeInstantiatorList(null, CHILDREN, PRIVATE, TAGLIST, 'z'); }
  / '^' PRIVATE:private_data_section '(' TAGLIST:taglist? NAME:instantiator_org_name ( ws + ) CHILDREN:(nex_with_space *) _  ')' { return PF.makeInstantiatorList(NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '^' PRIVATE:private_data_section '(_' TAGLIST:taglist? NAME:instantiator_org_name ( ws + ) CHILDREN:(nex_with_space *) _  '_)' { return PF.makeInstantiatorList(NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '^' PRIVATE:private_data_section '(|' TAGLIST:taglist? NAME:instantiator_org_name ( ws + ) CHILDREN:(nex_with_space *) _  '|)' { return PF.makeInstantiatorList(NAME, CHILDREN, PRIVATE, TAGLIST, 'v'); }
+ / '^' PRIVATE:private_data_section '(,' TAGLIST:taglist? NAME:instantiator_org_name ( ws + ) CHILDREN:(nex_with_space *) _  ',)' { return PF.makeInstantiatorList(NAME, CHILDREN, PRIVATE, TAGLIST, 'z'); }
  ;
 
 cmd_name

@@ -17,7 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as Utils from '../utils.js'
 
-import { NexContainer } from './nexcontainer.js'
+import { NexContainer, V_DIR, H_DIR, Z_DIR } from './nexcontainer.js'
 import { wrapError } from '../evaluator.js'
 import { experiments } from '../globalappflags.js'
 
@@ -70,7 +70,7 @@ class Org extends NexContainer {
 		let s = '';
 		for (let i = 0; i < this.numChildren(); i++) {
 			if (s != '') {
-				s += (this.vdir ? '\n' : ' ');
+				s += (this.dir == V_DIR ? '\n' : ' ');
 			}
 			let c = this.getChildAt(i);
 			s += c.toString('v2');
@@ -118,6 +118,15 @@ class Org extends NexContainer {
 		return r;
 	}
 
+	nextDir(dir) {
+		switch(dir) {
+			case H_DIR: return V_DIR;
+			case V_DIR: return Z_DIR;
+			case Z_DIR: return H_DIR;
+		}
+	}
+
+
 	getDirtyForRendering() {
 		if (this.drawfunction) {
 			// we are doing custom drawing, which means figuring out whether this is dirty or not
@@ -133,6 +142,9 @@ class Org extends NexContainer {
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('org');
 		domNode.classList.add('data');
+		if (experiments.ORG_Z) {
+			domNode.classList.add('redorgs');
+		}
 		if (this.drawfunction) {
 			let r = this.drawfunction(domNode.innerHTML);
 			if (typeof(r) == 'string') {

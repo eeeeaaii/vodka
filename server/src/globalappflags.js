@@ -45,7 +45,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //    that, keep it here with a comment saying // UNUSED BUT DO NOT REUSE
 
 const experiments = {
-	'V2_INSERTION_LENIENT_DOC_FORMAT': true,
 	'NO_COPY_CSS': true,
 	'DISABLE_ALERT_ANIMATIONS': false,
 	'BETTER_KEYBINDINGS': true,
@@ -78,6 +77,13 @@ const experiments = {
 
 	// massive overhaul of orgs
 	'ORG_OVERHAUL': true,
+
+	// stop being lenient
+	'V2_INSERTION_LENIENT_DOC_FORMAT': false,
+
+	// orgs can have a z direction
+	'ORG_Z': true,
+
 
 	// See note above about changing testharness.js when adding new flags.
 };

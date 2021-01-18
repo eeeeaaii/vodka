@@ -725,6 +725,13 @@ class RenderNode {
 		return this.removeChildAt(this.getIndexOfChild(c));
 	}
 
+	removeAllChildren() {
+		let nc = this.numChildren();
+		for (let i = 0 ; i < nc; i++) {
+			this.removeFirstChild();
+		}
+	}
+
 	// delete this, it's the same as the other method
 	getPreviousSibling(c) {
 		return this.getChildBefore(c);

@@ -33,14 +33,15 @@ class Editor {
 	}
 
 	shouldTerminate(text) {
-		// if (experiments.BETTER_KEYBINDINGS) {
-		// 	return text == 'Enter'
-		// }
-		return text == 'Enter'
-			|| (
-				text == 'Backspace'
-				&& !this.hasContent()
-				)
+		if (experiments.ORG_Z) {
+			return text == 'Enter';
+		} else {
+			return text == 'Enter'
+				|| (
+					text == 'Backspace'
+					&& !this.hasContent()
+					)
+		}
 	}
 
 	shouldBackspace(text) {

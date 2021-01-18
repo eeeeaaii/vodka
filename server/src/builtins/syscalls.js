@@ -25,7 +25,13 @@ import { Nil } from '../nex/nil.js'
 import { Org } from '../nex/org.js'
 import { RenderNode } from '../rendernode.js'
 import { systemState } from '../systemstate.js'
+import { rootManager } from '../rootmanager.js'
 import { experiments, getExperimentsAsString } from '../globalappflags.js'
+import { UNBOUND } from '../environment.js'
+import {
+	RENDER_MODE_NORM,
+	RENDER_MODE_EXPLO
+} from '../globalconstants.js'
 
 /**
  * Creates all syscall builtins.
@@ -124,34 +130,67 @@ function createSyscalls() {
 
 	Builtin.createBuiltin(
 		'get-pixel-height',
-		[ 'nex' ],
+		[ 'nex', 'normal?' ],
 		function $getPixelHeight(env, executionEnvironment) {
 			let n = env.lb('nex');
-			let rn = new RenderNode(n);
-			hiddenroot.appendChild(rn);
-			// has to be synchronous so we can measure
-			hiddenroot.render(0);
-			let w = rn.getDomNode().getBoundingClientRect().height;
-			hiddenroot.removeChildAt(0);
-			return new Float(w);
-		}
+			let normal = env.lb('normal');
+			let useNormal = (normal == UNBOUND ? true : normal.getTypedValue());
+			let renderModeToUse = useNormal ? RENDER_MODE_NORM : RENDER_MODE_EXPLO;
 
+			let rn = null;
+			let rna = n.getRenderNodes();
+			if (rna.length > 0) {
+				rn = rna[0];
+			}
+			if (rn != null) {
+				let lastRenderModeForCachedNode = rn.getRenderMode();
+				if (lastRenderModeForCachedNode != renderModeToUse) {
+					rn = null;
+				}
+			}
+			if (rn == null) {
+				rn = hiddenRootController.renderInHiddenRoot(n, renderModeToUse);
+			}
+			if (!rn) {
+				return new EError('cannot get height');
+			}
+			let h = rn.getDomNode().getBoundingClientRect().height;
+			return new Float(h);
+		},
+		'Returns the pixel height for the nex, in normal or exploded mode (default normal).'
 	);
 
 
 	Builtin.createBuiltin(
 		'get-pixel-width',
-		[ 'nex' ],
+		[ 'nex', 'normal?' ],
 		function $getPixelWidth(env, executionEnvironment) {
 			let n = env.lb('nex');
-			let rn = new RenderNode(n);
-			hiddenroot.appendChild(rn);
-			// has to be synchronous so we can measure
-			hiddenroot.render(0);
+			let normal = env.lb('normal');
+			let useNormal = (normal == UNBOUND ? true : normal.getTypedValue());
+			let renderModeToUse = useNormal ? RENDER_MODE_NORM : RENDER_MODE_EXPLO;
+
+			let rn = null;
+			let rna = n.getRenderNodes();
+			if (rna.length > 0) {
+				rn = rna[0];
+			}
+			if (rn != null) {
+				let lastRenderModeForCachedNode = rn.getRenderMode();
+				if (lastRenderModeForCachedNode != renderModeToUse) {
+					rn = null;
+				}
+			}
+			if (rn == null) {
+				rn = hiddenRootController.renderInHiddenRoot(n, renderModeToUse);
+			}
+			if (!rn) {
+				return new EError('cannot get width');
+			}
 			let w = rn.getDomNode().getBoundingClientRect().width;
-			hiddenroot.removeChildAt(0);
 			return new Float(w);
-		}
+		},
+		'Returns the pixel width for the nex, in normal or exploded mode (default normal).'
 	);
 
 	Builtin.createBuiltin(

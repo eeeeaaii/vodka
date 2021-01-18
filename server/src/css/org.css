@@ -40,6 +40,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border: 3px solid #a7a7a7;
 }
 
+.org.exploded.selected.redorgs {
+	border: 3px solid var(--selected-border);	
+}
+
 .nativeorg {
 	background-color: #c7c7c7;
 	font-family: Courier;
@@ -48,33 +52,87 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	font-size: 11px;
 }
 
-/*
-.line {
-	display: flex;
-	flex-direction: row;
-	flex-wrap:wrap;
-	align-items: flex-start;
+
+.zdir {
+	align-self:flex-start;
+	display: grid;
+	padding: 0px;
 }
 
-.line.exploded {
-	padding: 5px;
-	border: 1px solid #a7a7de;
-	border-radius: 6px;	
+.zdir.exploded {
+	padding-left: 5px;
+	padding-top: 5px;
+	border-left: 5px dotted #c7c7c7;
+	border-top: 5px dotted #c7c7c7;
+	border-right: 0px;
+	border-bottom: 0px;
+	border-radius: 6px;
 }
 
-.line.exploded.selected {
+.zdir.exploded.selected {
+	border-top: 5px solid #a7a7a7;
+	border-left: 5px solid #a7a7a7;
+	border-right: 0px;
+	border-bottom: 0px;
+}
+
+.zdir.exploded:empty {
+	width:0px;
+	height:0px;
+	border: 1px solid #c7c7c7;
+	padding:5px;
+}
+
+.zdir.exploded.selected:empty {
+	width:0px;
+	height:0px;
 	padding: 3px;
-	border-width: 3px;
+	border: 3px solid #a7a7a7;
 }
 
-.emptyline {
-	height:1.12em;	
-}
 
-.emptyline.selected {
-	background-color: black;
-	width:1px;
+.zdir > .nex {
+	grid-column: 1;
+	grid-row: 1;
 }
-*/
+.zdir > .nex:nth-child(1) { z-index:0; }
+.zdir > .nex:nth-child(2) { z-index:1; }
+.zdir > .nex:nth-child(3) { z-index:2; }
+.zdir > .nex:nth-child(4) { z-index:3; }
+.zdir > .nex:nth-child(5) { z-index:4; }
+.zdir > .nex:nth-child(6) { z-index:5; }
+.zdir > .nex:nth-child(7) { z-index:6; }
+.zdir > .nex:nth-child(8) { z-index:7; }
+.zdir > .nex:nth-child(9) { z-index:8; }
+.zdir > .nex:nth-child(10) { z-index:9; }
+.zdir > .nex:nth-child(11) { z-index:10; }
+.zdir > .nex:nth-child(12) { z-index:11; }
+.zdir > .nex:nth-child(13) { z-index:12; }
+.zdir > .nex:nth-child(14) { z-index:13; }
+.zdir > .nex:nth-child(15) { z-index:14; }
+.zdir > .nex:nth-child(16) { z-index:15; }
+.zdir > .nex:nth-child(17) { z-index:16; }
+
+.zdir.exploded > .nex:nth-child(1) { margin-top:0px; }
+.zdir.exploded > .nex:nth-child(2) { margin-top:10px; }
+.zdir.exploded > .nex:nth-child(3) { margin-top:20px; }
+.zdir.exploded > .nex:nth-child(4) { margin-top:30px; }
+.zdir.exploded > .nex:nth-child(5) { margin-top:40px; }
+.zdir.exploded > .nex:nth-child(6) { margin-top:50px; }
+.zdir.exploded > .nex:nth-child(7) { margin-top:60px; }
+.zdir.exploded > .nex:nth-child(8) { margin-top:70px; }
+.zdir.exploded > .nex:nth-child(9) { margin-top:80px; }
+.zdir.exploded > .nex:nth-child(10) { margin-top:90px; }
+.zdir.exploded > .nex:nth-child(11) { margin-top:100px; }
+.zdir.exploded > .nex:nth-child(12) { margin-top:110px; }
+.zdir.exploded > .nex:nth-child(13) { margin-top:120px; }
+.zdir.exploded > .nex:nth-child(14) { margin-top:130px; }
+.zdir.exploded > .nex:nth-child(15) { margin-top:140px; }
+.zdir.exploded > .nex:nth-child(16) { margin-top:150px; }
+.zdir.exploded > .nex:nth-child(17) { margin-top:160px; }
+
+
+
+
 
 

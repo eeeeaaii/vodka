@@ -98,7 +98,7 @@ class Command extends NexContainer {
 		if (version == 'v2') {
 			return this.toStringV2();
 		}
-		return `~"${this.commandtext}"${this.vdir ? 'v' : 'h'}(${super.childrenToString()}~)`;
+		// dead code , v2 always there?
 	}
 
 	convertMathToV2String(val) {

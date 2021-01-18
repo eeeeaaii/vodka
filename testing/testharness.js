@@ -135,7 +135,11 @@ function getLegacyDefaultFlags() {
 		'SAVE_EVALUATES_CONTENTS': false,
 
 		// org overhaul
-		'ORG_OVERHAUL': false
+		'ORG_OVERHAUL': false,
+
+		// orgs can have a z direction
+		'ORG_Z': false,
+
 
 	};
 }

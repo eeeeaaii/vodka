@@ -17,6 +17,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Nex } from './nex.js';
 import { ContextType } from '../contexttype.js'
+import { experiments } from '../globalappflags.js'
+
+const V_DIR = 0;
+const H_DIR = 1;
+const Z_DIR = 2;
 
 class ChildNex {
 	// lol
@@ -47,10 +52,11 @@ class Iterator {
 class NexContainer extends Nex {
 	constructor() {
 		super();
-		this.vdir = false;
+		this.dir = H_DIR;
 		this.firstChildNex = null;
 		this.numChildNexes = 0;
 		this.lastChildNex = null;
+		this.onContentsChangedCallback = 0;
 	}
 
 	getChildTagged(tag) {
@@ -84,7 +90,7 @@ class NexContainer extends Nex {
 
 	copyFieldsTo(n) {
 		super.copyFieldsTo(n);
-		n.vdir = this.vdir;
+		n.dir = this.dir;
 	}
 
 	evaluate() {
@@ -113,7 +119,7 @@ class NexContainer extends Nex {
 		for (let p = this.firstChildNex; p; p = p.next) {
 			p.n.addReference();
 		}
-		this.setDirtyForRendering(true);
+		this.changed();
 	}
 
 	getChildrenForCdr(newContainer) {
@@ -123,6 +129,10 @@ class NexContainer extends Nex {
 		newContainer.firstChildNex = this.firstChildNex.next;
 		newContainer.numChildNexes = this.numChildNexes - 1;
 		newContainer.lastChildNex = this.lastChildNex;
+	}
+
+	setOnContentsChangedCallback(cb) {
+		this.onContentsChangedCallback = cb;
 	}
 
 	copyChildrenTo(n, shallow) {
@@ -137,12 +147,20 @@ class NexContainer extends Nex {
 		}
 	}
 
+	charForDir() {
+		switch(this.dir) {
+			case H_DIR: return '_';
+			case V_DIR: return '|';
+			case Z_DIR: return ',';
+		}
+	}
+
 	listStartV2() {
-		return '(' + (this.vdir ? '|' : '_');
+		return '(' + this.charForDir();
 	}
 
 	listEndV2() {
-		return (this.vdir ? '|' : '_') + ')';
+		return this.charForDir() + ')';
 	}
 
 	standardListPrettyPrint(lvl, designator, hdir) {
@@ -156,7 +174,7 @@ class NexContainer extends Nex {
 	prettyPrintChildren(lvl) {
 		let r = '';
 		for (let p = this.firstChildNex; p != null; p = p.next) {
-			r += p.n.prettyPrintInternal(lvl, !this.vdir); // exp
+			r += p.n.prettyPrintInternal(lvl, (this.dir != V_DIR)); // exp
 		}
 		return r;		
 	}
@@ -199,34 +217,65 @@ class NexContainer extends Nex {
 		return r;				
 	}
 
+	nextDir(dir) {
+		// overridden in org, which is currently the
+		// only container that can have zdirection
+		switch(dir) {
+			case H_DIR: return V_DIR;
+			case V_DIR: return H_DIR;
+		}
+
+	}
+
 	toggleDir() {
-		this.vdir = !this.vdir;
+		if (experiments.ORG_Z) {
+			this.dir = this.nextDir(this.dir);
+		} else {
+			this.dir = (this.dir == V_DIR ? H_DIR : V_DIR);
+		}
 		this.setDirtyForRendering(true);
 	}
 
 	setVertical() {
-		this.vdir = true;
+		this.dir = V_DIR;
 	}
 
 	setHorizontal() {
-		this.vdir = false;
+		this.dir = H_DIR;
+	}
+
+	setZdirectional() {
+		this.dir = Z_DIR;
 	}
 
 	isVertical() {
-		return this.vdir;
+		return (this.dir == V_DIR);
 	}
 
 	isHorizontal() {
-		return !this.vdir;
+		return (this.dir == H_DIR);
+	}
+
+	isZdirectional() {
+		return (this.dir == Z_DIR);
 	}
 
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		super.renderInto(renderNode, renderFlags, withEditor);
-		if (this.vdir) {
-			domNode.classList.add('vdir');
-		} else {
-			domNode.classList.remove('vdir');
+		switch(this.dir) {
+			case V_DIR:
+				domNode.classList.add('vdir');
+				domNode.classList.remove('zdir');
+				break;
+			case H_DIR:
+				domNode.classList.remove('vdir');
+				domNode.classList.remove('zdir');
+				break;
+			case Z_DIR:
+				domNode.classList.add('zdir');
+				domNode.classList.remove('vdir');
+				break;
 		}
 	}
 
@@ -266,6 +315,13 @@ class NexContainer extends Nex {
 		return p.n;
 	}
 
+	changed() {
+		this.setDirtyForRendering(true);
+		if (this.onContentsChangedCallback) {
+			this.onContentsChangedCallback();
+		}
+	}
+
 	// called by RenderNode
 	removeChildAt(i) {
 		if (i < 0 || i >= this.numChildNexes) return null;
@@ -290,7 +346,7 @@ class NexContainer extends Nex {
 		}
 		this.numChildNexes--;
 		r.removeReference();
-		this.setDirtyForRendering(true);
+		this.changed();
 		return r;
 	}
 
@@ -305,7 +361,7 @@ class NexContainer extends Nex {
 		}
 		c.addReference();
 		this.numChildNexes++;
-		this.setDirtyForRendering(true);
+		this.changed();
 		return newP;
 	}
 
@@ -332,7 +388,7 @@ class NexContainer extends Nex {
 		}
 		c.addReference();
 		this.numChildNexes++;
-		this.setDirtyForRendering(true);
+		this.changed();
 	}
 
 	replaceChildAt(c, i) {
@@ -343,7 +399,7 @@ class NexContainer extends Nex {
 		if (p.n == c) return;
 		this.removeChildAt(i);
 		this.insertChildAt(c, i);
-		this.setDirtyForRendering(true);
+		this.changed();
 	}
 
 	replaceChildWith(c, c2) {
@@ -376,6 +432,13 @@ class NexContainer extends Nex {
 
 	removeChild(c) {
 		return this.removeChildAt(this.getIndexOfChild(c));
+	}
+
+	removeAllChildren() {
+		let nc = this.numChildren();
+		for (let i = 0 ; i < nc; i++) {
+			this.removeFirstChild();
+		}
 	}
 
 	// delete this, it's the same as the other method
@@ -413,7 +476,14 @@ class NexContainer extends Nex {
 	replaceChildWith(child, newchild) {
 		this.replaceChildAt(newchild, this.getIndexOfChild(child));
 	}
+
+	//
+	putContentsIntoOtherList(otherList) {
+		this.doForEachChild(function(c) {
+			otherList.appendChild(c);
+		});
+	}
 }
 
-export { NexContainer }
+export { NexContainer, V_DIR, H_DIR, Z_DIR }
 

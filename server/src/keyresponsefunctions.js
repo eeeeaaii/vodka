@@ -75,7 +75,7 @@ function isNormallyHandled(key) {
 	if (!(/^.$/.test(key))) {
 		return true;
 	}
-	if (/^[~!@#$%`^*&)([{]$/.test(key)) {
+	if (/^[~!@#$%`^*&)([\]{}<>]$/.test(key)) {
 		return true;
 	}
 	return false;
@@ -660,6 +660,11 @@ const KeyResponseFunctions = {
 	'insert-doc-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newDoc()); },
 	'insert-org-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newOrg()); },
 	'insert-zlist-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newZlist()); },
+
+	'close-off-org': function(s) { manipulator.closeOffOrg(s); },
+	'close-off-line': function(s) { manipulator.closeOffLine(s); },
+	'close-off-word': function(s) { manipulator.closeOffWord(s); },
+	'close-off-doc': function(s) { manipulator.closeOffDoc(s); },
 
 	'add-tag': function(s) { s.startTagEditor(); },
 

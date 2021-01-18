@@ -78,6 +78,12 @@ function isWord(n) {
 	return n.getTypeName() == '-word-';
 }
 
+function isOrg(n) {
+	if (n instanceof RenderNode) n = n.getNex();
+	if (!n) return false;
+	return n.getTypeName() == '-org-';
+}
+
 function isSeparator(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n) return false;
@@ -164,5 +170,6 @@ export {
 	isNex,
 	isClosure,
 	beep,
-	isMac
+	isMac,
+	isOrg
 }

@@ -18,7 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from '../utils.js'
 
 import { ContextType } from '../contexttype.js';
-import { NexContainer } from './nexcontainer.js';
+import { NexContainer, V_DIR } from './nexcontainer.js';
 import { ParamParser } from '../paramparser.js';
 import { Closure } from './closure.js';
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
@@ -118,7 +118,7 @@ class Lambda extends NexContainer {
 		if (version == 'v2') {
 			return this.toStringV2();
 		}
-		return `&"${this.amptext}"${this.vdir ? 'v' : 'h'}(${super.childrenToString()}&)`;
+		// dead code
 	}
 
 	// overridden because we shouldn't pretty print the doc string, it's going to look
@@ -129,7 +129,7 @@ class Lambda extends NexContainer {
 		let r = '';
 		for (; i < this.numChildren() ; i++) {
 			let c = this.getChildAt(i);
-			r += c.prettyPrintInternal(lvl, !this.vdir); // exp
+			r += c.prettyPrintInternal(lvl, (this.dir != V_DIR)); // exp
 		}
 		return r;		
 	}

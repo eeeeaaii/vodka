@@ -73,6 +73,8 @@ function setVertHoriz(obj, vh) {
 		obj.setVertical();
 	} else if (vh == 'h') {
 		obj.setHorizontal();
+	} else if (vh == 'z') {
+		obj.setZdirectional();
 	} else {
 		throw new Error('unknown verthoriz code');
 	}

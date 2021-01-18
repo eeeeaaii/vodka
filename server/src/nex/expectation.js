@@ -323,7 +323,7 @@ class Expectation extends NexContainer {
 			if (otherflags.DEBUG_EXPECTATIONS) {
 				console.log('completing activation and beginning async process for ' + this.debugString());
 			}
-			this.activationFunction();
+			this.activationFunction(this);
 		} else {
 			// this means the exp was not set. We just fulfill immediately.
 			if (otherflags.DEBUG_EXPECTATIONS) {

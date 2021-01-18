@@ -58,6 +58,7 @@ import {
 	RENDER_MODE_EXPLO } from './globalconstants.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { BINDINGS } from './environment.js'
+import { rootManager } from './rootmanager.js'
 
 
 // EXPERIMENTS
@@ -66,7 +67,6 @@ import { BINDINGS } from './environment.js'
 // possibly some of them would be moved into Render-specific
 // SystemState objects (for example, screen rendering vs. audio rendering)
 let isStepEvaluating = false; // allows some performance-heavy operations while step evaluating
-let hiddenroot = null;
 let stackLevel = 0;
 let root = null;
 
@@ -329,21 +329,11 @@ function setup() {
 		throw new Error('too many builtins, increase starting nex ID');
 	}
 	setNextNexId(1000);
-	hiddenroot = new RenderNode(new Root(true));
-	let hiddenRootDomNode = document.getElementById('hiddenroot');
-	hiddenroot.setDomNode(hiddenRootDomNode);
 
 	// this code for attaching a render node to a root will expand
 	// when there are different render node types.
 	// note this is duplicated in undo.js
-	let rootnex = new Root(true /* attached */);
-	root = new RenderNode(rootnex);
-	root.setRenderMode(RENDER_MODE_NORM);
-	document.vodkaroot = root; // for debugging in chrome dev tools
-	let rootDomNode = document.getElementById('mixroot');
-	root.setDomNode(rootDomNode);
-	systemState.setRoot(root);
-
+	root = rootManager.createNewRoot();
 
 	let justPressedShift = false;
 

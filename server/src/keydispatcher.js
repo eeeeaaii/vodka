@@ -105,15 +105,15 @@ class KeyDispatcher {
 			}
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-x') {
-			this.saveForUndo();
+			undo.saveStateForUndo();
 			manipulator.doCut();
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-c') {
-			this.saveForUndo();
+			undo.saveStateForUndo();
 			manipulator.doCopy();
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-v') {
-			this.saveForUndo();
+			undo.saveStateForUndo();
 			manipulator.doPaste();
 			return false; // to cancel browser event
 		} else if (eventName == 'Escape') {
@@ -122,11 +122,11 @@ class KeyDispatcher {
 			return false; // to cancel browser event
 		} else if (eventName == 'MetaEnter') {
 			// TODO: only save state for undo first time we hit meta-enter (step execute)
-			this.saveForUndo();
+			undo.saveStateForUndo();
 			this.doMetaEnter();
 			return false; // to cancel browser event
 		} else {
-			this.saveForUndo();
+			undo.saveStateForUndo();
 			// 1. look in override table
 			// 2. look in regular table
 			// 3. call defaultHandle
@@ -149,10 +149,10 @@ class KeyDispatcher {
 				if (this.runDefaultHandle(sourceNex, eventName, keyContext, systemState.getGlobalSelectedNode())) return false;
 				if (this.runFunctionFromRegularTable(sourceNex, eventName, keyContext)) return false;
 				if (this.runFunctionFromGenericTable(sourceNex, eventName, keyContext)) return false;
-				this.eraseLastUndo();
+				undo.eraseLastSavedState();
 				return true; // didn't handle it.
 			} catch (e) {
-				this.eraseLastUndo();
+				undo.eraseLastSavedState();
 				if (e == UNHANDLED_KEY) {
 					console.log("UNHANDLED KEY " +
 									':' + 'keycode=' + keycode +
@@ -164,14 +164,6 @@ class KeyDispatcher {
 				} else throw e;
 			}
 		}
-	}
-
-	saveForUndo() {
-		undo.saveStateForUndo(systemState.getRoot().getNex());
-	}
-
-	eraseLastUndo() {
-		undo.eraseLastSavedState();
 	}
 
 	doEditorEvent(eventName) {
@@ -466,7 +458,15 @@ class KeyDispatcher {
 			'ShiftSpace': (experiments.BETTER_KEYBINDINGS ? 'toggle-dir' : null),
 
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
-			'Backspace': (experiments.BETTER_KEYBINDINGS ? 'start-main-editor-or-delete' : 'remove-selected-and-select-previous-sibling-v2'),
+			'Backspace': (
+					experiments.BETTER_KEYBINDINGS
+					? (
+							experiments.ORG_Z
+							? 'start-main-editor'
+							: 'start-main-editor-or-delete'
+					)
+					: 'remove-selected-and-select-previous-sibling-v2'
+			),
 
 			'CtrlBackspace': (
 				experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null
@@ -495,10 +495,14 @@ class KeyDispatcher {
 			'^': experiments.ORG_OVERHAUL ? 'insert-instantiator-at-insertion-point-v2' : 'insert-nil-at-insertion-point-v2',
 			'&': 'insert-lambda-at-insertion-point-v2',
 			'*': 'insert-expectation-at-insertion-point-v2',
-			'(': 'insert-word-at-insertion-point-v2',
-			')': 'insert-org-at-insertion-point-v2',
+			'(': experiments.ORG_Z ? 'insert-org-at-insertion-point-v2' : 'insert-word-at-insertion-point-v2',
+			')': experiments.ORG_Z ? 'close-off-org' : 'insert-org-at-insertion-point-v2',
 			'[': 'insert-line-at-insertion-point-v2',
+			']': experiments.ORG_Z ? 'close-off-line' : null,
 			'{': 'insert-doc-at-insertion-point-v2',
+			'}': experiments.ORG_Z ? 'close-off-doc' : null,
+			'<': experiments.ORG_Z ? 'insert-word-at-insertion-point-v2' : null,
+			'>': experiments.ORG_Z ? 'close-off-word' : null,
 			'`': 'add-tag',
 			'Alt`': 'remove-all-tags',
 
@@ -559,11 +563,16 @@ class KeyDispatcher {
 			'^': experiments.ORG_OVERHAUL ? 'insert-instantiator-at-insertion-point-v2' : 'insert-nil-at-insertion-point-v2',
 			'&': 'insert-lambda-at-insertion-point-v2',
 			'*': 'insert-expectation-at-insertion-point-v2',
-			'(': 'insert-word-at-insertion-point-v2',
-			')': 'insert-org-at-insertion-point-v2',
+
+			'(': experiments.ORG_Z ? 'insert-org-at-insertion-point-v2' : 'insert-word-at-insertion-point-v2',
+			')': experiments.ORG_Z ? 'close-off-org' : 'insert-org-at-insertion-point-v2',
 			'[': 'insert-line-at-insertion-point-v2',
+			']': experiments.ORG_Z ? 'close-off-line' : null,
 			'{': 'insert-doc-at-insertion-point-v2',
-			'<': 'insert-zlist-at-insertion-point-v2',
+			'}': experiments.ORG_Z ? 'close-off-doc' : null,
+			'<': experiments.ORG_Z ? 'insert-word-at-insertion-point-v2' : null,
+			'>': experiments.ORG_Z ? 'close-off-word' : null,
+
 			'`': 'add-tag',
 			'Alt`': 'remove-all-tags',
 			'Alt~': 'wrap-in-command',

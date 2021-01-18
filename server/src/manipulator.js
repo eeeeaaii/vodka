@@ -75,8 +75,8 @@ class Manipulator {
 	// TESTS
 
 	_inSameLine(s1, s2) {
-		let l1 = this.getEnclosingLine(s1);
-		let l2 = this.getEnclosingLine(s2);
+		let l1 = this.getEnclosingLineInSameDoc(s1);
+		let l2 = this.getEnclosingLineInSameDoc(s2);
 		return l1 == l2;
 	}
 
@@ -183,7 +183,7 @@ class Manipulator {
 	}	
 
 	_isOnlyLeafInLine(node) {
-		let line = this.getEnclosingLine(node);
+		let line = this.getEnclosingLineInSameDoc(node);
 		return (node == this._getFirstLeafInside(line)
 				&& node == this._getLastLeafInside(line));
 	}
@@ -448,12 +448,12 @@ class Manipulator {
 	}
 
 	_deleteLineBreak(s) {
-		let enclosingLine = this.getEnclosingLine(s);
+		let enclosingLine = this.getEnclosingLineInSameDoc(s);
 		let previousSibLine = this._getSiblingBefore(enclosingLine);
 		if (enclosingLine && previousSibLine && Utils.isLine(previousSibLine)) {
 			this._joinContainers(previousSibLine, enclosingLine);
 			// now maybe join words.
-			let enclosingWord = this.getEnclosingWord(s);
+			let enclosingWord = this.getEnclosingWordInSameDoc(s);
 			let previousSibWord = this._getSiblingBefore(enclosingWord); // if enclosingWord null, returns null
 			if (enclosingWord && previousSibWord && Utils.isWord(previousSibWord)) {
 				this._joinContainers(previousSibWord, enclosingWord);
@@ -612,7 +612,7 @@ class Manipulator {
 				this.selectPreviousLeaf();
 				this._forceInsertionMode(INSERT_AFTER, this.selected());
 			} else {
-				this._prependBefore(this.newLine(), this.getEnclosingLine(s));
+				this._prependBefore(this.newLine(), this.getEnclosingLineInSameDoc(s));
 				// leave current thing selected!
 			}
 		} else if (this._isSeparatorInLetterPosition(s)) {
@@ -631,7 +631,7 @@ class Manipulator {
 			} else {
 				let line = this.newLine();
 				// split not performed, insert new empty line
-				this._appendAfterAndSelect(line, this.getEnclosingLine(s));
+				this._appendAfterAndSelect(line, this.getEnclosingLineInSameDoc(s));
 			}
 		} else if (this._isSeparatorInLetterPosition(s)) {
 			this._doLineBreakAfterLetter(s);
@@ -652,7 +652,7 @@ class Manipulator {
 				this.selectPreviousLeaf();
 				this._forceInsertionMode(INSERT_AFTER, this.selected());				
 			} else {
-				this._prependBefore(this.newLine(), this.getEnclosingLine(s));
+				this._prependBefore(this.newLine(), this.getEnclosingLineInSameDoc(s));
 				// leave current thing selected!
 			}
 		} else if (this._isLetterInSeparatorPosition(s)) {
@@ -673,7 +673,7 @@ class Manipulator {
 				this._forceInsertionMode(INSERT_BEFORE, this.selected());				
 			} else {
 				let line = this.newLine();
-				this._appendAfterAndSelect(line, this.getEnclosingLine(s));
+				this._appendAfterAndSelect(line, this.getEnclosingLineInSameDoc(s));
 			}
 		} else if (this._isLetterInSeparatorPosition(s)) {
 			this._doLineBreakAfterSeparator(s);
@@ -695,7 +695,7 @@ class Manipulator {
 	deleteLeafV2(s) {
 		if (this._isOnlyLeafInLine(s)) {
 			if (this.isInsertAfter(s)) {
-				let line = this.getEnclosingLine(s);
+				let line = this.getEnclosingLineInSameDoc(s);
 				this._deleteUpToLine(s);
 				line.setSelected();
 				this._forceInsertionMode(INSERT_INSIDE, line);
@@ -725,7 +725,7 @@ class Manipulator {
 				// whenever possible, so if possible we grab previous leaf and select it,
 				// putting insertion on right. But if they are in different lines, don't.
 				let prev = this._getLeafBefore(s);
-				if (prev && this.getEnclosingLine(prev) == this.getEnclosingLine(s)) {
+				if (prev && this.getEnclosingLineInSameDoc(prev) == this.getEnclosingLineInSameDoc(s)) {
 					prev.setSelected();
 				}
 			}
@@ -1137,11 +1137,11 @@ class Manipulator {
 	}
 
 	selectCorrespondingLetterInPreviousLineV2(s) {
-		let thisLine = Utils.isLine(s) ? s : this.getEnclosingLine(s);
+		let thisLine = Utils.isLine(s) ? s : this.getEnclosingLineInSameDoc(s);
 		// Okay in the weird/wrong event that we have a word inside a doc that's not
 		// inside a line, we just... do our best.
 		if (!thisLine) {
-			thisLine = Utils.isWord(s) ? s : this.getEnclosingWord(s);
+			thisLine = Utils.isWord(s) ? s : this.getEnclosingWordInSameDoc(s);
 		}
 		if (!thisLine) {
 			// ok shit we just have a letter by itself inside a doc. Cool we can keep going.
@@ -1191,11 +1191,11 @@ class Manipulator {
 	}
 
 	selectCorrespondingLetterInNextLineV2(s) {
-		let thisLine = Utils.isLine(s) ? s : this.getEnclosingLine(s);
+		let thisLine = Utils.isLine(s) ? s : this.getEnclosingLineInSameDoc(s);
 		// Okay in the weird/wrong event that we have a word inside a doc that's not
 		// inside a line, we just... do our best.
 		if (!thisLine) {
-			thisLine = Utils.isWord(s) ? s : this.getEnclosingWord(s);
+			thisLine = Utils.isWord(s) ? s : this.getEnclosingWordInSameDoc(s);
 		}
 		if (!thisLine) {
 			// ok shit we just have a letter by itself inside a doc. Cool we can keep going.
@@ -1252,7 +1252,7 @@ class Manipulator {
 
 		// get the current line and the previous line.
 
-		let enclosingLine = this.getEnclosingLine(systemState.getGlobalSelectedNode());
+		let enclosingLine = this.getEnclosingLineInSameDoc(systemState.getGlobalSelectedNode());
 		if (!enclosingLine) return false;
 		let doc = enclosingLine.getParent();
 		if (!doc) return false;
@@ -1271,7 +1271,7 @@ class Manipulator {
 		}
 
 		do {
-			if (this.getEnclosingLine((systemState.getGlobalSelectedNode())) != previousLine) {
+			if (this.getEnclosingLineInSameDoc((systemState.getGlobalSelectedNode())) != previousLine) {
 				this.selectPreviousLeaf();
 				break;
 			}
@@ -1287,7 +1287,7 @@ class Manipulator {
 
 	selectCorrespondingLetterInNextLine() {
 		// get the current line and the previous line.
-		let enclosingLine = this.getEnclosingLine((systemState.getGlobalSelectedNode()));
+		let enclosingLine = this.getEnclosingLineInSameDoc((systemState.getGlobalSelectedNode()));
 		if (!enclosingLine) return false;
 		let doc = enclosingLine.getParent();
 		if (!doc) return false;
@@ -1306,7 +1306,7 @@ class Manipulator {
 		}
 
 		do {
-			if (this.getEnclosingLine((systemState.getGlobalSelectedNode())) != nextLine) {
+			if (this.getEnclosingLineInSameDoc((systemState.getGlobalSelectedNode())) != nextLine) {
 				this.selectPreviousLeaf();
 				break;
 			}
@@ -1329,7 +1329,7 @@ class Manipulator {
 		return false;
 	}
 
-	getEnclosingLine(s) {
+	getEnclosingLineInSameDoc(s) {
 		while(s = s.getParent()) {
 			if (Utils.isDoc(s)) {
 				// we don't want to stray out of the immediate doc.
@@ -1342,7 +1342,7 @@ class Manipulator {
 		return null;
 	}
 
-	getEnclosingWord(s) {
+	getEnclosingWordInSameDoc(s) {
 		while (s = s.getParent()) {
 			if (Utils.isDoc(s)) {
 				// we don't want to stray out of the immediate doc.
@@ -1355,10 +1355,10 @@ class Manipulator {
 		return null;
 	}
 
-	getEnclosingDoc(s) {
+	_getEnclosingNexThatSatisfies(s, test) {
 		while (s = s.getParent()) {
 			if (!s) return null;
-			if (Utils.isWord(s)) {
+			if (test(s)) {
 				return s;
 			}
 		}
@@ -1366,6 +1366,39 @@ class Manipulator {
 	}
 
 	// traversal
+
+	_closeOff(s, test) {
+		let obj = this._getEnclosingNexThatSatisfies(s, test);
+		if (obj) {
+			obj.setSelected();
+			this._forceInsertionMode(INSERT_AFTER, obj);
+		}		
+	}
+
+	closeOffWord(s) {
+		this._closeOff(s, function(nex) {
+			return Utils.isWord(nex);
+		});
+	}
+
+	closeOffDoc(s) {		
+		this._closeOff(s, function(nex) {
+			return Utils.isDoc(nex);
+		});
+	}
+
+	closeOffOrg(s) {		
+		this._closeOff(s, function(nex) {
+			return Utils.isOrg(nex);
+		});
+	}
+
+	closeOffLine(s) {		
+		this._closeOff(s, function(nex) {
+			return Utils.isLine(nex);
+		});
+	}
+
 
 	selectPreviousLeaf() {
 		let first = (systemState.getGlobalSelectedNode());
