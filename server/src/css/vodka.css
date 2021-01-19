@@ -123,8 +123,16 @@ body {
 .infopanel .infoversion {
 	padding: 0;
 	margin: 0;
-	font-size: 12px;	
+	font-size: 12px;
 }
+
+.infopanel .infoheading {
+	padding: 0;
+	margin: 0;
+	font-size: 14px;
+	font-weight: bold;	
+}
+
 
 .infopanel .infoline {
 	padding: 0;

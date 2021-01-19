@@ -42,14 +42,14 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 <body id="body">
 <div id="intro" class="infopanel">
 	<p class="infotitle">Vodka</p>
-	<p class="infoversion">Version Two</p>
+	<p class="infoversion">Version Three</p>
 	<p class="infoline"><a href="./releasenotes.html">Release Notes</a></p>
 	<p class="infoline">&nbsp;</p>
 	<p class="infoline">Vodka is a creative coding environment for writing digital literary works such as poems or stories.</p>
 	<p class="infoline">&nbsp;</p>
 	<p class="qmark">???</p>
 	<p class="infoline">&nbsp;</p>
-	<p class="infoline">To see this screen again, type three question marks or add help=me to the browser query string. Typing four question marks or pressing the following button will go to the quick reference.</p>
+	<p class="infoline">To see this screen again, type three question marks or add help=me to the browser query string. Typing four question marks or pressing the following button will go to the quick reference. The help file opener is listening for your question marks, not reading your code.</p>
 	<p class="infoline">&nbsp;</p>
  	<p class="infoline"><button id="showhotkeys">Quick Reference</button></p>
 	<p class="infoline">&nbsp;</p>
@@ -94,20 +94,24 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	<p class="infoline">&nbsp;</p>
 	<p class="infoline">To see a list of all bound symbols (such as library imports), execute the "bindings" command.</p>
 	<p class="infoline">&nbsp;</p>
-	<p class="infoline"><span class="infohotkey">~</span>insert a command nex (container)</p>
+	<p class="infoline"><span class="infohotkey">~</span>insert a command nex container</p>
 	<p class="infoline"><span class="infohotkey">!</span>insert a boolean nex</p>
 	<p class="infoline"><span class="infohotkey">@</span>insert a symbol nex</p>
 	<p class="infoline"><span class="infohotkey">#</span>insert an integer nex</p>
 	<p class="infoline"><span class="infohotkey">$</span>insert a string nex</p>
 	<p class="infoline"><span class="infohotkey">%</span>insert a float nex</p>
 	<p class="infoline"><span class="infohotkey">^</span>insert a nil nex</p>
-	<p class="infoline"><span class="infohotkey">&</span>insert a lambda expression nex (container)</p>
-	<p class="infoline"><span class="infohotkey">*</span>insert an expectation nex (container)</p>
-	<p class="infoline"><span class="infohotkey">)</span>insert a generic nex (container) (an "obj")</p>
-	<p class="infoline"><span class="infohotkey">{</span>insert a page nex (container)</p>
-	<p class="infoline"><span class="infohotkey">[</span>insert a line nex (container)</p>
-	<p class="infoline"><span class="infohotkey">(</span>insert a word nex (container)</p>
-	<p class="infoline"><span class="infohotkey"><</span>insert a zlist nex (container)</p>
+	<p class="infoline"><span class="infohotkey">&</span>insert a lambda expression nex container</p>
+	<p class="infoline"><span class="infohotkey">*</span>insert an expectation nex container</p>
+	<p class="infoline"><span class="infohotkey">(</span>insert a generic nex container (an "obj")</p>
+	<p class="infoline"><span class="infohotkey">{</span>insert a page nex container</p>
+	<p class="infoline"><span class="infohotkey">[</span>insert a line nex container</p>
+	<p class="infoline"><span class="infohotkey"><</span>insert a word nex container</p>
+	<p class="infoline">
+		<span class="infohotkey">)</span>
+		<span class="infohotkey">&gt;</span>
+		<span class="infohotkey">}</span>
+		<span class="infohotkey">]</span>go up to nearest corresponding container type and put insertion pip after it</p>
 	<p class="infoline"><span class="infohotkey">`</span>activate the tag editor for the selected nex</p>
 	<p class="infoline"><span class="infohotkey">escape</span>toggle exploded/normal modes for entire document</p>
 	<p class="infoline"><span class="infohotkey">shift-escape</span>toggle exploded/normal modes for selected nex (and its children)</p>
@@ -122,8 +126,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	<p class="infoline"><span class="infohotkey"><span class="optionkey">option</span>-tab</span>move insertion pip to inside the currently selected nexcontainer</p>
 	<p class="infoline"><span class="infohotkey"><span class="optionkey">option</span>-shift-tab</span>move insertion pip to around the currently selected nex</p>
 	<p class="infoline"><span class="infohotkey"><span class="optionkey">option</span>-enter</span>activate editor for currently selected nex (if applicable)</p>
-	<p class="infoline"><span class="infohotkey">delete</span>activates editor for currently selected nex, deleting last letter. If currently selected nex has no editor, just deletes that nex.</p>
-	<p class="infoline"><span class="infohotkey">shift-delete</span>always deletes current nex</p>
+	<p class="infoline"><span class="infohotkey">delete</span>activates editor for currently selected nex, deleting last letter.</p>
+	<p class="infoline"><span class="infohotkey">shift-delete</span>deletes current nex</p>
 	<p class="infoline"><span class="infohotkey">shift-space</span>toggles direction of current nexcontainer</p>
 	<p class="infoline"><span class="infohotkey"><span class="metakey">cmd</span>-c</span>copy</p>
 	<p class="infoline"><span class="infohotkey"><span class="metakey">cmd</span>-x</span>cut</p>
@@ -157,7 +161,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	<p class="infoversion">In tag editor:<p>
 	<p class="infoline">Any nex can be tagged. Any character including spaces can be used in a tag.</p>
 	<p class="infoline"><span class="infohotkey">delete</span>deletes previous character</p>
-	<p class="infoline"><span class="infohotkey">rightarrow</span>or <span class="infohotkey">leftarrow</span>go to next tag, or create new tag if no tag there (duplicate tags are deleted)</p>
+	<p class="infoline"><span class="infohotkey">rightarrow</span>or <span class="infohotkey">leftarrow	<p class="infoline"><span class="infohotkey">enter</span>finish editing tags and quit tag editor</p>
+</span>go to next tag, or create new tag if no tag there (duplicate tags are deleted)</p>
 	<p class="infoline">&nbsp;</p>
 	<p class="infoversion">In string editor:<p>
 	<p class="infoline">Type or paste the desired string in the box. Drag the handle to make the editor larger. All other hotkeys are disabled while you are editing the string. To finish editing the string, click the "done" button.</p>
