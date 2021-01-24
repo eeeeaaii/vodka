@@ -441,7 +441,7 @@ class Expectation extends NexContainer {
 	}
 
 	toStringV2() {
-		return `*${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+		return `*${this.toStringV2Literal()}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
 
 	prettyPrintInternal(lvl, hdir) {

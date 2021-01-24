@@ -236,8 +236,10 @@ class Template {
 		let firstline = '';
 		if (!this.docs) {
 			let docs = TemplateStore.getChildTagged(this.org, ':info');
-			if (docs.getTypeName() == '-page-') {
+			if (docs && docs.getTypeName() == '-page-') {
 				firstline = docs.getValueAsString();
+			} else {
+				firstline = '-no description-';
 			}
 		} else {
 			firstline = this.docs;

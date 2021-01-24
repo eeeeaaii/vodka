@@ -56,7 +56,7 @@ class Bool extends ValueNex {
 	}
 
 	toStringV2() {
-		return '!' + this.toStringV2TagList() + this.renderValue();
+		return `!${this.toStringV2Literal()}${this.toStringV2TagList()}${this.renderValue()}`;
 	}
 
 	getTypedValue() {

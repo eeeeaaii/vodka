@@ -84,6 +84,12 @@ const experiments = {
 	// orgs can have a z direction
 	'ORG_Z': true,
 
+	// infix operators
+	'INFIX_OPERATORS': true,
+
+	// literals
+	'LITERALS': true,
+
 
 	// See note above about changing testharness.js when adding new flags.
 };
@@ -98,7 +104,8 @@ const experiments = {
 const otherflags = {
 	'DEFAULT_TO_PARAMETRIC_FONTS': false,
 	'DEBUG_EXPECTATIONS': false,
-	'FILE': ''
+	'FILE': '',
+	'NO_UNDO': false,
 }
 
 // If a flag has a certain default value that rarely/never works for

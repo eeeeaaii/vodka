@@ -534,7 +534,16 @@ class KeyDispatcher {
 			'ShiftAltTab': (experiments.BETTER_KEYBINDINGS ? 'force-insert-around' : null),
 
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
-			'Backspace': (experiments.BETTER_KEYBINDINGS ? 'start-main-editor-or-delete' : 'remove-selected-and-select-previous-sibling-v2'),
+
+			'Backspace': (
+					experiments.BETTER_KEYBINDINGS
+					? (
+							experiments.ORG_Z
+							? 'start-main-editor'
+							: 'start-main-editor-or-delete'
+					)
+					: 'remove-selected-and-select-previous-sibling-v2'
+			),
 
 			'CtrlBackspace': (
 				experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null

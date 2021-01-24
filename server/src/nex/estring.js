@@ -96,7 +96,8 @@ class EString extends ValueNex {
 	}
 
 	toStringV2() {
-		return '$' + this.toStringV2TagList() + this.toStringV2PrivateDataSection();
+		
+		return `$${this.toStringV2Literal()}${this.toStringV2TagList()}${this.toStringV2PrivateDataSection()}`;
 	}
 
 	deserializePrivateData(data) {

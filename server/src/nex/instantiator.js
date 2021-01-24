@@ -41,7 +41,15 @@ class Instantiator extends NexContainer {
 	}
 
 	toStringV2() {
-		return `^${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+		return `^${this.toStringV2Literal()}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+	}
+
+	deserializePrivateData(data) {
+		this.setOrgName(data);
+	}
+
+	serializePrivateData() {
+		return this.orgname;
 	}
 
 	prettyPrintInternal(lvl, hdir) {
@@ -71,6 +79,10 @@ class Instantiator extends NexContainer {
 			});
 			let r = templateStore.instantiateWithNameString(this.orgname, a);
 			return r;
+	}
+
+	setOrgName(n) {
+		this.orgname = n;
 	}
 
 	getOrgName() {

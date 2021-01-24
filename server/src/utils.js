@@ -149,6 +149,47 @@ function isMac() {
 	return ('' + navigator.platform).substring(0, 3) == 'Mac';
 }
 
+function convertMathToV2String(val) {
+	switch(val) {
+		case '*': return '::ti::';
+		case '/': return '::ov::';
+		case '+': return '::pl::';
+		case '=': return '::eq::';
+		case '<': return '::lt::';
+		case '>': return '::gt::';
+		case '<=': return '::lte::';
+		case '>=': return '::gte::';
+		case '<>': return '::ne::';
+		default: return val;
+	}
+}
+
+function convertV2StringToMath(val) {
+	switch(val) {
+		case '::ti::': return '*' ;
+		case '::ov::': return '/' ;
+		case '::pl::': return '+' ;
+		case '::eq::': return '=' ;
+		case '::lt::': return '<' ;
+		case '::gt::': return '>' ;
+		case '::lte::': return '<=' ;
+		case '::gte::': return '>=' ;
+		case '::ne::': return '<>' ;
+
+		case ':*': return '*' ;
+		case ':/': return '/' ;
+		case ':+': return '+' ;
+		case ':-': return '-' ;
+		case ':=': return '=' ;
+		case ':<': return '<' ;
+		case ':>': return '>' ;
+		case ':<=': return '<=' ;
+		case ':>=': return '>=' ;
+		case ':<>': return '<>' ;
+		default: return val;
+	}
+}
+
 export {
 	isError,
 	isFatalError,
@@ -171,5 +212,7 @@ export {
 	isClosure,
 	beep,
 	isMac,
-	isOrg
+	isOrg,
+	convertV2StringToMath,
+	convertMathToV2String
 }

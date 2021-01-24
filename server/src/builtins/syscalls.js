@@ -28,6 +28,7 @@ import { systemState } from '../systemstate.js'
 import { rootManager } from '../rootmanager.js'
 import { experiments, getExperimentsAsString } from '../globalappflags.js'
 import { UNBOUND } from '../environment.js'
+import { webFontManager } from '../webfonts.js'
 import {
 	RENDER_MODE_NORM,
 	RENDER_MODE_EXPLO
@@ -46,6 +47,18 @@ function createSyscalls() {
 			return new EString(s);
 		},
 		"Gets a snippet of code that represents the active experiment flags that should be saved with new tests (for internal use)."
+	);
+
+	Builtin.createBuiltin(
+		'load-web-font',
+		[ 'fontname$' ],
+		function $loadWebFont(env, executionEnvironment) {
+			let n = env.lb('fontname');
+			let name = n.getFullTypedValue();
+			webFontManager.loadFont(name);
+			return new Nil();
+		},
+		'loads a Google web font with the passed-in name (see fonts.google.com for options)'
 	);
 
 

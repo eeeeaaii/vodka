@@ -22,6 +22,7 @@ import {
 	RENDER_MODE_EXPLO,
 	RENDER_MODE_NORM
 } from './globalconstants.js'
+import { otherflags } from './globalappflags.js'
 
 const UNDO_LIMIT = 10;
 
@@ -45,6 +46,9 @@ class Undo {
 	// this would be a big issue.
 
 	saveStateForUndo() {
+		if (otherflags.NO_UNDO) {
+			return;
+		}
 		let copyOfRoot = null;
 		try {
 			copyOfRoot = systemState.getRoot().getNex().makeCopy();

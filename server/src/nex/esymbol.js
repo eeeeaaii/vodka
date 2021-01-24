@@ -55,7 +55,7 @@ class ESymbol extends ValueNex {
 
 	/** @override */
 	toStringV2() {
-		return '@' + this.toStringV2TagList() + this.value;
+		return `@${this.toStringV2Literal()}${this.toStringV2TagList()}${this.value}`;
 	}
 
 	/** @override */

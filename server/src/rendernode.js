@@ -71,13 +71,22 @@ class RenderNode {
 		this.renderMode = RENDER_MODE_INHERIT;
 
 		this.isCurrentlyExploded = false;
-		this.explodedOverride = -1;
-		this.firstToggleOnNexRender = false;
 		this.currentEd = null;
 		this.wrapperDomNode = null;
 		this.setInsertionMode(INSERT_UNSPECIFIED);
 
 		this.renderNodeIsDirty = true;
+	}
+
+	nodeCopy() {
+		let newNode = new RenderNode(this.nex);
+		newNode.selected = this.selected;
+		for (let i = 0; i < this.childnodes.length; i++) {
+			newNode.childnodes[i] = this.childnodes[i].nodeCopy();
+		}
+		newNode.renderMode = this.renderMode;
+		newNode.isCurrentlyExploded = this.isCurrentlyExploded;
+		return newNode;
 	}
 
 	setRenderNodeDirtyForRendering(v) {
@@ -161,6 +170,9 @@ class RenderNode {
 	}
 
 	possiblyStartMainEditor() {
+		if (experiments.LITERALS && !this.getNex().isLiteral()) {
+			return null;
+		}
 		let editor = this.getEditorForType(this.getNex());
 		if (editor) {
 			this.startEditor(editor);
@@ -413,6 +425,7 @@ class RenderNode {
 					this.domNode.appendChild(childRenderNode.getDomNode());
 				}
 				childRenderNode.render(childFlags);
+				this.nex.renderAfterChild(i, this, useFlags, this.getCurrentEditor());
 				if ((useFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_AFTER) {
 					this.domNode.appendChild(this.getInsertionPointDomNode(childRenderNode.insertionMode));			
 				}
@@ -426,6 +439,7 @@ class RenderNode {
 					this.childnodes[i] = newNode;
 					this.domNode.appendChild(newNode.getDomNode());
 					newNode.render(childFlags);
+					this.nex.renderAfterChild(i, this, useFlags, this.getCurrentEditor());
 				}
 			}
 

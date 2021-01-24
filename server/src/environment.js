@@ -191,29 +191,6 @@ class Environment {
 		}
 	}
 
-	set(name, val, optionalTag) {
-		let binding = this._recursiveLookup(name, [this.listOfPackagesUsed]);
-		if (!binding) {
-			throw new EError(`undefined symbol ${name}, cannot set. Sorry!`)
-		}
-		if (optionalTag) {
-			// need to find child of binding that has this tag.
-			let v = binding.val;
-			if (!(v instanceof NexContainer)) {
-				throw new EError('cannot dereference a non-org');
-			}
-			for (let i = 0; i < v.numChildren(); i++) {
-				if (v.getChildAt(i).hasTag(optionalTag)) {
-					val.addTag(optionalTag);
-					v.replaceChildAt(val, i);
-					return;
-				}
-			}
-		} else {
-			binding.val = val;
-		}
-	}
-
 	// only used by builtins to retrieve args, we can just directly access this env
 	lb(name) {
 		let nm = BUILTIN_ARG_PREFIX + name;
@@ -301,6 +278,27 @@ class Environment {
 		}
 	}
 
+	derefToParent(val, dereferencingPart) {
+		if (dereferencingPart.length == 1) {
+			return {
+				'val': val,
+				'tag': new Tag(dereferencingPart[0])
+			}
+		} else {
+			let refName = dereferencingPart[0];
+			let thisReferenceTag = new Tag(refName);
+			if (!this.isDereferenceable(val)) {
+				throw new EError(`cannot dereference this thing: [${val.debugString()}]. Sorry!`);
+			}
+			let newval = val.getChildWithTag(thisReferenceTag);
+			if (!newval) {
+				throw new EError(`unknown reference ${refName}. Sorry!`);
+			}
+			dereferencingPart.shift();
+			return this.derefToParent(newval, dereferencingPart)
+		}
+	}
+
 	// returns the full binding struct
 	lookupFullBinding(name) {
 		let dereferencingPart = null;
@@ -325,10 +323,66 @@ class Environment {
 		return this.lookupFullBinding(name).val;
 	}
 
+	// TODO(https://github.com/eeeeaaii/vodka/issues/133)
 	hasBinding(name) {
 		let binding = this._recursiveLookup(name, [this.listOfPackagesUsed]);
-		return !!binding;		
+		return !!binding;
 	}
+
+	set(name, val, optionalTag) {
+		let dereferencingPart = null;
+		if (name.indexOf('.') >= 0) {
+			dereferencingPart = name.substr(name.indexOf('.') + 1).split('.');
+			name = name.substr(0, name.indexOf('.'));
+		}
+		let binding = this._recursiveLookup(name, [this.listOfPackagesUsed]);
+		if (!binding) {
+			throw new EError(`undefined symbol: ${name}, cannot set. Sorry!`);
+		}
+		if (dereferencingPart) {
+			let derefSetRecord = this.derefToParent(binding.val, dereferencingPart);
+			let v = derefSetRecord.val;
+			if (!(v instanceof NexContainer)) {
+				throw new EError('cannot dereference a non-org');
+			}
+			for (let i = 0; i < v.numChildren(); i++) {
+				if (v.getChildAt(i).hasTag(derefSetRecord.tag)) {
+					val.addTag(derefSetRecord.tag);
+					v.replaceChildAt(val, i);
+					return;
+				}
+			}
+		} else {
+			binding.val = val;
+		}
+	}
+
+
+
+/*
+		let binding = this._recursiveLookup(name, [this.listOfPackagesUsed]);
+		if (!binding) {
+			throw new EError(`undefined symbol ${name}, cannot set. Sorry!`)
+		}
+		if (optionalTag) {
+			// need to find child of binding that has this tag.
+			let v = binding.val;
+			if (!(v instanceof NexContainer)) {
+				throw new EError('cannot dereference a non-org');
+			}
+			for (let i = 0; i < v.numChildren(); i++) {
+				if (v.getChildAt(i).hasTag(optionalTag)) {
+					val.addTag(optionalTag);
+					v.replaceChildAt(val, i);
+					return;
+				}
+			}
+		} else {
+			binding.val = val;
+		}
+	}
+	*/
+
 }
 
 // global lexical environment.

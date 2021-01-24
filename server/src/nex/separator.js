@@ -44,7 +44,7 @@ class Separator extends Letter {
 	}
 
 	toStringV2() {
-		return `[separator]${this.toStringV2PrivateDataSection(this.value)}${this.toStringV2TagList()}`
+		return `[${this.toStringV2Literal()}separator]${this.toStringV2PrivateDataSection(this.value)}${this.toStringV2TagList()}`
 	}
 
 	getKeyFunnel() {

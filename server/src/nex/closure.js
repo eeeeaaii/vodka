@@ -15,8 +15,9 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { ValueNex } from './valuenex.js'
 import * as Utils from '../utils.js'
+
+import { ValueNex } from './valuenex.js'
 import { ArgEvaluator } from '../argevaluator.js'
 import { Nil } from './nil.js'
 import { Org } from './org.js'
@@ -233,7 +234,7 @@ class Closure extends ValueNex {
 			let c = this.lambda.getChildAt(i);
 			r = evaluateNexSafely(c, scope, true /* skipactivate */);
 			if (Utils.isFatalError(r)) {
-				r = wrapError('&amp;', `${cmdname}: error in expr ${i+1}`, r);
+				r = wrapError('&amp;', `${cmdname}: error in expr ${i+1} of lambda`, r);
 				return r;
 			}
 		}

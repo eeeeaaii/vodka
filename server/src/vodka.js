@@ -179,7 +179,9 @@ function setDocRootFromStart() {
 }
 
 function setEmptyDocRoot() {
-	let docNode = root.appendChild(new Doc());
+	let d = new Doc();
+	d.setLiteral(true);
+	let docNode = root.appendChild(d);
 	docNode.setSelected(false /* don't render yet */);
 }
 

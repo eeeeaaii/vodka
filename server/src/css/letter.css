@@ -157,3 +157,24 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	margin-right: -1px;
 	margin-bottom: -1px;
 }
+
+.letter.newselected.leftinsert {
+	animation-duration: 2s;
+	animation-name: letterblinkleft;
+	animation-iteration-count: 1;
+}
+.letter.newselected.rightinsert {
+	animation-duration: 2s;
+	animation-name: letterblinkright;
+	animation-iteration-count: 1;
+}
+
+.letter.newselected.exploded {
+	animation-name: none;
+	border-top: 1px solid black;
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	margin-top: -1px;
+	margin-right: -1px;
+	margin-bottom: -1px;
+}

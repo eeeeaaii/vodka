@@ -102,14 +102,6 @@ class Lambda extends NexContainer {
 		r.cachedParamNames = this.cachedParamNames;
 	}
 
-	setAmpText(newval) {
-		if (newval == this.amptext) return;
-		this.amptext = newval;
-		if (this.amptext) {
-			this.cacheParamNames();
-		}
-	}
-
 	renderChildrenIfNormal() {
 		return false;
 	}
@@ -135,7 +127,7 @@ class Lambda extends NexContainer {
 	}
 
 	toStringV2() {
-		return `&${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+		return `&${this.toStringV2Literal()}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
 
 	prettyPrintInternal(lvl, hdir) {
@@ -284,6 +276,12 @@ class Lambda extends NexContainer {
 
 	appendAmpText(txt) {
 		this.setAmpText(this.amptext + txt);
+	}
+
+	setAmpText(newval) {
+		if (newval == this.amptext) return;
+		this.amptext = newval;
+		this.cacheParamNames();
 	}
 
 	doNotProcess(key) {

@@ -93,10 +93,6 @@ class NexContainer extends Nex {
 		n.dir = this.dir;
 	}
 
-	evaluate() {
-		return this;
-	}
-
 	// let the caller instantiate the new container
 	// because we don't know what type it is.
 	// all this does is set the child pointers

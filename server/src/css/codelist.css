@@ -32,6 +32,14 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border-color: var(--selected-border);
 }
 
+.codelist.exploded.newselected {
+	border-color: var(--selected-border);
+}
+
+.codelist.exploded > .nex.exploded {
+	margin: 0px 0px 0px 2px;
+}
+
 
 .codelist.exploded.vdir {
 	flex-direction: column;
@@ -60,7 +68,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border: 0px;
 	padding: 3px 7px 4px 5px;
 	border-radius: 0px 6px 6px 0px;
-	margin: 0px 2px 0px 0px;
+	margin: 0px 0px 0px 0px;
 }
 
 .codespan.exploded.editing {
@@ -78,6 +86,49 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .selected > .codespan {
+	background-color: var(--selected-border);
+}
+
+.newselected > .codespan {
+	background-color: var(--selected-border);
+}
+
+.innercodespan {
+	display: none;
+}
+
+.innercodespan.exploded {
+	position: relative;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	font-family: Courier;
+	color: #444444;
+	font-style: italic;
+	font-size: 15px;
+	background-color: var(--unselected-border);
+	border: 0px;
+	padding: 3px 7px 4px 5px;
+	border-radius: 0px 0px 6px 6px;	
+	margin: -5px 3px 2px 3px;
+}
+
+.codelist.exploded.vdir > .innercodespan {
+	border-radius: 0px 6px 6px 0px;
+	margin: 0px 2px 0px -5px;
+}
+
+
+.innercodespan.exploded.editing {
+	font-weight: bold;
+	background-color: #ffbfbe
+}
+
+.selected > .innercodespan {
+	background-color: var(--selected-border);
+}
+
+.newselected > .innercodespan {
 	background-color: var(--selected-border);
 }
 

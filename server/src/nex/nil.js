@@ -42,7 +42,7 @@ class Nil extends ValueNex {
 	}
 
 	toStringV2() {
-		return '^' + this.toStringV2TagList();
+		return '[nil]' + this.toStringV2TagList();
 	}
 
 	isEmpty() {

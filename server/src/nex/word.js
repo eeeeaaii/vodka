@@ -25,6 +25,7 @@ import {
 	RENDER_FLAG_INSERT_INSIDE,
 	RENDER_FLAG_INSERT_AROUND,
  } from '../globalconstants.js'
+import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 
 
 
@@ -54,7 +55,7 @@ class Word extends NexContainer {
 	}
 
 	toStringV2() {
-		return `[word]${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+		return `[${this.toStringV2Literal()}word]${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
 
  	prettyPrintInternal(lvl, hdir) {
@@ -62,16 +63,20 @@ class Word extends NexContainer {
 	}
 
 	evaluate(env) {
-		// shallow copy, then evaluate children.
-		let wordcopy = this.makeCopy(true);
-		let iterator = null;
-		this.doForEachChild(function(child) {
-			let newchild = evaluateNexSafely(child, env);
-			// we don't throw exceptions. We just embed them. We don't want to erase someone's doc
-			// because they put bad code in it.
-			iterator = wordcopy.fastAppendChildAfter(child.evaluate(env), iterator);
-		})
-		return wordcopy;
+		if (!experiments.LITERAL || this.literal) {
+			// shallow copy, then evaluate children.
+			let wordcopy = this.makeCopy(true);
+			let iterator = null;
+			this.doForEachChild(function(child) {
+				let newchild = evaluateNexSafely(child, env);
+				// we don't throw exceptions. We just embed them. We don't want to erase someone's doc
+				// because they put bad code in it.
+				iterator = wordcopy.fastAppendChildAfter(child.evaluate(env), iterator);
+			})
+			return wordcopy;
+		} else {
+			return this;
+		}
 	}
 
 
@@ -109,6 +114,14 @@ class Word extends NexContainer {
 
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
+
+		let wordspan = null;
+		// if (experiments.LITERALS && !(renderFlags & RENDER_FLAG_SHALLOW)) {
+		// 	wordspan = document.createElement("span");
+		// 	wordspan.classList.add('wordspan');
+		// 	domNode.appendChild(wordspan);
+		// }
+
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('word');
 		domNode.classList.add('data');
@@ -121,7 +134,17 @@ class Word extends NexContainer {
 		} else if (renderFlags & RENDER_FLAG_INSERT_INSIDE) {
 			domNode.classList.add('bottominsert');			
 		}
+		if (experiments.LITERALS) {
+			domNode.classList.add('newword');
+		}
 
+		// if (experiments.LITERALS && !(renderFlags & RENDER_FLAG_SHALLOW)) {
+		// 	if (renderFlags & RENDER_FLAG_EXPLODED) {
+		// 		wordspan.classList.add('exploded');
+		// 	} else {
+		// 		wordspan.classList.remove('exploded');
+		// 	}
+		// }
 	}
 
 	setPfont(pfstring) {

@@ -144,35 +144,34 @@ function createIterationBuiltins() {
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
-	function $loopOver(env, executionEnvironment) {
-		let closure = env.lb('func');
-		let list = env.lb('list');
-		let result = new Nil();
-		let i = 0;
-		try {
-			list.doForEachChild(function(item) {
-				let cmd = Command.makeCommandWithClosureOneArg(closure, Command.quote(item))
-				cmd.setSkipAlertAnimation(true);
-				result = evaluateNexSafely(cmd, executionEnvironment);
-				if (Utils.isFatalError(result)) {
-					throw wrapError('&szlig;', `loop-over: error returned from item ${i+1}`, result);
-				}
-				i++;
-			});
-		} catch (e) {
-			if (Utils.isFatalError(e)) {
-				return e;
-			} else {
-				throw e;
-			}
-		}
-		return result;
-	}
 
 	Builtin.createBuiltin(
 		'loop-over',
 		[ 'func&', 'list()' ],
-		$loopOver,
+		function $loopOver(env, executionEnvironment) {
+			let closure = env.lb('func');
+			let list = env.lb('list');
+			let result = new Nil();
+			let i = 0;
+			try {
+				list.doForEachChild(function(item) {
+					let cmd = Command.makeCommandWithClosureOneArg(closure, Command.quote(item))
+					cmd.setSkipAlertAnimation(true);
+					result = evaluateNexSafely(cmd, executionEnvironment);
+					if (Utils.isFatalError(result)) {
+						throw wrapError('&szlig;', `loop-over: error returned when processing input ${item.debugString()}`, result);
+					}
+					i++;
+				});
+			} catch (e) {
+				if (Utils.isFatalError(e)) {
+					return e;
+				} else {
+					throw e;
+				}
+			}
+			return result;
+		},
 		'loops over a list, evaluating a function on each member, and returning the last result.'
 	);
 

@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from './utils.js'
+
 import { Nex } from './nex/nex.js';
 import { Bool } from './nex/bool.js';
 import { Integer } from './nex/integer.js';
@@ -36,6 +38,8 @@ import { Letter } from './nex/letter.js';
 import { Separator } from './nex/separator.js';
 import { Tag } from './tag.js'
 
+import { experiments } from './globalappflags.js'
+
 
 function concatParserString(arr) {
 	if (arr == null) {
@@ -44,7 +48,12 @@ function concatParserString(arr) {
 	return arr.join('');
 }
 
-function addTagsToNex(nex, tags) {
+function decorateNex(nex, tags, nonliteral) {
+	if (experiments.LITERALS) {
+		if (!nonliteral) {
+			nex.setLiteral(true);
+		}		
+	}
 	if (!tags) {
 		return nex;
 	}
@@ -73,99 +82,104 @@ function setVertHoriz(obj, vh) {
 		obj.setVertical();
 	} else if (vh == 'h') {
 		obj.setHorizontal();
+	} else if (vh == 'z') {
+		obj.setZdirectional();
 	} else {
 		throw new Error('unknown verthoriz code');
 	}
 }
 
-function makeInteger(negation, digits, taglist) {
+function makeInteger(negation, digits, taglist, nonliteral) {
 	let n = Number(concatParserString(digits));
 	if (negation) {
 		n = -n;
 	}
-	return addTagsToNex(new Integer(n), taglist);
+	return decorateNex(new Integer(n), taglist, nonliteral);
 }
 
-function makeSymbol(letters, taglist) {
-	return addTagsToNex(new ESymbol(concatParserString(letters)), taglist);
+function makeSymbol(letters, taglist, nonliteral) {
+	return decorateNex(new ESymbol(concatParserString(letters)), taglist, nonliteral);
 }
 
-function makeString(privateData, taglist) {
+function makeString(privateData, taglist, nonliteral) {
 	let str = new EString();
 	setPrivateData(str, privateData);
-	return addTagsToNex(str, taglist);
+	return decorateNex(str, taglist, nonliteral);
 }
 
-function makeError(privateData, taglist) {
+function makeError(privateData, taglist, nonliteral) {
 	let err = new EError();
 	setPrivateData(err, privateData);
-	return addTagsToNex(err, taglist);
+	return decorateNex(err, taglist, nonliteral);
 }
 
-function makeFloat(contents, taglist) {
-	return addTagsToNex(new Float(contents), taglist);
+function makeFloat(contents, taglist, nonliteral) {
+	return decorateNex(new Float(contents), taglist, nonliteral);
 }
 
-function makeBool(val, taglist) {
-	return addTagsToNex(new Bool(val), taglist);
+function makeBool(val, taglist, nonliteral) {
+	return decorateNex(new Bool(val), taglist, nonliteral);
 }
 
-function makeNil(taglist) {
-	return addTagsToNex(new Nil(), taglist);
+function makeNil(taglist, nonliteral) {
+	return decorateNex(new Nil(), taglist, nonliteral);
 }
 
-function makeOrgList(children, privateData, taglist, verthoriz) {
+function makeOrgList(children, privateData, taglist, verthoriz, nonliteral) {
 	let t = new Org();
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
-	addTagsToNex(t, taglist);
+	decorateNex(t, taglist, nonliteral);
 	setVertHoriz(t, verthoriz);
 	return t;
 }
 
-function makeExpList(children, privateData, taglist, verthoriz) {
+function makeExpList(children, privateData, taglist, verthoriz, nonliteral) {
 	let t = new Expectation();
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
-	addTagsToNex(t, taglist);
+	decorateNex(t, taglist, nonliteral);
 	setVertHoriz(t, verthoriz);
 	return t;
 }
 
-function makeLambdaList(children, privateData, taglist, verthoriz) {
+function makeLambdaList(children, privateData, taglist, verthoriz, nonliteral) {
 	let t = new Lambda();
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
-	addTagsToNex(t, taglist);
+	decorateNex(t, taglist, nonliteral);
 	setVertHoriz(t, verthoriz);
 	return t;
 }
 
-function makeCommandList(name, children, privateData, taglist, verthoriz) {
-	let cmdname = Command.convertV2StringToMath(concatParserString(name));
+function makeCommandList(name, children, privateData, taglist, verthoriz, nonliteral) {
+	let cmdname = Utils.convertV2StringToMath(concatParserString(name));
 	let t = new Command(cmdname);
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
-	addTagsToNex(t, taglist);
+	decorateNex(t, taglist, nonliteral);
 	setVertHoriz(t, verthoriz);
 	return t;
 }
 
-function makeInstantiatorList(name, children, privateData, taglist, verthoriz) {
-	let t = new Instantiator(name);
+function makeInstantiatorList(children, privateData, taglist, verthoriz, nonliteral) {
+	let t = new Instantiator('');
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
-	addTagsToNex(t, taglist);
+	decorateNex(t, taglist, nonliteral);
 	setVertHoriz(t, verthoriz);
 	return t;
 }
 
-function makeInstanceAtom(instname, privatedata, taglist) {
+function makeInstanceAtom(instname, privatedata, taglist, nonliteral) {
 	// currently only letter, separator, and newline supported
 	let name = concatParserString(instname);
 	let t = null;
 	let isList = false;
 	switch(name) {
+		case 'newline': // so I can parse old files
+			t = new Nil();
+			break;
 		case 'nil':
 			t = new Nil();
 			break;
@@ -179,10 +193,10 @@ function makeInstanceAtom(instname, privatedata, taglist) {
 			throw new Error('unrecognized instance type: ' + instname);
 	}
 	setPrivateData(t, privatedata);
-	addTagsToNex(t, taglist);
+	decorateNex(t, taglist, nonliteral);
 	return t;}
 
-function makeInstanceList(instname, children, privatedata, taglist, verthoriz) {
+function makeInstanceList(instname, children, privatedata, taglist, verthoriz, nonliteral) {
 	// currently only word, doc, and line supported
 	let name = concatParserString(instname);
 	let t = null;
@@ -205,11 +219,11 @@ function makeInstanceList(instname, children, privatedata, taglist, verthoriz) {
 			isList = true;
 			break;
 		default:
-			throw new Error('unrecognized instance type: ' + instname);
+			throw new Error('unrecognized list instance type: ' + instname);
 	}
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privatedata);
-	addTagsToNex(t, taglist);
+	decorateNex(t, taglist, nonliteral);
 	setVertHoriz(t, verthoriz);
 	return t;
 }
@@ -227,6 +241,7 @@ export {
 	makeExpList,
 	makeInstanceList,
 	makeInstanceAtom,
+	makeInstantiatorList,
 	makeError
 }
 

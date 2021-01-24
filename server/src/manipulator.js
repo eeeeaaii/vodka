@@ -1865,18 +1865,20 @@ class Manipulator {
 	// used in keydispatcher.js
 	doPaste() {
 		let s = systemState.getGlobalSelectedNode();
+		let newNex = CLIPBOARD.makeCopy();
+		newNex.setLiteral(true);
 		switch(s.getInsertionMode()) {
 			case INSERT_AFTER:
-				this.insertAfterSelectedAndSelect(CLIPBOARD.makeCopy());
+				this.insertAfterSelectedAndSelect(newNex);
 				this.selected().setInsertionMode(CLIPBOARD_INSERTION_MODE);
 				break;
 			case INSERT_BEFORE:
 			case INSERT_AROUND:
-				this.insertBeforeSelectedAndSelect(CLIPBOARD.makeCopy());
+				this.insertBeforeSelectedAndSelect(newNex);
 				this.selected().setInsertionMode(CLIPBOARD_INSERTION_MODE);
 				break;
 			case INSERT_INSIDE:
-				this.insertAsFirstChild(CLIPBOARD.makeCopy());
+				this.insertAsFirstChild(newNex);
 				this.selected().setInsertionMode(CLIPBOARD_INSERTION_MODE);
 				break;
 		}
@@ -1884,113 +1886,168 @@ class Manipulator {
 
 
 	newDoc() {
-		return new RenderNode(new Doc());
+		let d = new Doc();
+		d.setLiteral(true);
+		return new RenderNode(d);
 	}
 
 	newWord() {
-		return new RenderNode(new Word());
+		let w = new Word();
+		w.setLiteral(true);
+		return new RenderNode(w);
 	}
 
 	newLine() {
-		return new RenderNode(new Line());
+		let line = new Line();
+		line.setLiteral(true);
+		return new RenderNode(line);
 	}
 
 	// public
 	newLambda() {
-		let r = new RenderNode(new Lambda());		
+		let l = new Lambda();
+		l.setLiteral(true);
+		let r = new RenderNode(l);		
 		r.possiblyStartMainEditor();
 		return r;
 	}
 
 	newESymbol() {
-		let r = new RenderNode(new ESymbol());
+		let e = new ESymbol();
+		e.setLiteral(true);
+		let r = new RenderNode(e);
 		r.possiblyStartMainEditor();
 		return r;
 	}
 
 	// public
 	newCommand() {
-		let r = new RenderNode(new Command());		
+		let c = new Command();
+		c.setLiteral(true);
+		let r = new RenderNode(c);		
 		r.possiblyStartMainEditor();
 		return r;
 	}
 
 	newBool() {
-		let r = new RenderNode(new Bool());		
+		let b = new Bool();
+		b.setLiteral(true);
+		let r = new RenderNode(b);		
 		r.possiblyStartMainEditor();
 		return r;
 	}
 
 	newInteger() {
-		let r = new RenderNode(new Integer());		
+		let i = new Integer();
+		i.setLiteral(true);
+		let r = new RenderNode(i);		
 		r.possiblyStartMainEditor();
 		return r;		
 	}
 
 	newEString() {
-		let r = new RenderNode(new EString());
+		let e = new EString();
+		e.setLiteral(true);
+		let r = new RenderNode(e);
 		r.possiblyStartMainEditor();
 		return r;
 	}
 
 	newFloat() {
-		let r = new RenderNode(new Float());
+		let f = new Float();
+		f.setLiteral(true);
+		let r = new RenderNode(f);
 		r.possiblyStartMainEditor();
 		return r;		
 	}
 
 	newInstantiator() {
-		let r = new RenderNode(new Instantiator());
+		let i = new Instantiator();
+		i.setLiteral(true);
+		let r = new RenderNode(i);
 		r.possiblyStartMainEditor();
 		return r;		
 	}
 
 	newNil() {
-		let r = new RenderNode(new Nil());
+		let n = new Nil();
+		n.setLiteral(true);
+		let r = new RenderNode(n);
 		return r;		
 	}
 
 	newExpectation() {
-		let r = new RenderNode(new Expectation());
+		let e = new Expectation();
+		e.setLiteral(true);
+		let r = new RenderNode(e);
 		return r;		
 	}
 
 	newZlist() {
-		let r = new RenderNode(new Zlist());
+		let zl = new Zlist();
+		zl.setLiteral(true);
+		let r = new RenderNode(zl);
 		return r;		
 	}
 
 	newOrg() {
-		let r = new RenderNode(new Org());
+		let o = new Org();
+		o.setLiteral(true);
+		let r = new RenderNode(o);
 		return r;
 	}
 
 	newSeparator(txt) {
-		let r = new RenderNode(new Separator(txt));
+		let s = new Separator(txt);
+		s.setLiteral(true);
+		let r = new RenderNode(s);
 		return r;
 	}
 
 	newLetter(txt) {
-		let r = new RenderNode(new Letter(txt));
+		let l = new Letter(txt);
+		l.setLiteral(true);
+		let r = new RenderNode(l);
 		return r;
 	}
 
+	// this is garbage crap
 	newNexForKey(key) {
-		switch(key) {
-			case '~': return this.newCommand();
-			case '!': return this.newBool();
-			case '@': return this.newESymbol();
-			case '#': return this.newInteger();
-			case '$': return this.newEString();
-			case '%': return this.newFloat();
-			case '^': return this.newNil();
-			case '&': return this.newLambda();
-			case '*': return this.newExpectation();
-			case '(': return this.newWord();
-			case ')': return this.newOrg();
-			case '{': return this.newDoc();
-			case '[': return this.newLine();
-			case '<': return this.newZlist();
+		if (experiments.ORG_Z) {
+			switch(key) {
+				case '~': return this.newCommand();
+				case '!': return this.newBool();
+				case '@': return this.newESymbol();
+				case '#': return this.newInteger();
+				case '$': return this.newEString();
+				case '%': return this.newFloat();
+				case '^': return this.newNil();
+				case '&': return this.newLambda();
+				case '*': return this.newExpectation();
+				case '(': return this.newOrg();
+				case '{': return this.newDoc();
+				case '[': return this.newLine();
+				case '<': return this.newWord();
+			}
+
+		} else {
+			switch(key) {
+				case '~': return this.newCommand();
+				case '!': return this.newBool();
+				case '@': return this.newESymbol();
+				case '#': return this.newInteger();
+				case '$': return this.newEString();
+				case '%': return this.newFloat();
+				case '^': return this.newNil();
+				case '&': return this.newLambda();
+				case '*': return this.newExpectation();
+				case '(': return this.newWord();
+				case ')': return this.newOrg();
+				case '{': return this.newDoc();
+				case '[': return this.newLine();
+				case '<': return this.newZlist();
+			}
+
 		}
 		// either letter or separator
 		let letterRegex = /^[a-zA-Z0-9']$/;

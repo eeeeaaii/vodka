@@ -32,6 +32,19 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	animation-iteration-count: 1;
 }
 
+.separator.newselected.leftinsert {
+	animation-duration: 1s;
+	animation-name: letterblinkleft;
+	animation-iteration-count: 1;
+}
+
+.separator.newselected.rightinsert {
+	animation-duration: 1s;
+	animation-name: letterblinkright;
+	animation-iteration-count: 1;
+}
+
+
 .line > .separator.exploded {
 	margin-top: 6px;
 	margin-bottom: 6px;
@@ -43,8 +56,19 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border-bottom: 1px solid black;
 	margin-right: -1px; /* why did I do this */
 }
+.separator.exploded.newselected {
+	animation-name: none;
+	border-top: 1px solid black;
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	margin-right: -1px; /* why did I do this */
+}
 
 .line > .separator.exploded.selected {
+	margin-top: 5px;
+	margin-bottom: 5px;	
+}
+.line > .separator.exploded.newselected {
 	margin-top: 5px;
 	margin-bottom: 5px;	
 }

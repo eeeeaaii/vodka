@@ -35,47 +35,40 @@ import { experiments } from '../globalappflags.js'
 
 function createEnvironmentBuiltins() {
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $bind(env, executionEnvironment) {
-		let val = env.lb('nex');
-		let name = env.lb('name');
-		let namestr = name.getTypedValue();
-		BINDINGS.bindInPackage(namestr, val);
-		return name;
-	}
-
 	Builtin.createBuiltin(
 		'bind',
 		[ '_name@', 'nex' ],
-		$bind,
+		function $bind(env, executionEnvironment) {
+			let val = env.lb('nex');
+			let name = env.lb('name');
+			let namestr = name.getTypedValue();
+			BINDINGS.bindInPackage(namestr, val);
+			return name;
+		},
 		'binds a new global variable named |name with a value of |nex.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $bindings(env, executionEnvironment) {
-		let ssnex = env.lb('search');
-		let ss = "";
-		if (ssnex != UNBOUND) {
-			ss = ssnex.getTypedValue();
-		}
-		let matches = autocomplete.findAllBindingsMatching(ss);
-		if (matches.length == 1) {
-			return new ESymbol(matches[0]);
-		} else {
-			let r = new Doc();
-			for (let j = 0; j < matches.length; j++) {
-				r.appendChild(new ESymbol(matches[j]))
-			}
-			return r;
-		}
-	}
 
 	Builtin.createBuiltin(
 		'bindings',
 		[ '_search@?' ],
-		$bindings,
+		function $bindings(env, executionEnvironment) {
+			let ssnex = env.lb('search');
+			let ss = "";
+			if (ssnex != UNBOUND) {
+				ss = ssnex.getTypedValue();
+			}
+			let matches = autocomplete.findAllBindingsMatching(ss);
+			if (matches.length == 1) {
+				return new ESymbol(matches[0]);
+			} else {
+				let r = new Doc();
+				for (let j = 0; j < matches.length; j++) {
+					r.appendChild(new ESymbol(matches[j]))
+				}
+				return r;
+			}
+		},
 		'returns a list of all globally bound variables.'
 	);
 

@@ -101,58 +101,17 @@ class Command extends NexContainer {
 		// dead code , v2 always there?
 	}
 
-	convertMathToV2String(val) {
-		switch(val) {
-			case '*': return '::ti::';
-			case '/': return '::ov::';
-			case '+': return '::pl::';
-			case '=': return '::eq::';
-			case '<': return '::lt::';
-			case '>': return '::gt::';
-			case '<=': return '::lte::';
-			case '>=': return '::gte::';
-			case '<>': return '::ne::';
-			default: return val;
-		}
-	}
-
-	static convertV2StringToMath(val) {
-		switch(val) {
-			case '::ti::': return '*' ;
-			case '::ov::': return '/' ;
-			case '::pl::': return '+' ;
-			case '::eq::': return '=' ;
-			case '::lt::': return '<' ;
-			case '::gt::': return '>' ;
-			case '::lte::': return '<=' ;
-			case '::gte::': return '>=' ;
-			case '::ne::': return '<>' ;
-
-			case ':*': return '*' ;
-			case ':/': return '/' ;
-			case ':+': return '+' ;
-			case ':-': return '-' ;
-			case ':=': return '=' ;
-			case ':<': return '<' ;
-			case ':>': return '>' ;
-			case ':<=': return '<=' ;
-			case ':>=': return '>=' ;
-			case ':<>': return '<>' ;
-			default: return val;
-		}
-	}
-
 	toStringV2() {
-		let cmdPrefix = this.convertMathToV2String(this.commandtext);
+		let cmdPrefix = Utils.convertMathToV2String(this.commandtext);
 		if (cmdPrefix != '') {
 			cmdPrefix = cmdPrefix + ' ';
 		}
-		return `~${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}${super.childrenToString('v2')}${this.listEndV2()}`;		
+		return `~${this.toStringV2Literal()}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}${super.childrenToString('v2')}${this.listEndV2()}`;		
 	}
 
 	prettyPrintInternal(lvl, hdir) {
 		// because of cmdPrefix we don't use standardListPrettyPrint
-		let cmdPrefix = this.convertMathToV2String(this.commandtext);
+		let cmdPrefix = Utils.convertMathToV2String(this.commandtext);
 		let fline = `${this.doTabs(lvl, hdir)}~${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}`; // exp // \n`;
 		let contents = this.prettyPrintChildren(lvl + 1);
 		let lline = `${this.listEndV2()}` // exp
@@ -293,7 +252,7 @@ class Command extends NexContainer {
 		}
 		if (!cmdname) {
 			// we have to give them something
-			cmdname = `<br>*** unnamed function, function body follows **** <br>${closure.getLambdaDebugString()}<br>*** end function body ***<br>`;
+			cmdname = `\nunnamed function:\n${closure.getLambda().prettyPrint()}\n`;
 		}
 
 		this.evalState = {
@@ -393,6 +352,11 @@ class Command extends NexContainer {
 		return ghost;
 	}
 
+	isInfix(cmdname) {
+		return !!cmdname &&
+			(cmdname == '-' || Utils.convertMathToV2String(cmdname).indexOf('::') == 0);
+	}
+
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		let codespan = null;
@@ -415,13 +379,47 @@ class Command extends NexContainer {
 			} else {
 				codespan.classList.remove('editing');
 			}
-			codespan.innerHTML = '<span class="tilde">&#8766;</span>' + this.commandtext;
+			let codespanHtml = '<span class="tilde">&#8766;</span>';
+			if (experiments.INFIX_OPERATORS) {
+				let gclosure = this.getClosureForGhost();
+				if (gclosure && Utils.isClosure(gclosure) && this.isInfix(this.commandtext) && this.numChildren() > 1) {
+				} else {
+					codespanHtml += this.commandtext;				
+				}
+			} else {
+				codespanHtml += this.commandtext;
+			}
+			codespan.innerHTML = codespanHtml;
 			if (experiments.NEW_CLOSURE_DISPLAY && this.isEditing && renderNode.isSelected()) {
 				let gclosure = this.getClosureForGhost();
 				if (gclosure && Utils.isClosure(gclosure)) {
 					codespan.appendChild(this.getGhostDiv(gclosure));
 				}
 			}
+		}
+	}
+
+	renderAfterChild(childNum, renderNode, renderFlags, withEditor) {
+		if (experiments.INFIX_OPERATORS && childNum < this.numChildren() - 1) {
+			let gclosure = this.getClosureForGhost();
+			if (gclosure && Utils.isClosure(gclosure) && this.isInfix(this.commandtext)) {
+				let innercodespan = null;
+				innercodespan = document.createElement("span");
+				innercodespan.classList.add('innercodespan');
+				if (this.isEditing) {
+					innercodespan.classList.add('editing');
+				} else {
+					innercodespan.classList.remove('editing');
+				}
+				if (renderFlags & RENDER_FLAG_EXPLODED) {
+					innercodespan.classList.add('exploded');
+				} else {
+					innercodespan.classList.remove('exploded');
+				}
+				innercodespan.innerHTML = this.commandtext;
+				let domNode = renderNode.getDomNode();
+				domNode.appendChild(innercodespan);
+			}		
 		}
 	}
 

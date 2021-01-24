@@ -34,6 +34,40 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border-width: 3px;
 }
 
+.newdoc.exploded {
+	border-color: #bce3c5;	
+}
+
+.newdoc.exploded.newselected {
+	border-color: #1ece44;
+}
+
+.newdoc.exploded.literal {
+	padding: 3px;
+	border-width: 3px;
+}
+
+/*
+
+.docspan {
+	display: none;
+}
+
+.newselected > .docspan.exploded {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	background-color: #1ece44;
+	width: 100%;
+	height: 3px;
+	border-radius: 6px 6px 6px 6px;
+	margin: -2px 0px 3px 0px;
+}
+
+.newselected > .docspan.exploded.literal {
+	margin: -4px 0px 3px 0px;
+}
+*/
 
 @keyframes show-doc-execution-selected-1 {
 	0% {border-color: var(--selected-border);}

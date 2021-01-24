@@ -21,7 +21,7 @@ import { ContextType } from '../contexttype.js'
 import { NexContainer } from './nexcontainer.js'
 import { EError } from './eerror.js'
 import { experiments } from '../globalappflags.js'
-import { RENDER_FLAG_EXPLODED } from '../globalconstants.js'
+import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import {
 	RENDER_FLAG_INSERT_AFTER,
@@ -66,7 +66,7 @@ class Line extends NexContainer {
 	}
 
 	toStringV2() {
-		return `[line]${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+		return `[${this.toStringV2Literal()}line]${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
 
 	prettyPrintInternal(lvl, hdir) {
@@ -82,16 +82,20 @@ class Line extends NexContainer {
 	}
 
 	evaluate(env) {
-		// shallow copy, then evaluate children.
-		let linecopy = this.makeCopy(true);
-		let iterator = null;
-		this.doForEachChild(function(child) {
-			let newchild = evaluateNexSafely(child, env);
-			// we don't throw exceptions. We just embed them. We don't want to erase someone's doc
-			// because they put bad code in it.
-			iterator = linecopy.fastAppendChildAfter(child.evaluate(env), iterator);
-		})
-		return linecopy;
+		if (!experiments.LITERAL || this.literal) {
+			// shallow copy, then evaluate children.
+			let linecopy = this.makeCopy(true);
+			let iterator = null;
+			this.doForEachChild(function(child) {
+				let newchild = evaluateNexSafely(child, env);
+				// we don't throw exceptions. We just embed them. We don't want to erase someone's doc
+				// because they put bad code in it.
+				iterator = linecopy.fastAppendChildAfter(child.evaluate(env), iterator);
+			})
+			return linecopy;
+		} else {
+			return this;
+		}
 	}
 
 	toggleDir() {} // can only be horizontal
@@ -147,6 +151,14 @@ class Line extends NexContainer {
 
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
+
+		// let linespan = null;
+		// if (experiments.LITERALS && !(renderFlags & RENDER_FLAG_SHALLOW)) {
+		// 	linespan = document.createElement("span");
+		// 	linespan.classList.add('linespan');
+		// 	domNode.appendChild(linespan);
+		// }
+
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('line');
 		domNode.classList.add('data');
@@ -173,6 +185,18 @@ class Line extends NexContainer {
 		} else {
 			domNode.classList.remove('emptyline');
 		}
+		if (experiments.LITERALS) {
+			domNode.classList.add('newversionofline');
+		}
+	
+		// if (experiments.LITERALS && !(renderFlags & RENDER_FLAG_SHALLOW)) {
+		// 	if (renderFlags & RENDER_FLAG_EXPLODED) {
+		// 		linespan.classList.add('exploded');
+		// 	} else {
+		// 		linespan.classList.remove('exploded');
+		// 	}
+		// }
+
 	}
 
 	getDefaultHandler() {

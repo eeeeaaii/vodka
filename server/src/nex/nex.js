@@ -24,6 +24,7 @@ import { systemState } from '../systemstate.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { RENDER_FLAG_SELECTED, RENDER_FLAG_SHALLOW, RENDER_FLAG_NORMAL, RENDER_FLAG_RERENDER, RENDER_FLAG_EXPLODED, RENDER_FLAG_DEPTH_EXCEEDED } from '../globalconstants.js'
 import { checkRecordState } from '../testrecorder.js'
+import { experiments } from '../globalappflags.js'
 
 /**
  * This is the parent class for all nexes, aka pieces of vodka code, aka s-expressions.
@@ -48,6 +49,7 @@ class Nex {
 		this.closure = null; // only lambdas have closures but just copying is prob cheaper than testing?
 		this.inPackage = null; // well here we go with more things in the env I guess.
 		this.dirtyForRendering = true;
+		this.literal = false;
 	}
 
     /**
@@ -107,6 +109,21 @@ class Nex {
 		return str;
 	}
 
+	setLiteral(val) {
+		this.literal = val;
+	}
+
+	isLiteral() {
+		return this.literal;
+	}
+
+	toStringV2Literal() {
+		if (experiments.LITERALS && !this.literal) {
+			return ';';
+		} else {
+			return '';
+		}
+	}
 
 	toStringV2PrivateDataSection() {
 		let v = this.serializePrivateData();
@@ -398,7 +415,15 @@ class Nex {
 	}
 
 	evaluate(env) {
-		return this.makeCopy();
+		if (experiments.LITERALS) {
+			if (this.literal) {
+				return this.makeCopy();
+			} else {
+				return this;
+			}
+		} else {
+			return this.makeCopy();
+		}
 	}
 
 
@@ -460,17 +485,29 @@ class Nex {
 		}
 		domNode.classList.add('nex');
 
-		if (renderFlags & RENDER_FLAG_SELECTED) {
-			domNode.classList.add('selected');		
+		if (experiments.LITERALS) {
+			if (renderFlags & RENDER_FLAG_SELECTED) {
+				domNode.classList.add('newselected');		
+			}
+		} else {
+			if (renderFlags & RENDER_FLAG_SELECTED) {
+				domNode.classList.add('selected');		
+			}
 		}
 		let isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
 		if (isExploded) {
 			domNode.classList.add('exploded');
 		}
+		if (experiments.LITERALS && this.literal) {
+			domNode.classList.add('literal');
+		}
 		domNode.setAttribute("style", this.getCurrentStyle());
 		if (renderFlags & RENDER_FLAG_DEPTH_EXCEEDED) {
 			this.clearDomNode(domNode);
 		}
+	}
+
+	renderAfterChild(childNum, renderNode, renderFlags, withEditor) {
 	}
 
 	/**

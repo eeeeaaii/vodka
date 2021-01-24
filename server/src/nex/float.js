@@ -63,7 +63,7 @@ class Float extends ValueNex {
 	}
 
 	toStringV2() {
-		return '%' + this.toStringV2TagList() + this.value;
+		return `%${this.toStringV2Literal()}${this.toStringV2TagList()}${this.value}`;
 	}
 
 	_isValid(value) {

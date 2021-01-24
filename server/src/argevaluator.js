@@ -76,13 +76,13 @@ class ArgEvaluator {
 
 	checkMinNumArgs() {
 		if (this.argContainer.numArgs() < this.numRequiredParams) {
-			throw new EError(`${this.name}: not enough args. You needed ${this.numRequiredParams} but there were only ${this.argContainer.numArgs()}. Sorry!`);
+			throw new EError(`when calling ${this.name}: not enough args. You needed ${this.numRequiredParams} but there were only ${this.argContainer.numArgs()}. Sorry!`);
 		}
 	}
 
 	checkMaxNumArgs() {
 		if (this.argContainer.numArgs() > this.effectiveParams.length) {
-			throw new EError(`${this.name}: too many args. The max is ${this.effectiveParams.length} but you passed ${this.argContainer.numArgs()}. Sorry!`);
+			throw new EError(`when calling ${this.name}: too many args. The max is ${this.effectiveParams.length} but you passed ${this.argContainer.numArgs()}. Sorry!`);
 		}
 	}
 
@@ -106,16 +106,16 @@ class ArgEvaluator {
 		if (!param.skipeval) {
 			arg = evaluateNexSafely(arg, this.executionEnvironment, param.skipactivate);
 			if (Utils.isFatalError(arg)) {
-				throw wrapError('&szlig;', `${this.name}: fatal error in argument ${i + 1} (expected type ${param.type}), cannot continue. Sorry!`, arg);
+				throw wrapError('&szlig;', `when calling ${this.name}: fatal error in argument ${i + 1} (expected type ${param.type}), cannot continue. Sorry!`, arg);
 			}
 		}
 		let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[expectedType](arg);
 
 		if (!typeChecksOut) {
 			if (arg.getTypeName() == '-error-') {
-				throw wrapError('&szlig;', `${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, arg);
+				throw wrapError('&szlig;', `when calling ${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, arg);
 			} else {
-				throw new EError(`${this.name}: stopping because expected ${expectedType} for arg ${i + 1} but got ${arg.getTypeName()}. Sorry!`);
+				throw new EError(`when calling ${this.name}: stopping because expected ${expectedType} for arg ${i + 1} but got ${arg.getTypeName()}. Sorry!`);
 			}
 		}
 		this.argContainer.setArgAt(arg, i);

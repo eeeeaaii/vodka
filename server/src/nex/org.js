@@ -20,6 +20,8 @@ import * as Utils from '../utils.js'
 import { NexContainer, V_DIR, H_DIR, Z_DIR } from './nexcontainer.js'
 import { wrapError } from '../evaluator.js'
 import { experiments } from '../globalappflags.js'
+import { evaluateNexSafely } from '../evaluator.js'
+
 
 class Org extends NexContainer {
 	constructor() {
@@ -59,7 +61,7 @@ class Org extends NexContainer {
 	}
 
 	toStringV2() {
-		return `${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+		return `${this.toStringV2Literal()}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 
 	}
 
@@ -85,7 +87,22 @@ class Org extends NexContainer {
 	serializePrivateData(data) {
 		return this.privateData;
 	}
-
+	
+	evaluate(env) {
+		if (experiments.LITERALS && this.literal) {
+			// shallow copy, then evaluate children.
+			let listcopy = this.makeCopy(true);
+			let iterator = null;
+			this.doForEachChild(function(child) {
+				let newchild = evaluateNexSafely(child, env);
+				// we don't throw exceptions, we just embed them - this isn't a function.
+				iterator = listcopy.fastAppendChildAfter(child.evaluate(env), iterator);
+			})
+			return listcopy;
+		} else {
+			return this;
+		}
+	}
 
 	getTypeName() {
 		return '-org-';

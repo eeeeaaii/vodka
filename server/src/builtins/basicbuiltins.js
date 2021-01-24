@@ -263,7 +263,7 @@ function createBasicBuiltins() {
 			let newresult = evaluateNexSafely(expr, executionEnvironment);
 			// we do not wrap errors for eval - we let
 			// the caller deal with it
-			return newresult;				
+			return newresult;
 		},
 		'returns the result of evaluating |nex.'
 	);
@@ -277,6 +277,61 @@ function createBasicBuiltins() {
 		'returns the unevaluated form of |nex.'
 	);
 
+	Builtin.createBuiltin(
+		'horizontal',
+		[ 'nex' ],
+		function $horizontal(env, executionEnvironment) {
+			let n = env.lb('nex');
+			n.setHorizontal();
+			return n;
+		},
+		'sets direction of |nex to horizontal'
+	);
+
+
+	Builtin.createBuiltin(
+		'vertical',
+		[ 'nex' ],
+		function $vertical(env, executionEnvironment) {
+			let n = env.lb('nex');
+			n.setHorizontal();
+			return n;
+		},
+		'sets direction of |nex to vertical'
+	);
+
+	Builtin.createBuiltin(
+		'zdirectional',
+		[ 'nex' ],
+		function $zdirectional(env, executionEnvironment) {
+			let n = env.lb('nex');
+			n.setHorizontal();
+			return n;
+		},
+		'sets direction of |nex to zdirectional'
+	);
+
+	Builtin.createBuiltin(
+		'literal',
+		[ 'nex' ],
+		function $literal(env, executionEnvironment) {
+			let n = env.lb('nex');
+			n.setLiteral(true);
+			return n;
+		},
+		'makes |nex a literal'
+	);
+
+	Builtin.createBuiltin(
+		'nonliteral',
+		[ 'nex' ],
+		function $nonliteral(env, executionEnvironment) {
+			let n = env.lb('nex');
+			n.setLiteral(false);
+			return n;
+		},
+		'makes |nex a nonliteral'
+	);
 }
 
 export { createBasicBuiltins }

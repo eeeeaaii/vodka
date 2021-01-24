@@ -72,7 +72,7 @@ class Letter extends Nex {
 	}
 
 	toStringV2() {
-		return `[letter]${this.toStringV2PrivateDataSection()}${this.toStringV2TagList()}`
+		return `[${this.toStringV2Literal()}letter]${this.toStringV2PrivateDataSection()}${this.toStringV2TagList()}`
 	}
 
 	serializePrivateData(data) {

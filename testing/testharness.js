@@ -140,6 +140,12 @@ function getLegacyDefaultFlags() {
 		// orgs can have a z direction
 		'ORG_Z': false,
 
+		// infix operators
+		'INFIX_OPERATORS': false,
+
+		// literals
+		'LITERALS': false,
+
 
 	};
 }

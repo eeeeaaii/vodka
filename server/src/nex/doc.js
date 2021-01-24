@@ -20,6 +20,7 @@ import { EError } from './eerror.js'
 import { ContextType } from '../contexttype.js'
 import { experiments } from '../globalappflags.js'
 import { evaluateNexSafely } from '../evaluator.js'
+import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED, CONSOLE_DEBUG } from '../globalconstants.js'
 
 /**
  * Represents a document with text in it.
@@ -39,7 +40,7 @@ class Doc extends NexContainer {
 	}
 
 	toStringV2() {
-		return `[doc]${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+		return `[${this.toStringV2Literal()}doc]${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
 
 
@@ -101,16 +102,20 @@ class Doc extends NexContainer {
 	}
 
 	evaluate(env) {
-		// shallow copy, then evaluate children.
-		let doccopy = this.makeCopy(true);
-		let iterator = null;
-		this.doForEachChild(function(child) {
-			let newchild = evaluateNexSafely(child, env);
-			// we don't throw exceptions. We just embed them. We don't want to erase someone's doc
-			// because they put bad code in it.
-			iterator = doccopy.fastAppendChildAfter(child.evaluate(env), iterator);
-		})
-		return doccopy;
+		if (!experiments.LITERAL || this.literal) {
+			// shallow copy, then evaluate children.
+			let doccopy = this.makeCopy(true);
+			let iterator = null;
+			this.doForEachChild(function(child) {
+				let newchild = evaluateNexSafely(child, env);
+				// we don't throw exceptions. We just embed them. We don't want to erase someone's doc
+				// because they put bad code in it.
+				iterator = doccopy.fastAppendChildAfter(child.evaluate(env), iterator);
+			})
+			return doccopy;
+		} else {
+			return this;
+		}
 	}
 
 	getContextType() {
@@ -119,9 +124,26 @@ class Doc extends NexContainer {
 
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
+		// let docspan = null;
+		// if (experiments.LITERALS && !(renderFlags & RENDER_FLAG_SHALLOW)) {
+		// 	docspan = document.createElement("span");
+		// 	docspan.classList.add('docspan');
+		// 	domNode.appendChild(docspan);
+		// }
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('doc');
 		domNode.classList.add('data');
+		if (experiments.LITERALS) {
+			domNode.classList.add('newdoc');
+		}
+
+		// if (experiments.LITERALS && !(renderFlags & RENDER_FLAG_SHALLOW)) {
+		// 	if (renderFlags & RENDER_FLAG_EXPLODED) {
+		// 		docspan.classList.add('exploded');
+		// 	} else {
+		// 		docspan.classList.remove('exploded');
+		// 	}
+		// }
 	}
 
 	getDefaultHandler() {
