@@ -113,6 +113,10 @@ class Nex {
 		this.literal = val;
 	}
 
+	setLiteralRecursive(val) {
+		this.setLiteral(val);
+	}
+
 	isLiteral() {
 		return this.literal;
 	}

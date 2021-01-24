@@ -194,7 +194,7 @@ class TemplateStore  {
 			let cmd = Command.makeCommandWithClosure(initializer, args);
 			let rstr = evaluateNexSafely(cmd, env);
 			if (Utils.isFatalError(rstr)) {
-				return rstr;
+				throw rstr;
 			}
 		}
 		return org;

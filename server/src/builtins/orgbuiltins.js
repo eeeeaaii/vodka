@@ -29,7 +29,7 @@ function createOrgBuiltins() {
 	if (experiments.ORG_OVERHAUL) {
 		Builtin.createBuiltin(
 			'template',
-			[ '_name@', 'org()' ],
+			[ '_name@', '_org()' ],
 			function $template(env, executionEnvironment) {
 				let name = env.lb('name');
 				let org = env.lb('org');

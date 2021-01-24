@@ -1866,7 +1866,7 @@ class Manipulator {
 	doPaste() {
 		let s = systemState.getGlobalSelectedNode();
 		let newNex = CLIPBOARD.makeCopy();
-		newNex.setLiteral(true);
+		newNex.setLiteralRecursive(true);
 		switch(s.getInsertionMode()) {
 			case INSERT_AFTER:
 				this.insertAfterSelectedAndSelect(newNex);

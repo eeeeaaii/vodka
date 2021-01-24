@@ -143,6 +143,13 @@ class NexContainer extends Nex {
 		}
 	}
 
+	setLiteralRecursive(val) {
+		this.setLiteral(val);
+		this.doForEachChild(function(c) {
+			c.setLiteralRecursive(val);
+		})
+	}
+
 	charForDir() {
 		switch(this.dir) {
 			case H_DIR: return '_';

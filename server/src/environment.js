@@ -352,6 +352,8 @@ class Environment {
 					return;
 				}
 			}
+			// if we got here, we tried to reference a nonexistant property.
+			throw new EError(`unknown reference ${derefSetRecord.tag.getName()}. Sorry!`);
 		} else {
 			binding.val = val;
 		}
