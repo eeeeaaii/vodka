@@ -86,7 +86,7 @@ function createAsyncBuiltins() {
 
 
 	Builtin.createBuiltin(
-		'ff-with',
+		'ff--with',
 		[ 'exp*', 'val' ],
 		function $ffWith(env, executionEnvironment) {
 			let ff = env.lb('val');

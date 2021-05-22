@@ -28,7 +28,7 @@ import { Org } from '../nex/org.js'
 import { ESymbol } from '../nex/esymbol.js'
 import { ERROR_TYPE_INFO } from '../nex/eerror.js'
 import { wrapError } from '../evaluator.js'
-import { saveNex, loadNex, importNex, loadRaw, saveRaw } from '../servercommunication.js'
+import { saveShortcut, saveNex, loadNex, importNex, loadRaw, saveRaw } from '../servercommunication.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { BINDINGS } from '../environment.js'
 import { experiments } from '../globalappflags.js'
@@ -74,11 +74,7 @@ function createFileBuiltins() {
 
 	if (experiments.SAVE_EVALUATES_CONTENTS) {
 
-		Builtin.createBuiltin(
-			'save',
-			[ '_name', 'nex' ],
-			function $save(env, executionEnvironment) {
-				let namesym = env.lb('name');
+		function doSave(namesym, val) {
 				let nametype = namesym.getTypeName();
 				let savemethod = '';
 				let nm = '';
@@ -91,7 +87,6 @@ function createFileBuiltins() {
 				} else {
 					return new EError(`save: name must be symbol or string. Sorry!`);
 				}
-				let val = env.lb('nex');			
 				let exp = new Expectation();
 				exp.set(function(callback) {
 					return function() {
@@ -104,11 +99,47 @@ function createFileBuiltins() {
 				let savingMessage = new EError(`saving (in the file ${nm}) this data: ${val.prettyPrint()}`);
 				savingMessage.setErrorType(ERROR_TYPE_INFO);
 				exp.appendChild(savingMessage)
-				return exp;
+				return exp;			
+		}
+
+		Builtin.createBuiltin(
+			'eval-and-save',
+			[ '_name', 'nex' ],
+			function $save(env, executionEnvironment) {
+				return doSave(env.lb('name'), env.lb('nex'));
 			},
-			'saves |nex in the file |name.'
+			'saves |nex in the file |name (|nex is evaluated).'
 		);
 
+		Builtin.createBuiltin(
+			'save',
+			[ '_name', '_nex' ],
+			function $save(env, executionEnvironment) {
+				return doSave(env.lb('name'), env.lb('nex'));
+			},
+			'saves |nex in the file |name (without evaluating |nex).'
+		);
+
+		Builtin.createBuiltin(
+			'save-and-eval',
+			[ '_name', '_nex' ],
+			function $save(env, executionEnvironment) {
+				let nex = env.lb('nex');
+				let name = env.lb('name');
+				let r = evaluateNexSafely(nex, executionEnvironment);
+				if (Utils.isFatalError(r)) {
+					// don't need to alert because for syncronous errors it's handled
+				} else {
+					saveShortcut(name, nex, function(result) {
+						if (result != null) {
+							alert('saveqr: save failed! Check result: ' + result.debugString());
+						}
+					});
+				}
+				return r;
+			},
+			'saves |nex in the file |name (without evaluating |nex), then evaluates nex and returns it. If the save fails, the user will see an alert message.'
+		);
 	} else {
 
 		Builtin.createBuiltin(
@@ -186,7 +217,7 @@ function createFileBuiltins() {
 			let nm = namesym.getFullTypedValue();
 
 			let val = env.lb('val');
-			let saveval = val.getFullTypedValue();			
+			let saveval = val.getFullTypedValue();
 
 			let savemethod = 'saveraw';
 

@@ -8,7 +8,10 @@ server/packages/ig*
 server/src/favicon.ico
 server/sounds/*
 server/sessions/*
+server/src/audiotesting/*
 server/docs/*
 server/webenv.txt
 soundcreation
+server/src/package-lock.json
+server/src/node_modules
 

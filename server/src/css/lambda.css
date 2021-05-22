@@ -24,3 +24,25 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	font-weight: bold;
 	padding-right:.2em;
 }
+
+.lambda > .codespan.exploded {
+	background-color: #e8e8e8;
+	border-width: 3px 3px 3px 0px;
+	border-style: solid;
+	border-color: var(--unselected-border);
+	padding: 1px 5px 2px 3px;
+	font-size: 13px;
+}
+
+.lambda > .codespan.exploded.editing {
+	background-color: #ffbfbe;
+}
+
+.lambda.vdir > .codespan.exploded {
+	border-width: 0px 3px 3px 3px;
+}
+
+.lambda.newselected > .codespan.exploded {
+	border-color: var(--selected-border);
+}
+

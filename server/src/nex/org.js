@@ -96,7 +96,7 @@ class Org extends NexContainer {
 			this.doForEachChild(function(child) {
 				let newchild = evaluateNexSafely(child, env);
 				// we don't throw exceptions, we just embed them - this isn't a function.
-				iterator = listcopy.fastAppendChildAfter(child.evaluate(env), iterator);
+				iterator = listcopy.fastAppendChildAfter(newchild, iterator);
 			})
 			return listcopy;
 		} else {

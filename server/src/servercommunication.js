@@ -16,11 +16,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { BINDINGS } from './environment.js'
-import { EError, ERROR_TYPE_WARN, ERROR_TYPE_INFO } from './nex/eerror.js'
+import { EError, ERROR_TYPE_FATAL, ERROR_TYPE_WARN, ERROR_TYPE_INFO } from './nex/eerror.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { parse } from './nexparser2.js';
 
-function sendToServer(payload, cb) {
+function sendToServer(payload, cb, errcb) {
 	let xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function() {};
 	xhr.open('POST', 'api')
@@ -28,8 +28,13 @@ function sendToServer(payload, cb) {
 	xhr.onload = function() {
 		if (xhr.readyState === xhr.DONE && xhr.status === 200) {
 			cb(xhr.response);
+		} else {
+			errcb();
 		}
-  	}
+	};
+	xhr.onerror = function() {
+		errcb();
+	}
 }
 
 function loadNex(name, method, callback) {
@@ -38,6 +43,8 @@ function loadNex(name, method, callback) {
 	sendToServer(payload, function(data) {
 		document.title = name;
 		parseReturnPayload(data, callback);
+	}, function() {
+		callback(serverError());
 	});
 }
 
@@ -46,6 +53,8 @@ function loadRaw(name, method, callback) {
 
 	sendToServer(payload, function(data) {
 		callback(data);
+	}, function() {
+		callback(serverError());
 	});
 }
 
@@ -54,6 +63,8 @@ function saveNex(name, nex, method, callback) {
 
 	sendToServer(payload, function(data) {
 		parseReturnPayload(data, callback);
+	}, function() {
+		callback(serverError());
 	});
 }
 
@@ -62,6 +73,8 @@ function saveRaw(name, data, method, callback) {
 
 	sendToServer(payload, function(data) {
 		parseReturnPayload(data, callback);
+	}, function() {
+		callback(serverError());
 	});
 }
 
@@ -72,6 +85,8 @@ function importNex(name, method, callback) {
 		parseReturnPayload(data, function(nex) {
 			callback(evaluatePackage(nex));
 		})
+	}, function() {
+		callback(serverError());
 	});
 }
 
@@ -83,7 +98,14 @@ function loadAndRun(name, callback) {
 			let result = evaluateNexSafely(parsed, BINDINGS);
 			callback(result);
 		});
-	});	
+	}, function() {
+		callback(serverError());
+	});
+}
+
+function serverError() {
+	let r = new EError("Server error.");
+	return r;
 }
 
 
@@ -109,22 +131,67 @@ expected: ${e.expected[0].type}
 }
 
 function evaluatePackage(nex) {
-	if (nex.getTypeName() != '-command-' || nex.getCommandName() != 'package') {
-		let r = new EError('Cannot import a non-package, see file contents')
+	if (!(nex.getTypeName() == '-command-'
+				&& (nex.getCommandName() == 'package'
+				|| nex.getCommandName() == 'template'))) {
+		let r = new EError('Can only import packages or templates, see file contents')
 		r.appendChild(nex);
 		return r;
 	}
 	let result = evaluateNexSafely(nex, BINDINGS);
-	if (result.getTypeName() == '-error-') {
-		let r = new EError("Import failed.");
+	let r = null;
+	if (result.getTypeName() == '-error-'
+			&& result.getErrorType() == ERROR_TYPE_FATAL) {
+		r = new EError("Import failed.");
+		r.setErrorType(ERROR_TYPE_FATAL);
+	} else if (result.getTypeName() == '-error-'
+			&& result.getErrorType() == ERROR_TYPE_WARN) {
+		r = new EError("Import succeeded with warnings.");
 		r.setErrorType(ERROR_TYPE_WARN);
-		r.appendChild(result);
-		r.appendChild(nex);
-		return r;
+	} else {
+		r = new EError("Import successful.");
+		r.setErrorType(ERROR_TYPE_INFO);		
 	}
-	let r = new EError("Import successful.");
-	r.setErrorType(ERROR_TYPE_INFO);
+	r.appendChild(result);
+	r.appendChild(nex);
 	return r;
 }
 
-export { saveNex, importNex, loadNex, loadRaw, saveRaw, loadAndRun  }
+// This util is meant to be used from functions like
+// save-template and save-package.
+// These aren't meant to be called from "code" because it doesn't
+// give you access to success/failure, or the returned expectation.
+// It's more of an ide shortcut kind of thing.
+function saveShortcut(namesym, val, callback) {
+	let nametype = namesym.getTypeName();
+	let savemethod = '';
+	let nm = '';
+	if (nametype == '-symbol-') {
+		savemethod = 'savepackage';
+		nm = namesym.getTypedValue();
+	} else if (nametype == '-string-') {
+		savemethod = 'save';
+		nm = namesym.getFullTypedValue();
+	} else {
+		callback("wrong arg type"); // I guess we're not saving anything
+		return;
+	}
+	saveNex(nm, val, savemethod, function(result) {
+		if (result.getTypeName() == '-error-'
+			&& result.getErrorType() == ERROR_TYPE_INFO) {
+			callback(null);
+		} else {
+			callback(result);
+		}
+	});
+}
+
+export {
+	saveNex,
+	importNex,
+	loadNex,
+	loadRaw,
+	saveRaw,
+	loadAndRun,
+	saveShortcut
+}

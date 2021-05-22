@@ -102,6 +102,15 @@ class Lambda extends NexContainer {
 		r.cachedParamNames = this.cachedParamNames;
 	}
 
+	isInfix() {
+		// regular lambda always not infix
+		return false;
+	}
+
+	getCanonicalName() {
+		return null;
+	}
+
 	renderChildrenIfNormal() {
 		return false;
 	}

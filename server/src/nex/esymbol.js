@@ -63,6 +63,12 @@ class ESymbol extends ValueNex {
 		return true;
 	}
 
+	renderValue() {
+		// em dash
+		return this.value.replace(/--/g, '__');
+		//return this.value;
+	}
+
 	pushNexPhase(phaseExecutor, env) {
 	 	phaseExecutor.pushPhase(new SymbolLookupPhase(this, env));
 	}

@@ -60,7 +60,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	font-family: Courier;
+	font-family: "Courier";
 	color: #444444;
 	font-style: italic;
 	font-size: 15px;

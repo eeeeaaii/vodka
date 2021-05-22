@@ -163,6 +163,18 @@ class Command extends NexContainer {
 		return this.cachedClosure.getLambda();
 	}
 
+	revertToCanonicalName() {
+		let gclosure = this.getClosureForGhost();
+		if (!gclosure) return;
+		if (!Utils.isClosure(gclosure)) return;
+		let lambda = gclosure.getLambda();
+		if (!lambda) return;
+		let canonicalName = lambda.getCanonicalName();
+		if (!canonicalName) return;
+		// wow we got one.
+		this.setCommandText(canonicalName);
+	}
+
 	needsEvaluation() {
 		return true;
 	}
@@ -341,7 +353,7 @@ class Command extends NexContainer {
 		return null;
 	}
 
-	getGhostDiv(gclosure) {
+	createGhostDiv(gclosure) {
 		let ghost = document.createElement('div');
 		ghost.classList.add('ghost');
 		let val = gclosure.getInnerHTMLForDisplay();
@@ -352,57 +364,155 @@ class Command extends NexContainer {
 		return ghost;
 	}
 
-	isInfix(cmdname) {
-		return !!cmdname &&
-			(cmdname == '-' || Utils.convertMathToV2String(cmdname).indexOf('::') == 0);
+	// isInfix(cmdname) {
+	// 	return !!cmdname &&
+	// 		(cmdname == '-' || Utils.convertMathToV2String(cmdname).indexOf('::') == 0);
+	// }
+
+	// Since we are supporting infix operators we want to support things like
+	// IF something THEN something ELSE something
+	// 
+	getInfixPart(position, cmdname) {
+		// each double hyphen in the name stands for a child.
+		// but if there are n hyphens and less than n children,
+		// the last time we call getInfixPart, we need to display
+		// the entire remaining portion of the name.
+		//
+		// so if the name is foo--bar--baz, it's supposed to have 2 children.
+		//
+		// if there are zero children:
+		//   getInfixPart(0, ...) returns 'foo--bar--baz'
+		//   getInfixPart(1, ...) never gets called
+		//
+		// if there is one child
+		//   getInfixPart(0, ...) returns 'foo'
+		//   getInfixPart(1, ...) returns 'bar-baz'
+		//   getInfixPart(2, ...) never gets called
+		//
+		// if there are two children
+		//   getInfixPart(0, ...) returns 'foo'
+		//   getInfixPart(1, ...) returns 'bar'
+		//   getInfixPart(2, ...) returns 'baz'
+		//   getInfixPart(3, ...) never gets called
+		//
+		// if there are three children
+		//   getInfixPart(0, ...) returns 'foo'
+		//   getInfixPart(1, ...) returns 'bar'
+		//   getInfixPart(2, ...) returns 'baz'
+		//   getInfixPart(3, ...) returns ''
+
+
+		let a = (cmdname == "") ? [] : cmdname.split('--')
+		if (position >= a.length) {
+			return '';
+		}
+		if (a[a.length-1] == '') {
+			a.pop();
+			a[a.length-1] = a[a.length-1] + '--';
+		}
+		let nc = this.numChildren();
+		if (a.length > nc + 1) {
+			for (let i = nc + 1; i < a.length; i++) {
+				a[nc] = a[nc] + '--' + a[i];
+			}
+		}
+		if (position < a.length) {
+			return a[position].replace(/--/g, '__');
+//			return a[position];
+		} else {
+			return '';
+		}
+	}
+
+	getGhostDiv(renderNode) {
+		if (experiments.NEW_CLOSURE_DISPLAY && this.isEditing && renderNode.isSelected()) {
+			let gclosure = this.getClosureForGhost();
+			if (gclosure && Utils.isClosure(gclosure)) {
+				return this.createGhostDiv(gclosure);
+			}
+		}
+		return null;
+	}
+
+	getInitialCodespanContents(renderNode) {
+		let codespanHtml = '<span class="tilde">&#8766;</span>';
+		if (experiments.NO_TILDE && !this.isEditing && !renderNode.isSelected()) {
+			codespanHtml = '';
+		}
+		if (experiments.INFIX_OPERATORS) {
+			let gclosure = this.getClosureForGhost();
+			let operatorInfix = (gclosure &&
+					Utils.isClosure(gclosure) &&
+					gclosure.getLambda().isInfix() &&
+					this.numChildren() > 1);
+			if (!operatorInfix) {
+				codespanHtml += this.getInfixPart(0, this.commandtext);
+			}
+		} else {
+			codespanHtml += this.commandtext;
+		}
+		return codespanHtml;
 	}
 
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		let codespan = null;
-		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
+		let ghostDiv = this.getGhostDiv(renderNode);
+		let codespanHtml = this.getInitialCodespanContents(renderNode);
+		if (!(renderFlags & RENDER_FLAG_SHALLOW) && codespanHtml != '' || ghostDiv) {
 			codespan = document.createElement("span");
 			codespan.classList.add('codespan');
+			codespan.innerHTML = codespanHtml;
 			domNode.appendChild(codespan);
-		}			
+		}
 		super.renderInto(renderNode, renderFlags, withEditor); // will create children
 		domNode.classList.add('command');
 		domNode.classList.add('codelist');
 		if (!(renderFlags & RENDER_FLAG_SHALLOW)) {
-			if (renderFlags & RENDER_FLAG_EXPLODED) {
-				codespan.classList.add('exploded');
-			} else {
-				codespan.classList.remove('exploded');
-			}
-			if (this.isEditing) {
-				codespan.classList.add('editing');
-			} else {
-				codespan.classList.remove('editing');
-			}
-			let codespanHtml = '<span class="tilde">&#8766;</span>';
-			if (experiments.INFIX_OPERATORS) {
-				let gclosure = this.getClosureForGhost();
-				if (gclosure && Utils.isClosure(gclosure) && this.isInfix(this.commandtext) && this.numChildren() > 1) {
+			if (codespan) {
+				if (renderFlags & RENDER_FLAG_EXPLODED) {
+					codespan.classList.add('exploded');
 				} else {
-					codespanHtml += this.commandtext;				
+					codespan.classList.remove('exploded');
 				}
-			} else {
-				codespanHtml += this.commandtext;
-			}
-			codespan.innerHTML = codespanHtml;
-			if (experiments.NEW_CLOSURE_DISPLAY && this.isEditing && renderNode.isSelected()) {
-				let gclosure = this.getClosureForGhost();
-				if (gclosure && Utils.isClosure(gclosure)) {
-					codespan.appendChild(this.getGhostDiv(gclosure));
+				if (this.isEditing) {
+					codespan.classList.add('editing');
+				} else {
+					codespan.classList.remove('editing');
 				}
 			}
+			if (ghostDiv) {
+				codespan.appendChild(ghostDiv);
+			}
+			// let codespanHtml = experiments.NO_TILDE ? '' : '<span class="tilde">&#8766;</span>';
+			// if (experiments.INFIX_OPERATORS) {
+			// 	let gclosure = this.getClosureForGhost();
+			// 	if (gclosure && Utils.isClosure(gclosure) && gclosure.getLambda().isInfix() /*this.isInfix(this.commandtext)*/ && this.numChildren() > 1) {
+			// 	} else {
+			// 		codespanHtml += this.getInfixPart(0, this.commandtext);
+			// 	}
+			// } else {
+			// 	codespanHtml += this.commandtext;
+			// }
+			// codespan.innerHTML = codespanHtml;
+			// if (experiments.NEW_CLOSURE_DISPLAY && this.isEditing && renderNode.isSelected()) {
+			// 	let gclosure = this.getClosureForGhost();
+			// 	if (gclosure && Utils.isClosure(gclosure)) {
+			// 		codespan.appendChild(this.createGhostDiv(gclosure));
+			// 	}
+			// }
 		}
 	}
 
 	renderAfterChild(childNum, renderNode, renderFlags, withEditor) {
-		if (experiments.INFIX_OPERATORS && childNum < this.numChildren() - 1) {
+		if (experiments.INFIX_OPERATORS) {
 			let gclosure = this.getClosureForGhost();
-			if (gclosure && Utils.isClosure(gclosure) && this.isInfix(this.commandtext)) {
+			let infixOperator = (gclosure
+					&& Utils.isClosure(gclosure)
+					&& gclosure.getLambda().isInfix()
+					&& childNum < this.numChildren() - 1);
+			let infixName = (!!this.getInfixPart(childNum + 1, this.commandtext));
+			if (infixOperator || infixName) {
 				let innercodespan = null;
 				innercodespan = document.createElement("span");
 				innercodespan.classList.add('innercodespan');
@@ -416,7 +526,11 @@ class Command extends NexContainer {
 				} else {
 					innercodespan.classList.remove('exploded');
 				}
-				innercodespan.innerHTML = this.commandtext;
+				if (infixOperator) {
+					innercodespan.innerHTML = this.commandtext;
+				} else { // infixName
+					innercodespan.innerHTML = this.getInfixPart(childNum + 1, this.commandtext);
+				}
 				let domNode = renderNode.getDomNode();
 				domNode.appendChild(innercodespan);
 			}		
@@ -594,6 +708,11 @@ class CommandEditor extends Editor {
 
 	constructor(nex) {
 		super(nex, 'CommandEditor');
+	}
+
+	finish() {
+		super.finish();
+		this.nex.revertToCanonicalName();
 	}
 
 	doBackspaceEdit() {

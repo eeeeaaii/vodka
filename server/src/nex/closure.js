@@ -99,7 +99,11 @@ class Closure extends ValueNex {
 	}
 
 	getLambdaArgString() {
-		return this.escape(this.lambda.getArgString(this.cmdname));
+		let name = this.getLambda().getCanonicalName();
+		if (!name) {
+			name = this.cmdname;
+		}
+		return this.escape(this.lambda.getArgString(name));
 	}
 
 	setCmdName(nm) {
@@ -128,7 +132,11 @@ class Closure extends ValueNex {
 
 	getSummaryLine() {
 		// the cmdname and tags
-		let r = this.cmdname;
+		let name = this.getLambda().getCanonicalName();
+		if (!name) {
+			name = this.cmdname;
+		}
+		let r = name;
 		for (let i = 0; i < this.numTags(); i++) {
 			r += '[' + this.getTag(i).getName(i) + ']';
 		}

@@ -54,6 +54,8 @@ const INSERT_BEFORE = 2;
 const INSERT_INSIDE = 3;
 const INSERT_AROUND = 4;
 
+const MAX_SIBLING_COUNT = 1000;
+
 /**
  * Represents a rectangle on the screen where a nex is actually rendered or
  * displayed.
@@ -322,10 +324,17 @@ class RenderNode {
 		}
 	}
 
-	renderDepthExceeded() {
+	setToRenderDepthExceededState() {
 		let domNode = this.getDomNode();
 		domNode.innerHTML = '&#8253;&#8253;&#8253;';
 		domNode.classList.add('render-depth-exceeded')
+	}
+
+	getSiblingCountExceededDomElement() {
+		let domelt = document.createElement("div");
+		domelt.classList.add('render-depth-exceeded');
+		domelt.innerHTML = '...';
+		return domelt;
 	}
 
 	setAllNotDirty() {
@@ -365,7 +374,7 @@ class RenderNode {
 		}
 		this.clearDomNode(useFlags);
 		if (this.renderDepth > experiments.MAX_RENDER_DEPTH) {
-			this.renderDepthExceeded();
+			this.setToRenderDepthExceededState();
 			return;
 		}
 		switch(this.insertionMode) {
@@ -432,26 +441,47 @@ class RenderNode {
 			}
 			if (i < (this.getNex().numChildren())) {
 				// oops, more nodes added since the last time we rendered.
-				for ( ; i < this.getNex().numChildren(); i++) {
-					let newNode = new RenderNode(this.getNex().getChildAt(i));
-					newNode.setParent(this, i);
-					newNode.setRenderDepth(this.renderDepth + 1);
-					this.childnodes[i] = newNode;
-					this.domNode.appendChild(newNode.getDomNode());
-					newNode.render(childFlags);
-					this.nex.renderAfterChild(i, this, useFlags, this.getCurrentEditor());
-				}
-			}
 
-		}
-		if (this.getCurrentEditor() && this.getCurrentEditor().isEditing()) {
-			let postNode = this.getCurrentEditor().postNode();
-			if (postNode) {
-				this.domNode.appendChild(postNode);
+				let n = this.getNex().numChildren();
+				// if we are exploded we trust the user to just render the right number of things
+				// this might be bad
+				let truncated = false;
+				if (n > MAX_SIBLING_COUNT && (useFlags & RENDER_FLAG_EXPLODED)) {
+					n = MAX_SIBLING_COUNT;
+					truncated = true;
+				}
+				for ( ; i < n; i++) {
+					this.renderNewChildAt(i, childFlags, useFlags, true);
+					// let newNode = new RenderNode(this.getNex().getChildAt(i));
+					// newNode.setParent(this, i);
+					// newNode.setRenderDepth(this.renderDepth + 1);
+					// this.childnodes[i] = newNode;
+					// this.domNode.appendChild(newNode.getDomNode());
+					// newNode.render(childFlags);
+					// this.nex.renderAfterChild(i, this, useFlags, this.getCurrentEditor());
+				}
+				if (truncated) {
+					// we are truncating because too many children, first display the ellipses
+					this.domNode.appendChild(this.getSiblingCountExceededDomElement());
+					// then put last child, so it's like 1, 2, 3 ... 1000
+					this.renderNewChildAt(this.getNex().numChildren() - 1, childFlags, useFlags, false);
+				}
 			}
 		}
 		this.nex.renderTags(this.domNode, useFlags, this.getCurrentEditor());
 		this.setRenderNodeDirtyForRendering(false);
+	}
+
+	renderNewChildAt(i, childFlags, useFlags, doChildNode) {
+		let newNode = new RenderNode(this.getNex().getChildAt(i));
+		newNode.setParent(this, i);
+		newNode.setRenderDepth(this.renderDepth + 1);
+		if (doChildNode) {
+			this.childnodes[i] = newNode;
+		}
+		this.domNode.appendChild(newNode.getDomNode());
+		newNode.render(childFlags);
+		this.nex.renderAfterChild(i, this, useFlags, this.getCurrentEditor());
 	}
 
 	getInsertionPointDomNode(insertionMode) {

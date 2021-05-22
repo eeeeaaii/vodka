@@ -33,6 +33,7 @@ class Builtin extends Lambda {
 		this.returnValueParam = retval;
 		this.internaljs = null;
 		this.docstring = docstring ? docstring : ' - no docs - ';
+		this.infix = false;
 		let amp = '';
 		if (experiments.NEW_CLOSURE_DISPLAY) {
 			for (let i = 0; i < params.length; i++) {
@@ -60,6 +61,10 @@ class Builtin extends Lambda {
 	}
 
 	getCmdName() {
+		return this.name;
+	}
+
+	getCanonicalName() {
 		return this.name;
 	}
 
@@ -96,6 +101,14 @@ class Builtin extends Lambda {
 		this.f = f.bind(this);
 	}
 
+	isInfix() {
+		return this.infix;
+	}
+
+	setInfix(v) {
+		this.infix = v;
+	}
+
 	prettyPrintInternal(lvl, hdir) {
 		return ` [&]${this.toStringV2PrivateDataSection()}${this.toStringV2TagList()}`;// exp \n`;
 	}
@@ -106,7 +119,9 @@ class Builtin extends Lambda {
 		return r;
 	}
 
-	static createBuiltin(name, paramsArray, f, docstring) {
+	static createBuiltin(name, paramsArray, f, docstring, infix) {
+
+
 		let parser = new ParamParser(true /* isBuiltin */);
 		parser.parse(paramsArray);
 		let params = parser.getParams();
@@ -116,6 +131,7 @@ class Builtin extends Lambda {
 			perfmon.registerMethod(name);
 		}
 		builtin.setF(f);
+		builtin.setInfix(!!infix);
 		let closure = builtin.evaluate(BUILTINS);
 		// rip out the copied closure and replace with global env because
 		// builtins (though they typically do not evaluate each other)
@@ -123,6 +139,12 @@ class Builtin extends Lambda {
 		// stuff in a package.
 		closure.setLexicalEnvironment(BUILTINS);
 		Builtin.bindBuiltinObject(name, closure);
+
+		// if there are em dashes, auto-alias
+		if (name.indexOf('--') >= 0) {
+			let othername = name.replace(/--/g, '-');
+			Builtin.aliasBuiltin(othername, name);
+		}
 	}
 
 	static aliasBuiltin(aliasName, boundName) {

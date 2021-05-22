@@ -217,10 +217,6 @@ class TagEditor extends Editor {
 			this.managedTag.setIsEditing(false);
 		}
 	}
-
-	postNode() {
-		return this.editorDomNode;
-	}
 }
 
 export { Tag, TagEditor  }

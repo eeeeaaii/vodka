@@ -95,12 +95,28 @@ function createBasicBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'cap',
+		'head',
 		[ 'list()' ],
-		function $cap(env, executionEnvironment) {
+		function $head(env, executionEnvironment) {
+			let lst = env.lb('list');
+			if (lst.numChildren() == 0) {
+				return new EError('head: cannot get first element of empty list. Sorry!');
+			}
+			return lst.getFirstChild();
+		},
+		'returns the first element of |list, without altering |list in any way.'
+	);
+
+	Builtin.aliasBuiltin('car', 'head');
+	Builtin.aliasBuiltin('first', 'head');
+
+	Builtin.createBuiltin(
+		'hard-head',
+		[ 'list()' ],
+		function $hardHead(env, executionEnvironment) {
 			let c = env.lb('list');
 			if (c.numChildren() == 0) {
-				return new EError("cap: cannot get first element of empty list. Sorry!");
+				return new EError("hard-head: cannot get first element of empty list. Sorry!");
 			}
 			let r = c.getChildAt(0);
 			c.removeChild(c.getChildAt(0));
@@ -109,28 +125,16 @@ function createBasicBuiltins() {
 		'destructively and permanently removes the first element of |list, and returns the removed element.'
 	);
 
-	Builtin.createBuiltin(
-		'car',
-		[ 'list()' ],
-		function $car(env, executionEnvironment) {
-			let lst = env.lb('list');
-			if (lst.numChildren() == 0) {
-				return new EError('first/car: cannot get first element of empty list. Sorry!');
-			}
-			return lst.getFirstChild();
-		},
-		'returns the first element of |list, without altering |list in any way.'
-	);
-
-	Builtin.aliasBuiltin('first', 'car');
+	Builtin.aliasBuiltin('cap', 'hard-head');
+	Builtin.aliasBuiltin('hard-first', 'hard-head');
 
 	Builtin.createBuiltin(
-		'cdr',
+		'tail',
 		[ 'list()' ],
-		function $cdr(env, executionEnvironment) {
+		function $tail(env, executionEnvironment) {
 			let c = env.lb('list');
 			if (c.numChildren() == 0) {
-				return new EError("rest/cdr: given an empty list, cannot make a new list with first element removed. Sorry!");
+				return new EError("tail: given an empty list, cannot make a new list with first element removed. Sorry!");
 			}
 			let newOne = c.makeCopy(true);
 			c.getChildrenForCdr(newOne);
@@ -139,15 +143,16 @@ function createBasicBuiltins() {
 		'returns a new list containing all elements of |list except the first one.'
 	);
 
-	Builtin.aliasBuiltin('rest', 'cdr');
+	Builtin.aliasBuiltin('cdr', 'tail');
+	Builtin.aliasBuiltin('rest', 'tail');
 
 	Builtin.createBuiltin(
-		'chop',
+		'hard-tail',
 		[ 'list()' ],
-		function $chop(env, executionEnvironment) {
+		function $hardTail(env, executionEnvironment) {
 			let c = env.lb('list');
 			if (c.numChildren() == 0) {
-				return new EError("chop: cannot remove first element of empty list. Sorry!");
+				return new EError("hard-tail: cannot remove first element of empty list. Sorry!");
 			}
 			c.removeChild(c.getChildAt(0));
 			return c;
@@ -155,10 +160,13 @@ function createBasicBuiltins() {
 		'destructively and permanently removes the first element of |list, and returns |list.'
 	);
 
+	Builtin.aliasBuiltin('chop', 'hard-tail');
+	Builtin.aliasBuiltin('hard-rest', 'hard-tail');
+
 	Builtin.createBuiltin(
-		'cons',
+		'push--into',
 		[ 'nex', 'list()' ],
-		function $cons(env, executionEnvironment) {
+		function $create(env, executionEnvironment) {
 			let nex = env.lb('nex');
 			let lst = env.lb('list');
 			let newOne = lst.makeCopy(true);
@@ -167,6 +175,19 @@ function createBasicBuiltins() {
 		},
 		'creates a new list by prepending |nex to |list, and returns the new list.'
 	);
+	Builtin.aliasBuiltin('cons', 'push--into');
+
+	Builtin.createBuiltin(
+		'hard-push--into',
+		[ 'nex', 'list()' ],
+		function $hardCreate(env, executionEnvironment) {
+			let lst = env.lb('list');
+			lst.prependChild(env.lb('nex'));
+			return lst;
+		},
+		'permanently alters |list by prepending |nex to it.'
+	);
+	Builtin.aliasBuiltin('cram', 'hard-push--into');
 
 	Builtin.createBuiltin(
 		'copy',
@@ -175,17 +196,6 @@ function createBasicBuiltins() {
 			return env.lb('nex').makeCopy();
 		},
 		'returns a deep copy of |nex (if |nex is a list, list elements are also copied).'
-	);
-
-	Builtin.createBuiltin(
-		'cram',
-		[ 'nex', 'list()' ],
-		function $cram(env, executionEnvironment) {
-			let lst = env.lb('list');
-			lst.prependChild(env.lb('nex'));
-			return lst;
-		},
-		'permanently alters |list by prepending |nex to it.'
 	);
 
 	Builtin.createBuiltin(

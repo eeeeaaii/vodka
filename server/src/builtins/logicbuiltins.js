@@ -37,7 +37,8 @@ function createLogicBuiltins() {
 		'and',
 		[ 'val1!', 'val2!' ],
 		$and,
-		'returns true if both |val1 and |val2 evaluate to boolean true.'
+		'returns true if both |val1 and |val2 evaluate to boolean true.',
+		true /* infix */
 	)
 
 	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
@@ -66,36 +67,55 @@ function createLogicBuiltins() {
 
 	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
 
-	function $if(env, executionEnvironment) {
-		let b = env.lb('cond').getTypedValue();
-		let iftrue = env.lb('iftrue');
-		let iffalse = env.lb('iffalse');
-		if (b) {
-			let iftrueresult = evaluateNexSafely(iftrue, executionEnvironment);
-			if (Utils.isFatalError(iftrueresult)) {
-				return wrapError('&szlig;', 'if(-then(-else)): error in argument 2', iftrueresult);
-			}
-			return iftrueresult;
-		} else if (iffalse == UNBOUND) {
-			return new Nil();
-		} else {
-			let iffalseresult = evaluateNexSafely(iffalse, executionEnvironment);
-			if (Utils.isFatalError(iffalseresult)) {
-				return wrapError('&szlig;', 'if(-then(-else)): error in argument 3', iffalseresult);
-			}
-			return iffalseresult;
-		}
-	}
-
 	Builtin.createBuiltin(
-		'if',
-		[ 'cond!', '_iftrue', '_iffalse?' ],
-		$if,
-		'evalutes |cond, and if it is true, return |iftrue, otherwise return |iffalse (if it is present) or nil (if it isn\'t).'
+		'if--then--else',
+		[ 'cond!', '_iftrue', '_iffalse' ],
+		function $if(env, executionEnvironment) {
+			let b = env.lb('cond').getTypedValue();
+			let iftrue = env.lb('iftrue');
+			let iffalse = env.lb('iffalse');
+			if (b) {
+				let iftrueresult = evaluateNexSafely(iftrue, executionEnvironment);
+				if (Utils.isFatalError(iftrueresult)) {
+					return wrapError('&szlig;', 'if--then--else: error in argument 2', iftrueresult);
+				}
+				return iftrueresult;
+			} else {
+				let iffalseresult = evaluateNexSafely(iffalse, executionEnvironment);
+				if (Utils.isFatalError(iffalseresult)) {
+					return wrapError('&szlig;', 'if--then--else: error in argument 3', iffalseresult);
+				}
+				return iffalseresult;
+			}
+		},
+		'evalutes |cond, and if it is true, return |iftrue, otherwise return |iffalse.'
 	)
 
-	Builtin.aliasBuiltin('if-then-else', 'if');
-	Builtin.aliasBuiltin('if-then', 'if');
+	Builtin.aliasBuiltin('if-then-else', 'if--then--else');
+	Builtin.aliasBuiltin('if', 'if--then--else');
+
+	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
+
+	Builtin.createBuiltin(
+		'if--then',
+		[ 'cond!', '_iftrue'],
+		function $if(env, executionEnvironment) {
+			let b = env.lb('cond').getTypedValue();
+			let iftrue = env.lb('iftrue');
+			if (b) {
+				let iftrueresult = evaluateNexSafely(iftrue, executionEnvironment);
+				if (Utils.isFatalError(iftrueresult)) {
+					return wrapError('&szlig;', 'if(-then(-else)): error in argument 2', iftrueresult);
+				}
+				return iftrueresult;
+			} else {
+				return new Nil();
+			}
+		},
+		'evalutes |cond, and if it is true, return |iftrue, otherwise return nil.'
+	)
+
+	Builtin.aliasBuiltin('if-then', 'if--then');
 
 	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
 
@@ -120,7 +140,8 @@ function createLogicBuiltins() {
 		'or',
 		[ 'val1!', 'val2!' ],
 		$or,
-		'evaluates to true if either or both of |val1 or |val2 evaluate to true.'
+		'evaluates to true if either or both of |val1 or |val2 evaluate to true.',
+		true /* infix */
 	)
 
 

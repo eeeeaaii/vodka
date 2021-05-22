@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
+import { experiments } from '../globalappflags.js'
 
 //
 
@@ -45,12 +45,26 @@ class ValueNex extends Nex {
 		return this.value;
 	}
 
+	escapedRenderValue() {
+		return this.escape(this.renderValue());
+	}
+
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add(this.className);
 		domNode.classList.add('valuenex');
-		domNode.innerHTML = '' + this.prefix + this.escape(this.renderValue());
+		let val = this.escapedRenderValue();
+		let inner = '';
+		if (experiments.NO_TILDE) {
+			if (this.isEditing || (!val) || renderNode.isSelected()) {
+				inner += '' + this.prefix;
+			}
+			inner += val;
+		} else {
+			inner = '' + this.prefix + this.escapedRenderValue();
+		}
+		domNode.innerHTML = inner;
 	}
 
 	getTypedValue() {

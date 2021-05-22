@@ -27,50 +27,52 @@ function createMathBuiltins() {
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
-	function $minus(env, executionEnvironment) {
-		let a = env.lb('min');
-		let b = env.lb('sub');
-		if (b == UNBOUND) {
-			let n = (-a.getTypedValue());
-			if (a instanceof Float) {
-				return new Float(n);
-			} else {
-				return new Integer(n);
-			}
-		} else {
-			let result = a.getTypedValue() - b.getTypedValue();
-			if (a instanceof Float
-					|| b instanceof Float) {
-				return new Float(result);
-			} else {
-				return new Integer(result);
-			}
-		}
-	}
+	
 
 	// minuend - subtrahend
 
 	Builtin.createBuiltin(
 		/* minus */ '-',
 		[ 'min#%', 'sub#%?' ],
-		$minus,
-		'subtracts |sub from |min and returns the result.'
+		function $minus(env, executionEnvironment) {
+			let a = env.lb('min');
+			let b = env.lb('sub');
+			if (b == UNBOUND) {
+				let n = (-a.getTypedValue());
+				if (a instanceof Float) {
+					return new Float(n);
+				} else {
+					return new Integer(n);
+				}
+			} else {
+				let result = a.getTypedValue() - b.getTypedValue();
+				if (a instanceof Float
+						|| b instanceof Float) {
+					return new Float(result);
+				} else {
+					return new Integer(result);
+				}
+			}
+		},
+		'subtracts |sub from |min and returns the result.',
+		true /* is infix */
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
-	function $notEqual(env, executionEnvironment) {
-		let a = env.lb('lhs').getTypedValue();
-		let b = env.lb('rhs').getTypedValue();
-		let r = (a != b);
-		return new Bool(r);
-	}
+	
 
 	Builtin.createBuiltin(
 		/* not-equal */ '<>',
 		[ 'lhs#%', 'rhs#%' ],
-		$notEqual,
-		'returns true if |lhs evaluates to a number that is not equal to |rhs.'
+		function $notEqual(env, executionEnvironment) {
+			let a = env.lb('lhs').getTypedValue();
+			let b = env.lb('rhs').getTypedValue();
+			let r = (a != b);
+			return new Bool(r);
+		},
+		'returns true if |lhs evaluates to a number that is not equal to |rhs.',
+		true /* is infix */
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -94,7 +96,8 @@ function createMathBuiltins() {
 		/* plus */ '+',
 		[ 'add#%...' ],
 		$plus,
-		'adds the arguments and returns the result.'
+		'adds the arguments and returns the result.',
+		true /* is infix */
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -110,7 +113,8 @@ function createMathBuiltins() {
 		/* greater-than */ '>',
 		[ 'lhs#%', 'rhs#%' ],
 		$greaterThan,
-		'returns true if |lhs evaluates to a number that is strictly greater than |rhs.'
+		'returns true if |lhs evaluates to a number that is strictly greater than |rhs.',
+		true /* is infix */
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -126,7 +130,8 @@ function createMathBuiltins() {
 		/* greater-than-or-equal-to */ '>=',
 		[ 'lhs#%', 'rhs#%' ],
 		$greaterThanOrEqualTo,
-		'returns true if |lhs evaluates to a number that is greater than or equal to |rhs.'
+		'returns true if |lhs evaluates to a number that is greater than or equal to |rhs.',
+		true /* is infix */
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -142,7 +147,8 @@ function createMathBuiltins() {
 		/* less-than */ '<',
 		[ 'lhs#%', 'rhs#%' ],
 		$lessThan,
-		'returns true if |lhs evaluates to a number that is strictly less than |rhs.'
+		'returns true if |lhs evaluates to a number that is strictly less than |rhs.',
+		true /* is infix */
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -158,7 +164,8 @@ function createMathBuiltins() {
 		/* less-than-or-equal-to */ '<=',
 		[ 'lhs#%', 'rhs#%' ],
 		$lessThanOrEqualTo,
-		'returns true if |lhs evaluates to a number that is less than or equal to |rhs.'
+		'returns true if |lhs evaluates to a number that is less than or equal to |rhs.',
+		true /* is infix */
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -182,7 +189,8 @@ function createMathBuiltins() {
 		/* divided-by */ '/',
 		[ 'divid#%', 'divis#%' ],
 		$dividedBy,
-		'divides |divid by |divis and returns the result.'
+		'divides |divid by |divis and returns the result.',
+		true /* is infix */
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -198,7 +206,8 @@ function createMathBuiltins() {
 		/* equals */ '=',
 		[ 'lhs#%', 'rhs#%' ],
 		$equals,
-		'returns true if |lhs and |rhs evaluates to numbers that are equal.'
+		'returns true if |lhs and |rhs evaluates to numbers that are equal.',
+		true /* is infix */
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -222,7 +231,8 @@ function createMathBuiltins() {
 		/* times */ '*',
 		[ 'fact#%...' ],
 		$times,
-		'multiplies the args and returns the result.'
+		'multiplies the args and returns the result.',
+		true /* is infix */
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -428,7 +438,8 @@ function createMathBuiltins() {
 		'modulo',
 		[ 'divid#', 'modulus#' ],
 		$modulo,
-		'computes |divid modulo |modulus and returns the result.'
+		'computes |divid modulo |modulus and returns the result.',
+		true /* is infix */
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -458,7 +469,8 @@ function createMathBuiltins() {
 		'power',
 		[ 'a%', 'b%' ],
 		$power,
-		'computes |a to the |b power and returns the result.'
+		'computes |a to the |b power and returns the result.',
+		true /* is infix */
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  

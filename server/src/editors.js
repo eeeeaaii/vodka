@@ -121,14 +121,6 @@ class Editor {
 		return this._isEditing;
 	}
 
-	postNode() {
-		return null; // override optionally
-	}
-
-	preNode() {
-		return null; // override optionally
-	}
-
 	forceClose() {
 		this.finish();
 	}

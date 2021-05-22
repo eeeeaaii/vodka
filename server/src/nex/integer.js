@@ -61,7 +61,21 @@ class Integer extends ValueNex {
 	}
 
 	renderValue() {
-		return '' + this.value;
+		let r = '' + this.value;
+		if (this.isEditing) {
+			return r; // no commas when editing
+		}
+		let pos = 0;
+		let r2 = '';
+		for (let i = r.length - 1; i >= 0; i--) {
+			let c = r.charAt(i);
+			if (pos++ == 3) {
+				pos = 1;
+				r2 = ',' + r2;
+			}
+			r2 = c + r2;
+		}
+		return r2;
 	}
 
 	getTypedValue() {

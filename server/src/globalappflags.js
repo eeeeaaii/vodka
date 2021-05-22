@@ -90,6 +90,8 @@ const experiments = {
 	// literals
 	'LITERALS': true,
 
+	// no-tilde
+	'NO_TILDE': true,
 
 	// See note above about changing testharness.js when adding new flags.
 };

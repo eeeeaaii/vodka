@@ -36,7 +36,7 @@ import { experiments } from '../globalappflags.js'
 function createEnvironmentBuiltins() {
 
 	Builtin.createBuiltin(
-		'bind',
+		'bind--to',
 		[ '_name@', 'nex' ],
 		function $bind(env, executionEnvironment) {
 			let val = env.lb('nex');
@@ -47,6 +47,7 @@ function createEnvironmentBuiltins() {
 		},
 		'binds a new global variable named |name with a value of |nex.'
 	);
+	Builtin.aliasBuiltin('bind', 'bind--to');
 
 
 	Builtin.createBuiltin(
@@ -72,78 +73,67 @@ function createEnvironmentBuiltins() {
 		'returns a list of all globally bound variables.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $builtins(env, executionEnvironment) {
-		let ssnex = env.lb('search');
-		let ss = "";
-		if (ssnex != UNBOUND) {
-			ss = ssnex.getTypedValue();
-		}
-		let matches = autocomplete.findAllBuiltinsMatching(ss);
-		if (matches.length == 1) {
-			return new ESymbol(matches[0]);
-		} else {
-			let r = new Doc();
-			for (let j = 0; j < matches.length; j++) {
-				r.appendChild(new ESymbol(matches[j]))
-			}
-			return r;
-		}
-	}
-
 	Builtin.createBuiltin(
 		'builtins',
 		[ '_search@?' ],
-		$builtins,
+		function $builtins(env, executionEnvironment) {
+			let ssnex = env.lb('search');
+			let ss = "";
+			if (ssnex != UNBOUND) {
+				ss = ssnex.getTypedValue();
+			}
+			let matches = autocomplete.findAllBuiltinsMatching(ss);
+			if (matches.length == 1) {
+				return new ESymbol(matches[0]);
+			} else {
+				let r = new Doc();
+				for (let j = 0; j < matches.length; j++) {
+					r.appendChild(new ESymbol(matches[j]))
+				}
+				return r;
+			}
+		},
 		'returns a list of all vodka builtins.'
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isBound(env, executionEnvironment) {
-		let name = env.lb('name');
-		try {
-			let binding = executionEnvironment.lookupBinding(name.getTypedValue());
-			return new Bool(true);
-		} catch (e) {
-			// don't swallow real errors
-			if (e.getTypeName
-					&& e.getTypeName() == '-error-'
-					&& e.getFullTypedValue().substr(0, 16) == 'undefined symbol') {
-				return new Bool(false);
-			} else {
-				throw e;
-			}
-		}
-	}
 
 	Builtin.createBuiltin(
 		'is-bound',
 		[ '_name@'],
-		$isBound,
+		function $isBound(env, executionEnvironment) {
+			let name = env.lb('name');
+			try {
+				let binding = executionEnvironment.lookupBinding(name.getTypedValue());
+				return new Bool(true);
+			} catch (e) {
+				// don't swallow real errors
+				if (e.getTypeName
+						&& e.getTypeName() == '-error-'
+						&& e.getFullTypedValue().substr(0, 16) == 'undefined symbol') {
+					return new Bool(false);
+				} else {
+					throw e;
+				}
+			}
+		},
 		'returns true if the symbol |name is bound in the global environment.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $let(env, executionEnvironment) {
-		let rhs = env.lb('nex');
-		let symname = env.lb('name').getTypedValue();
-		executionEnvironment.bind(symname, rhs);
-		if (rhs.getTypeName() == '-closure-') {
-			// basically let is always "letrec"
-			rhs.getLexicalEnvironment().bind(symname, rhs);
-		}
-		return rhs;
-	}
-
 	Builtin.createBuiltin(
-		'let',
+		'let--be',
 		[ '_name@', 'nex' ],
-		$let,
+		function $let(env, executionEnvironment) {
+			let rhs = env.lb('nex');
+			let symname = env.lb('name').getTypedValue();
+			executionEnvironment.bind(symname, rhs);
+			if (rhs.getTypeName() == '-closure-') {
+				// basically let is always "letrec"
+				rhs.getLexicalEnvironment().bind(symname, rhs);
+			}
+			return rhs;
+		},
 		'binds |name to |nex in the current closure\'s local scope.'
 	);
+	Builtin.aliasBuiltin('let', 'let--be');
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 

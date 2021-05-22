@@ -68,7 +68,11 @@ class Bool extends ValueNex {
 	}
 
 	renderValue() {
-		return this.value;
+		return this.getTypedValue() ? 'T' : 'F';
+	}
+
+	escapedRenderValue() {
+		return '<span class="boolfont">' + this.renderValue() + '</span>'
 	}
 
 	getDefaultHandler() {
@@ -82,6 +86,13 @@ class Bool extends ValueNex {
 			domNode.classList.add('editing');
 		} else {
 			domNode.classList.remove('editing');
+		}
+		if (this.getTypedValue()) {
+			domNode.classList.add('booleanyes');
+			domNode.classList.remove('booleanno');
+		} else {
+			domNode.classList.add('booleanno');
+			domNode.classList.remove('booleanyes');
 		}
 	}
 
@@ -107,19 +118,28 @@ class BoolEditor extends Editor {
 	}
 
 	doAppendEdit(text) {
-		if (/^[yY]$/.test(text)) {
-			this.nex.setValue('yes');
-		} else if (/^[nN]$/.test(text)) {
-			this.nex.setValue('no');
-		}
+		let v = this.nex.getValue();
+		this.nex.setValue((v == 'yes') ? 'no' : 'yes');
+		// if (/^[yY]$/.test(text)) {
+		// 	this.nex.setValue('yes');
+		// } else if (/^[nN]$/.test(text)) {
+		// 	this.nex.setValue('no');
+		// }
 	}
 
 	shouldAppend(text) {
-		return /^[yYnN]$/.test(text);
+//		return true;
+		return /^[a-zA-Z0-9]$/.test(text);
+//		return /^[yYnN]$/.test(text);
 	}
 
 	shouldTerminateAndReroute(text) {
-		return !(/^[yYnN]$/.test(text));
+		if (super.shouldTerminateAndReroute()) return true;
+		return !(/^[a-zA-Z0-9]$/.test(text));
+		//if (text == 'Enter') return true;
+		//return false;
+//		return false;
+//		return !(/^[yYnN]$/.test(text));
 	}
 }
 

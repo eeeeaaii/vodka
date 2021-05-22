@@ -1,0 +1,35 @@
+
+
+.valuenex.boolean.exploded {
+	font-weight: bold;
+	background-color: #444444;
+	font-style: normal;
+	font-size:14px;
+	color: #e8e8e8;
+}
+
+.valuenex.boolean.exploded.editing {
+	background-color: #ffbfbe;
+	color: #444444;
+}
+
+.boolfont {
+	font-family: sans-serif;
+	padding-left: 4px;
+	padding-right: 4px;
+	font-size:16px;
+}
+
+/*
+.valuenex.boolean.booleanyes.exploded {
+	font-weight: bold;
+	color: #1f4d22;
+	border-color: #50ab56;
+}
+
+.valuenex.boolean.booleanno.exploded {
+	font-weight: bold;	
+	color: #4a4a23;
+	border-color: #adac55;
+}
+*/

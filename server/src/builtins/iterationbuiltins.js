@@ -48,7 +48,7 @@ function createIterationBuiltins() {
 				}
 				if (result.getTypedValue()) {
 					appendIterator = resultList.fastAppendChildAfter(list.getChildAt(i), appendIterator);
-				}			
+				}
 				i++;
 			})
 		} catch (e) {
@@ -58,17 +58,19 @@ function createIterationBuiltins() {
 				throw e; // shouldn't be possible for this to be a non-fatal EError.
 			}
 		}
-		return resultList;				
+		return resultList;
 	}
 
 	Builtin.createBuiltin(
-		'filter-with',
+		'filter--with',
 		[ 'list()', 'func&' ],
 		$filterWith,
 		'returns a new list containing only the elements of |list for which |func calls true when it is called on that element.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
+
+
+	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
 	function $mapWith(env, executionEnvironment) {
 		let closure = env.lb('func');
@@ -94,19 +96,19 @@ function createIterationBuiltins() {
 				return e;
 			} else {
 				throw e;
-			}			
+			}
 		}
-		return resultList;				
+		return resultList;
 	}
 
 	Builtin.createBuiltin(
-		'map-with',
+		'map--with',
 		[ 'list()', 'func&' ],
 		$mapWith,
 		'goes through all the elements in |list and replaces each one with the result of calling |func on that element.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
+	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
 	function $reduceWithStarting(env, executionEnvironment) {
 		let list = env.lb('list');
@@ -136,7 +138,7 @@ function createIterationBuiltins() {
 	}
 
 	Builtin.createBuiltin(
-		'reduce-with-starting',
+		'reduce--with--starting',
 		[ 'list()', 'func&', 'startvalue' ],
 		$reduceWithStarting,
 		'progressively updates a value, starting with |startvalue, by calling |func on each element in |list, passing in 1. the list element and 2. the progressively updated value, returning the final updated value.'
@@ -146,7 +148,7 @@ function createIterationBuiltins() {
 
 
 	Builtin.createBuiltin(
-		'loop-over',
+		'loop--over',
 		[ 'func&', 'list()' ],
 		function $loopOver(env, executionEnvironment) {
 			let closure = env.lb('func');
@@ -175,7 +177,7 @@ function createIterationBuiltins() {
 		'loops over a list, evaluating a function on each member, and returning the last result.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
+	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
 	function $range(env, executionEnvironment) {
 		let startorstop_n = env.lb('startorstop');
@@ -224,6 +226,9 @@ function createIterationBuiltins() {
 		let startcmd = Command.makeCommandWithClosureZeroArgs(start);
 		startcmd.setSkipAlertAnimation(true);
 		let iterationvalue = evaluateNexSafely(startcmd, executionEnvironment);
+		if (Utils.isFatalError(iterationvalue)) {
+			return wrapError('&szlig;', `for: error returned from initializer`, iterationvalue);
+		}
 
 		let bodyresult = null;
 		while(true) {
@@ -231,6 +236,9 @@ function createIterationBuiltins() {
 			let testcmd = Command.makeCommandWithClosureOneArg(test, Command.quote(iterationvalue));
 			testcmd.setSkipAlertAnimation(true);
 			let testval = evaluateNexSafely(testcmd, executionEnvironment);
+			if (Utils.isFatalError(testval)) {
+				return wrapError('&szlig;', `for: error returned from test`, testval);
+			}
 			if (testval.getTypeName() != '-bool-') {
 				return new EError('for: test lambda must return a boolean');
 			}
@@ -248,16 +256,22 @@ function createIterationBuiltins() {
 			let inccmd = Command.makeCommandWithClosureOneArg(inc, Command.quote(iterationvalue));
 			inccmd.setSkipAlertAnimation(true);
 			iterationvalue = evaluateNexSafely(inccmd, executionEnvironment);
+			if (Utils.isFatalError(iterationvalue)) {
+				return wrapError('&szlig;', `for: error returned from then-with`, iterationvalue);
+			}
 		}
 		return bodyresult;
 	}
 
 	Builtin.createBuiltin(
-		'for',
-		[ 'start&', 'test&', 'inc&', 'body&' ],
+		'starting-with--while--do--then-with',
+		[ 'start&', 'test&', 'body&', 'inc&'],
 		$for,
 		'classic for loop: start, test, and increment are all closures.'
 	)
+
+	Builtin.aliasBuiltin('for', 'starting-with--while--do--then-with');
+	Builtin.aliasBuiltin('while', 'starting-with--while--do--then-with');
 
 }
 

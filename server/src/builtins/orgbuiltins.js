@@ -22,6 +22,10 @@ import { EError } from '../nex/eerror.js'
 import { templateStore } from '../templates.js'
 import { ERROR_TYPE_INFO } from '../nex/eerror.js'
 import { experiments } from '../globalappflags.js'
+import { saveShortcut } from '../servercommunication.js'
+import { ESymbol } from '../nex/esymbol.js'
+import { Command } from '../nex/command.js'
+
 
 
 function createOrgBuiltins() {
@@ -48,6 +52,38 @@ function createOrgBuiltins() {
 			},
 			'creates a template with a name equal to the passed-in symbol.'
 		);		
+
+		Builtin.createBuiltin(
+			'template-save',
+			[ '_name@', '_org()' ],
+			function $template(env, executionEnvironment) {
+				let name = env.lb('name');
+				let org = env.lb('org');
+				try {
+					let template = templateStore.createTemplate(name, org, executionEnvironment);
+					// successfully created template, so we also save it.
+					let namesym = new ESymbol(name.getTypedValue() + '-template');
+					let toSave = Command.makeCommandWithArgs("template", name, org);
+					toSave.setLiteral(true);
+					saveShortcut(namesym, toSave, function(result) {
+						if (result != null) {
+							alert('save-template: save failed! Check result: ' + result.debugString());
+						}
+					});
+					let r = new EError(`created template ${template.getName()}`);
+					r.setErrorType(ERROR_TYPE_INFO);
+					return r;					
+				} catch (e) {
+					if (Utils.isFatalError(e)) {
+						return e;
+					} else {
+						throw e;
+					}
+				}
+			},
+			'Creates a template and also attempts to save it in an appropriately-named file. Notifies the user with a javascript alert dialog if the save failed, otherwise no notification is given of success.'
+		);		
+
 	} else {
 		Builtin.createBuiltin(
 			'template',
@@ -71,6 +107,23 @@ function createOrgBuiltins() {
 			'creates a template identified by the nix tag.'
 		);		
 	}
+
+
+	Builtin.createBuiltin(
+		'dump-template',
+		[ '_name@' ],
+		function $dumpTemplate(env, executionEnvironment) {
+			let nex = env.lb('name');
+			let name = nex.getTypedValue();
+			let template = templateStore.getTemplate(name);
+			if (!template) {
+				return new EError(`dump-template: no such template ${name}`);
+			} else {
+				return template.getOrg().makeCopy();
+			}
+		},
+		'Gets the definition of a template from the template store and returns it, or returns an error if no such template.'
+	);
 
 	Builtin.createBuiltin(
 		'merge',
