@@ -75,6 +75,10 @@ let funnelConnected = true;
 
 var justPressedShift;
 
+var mobileMode = false;
+
+var mileInputMode = false;
+
 function dumpPerf() {
 	perfmon.dump();
 }
@@ -315,7 +319,41 @@ function doMobileKeyDown(e) {
 	}
 }
 
+var prev = null
 function setupMobile() {
+	var mobileInput = document.getElementById("mobile_input");
+	mobileInput.onchange = function(e) {
+		// lol this is basically when enter
+		prev = "";
+		doFakeEvent("Enter", false, false, false, false, false);
+		setTimeout(function() {
+			mobileInput.value = prev;
+		}, 1);
+	}
+	mobileInput.oninput = function(e) {
+		if (prev === null) {
+			// well I guess we added stuff
+			prev = mobileInput.value;
+			doFakeEvent(prev, false, false, false, false, false);
+		} else {
+			// either it's shorter or longer!
+			let newone = mobileInput.value;
+			if (newone.length > prev.length) {
+				let k = newone.charAt(newone.length - 1);
+				prev = newone;
+				doFakeEvent(k, false, false, false, false, false);
+			} else {
+				prev = newone;
+				// gotta be shorter?
+				doFakeEvent("Backspace", false, false, false, false, false);
+			}
+		}
+		setTimeout(function() {
+			mobileInput.value = prev;
+		}, 1);
+		return true;
+	}
+
 	document.getElementById("mobilecontrolpanel").style.display = 'block';
 	document.getElementById("content").style.position = 'absolute';
 	document.getElementById("content").style.top = '225px';
@@ -448,6 +486,7 @@ function setup() {
 
 	if (getQSVal('mobile')) {
 		setupMobile();
+		mobileMode = true;
 	}
 
 	keyDispatcher.setCloseHelp(function() {
@@ -503,11 +542,10 @@ function setup() {
 		return true;
 	}
 	document.onkeydown = function(e) {
+		if (mobileMode) {
+			return true;
+		}
 		doMobileKeyDown(e);
-		console.log(e.key);
-		console.log(e.altKey);
-		console.log(e.shiftKey);
-		console.log(e.ctrlKey);
 		return doKeydownEvent(e);
 	}
 	if (!!otherflags.FILE) {
