@@ -28,7 +28,7 @@ function createStringBuiltins() {
 
 
 	Builtin.createBuiltin(
-		'string-cat',
+		'concatenate-strings',
 		[ 'str$...' ],
 		function $stringCat(env, executionEnvironment) {
 			let r = '';
@@ -47,8 +47,8 @@ function createStringBuiltins() {
 	
 
 	Builtin.createBuiltin(
-		'string-char-at',
-		[ 'str$', 'pos#' ],
+		'char-at--in-string',
+		[ 'pos#', 'str$',  ],
 		function $stringCharAt(env, executionEnvironment) {
 			let s = env.lb('str').getFullTypedValue();
 			let n = env.lb('pos').getTypedValue();
@@ -66,8 +66,8 @@ function createStringBuiltins() {
 	
 
 	Builtin.createBuiltin(
-		'string-index-of',
-		[ 'str$', 'tofind$' ],
+		'index-of-string--in-string',
+		[ 'tofind$', 'str$' ],
 		function $stringIndexOf(env, executionEnvironment) {
 			let s = env.lb('str').getFullTypedValue();
 			let tofind = env.lb('tofind').getFullTypedValue();
@@ -82,7 +82,7 @@ function createStringBuiltins() {
 	
 
 	Builtin.createBuiltin(
-		'string-join-on',
+		'join-strings--on',
 		[ 'strs()', 'on$' ],
 		function $stringJoinOn(env, executionEnvironment) {
 			let lst = env.lb('strs');
@@ -101,7 +101,7 @@ function createStringBuiltins() {
 
 
 	Builtin.createBuiltin(
-		'string-length',
+		'length-of-string',
 		[ 'str$' ],
 		function $stringLength(env, executionEnvironment) {
 			let s = env.lb('str').getFullTypedValue();
@@ -116,7 +116,7 @@ function createStringBuiltins() {
 	
 
 	Builtin.createBuiltin(
-		'string-listify',
+		'listify-string',
 		[ 'str$' ],
 		function $stringListify(env, executionEnvironment) {
 			let r = new Word();
@@ -136,8 +136,8 @@ function createStringBuiltins() {
 	
 
 	Builtin.createBuiltin(
-		'string-split-on',
-		[ 'str$', 'on$' ],
+		'split-on--in-string',
+		[ 'on$', 'str$' ],
 		function $stringSplitOn(env, executionEnvironment) {
 			let str = env.lb('str').getFullTypedValue();
 			let on = env.lb('on').getFullTypedValue();
@@ -157,16 +157,16 @@ function createStringBuiltins() {
 	
 
 	Builtin.createBuiltin(
-		'string-substring',
-		[ 'str$', 'start#', 'len#' ],
+		'from--to--in-string',
+		[ 'start#', 'len#', 'str$' ],
 		function $stringSubstring(env, executionEnvironment) {
 			let str = env.lb('str').getFullTypedValue();
 			let start = env.lb('start').getTypedValue();
 			let len = env.lb('len').getTypedValue();
-			let s = str.substr(start, len);
+			let s = str.substring(start, len);
 			return new EString(s);
 		},
-		'retrieves a substring of |str that is |len characters long starting at |start'
+		'retrieves a substring of |str from |start to |len'
 	);
 }
 

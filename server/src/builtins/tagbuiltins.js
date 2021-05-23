@@ -32,8 +32,8 @@ function createTagBuiltins() {
 	}
 
 	Builtin.createBuiltin(
-		'add-tag',
-		[ 'nex', 'tag$' ],
+		'add-tag--to',
+		[ 'tag$', 'nex' ],
 		$addTag
 	);
 
@@ -46,7 +46,7 @@ function createTagBuiltins() {
 	}
 
 	Builtin.createBuiltin(
-		'clear-tags',
+		'clear-tags-from',
 		[ 'nex' ],
 		$clearTags
 	);
@@ -65,7 +65,7 @@ function createTagBuiltins() {
 	}
 
 	Builtin.createBuiltin(
-		'has-tag',
+		'--has-tag',
 		[ 'nex', 'tag$' ],
 		$hasTag
 	);
@@ -81,8 +81,8 @@ function createTagBuiltins() {
 	}
 
 	Builtin.createBuiltin(
-		'remove-tag',
-		[ 'nex', 'tag$' ],
+		'remove-tag--from',
+		[ 'tag$', 'nex' ],
 		$removeTag
 	);
 }

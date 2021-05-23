@@ -30,18 +30,23 @@ import { experiments } from './globalappflags.js'
 class KeyDispatcher {
 	constructor() {
 		this.nqmarks = 0;
-		this.helpcallback = null;
-		this.help2callback = null;
+		// this.helpcallback = null;
+		// this.help2callback = null;
 		this.closeHelp = null;
+		this.uiCallbackObject = null;
 	}
 
-	setHelpCallback(cb) {
-		this.helpcallback = cb;
+	setUiCallbackObject(obj) {
+		this.uiCallbackObject = obj;
 	}
 
-	setHelp2Callback(cb) {
-		this.help2callback = cb;
-	}
+	// setHelpCallback(cb) {
+	// 	this.helpcallback = cb;
+	// }
+
+	// setHelp2Callback(cb) {
+	// 	this.help2callback = cb;
+	// }
 
 	setCloseHelp(cb) {
 		this.closeHelp = cb;
@@ -58,10 +63,12 @@ class KeyDispatcher {
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
 		if (eventName == '?') {
 			if (this.nqmarks == 2) {
-				this.helpcallback();
+				this.uiCallbackObject.helpCallback();
+//				this.helpcallback();
 				this.nqmarks++
 			} else if (this.nqmarks == 3) {
-				this.help2callback();
+				this.uiCallbackObject.helpCallback2();
+//				this.help2callback();
 				this.nqmarks = 0;
 			} else {
 				if (eventName != 'Shift') this.closeHelp();
@@ -381,6 +388,7 @@ class KeyDispatcher {
 
 	doEscape() {
 		let root = systemState.getRoot();
+		this.uiCallbackObject.setExplodedState(root.isExploded())
 		root.toggleRenderMode();
 	}
 

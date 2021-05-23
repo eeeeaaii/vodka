@@ -436,7 +436,7 @@ class Command extends NexContainer {
 
 	getInitialCodespanContents(renderNode) {
 		let codespanHtml = '<span class="tilde">&#8766;</span>';
-		if (experiments.NO_TILDE && !this.isEditing && !renderNode.isSelected()) {
+		if (experiments.NO_TILDE && !this.isEditing) {
 			codespanHtml = '';
 		}
 		if (experiments.INFIX_OPERATORS) {

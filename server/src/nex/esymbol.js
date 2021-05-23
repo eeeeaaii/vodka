@@ -173,10 +173,19 @@ class ESymbolEditor extends Editor {
 	}
 
 	shouldAppend(text) {
-		if (experiments.ORG_OVERHAUL) {
-			return /^[a-zA-Z0-9:.-]$/.test(text);
+		let firstLetter = (this.nex.getValue().length == 0);
+		if (firstLetter) {
+			if (experiments.ORG_OVERHAUL) {
+				return /^[a-zA-Z:.-]$/.test(text);
+			} else {
+				return /^[a-zA-Z:-]$/.test(text);
+			}
 		} else {
-			return /^[a-zA-Z0-9:-]$/.test(text);
+			if (experiments.ORG_OVERHAUL) {
+				return /^[a-zA-Z0-9:.-]$/.test(text);
+			} else {
+				return /^[a-zA-Z0-9:-]$/.test(text);
+			}
 		}
 	}
 

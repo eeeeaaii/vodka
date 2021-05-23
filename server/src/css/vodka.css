@@ -30,6 +30,12 @@ body {
 	padding: 0;
 }
 
+#mobilecontrolpanel {
+	position: fixed;
+	width: 100%;
+	background-color: #ffffff;
+}
+
 #hiddenroot {
 	visibility: hidden;
 	width:10000px;

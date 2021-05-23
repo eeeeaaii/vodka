@@ -103,8 +103,8 @@ function createFileBuiltins() {
 		}
 
 		Builtin.createBuiltin(
-			'eval-and-save',
-			[ '_name', 'nex' ],
+			'eval--and-save-as',
+			[ 'nex', '_name' ],
 			function $save(env, executionEnvironment) {
 				return doSave(env.lb('name'), env.lb('nex'));
 			},
@@ -112,8 +112,8 @@ function createFileBuiltins() {
 		);
 
 		Builtin.createBuiltin(
-			'save',
-			[ '_name', '_nex' ],
+			'save--as',
+			[ '_nex', '_name' ],
 			function $save(env, executionEnvironment) {
 				return doSave(env.lb('name'), env.lb('nex'));
 			},
@@ -121,8 +121,8 @@ function createFileBuiltins() {
 		);
 
 		Builtin.createBuiltin(
-			'save-and-eval',
-			[ '_name', '_nex' ],
+			'save--as--then-eval',
+			[ '_nex', '_name' ],
 			function $save(env, executionEnvironment) {
 				let nex = env.lb('nex');
 				let name = env.lb('name');
@@ -143,8 +143,8 @@ function createFileBuiltins() {
 	} else {
 
 		Builtin.createBuiltin(
-			'save',
-			[ '_name', '_nex' ],
+			'save--as',
+			[ '_nex', '_name' ],
 			function $save(env, executionEnvironment) {
 				let namesym = env.lb('name');
 				let nametype = namesym.getTypeName();
@@ -184,7 +184,7 @@ function createFileBuiltins() {
 	
 
 	Builtin.createBuiltin(
-		'load-file',
+		'load-string',
 		[ '_name$' ],
 		function $loadFile(env, executionEnvironment) {
 			let namesym = env.lb('name');
@@ -210,8 +210,8 @@ function createFileBuiltins() {
 
 
 	Builtin.createBuiltin(
-		'save-file',
-		[ '_name$', 'val$' ],
+		'save-string--as',
+		[ 'val$', '_name$'],
 		function $saveFile(env, executionEnvironment) {
 			let namesym = env.lb('name');
 			let nm = namesym.getFullTypedValue();
@@ -330,7 +330,7 @@ function createFileBuiltins() {
 	
 
 	Builtin.createBuiltin(
-		'package',
+		'package-named--is',
 		[ '_name@', '_nex...' ],
 		function $package(env, executionEnvironment) {
 			let packageName = env.lb('name').getTypedValue();
@@ -355,8 +355,8 @@ function createFileBuiltins() {
 
 	if (experiments.SAVE_EVALUATES_CONTENTS) {
 		Builtin.createBuiltin(
-			'save-package',
-			[ '_name@', '_nex' ],
+			'save-package--as',
+			[ '_nex', '_name@' ],
 			function $savePackage(env, executionEnvironment) {
 				// figure out the real name
 				let namesym = env.lb('name');

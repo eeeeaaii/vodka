@@ -118,6 +118,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	margin: 0px 2px 0px -5px;
 }
 
+.quiettilde {
+	color: #8c8c8c;
+}
 
 .innercodespan.exploded.editing {
 	font-weight: bold;

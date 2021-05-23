@@ -73,6 +73,8 @@ let root = null;
 let sessionId = null;
 let funnelConnected = true;
 
+var justPressedShift;
+
 function dumpPerf() {
 	perfmon.dump();
 }
@@ -204,12 +206,13 @@ function setCookie(key, val) {
 
 function getQSVal(k) {
 	let params = new URLSearchParams(window.location.search);
+	let lastVal = null;
 	params.forEach(function(value, key) {
 		if (key == k) {
-			return value;
+			lastVal = value;
 		}
 	});
-	return null;
+	return lastVal;
 }
 
 
@@ -291,6 +294,149 @@ function macSubst() {
 	}
 }
 
+function doFakeEvent(key, shift, ctrl, alt, cmd, meta) {
+	mobileClearInput();
+	let e = {};
+	e.key = key;
+	e.altKey = alt;
+	e.ctrlKey = ctrl;
+	e.shiftKey = shift;
+	e.metaKey = meta;
+	doKeydownEvent(e);
+}
+
+function mobileClearInput() {
+	document.getElementById('mobile_input').value = '';
+}
+
+function doMobileKeyDown(e) {
+	if (e.key == 'Enter') {
+		mobileClearInput();
+	}
+}
+
+function setupMobile() {
+	document.getElementById("mobilecontrolpanel").style.display = 'block';
+	document.getElementById("content").style.position = 'absolute';
+	document.getElementById("content").style.top = '211px';
+
+	document.getElementById("mobile_out").onclick = function() {
+		doFakeEvent("Tab", true, false, false, false, false);
+	}
+	document.getElementById("mobile_in").onclick = function() {
+		doFakeEvent("Tab", false, false, false, false, false);
+	}
+	document.getElementById("mobile_prev").onclick = function() {
+		doFakeEvent("ArrowLeft", false, false, false, false, false);
+	}
+	document.getElementById("mobile_next").onclick = function() {
+		doFakeEvent("ArrowRight", false, false, false, false, false);
+	}
+
+	document.getElementById("mobile_del").onclick = function() {
+		doFakeEvent("Backspace", false, false, false, false, false);
+	}
+	document.getElementById("mobile_sde").onclick = function() {
+		doFakeEvent("Backspace", true, false, false, false, false);
+	}
+	document.getElementById("mobile_esc").onclick = function() {
+		doFakeEvent("Escape", false, false, false, false, false);
+	}
+	document.getElementById("mobile_til").onclick = function() {
+		doFakeEvent("~", true, false, false, false, false);
+	}
+	document.getElementById("mobile_exc").onclick = function() {
+		doFakeEvent("!", true, false, false, false, false);
+	}
+	document.getElementById("mobile_ats").onclick = function() {
+		doFakeEvent("@", true, false, false, false, false);
+	}
+	document.getElementById("mobile_num").onclick = function() {
+		doFakeEvent("#", true, false, false, false, false);
+	}
+	document.getElementById("mobile_dol").onclick = function() {
+		doFakeEvent("$", true, false, false, false, false);
+	}
+	document.getElementById("mobile_per").onclick = function() {
+		doFakeEvent("%", true, false, false, false, false);
+	}
+	document.getElementById("mobile_car").onclick = function() {
+		doFakeEvent("^", true, false, false, false, false);
+	}
+	document.getElementById("mobile_amp").onclick = function() {
+		doFakeEvent("&", true, false, false, false, false);
+	}
+	document.getElementById("mobile_ast").onclick = function() {
+		doFakeEvent("*", true, false, false, false, false);
+	}
+	document.getElementById("mobile_par").onclick = function() {
+		doFakeEvent("(", true, false, false, false, false);
+	}
+	document.getElementById("mobile_bce").onclick = function() {
+		doFakeEvent("{", true, false, false, false, false);
+	}
+	document.getElementById("mobile_brk").onclick = function() {
+		doFakeEvent("[", true, false, false, false, false);
+	}
+	document.getElementById("mobile_flp").onclick = function() {
+		doFakeEvent(" ", true, false, false, false, false);
+	}
+
+	document.getElementById("mobile_edit").onclick = function() {
+		doFakeEvent("Enter", false, true, false, false, false);
+	}
+	document.getElementById("mobile_sted").onclick = function() {
+		doFakeEvent("Enter", false, false, false, false, false);
+	}
+
+	document.getElementById("mobile_cut").onclick = function() {
+		doFakeEvent("x", false, false, false, false, true);
+	}
+	document.getElementById("mobile_copy").onclick = function() {
+		doFakeEvent("c", false, false, false, false, true);
+	}
+	document.getElementById("mobile_paste").onclick = function() {
+		doFakeEvent("v", false, false, false, false, true);
+	}
+
+	document.getElementById("mobile_eval").onclick = function() {
+		doFakeEvent("Enter", false, false, false, false, false);
+	}
+	document.getElementById("mobile_quiet").onclick = function() {
+		doFakeEvent("Enter", true, false, false, false, false);
+	}
+}
+
+function doKeydownEvent(e) {
+	checkRecordState(e, 'down');
+	if (systemState.isKeyFunnelActive()) {
+		if (e.key == 'Shift') {
+			justPressedShift = true;
+		} else {
+			justPressedShift = false;
+		}
+		return doKeyInputNotForTests(e.key, e.code, e.shiftKey, e.ctrlKey, e.metaKey, e.altKey);
+	} else {
+		return true;
+	}
+}
+
+function getUiCallbackObject() {
+	return {
+		'helpCallback': function() {
+			document.getElementById('intro').style.visibility = 'visible';
+		},
+		'helpCallback2': function() {
+			document.getElementById('intro').style.visibility = 'hidden';
+			document.getElementById('hotkeyreference').style.visibility = 'visible';
+		},
+		'setExplodedState': function(exploded) {
+			document.getElementById("mobile_esc").innerText = (exploded) ? 'explode' : 'contract'
+		}
+	}
+}
+
+
 // app main entry point
 
 function setup() {
@@ -299,6 +445,10 @@ function setup() {
 	macSubst();
 	checkHelpMessage();
 	eventQueue.initialize();
+
+	if (getQSVal('mobile')) {
+		setupMobile();
+	}
 
 	keyDispatcher.setCloseHelp(function() {
 		let closedIt = false;
@@ -314,13 +464,14 @@ function setup() {
 			window.scrollTo(0,0);
 		}
 	})
-	keyDispatcher.setHelpCallback(function() {
-		document.getElementById('intro').style.visibility = 'visible';
-	})
-	keyDispatcher.setHelp2Callback(function() {
-		document.getElementById('intro').style.visibility = 'hidden';
-		document.getElementById('hotkeyreference').style.visibility = 'visible';
-	})
+	keyDispatcher.setUiCallbackObject(getUiCallbackObject());
+	// keyDispatcher.setHelpCallback(function() {
+	// 	document.getElementById('intro').style.visibility = 'visible';
+	// })
+	// keyDispatcher.setHelp2Callback(function() {
+	// 	document.getElementById('intro').style.visibility = 'hidden';
+	// 	document.getElementById('hotkeyreference').style.visibility = 'visible';
+	// })
 
 	// testharness.js needs this
 	window.doKeyInput = doKeyInput;
@@ -337,7 +488,7 @@ function setup() {
 	// note this is duplicated in undo.js
 	root = rootManager.createNewRoot();
 
-	let justPressedShift = false;
+	justPressedShift = false;
 
 	document.onclick = function(e) {
 		checkRecordState(e, 'mouse');
@@ -352,17 +503,12 @@ function setup() {
 		return true;
 	}
 	document.onkeydown = function(e) {
-		checkRecordState(e, 'down');
-		if (systemState.isKeyFunnelActive()) {
-			if (e.key == 'Shift') {
-				justPressedShift = true;
-			} else {
-				justPressedShift = false;
-			}
-			return doKeyInputNotForTests(e.key, e.code, e.shiftKey, e.ctrlKey, e.metaKey, e.altKey);
-		} else {
-			return true;
-		}
+		doMobileKeyDown(e);
+		console.log(e.key);
+		console.log(e.altKey);
+		console.log(e.shiftKey);
+		console.log(e.ctrlKey);
+		return doKeydownEvent(e);
 	}
 	if (!!otherflags.FILE) {
 		setDocRootFromFile(otherflags.FILE);

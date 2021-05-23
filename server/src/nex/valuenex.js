@@ -57,7 +57,7 @@ class ValueNex extends Nex {
 		let val = this.escapedRenderValue();
 		let inner = '';
 		if (experiments.NO_TILDE) {
-			if (this.isEditing || (!val) || renderNode.isSelected()) {
+			if (this.isEditing || (!val)) {
 				inner += '' + this.prefix;
 			}
 			inner += val;

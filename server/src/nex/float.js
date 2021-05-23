@@ -71,7 +71,13 @@ class Float extends ValueNex {
 	}
 
 	renderValue() {
-		return this.value;
+		if (isNaN(this.value)) return this.value;
+		let n = Number(this.value);
+		if (Math.round(n) == n) {
+			return '' + n + '.0';
+		} else {
+			return '' + n;
+		}
 	}
 
 	getTypedValue() {
