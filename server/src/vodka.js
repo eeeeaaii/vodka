@@ -318,7 +318,7 @@ function doMobileKeyDown(e) {
 function setupMobile() {
 	document.getElementById("mobilecontrolpanel").style.display = 'block';
 	document.getElementById("content").style.position = 'absolute';
-	document.getElementById("content").style.top = '211px';
+	document.getElementById("content").style.top = '225px';
 
 	document.getElementById("mobile_out").onclick = function() {
 		doFakeEvent("Tab", true, false, false, false, false);
