@@ -505,6 +505,9 @@ class Nex {
 		if (experiments.LITERALS && this.literal) {
 			domNode.classList.add('literal');
 		}
+		if (systemState.getIsMobile()) {
+			domNode.classList.add('mobile');
+		}
 		domNode.setAttribute("style", this.getCurrentStyle());
 		if (renderFlags & RENDER_FLAG_DEPTH_EXCEEDED) {
 			this.clearDomNode(domNode);

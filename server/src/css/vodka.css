@@ -28,12 +28,8 @@ body {
 	cursor: default;
 	margin: 0;
 	padding: 0;
-}
-
-#mobilecontrolpanel {
-	position: fixed;
 	width: 100%;
-	background-color: #ffffff;
+	height:100%;
 }
 
 #hiddenroot {
@@ -101,11 +97,11 @@ body {
 }
 
 #intro {
-	visibility: hidden;
+	display: none;
 }
 
 #hotkeyreference {
-	visibility: hidden;
+	display: none;
 }
 
 .infopanel {
@@ -114,7 +110,7 @@ body {
 	border: 2px solid #88003f;
 	background-color: #ef99aa;
 	padding: 20px;
-	margin: 20px;
+	margin: 20px;	
 	visibility: hidden;
 	position:absolute;
 	z-index: 1000;

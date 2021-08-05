@@ -31,6 +31,15 @@ class SystemState {
 		this.key_funnel_active = true;
 		this.mouse_funnel_active = true;
 		this.stackLevel = 0;
+		this.isMobile = false;
+	}
+
+	setIsMobile(val) {
+		this.isMobile = val;
+	}
+
+	getIsMobile() {
+		return this.isMobile;
 	}
 
 	setGlobalSelectedNode(newNode) {

@@ -1,0 +1,54 @@
+
+
+
+/*
+#codepane {
+	transform: scale(2);
+}
+
+
+#codepane.mobile {
+	transform: scale(6);
+	transform-origin: top left;
+}
+*/
+
+#codepane.mobile {
+	transform: scale(2);
+	transform-origin: top left;
+	height: 25%;
+	overflow: scroll;
+}
+
+
+
+
+#mobilecontrolpanel {
+	display: none; /* change to flex */
+	flex-direction: column;
+	justify-content: space-evenly;
+	align-items: stretch;
+	width: 100%;
+	height: 50%;
+	position: fixed;
+	left:0px;
+	top:50%;
+	opacity: 0;
+
+	transition-property: opacity;
+	transition-duration: .2s;
+}
+
+.mobilecontrolpanelrow {
+	flex-grow: 1;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-evenly;
+	align-items: stretch
+}
+
+.mobilecontrolpanelitem {
+	flex-grow: 1;
+	font-size: 1.4em;
+	width: 20px;
+}

@@ -232,19 +232,19 @@ function setSessionId() {
 
 function checkHelpMessage() {
 	document.getElementById('showhotkeys').onclick = function(c) {
-		document.getElementById('intro').style.visibility = 'hidden';
-		document.getElementById('hotkeyreference').style.visibility = 'visible';
+		document.getElementById('intro').style.display = 'none';
+		document.getElementById('hotkeyreference').style.display = 'block';
 	}
 	document.getElementById('closehotkeyreference').onclick = function(c) {
-		document.getElementById('hotkeyreference').style.visibility = 'hidden';
+		document.getElementById('hotkeyreference').style.display = 'none';
 		window.scrollTo(0,0);
 	}
 	document.getElementById('closeintro').onclick = function(c) {
-		document.getElementById('intro').style.visibility = 'hidden';
+		document.getElementById('intro').style.display = 'none';
 		window.scrollTo(0,0);
 	}
 	document.getElementById('closeintropermanently').onclick = function(c) {
-		document.getElementById('intro').style.visibility = 'hidden';
+		document.getElementById('intro').style.display = 'none';
 		document.cookie = 'hasbeenhelped=true';
 		window.scrollTo(0,0);
 	}
@@ -253,10 +253,10 @@ function checkHelpMessage() {
 	document.getElementById('newsessionlink').href = `http://${FEATURE_VECTOR.hostname}?new=1`;
 	let userSaidDoNotRemind = !!getCookie('hasbeenhelped');
 	let showIt = function() {
-		document.getElementById('intro').style.visibility = 'visible';
+		document.getElementById('intro').style.display = 'block';
 	}
 	let showIt2 = function() {
-		document.getElementById('hotkeyreference').style.visibility = 'visible';
+		document.getElementById('hotkeyreference').style.display = 'block';
 	}
 	if (!userSaidDoNotRemind && !experiments.NO_SPLASH) {
 		showIt();
@@ -309,6 +309,30 @@ function doFakeEvent(key, shift, ctrl, alt, cmd, meta) {
 	doKeydownEvent(e);
 }
 
+var mobileControlPanelVisible = false;
+var hideTimeout = null;
+
+function setHideTimeout() {
+	if (hideTimeout) {
+		clearTimeout(hideTimeout);
+	}
+	hideTimeout = setTimeout(function() {
+		document.getElementById("mobilecontrolpanel").style.opacity = 0.0;
+		mobileControlPanelVisible = false;
+	}, 30000);
+}
+
+function showOrDoFakeEvent(key, shift, ctrl, alt, cmd, meta) {
+	if (!mobileControlPanelVisible) {
+		mobileControlPanelVisible = true;
+		document.getElementById("mobilecontrolpanel").style.opacity = 1;
+		setHideTimeout();
+		return;
+	}
+	setHideTimeout();
+	doFakeEvent(key, shift, ctrl, alt, cmd, meta);
+}
+
 function mobileClearInput() {
 	document.getElementById('mobile_input').value = '';
 }
@@ -354,94 +378,96 @@ function setupMobile() {
 		return true;
 	}
 
-	document.getElementById("mobilecontrolpanel").style.display = 'block';
-	document.getElementById("content").style.position = 'absolute';
-	document.getElementById("content").style.top = '225px';
+	systemState.setIsMobile(true);
+	document.getElementById("mobilecontrolpanel").style.display = 'flex';
+	document.getElementById("codepane").classList.add('mobile');
+//	document.getElementById("content").style.position = 'absolute';
+//	document.getElementById("content").style.top = '225px';
 
 	document.getElementById("mobile_out").onclick = function() {
-		doFakeEvent("Tab", true, false, false, false, false);
+		showOrDoFakeEvent("Tab", true, false, false, false, false);
 	}
 	document.getElementById("mobile_in").onclick = function() {
-		doFakeEvent("Tab", false, false, false, false, false);
+		showOrDoFakeEvent("Tab", false, false, false, false, false);
 	}
 	document.getElementById("mobile_prev").onclick = function() {
-		doFakeEvent("ArrowLeft", false, false, false, false, false);
+		showOrDoFakeEvent("ArrowLeft", false, false, false, false, false);
 	}
 	document.getElementById("mobile_next").onclick = function() {
-		doFakeEvent("ArrowRight", false, false, false, false, false);
+		showOrDoFakeEvent("ArrowRight", false, false, false, false, false);
 	}
 
 	document.getElementById("mobile_del").onclick = function() {
-		doFakeEvent("Backspace", false, false, false, false, false);
+		showOrDoFakeEvent("Backspace", false, false, false, false, false);
 	}
 	document.getElementById("mobile_sde").onclick = function() {
-		doFakeEvent("Backspace", true, false, false, false, false);
+		showOrDoFakeEvent("Backspace", true, false, false, false, false);
 	}
 	document.getElementById("mobile_esc").onclick = function() {
-		doFakeEvent("Escape", false, false, false, false, false);
+		showOrDoFakeEvent("Escape", false, false, false, false, false);
 	}
 	document.getElementById("mobile_til").onclick = function() {
-		doFakeEvent("~", true, false, false, false, false);
+		showOrDoFakeEvent("~", true, false, false, false, false);
 	}
 	document.getElementById("mobile_exc").onclick = function() {
-		doFakeEvent("!", true, false, false, false, false);
+		showOrDoFakeEvent("!", true, false, false, false, false);
 	}
 	document.getElementById("mobile_ats").onclick = function() {
-		doFakeEvent("@", true, false, false, false, false);
+		showOrDoFakeEvent("@", true, false, false, false, false);
 	}
 	document.getElementById("mobile_num").onclick = function() {
-		doFakeEvent("#", true, false, false, false, false);
+		showOrDoFakeEvent("#", true, false, false, false, false);
 	}
 	document.getElementById("mobile_dol").onclick = function() {
-		doFakeEvent("$", true, false, false, false, false);
+		showOrDoFakeEvent("$", true, false, false, false, false);
 	}
 	document.getElementById("mobile_per").onclick = function() {
-		doFakeEvent("%", true, false, false, false, false);
+		showOrDoFakeEvent("%", true, false, false, false, false);
 	}
 	document.getElementById("mobile_car").onclick = function() {
-		doFakeEvent("^", true, false, false, false, false);
+		showOrDoFakeEvent("^", true, false, false, false, false);
 	}
 	document.getElementById("mobile_amp").onclick = function() {
-		doFakeEvent("&", true, false, false, false, false);
+		showOrDoFakeEvent("&", true, false, false, false, false);
 	}
 	document.getElementById("mobile_ast").onclick = function() {
-		doFakeEvent("*", true, false, false, false, false);
+		showOrDoFakeEvent("*", true, false, false, false, false);
 	}
 	document.getElementById("mobile_par").onclick = function() {
-		doFakeEvent("(", true, false, false, false, false);
+		showOrDoFakeEvent("(", true, false, false, false, false);
 	}
 	document.getElementById("mobile_bce").onclick = function() {
-		doFakeEvent("{", true, false, false, false, false);
+		showOrDoFakeEvent("{", true, false, false, false, false);
 	}
 	document.getElementById("mobile_brk").onclick = function() {
-		doFakeEvent("[", true, false, false, false, false);
+		showOrDoFakeEvent("[", true, false, false, false, false);
 	}
 	document.getElementById("mobile_flp").onclick = function() {
-		doFakeEvent(" ", true, false, false, false, false);
+		showOrDoFakeEvent(" ", true, false, false, false, false);
 	}
 
 	document.getElementById("mobile_edit").onclick = function() {
-		doFakeEvent("Enter", false, true, false, false, false);
+		showOrDoFakeEvent("Enter", false, true, false, false, false);
 	}
 	document.getElementById("mobile_sted").onclick = function() {
-		doFakeEvent("Enter", false, false, false, false, false);
+		showOrDoFakeEvent("Enter", false, false, false, false, false);
 	}
 
 	document.getElementById("mobile_cut").onclick = function() {
-		doFakeEvent("x", false, false, false, false, true);
+		showOrDoFakeEvent("x", false, false, false, false, true);
 	}
 	document.getElementById("mobile_copy").onclick = function() {
-		doFakeEvent("c", false, false, false, false, true);
+		showOrDoFakeEvent("c", false, false, false, false, true);
 	}
 	document.getElementById("mobile_paste").onclick = function() {
-		doFakeEvent("v", false, false, false, false, true);
+		showOrDoFakeEvent("v", false, false, false, false, true);
 	}
 
 	document.getElementById("mobile_eval").onclick = function() {
-		doFakeEvent("Enter", false, false, false, false, false);
+		showOrDoFakeEvent("Enter", false, false, false, false, false);
 	}
 	document.getElementById("mobile_quiet").onclick = function() {
-		doFakeEvent("Enter", true, false, false, false, false);
+		showOrDoFakeEvent("Enter", true, false, false, false, false);
 	}
 }
 
@@ -462,11 +488,11 @@ function doKeydownEvent(e) {
 function getUiCallbackObject() {
 	return {
 		'helpCallback': function() {
-			document.getElementById('intro').style.visibility = 'visible';
+			document.getElementById('intro').style.display = 'block';
 		},
 		'helpCallback2': function() {
-			document.getElementById('intro').style.visibility = 'hidden';
-			document.getElementById('hotkeyreference').style.visibility = 'visible';
+			document.getElementById('intro').style.display = 'none';
+			document.getElementById('hotkeyreference').style.display = 'block';
 		},
 		'setExplodedState': function(exploded) {
 			document.getElementById("mobile_esc").innerText = (exploded) ? 'explode' : 'contract'
@@ -491,12 +517,12 @@ function setup() {
 
 	keyDispatcher.setCloseHelp(function() {
 		let closedIt = false;
-		if (document.getElementById('intro').style.visibility != 'hidden') {
-			document.getElementById('intro').style.visibility = 'hidden';
+		if (document.getElementById('intro').style.display != 'none') {
+			document.getElementById('intro').style.display = 'none';
 			closedIt = true;
 		}
-		if (document.getElementById('hotkeyreference').style.visibility != 'hidden') {
-			document.getElementById('hotkeyreference').style.visibility = 'hidden';
+		if (document.getElementById('hotkeyreference').style.display != 'none') {
+			document.getElementById('hotkeyreference').style.display = 'none';
 			closedIt = true;
 		}
 		if (closedIt) {
@@ -505,11 +531,11 @@ function setup() {
 	})
 	keyDispatcher.setUiCallbackObject(getUiCallbackObject());
 	// keyDispatcher.setHelpCallback(function() {
-	// 	document.getElementById('intro').style.visibility = 'visible';
+	// 	document.getElementById('intro').style.display = 'block';
 	// })
 	// keyDispatcher.setHelp2Callback(function() {
-	// 	document.getElementById('intro').style.visibility = 'hidden';
-	// 	document.getElementById('hotkeyreference').style.visibility = 'visible';
+	// 	document.getElementById('intro').style.display = 'none';
+	// 	document.getElementById('hotkeyreference').style.display = 'block';
 	// })
 
 	// testharness.js needs this

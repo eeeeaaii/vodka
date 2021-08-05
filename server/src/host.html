@@ -38,6 +38,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	<link rel="stylesheet" href="css/tags.css">
 	<link rel="stylesheet" href="css/org.css">
 	<link rel="stylesheet" href="css/expectation.css">
+	<link rel="stylesheet" href="css/mobile.css">
   <!-- web font loader -->
   <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
 	<!-- serverinject:head -->
@@ -174,60 +175,58 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	<p class="infoline"><button id="closehotkeyreference">Done</button> with quick reference</p>
 </a></p>
 </div>
-<div id="content">
+<div id="codepane">
 	<div id="mixroot"></div>
 	<div id="hiddenroot"></div>
 </div>
-<div id="mobilecontrolpanel" style="display:none">
-	<div>
-		<input id="mobile_input">
+	<div id="mobilecontrolpanel" style="display:none">
+		<div class="mobilecontrolpanelrow">
+			<button class="mobilecontrolpanelitem" id="mobile_esc">explode</button>
+			<button class="mobilecontrolpanelitem" id="mobile_flp">flip</button>
+		</div>
+		<div class="mobilecontrolpanelrow">
+			<button class="mobilecontrolpanelitem" id="mobile_out">out</button>
+			<button class="mobilecontrolpanelitem" id="mobile_prev">prev</button>
+			<button class="mobilecontrolpanelitem" id="mobile_next">next</button>
+			<button class="mobilecontrolpanelitem" id="mobile_in">in</button>
+		</div>
+		<div class="mobilecontrolpanelrow">
+			<button class="mobilecontrolpanelitem" id="mobile_til">~</button>
+			<button class="mobilecontrolpanelitem" id="mobile_exc">!</button>
+			<button class="mobilecontrolpanelitem" id="mobile_ats">@</button>
+			<button class="mobilecontrolpanelitem" id="mobile_num">#</button>
+			<button class="mobilecontrolpanelitem" id="mobile_dol">$</button>
+			<button class="mobilecontrolpanelitem" id="mobile_per">%</button>
+		</div>
+		<div class="mobilecontrolpanelrow">
+			<button class="mobilecontrolpanelitem" id="mobile_car">^</button>
+			<button class="mobilecontrolpanelitem" id="mobile_amp">&#8907;</button>
+			<button class="mobilecontrolpanelitem" id="mobile_ast">*</button>
+			<button class="mobilecontrolpanelitem" id="mobile_par">(</button>
+			<button class="mobilecontrolpanelitem" id="mobile_bce">{</button>
+			<button class="mobilecontrolpanelitem" id="mobile_brk">[</button>
+		</div>
+		<div class="mobilecontrolpanelrow">
+			<button class="mobilecontrolpanelitem" id="mobile_del">del-char</button>
+			<button class="mobilecontrolpanelitem" id="mobile_sde">del-nex</button>
+		</div>
+		<div class="mobilecontrolpanelrow">
+			<button class="mobilecontrolpanelitem" id="mobile_edit">edit</button>
+			<button class="mobilecontrolpanelitem" id="mobile_sted">stop edit</button>
+		</div>
+		<div class="mobilecontrolpanelrow">
+			<button class="mobilecontrolpanelitem" id="mobile_cut">cut</button>
+			<button class="mobilecontrolpanelitem" id="mobile_copy">copy</button>
+			<button class="mobilecontrolpanelitem" id="mobile_paste">paste</button>
+		</div>
+		<div class="mobilecontrolpanelrow">
+			<button class="mobilecontrolpanelitem" id="mobile_eval">eval</button>
+			<button class="mobilecontrolpanelitem" id="mobile_quiet">quiet-eval</button>
+		</div>
+		<div class="mobilecontrolpanelrow">
+			<input class="mobilecontrolpanelitem" id="mobile_input">
+		</div>
 	</div>
-	<div>
-		<button id="mobile_esc">explode</button>
-	</div>
-	<div>
-		<button id="mobile_out">out</button>
-		<button id="mobile_in">in</button>
-	</div>
-	<div>
-		<button id="mobile_prev">prev</button>
-		<button id="mobile_next">next</button>
-	</div>
-	<div>
-		<button id="mobile_til">~</button>
-		<button id="mobile_exc">!</button>
-		<button id="mobile_ats">@</button>
-		<button id="mobile_num">#</button>
-		<button id="mobile_dol">$</button>
-		<button id="mobile_per">%</button>
-		<button id="mobile_car">^</button>
-		<button id="mobile_amp">&#8907;</button>
-		<button id="mobile_ast">*</button>
-		<button id="mobile_par">(</button>
-		<button id="mobile_bce">{</button>
-		<button id="mobile_brk">[</button>
-	</div>
-	<div>
-		<button id="mobile_del">del-char</button>
-		<button id="mobile_sde">del-nex</button>
-	</div>
-	<div>
-		<button id="mobile_flp">flip</button>
-	</div>
-	<div>
-		<button id="mobile_edit">edit</button>
-		<button id="mobile_sted">stop edit</button>
-	</div>
-	<div>
-		<button id="mobile_cut">cut</button>
-		<button id="mobile_copy">copy</button>
-		<button id="mobile_paste">paste</button>
-	</div>
-	<div>
-		<button id="mobile_eval">eval</button>
-		<button id="mobile_quiet">quiet-eval</button>
-	</div>
-</div>
 </body>
 <!-- serverinject:beforebootstrap -->
 <script type="module" src="vodkastart.js"></script>
