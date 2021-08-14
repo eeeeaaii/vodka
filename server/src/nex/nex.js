@@ -49,7 +49,7 @@ class Nex {
 		this.closure = null; // only lambdas have closures but just copying is prob cheaper than testing?
 		this.inPackage = null; // well here we go with more things in the env I guess.
 		this.dirtyForRendering = true;
-		this.literal = false;
+		this.mutable = true;
 	}
 
     /**
@@ -109,20 +109,20 @@ class Nex {
 		return str;
 	}
 
-	setLiteral(val) {
-		this.literal = val;
+	setMutable(val) {
+		this.mutable = val;
 	}
 
-	setLiteralRecursive(val) {
-		this.setLiteral(val);
+	setMutableRecursive(val) {
+		this.setMutable(val);
 	}
 
 	isLiteral() {
-		return this.literal;
+		return this.mutable;
 	}
 
 	toStringV2Literal() {
-		if (experiments.LITERALS && !this.literal) {
+		if (experiments.MUTABLES && !this.mutable) {
 			return ';';
 		} else {
 			return '';
@@ -419,8 +419,8 @@ class Nex {
 	}
 
 	evaluate(env) {
-		if (experiments.LITERALS) {
-			if (this.literal) {
+		if (experiments.MUTABLES) {
+			if (this.mutable) {
 				return this.makeCopy();
 			} else {
 				return this;
@@ -489,7 +489,7 @@ class Nex {
 		}
 		domNode.classList.add('nex');
 
-		if (experiments.LITERALS) {
+		if (experiments.MUTABLES) {
 			if (renderFlags & RENDER_FLAG_SELECTED) {
 				domNode.classList.add('newselected');		
 			}
@@ -502,8 +502,8 @@ class Nex {
 		if (isExploded) {
 			domNode.classList.add('exploded');
 		}
-		if (experiments.LITERALS && this.literal) {
-			domNode.classList.add('literal');
+		if (experiments.MUTABLES && this.mutable) {
+			domNode.classList.add('mutable');
 		}
 		if (systemState.getIsMobile()) {
 			domNode.classList.add('mobile');

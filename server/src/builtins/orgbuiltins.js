@@ -64,7 +64,7 @@ function createOrgBuiltins() {
 					// successfully created template, so we also save it.
 					let namesym = new ESymbol(name.getTypedValue() + '-template');
 					let toSave = Command.makeCommandWithArgs("template", name, org);
-					toSave.setLiteral(true);
+					toSave.setMutable(true);
 					saveShortcut(namesym, toSave, function(result) {
 						if (result != null) {
 							alert('save-template: save failed! Check result: ' + result.debugString());

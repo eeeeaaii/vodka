@@ -82,7 +82,7 @@ class Line extends NexContainer {
 	}
 
 	evaluate(env) {
-		if (!experiments.LITERAL || this.literal) {
+		if (!experiments.MUTABLES || this.mutable) {
 			// shallow copy, then evaluate children.
 			let linecopy = this.makeCopy(true);
 			let iterator = null;
@@ -153,7 +153,7 @@ class Line extends NexContainer {
 		let domNode = renderNode.getDomNode();
 
 		// let linespan = null;
-		// if (experiments.LITERALS && !(renderFlags & RENDER_FLAG_SHALLOW)) {
+		// if (experiments.MUTABLES && !(renderFlags & RENDER_FLAG_SHALLOW)) {
 		// 	linespan = document.createElement("span");
 		// 	linespan.classList.add('linespan');
 		// 	domNode.appendChild(linespan);
@@ -185,7 +185,7 @@ class Line extends NexContainer {
 		} else {
 			domNode.classList.remove('emptyline');
 		}
-		if (experiments.LITERALS) {
+		if (experiments.MUTABLES) {
 			domNode.classList.add('newversionofline');
 		}
 	}

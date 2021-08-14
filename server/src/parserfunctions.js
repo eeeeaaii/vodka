@@ -48,10 +48,10 @@ function concatParserString(arr) {
 	return arr.join('');
 }
 
-function decorateNex(nex, tags, nonliteral) {
-	if (experiments.LITERALS) {
-		if (!nonliteral) {
-			nex.setLiteral(true);
+function decorateNex(nex, tags, nonmutable) {
+	if (experiments.MUTABLES) {
+		if (!nonmutable) {
+			nex.setMutable(true);
 		}		
 	}
 	if (!tags) {
@@ -89,89 +89,89 @@ function setVertHoriz(obj, vh) {
 	}
 }
 
-function makeInteger(negation, digits, taglist, nonliteral) {
+function makeInteger(negation, digits, taglist, nonmutable) {
 	let n = Number(concatParserString(digits));
 	if (negation) {
 		n = -n;
 	}
-	return decorateNex(new Integer(n), taglist, nonliteral);
+	return decorateNex(new Integer(n), taglist, nonmutable);
 }
 
-function makeSymbol(letters, taglist, nonliteral) {
-	return decorateNex(new ESymbol(concatParserString(letters)), taglist, nonliteral);
+function makeSymbol(letters, taglist, nonmutable) {
+	return decorateNex(new ESymbol(concatParserString(letters)), taglist, nonmutable);
 }
 
-function makeString(privateData, taglist, nonliteral) {
+function makeString(privateData, taglist, nonmutable) {
 	let str = new EString();
 	setPrivateData(str, privateData);
-	return decorateNex(str, taglist, nonliteral);
+	return decorateNex(str, taglist, nonmutable);
 }
 
-function makeError(privateData, taglist, nonliteral) {
+function makeError(privateData, taglist, nonmutable) {
 	let err = new EError();
 	setPrivateData(err, privateData);
-	return decorateNex(err, taglist, nonliteral);
+	return decorateNex(err, taglist, nonmutable);
 }
 
-function makeFloat(contents, taglist, nonliteral) {
-	return decorateNex(new Float(contents), taglist, nonliteral);
+function makeFloat(contents, taglist, nonmutable) {
+	return decorateNex(new Float(contents), taglist, nonmutable);
 }
 
-function makeBool(val, taglist, nonliteral) {
-	return decorateNex(new Bool(val), taglist, nonliteral);
+function makeBool(val, taglist, nonmutable) {
+	return decorateNex(new Bool(val), taglist, nonmutable);
 }
 
-function makeNil(taglist, nonliteral) {
-	return decorateNex(new Nil(), taglist, nonliteral);
+function makeNil(taglist, nonmutable) {
+	return decorateNex(new Nil(), taglist, nonmutable);
 }
 
-function makeOrgList(children, privateData, taglist, verthoriz, nonliteral) {
+function makeOrgList(children, privateData, taglist, verthoriz, nonmutable) {
 	let t = new Org();
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
-	decorateNex(t, taglist, nonliteral);
+	decorateNex(t, taglist, nonmutable);
 	setVertHoriz(t, verthoriz);
 	return t;
 }
 
-function makeExpList(children, privateData, taglist, verthoriz, nonliteral) {
+function makeExpList(children, privateData, taglist, verthoriz, nonmutable) {
 	let t = new Expectation();
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
-	decorateNex(t, taglist, nonliteral);
+	decorateNex(t, taglist, nonmutable);
 	setVertHoriz(t, verthoriz);
 	return t;
 }
 
-function makeLambdaList(children, privateData, taglist, verthoriz, nonliteral) {
+function makeLambdaList(children, privateData, taglist, verthoriz, nonmutable) {
 	let t = new Lambda();
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
-	decorateNex(t, taglist, nonliteral);
+	decorateNex(t, taglist, nonmutable);
 	setVertHoriz(t, verthoriz);
 	return t;
 }
 
-function makeCommandList(name, children, privateData, taglist, verthoriz, nonliteral) {
+function makeCommandList(name, children, privateData, taglist, verthoriz, nonmutable) {
 	let cmdname = Utils.convertV2StringToMath(concatParserString(name));
 	let t = new Command(cmdname);
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
-	decorateNex(t, taglist, nonliteral);
+	decorateNex(t, taglist, nonmutable);
 	setVertHoriz(t, verthoriz);
 	return t;
 }
 
-function makeInstantiatorList(children, privateData, taglist, verthoriz, nonliteral) {
+function makeInstantiatorList(children, privateData, taglist, verthoriz, nonmutable) {
 	let t = new Instantiator('');
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
-	decorateNex(t, taglist, nonliteral);
+	decorateNex(t, taglist, nonmutable);
 	setVertHoriz(t, verthoriz);
 	return t;
 }
 
-function makeInstanceAtom(instname, privatedata, taglist, nonliteral) {
+function makeInstanceAtom(instname, privatedata, taglist, nonmutable) {
 	// currently only letter, separator, and newline supported
 	let name = concatParserString(instname);
 	let t = null;
@@ -193,10 +193,10 @@ function makeInstanceAtom(instname, privatedata, taglist, nonliteral) {
 			throw new Error('unrecognized instance type: ' + instname);
 	}
 	setPrivateData(t, privatedata);
-	decorateNex(t, taglist, nonliteral);
+	decorateNex(t, taglist, nonmutable);
 	return t;}
 
-function makeInstanceList(instname, children, privatedata, taglist, verthoriz, nonliteral) {
+function makeInstanceList(instname, children, privatedata, taglist, verthoriz, nonmutable) {
 	// currently only word, doc, and line supported
 	let name = concatParserString(instname);
 	let t = null;
@@ -223,7 +223,7 @@ function makeInstanceList(instname, children, privatedata, taglist, verthoriz, n
 	}
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privatedata);
-	decorateNex(t, taglist, nonliteral);
+	decorateNex(t, taglist, nonmutable);
 	setVertHoriz(t, verthoriz);
 	return t;
 }

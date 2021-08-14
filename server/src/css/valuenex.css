@@ -34,7 +34,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	padding: 5px;
 }
 
-.valuenex.literal {
+.valuenex.mutable {
 	border-width: 3px;
 	padding: 3px;
 }

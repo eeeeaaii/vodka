@@ -43,7 +43,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border-color: #a7a7de;
 }
 
-.newversionofline.exploded.literal {
+.newversionofline.exploded.mutable {
 	padding: 3px;
 	border-width: 3px;	
 }
@@ -64,7 +64,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	margin: 0px 3px 0px -2px;
 }
 
-.newselected > .linespan.exploded.literal {
+.newselected > .linespan.exploded.mutable {
 	margin: 0px 3px 0px -4px;
 }
 */

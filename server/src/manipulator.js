@@ -1889,7 +1889,7 @@ class Manipulator {
 	doPaste() {
 		let s = systemState.getGlobalSelectedNode();
 		let newNex = CLIPBOARD.makeCopy();
-		newNex.setLiteralRecursive(true);
+		newNex.setMutableRecursive(true);
 		switch(s.getInsertionMode()) {
 			case INSERT_AFTER:
 				this.insertAfterSelectedAndSelect(newNex);
@@ -1910,26 +1910,26 @@ class Manipulator {
 
 	newDoc() {
 		let d = new Doc();
-		d.setLiteral(true);
+		d.setMutable(true);
 		return new RenderNode(d);
 	}
 
 	newWord() {
 		let w = new Word();
-		w.setLiteral(true);
+		w.setMutable(true);
 		return new RenderNode(w);
 	}
 
 	newLine() {
 		let line = new Line();
-		line.setLiteral(true);
+		line.setMutable(true);
 		return new RenderNode(line);
 	}
 
 	// public
 	newLambda() {
 		let l = new Lambda();
-		l.setLiteral(true);
+		l.setMutable(true);
 		let r = new RenderNode(l);		
 		r.possiblyStartMainEditor();
 		return r;
@@ -1937,7 +1937,7 @@ class Manipulator {
 
 	newESymbol() {
 		let e = new ESymbol();
-		e.setLiteral(true);
+		e.setMutable(true);
 		let r = new RenderNode(e);
 		r.possiblyStartMainEditor();
 		return r;
@@ -1946,7 +1946,7 @@ class Manipulator {
 	// public
 	newCommand() {
 		let c = new Command();
-		c.setLiteral(true);
+		c.setMutable(true);
 		let r = new RenderNode(c);		
 		r.possiblyStartMainEditor();
 		return r;
@@ -1954,7 +1954,7 @@ class Manipulator {
 
 	newBool() {
 		let b = new Bool();
-		b.setLiteral(true);
+		b.setMutable(true);
 		let r = new RenderNode(b);		
 		r.possiblyStartMainEditor();
 		return r;
@@ -1962,7 +1962,7 @@ class Manipulator {
 
 	newInteger() {
 		let i = new Integer();
-		i.setLiteral(true);
+		i.setMutable(true);
 		let r = new RenderNode(i);		
 		r.possiblyStartMainEditor();
 		return r;		
@@ -1970,7 +1970,7 @@ class Manipulator {
 
 	newEString() {
 		let e = new EString();
-		e.setLiteral(true);
+		e.setMutable(true);
 		let r = new RenderNode(e);
 		r.possiblyStartMainEditor();
 		return r;
@@ -1978,7 +1978,7 @@ class Manipulator {
 
 	newFloat() {
 		let f = new Float();
-		f.setLiteral(true);
+		f.setMutable(true);
 		let r = new RenderNode(f);
 		r.possiblyStartMainEditor();
 		return r;		
@@ -1986,7 +1986,7 @@ class Manipulator {
 
 	newInstantiator() {
 		let i = new Instantiator();
-		i.setLiteral(true);
+		i.setMutable(true);
 		let r = new RenderNode(i);
 		r.possiblyStartMainEditor();
 		return r;		
@@ -1994,14 +1994,14 @@ class Manipulator {
 
 	newNil() {
 		let n = new Nil();
-		n.setLiteral(true);
+		n.setMutable(true);
 		let r = new RenderNode(n);
 		return r;		
 	}
 
 	newExpectation() {
 		let e = new Expectation();
-		e.setLiteral(true);
+		e.setMutable(true);
 		let r = new RenderNode(e);
 		r.possiblyStartMainEditor();
 		return r;		
@@ -2009,28 +2009,28 @@ class Manipulator {
 
 	newZlist() {
 		let zl = new Zlist();
-		zl.setLiteral(true);
+		zl.setMutable(true);
 		let r = new RenderNode(zl);
 		return r;		
 	}
 
 	newOrg() {
 		let o = new Org();
-		o.setLiteral(true);
+		o.setMutable(true);
 		let r = new RenderNode(o);
 		return r;
 	}
 
 	newSeparator(txt) {
 		let s = new Separator(txt);
-		s.setLiteral(true);
+		s.setMutable(true);
 		let r = new RenderNode(s);
 		return r;
 	}
 
 	newLetter(txt) {
 		let l = new Letter(txt);
-		l.setLiteral(true);
+		l.setMutable(true);
 		let r = new RenderNode(l);
 		return r;
 	}

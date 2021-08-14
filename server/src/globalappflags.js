@@ -87,8 +87,8 @@ const experiments = {
 	// infix operators
 	'INFIX_OPERATORS': true,
 
-	// literals
-	'LITERALS': true,
+	// mutables
+	'MUTABLES': true,
 
 	// no-tilde
 	'NO_TILDE': true,

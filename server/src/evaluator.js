@@ -116,11 +116,19 @@ function evaluateAndReplace(s) {
 	} else if (n.getTypeName() == '-expectation-' && !n.isActivated()) {
 	// ONLY AT TOP LEVEL we activate expectations.
 		n.activate();
+	} else if (shouldConvertToNonmutable(n)) {
+		n.setMutable(false);
 	}
-
 	if (n) {
 		manipulator.replaceSelectedWith(new RenderNode(n));
 	}
+}
+
+function shouldConvertToNonmutable(nex) {
+	return nex && (Utils.isBool(nex) ||
+			Utils.isEString(nex) ||
+			Utils.isFloat(nex) ||
+			Utils.isInteger(nex))
 }
 
 /**

@@ -106,6 +106,24 @@ function isNexContainer(n) {
 	return (n.isNexContainer());
 }
 
+function isBool(n) {
+	if (n instanceof RenderNode) n = n.getNex();
+	if (!n) return false;
+	return n.getTypeName() == '-bool-';
+}
+
+function isFloat(n) {
+	if (n instanceof RenderNode) n = n.getNex();
+	if (!n) return false;
+	return n.getTypeName() == '-float-';
+}
+
+function isInteger(n) {
+	if (n instanceof RenderNode) n = n.getNex();
+	if (!n) return false;
+	return n.getTypeName() == '-integer-';
+}
+
 function isEString(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n) return false;
@@ -209,6 +227,9 @@ export {
 	isLambda,
 	isRoot,
 	isNex,
+	isBool,
+	isFloat,
+	isInteger,
 	isClosure,
 	beep,
 	isMac,

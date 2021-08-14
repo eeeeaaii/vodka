@@ -192,7 +192,7 @@ class RenderNode {
 	}
 
 	possiblyStartMainEditor() {
-		if (experiments.LITERALS && !this.getNex().isLiteral()) {
+		if (experiments.MUTABLES && !this.getNex().isLiteral()) {
 			return null;
 		}
 		let editor = this.getEditorForType(this.getNex());

@@ -102,7 +102,7 @@ class Doc extends NexContainer {
 	}
 
 	evaluate(env) {
-		if (!experiments.LITERAL || this.literal) {
+		if (!experiments.MUTABLES || this.mutable) {
 			// shallow copy, then evaluate children.
 			let doccopy = this.makeCopy(true);
 			let iterator = null;
@@ -125,7 +125,7 @@ class Doc extends NexContainer {
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		// let docspan = null;
-		// if (experiments.LITERALS && !(renderFlags & RENDER_FLAG_SHALLOW)) {
+		// if (experiments.MUTABLES && !(renderFlags & RENDER_FLAG_SHALLOW)) {
 		// 	docspan = document.createElement("span");
 		// 	docspan.classList.add('docspan');
 		// 	domNode.appendChild(docspan);
@@ -133,11 +133,11 @@ class Doc extends NexContainer {
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('doc');
 		domNode.classList.add('data');
-		if (experiments.LITERALS) {
+		if (experiments.MUTABLES) {
 			domNode.classList.add('newdoc');
 		}
 
-		// if (experiments.LITERALS && !(renderFlags & RENDER_FLAG_SHALLOW)) {
+		// if (experiments.MUTABLES && !(renderFlags & RENDER_FLAG_SHALLOW)) {
 		// 	if (renderFlags & RENDER_FLAG_EXPLODED) {
 		// 		docspan.classList.add('exploded');
 		// 	} else {

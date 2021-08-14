@@ -63,7 +63,7 @@ class Word extends NexContainer {
 	}
 
 	evaluate(env) {
-		if (!experiments.LITERAL || this.literal) {
+		if (!experiments.MUTABLES || this.mutable) {
 			// shallow copy, then evaluate children.
 			let wordcopy = this.makeCopy(true);
 			let iterator = null;
@@ -116,7 +116,7 @@ class Word extends NexContainer {
 		let domNode = renderNode.getDomNode();
 
 		let wordspan = null;
-		// if (experiments.LITERALS && !(renderFlags & RENDER_FLAG_SHALLOW)) {
+		// if (experiments.MUTABLES && !(renderFlags & RENDER_FLAG_SHALLOW)) {
 		// 	wordspan = document.createElement("span");
 		// 	wordspan.classList.add('wordspan');
 		// 	domNode.appendChild(wordspan);
@@ -134,11 +134,11 @@ class Word extends NexContainer {
 		} else if (renderFlags & RENDER_FLAG_INSERT_INSIDE) {
 			domNode.classList.add('bottominsert');			
 		}
-		if (experiments.LITERALS) {
+		if (experiments.MUTABLES) {
 			domNode.classList.add('newword');
 		}
 
-		// if (experiments.LITERALS && !(renderFlags & RENDER_FLAG_SHALLOW)) {
+		// if (experiments.MUTABLES && !(renderFlags & RENDER_FLAG_SHALLOW)) {
 		// 	if (renderFlags & RENDER_FLAG_EXPLODED) {
 		// 		wordspan.classList.add('exploded');
 		// 	} else {

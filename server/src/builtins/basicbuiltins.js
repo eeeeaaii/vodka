@@ -322,25 +322,25 @@ function createBasicBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'literal',
+		'mutable',
 		[ 'nex' ],
-		function $literal(env, executionEnvironment) {
+		function $mutable(env, executionEnvironment) {
 			let n = env.lb('nex');
-			n.setLiteral(true);
+			n.setMutable(true);
 			return n;
 		},
-		'makes |nex a literal'
+		'makes |nex a mutable'
 	);
 
 	Builtin.createBuiltin(
-		'nonliteral',
+		'nonmutable',
 		[ 'nex' ],
-		function $nonliteral(env, executionEnvironment) {
+		function $nonmutable(env, executionEnvironment) {
 			let n = env.lb('nex');
-			n.setLiteral(false);
+			n.setMutable(false);
 			return n;
 		},
-		'makes |nex a nonliteral'
+		'makes |nex a nonmutable'
 	);
 }
 

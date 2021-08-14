@@ -143,10 +143,10 @@ class NexContainer extends Nex {
 		}
 	}
 
-	setLiteralRecursive(val) {
-		this.setLiteral(val);
+	setMutableRecursive(val) {
+		this.setMutable(val);
 		this.doForEachChild(function(c) {
-			c.setLiteralRecursive(val);
+			c.setMutableRecursive(val);
 		})
 	}
 

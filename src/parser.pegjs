@@ -43,10 +43,10 @@ list
  ;
 
 instance_list
- = INST_NAME:nonliteral_instance_name PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ ')' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); }
- / INST_NAME:nonliteral_instance_name PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ '_)' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); }
- / INST_NAME:nonliteral_instance_name PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ '|)' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonliteral */); }
- / INST_NAME:nonliteral_instance_name PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ ',)' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonliteral */); }
+ = INST_NAME:nonmutable_instance_name PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ ')' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
+ / INST_NAME:nonmutable_instance_name PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ '_)' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
+ / INST_NAME:nonmutable_instance_name PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ '|)' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonmutable */); }
+ / INST_NAME:nonmutable_instance_name PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ ',)' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonmutable */); }
  / INST_NAME:instance_name PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ ')' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / INST_NAME:instance_name PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ '_)' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / INST_NAME:instance_name PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _ '|)' { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'v'); }
@@ -54,10 +54,10 @@ instance_list
  ;
 
 org_list
- = ';' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); }
- / ';' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); }
- / ';' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonliteral */); }
- / ';' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonliteral */); }
+ = ';' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
+ / ';' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
+ / ';' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonmutable */); }
+ / ';' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonmutable */); }
  / PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'v'); }
@@ -65,10 +65,10 @@ org_list
  ;
 
 exp_list
- = '*;' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); }
- / '*;' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); }
- / '*;' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonliteral */); }
- / '*;' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonliteral */); }
+ = '*;' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
+ / '*;' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
+ / '*;' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonmutable */); }
+ / '*;' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonmutable */); }
  / '*' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '*' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '*' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'v'); }
@@ -76,10 +76,10 @@ exp_list
  ;
 
 lambda_list
- = '&;' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); }
- / '&;' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); }
- / '&;' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonliteral */); }
- / '&;' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonliteral */); }
+ = '&;' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
+ / '&;' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
+ / '&;' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonmutable */); }
+ / '&;' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonmutable */); }
  / '&' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '&' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '&' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'v'); }
@@ -87,14 +87,14 @@ lambda_list
  ;
 
 cmd_list
- = '~;' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); }
- / '~;' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); }
- / '~;' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonliteral */); }
- / '~;' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonliteral */); }
- / '~;' PRIVATE:private_data_section '(' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  ')' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); }
- / '~;' PRIVATE:private_data_section '(_' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  '_)' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); }
- / '~;' PRIVATE:private_data_section '(|' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  '|)' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonliteral */); }
- / '~;' PRIVATE:private_data_section '(,' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  ',)' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonliteral */); }
+ = '~;' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
+ / '~;' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
+ / '~;' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonmutable */); }
+ / '~;' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonmutable */); }
+ / '~;' PRIVATE:private_data_section '(' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  ')' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
+ / '~;' PRIVATE:private_data_section '(_' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  '_)' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
+ / '~;' PRIVATE:private_data_section '(|' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  '|)' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonmutable */); }
+ / '~;' PRIVATE:private_data_section '(,' TAGLIST:taglist? NAME:cmd_name ( ws + ) CHILDREN:(nex_with_space *) _  ',)' { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonmutable */); }
  / '~' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '~' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '~' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'v'); }
@@ -106,10 +106,10 @@ cmd_list
  ;
 
 instantiator_list
- = '^;' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); }
- / '^;' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); }
- / '^;' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonliteral */); }
- / '^;' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonliteral */); }
+ = '^;' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
+ / '^;' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
+ / '^;' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonmutable */); }
+ / '^;' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonmutable */); }
  / '^' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '^' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
  / '^' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'v'); }
@@ -144,7 +144,7 @@ atom
   ;
 
 instance_atom
- = INST_NAME:nonliteral_instance_name PRIVATE:private_data_section TAGLIST:taglist? ! '(' { return PF.makeInstanceAtom(INST_NAME, PRIVATE, TAGLIST, true /* nonliteral */); }
+ = INST_NAME:nonmutable_instance_name PRIVATE:private_data_section TAGLIST:taglist? ! '(' { return PF.makeInstanceAtom(INST_NAME, PRIVATE, TAGLIST, true /* nonmutable */); }
  / INST_NAME:instance_name PRIVATE:private_data_section TAGLIST:taglist? ! '(' { return PF.makeInstanceAtom(INST_NAME, PRIVATE, TAGLIST); }
  ;
 
@@ -152,7 +152,7 @@ instance_name
  = '[' INST_NAME_DATA:instance_name_data ']' { return INST_NAME_DATA; }
  ;
 
-nonliteral_instance_name
+nonmutable_instance_name
  = '[;' INST_NAME_DATA:instance_name_data ']' { return INST_NAME_DATA; }
  ;
 
@@ -161,14 +161,14 @@ instance_name_data
  ;
 
 boolean_expression
-  = '!;' TAGLIST:taglist? 'yes' { return PF.makeBool(true, TAGLIST, true /* nonliteral */); }
-  / '!;' TAGLIST:taglist? 'no'  { return PF.makeBool(false, TAGLIST, true /* nonliteral */); }
+  = '!;' TAGLIST:taglist? 'yes' { return PF.makeBool(true, TAGLIST, true /* nonmutable */); }
+  / '!;' TAGLIST:taglist? 'no'  { return PF.makeBool(false, TAGLIST, true /* nonmutable */); }
   / '!' TAGLIST:taglist? 'yes' { return PF.makeBool(true, TAGLIST); }
   / '!' TAGLIST:taglist? 'no'  { return PF.makeBool(false, TAGLIST); }
   ;
 
 symbol_expression
-  = '@;' TAGLIST:taglist? SYMBOL:(symbol_char)+  { return PF.makeSymbol(SYMBOL, TAGLIST, true /* nonliteral */); }
+  = '@;' TAGLIST:taglist? SYMBOL:(symbol_char)+  { return PF.makeSymbol(SYMBOL, TAGLIST, true /* nonmutable */); }
   / '@' TAGLIST:taglist? SYMBOL:(symbol_char)+  { return PF.makeSymbol(SYMBOL, TAGLIST); }
   ;
 
@@ -178,31 +178,31 @@ symbol_char
   ;
 
 integer_expression
-  = '#;' TAGLIST:taglist? NEGATION:'-'? DIGITS:[0-9]+ { return PF.makeInteger(NEGATION, DIGITS, TAGLIST, true /* nonliteral */); }
+  = '#;' TAGLIST:taglist? NEGATION:'-'? DIGITS:[0-9]+ { return PF.makeInteger(NEGATION, DIGITS, TAGLIST, true /* nonmutable */); }
   / '#' TAGLIST:taglist? NEGATION:'-'? DIGITS:[0-9]+ { return PF.makeInteger(NEGATION, DIGITS, TAGLIST); }
   ;
 
 string_expression
-  = '$;' TAGLIST:taglist?  DATA:private_data_section { return PF.makeString(DATA, TAGLIST, true /* nonliteral */); }
+  = '$;' TAGLIST:taglist?  DATA:private_data_section { return PF.makeString(DATA, TAGLIST, true /* nonmutable */); }
   / '$' TAGLIST:taglist?  DATA:private_data_section { return PF.makeString(DATA, TAGLIST); }
   ;
 
 error_expression
-  = '?' TAGLIST:taglist?   DATA:private_data_section { return PF.makeError(DATA, TAGLIST, true /* nonliteral */); }
+  = '?' TAGLIST:taglist?   DATA:private_data_section { return PF.makeError(DATA, TAGLIST, true /* nonmutable */); }
   ;
 
 float_expression
-  = '%;' TAGLIST:taglist?  FLOAT:float_digits { return PF.makeFloat(FLOAT, TAGLIST, true /* nonliteral */); }
+  = '%;' TAGLIST:taglist?  FLOAT:float_digits { return PF.makeFloat(FLOAT, TAGLIST, true /* nonmutable */); }
   / '%' TAGLIST:taglist?  FLOAT:float_digits { return PF.makeFloat(FLOAT, TAGLIST); }
   ;
 
 nil_expression
-  = '^' TAGLIST:taglist ! '(' { return PF.makeNil(TAGLIST, true /* nonliteral */) }
-  / '^' TAGLIST:taglist ! '"' { return PF.makeNil(TAGLIST, true /* nonliteral */) }
-  / '^' TAGLIST:taglist ! '{' { return PF.makeNil(TAGLIST, true /* nonliteral */) }
-  / '^' ! '(' { return PF.makeNil(null, true /* nonliteral */) }
-  / '^' ! '"' { return PF.makeNil(null, true /* nonliteral */) }
-  / '^' ! '{' { return PF.makeNil(null, true /* nonliteral */) }
+  = '^' TAGLIST:taglist ! '(' { return PF.makeNil(TAGLIST, true /* nonmutable */) }
+  / '^' TAGLIST:taglist ! '"' { return PF.makeNil(TAGLIST, true /* nonmutable */) }
+  / '^' TAGLIST:taglist ! '{' { return PF.makeNil(TAGLIST, true /* nonmutable */) }
+  / '^' ! '(' { return PF.makeNil(null, true /* nonmutable */) }
+  / '^' ! '"' { return PF.makeNil(null, true /* nonmutable */) }
+  / '^' ! '{' { return PF.makeNil(null, true /* nonmutable */) }
   ;
 
 float_digits

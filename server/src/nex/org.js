@@ -89,7 +89,7 @@ class Org extends NexContainer {
 	}
 	
 	evaluate(env) {
-		if (experiments.LITERALS && this.literal) {
+		if (experiments.MUTABLES && this.mutable) {
 			// shallow copy, then evaluate children.
 			let listcopy = this.makeCopy(true);
 			let iterator = null;

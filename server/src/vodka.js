@@ -189,7 +189,7 @@ function setDocRootFromStart() {
 
 function setEmptyDocRoot() {
 	let d = new Doc();
-	d.setLiteral(true);
+	d.setMutable(true);
 	let docNode = root.appendChild(d);
 	docNode.setSelected(false /* don't render yet */);
 }

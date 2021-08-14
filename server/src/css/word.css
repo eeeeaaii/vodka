@@ -44,7 +44,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border-color: #c7c747;
 }
 
-.newword.exploded.literal {
+.newword.exploded.mutable {
 	padding: 3px;
 	border-width: 3px;	
 }
@@ -61,7 +61,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	margin: 0px 3px 0px -2px;
 }
 
-.newselected > .wordspan.exploded.literal {
+.newselected > .wordspan.exploded.mutable {
 	margin: 0px 3px 0px -4px;
 }
 */

@@ -39,7 +39,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	margin: 2px 2px 2px 2px;
 }
 
-.org.literal {
+.org.mutable {
 	border-width: 3px;
 	padding: 3px;
 }
