@@ -15,4 +15,5 @@ soundcreation
 server/src/package-lock.json
 server/src/node_modules
 server/node_modules
+asm/emsdk
 

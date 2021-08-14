@@ -28,18 +28,41 @@ class Integer extends ValueNex {
 			val = '0';
 		}
 		super(val, '#', 'integer');
-		if (!this._isValid(this.value)) {
-			this.value = '0';
+		if (!this._isValid(this.getValue())) {
+			this.setValue('0');
 		}
 		this.minusPressed = false; // TODO: move to editor
 	}
+
+	setValue(v) {
+		super.setValue(v);
+		if (experiments.ASM_RUNTIME) {
+			Module.ccall("set_integer_value",
+					'number',
+					['number', 'number'],
+					[this.runtimeId, Number(v)]
+					);
+		}
+	}
+
+	getValue() {
+		if (experiments.ASM_RUNTIME) {
+			return '' + Module.ccall("get_integer_value",
+					'number',
+					['number'],
+					[this.runtimeId]
+					);
+		}		
+		return this.value;
+	}
+
 
 	getTypeName() {
 		return '-integer-';
 	}
 
 	makeCopy() {
-		let r = new Integer(this.value);
+		let r = new Integer(this.getValue());
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -52,7 +75,7 @@ class Integer extends ValueNex {
 	}
 
 	toStringV2() {
-		return `#${this.toStringV2Literal()}${this.toStringV2TagList()}${this.value}`;
+		return `#${this.toStringV2Literal()}${this.toStringV2TagList()}${this.getValue()}`;
 	}
 
 	_isValid(value) {
@@ -61,7 +84,7 @@ class Integer extends ValueNex {
 	}
 
 	renderValue() {
-		let r = '' + this.value;
+		let r = '' + this.getValue();
 		if (this.isEditing) {
 			return r; // no commas when editing
 		}
@@ -79,7 +102,7 @@ class Integer extends ValueNex {
 	}
 
 	getTypedValue() {
-		return Number(this.value);
+		return Number(this.getValue());
 	}
 
 	renderInto(renderNode, renderFlags, withEditor) {
@@ -97,29 +120,29 @@ class Integer extends ValueNex {
 	appendText(txt) {
 		if (txt == '-') {
 			// negate it, unless it's zero
-			if (this.value == '0') {
+			if (this.getValue() == '0') {
 				// this hack allows you to type a minus before typing digits
 				// if the thing is zero
 				this.minusPressed = true;
 				this.setDirtyForRendering(true);
 				return;
 			}
-			if (this.value.charAt(0) == '-') {
-				this.value = this.value.substring(1);
+			if (this.getValue().charAt(0) == '-') {
+				this.setValue(this.getValue().substring(1));
 			} else {
-				this.value = '-' + this.value;
+				this.setValue('-' + this.getValue());
 			}
 		} else if (/[0-9]/.test(txt)) {
-			if (this.value == '0') {
+			if (this.getValue() == '0') {
 				if (txt != '0') {
 					// just because we pressed minus before doesn't mean that
 					// '-004' is a thing
-					this.value = (this.minusPressed ? '-' : '') + txt;
+					this.setValue((this.minusPressed ? '-' : '') + txt);
 				} else {
-					this.value = txt;
+					this.setValue(txt);
 				}
 			} else {
-				this.value = this.value + txt;
+				this.setValue(this.getValue() + txt);
 			}
 		};
 		this.minusPressed = false;
@@ -127,16 +150,16 @@ class Integer extends ValueNex {
 	}
 
 	deleteLastLetter() {
-		let v = this.value;
+		let v = this.getValue();
 		if (v == '0') return;
-		let isNegative = this.value.charAt(0) == '-';
+		let isNegative = this.getValue().charAt(0) == '-';
 		let realLength = isNegative ? v.length == 2 : v.length == 1;
 		if (realLength == 1) {
-			this.value = '0';
+			this.setValue('0');
 			this.setDirtyForRendering(true);
 			return;
 		}
-		this.value = v.substr(0, v.length - 1);
+		this.setValue(v.substr(0, v.length - 1));
 		this.setDirtyForRendering(true);
 	}
 

@@ -50,6 +50,18 @@ body {
 
 }
 
+.prefixspan {
+	opacity:  .33;
+}
+
+.newselected > .prefixspan {
+	opacity: 1;
+}
+
+.newselected > .codespan > .prefixspan {
+	opacity: 1;
+}
+
 .duplicatednex {
 	position:relative;
 }

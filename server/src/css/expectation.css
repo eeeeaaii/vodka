@@ -41,14 +41,46 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border-color: var(--selected-border);
 }
 
+.expectation.exploded.newselected {
+	border-color: var(--selected-border);
+}
+
 .dotspan.exploded {
 	border: 1px solid var(--unselected-border);
-	margin: 0px 0px 0px 0px;
+	margin: 0px 6px 0px 0px;
 	display: inline-block;
-	line-height: .6;
-	padding: 0px 4px 8px 4px;
-	border-radius:6px 0px 0px 6px;
+/*	line-height: .6;*/
+	padding: 2px 4px 2px 4px;
+	border-radius:6px 6px 6px 6px;
+	font-family: "Courier";
+	font-style: italic;
+	font-size: 12px;
 }
+
+.dotspan.exploded.editing {
+	font-weight: bold;
+	background-color: #ffbfbe	
+}
+
+
+/*
+.codespan.exploded {
+	position: relative;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	font-family: "Courier";
+	color: #444444;
+	font-style: italic;
+	font-size: 15px;
+	background-color: var(--unselected-border);
+	border: 0px;
+	padding: 3px 7px 4px 5px;
+	border-radius: 0px 6px 6px 0px;
+	margin: 0px 0px 0px 0px;
+}
+*/
+
 
 /* -- dotspan ----- */
 
@@ -208,5 +240,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 .expectation.exploded.selected > .dotspan {
+	border-color: var(--selected-border);
+}
+
+.expectation.exploded.newselected > .dotspan {
 	border-color: var(--selected-border);
 }

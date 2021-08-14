@@ -139,12 +139,6 @@ class Builtin extends Lambda {
 		// stuff in a package.
 		closure.setLexicalEnvironment(BUILTINS);
 		Builtin.bindBuiltinObject(name, closure);
-
-		// if there are em dashes, auto-alias
-		if (name.indexOf('--') >= 0) {
-			let othername = name.replace(/--/g, '-');
-			Builtin.aliasBuiltin(othername, name);
-		}
 	}
 
 	static aliasBuiltin(aliasName, boundName) {

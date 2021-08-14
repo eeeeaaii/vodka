@@ -79,6 +79,9 @@ var mobileMode = false;
 
 var mileInputMode = false;
 
+// used by emscripten
+var Module = {}
+
 function dumpPerf() {
 	perfmon.dump();
 }

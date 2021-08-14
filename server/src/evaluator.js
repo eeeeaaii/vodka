@@ -22,6 +22,7 @@ import { manipulator } from './manipulator.js'
 import { EError } from './nex/eerror.js'
 import { ArgEvaluator } from './argevaluator.js'
 import { BINDINGS } from './environment.js'
+import { experiments } from './globalappflags.js'
 
 /** @module evaluator */
 
@@ -34,6 +35,10 @@ import { BINDINGS } from './environment.js'
  * @returns {Nex} what this code evaluates to (can be an error)
  */
 function evaluateNexSafely(nex, executionEnvironment, skipActivation /* TODO: remove this param */) {
+	if (experiments.ASM_RUNTIME) {
+		Module.ccall("evaluate")
+	}
+
 	let result;
 	try {
 		nex.evalSetup(executionEnvironment);

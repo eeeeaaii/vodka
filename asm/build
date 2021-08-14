@@ -1,0 +1,20 @@
+#!/bin/zsh
+
+EXPORTS='['
+EXPORTS="$EXPORTS\"_evaluate\","
+EXPORTS="$EXPORTS\"_create_integer\","
+EXPORTS="$EXPORTS\"_set_integer_value\","
+EXPORTS="$EXPORTS\"_get_integer_value\","
+EXPORTS="$EXPORTS\"_main\""
+EXPORTS="$EXPORTS]"
+
+echo $EXPORTS
+
+emcc main.cc \
+	-o runtime.js \
+	-s EXPORTED_FUNCTIONS="$EXPORTS" \
+	-s EXPORTED_RUNTIME_METHODS='["ccall"]' \
+	&& \
+	cp runtime.js ../server/src/asm/ && \
+	cp runtime.wasm ../server/src/asm/
+	

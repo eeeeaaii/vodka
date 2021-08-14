@@ -125,6 +125,7 @@ function createAsyncBuiltins() {
 			if (exp.numChildren() == 0) {
 				return new EError('set-click: must have at least one clickable object');
 			}
+			exp.setExptextSetname('click');
 			exp.set(function(callback, ex) {
 				return function() {
 					ex.getChildAt(0).extraClickHandler = function() {
@@ -143,6 +144,7 @@ function createAsyncBuiltins() {
 		function $setDelay(env, executionEnvironment) {
 			let time = env.lb('time').getTypedValue();
 			let exp = env.lb('exp');
+			exp.setExptextSetname('delay');
 			exp.set(function(callback) {
 				return function() {
 					setTimeout(function() {
@@ -160,6 +162,7 @@ function createAsyncBuiltins() {
 		[ 'exp*' ],
 		function $setContentsChanged(env, executionEnvironment) {
 			let exp = env.lb('exp');
+			exp.setExptextSetname('contents-changed');
 			exp.set(function(callback) {
 				return function(exp) {
 					// the expectation will fulfill when its first child's contents
@@ -191,6 +194,7 @@ function createAsyncBuiltins() {
 		[ 'exp*'],
 		function $setImmediate(env, executionEnvironment) {
 			let exp = env.lb('exp');
+			exp.setExptextSetname('immediate');
 			exp.set(function(callback) {
 				return function() {
 					callback(null);

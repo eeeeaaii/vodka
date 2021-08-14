@@ -188,15 +188,6 @@ class Line extends NexContainer {
 		if (experiments.LITERALS) {
 			domNode.classList.add('newversionofline');
 		}
-	
-		// if (experiments.LITERALS && !(renderFlags & RENDER_FLAG_SHALLOW)) {
-		// 	if (renderFlags & RENDER_FLAG_EXPLODED) {
-		// 		linespan.classList.add('exploded');
-		// 	} else {
-		// 		linespan.classList.remove('exploded');
-		// 	}
-		// }
-
 	}
 
 	getDefaultHandler() {
@@ -208,6 +199,7 @@ class Line extends NexContainer {
 			return {
 				'ShiftSpace' : 'do-nothing',
 				'Enter': 'do-line-break-or-eval',
+				'Backspace': 'delete-line-v2',
 			}
 		} else {
 			return {

@@ -24,17 +24,26 @@ import { Nex } from './nex.js'
 class ValueNex extends Nex {
 	constructor(val, prefix, className) {
 		super();
-		this.value = String(val);
+		if (experiments.ASM_RUNTIME) {
+			if (className == 'integer') {
+				this.runtimeId = Module.ccall("create_" + className,
+						'number',
+						[],
+						[]
+						);
+			}
+		}
+		this.setValue(String(val));
 		this.prefix = prefix;
 		this.className = className;
 	}
 
 	isEmpty() {
-		return this.value == '';
+		return this.setValue('');
 	}
 
 	toString() {
-		return '' + this.prefix + this.value;
+		return '' + this.prefix + this.getValue();
 	}
 
 	getKeyFunnel() {
@@ -42,7 +51,7 @@ class ValueNex extends Nex {
 	}
 
 	renderValue() {
-		return this.value;
+		return this.getValue();
 	}
 
 	escapedRenderValue() {
@@ -57,10 +66,11 @@ class ValueNex extends Nex {
 		let val = this.escapedRenderValue();
 		let inner = '';
 		if (experiments.NO_TILDE) {
-			if (this.isEditing || (!val)) {
-				inner += '' + this.prefix;
-			}
-			inner += val;
+			inner = '<span class="prefixspan">' + this.prefix + '</span>' + this.escapedRenderValue();
+			// if (this.isEditing || (!val)) {
+			// 	inner += '' + this.prefix;
+			// }
+			// inner += val;
 		} else {
 			inner = '' + this.prefix + this.escapedRenderValue();
 		}
@@ -68,7 +78,7 @@ class ValueNex extends Nex {
 	}
 
 	getTypedValue() {
-		return this.value;
+		return this.getValue();
 	}
 
 	setValue(v) {
@@ -81,17 +91,17 @@ class ValueNex extends Nex {
 	}
 
 	appendText(txt) {
-		let v = this.value;
+		let v = this.getValue();
 		v = v + txt;
-		this.value = v;
+		this.setValue(v);
 		this.setDirtyForRendering(true);
 	}
 
 	deleteLastLetter() {
-		let v = this.value;
+		let v = this.getValue();
 		if (v == '') return;
 		v = v.substr(0, v.length - 1);
-		this.value = v;
+		this.setValue(v);
 		this.setDirtyForRendering(true);
 	}
 }

@@ -55,6 +55,7 @@ function createFileBuiltins() {
 				return new EError(`load: name must be symbol or string. Sorry!`);
 			}
 			let exp = new Expectation();
+			exp.setExptextSetname('load');
 			exp.set(function(callback) {
 				return function() {
 					loadNex(nm, loadmethod, function(loadResult) {
@@ -88,6 +89,7 @@ function createFileBuiltins() {
 					return new EError(`save: name must be symbol or string. Sorry!`);
 				}
 				let exp = new Expectation();
+				exp.setExptextSetname('save');
 				exp.set(function(callback) {
 					return function() {
 						saveNex(nm, val, savemethod, function(saveResult) {
@@ -161,6 +163,7 @@ function createFileBuiltins() {
 				}
 				let val = env.lb('nex');			
 				let exp = new Expectation();
+				exp.setExptextSetname('save-as');
 				exp.set(function(callback) {
 					return function() {
 						saveNex(nm, val, savemethod, function(saveResult) {
@@ -191,6 +194,7 @@ function createFileBuiltins() {
 			let loadmethod = 'loadraw';
 			let nm = namesym.getFullTypedValue();
 			let exp = new Expectation();
+			exp.setExptextSetname('load-string');
 			exp.set(function(callback) {
 				return function() {
 					loadRaw(nm, loadmethod, function(loadResult) {
@@ -222,6 +226,7 @@ function createFileBuiltins() {
 			let savemethod = 'saveraw';
 
 			let exp = new Expectation();
+			exp.setExptextSetname('save-string-as');
 			exp.set(function(callback) {
 				return function() {
 					saveRaw(nm, saveval, savemethod, function(saveResult) {
@@ -260,6 +265,7 @@ function createFileBuiltins() {
 			}
 
 			let exp = new Expectation();
+			exp.setExptextSetname('import');
 			exp.set(function(callback) {
 				return function() {
 					importNex(nm, loadmethod, function(importResult) {
@@ -383,6 +389,7 @@ function createFileBuiltins() {
 				}
 
 				let exp = new Expectation();
+				exp.setExptextSetname('save-package-as');
 				exp.set(function(callback) {
 					return function() {
 						saveNex(nm, val, savemethod, function(saveResult) {
@@ -425,6 +432,7 @@ function createFileBuiltins() {
 				Command.pushListContentsIntoArray(lst);
 				let val = Command.makeCommandWithArgs('package', args);
 				let exp = new Expectation();
+				exp.setExptextSetname('package-edit');
 				exp.set(function(callback) {
 					return function() {
 						saveNex(nm, val, function(saveResult) {

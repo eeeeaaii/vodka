@@ -17,6 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Builtin } from '../nex/builtin.js'
 import { EError } from '../nex/eerror.js'
+import { Bool } from '../nex/bool.js'
 import { Word } from '../nex/word.js'
 import { EString } from '../nex/estring.js'
 import { Integer } from '../nex/integer.js'
@@ -167,6 +168,16 @@ function createStringBuiltins() {
 			return new EString(s);
 		},
 		'retrieves a substring of |str from |start to |len'
+	);
+
+	Builtin.createBuiltin(
+		'is-empty-string',
+		[ 'str$' ],
+		function $isEmptyString(env, executionEnvironment) {
+			let str = env.lb('str').getFullTypedValue();
+			return new Bool(str == '');
+		},
+		'returns true if |str is the empty string.'
 	);
 }
 

@@ -528,6 +528,16 @@ const KeyResponseFunctions = {
 		s.getNex().startModalEditing();
 	},
 
+	'activate-or-return-exp-child': function(s) {
+		let exp = s.getNex();
+		if (!exp.isActivated()) {
+			evaluateAndKeep(s); // this will activate plus do all the other junk I want
+		} else if (exp.isFulfilled()) {
+			manipulator.replaceSelectedWithFirstChildOfSelected();
+		}
+		// else no-op, it's still thinking.
+	},
+
 	'return-exp-child': function(s) {
 		manipulator.replaceSelectedWithFirstChildOfSelected();
 	},
@@ -559,6 +569,10 @@ const KeyResponseFunctions = {
 
 	'delete-separator-v2': function(s) {
 		manipulator.deleteLeafV2(s);
+	},
+
+	'delete-line-v2': function(s) {
+		manipulator.maybeDeleteEmptyLineV2(s);
 	},
 
 	'remove-selected-and-select-previous-leaf-v2': function(s) {

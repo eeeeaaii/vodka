@@ -132,7 +132,7 @@ expected: ${e.expected[0].type}
 
 function evaluatePackage(nex) {
 	if (!(nex.getTypeName() == '-command-'
-				&& (nex.getCommandName() == 'package'
+				&& (nex.getCommandName() == 'package-named--is'
 				|| nex.getCommandName() == 'template'))) {
 		let r = new EError('Can only import packages or templates, see file contents')
 		r.appendChild(nex);

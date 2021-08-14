@@ -169,6 +169,9 @@ class ESymbolEditor extends Editor {
 	}
 
 	doAppendEdit(text) {
+		if (text == ' ') {
+			text = '-';
+		}
 		this.nex.appendText(text);
 	}
 
@@ -176,15 +179,15 @@ class ESymbolEditor extends Editor {
 		let firstLetter = (this.nex.getValue().length == 0);
 		if (firstLetter) {
 			if (experiments.ORG_OVERHAUL) {
-				return /^[a-zA-Z:.-]$/.test(text);
+				return /^[a-zA-Z:. -]$/.test(text);
 			} else {
-				return /^[a-zA-Z:-]$/.test(text);
+				return /^[a-zA-Z: -]$/.test(text);
 			}
 		} else {
 			if (experiments.ORG_OVERHAUL) {
-				return /^[a-zA-Z0-9:.-]$/.test(text);
+				return /^[a-zA-Z0-9:. -]$/.test(text);
 			} else {
-				return /^[a-zA-Z0-9:-]$/.test(text);
+				return /^[a-zA-Z0-9: -]$/.test(text);
 			}
 		}
 	}

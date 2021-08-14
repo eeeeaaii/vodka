@@ -91,9 +91,6 @@ function createLogicBuiltins() {
 		'evalutes |cond, and if it is true, return |iftrue, otherwise return |iffalse.'
 	)
 
-	Builtin.aliasBuiltin('if-then-else', 'if--then--else');
-	Builtin.aliasBuiltin('if', 'if--then--else');
-
 	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
 
 	Builtin.createBuiltin(
@@ -114,8 +111,6 @@ function createLogicBuiltins() {
 		},
 		'evalutes |cond, and if it is true, return |iftrue, otherwise return nil.'
 	)
-
-	Builtin.aliasBuiltin('if-then', 'if--then');
 
 	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
 

@@ -93,6 +93,11 @@ const experiments = {
 	// no-tilde
 	'NO_TILDE': true,
 
+	// expectations that have names
+	'NEW_EXPECTATION_SYNTAX': true,
+
+	// runtime in webasm
+	'ASM_RUNTIME': false,
 	// See note above about changing testharness.js when adding new flags.
 };
 

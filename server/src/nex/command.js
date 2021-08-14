@@ -437,7 +437,7 @@ class Command extends NexContainer {
 	getInitialCodespanContents(renderNode) {
 		let codespanHtml = '<span class="tilde">&#8766;</span>';
 		if (experiments.NO_TILDE && !this.isEditing) {
-			codespanHtml = '';
+			codespanHtml = '<span class="tilde prefixspan">&#8766;</span>';
 		}
 		if (experiments.INFIX_OPERATORS) {
 			let gclosure = this.getClosureForGhost();
@@ -720,6 +720,10 @@ class CommandEditor extends Editor {
 	}
 
 	doAppendEdit(text) {
+		// if the user types a space, we know they mean a dash.
+		if (text == ' ') {
+			text = '-';
+		}
 		this.nex.appendCommandText(text);
 	}
 
@@ -728,7 +732,7 @@ class CommandEditor extends Editor {
 	}
 
 	shouldAppend(text) {
-		if (/^[a-zA-Z0-9:.-]$/.test(text)) return true; // normal chars
+		if (/^[a-zA-Z0-9:. -]$/.test(text)) return true; // normal chars
 		if (/^[/<>=+*]$/.test(text)) return true;
 		return false;
 	}
@@ -739,7 +743,7 @@ class CommandEditor extends Editor {
 		if (/^[/<>=+*]$/.test(input)) return false;
 
 		// command-friendly characters
-		if (/^[a-zA-Z0-9:.-]$/.test(input)) return false;
+		if (/^[a-zA-Z0-9:. -]$/.test(input)) return false;
 
 		// anything else, pop out
 		return true;

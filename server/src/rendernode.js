@@ -25,6 +25,7 @@ import { IntegerEditor } from './nex/integer.js'
 import { ESymbolEditor } from './nex/esymbol.js'
 import { EStringEditor } from './nex/estring.js'
 import { CommandEditor } from './nex/command.js'
+import { ExpectationEditor } from './nex/expectation.js'
 import { InstantiatorEditor } from './nex/instantiator.js'
 import { TagEditor } from './tag.js'
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
@@ -111,19 +112,27 @@ class RenderNode {
 		this.currentEd = newval;
 	}
 
+	stopEditing() {
+		this.setCurrentEditor(null);
+		// set parent dirty when you stop editing because of redrawing pips
+		let p = this.getParent();
+		let toSetDirty = p ? p : this;
+		toSetDirty.nex.setDirtyForRendering(true);
+	}
+
 	routeKeyToCurrentEditor(keycode) {
 		try {
 			let reroute = this.getCurrentEditor().routeKey(keycode);
 			// the editor will decide when it's finished and will stop editing
 			if (!this.getCurrentEditor().isEditing()) {
-				this.setCurrentEditor(null);
+				this.stopEditing();
 			}
 			return reroute;
 		} catch (e) {
 			if (e.getTypeName && e.getTypeName() == '-error-') {
 				// YOU HAVE TO SET THE CURRENT EDITOR TO NULL FIRST
 				// because replacing self triggers a forceClose via select/unselect
-				this.setCurrentEditor(null);
+				this.stopEditing();
 				this.replaceSelfInParentWith(e);
 				return false;
 			} else {
@@ -135,7 +144,7 @@ class RenderNode {
 	forceCloseEditor() {
 		if (this.getCurrentEditor()) {
 			this.getCurrentEditor().forceClose();
-			this.setCurrentEditor(null);
+			this.stopEditing();
 		}
 	}
 
@@ -166,6 +175,17 @@ class RenderNode {
 				} else {
 					return false;
 				}
+			case '-expectation-':
+				if (experiments.NEW_EXPECTATION_SYNTAX) {
+					// special case: we cannot edit fulfilled or active expectations.
+					if (nex.isActivated() || nex.isFulfilled()) {
+						return false;
+					} else {
+						return new ExpectationEditor(nex);
+					}
+				} else {
+					return false;
+				}
 			default:
 				return null;
 		}
@@ -189,7 +209,9 @@ class RenderNode {
 		}
 		this.setCurrentEditor(editor);
 		this.getCurrentEditor().startEditing();
-		this.nex.setDirtyForRendering(true);
+		let p = this.getParent();
+		let toSetDirty = p ? p : this;
+		toSetDirty.nex.setDirtyForRendering(true);
 	}
 
 	startTagEditor() {
@@ -395,7 +417,7 @@ class RenderNode {
 		}
 		if (this.getNex().isNexContainer() && this.getNex().getTypeName() != '-nativeorg-' && !(useFlags & RENDER_FLAG_SHALLOW)) {
 			if ((useFlags & RENDER_FLAG_EXPLODED) && this.insertionMode == INSERT_INSIDE) {
-				this.domNode.appendChild(this.getInsertionPointDomNode(this.insertionMode));			
+				this.doInsertionPip(this);
 			}
 			let i = 0;
 			for (i = 0; i < this.childnodes.length; i++) {
@@ -422,13 +444,14 @@ class RenderNode {
 				childRenderNode.setRenderDepth(this.renderDepth + 1);
 
 				if ((useFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_BEFORE) {
-					this.domNode.appendChild(this.getInsertionPointDomNode(childRenderNode.insertionMode));			
+					this.doInsertionPip(childRenderNode);
 				}
 				// need to append child before drawing so things like focus() work right
 				if ((useFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_AROUND) {
-					this.wrapperDomNodes[i] = this.getInsertionPointDomNode(childRenderNode.insertionMode);
-					this.domNode.appendChild(this.wrapperDomNodes[i]);
-					this.wrapperDomNodes[i].appendChild(childRenderNode.getDomNode());
+					this.doInsertionSquare(i, childRenderNode)
+					// this.wrapperDomNodes[i] = this.getInsertionPipDomNode(childRenderNode.insertionMode);
+					// this.domNode.appendChild(this.wrapperDomNodes[i]);
+					// this.wrapperDomNodes[i].appendChild(childRenderNode.getDomNode());
 				} else {
 					this.wrapperDomNodes[i] = null;
 					this.domNode.appendChild(childRenderNode.getDomNode());
@@ -436,7 +459,7 @@ class RenderNode {
 				childRenderNode.render(childFlags);
 				this.nex.renderAfterChild(i, this, useFlags, this.getCurrentEditor());
 				if ((useFlags & RENDER_FLAG_EXPLODED) && childRenderNode.insertionMode == INSERT_AFTER) {
-					this.domNode.appendChild(this.getInsertionPointDomNode(childRenderNode.insertionMode));			
+					this.doInsertionPip(childRenderNode);
 				}
 			}
 			if (i < (this.getNex().numChildren())) {
@@ -484,40 +507,41 @@ class RenderNode {
 		this.nex.renderAfterChild(i, this, useFlags, this.getCurrentEditor());
 	}
 
-	getInsertionPointDomNode(insertionMode) {
-		if (insertionMode == INSERT_AROUND) {
-			return this.getInsertionPointForAround();
-		} else {
-			return this.getInsertionPointForNotAround();
-		}
-	}
-
-	getInsertionPointForAround() {
-		let ipoint = document.createElement('div');
-		let ss = "";
-		ss += "padding:5px;";
-		ss += "border:2px dotted #ff7777;";
-		ipoint.setAttribute("style", ss);
-		return ipoint;		
-	}
-
-	getInsertionPointForNotAround() {
-		let ipoint = document.createElement('div');
+	doInsertionPip(renderNodeToCheckIfEditing) {
+		let pip = document.createElement('div');
 		let ss = "";
 		ss += "width:5px;";
 		ss += "height:6px;";
 		ss += "padding:0px;";
 		ss += "color:#ff7777;";
 		ss += "line-height:0.4;";
-		if (this.getNex().isHorizontal && this.getNex().isHorizontal()) {
-			ss += "margin-top:6px;";
+		let p = renderNodeToCheckIfEditing.getParent();
+		if (p && p.nex.getTypeName() == '-root-') {
+			ss += "align-self:flex-start;"
 		} else {
-			ss += "margin-left:6px;"
+			ss += "align-self:center;"
+		}
+		if (renderNodeToCheckIfEditing.usingEditor()) {
+			ss += "opacity:.33;";
 		}
 
-		ipoint.setAttribute("style", ss);
-		ipoint.innerHTML = "&bull;";
-		return ipoint;
+		pip.setAttribute("style", ss);
+		pip.innerHTML = "&bull;";
+		this.domNode.appendChild(pip);			
+	}
+
+	doInsertionSquare(i, childRenderNode) {
+		let square = document.createElement('div');
+		let ss = "";
+		ss += "padding:5px;";
+		ss += "border:2px dotted #ff7777;";
+		if (renderNodeToCheckIfEditing.usingEditor()) {
+			ss += "opacity:.33;";
+		}
+		square.setAttribute("style", ss);
+		this.wrapperDomNodes[i] = square;
+		this.domNode.appendChild(this.wrapperDomNodes[i]);
+		this.wrapperDomNodes[i].appendChild(childRenderNode.getDomNode());
 	}
 
 	setInsertionMode(mode) {

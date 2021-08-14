@@ -22,6 +22,38 @@ import * as Utils from './utils.js'
 import { ERROR_TYPE_FATAL} from './nex/eerror.js'
 
 
+function getParameterInfo(params) {
+	let info = {};
+	info.hasoptionals = false;
+	info.hasvariadics = false;
+	info.minArgCount = 0;
+	info.maxArgCount = 0;
+	let didVariadic = false;
+	for (let i = 0; i < params.length; i++) {
+		if (info.hasvariadics) {
+			throw new Error("variadic must be last arg");
+		}
+		let param = params[i];
+		if (param.optional) {
+			info.hasoptionals = true;
+			info.maxArgCount++;
+			continue;
+		}
+		if (param.variadic) {
+			if (info.hasoptionals) {
+				throw new Error("can't have variadics and also optionals.");
+			}
+			info.hasvariadics = true;
+			info.maxArgCount = Infinity;
+		} else {
+			info.maxArgCount++;
+			info.minArgCount++;
+		}
+	}
+	return info;
+}
+
+
 
 class ArgEvaluator {
 	constructor(name, params, argContainer, executionEnvironment) {
@@ -29,7 +61,8 @@ class ArgEvaluator {
 		this.params = params;
 		this.argContainer = argContainer;
 		this.executionEnvironment = executionEnvironment;
-		this.verifyParameterCorrectness();
+		this.paramInfo = getParameterInfo(this.params);
+//		this.verifyParameterCorrectness();
 	}
 
 	debugString() {
@@ -47,10 +80,11 @@ class ArgEvaluator {
 		return s;
 	}
 
+/*
 	verifyParameterCorrectness() {
 		this.hasoptionals = false;
 		this.hasvariadics = false;
-		this.numRequiredParams = 0;
+		this.minArgCount = 0;
 		for (let i = 0; i < this.params.length; i++) {
 			let param = this.params[i];
 			if (param.optional) {
@@ -70,13 +104,14 @@ class ArgEvaluator {
 				this.hasvariadics = true;
 				continue;
 			}
-			this.numRequiredParams++;
+			this.minArgCount++;
 		}
 	}
+	*/
 
 	checkMinNumArgs() {
-		if (this.argContainer.numArgs() < this.numRequiredParams) {
-			throw new EError(`when calling ${this.name}: not enough args. You needed ${this.numRequiredParams} but there were only ${this.argContainer.numArgs()}. Sorry!`);
+		if (this.argContainer.numArgs() < this.paramInfo.minArgCount) {
+			throw new EError(`when calling ${this.name}: not enough args. You needed ${this.paramInfo.minArgCount} but there were only ${this.argContainer.numArgs()}. Sorry!`);
 		}
 	}
 
@@ -92,7 +127,7 @@ class ArgEvaluator {
 		for (; i < this.params.length; i++) {
 			this.effectiveParams[i] = this.params[i];
 		}
-		if (this.hasvariadics) {
+		if (this.paramInfo.hasvariadics) {
 			for(let lasti = i - 1; i < this.argContainer.numArgs(); i++) {
 				this.effectiveParams[i] = this.params[lasti];
 			}
@@ -201,5 +236,5 @@ ArgEvaluator.ARG_VALIDATORS = {
 	'Closure': arg => (arg.getTypeName() == '-closure-'),
 };
 
-export { ArgEvaluator }
+export { ArgEvaluator, getParameterInfo }
 

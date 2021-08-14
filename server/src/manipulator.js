@@ -447,6 +447,23 @@ class Manipulator {
 		}
 	}
 
+	_deleteEmptyLine(s) {
+		let previousSibLine = this._getSiblingBefore(s);
+		if (previousSibLine) {
+			previousSibLine.setSelected();
+			if (!this._isEmpty(previousSibLine)) {
+				let tosel = this._getLastLeafInside(previousSibLine);
+				tosel.setSelected();
+				this._forceInsertionMode(INSERT_AFTER, tosel);
+			}
+			this._deleteNode(s);
+		} else {
+			let p = s.getParent();
+			p.setSelected();
+			this._deleteNode(s);
+		}
+	}
+
 	_deleteLineBreak(s) {
 		let enclosingLine = this.getEnclosingLineInSameDoc(s);
 		let previousSibLine = this._getSiblingBefore(enclosingLine);
@@ -732,6 +749,12 @@ class Manipulator {
 		} else {
 			// simpler delete for "naked" letters
 			this.removeAndSelectPreviousSiblingV2(s);
+		}
+	}
+
+	maybeDeleteEmptyLineV2(s) {
+		if (this._isEmptyLineInDoc(s)) {
+			this._deleteEmptyLine(s);
 		}
 	}
 
@@ -1980,6 +2003,7 @@ class Manipulator {
 		let e = new Expectation();
 		e.setLiteral(true);
 		let r = new RenderNode(e);
+		r.possiblyStartMainEditor();
 		return r;		
 	}
 

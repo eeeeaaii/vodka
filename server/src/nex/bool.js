@@ -56,7 +56,7 @@ class Bool extends ValueNex {
 	}
 
 	toStringV2() {
-		return `!${this.toStringV2Literal()}${this.toStringV2TagList()}${this.renderValue()}`;
+		return `!${this.toStringV2Literal()}${this.toStringV2TagList()}${this.saveRenderValue()}`;
 	}
 
 	getTypedValue() {
@@ -65,6 +65,11 @@ class Bool extends ValueNex {
 
 	isEmpty() {
 		return true;
+	}
+
+	// TODO: save it as T or F not yes or no
+	saveRenderValue() {
+		return this.getTypedValue() ? 'yes' : 'no';
 	}
 
 	renderValue() {

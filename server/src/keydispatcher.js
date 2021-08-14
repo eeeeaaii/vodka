@@ -53,6 +53,7 @@ class KeyDispatcher {
 	}
 
 	dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
+		if (keycode == 'CapsLock') return true;
 		let keyContext = ContextType.COMMAND;
 		let p = systemState.getGlobalSelectedNode().getParent();
 		if (p) {

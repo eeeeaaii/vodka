@@ -245,6 +245,8 @@ function getMimeTypeFromExt(fname) {
 			return 'text/css';
 		case '.mp3':
 			return 'audio/mpeg';
+		case '.wasm':
+			return 'application/wasm';
 	}
 	return 'text/plain';
 }

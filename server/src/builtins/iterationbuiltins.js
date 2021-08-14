@@ -110,7 +110,7 @@ function createIterationBuiltins() {
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
-	function $reduceWithStarting(env, executionEnvironment) {
+	function $reduceWithGiven(env, executionEnvironment) {
 		let list = env.lb('list');
 		let closure = env.lb('func');
 		let sn = env.lb('startvalue');
@@ -122,7 +122,7 @@ function createIterationBuiltins() {
 				cmd.setSkipAlertAnimation(true);
 				let result = evaluateNexSafely(cmd, executionEnvironment);
 				if (Utils.isFatalError(result)) {
-					throw wrapError('&szlig;', `reduce-with-starting: error returned from item ${i+1}`, result);
+					throw wrapError('&szlig;', `reduce-with-given: error returned from item ${i+1}`, result);
 				}
 				p = result;
 				i++;
@@ -138,9 +138,9 @@ function createIterationBuiltins() {
 	}
 
 	Builtin.createBuiltin(
-		'reduce--with--starting',
+		'reduce--with--given',
 		[ 'list()', 'func&', 'startvalue' ],
-		$reduceWithStarting,
+		$reduceWithGiven,
 		'progressively updates a value, starting with |startvalue, by calling |func on each element in |list, passing in 1. the list element and 2. the progressively updated value, returning the final updated value.'
 	);
 
