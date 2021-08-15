@@ -53,7 +53,13 @@ class KeyDispatcher {
 	}
 
 	dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
+		// don't need to do anything with modifier key presses directly, and having them go through the pipline
+		// makes it hard to debug key presses.
 		if (keycode == 'CapsLock') return true;
+		if (keycode == 'Shift') return true;
+		if (keycode == 'Alt') return true;
+		if (keycode == 'Meta') return true;
+		if (keycode == 'Control') return true;
 		let keyContext = ContextType.COMMAND;
 		let p = systemState.getGlobalSelectedNode().getParent();
 		if (p) {
@@ -65,18 +71,16 @@ class KeyDispatcher {
 		if (eventName == '?') {
 			if (this.nqmarks == 2) {
 				this.uiCallbackObject.helpCallback();
-//				this.helpcallback();
 				this.nqmarks++
 			} else if (this.nqmarks == 3) {
 				this.uiCallbackObject.helpCallback2();
-//				this.help2callback();
 				this.nqmarks = 0;
 			} else {
-				if (eventName != 'Shift') this.closeHelp();
+				this.closeHelp();
 				this.nqmarks++;
 			}
 		} else {
-			if (eventName != 'Shift') this.closeHelp();
+			this.closeHelp();
 			this.nqmarks = 0;
 		}
 

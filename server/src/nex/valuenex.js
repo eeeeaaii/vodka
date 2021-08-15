@@ -16,9 +16,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { experiments } from '../globalappflags.js'
-
-//
-
 import { Nex } from './nex.js'
 
 class ValueNex extends Nex {

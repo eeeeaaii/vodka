@@ -1,0 +1,1 @@
+v2:~(|package-named--is @livecode ~(_import @style-functions_) ~(_bind--to @random-flip &"nex"(|~(|if--then--else ~(_::lt:: ~(_random _) %0.5_) ~(_style:flip-horizontally @nex_) ~(_style:flip-vertically @nex_)|)|)_)|)

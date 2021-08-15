@@ -15,10 +15,11 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from './utils.js'
+
 import { evaluateNexSafely, wrapError } from './evaluator.js'
 import { Word } from './nex/word.js'
 import { EError } from './nex/eerror.js'
-import * as Utils from './utils.js'
 import { ERROR_TYPE_FATAL} from './nex/eerror.js'
 
 

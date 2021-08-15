@@ -98,6 +98,16 @@ class Line extends NexContainer {
 		}
 	}
 
+	setMutable(val) {
+		super.setMutable(val)
+		// make doc-type children also have the same mutability
+		this.doForEachChild(c => {
+			if (Utils.isDocElement(c)) {
+				c.setMutable(val);
+			}
+		})
+	}
+
 	toggleDir() {} // can only be horizontal
 	setVertical() {}
 

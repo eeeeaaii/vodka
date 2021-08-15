@@ -15,6 +15,9 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from '../utils.js';
+
+
 import { NexContainer } from './nexcontainer.js'
 import { ContextType } from '../contexttype.js'
 import { experiments } from '../globalappflags.js'
@@ -79,6 +82,15 @@ class Word extends NexContainer {
 		}
 	}
 
+	setMutable(val) {
+		super.setMutable(val)
+		// make doc-type children also have the same mutability
+		this.doForEachChild(c => {
+			if (Utils.isDocElement(c)) {
+				c.setMutable(val);
+			}
+		})
+	}
 
 	toggleDir() {} // can only be horizontal
 	setVertical() {}

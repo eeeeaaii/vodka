@@ -537,7 +537,7 @@ class RenderNode {
 		let ss = "";
 		ss += "padding:5px;";
 		ss += "border:2px dotted #ff7777;";
-		if (renderNodeToCheckIfEditing.usingEditor()) {
+		if (childRenderNode.usingEditor()) {
 			ss += "opacity:.33;";
 		}
 		square.setAttribute("style", ss);

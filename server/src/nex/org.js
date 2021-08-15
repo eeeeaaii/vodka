@@ -18,9 +18,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from '../utils.js'
 
 import { NexContainer, V_DIR, H_DIR, Z_DIR } from './nexcontainer.js'
-import { wrapError } from '../evaluator.js'
 import { experiments } from '../globalappflags.js'
-import { evaluateNexSafely } from '../evaluator.js'
+import { wrapError, evaluateNexSafely } from '../evaluator.js'
 
 
 class Org extends NexContainer {

@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from '../utils.js'
+
 import { NexContainer } from './nexcontainer.js'
 import { EError } from './eerror.js'
 import { ContextType } from '../contexttype.js'
@@ -42,7 +44,6 @@ class Doc extends NexContainer {
 	toStringV2() {
 		return `[${this.toStringV2Literal()}doc]${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
-
 
 	toggleDir() {} // can only be vertical
 	setHorizontal() {}
@@ -144,6 +145,16 @@ class Doc extends NexContainer {
 		// 		docspan.classList.remove('exploded');
 		// 	}
 		// }
+	}
+
+	setMutable(val) {
+		super.setMutable(val)
+		// make doc-type children also have the same mutability
+		this.doForEachChild(c => {
+			if (Utils.isDocElement(c)) {
+				c.setMutable(val);
+			}
+		})
 	}
 
 	getDefaultHandler() {
