@@ -26,7 +26,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .lambda > .codespan.exploded {
-	background-color: #e8e8e8;
+	background-color: var(--value-background);
 	border-width: 3px 3px 3px 0px;
 	border-style: solid;
 	border-color: var(--unselected-border);
@@ -35,7 +35,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .lambda > .codespan.exploded.editing {
-	background-color: #ffbfbe;
+	background-color: var(--editing-background);
 }
 
 .lambda.vdir > .codespan.exploded {

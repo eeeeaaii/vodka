@@ -18,9 +18,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 .nil.exploded {
 	font-weight: bold;
-	background-color: #444444;
+	background-color: var(--inverted-nex-background);
 	font-style: normal;
-	color: #e8e8e8;
+	color: var(--inverted-nex-foreground);
 	padding-left: 8px;
 	padding-right: 8px;
 	font-size:16px;

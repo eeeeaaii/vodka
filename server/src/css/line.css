@@ -36,11 +36,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .newversionofline.exploded {
-	border-color: #d5d5e3;
+	border-color: var(--line-unselected);
 }
 
 .newversionofline.exploded.newselected {
-	border-color: #a7a7de;
+	border-color: var(--line-selected);
 }
 
 .newversionofline.exploded.mutable {

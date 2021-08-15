@@ -1,0 +1,34 @@
+
+
+:root {
+  --selected-border: #652e2e;
+  --unselected-border: #313131;
+  --value-background: #1d1d1d;
+  --info-text: #c7c7c7;
+  --inverted-nex-background: #c7c7c7;
+  --inverted-nex-foreground: #1d1d1d;
+  --editing-background: #381f1e;
+
+  --doc-selected: #127f29;
+  --doc-unselected: #294430;
+  --line-selected: #8484af;
+  --line-unselected: #3a3a56;
+  --word-selected: #8e8e33;
+  --word-unselected: #4a4a29;
+
+  --org-border: #3a3a3a;
+}
+
+/* dark theme has a different default font for letters. */
+
+.letter {
+  font-family: Arial, sans-serif;  
+}
+
+body {
+	background-color: black;
+}
+
+.letter {
+	color: white;
+}

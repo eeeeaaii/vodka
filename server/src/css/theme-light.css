@@ -1,0 +1,24 @@
+
+
+:root {
+  --selected-border: #ff7777;
+  --unselected-border: #aaaaaa;
+  --value-background: #e8e8e8;
+  --info-text: #444444;
+  --inverted-nex-background: #444444;
+  --inverted-nex-foreground: #e8e8e8;
+  --editing-background: #ffbfbe;
+
+  --doc-selected: #1ece44;
+  --doc-unselected: #bce3c5;
+  --line-selected: #a7a7de;
+  --line-unselected: #d5d5e3;
+  --word-selected: #c7c747;
+  --word-unselected: #e6e6b3;
+
+  --org-border: #c7c7c7;
+}
+
+body {
+	background-color: white;
+}

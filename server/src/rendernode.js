@@ -79,6 +79,8 @@ class RenderNode {
 		this.setInsertionMode(INSERT_UNSPECIFIED);
 
 		this.renderNodeIsDirty = true;
+
+		this.nodesThatIfDroppedInvalidateTheSelection = [];
 	}
 
 	nodeCopy() {

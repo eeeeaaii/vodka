@@ -112,7 +112,7 @@ const otherflags = {
 	'DEFAULT_TO_PARAMETRIC_FONTS': false,
 	'DEBUG_EXPECTATIONS': false,
 	'FILE': '',
-	'NO_UNDO': false,
+	'NO_UNDO': true,
 }
 
 // If a flag has a certain default value that rarely/never works for

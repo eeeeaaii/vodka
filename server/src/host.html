@@ -18,6 +18,16 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 <html>
 <head>
 	<title>- no file -</title>
+	<script type="text/javascript">
+	var CSS_THEME = 'light';
+	//hack
+	let params = new URLSearchParams(window.location.search);
+	params.forEach(function(value, key) {
+		if (key == 'theme' && value == 'dark') {
+			CSS_THEME = 'dark'
+		}
+	})
+	</script>
 	<link rel="stylesheet" href="css/vodka.css">
 	<link rel="stylesheet" href="css/valuenex.css">
 	<link rel="stylesheet" href="css/doc.css">
@@ -39,6 +49,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	<link rel="stylesheet" href="css/org.css">
 	<link rel="stylesheet" href="css/expectation.css">
 	<link rel="stylesheet" href="css/mobile.css">
+	<script type="text/javascript">
+		document.write('<link rel="stylesheet" href="css/theme-' + CSS_THEME + '.css">');
+	</script>
   <!-- web font loader -->
   <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
 	<!-- serverinject:head -->

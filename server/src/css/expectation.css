@@ -55,11 +55,13 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	font-family: "Courier";
 	font-style: italic;
 	font-size: 12px;
+	color: var(--info-text);
+	background-color: var(--value-background);
 }
 
 .dotspan.exploded.editing {
 	font-weight: bold;
-	background-color: #ffbfbe	
+	background-color: var(--editing-background)	
 }
 
 
@@ -70,7 +72,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	flex-direction: row;
 	align-items: center;
 	font-family: "Courier";
-	color: #444444;
+	color: var(--info-text);
 	font-style: italic;
 	font-size: 15px;
 	background-color: var(--unselected-border);

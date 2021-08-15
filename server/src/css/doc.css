@@ -35,11 +35,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .newdoc.exploded {
-	border-color: #bce3c5;	
+	border-color: var(--doc-unselected);	
 }
 
 .newdoc.exploded.newselected {
-	border-color: #1ece44;
+	border-color: var(--doc-selected);
 }
 
 .newdoc.exploded.mutable {

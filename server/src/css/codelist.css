@@ -61,7 +61,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	flex-direction: row;
 	align-items: center;
 	font-family: "Courier";
-	color: #444444;
+	color: var(--info-text);
 	font-style: italic;
 	font-size: 15px;
 	background-color: var(--unselected-border);
@@ -73,7 +73,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 .codespan.exploded.editing {
 	font-weight: bold;
-	background-color: #ffbfbe
+	background-color: var(--editing-background)
 }
 
 .codelist.exploded.vdir > .codespan {
@@ -103,7 +103,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	flex-direction: row;
 	align-items: center;
 	font-family: Courier;
-	color: #444444;
+	color: var(--info-text);
 	font-style: italic;
 	font-size: 15px;
 	background-color: var(--unselected-border);
@@ -120,7 +120,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 .innercodespan.exploded.editing {
 	font-weight: bold;
-	background-color: #ffbfbe
+	background-color: var(--editing-background)
 }
 
 .selected > .innercodespan {

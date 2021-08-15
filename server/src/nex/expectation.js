@@ -54,10 +54,22 @@ class CallbackRouter {
 	}
 
 	addExpecting(exp) {
+		for (let i = 0; i < this.waitingExpectations.length; i++) {
+			if (this.waitingExpectations[i] == exp) {
+				console.log('warning: re-adding the same expectation.')
+				return;
+			}
+		}
 		this.waitingExpectations.push(exp);
 	}
 
 	fulfill(result) {
+		for (let i = 0; i < this.waitingExpectations.length; i++) {
+			if (this.waitingExpectations[i].references == 0) {
+				this.waitingExpectations.splice(i, 1);// delete what's at i
+				i--; // we'll have to look at i again, decrement so it can be incremented
+			}
+		}
 		for (let i = 0; i < this.waitingExpectations.length; i++) {
 			this.waitingExpectations[i].fulfill(result);
 		}
@@ -189,11 +201,14 @@ class Expectation extends NexContainer {
 		if (this.activated) {
 			throw new EError('Expectation: cannot set the expectation, has already been activated');
 		}
-		this.hasBeenSet = true;
+		if (!this.isSet()) {
+			// first time setting
+			this.hasBeenSet = true;
+			this.ffgen = FF_GEN;
+			this.callbackRouter = new CallbackRouter();
+			this.callbackRouter.addExpecting(this);
+		}
 		this.autoreset = !!autoreset;
-		this.ffgen = FF_GEN;
-		this.callbackRouter = new CallbackRouter();
-		this.callbackRouter.addExpecting(this);
 		this.activationFunctionGenerator = activationFunctionGenerator;
 		this.activationFunction = activationFunctionGenerator(this.getCallbackForSet(), this);
 	}
@@ -721,13 +736,33 @@ class Expectation extends NexContainer {
 		this.setBuiltinAsyncType(this.getExptextSetname());
 	}
 
-	getExptextSetname() {
+	getExptextArg(def) {
+		let r = '';
 		if (this.exptext.indexOf(',') > 0) {
 			let a = this.exptext.split(',');
-			return a[0];
+			r = a[0];
 		} else {
-			return this.exptext;
+			r = this.exptext;
 		}
+		if (r.indexOf('(') >= 0) {
+			return r.substring(r.indexOf('(') + 1, r.indexOf(')'))
+		} else {
+			return def;
+		}
+	}
+
+	getExptextSetname() {
+		let r = '';
+		if (this.exptext.indexOf(',') > 0) {
+			let a = this.exptext.split(',');
+			r = a[0];
+		} else {
+			r = this.exptext;
+		}
+		if (r.indexOf('(') >= 0) {
+			r = r.substr(0, r.indexOf('('));
+		}
+		return r;
 	}
 
 	getExptextFfname() {
@@ -762,15 +797,7 @@ class Expectation extends NexContainer {
 
 		let delayAFG = function(callback) {
 					return function(exp) {
-						let timeout = 1000; // default timeout 1 second
-						let n = exp.numChildren();
-						// if last child is an integer, use that for timeout instead
-						if (n > 0) {
-							let c1 = exp.getChildAt(exp.numChildren() - 1);
-							if (c1.getTypeName() == '-integer-') {
-								timeout = c1.getTypedValue();
-							}
-						}
+						let timeout = Number(exp.getExptextArg('1000'));
 						setTimeout(function() {
 							callback(null /* do not set a value, the default is whatever the child is of the exp */);
 						}, timeout)							
@@ -854,14 +881,14 @@ class ExpectationEditor extends Editor {
 	}
 
 	shouldAppend(text) {
-		if (/^[a-zA-Z0-9:,-]$/.test(text)) return true; // normal chars
+		if (/^[a-zA-Z0-9:)(,-]$/.test(text)) return true; // normal chars
 		return false;
 	}
 
 	shouldTerminateAndReroute(input) {
 		if (super.shouldTerminateAndReroute()) return true;
 
-		if (/^[a-zA-Z0-9:,-]$/.test(input)) return false;
+		if (/^[a-zA-Z0-9:)(,-]$/.test(input)) return false;
 
 		// anything else, pop out
 		return true;
