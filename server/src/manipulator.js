@@ -622,14 +622,14 @@ class Manipulator {
 	// THESE SHOULD ALL BE SEPARATE CLASSES THEN I WOULDN'T HAVE TO SCREAM IN ALL CAPS
 
 
-	_doLineBreakBeforeSeparator(s) {
+	_doLineBreakBeforeSeparator(s, context) {
 		if (this._isSeparatorInDocFormat(s) || this._isLetterInSeparatorPosition(s)) {
-			if (this._splitParentBeforeAndPutIn(s, this.newLine())) {
+			if (this._splitParentBeforeAndPutIn(s, this.possiblyMakeImmutable(this.newLine(), context))) {
 				// split was performed, select next leaf and put insertion point before
 				this.selectPreviousLeaf();
 				this._forceInsertionMode(INSERT_AFTER, this.selected());
 			} else {
-				this._prependBefore(this.newLine(), this.getEnclosingLineInSameDoc(s));
+				this._prependBefore(this.possiblyMakeImmutable(this.newLine(), context), this.getEnclosingLineInSameDoc(s));
 				// leave current thing selected!
 			}
 		} else if (this._isSeparatorInLetterPosition(s)) {
@@ -639,61 +639,59 @@ class Manipulator {
 		}
 	}
 
-	_doLineBreakAfterSeparator(s) {
+	_doLineBreakAfterSeparator(s, context) {
 		if (this._isSeparatorInDocFormat(s) || this._isLetterInSeparatorPosition(s)) {
-			if (this._splitParentAfterAndPutIn(s, this.newLine())) {
+			if (this._splitParentAfterAndPutIn(s, this.possiblyMakeImmutable(this.newLine(), context))) {
 				// split was performed, select next leaf and put insertion point before
 				this.selectNextLeaf();
 				this._forceInsertionMode(INSERT_BEFORE, this.selected());
 			} else {
-				let line = this.newLine();
 				// split not performed, insert new empty line
-				this._appendAfterAndSelect(line, this.getEnclosingLineInSameDoc(s));
+				this._appendAfterAndSelect(this.possiblyMakeImmutable(this.newLine(), context), this.getEnclosingLineInSameDoc(s));
 			}
 		} else if (this._isSeparatorInLetterPosition(s)) {
-			this._doLineBreakAfterLetter(s);
+			this._doLineBreakAfterLetter(s, context);
 		} else {
 			// idk, call the method we use for random things? do nothing? idk
 		}
 	}
 
-	_doLineBreakBeforeLetter(s) {
+	_doLineBreakBeforeLetter(s, context) {
 		if (this._isLetterInDocFormat(s) || this._isSeparatorInLetterPosition(s)) {
 			// for situations where we have ( ( a S b c) )
-			if (this._splitParentAndGrandparentBeforeAndPutIn(s, this.newWord(), this.newLine())) {
+			if (this._splitParentAndGrandparentBeforeAndPutIn(s, this.possiblyMakeImmutable(this.newWord(), context), this.possiblyMakeImmutable(this.newLine(), context))) {
 				// split was performed, need to move selected node
 				this.selectPreviousLeaf();
 				this._forceInsertionMode(INSERT_AFTER, this.selected());
 			// for situations where we have ( a ( S b c) )
-			} else if (this._splitGrandparentBeforeAndPutIn(s, this.newLine())) {
+			} else if (this._splitGrandparentBeforeAndPutIn(s, this.possiblyMakeImmutable(this.newLine(), context))) {
 				this.selectPreviousLeaf();
 				this._forceInsertionMode(INSERT_AFTER, this.selected());				
 			} else {
-				this._prependBefore(this.newLine(), this.getEnclosingLineInSameDoc(s));
+				this._prependBefore(this.possiblyMakeImmutable(this.newLine(), context), this.getEnclosingLineInSameDoc(s));
 				// leave current thing selected!
 			}
 		} else if (this._isLetterInSeparatorPosition(s)) {
-			this._doLineBreakBeforeSeparator(s);
+			this._doLineBreakBeforeSeparator(s, context);
 		}
 	}
 
-	_doLineBreakAfterLetter(s) {
+	_doLineBreakAfterLetter(s, context) {
 		if (this._isLetterInDocFormat(s) || this._isSeparatorInLetterPosition(s)) {
 			// for situations where we have ( ( a b S c ) )
-			if (this._splitParentAndGrandparentAfterAndPutIn(s, this.newWord(), this.newLine())) {
+			if (this._splitParentAndGrandparentAfterAndPutIn(s, this.possiblyMakeImmutable(this.newWord(), context), this.possiblyMakeImmutable(this.newLine(), context))) {
 				// split was performed, need to move selected node
 				this.selectNextLeaf();
 				this._forceInsertionMode(INSERT_BEFORE, this.selected());
 			// for situations where we have ( ( a b S ) c )
-			} else if (this._splitGrandparentAfterAndPutIn(s, this.newLine())) {
+			} else if (this._splitGrandparentAfterAndPutIn(s, this.possiblyMakeImmutable(this.newLine(), context))) {
 				this.selectNextLeaf();
 				this._forceInsertionMode(INSERT_BEFORE, this.selected());				
 			} else {
-				let line = this.newLine();
-				this._appendAfterAndSelect(line, this.getEnclosingLineInSameDoc(s));
+				this._appendAfterAndSelect(this.possiblyMakeImmutable(this.newLine(), context), this.getEnclosingLineInSameDoc(s));
 			}
 		} else if (this._isLetterInSeparatorPosition(s)) {
-			this._doLineBreakAfterSeparator(s);
+			this._doLineBreakAfterSeparator(s, context);
 		}
 	}	
 
@@ -861,24 +859,24 @@ class Manipulator {
 	}
 
 
-	doLineBreakForLetter(s) {
+	doLineBreakForLetter(s, context) {
 		if (s.getInsertionMode() == INSERT_AFTER) {
-			this._doLineBreakAfterLetter(s);
+			this._doLineBreakAfterLetter(s, context);
 		} else {
-			this._doLineBreakBeforeLetter(s);
+			this._doLineBreakBeforeLetter(s, context);
 		}
 	}
 
-	doLineBreakForSeparator(s) {
+	doLineBreakForSeparator(s, context) {
 		if (s.getInsertionMode() == INSERT_AFTER) {
-			this._doLineBreakAfterSeparator(s);
+			this._doLineBreakAfterSeparator(s, context);
 		} else {
-			this._doLineBreakBeforeSeparator(s);
+			this._doLineBreakBeforeSeparator(s, context);
 		}
 	}
 
-	doLineBreakForLine(s) {
-		let ln = this.newLine();
+	doLineBreakForLine(s, context) {
+		let ln = this.possiblyMakeImmutable(this.newLine(), context);
 		let mode = s.getInsertionMode();
 		if (mode == INSERT_BEFORE || mode == INSERT_AROUND) {
 			this._prependBeforeAndSelect(ln, s);
@@ -1905,6 +1903,15 @@ class Manipulator {
 				this.selected().setInsertionMode(CLIPBOARD_INSERTION_MODE);
 				break;
 		}
+	}
+
+	possiblyMakeImmutable(nex, context) {
+		if (Utils.isImmutableContext(context)) {
+			let n = nex;
+			if (n instanceof RenderNode) n = n.getNex();
+			n.setMutable(false);
+		}
+		return nex;
 	}
 
 

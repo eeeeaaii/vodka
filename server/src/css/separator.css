@@ -51,18 +51,34 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 .separator.exploded.selected {
 	animation-name: none;
-	border-top: 1px solid black;
-	border-right: 1px solid black;
-	border-bottom: 1px solid black;
+	border-top: 1px solid var(--cursor-blink-color);
+	border-right: 1px solid var(--cursor-blink-color);
+	border-bottom: 1px solid var(--cursor-blink-color);
 	margin-right: -1px; /* why did I do this */
 }
 .separator.exploded.newselected {
 	animation-name: none;
-	border-top: 1px solid black;
-	border-right: 1px solid black;
-	border-bottom: 1px solid black;
-	margin-right: -1px; /* why did I do this */
 }
+
+.separator.newselected.exploded.leftinsert {
+	border-top: 1px solid var(--cursor-blink-color);
+	border-left: 1px solid var(--cursor-blink-color);
+	border-bottom: 1px solid var(--cursor-blink-color);
+	margin-top: -1px;
+	margin-left: -1px;
+	margin-bottom: -1px;
+}
+
+.separator.newselected.exploded.rightinsert {
+	border-top: 1px solid var(--cursor-blink-color);
+	border-right: 1px solid var(--cursor-blink-color);
+	border-bottom: 1px solid var(--cursor-blink-color);
+	margin-top: -1px;
+	margin-right: -1px;
+	margin-bottom: -1px;
+}
+
+
 
 .line > .separator.exploded.selected {
 	margin-top: 5px;

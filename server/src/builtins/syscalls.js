@@ -97,9 +97,6 @@ function createSyscalls() {
 		function $applyCssStyleTo(env, executionEnvironment) {
 			let s = env.lb('style').getFullTypedValue();
 			let n = env.lb('nex');
-			if (!experiments.NO_COPY_CSS) {
-				n = n.makeCopy();
-			}
 			n.setCurrentStyle(s);
 			return n;
 		}

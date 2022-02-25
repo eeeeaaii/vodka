@@ -117,7 +117,7 @@ class Nex {
 		this.setMutable(val);
 	}
 
-	isLiteral() {
+	isMutable() {
 		return this.mutable;
 	}
 
@@ -318,6 +318,10 @@ class Nex {
 		if (this.hasTag(tag)) return;
 		this.tags.unshift(tag);		
 		this.setDirtyForRendering(true);
+	}
+
+	hasTagWithString(s) {
+		return this.hasTag(new Tag(s));
 	}
 
 	hasTag(tag) {

@@ -126,7 +126,7 @@ function createBasicBuiltins() {
 	);
 
 	Builtin.aliasBuiltin('cap', 'hard-head');
-	Builtin.aliasBuiltin('hard-first', 'hard-head');
+//	Builtin.aliasBuiltin('hard-first', 'hard-head');
 
 	Builtin.createBuiltin(
 		'tail',
@@ -161,7 +161,7 @@ function createBasicBuiltins() {
 	);
 
 	Builtin.aliasBuiltin('chop', 'hard-tail');
-	Builtin.aliasBuiltin('hard-rest', 'hard-tail');
+//	Builtin.aliasBuiltin('hard-rest', 'hard-tail');
 
 	Builtin.createBuiltin(
 		'push--into',
@@ -329,18 +329,18 @@ function createBasicBuiltins() {
 			n.setMutable(true);
 			return n;
 		},
-		'makes |nex a mutable'
+		'makes |nex mutable'
 	);
 
 	Builtin.createBuiltin(
-		'nonmutable',
+		'immutable',
 		[ 'nex' ],
-		function $nonmutable(env, executionEnvironment) {
+		function $immutable(env, executionEnvironment) {
 			let n = env.lb('nex');
 			n.setMutable(false);
 			return n;
 		},
-		'makes |nex a nonmutable'
+		'makes |nex immutable'
 	);
 }
 

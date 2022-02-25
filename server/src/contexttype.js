@@ -22,6 +22,9 @@ ContextType.COMMAND = 2;
 ContextType.DOC = 3;
 ContextType.LINE = 4;
 ContextType.WORD = 5;
+ContextType.IMMUTABLE_DOC = 6;
+ContextType.IMMUTABLE_LINE = 7;
+ContextType.IMMUTABLE_WORD = 8;
 
 class ContextMapBuilder {
 	constructor() {

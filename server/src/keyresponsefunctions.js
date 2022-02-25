@@ -288,7 +288,7 @@ const DefaultHandlers = {
 		}		
 	},
 
-	'insertAfterEError': function(nex, txt) {
+	'eerrorDefault': function(nex, txt) {
 		if (isNormallyHandled(txt)) {
 			return false;
 		}
@@ -303,7 +303,21 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	'justAppendLetterOrSeparator': function(nex, txt) {
+	'boolDefault': function(nex, txt) {
+		if (isNormallyHandled(txt)) {
+			return false;
+		}
+		let letterRegex = /^[a-zA-Z0-9']$/;
+		let isSeparator = !letterRegex.test(txt);
+		if (isSeparator) {
+			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt))
+		} else {
+			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt))
+		}
+		return true;
+	},
+
+	'lambdaDefault': function(nex, txt) {
 		if (isNormallyHandled(txt)) {
 			return false;
 		}
@@ -336,7 +350,7 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	'insertAtLetterLevel': function(nex, txt, context) {
+	'letterDefault': function(nex, txt, context) {
 		if (isNormallyHandledInDocContext(txt)) {
 			return false;
 		}
@@ -344,7 +358,7 @@ const DefaultHandlers = {
 		if (txt == '<') {
 			return false;
 		}
-		let inWord = (context == ContextType.WORD);
+		let inWord = (context == ContextType.WORD || context == ContextType.IMMUTABLE_WORD);
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		if (isSeparator) {
@@ -359,11 +373,11 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	'insertAtSeparatorLevel': function (nex, txt, context) {
+	'separatorDefault': function (nex, txt, context) {
 		if (isNormallyHandledInDocContext(txt)) {
 			return false;
 		}
-		let isLine = (context == ContextType.LINE)
+		let isLine = (context == ContextType.LINE || context == ContextType.IMMUTABLE_LINE)
 		if (!(/^.$/.test(txt))) {
 			throw UNHANDLED_KEY;
 		};
@@ -373,7 +387,13 @@ const DefaultHandlers = {
 			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
 		} else {
 			if (isLine) {
+				// special case - when user is typing into a doc, we want to preserve the general
+				// mutability of the surroundings even if we are inserting new things.
+				
 				let newword = manipulator.newWord();
+				if (context == ContextType.IMMUTABLE_LINE) {
+					newword.getNex().setMutable(false);
+				}
 				let newletter = manipulator.newLetter(txt);
 				newword.appendChild(newletter);
 				manipulator.defaultInsertForV2(manipulator.selected(), newword);
@@ -386,7 +406,7 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	'insertAtWordLevel' : function(nex, txt, context) {
+	'wordDefault' : function(nex, txt, context) {
 		if (isNormallyHandledInDocContext(txt)) {
 			return false;
 		}
@@ -443,11 +463,11 @@ const DefaultHandlers = {
 						if (manipulator.selectLastChild()) {
 							manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
 						} else {
-							manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newWord());
+							manipulator.defaultInsertForV2(manipulator.selected(), manipulator.possiblyMakeImmutable(manipulator.newWord(), context));
 							manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
 						}
 					} else {
-						manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newWord());
+						manipulator.defaultInsertForV2(manipulator.selected(), manipulator.possiblyMakeImmutable(manipulator.newWord(), context));
 						manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
 					}
 				} else {
@@ -458,7 +478,7 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	'docHandle' : function(nex, txt, context) {
+	'docDefault' : function(nex, txt, context) {
 		if (isNormallyHandledInDocContext(txt)) {
 			return false;
 		}
@@ -470,7 +490,7 @@ const DefaultHandlers = {
 				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
 			} else {
 				manipulator.selectLastChild()
-					|| manipulator.appendAndSelect(manipulator.newLine());
+					|| manipulator.appendAndSelect(manipulator.possiblyMakeImmutable(manipulator.newLine(), context));
 				manipulator.appendAndSelect(manipulator.newSeparator(txt));
 
 			}
@@ -478,10 +498,13 @@ const DefaultHandlers = {
 			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
 				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
 			} else {
+				// if we are inserting a letter inside an empty doc, we decide whether to make the line and word
+				// immutable based on the mutability of the doc itself, not its context.
+				let fakeContext = (nex.isMutable() ? ContextType.DOC : ContextType.IMMUTABLE_DOC);
 				manipulator.selectLastChild()
-					|| manipulator.appendAndSelect(manipulator.newLine());
+					|| manipulator.appendAndSelect(manipulator.possiblyMakeImmutable(manipulator.newLine(), fakeContext));
 				manipulator.selectLastChild()
-					|| manipulator.appendAndSelect(manipulator.newWord());
+					|| manipulator.appendAndSelect(manipulator.possiblyMakeImmutable(manipulator.newWord(), fakeContext));
 				if (manipulator.selectLastChild()) {
 					manipulator.insertAfterSelectedAndSelect(manipulator.newLetter(txt));
 				} else {
@@ -531,7 +554,7 @@ const KeyResponseFunctions = {
 	'activate-or-return-exp-child': function(s) {
 		let exp = s.getNex();
 		if (!exp.isActivated()) {
-			evaluateAndKeep(s); // this will activate plus do all the other junk I want
+			evaluateAndReplace(s); // this will activate plus do all the other junk I want
 		} else if (exp.isFulfilled()) {
 			manipulator.replaceSelectedWithFirstChildOfSelected();
 		}
@@ -604,23 +627,23 @@ const KeyResponseFunctions = {
 	},
 
 	'do-line-break-or-eval': function(s, context) {
-		if (context == ContextType.DOC) {
-			manipulator.doLineBreakForLine(s);
+		if (context == ContextType.DOC || context == ContextType.IMMUTABLE_DOC) {
+			manipulator.doLineBreakForLine(s, context);
 		} else {
 			evaluateAndReplace(s);
 		}
 	},
 
-	'do-line-break-from-line-v2': function(s) {
-		manipulator.doLineBreakForLine(s);
+	'do-line-break-from-line-v2': function(s, context) {
+		manipulator.doLineBreakForLine(s, context);
 	},
 
-	'do-line-break-for-letter-v2': function(s) {
-		manipulator.doLineBreakForLetter(s);
+	'do-line-break-for-letter-v2': function(s, context) {
+		manipulator.doLineBreakForLetter(s, context);
 	},
 
-	'do-line-break-for-separator-v2': function(s) {
-		manipulator.doLineBreakForSeparator(s);
+	'do-line-break-for-separator-v2': function(s, context) {
+		manipulator.doLineBreakForSeparator(s, context);
 	},
 
 	'move-to-corresponding-letter-in-previous-line-v2': function(s) {

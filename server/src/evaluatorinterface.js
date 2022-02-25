@@ -45,7 +45,7 @@ function evaluateAndReplace(s) {
 	if (n.getTypeName() == '-expectation-' && !n.isActivated()) {
 	// ONLY AT TOP LEVEL we activate expectations.
 		n.activate();
-	} else if (shouldConvertToNonmutable(n)) {
+	} else if (shouldChangeMutability(n)) {
 		n.setMutable(false);
 	}
 	if (n) {
@@ -53,11 +53,15 @@ function evaluateAndReplace(s) {
 	}
 }
 
-function shouldConvertToNonmutable(nex) {
+function shouldChangeMutability(nex) {
 	return nex && (Utils.isBool(nex) ||
 			Utils.isEString(nex) ||
 			Utils.isFloat(nex) ||
-			Utils.isInteger(nex))
+			Utils.isInteger(nex) ||
+			Utils.isDoc(nex) ||
+			Utils.isLine(nex) ||
+			Utils.isWord(nex) ||
+			Utils.isOrg(nex))
 }
 
 /**
@@ -90,6 +94,10 @@ function evaluateAndKeep(s) {
 				eventQueueDispatcher.enqueueRenderOnlyDirty()
 			}
 		})
+	} else if (shouldChangeMutability(n)) {
+		n.setMutable(true);
+		n.setDirtyForRendering(true);
+
 	}
 	eventQueueDispatcher.enqueueAlertAnimation(s);
 }

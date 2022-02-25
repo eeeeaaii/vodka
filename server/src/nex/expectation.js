@@ -91,7 +91,6 @@ class Expectation extends NexContainer {
 
 		this.activating = false;
 		this.startedTryingToFulfill = false;
-		this.autoreset = false;
 
 		this.ffExecutionEnvironment = null;
 		this.pendingCallbacks = [];
@@ -101,8 +100,12 @@ class Expectation extends NexContainer {
 		this.activationFunction = null; // this starts the async process, whatever it is
 		this.virtualChildren = [];
 
+		this.lastReturnedDelayTime = -1;
+
 		// NEW_EXPECTATION_SYNTAX
 		this.exptext = '';
+
+		this.autoreset = false;
 
 		// private data is currently unused but I want the logic for
 		// handling it here so I can implement parsing and tests for it
@@ -119,16 +122,27 @@ class Expectation extends NexContainer {
 			this.ffWithFromBindingName(executionEnv);
 		}
 
-		// TODO() -- implement final/immutable syntax etc.
-		if (!this.isActivated()
-				&& !this.isFulfilled()
-				&& !this.isSet()
-				&& !this.hasFFF()
-				&& this.numChildren() == 0) {
-			return this.makeCopy();
+		// same as nex if mutable experiment
+		if (experiments.MUTABLES) {
+			if (this.mutable) {
+				return this.makeCopy();
+			} else {
+				return this;
+			}
 		} else {
-			return this;
+			// TODO() -- implement final/immutable syntax etc.
+			if (!this.isActivated()
+					&& !this.isFulfilled()
+					&& !this.isSet()
+					&& !this.hasFFF()
+					&& this.numChildren() == 0) {
+				return this.makeCopy();
+			} else {
+				return this;
+			}
 		}
+
+
 	}
 
 	isInFlight() {
@@ -157,6 +171,10 @@ class Expectation extends NexContainer {
 
 	getFFClosure() {
 		return this.ffClosure;
+	}
+
+	setAutoreset(val) {
+		this.autoreset = val;
 	}
 
 	reset() {
@@ -194,7 +212,7 @@ class Expectation extends NexContainer {
 		}).bind(this);
 	}
 
-	set(activationFunctionGenerator, autoreset) {
+	set(activationFunctionGenerator) {
 		if (this.isFulfilled()) {
 			throw new EError('Expectation: cannot set the expectation, has already been fulfilled');			
 		}
@@ -208,7 +226,6 @@ class Expectation extends NexContainer {
 			this.callbackRouter = new CallbackRouter();
 			this.callbackRouter.addExpecting(this);
 		}
-		this.autoreset = !!autoreset;
 		this.activationFunctionGenerator = activationFunctionGenerator;
 		this.activationFunction = activationFunctionGenerator(this.getCallbackForSet(), this);
 	}
@@ -253,8 +270,49 @@ class Expectation extends NexContainer {
 		eventQueueDispatcher.enqueueRenderOnlyDirty()
 	}
 
-	testForReactivationAfterFFClosure() {
+	// returns true if reset
+	resetDelayTimeFromChildren() {
+		if (this.getExptextSetname() == 'delay-time') {
+			for (let i = 0; i < this.numChildren(); i++) {
+				let c = this.getChildAt(i);
+				if (c.hasTagWithString('delay-time') && Utils.isInteger(c)) {
+					let val = c.getTypedValue();
+					if (val >= 0) {
+						this.lastReturnedDelayTime = val;
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	getLastReturnedDelayTime() {
+		if (this.lastReturnedDelayTime >= 0) {
+			let r = this.lastReturnedDelayTime;
+			this.lastReturnedDelayTime = -1;
+			return r;
+		}
+		return -1;
+	}
+
+	testForReactivationBeforeNotifying() {
 		if (this.autoreset) {
+			this.reset();
+			this.activate();
+		} else {
+			this.notifyAfterFulfill();
+		}
+	}
+
+	testForReactivationAfterFFClosure() {
+		// if this is a delay, we check for a child tagged with 'delay'
+
+		let delay = -1;
+		if ((delay = this.resetDelayTimeFromChildren())) {
+			this.reset();
+			this.activate();
+		} else if (this.autoreset) {
 			this.reset();
 			this.activate();
 		} else if (this.isFulfilled()) {
@@ -274,6 +332,43 @@ class Expectation extends NexContainer {
 		}
 	}
 
+	// helper method to consume args when calling ff
+	// this is the algo:
+	// if ff is:
+	//    f(x)
+	// and these are the children:
+	//    a b c d e
+	// result is
+	//    f(a) f(b) f(c) f(d) f(e)
+	// if ff is:
+	//    f(x, y)
+	// result is
+	//    car(f(a, b)) cadr(f(a, b)) car(f(c, d)) cadr(f(c, d))
+	//    (note the e is ignored)
+
+	// this destructively modifies resultarray and childrenarray
+	consumeChildrenForFF(ffNumArgs, resultarray, childrenarray) {
+		if (childrenarray.length < ffNumArgs) {
+			return false; // can't do more
+		}
+		let args = [];
+		for (let i = 0; i < ffNumArgs; i++) {
+			args.push(childrenarray.shift());		
+		}
+		let cmd = Command.makeCommandWithClosure(this.ffClosure, args);
+		let result = evaluateNexSafely(cmd, this.ffExecutionEnvironment);
+		if (ffNumArgs > 1) {
+			// result should be a NexContainer
+			for (let j = 0; j < result.numChildren(); j++) {
+				let c = result.getChildAt(j);
+				resultarray.push(c);
+			}
+		} else {
+			resultarray.push(result);
+		}
+		return true;
+	}
+
 	callFFClosureOnAllChildren() {
 		if (experiments.NEW_EXPECTATION_SYNTAX) {
 
@@ -282,23 +377,18 @@ class Expectation extends NexContainer {
 			// maybe there's a way to specify one or the other way
 
 			let info = getParameterInfo(this.ffClosure.lambda.paramsArray);
+			let ffNumArgs = info.maxArgCount;
+			let results = [];
 			let args = [];
-			let foundExp = false;
-			for (let i = 0; i < this.numChildren() && i < info.maxArgCount; i++) {
-				let c = this.getChildAt(i);
-				if (c.getTypeName() == '-expectation-') {
-					// what do if > 1 children?
-					if (c.numChildren() > 0) {
-						args.push(c.getChildAt(0));
-					}
-				} else {
-					args.push(this.getChildAt(i));
-				}
+			for (let i = 0; i < this.numChildren(); i++) {
+				args.push(this.getChildAt(i));
 			}
-			let cmd = Command.makeCommandWithClosure(this.ffClosure, args);
-			let result = evaluateNexSafely(cmd, this.ffExecutionEnvironment);
+			while(this.consumeChildrenForFF(ffNumArgs, results, args));
 			this.removeAllChildren();
-			this.appendChild(result);
+			for (let i = 0; i < results.length; i++) {
+				this.appendChild(results[i]);
+			}
+
 			this.doOrWaitToDo(function() {
 				this.testForReactivationAfterFFClosure();
 			}.bind(this));		
@@ -347,7 +437,7 @@ class Expectation extends NexContainer {
 			if (otherflags.DEBUG_EXPECTATIONS) {
 				console.log('no fff present, notifying pending exps, for ' + this.debugString());
 			}
-			this.notifyAfterFulfill();
+			this.testForReactivationBeforeNotifying();
 		}		
 	}
 
@@ -728,12 +818,20 @@ class Expectation extends NexContainer {
 
 	deleteLastExptextLetter() {
 		this.exptext = this.exptext.substr(0, this.exptext.length - 1);
-		this.setBuiltinAsyncType(this.getExptextSetname());
+		let nm = this.getExptextSetname();
+		let f = this.getBuiltinAsyncType(nm);
+		if (f) {
+			this.set(f);
+		}
 	}
 
 	appendExptext(t) {
 		this.exptext = this.exptext + t;
-		this.setBuiltinAsyncType(this.getExptextSetname());
+		let nm = this.getExptextSetname();
+		let f = this.getBuiltinAsyncType(nm);
+		if (f) {
+			this.set(f);
+		}
 	}
 
 	getExptextArg(def) {
@@ -793,48 +891,62 @@ class Expectation extends NexContainer {
 	// 'and' is a synonym for immediate (because 'and' is the default behavior)
 	// these types can be set directly by changing the exptext
 	// not all types can be set that way
-	setBuiltinAsyncType(type) {
-
-		let delayAFG = function(callback) {
-					return function(exp) {
-						let timeout = Number(exp.getExptextArg('1000'));
-						setTimeout(function() {
-							callback(null /* do not set a value, the default is whatever the child is of the exp */);
-						}, timeout)							
-					}
-				};
+	getBuiltinAsyncType(type) {
 
 		switch(type) {
 			case 'and':
 			case 'immediate':
-				this.set(function(callback) {
-					return function() {
+				return function(callback) {
+					return function(exp) {
+						exp.setAutoreset(false);
 						callback(null);
 					}
-				});
-				break;
+				};
 			case 'repeat':
-				this.set(delayAFG, true);
-				break;
+				return function(callback) {
+					return function(exp) {
+						exp.setAutoreset(true);
+						let timeout = exp.getLastReturnedDelayTime();
+						if (timeout < 0) {
+							timeout = exp.getExptextArg('1000');
+						}
+						timeout = Number(timeout);
+						setTimeout(function() {
+							callback(null /* do not set a value, the default is whatever the child is of the exp */);
+						}, timeout)							
+					}
+				}
 			case 'delay':
-				this.set(delayAFG, false);
-				break;
+				return function(callback) {
+					return function(exp) {
+						exp.setAutoreset(false);
+						let timeout = exp.getLastReturnedDelayTime();
+						if (timeout < 0) {
+							timeout = exp.getExptextArg('1000');
+						}
+						timeout = Number(timeout);
+						setTimeout(function() {
+							callback(null /* do not set a value, the default is whatever the child is of the exp */);
+						}, timeout)							
+					}
+				}
 			case 'click':
-				this.set(function(callback, ex) {
-					return function() {
+				return function(callback, ex) {
+					return function(exp) {
+						exp.setAutoreset(false);
 						ex.getChildAt(0).extraClickHandler = function() {
 							callback();
 						}
 					}
-				});
-				break;
+				};
 			case 'set-contents-changed':
-				this.set(function(callback) {
+				return function(callback) {
 					return function(exp) {
 						// the expectation will fulfill when its first child's contents
 						// change in any way. We ignore 2nd and later children.
 						// we fulfill immediately if there are no children, or if the
 						// first child is not a container.
+						exp.setAutoreset(false);
 						let n = exp.numChildren();
 						if (n == 0) {
 							callback(null);
@@ -849,9 +961,9 @@ class Expectation extends NexContainer {
 							}
 						}
 					}
-				});
-				break;
+				};
 		}
+		return null;
 	}
 
 

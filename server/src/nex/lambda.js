@@ -301,7 +301,7 @@ class Lambda extends NexContainer {
 	}
 
 	getDefaultHandler() {
-		return 'justAppendLetterOrSeparator';
+		return 'lambdaDefault';
 	}
 
 	getEventTable(context) {

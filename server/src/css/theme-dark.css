@@ -17,6 +17,8 @@
   --word-unselected: #4a4a29;
 
   --org-border: #3a3a3a;
+
+  --cursor-blink-color: white;
 }
 
 /* dark theme has a different default font for letters. */

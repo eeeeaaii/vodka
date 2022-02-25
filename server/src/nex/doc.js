@@ -102,6 +102,9 @@ class Doc extends NexContainer {
 		return s;
 	}
 
+/*
+	// maybe put this back if we want evaluating docs to do this
+
 	evaluate(env) {
 		if (!experiments.MUTABLES || this.mutable) {
 			// shallow copy, then evaluate children.
@@ -118,9 +121,14 @@ class Doc extends NexContainer {
 			return this;
 		}
 	}
+*/
 
 	getContextType() {
-		return ContextType.DOC;
+		if (this.isMutable()) {
+			return ContextType.DOC;
+		} else {
+			return ContextType.IMMUTABLE_DOC;
+		}
 	}
 
 	renderInto(renderNode, renderFlags, withEditor) {
@@ -158,7 +166,7 @@ class Doc extends NexContainer {
 	}
 
 	getDefaultHandler() {
-		return 'docHandle';
+		return 'docDefault';
 	}
 
 	getEventTable(context) {

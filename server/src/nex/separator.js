@@ -68,7 +68,7 @@ class Separator extends Letter {
 	}
 
 	getDefaultHandler() {
-		return 'insertAtSeparatorLevel';
+		return 'separatorDefault';
 	}
 
 	getEventTable() {

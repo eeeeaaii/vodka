@@ -45,7 +45,7 @@ function createContractBuiltins() {
 		},
 		'ensures that the nix tag can only be applied to |nex.'
 	);
-	Builtin.aliasBuiltin('must-be', 'tagged-as--must-be');
+//	Builtin.aliasBuiltin('must-be', 'tagged-as--must-be');
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
@@ -66,7 +66,7 @@ function createContractBuiltins() {
 		},
 		'ensures that anything with the nix tag must have the same type as |nex.'
 	);
-	Builtin.aliasBuiltin('must-have-type-of', 'tagged-as--must-have-type-of');
+//	Builtin.aliasBuiltin('must-have-type-of', 'tagged-as--must-have-type-of');
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
@@ -87,7 +87,7 @@ function createContractBuiltins() {
 		},
 		'ensures that anything with the nix tag must have the same number of children as |org, and those children must be tagged the same way.'
 	);
-	Builtin.aliasBuiltin('must-have-contents-tagged-as', 'tagged-as--must-have-contents-tagged-as');
+//	Builtin.aliasBuiltin('must-have-contents-tagged-as', 'tagged-as--must-have-contents-tagged-as');
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
@@ -108,7 +108,7 @@ function createContractBuiltins() {
 		'ensures that anything with the nix tag must have the same number of children as |org, and those children must have the same types.'
 	);
 
-	Builtin.aliasBuiltin('must-have-contents-like', 'tagged-as--must-have-contents-like');
+//	Builtin.aliasBuiltin('must-have-contents-like', 'tagged-as--must-have-contents-like');
 }
 
 

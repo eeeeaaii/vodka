@@ -37,6 +37,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border: 1px solid var(--unselected-border);
 }
 
+.expectation.exploded.mutable {
+	padding: 3px;
+	border-width: 3px;	
+}
+
+
 .expectation.exploded.selected {
 	border-color: var(--selected-border);
 }

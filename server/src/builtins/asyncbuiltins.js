@@ -126,13 +126,7 @@ function createAsyncBuiltins() {
 				return new EError('set-click: must have at least one clickable object');
 			}
 			exp.setExptextSetname('click');
-			exp.set(function(callback, ex) {
-				return function() {
-					ex.getChildAt(0).extraClickHandler = function() {
-						callback();
-					}
-				}
-			});
+			exp.set(exp.getBuiltinAsyncType('click'));
 			return exp;
 		},
 		'sets |exp to fulfill when clicked on.'
@@ -145,16 +139,24 @@ function createAsyncBuiltins() {
 			let time = env.lb('time').getTypedValue();
 			let exp = env.lb('exp');
 			exp.setExptextSetname('delay');
-			exp.set(function(callback) {
-				return function() {
-					setTimeout(function() {
-						callback(null /* do not set a value, the default is whatever the child is of the exp */);
-					}, time)
-				}
-			});
+			exp.set(exp.getBuiltinAsyncType('delay'));
 			return exp;
 		},
 		'sets |exp to fulfill after the specified delay.'
+	);
+
+	Builtin.createBuiltin(
+		'set-repeat',
+		[ 'exp*', 'time#' ],
+		function setRepeat(env, executionEnvironment) {
+			let time = env.lb('time').getTypedValue();
+			let exp = env.lb('exp');
+			exp.setExptextSetname('repeat');
+			exp.setAutoreset(true);
+			exp.set(exp.getBuiltinAsyncType('repeat'));
+			return exp;
+		},
+		'sets |exp to repeatedly fulfill at the specified rate.'
 	);
 
 	Builtin.createBuiltin(
@@ -163,27 +165,7 @@ function createAsyncBuiltins() {
 		function $setContentsChanged(env, executionEnvironment) {
 			let exp = env.lb('exp');
 			exp.setExptextSetname('contents-changed');
-			exp.set(function(callback) {
-				return function(exp) {
-					// the expectation will fulfill when its first child's contents
-					// change in any way. We ignore 2nd and later children.
-					// we fulfill immediately if there are no children, or if the
-					// first child is not a container.
-					let n = exp.numChildren();
-					if (n == 0) {
-						callback(null);
-					} else {
-						let c1 = exp.getChildAt(0);
-						if (!Utils.isNexContainer(c1)) {
-							callback(null);
-						} else {
-							c1.setOnContentsChangedCallback(function() {
-								callback(null);
-							})
-						}
-					}
-				}
-			});
+			exp.set(exp.getBuiltinAsyncType('contents-changed'));
 			return exp;
 		},
 		'sets |exp to fulfill when the contents of its children change.'
@@ -195,11 +177,7 @@ function createAsyncBuiltins() {
 		function $setImmediate(env, executionEnvironment) {
 			let exp = env.lb('exp');
 			exp.setExptextSetname('immediate');
-			exp.set(function(callback) {
-				return function() {
-					callback(null);
-				}
-			});
+			exp.set(exp.getBuiltinAsyncType('immediate'));
 			return exp;
 		},
 		'sets |exp to fulfill immediately.'

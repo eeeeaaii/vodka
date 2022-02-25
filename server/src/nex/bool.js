@@ -81,7 +81,7 @@ class Bool extends ValueNex {
 	}
 
 	getDefaultHandler() {
-		return 'justAppendLetterOrSeparator';
+		return 'boolDefault';
 	}
 
 	renderInto(renderNode, renderFlags, withEditor) {

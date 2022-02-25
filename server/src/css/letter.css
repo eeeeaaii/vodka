@@ -30,17 +30,17 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 @keyframes letterblinkright {
 	from {
-		border-top: 1px solid black;
-		border-right: 1px solid black;
-		border-bottom: 1px solid black;
+		border-top: 1px solid var(--cursor-blink-color);
+		border-right: 1px solid var(--cursor-blink-color);
+		border-bottom: 1px solid var(--cursor-blink-color);
 		margin-top: -1px;
 		margin-right: -1px;
 		margin-bottom: -1px;
 	}
 	99% {
-		border-top: 1px solid black;
-		border-right: 1px solid black;
-		border-bottom: 1px solid black;
+		border-top: 1px solid var(--cursor-blink-color);
+		border-right: 1px solid var(--cursor-blink-color);
+		border-bottom: 1px solid var(--cursor-blink-color);
 		margin-top: -1px;
 		margin-right: -1px;
 		margin-bottom: -1px;
@@ -57,17 +57,17 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 @keyframes letterblinkleft {
 	from {
-		border-top: 1px solid black;
-		border-left: 1px solid black;
-		border-bottom: 1px solid black;
+		border-top: 1px solid var(--cursor-blink-color);
+		border-left: 1px solid var(--cursor-blink-color);
+		border-bottom: 1px solid var(--cursor-blink-color);
 		margin-top: -1px;
 		margin-left: -1px;
 		margin-bottom: -1px;
 	}
 	99% {
-		border-top: 1px solid black;
-		border-left: 1px solid black;
-		border-bottom: 1px solid black;
+		border-top: 1px solid var(--cursor-blink-color);
+		border-left: 1px solid var(--cursor-blink-color);
+		border-bottom: 1px solid var(--cursor-blink-color);
 		margin-top: -1px;
 		margin-left: -1px;
 		margin-bottom: -1px;
@@ -84,17 +84,17 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 @keyframes letterblinktop {
 	from {
-		border-top: 1px solid black;
-		border-left: 1px solid black;
-		border-right: 1px solid black;
+		border-top: 1px solid var(--cursor-blink-color);
+		border-left: 1px solid var(--cursor-blink-color);
+		border-right: 1px solid var(--cursor-blink-color);
 		margin-top: -1px;
 		margin-left: -1px;
 		margin-right: -1px;
 	}
 	99% {
-		border-top: 1px solid black;
-		border-left: 1px solid black;
-		border-right: 1px solid black;
+		border-top: 1px solid var(--cursor-blink-color);
+		border-left: 1px solid var(--cursor-blink-color);
+		border-right: 1px solid var(--cursor-blink-color);
 		margin-top: -1px;
 		margin-left: -1px;
 		margin-right: -1px;
@@ -112,17 +112,17 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 @keyframes letterblinkbottom {
 	from {
-		border-right: 1px solid black;
-		border-left: 1px solid black;
-		border-bottom: 1px solid black;
+		border-right: 1px solid var(--cursor-blink-color);
+		border-left: 1px solid var(--cursor-blink-color);
+		border-bottom: 1px solid var(--cursor-blink-color);
 		margin-right: -1px;
 		margin-left: -1px;
 		margin-bottom: -1px;
 	}
 	99% {
-		border-right: 1px solid black;
-		border-left: 1px solid black;
-		border-bottom: 1px solid black;
+		border-right: 1px solid var(--cursor-blink-color);
+		border-left: 1px solid var(--cursor-blink-color);
+		border-bottom: 1px solid var(--cursor-blink-color);
 		margin-right: -1px;
 		margin-left: -1px;
 		margin-bottom: -1px;
@@ -150,9 +150,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 .letter.selected.exploded {
 	animation-name: none;
-	border-top: 1px solid black;
-	border-right: 1px solid black;
-	border-bottom: 1px solid black;
+	border-top: 1px solid var(--cursor-blink-color);
+	border-right: 1px solid var(--cursor-blink-color);
+	border-bottom: 1px solid var(--cursor-blink-color);
 	margin-top: -1px;
 	margin-right: -1px;
 	margin-bottom: -1px;
@@ -171,10 +171,23 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 .letter.newselected.exploded {
 	animation-name: none;
-	border-top: 1px solid black;
-	border-right: 1px solid black;
-	border-bottom: 1px solid black;
+}
+
+.letter.newselected.exploded.leftinsert {
+	border-top: 1px solid var(--cursor-blink-color);
+	border-left: 1px solid var(--cursor-blink-color);
+	border-bottom: 1px solid var(--cursor-blink-color);
+	margin-top: -1px;
+	margin-left: -1px;
+	margin-bottom: -1px;
+}
+
+.letter.newselected.exploded.rightinsert {
+	border-top: 1px solid var(--cursor-blink-color);
+	border-right: 1px solid var(--cursor-blink-color);
+	border-bottom: 1px solid var(--cursor-blink-color);
 	margin-top: -1px;
 	margin-right: -1px;
 	margin-bottom: -1px;
 }
+

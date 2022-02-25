@@ -230,7 +230,7 @@ function createIterationBuiltins() {
 			return wrapError('&szlig;', `for: error returned from initializer`, iterationvalue);
 		}
 
-		let bodyresult = null;
+		let bodyresult = new Nil();
 		while(true) {
 			// check for continuation condition
 			let testcmd = Command.makeCommandWithClosureOneArg(test, Command.quote(iterationvalue));

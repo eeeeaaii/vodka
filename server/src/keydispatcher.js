@@ -60,6 +60,10 @@ class KeyDispatcher {
 		if (keycode == 'Alt') return true;
 		if (keycode == 'Meta') return true;
 		if (keycode == 'Control') return true;
+
+		if (hasMeta && (keycode == '2')) {
+			return true;
+		}
 		let keyContext = ContextType.COMMAND;
 		let p = systemState.getGlobalSelectedNode().getParent();
 		if (p) {

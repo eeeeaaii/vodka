@@ -47,7 +47,7 @@ function createEnvironmentBuiltins() {
 		},
 		'binds a new global variable named |name with a value of |nex.'
 	);
-	Builtin.aliasBuiltin('bind', 'bind--to');
+//	Builtin.aliasBuiltin('bind', 'bind--to');
 
 
 	Builtin.createBuiltin(
@@ -133,7 +133,7 @@ function createEnvironmentBuiltins() {
 		},
 		'binds |name to |nex in the current closure\'s local scope.'
 	);
-	Builtin.aliasBuiltin('let', 'let--be');
+//	Builtin.aliasBuiltin('let', 'let--be');
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 

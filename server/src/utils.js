@@ -16,7 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { RenderNode } from './rendernode.js';
-
+import { ContextType } from './contexttype.js'
 import { ERROR_TYPE_FATAL} from './nex/eerror.js'
 
 
@@ -33,6 +33,12 @@ function isFatalError(n) {
 function isInDocContext(n) {
 	let p = n.getParent();
 	return isDocElement(p);
+}
+
+function isImmutableContext(context) {
+	return (context == ContextType.IMMUTABLE_DOC
+		|| context == ContextType.IMMUTABLE_LINE
+		|| context == ContextType.IMMUTABLE_WORD);
 }
 
 function isDocElement(n) {
@@ -224,5 +230,6 @@ export {
 	isMac,
 	isOrg,
 	convertV2StringToMath,
-	convertMathToV2String
+	convertMathToV2String,
+	isImmutableContext
 }

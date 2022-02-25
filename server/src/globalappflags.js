@@ -45,7 +45,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //    that, keep it here with a comment saying // UNUSED BUT DO NOT REUSE
 
 const experiments = {
-	'NO_COPY_CSS': true,
 	'DISABLE_ALERT_ANIMATIONS': false,
 	'BETTER_KEYBINDINGS': true,
 

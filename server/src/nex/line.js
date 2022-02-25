@@ -81,6 +81,9 @@ class Line extends NexContainer {
 		this.setCurrentStyle(data);
 	}
 
+/*
+	// maybe put this back if we want evaluating docs to do this
+
 	evaluate(env) {
 		if (!experiments.MUTABLES || this.mutable) {
 			// shallow copy, then evaluate children.
@@ -97,7 +100,7 @@ class Line extends NexContainer {
 			return this;
 		}
 	}
-
+*/
 	setMutable(val) {
 		super.setMutable(val)
 		// make doc-type children also have the same mutability
@@ -151,7 +154,11 @@ class Line extends NexContainer {
 	}
 
 	getContextType() {
-		return ContextType.LINE;
+		if (this.isMutable()) {
+			return ContextType.LINE;
+		} else {
+			return ContextType.IMMUTABLE_LINE;
+		}
 	}
 
 	// deprecated

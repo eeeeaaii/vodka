@@ -123,7 +123,7 @@ class Letter extends Nex {
 	}
 
 	getDefaultHandler() {
-		return 'insertAtLetterLevel';
+		return 'letterDefault';
 	}
 
 	getEventTable(context) {

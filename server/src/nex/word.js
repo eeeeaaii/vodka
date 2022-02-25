@@ -65,6 +65,9 @@ class Word extends NexContainer {
 		return this.standardListPrettyPrint(lvl, '[word]', hdir);
 	}
 
+/*
+	// maybe put this back if we want evaluating docs to do this
+
 	evaluate(env) {
 		if (!experiments.MUTABLES || this.mutable) {
 			// shallow copy, then evaluate children.
@@ -81,7 +84,7 @@ class Word extends NexContainer {
 			return this;
 		}
 	}
-
+*/
 	setMutable(val) {
 		super.setMutable(val)
 		// make doc-type children also have the same mutability
@@ -96,7 +99,11 @@ class Word extends NexContainer {
 	setVertical() {}
 
 	getContextType() {
-		return ContextType.WORD;
+		if (this.isMutable()) {
+			return ContextType.WORD;
+		} else {
+			return ContextType.IMMUTABLE_WORD;
+		}
 	}
 
 	getValueAsString() {
@@ -174,7 +181,7 @@ class Word extends NexContainer {
 	}
 
 	getDefaultHandler() {
-		return 'insertAtWordLevel';
+		return 'wordDefault';
 	}
 
 	getEventTable(context) {
