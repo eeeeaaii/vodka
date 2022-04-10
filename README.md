@@ -41,7 +41,7 @@ If you install Vodka locally, you can make changes or use your own audio samples
 
 1. Clone this repo.
 2. In a terminal, cd into the "server" directory and execute the script `runserver.sh`.
-3. In a webserver, navigate to `http://localhost:300`
+3. In a webserver, navigate to `http://localhost:3000`
 
 ## Documentation
 
