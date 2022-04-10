@@ -184,6 +184,9 @@ class EString extends ValueNex {
 			this.innerspan.classList.add('innerspan');
 			this.innerspan.innerHTML = this.escape(this.displayValue);
 			domNode.appendChild(this.innerspan);
+			domNode.appendChild(document.createTextNode(this.prefix));
+		} else {
+			domNode.appendChild(document.createTextNode(this.prefix));
 		}
 	}
 

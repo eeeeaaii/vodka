@@ -179,6 +179,15 @@ class FloatEditor extends Editor {
 	hasContent() {
 		return this.nex.renderValue() != '0';
 	}
+	
+	startEditing() {
+		super.startEditing();
+		this.oldVal = this.nex.getValue();
+	}
+
+	abort() {
+		this.nex.setValue(this.oldVal);
+	}
 
 	doBackspaceEdit() {
 		this.nex.deleteLastLetter();

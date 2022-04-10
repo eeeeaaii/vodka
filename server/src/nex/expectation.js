@@ -103,6 +103,7 @@ class Expectation extends NexContainer {
 		this.lastReturnedDelayTime = -1;
 
 		this.exptext = '';
+		this.fftext = '';
 
 		this.autoreset = false;
 
@@ -229,13 +230,13 @@ class Expectation extends NexContainer {
 			this.callbackRouter = new CallbackRouter();
 			this.callbackRouter.addExpecting(this);
 		}
-		this.setExptextSetname(activationFunctionGenerator.getName());
+		this.setExptext(activationFunctionGenerator.getName());
 		this.activationFunctionGenerator = activationFunctionGenerator;
 		this.activationFunction = activationFunctionGenerator.getFunction(this.getCallbackForSet(), this);
 	}
 
 	ffWithFromBindingName(executionEnvironment) {
-		let nameOfBinding = this.getExptextFfname();
+		let nameOfBinding = this.fftext;
 		if (nameOfBinding) {
 			let b = executionEnvironment.lookupBinding(nameOfBinding);
 			if (b && b.getTypeName() == '-closure-') {
@@ -611,6 +612,7 @@ class Expectation extends NexContainer {
 		nex.activated = this.activated;
 		nex.autoreset = this.autoreset;
 		nex.exptext = this.exptext;
+		nex.fftext = this.fftext;
 	}
 
 	getContextType() {
@@ -638,14 +640,15 @@ class Expectation extends NexContainer {
 			} else {
 				dotspan.classList.remove('editing');
 			}
+			let expfftext = this.constructTextFromExpAndFF();
 			if (this.isFulfilled()) {
-				dotspan.innerText = '(' + this.exptext + ')';
+				dotspan.innerText = '(' + expfftext + ')';
 			} else if (this.isActivated()) {
-				dotspan.innerText = '!' + this.exptext + '!';
+				dotspan.innerText = '!' + expfftext + '!';
 			} else if (this.isSet()) {
-				dotspan.innerText = '...' + this.exptext + '...';
+				dotspan.innerText = '...' + expfftext + '...';
 			} else {
-				dotspan.innerText = this.exptext;
+				dotspan.innerText = expfftext;
 			}
 		}
 	}
@@ -662,10 +665,6 @@ class Expectation extends NexContainer {
 		return new ExpectationKeyFunnel(this);
 	}
 
-	deleteLastLetter() {}
-
-	appendText(txt) {}
-
 	getDefaultHandler() {
 		return 'expectationDefault';
 	}
@@ -680,61 +679,44 @@ class Expectation extends NexContainer {
 		}
 	}
 
-	parseExptext(text) {
-		// 'apple,banana' or just 'apple'
-		if (text.indexOf('+') >= 0) {
-			let a = text.split('+');
-			return {
-				waitfor: a[0],
-				ff: a[1]
-			}
+	constructTextFromExpAndFF(s) {
+		if (this.exptext && this.fftext) {
+			return this.exptext + '*' + this.fftext;
+		} else if (this.fftext) {
+			return '?*' + this.fftext;
+		} else if (this.exptext) {
+			return this.exptext + '*?';
 		} else {
-			return {
-				waitfor: text
-			}
+			return '*';
 		}
 	}
 
-	constructExptext(s) {
-		if (s.waitfor && s.ff) {
-			return s.waitfor + '+' + s.ff;
-		} else if (s.ff) {
-			return '+' + s.ff;
-		} else if (s.waitfor) {
-			return s.waitfor;
-		} else {
-			return '';
+	deleteLastFFLetter() {
+		if (this.fftext.length > 0) {
+			this.fftext = this.fftext.substr(0, this.fftext.length - 1);
 		}
 	}
 
-	deleteLastExptextLetter() {
-		let s = this.parseExptext(this.exptext);
-		if (s.ff.length > 0) {
-			s.ff = s.ff.substring(0, s.ff.length - 1);
-		}
-		this.exptext = this.constructExptext(s);
+	appendFFLetter(t) {
+		this.fftext += t;
 	}
 
-	appendExptextLetter(t) {
-		let s = this.parseExptext(this.exptext);
-		s.ff = s.ff + t;
-		this.exptext = this.constructExptext(s);
+	getFFText() {
+		return this.fftext;
 	}
 
-	setExptextSetname(setname) {
-		let s = this.parseExptext(this.exptext);
-		s.waitfor = setname;
-		this.exptext = this.constructExptext(s);
+	setFFText(t) {
+		this.fftext = t;
 	}
 
-	getExptextFfname() {
-		let s = this.parseExptext(this.exptext);
-		return s.ff;
+	setExptext(setname) {
+		this.exptext = setname;
 	}
 
 	getExptext() {
 		return this.exptext;
 	}
+
 }
 
 class ExpectationEditor extends Editor {
@@ -746,16 +728,25 @@ constructor(nex) {
 		super.finish();
 	}
 
+	startEditing() {
+		super.startEditing();
+		this.oldVal = this.nex.getFFText();
+	}
+
+	abort() {
+		this.nex.setFFText(this.oldVal);
+	}
+
 	doBackspaceEdit() {
-		this.nex.deleteLastExptextLetter();
+		this.nex.deleteLastFFLetter();
 	}
 
 	doAppendEdit(text) {
-		this.nex.appendExptextLetter(text);
+		this.nex.appendFFLetter(text);
 	}
 
 	hasContent() {
-		return this.nex.getExptext() != '';
+		return this.nex.getFFText() != '';
 	}
 
 	shouldAppend(text) {

@@ -127,8 +127,8 @@ function createFileBuiltins() {
 
 
 	Builtin.createBuiltin(
-		'eval--and-save-as',
-		[ 'val', '_name' ],
+		'save-in--after-evaluating',
+		[ 'val', '_name', 'val' ],
 		function $save(env, executionEnvironment) {
 			let val = env.lb('val');
 
@@ -158,8 +158,8 @@ function createFileBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'save--as',
-		[ '_val', '_name' ],
+		'save-in--unevaluated',
+		[ '_name', '_val' ],
 		function $save(env, executionEnvironment) {
 
 			let val = env.lb('val');
@@ -186,11 +186,11 @@ function createFileBuiltins() {
 		},
 		'saves |nex in the file |name (without evaluating |nex).'
 	);
-	Builtin.aliasBuiltin('save', 'save--as');
+	Builtin.aliasBuiltin('save', 'save-in--unevaluated');
 
 	Builtin.createBuiltin(
-		'save--as--then-eval',
-		[ '_nex', '_name' ],
+		'save-in--then-eval',
+		[ '_name', '_nex' ],
 		function $save(env, executionEnvironment) {
 			let nex = env.lb('nex');
 

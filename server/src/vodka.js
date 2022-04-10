@@ -85,6 +85,7 @@ var mobileMode = false;
 var mileInputMode = false;
 
 var helpIsShowing = false;
+var helpButtonIsShowing = true;
 
 // used by emscripten
 var Module = {}
@@ -245,63 +246,124 @@ function setSessionId() {
 }
 
 function setupHelp() {
+
+	document.getElementById('helpbutton').onclick = function(c) {
+		toggleHelp();
+	}
 	document.getElementById('showhotkeys').onclick = function(c) {
 		showHelpPage('hotkeyreference');
 	}
 	document.getElementById('showapi').onclick = function(c) {
 		showHelpPage('fullapireference');
 	}
-	document.getElementById('showapi2').onclick = function(c) {
-		showHelpPage('fullapireference');
-	}
 	document.getElementById('showwelcome').onclick = function(c) {
 		showHelpPage('intro');
 	}
-	document.getElementById('closehotkeyreference').onclick = function(c) {
-		hideHelp();
+	document.getElementById('closehelp').onclick = function(c) {
+		toggleHelp();
 	}
-	document.getElementById('closeintro').onclick = function(c) {
-		hideHelp();
+	document.getElementById('closehelppermanently').onclick = function(c) {
+		doPermanentHelpHide();
 	}
-	document.getElementById('closeintropermanently').onclick = function(c) {
-		hideHelp();
-		document.cookie = 'hasbeenhelped=true';
+	document.getElementById('bringbackhelp').onclick = function(c) {
+		bringBackHelp();
 	}
 	document.getElementById('sessionid').innerText = sessionId;
 	document.getElementById('sessionlink').href = `http://${FEATURE_VECTOR.hostname}?sessionId=${sessionId}`;
 	document.getElementById('newsessionlink').href = `http://${FEATURE_VECTOR.hostname}?new=1`;
 }
 
-function hasShowHelpInQueryString() {
-	var params = new URLSearchParams(window.location.search);
-	params.forEach(function(value, key) {
-		if (key == 'help') {
-			return true;
-		}
-	});
-	return false;
-}
+function toggleHelpButtonButtons() {
+	// TODO: make hiding the help button a more difficult thing
+//	if (isFirstVisit()) {
+		document.getElementById('bringbackhelp').style.display = 'none';
+		document.getElementById('closehelppermanently').style.display = 'none';				
+// 	} else if (userAskedToHideHelpButton()) {
+// 		document.getElementById('bringbackhelp').style.display = 'flex';
+// 		document.getElementById('closehelppermanently').style.display = 'none';		
+// 	} else {
+// 		document.getElementById('bringbackhelp').style.display = 'none';
+// 		document.getElementById('closehelppermanently').style.display = 'flex';		
+// 	}
+ }
 
-function showHelpIfNotSuppressed() {
-	let userSaidDoNotRemind = !!getCookie('hasbeenhelped');
-	if (experiments.NO_SPLASH) {
-		hideHelp();
-	} else if (userSaidDoNotRemind && !hasShowHelpInQueryString()) {
-		// odds are users who said not to remind want the quick ref, not the intro
-		showHelpPage('hotkeyreference');
-		hideHelp();
-	} else {
-		showHelp();
-		showHelpPage('intro');
+function doPermanentHelpHide() {
+	if (confirm(
+`Note: clicking "ok" will permanently hide the help button.
+You can always get back to help by adding "help=me" to the query string.
+Only do this if you know what you're doing!
+`)) {
+		hideHelpPanel();
+		hideHelpButton();
+		document.cookie = 'hidehelpbutton=true';
+		toggleHelpButtonButtons();
 	}
 }
 
-function showHelp() {
-	helpIsShowing = true;
-	document.getElementById('uberhelpcontainer').style.display = 'block';
+function bringBackHelp() {
+	hideHelpPanel();
+	showHelpButton();
+	document.cookie = 'hidehelpbutton=false';
+	toggleHelpButtonButtons();
 }
 
-function hideHelp() {
+function hasShowHelpInQueryString() {
+	var params = new URLSearchParams(window.location.search);
+	return params.has('help');
+}
+
+function userAskedToHideHelpButton() {
+	return (getCookie('hidehelpbutton') == 'true');
+}
+
+function isFirstVisit() {
+	return !getCookie('userhasvisited');	
+}
+
+function setVeteranCookie() {
+	if (isFirstVisit()) {
+		document.cookie = 'userhasvisited=true';	
+	}
+}
+
+function maybeShowHelp() {
+	showHelpPage('hotkeyreference');
+	if (experiments.NO_SPLASH) {
+		// this is used in tests
+		hideHelpPanel();
+		hideHelpButton();
+	} else if (hasShowHelpInQueryString()) {
+		showHelpPanel();
+		hideHelpButton();
+	} else if (isFirstVisit()) {
+		showHelpPanel();
+		showHelpPage('intro');
+		hideHelpButton();
+	} else if (userAskedToHideHelpButton()) {
+		hideHelpPanel();
+		hideHelpButton();
+	} else {
+		hideHelpPanel();
+		showHelpButton();
+	}
+}
+
+function showHelpButton() {
+	helpButtonIsShowing = true;
+	document.getElementById('helpbutton').style.display = 'block';
+}
+
+function hideHelpButton() {
+	helpButtonIsShowing = false;
+	document.getElementById('helpbutton').style.display = 'none';
+}
+
+function showHelpPanel() {
+	helpIsShowing = true;
+	document.getElementById('uberhelpcontainer').style.display = 'flex';
+}
+
+function hideHelpPanel() {
 	helpIsShowing = false;
 	document.getElementById('uberhelpcontainer').style.display = 'none';
 	window.scrollTo(0,0);
@@ -309,9 +371,11 @@ function hideHelp() {
 
 function toggleHelp() {
 	if (helpIsShowing) {
-		hideHelp();
+		hideHelpPanel();
+		showHelpButton();
 	} else {
-		showHelp();
+		showHelpPanel();
+		hideHelpButton();
 	}
 }
 
@@ -554,7 +618,9 @@ function setup() {
 	setSessionId();
 	macSubst();
 	setupHelp();
-	showHelpIfNotSuppressed()
+	maybeShowHelp()
+	toggleHelpButtonButtons();
+	setVeteranCookie();
 	eventQueue.initialize();
 
 	if (getQSVal('mobile')) {

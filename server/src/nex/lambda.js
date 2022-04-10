@@ -206,7 +206,13 @@ class Lambda extends NexContainer {
 			} else {
 				codespan.classList.remove('editing');
 			}
-			codespan.innerHTML = '<span class="lambdasign">' + this.getSymbolForCodespan() + '</span>' + this.amptext.replace(/ /g, '&nbsp;');
+			let lambdasignleft = '<span class="lambdasign glyphleft">' + this.getSymbolForCodespan() + '</span>';
+			let lambdasignright = '<span class="lambdasign glyphright">' + this.getSymbolForCodespan() + '</span>';
+			let innerhtml = lambdasignleft + this.amptext.replace(/ /g, '&nbsp;');
+			if (!this.isEditing) {
+				innerhtml += lambdasignright;
+			}
+			codespan.innerHTML = innerhtml;
 		}
 	}
 
@@ -350,6 +356,15 @@ class LambdaEditor extends Editor {
 
 	hasContent() {
 		return this.nex.getAmpText() != '';
+	}
+
+	startEditing() {
+		super.startEditing();
+		this.oldVal = this.nex.getAmpText();
+	}
+
+	abort() {
+		this.nex.setAmpText(this.oldVal);
 	}
 
 	shouldAppend(text) {

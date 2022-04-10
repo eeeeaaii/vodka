@@ -305,6 +305,10 @@ class RenderNode {
 		return this.parentalfigure;
 	}
 
+	hasParent() {
+		return !!this.parentalfigure;
+	}
+
 	setParent(p, index) {
 		this.parentalfigure = p;
 		this.indexinparentalfigure = index;

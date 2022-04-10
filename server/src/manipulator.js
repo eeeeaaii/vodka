@@ -905,16 +905,51 @@ class Manipulator {
 	}
 
 	moveLeftUpV2(s) {
-		this.selectPreviousSibling()
-			|| this._forceInsertionMode(INSERT_BEFORE, this.selected())
+		if (s.getInsertionMode() == INSERT_AFTER) {
+			if (Utils.isNexContainer(s)) {
+				this._forceInsertionMode(INSERT_INSIDE, s);
+			} else {
+				this._forceInsertionMode(INSERT_BEFORE, s);
+			}
+		} else if (s.getInsertionMode() == INSERT_INSIDE) {
+			this._forceInsertionMode(INSERT_BEFORE, s);
+		} else {
+			if (this.selectPreviousSibling()) {
+				if (Utils.isNexContainer(this.selected())) {
+					this._forceInsertionMode(INSERT_INSIDE, this.selected());
+				} else {
+					this._forceInsertionMode(INSERT_BEFORE, this.selected());
+				}
+			}
+
+//			this.selectPreviousSibling()
+//				&&  this._forceInsertionMode(INSERT_BEFORE, this.selected());
+			//
+			// if (this.selectPreviousSibling()) {
+			// 	this._forceInsertionMode(INSERT_AFTER, this.selected());
+			// } else {
+			// 	this._forceInsertionMode(INSERT_BEFORE, this.selected())			
+			// }
+		}
 	}
 
 	moveRightDownV2(s) {
 		if (s.getInsertionMode() == INSERT_BEFORE) {
+			if (Utils.isNexContainer(s)) {
+				this._forceInsertionMode(INSERT_INSIDE, s);
+			} else {
+				this._forceInsertionMode(INSERT_AFTER, s);
+			}
+		} else if (s.getInsertionMode() == INSERT_INSIDE) {
 			this._forceInsertionMode(INSERT_AFTER, s);
 		} else {
-			this.selectNextSibling()
-				||  this._forceInsertionMode(INSERT_AFTER, this.selected());
+			if (this.selectNextSibling()) {
+				if (Utils.isNexContainer(this.selected())) {
+					this._forceInsertionMode(INSERT_INSIDE, this.selected());
+				} else {
+					this._forceInsertionMode(INSERT_AFTER, this.selected());
+				}
+			}
 		}		
 	}
 
@@ -1868,6 +1903,41 @@ class Manipulator {
 		this.removeNex(x);
 	}
 
+	doSave() {
+		let p = this.selected();
+
+		while(!Utils.isRoot(p)) {
+			if (Utils.isCommand(p) && p.nex.getCommandText() == 'save-in--unevaluated') {
+				return p;
+			}
+			p = p.getParent();
+		}
+
+		// oops we need to insert one
+
+		let cmd = this.newCommandWithText('save-in--unevaluated', true /* skip editor */);
+		cmd.nex.setVertical();
+		let sym = this.newESymbolWithText('untitled-functions');
+		sym.setSelected();
+		cmd.appendChild(sym);
+
+		if (p.numChildren() == 1) {
+			cmd.appendChild(p.getChildAt(0));
+			p.removeChildAt(0);
+			p.appendChild(cmd);
+		} else {
+			let org = this.newOrg();
+			while(p.hasChildren()) {
+				let c = p.getChildAt(0);
+				org.appendChild(c);
+				p.removeChildAt(0);
+			}
+			cmd.appendChild(org);
+			p.appendChild(cmd);
+		}
+		return null;
+	}
+
 	// used in keydispatcher.js
 	doCopy() {
 		try {
@@ -1943,11 +2013,29 @@ class Manipulator {
 		return r;
 	}
 
+	newESymbolWithText(txt) {
+		let e = new ESymbol(txt);
+		e.setMutable(true);
+		let r = new RenderNode(e);
+		r.possiblyStartMainEditor();
+		return r;
+	}
+
 	newESymbol() {
 		let e = new ESymbol();
 		e.setMutable(true);
 		let r = new RenderNode(e);
 		r.possiblyStartMainEditor();
+		return r;
+	}
+
+	newCommandWithText(txt, skipEditor) {
+		let c = new Command(txt);
+		c.setMutable(true);
+		let r = new RenderNode(c);		
+		if (!skipEditor) {
+			r.possiblyStartMainEditor();
+		}
 		return r;
 	}
 
@@ -1966,6 +2054,14 @@ class Manipulator {
 		let r = new RenderNode(b);		
 		r.possiblyStartMainEditor();
 		return r;
+	}
+
+	newIntegerWithValue(v) {
+		let i = new Integer(Number(v));
+		i.setMutable(true);
+		let r = new RenderNode(i);		
+		r.possiblyStartMainEditor();
+		return r;		
 	}
 
 	newInteger() {

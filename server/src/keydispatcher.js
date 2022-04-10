@@ -25,6 +25,7 @@ import { undo } from './undo.js';
 import { ContextType } from './contexttype.js';
 import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
 import { evaluateNexSafely } from './evaluator.js';
+import { evaluateAndKeep } from './evaluatorinterface.js';
 import { experiments } from './globalappflags.js'
 
 class KeyDispatcher {
@@ -57,10 +58,10 @@ class KeyDispatcher {
 			}
 		}
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
-		if (eventName == 'Escape') {
-			this.uiCallbackObject.toggleHelp();
-			return false;
-		}
+		// if (eventName == 'Escape') {
+		// 	this.uiCallbackObject.toggleHelp();
+		// 	return false;
+		// }
 
 
 		if (!experiments.BETTER_KEYBINDINGS) {
@@ -94,6 +95,14 @@ class KeyDispatcher {
 				undo.performUndo();
 			}
 			return false; // to cancel browser event
+		} else if (eventName == 'Meta-s') {
+			undo.saveStateForUndo();
+			let rn = manipulator.doSave();
+			if (rn) {
+				evaluateAndKeep(rn)
+			}
+
+			return false; // to cancel browser event
 		} else if (eventName == 'Meta-x') {
 			undo.saveStateForUndo();
 			manipulator.doCut();
@@ -106,7 +115,7 @@ class KeyDispatcher {
 			undo.saveStateForUndo();
 			manipulator.doPaste();
 			return false; // to cancel browser event
-		} else if (eventName == 'ShiftEscape') {
+		} else if (eventName == 'Escape' && !systemState.getGlobalSelectedNode().usingEditor()) {
 			// do not save state for undo as esc is non-destructive
 			this.toggleGlobalExplodedMode();
 			return false; // to cancel browser event
@@ -136,9 +145,9 @@ class KeyDispatcher {
 					parentNex = systemState.getGlobalSelectedNode().getParent().getNex();
 				}
 				// returning false here means we tell the browser not to process the event.
-				if (this.runDefaultHandle(sourceNex, eventName, keyContext, systemState.getGlobalSelectedNode())) return false;
 				if (this.runFunctionFromRegularTable(sourceNex, eventName, keyContext)) return false;
 				if (this.runFunctionFromGenericTable(sourceNex, eventName, keyContext)) return false;
+				if (this.runDefaultHandle(sourceNex, eventName, keyContext, systemState.getGlobalSelectedNode())) return false;
 				undo.eraseLastSavedState();
 				return true; // didn't handle it.
 			} catch (e) {
@@ -297,14 +306,17 @@ class KeyDispatcher {
 			return 'Meta-c';
 		} else if (keycode == 'v' && hasCtrl) {
 			return 'Meta-v';
+		} else if (keycode == 's' && hasCtrl) {
+			return 'Meta-s';
+
 		} else if (keycode == 'z' && hasMeta) {
 			return 'Meta-z';
 		} else if (keycode == 'x' && hasMeta) {
 			return 'Meta-x';
 		} else if (keycode == 'c' && hasMeta) {
 			return 'Meta-c';
-		} else if (keycode == 'v' && hasMeta) {
-			return 'Meta-v';
+		} else if (keycode == 's' && hasMeta) {
+			return 'Meta-s';
 		} else {
 			return keycode;
 		}
@@ -314,7 +326,14 @@ class KeyDispatcher {
 		if (sourceNex.getDefaultHandler) {
 			let handleFunction = sourceNex.getDefaultHandler();
 			if (handleFunction) {
-				return DefaultHandlers[handleFunction](sourceNex, eventName, context, sourceNode);
+				let handler = DefaultHandlers[handleFunction];
+				if (handler) {
+					return handler(sourceNex, eventName, context, sourceNode);
+				} else {
+					// TODO: return false instead once I fix defaults
+					handler = DefaultHandlers['standardDefault'];
+					return handler(sourceNex, eventName, context, sourceNode);
+				}
 			}
 		}
 		if (sourceNex.defaultHandle) {
@@ -495,6 +514,7 @@ class KeyDispatcher {
 			'{': 'insert-doc-at-insertion-point-v2',
 			'}': 'close-off-doc',
 			'<': 'insert-word-at-insertion-point-v2',
+			'_': 'insert-wavetable-at-insertion-point-v2',
 			'>': 'close-off-word',
 			'`': 'add-tag',
 			'Alt`': 'remove-all-tags',
@@ -513,7 +533,7 @@ class KeyDispatcher {
 	getNexGenericTable() {
 		return {
 			'ShiftTab': 'select-parent',
-			'Tab': 'select-next-sibling',
+			'Tab': 'move-right-down-v2',
 
 			'ArrowUp': 'move-left-up-v2',
 			'ArrowDown': 'move-right-down-v2',
@@ -542,7 +562,7 @@ class KeyDispatcher {
 				(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
 				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
 
-			'ShiftAltEscape': 'toggle-exploded',
+			'ShiftEscape': 'toggle-exploded',
 
 			'CtrlEnter': (
 				experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null
@@ -551,7 +571,7 @@ class KeyDispatcher {
 				(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
 				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
 
-			'ShiftAltEscape': 'toggle-exploded',
+			'ShiftEscape': 'toggle-exploded',
 			'Enter': 'evaluate-v2',
 			'~': 'insert-command-at-insertion-point-v2',
 			'!': 'insert-bool-at-insertion-point-v2',

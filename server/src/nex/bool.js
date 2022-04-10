@@ -127,6 +127,15 @@ class BoolEditor extends Editor {
 	doBackspaceEdit() {
 	}
 
+	startEditing() {
+		super.startEditing();
+		this.oldVal = this.nex.getValue();
+	}
+
+	abort() {
+		this.nex.setValue(this.oldVal);
+	}
+
 	doAppendEdit(text) {
 		let v = this.nex.getValue();
 		this.nex.setValue((v == 'yes') ? 'no' : 'yes');

@@ -174,6 +174,15 @@ class ESymbolEditor extends Editor {
 		this.nex.deleteLastLetter();
 	}
 
+	startEditing() {
+		super.startEditing();
+		this.oldVal = this.nex.getValue();
+	}
+
+	abort() {
+		this.nex.setValue(this.oldVal);
+	}
+
 	doAppendEdit(text) {
 		if (text == ' ') {
 			text = '-';

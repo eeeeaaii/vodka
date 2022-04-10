@@ -82,9 +82,6 @@ const experiments = {
 	// mutables
 	'MUTABLES': true,
 
-	// no-tilde
-	'NO_TILDE': true,
-
 	// expectations that have names
 	'NEW_EXPECTATION_SYNTAX': true,
 

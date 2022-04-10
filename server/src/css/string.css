@@ -42,6 +42,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border: 1px solid #dddddd;
 	padding: 3px;
 	margin-left: 5px;
+	margin-right: 5px;
 	font-size: 10px;
 	font-family: Arial, sans-serif;
 	display: inline-block;

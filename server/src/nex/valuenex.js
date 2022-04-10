@@ -56,14 +56,11 @@ class ValueNex extends Nex {
 		domNode.classList.add('valuenex');
 		let val = this.escapedRenderValue();
 		let inner = '';
-		if (experiments.NO_TILDE) {
-			inner = '<span class="prefixspan">' + this.prefix + '</span>' + this.escapedRenderValue();
-			// if (this.isEditing || (!val)) {
-			// 	inner += '' + this.prefix;
-			// }
-			// inner += val;
-		} else {
-			inner = '' + this.prefix + this.escapedRenderValue();
+		let leftspan = '<span class="glyphleft">' + this.prefix + '</span>'
+		let rightspan = '<span class="glyphright">' + this.prefix + '</span>'
+		inner = '' + leftspan + this.escapedRenderValue();
+		if (!this.isEditing) {
+			inner += rightspan;
 		}
 		domNode.innerHTML = inner;
 	}

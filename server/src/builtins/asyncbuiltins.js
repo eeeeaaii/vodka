@@ -52,7 +52,7 @@ function createAsyncBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'cancel-ff',
+		'cancel-fulfill',
 		[ 'exp*?' ],
 		function $cancelFf(env, executionEnvironment) {
 			let exp = env.lb('exp');
@@ -66,6 +66,8 @@ function createAsyncBuiltins() {
 		},
 		'cancels the optional argument |exp (it will never fulfill), or, if no args, cancels all unfulfilled expectations.'
 	);
+	Builtin.aliasBuiltin('cancel-ff', 'cancel-fulfill');
+
 
 	Builtin.createBuiltin(
 		'exp-gc',
@@ -78,7 +80,7 @@ function createAsyncBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'ff-of',
+		'get-and-then',
 		[ 'exp*'],
 		function $ffOf(env, executionEnvironment) {
 			let exp = env.lb('exp');
@@ -89,12 +91,13 @@ function createAsyncBuiltins() {
 				return c;
 			}
 		},
-		'retrieves the fulfill-function for |exp (or nil, if it doesn\'t have one).'
+		'retrieves the and-then-function for |exp (or nil, if it doesn\'t have one).'
 	);
+	Builtin.aliasBuiltin('ff-of', 'get-and-then');
 
 
 	Builtin.createBuiltin(
-		'ff--with',
+		'and-then',
 		[ 'exp*', 'val' ],
 		function $ffWith(env, executionEnvironment) {
 			let ff = env.lb('val');
@@ -108,8 +111,9 @@ function createAsyncBuiltins() {
 			exp.ffWith(ff, executionEnvironment);
 			return exp;
 		},
-		'sets the fulfill-function of |exp to be |val (if it\'s a closure), or a closure that returns |val (if it\'s not).'
+		'sets the and-then-function of |exp to be |val (if it\'s a closure), or a closure that returns |val (if it\'s not).'
 	);
+	Builtin.aliasBuiltin('ff-of', 'and-then');
 
 	Builtin.createBuiltin(
 		'reset',
@@ -145,7 +149,7 @@ function createAsyncBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'prime-nothing',
+		'wait-for-nothing',
 		[ 'exp*'],
 		function $setNothing(env, executionEnvironment) {
 			let exp = env.lb('exp');
@@ -153,14 +157,14 @@ function createAsyncBuiltins() {
 			exp.set(afg);
 			return exp;
 		},
-		'primes |exp to wait for nothing (fulfill immediately).'
+		'wait-fors |exp to wait for nothing (fulfill immediately).'
 	);
-	Builtin.aliasBuiltin('set-immediate', 'prime-nothing');
-	Builtin.aliasBuiltin('set-nothing', 'prime-nothing');
+	Builtin.aliasBuiltin('set-immediate', 'wait-for-nothing');
+	Builtin.aliasBuiltin('set-nothing', 'wait-for-nothing');
 
 
 	Builtin.createBuiltin(
-		'prime-delay',
+		'wait-for-delay',
 		[ 'exp*', 'time#' ],
 		function $setDelay(env, executionEnvironment) {
 			let time = env.lb('time').getTypedValue();
@@ -169,31 +173,31 @@ function createAsyncBuiltins() {
 			exp.set(afg);
 			return exp;
 		},
-		'primes |exp to fulfill after the specified delay (in milliseconds).'
+		'wait-fors |exp to fulfill after the specified delay (in milliseconds).'
 	);
-	Builtin.aliasBuiltin('set-delay', 'prime-delay');
+	Builtin.aliasBuiltin('set-delay', 'wait-for-delay');
 
 	Builtin.createBuiltin(
-		'prime-click',
+		'wait-for-click',
 		[ 'exp*' ],
 		function $setClick(env, executionEnvironment) {
 			let exp = env.lb('exp');
 			if (exp.numChildren() > 1) {
-				return new EError('prime-click: more than one clickable object unsupported');
+				return new EError('wait-for-click: more than one clickable object unsupported');
 			}
 			if (exp.numChildren() == 0) {
-				return new EError('prime-click: must have at least one clickable object');
+				return new EError('wait-for-click: must have at least one clickable object');
 			}
 			let afg = new ClickActivationFunctionGenerator();
 			exp.set(afg);
 			return exp;
 		},
-		'primes |exp to fulfill when clicked on.'
+		'wait-fors |exp to fulfill when clicked on.'
 	);
-	Builtin.aliasBuiltin('set-click', 'prime-click');
+	Builtin.aliasBuiltin('set-click', 'wait-for-click');
 
 	Builtin.createBuiltin(
-		'prime-contents-changed',
+		'wait-for-contents-changed',
 		[ 'exp*' ],
 		function $setContentsChanged(env, executionEnvironment) {
 			let exp = env.lb('exp');
@@ -201,9 +205,9 @@ function createAsyncBuiltins() {
 			exp.set(afg);
 			return exp;
 		},
-		'primes |exp to fulfill when the contents of its children change.'
+		'wait-fors |exp to fulfill when the contents of its children change.'
 	);
-	Builtin.aliasBuiltin('set-contents-changed', 'prime-contents-changed');
+	Builtin.aliasBuiltin('set-contents-changed', 'wait-for-contents-changed');
 
 }
 

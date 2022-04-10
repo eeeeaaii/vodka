@@ -439,24 +439,38 @@ class Command extends NexContainer {
 		//   getInfixPart(2, ...) returns 'baz'
 		//   getInfixPart(3, ...) returns ''
 
+		let righttilde = '<span class="tilde glyphright">&#8766;</span>';
 
-		let a = (cmdname == "") ? [] : cmdname.split('--')
-		if (position >= a.length) {
+		if (this.isEditing && position == 0) {
+			return cmdname.replace(/--/g, '__');
+//			if (!this.isEditing) {
+//				codespanHtml += righttilde;
+//			}
+		}
+
+		let commandWords = (cmdname == "") ? [] : cmdname.split('--')
+		if (position >= commandWords.length) {
 			return '';
 		}
-		if (a[a.length-1] == '') {
-			a.pop();
-			a[a.length-1] = a[a.length-1] + '--';
+		// sometimes last command word is null if user types '--' at the end of the string
+		let lastCommandWord = commandWords[commandWords.length - 1];
+		if (lastCommandWord == '') {
+			commandWords.pop();
+			commandWords[commandWords.length - 1] += '--';
 		}
-		let nc = this.numChildren();
-		if (a.length > nc + 1) {
-			for (let i = nc + 1; i < a.length; i++) {
-				a[nc] = a[nc] + '--' + a[i];
+		let numActualChildren = this.numChildren();
+		// if there are more command words than there are children,
+		// we modify the array (basically unsplit the last few words)
+		while(commandWords.length > numActualChildren + 1) {
+			let lastWord = commandWords.pop();
+			commandWords[commandWords.length - 1] += '--' + lastWord;
+		}
+		if (position < commandWords.length) {
+			let r = commandWords[position].replace(/--/g, '__');
+			if (position == commandWords.length - 1) {
+				r += righttilde;
 			}
-		}
-		if (position < a.length) {
-			return a[position].replace(/--/g, '__');
-//			return a[position];
+			return r;
 		} else {
 			return '';
 		}
@@ -473,22 +487,18 @@ class Command extends NexContainer {
 	}
 
 	getInitialCodespanContents(renderNode) {
-		let codespanHtml = '<span class="tilde">&#8766;</span>';
-		if (experiments.NO_TILDE && !this.isEditing) {
-			codespanHtml = '<span class="tilde prefixspan">&#8766;</span>';
+		let lefttilde = '<span class="tilde glyphleft">&#8766;</span>';
+		let righttilde = '<span class="tilde glyphright">&#8766;</span>';
+		let codespanHtml = lefttilde;
+		let gclosure = this.getClosureForGhost();
+		let operatorInfix = (gclosure &&
+				Utils.isClosure(gclosure) &&
+				gclosure.getLambda().isInfix() &&
+				this.numChildren() > 1);
+		if (!operatorInfix) {
+			codespanHtml += this.getInfixPart(0, this.commandtext);
 		}
-		if (experiments.INFIX_OPERATORS) {
-			let gclosure = this.getClosureForGhost();
-			let operatorInfix = (gclosure &&
-					Utils.isClosure(gclosure) &&
-					gclosure.getLambda().isInfix() &&
-					this.numChildren() > 1);
-			if (!operatorInfix) {
-				codespanHtml += this.getInfixPart(0, this.commandtext);
-			}
-		} else {
-			codespanHtml += this.commandtext;
-		}
+
 		return codespanHtml;
 	}
 
@@ -526,36 +536,37 @@ class Command extends NexContainer {
 	}
 
 	renderAfterChild(childNum, renderNode, renderFlags, withEditor) {
-		if (experiments.INFIX_OPERATORS) {
-			let gclosure = this.getClosureForGhost();
-			let infixOperator = (gclosure
-					&& Utils.isClosure(gclosure)
-					&& gclosure.getLambda().isInfix()
-					&& childNum < this.numChildren() - 1);
-			let infixName = (!!this.getInfixPart(childNum + 1, this.commandtext));
-			if (infixOperator || infixName) {
-				let innercodespan = null;
-				innercodespan = document.createElement("span");
-				innercodespan.classList.add('innercodespan');
-				if (this.isEditing) {
-					innercodespan.classList.add('editing');
-				} else {
-					innercodespan.classList.remove('editing');
-				}
-				if (renderFlags & RENDER_FLAG_EXPLODED) {
-					innercodespan.classList.add('exploded');
-				} else {
-					innercodespan.classList.remove('exploded');
-				}
-				if (infixOperator) {
-					innercodespan.innerHTML = this.commandtext;
-				} else { // infixName
-					innercodespan.innerHTML = this.getInfixPart(childNum + 1, this.commandtext);
-				}
-				let domNode = renderNode.getDomNode();
-				domNode.appendChild(innercodespan);
-			}		
+		let gclosure = this.getClosureForGhost();
+		if (this.isEditing) {
+			return;
 		}
+		let infixOperator = (gclosure
+				&& Utils.isClosure(gclosure)
+				&& gclosure.getLambda().isInfix()
+				&& childNum < this.numChildren() - 1);
+		let infixName = (!!this.getInfixPart(childNum + 1, this.commandtext));
+		if (infixOperator || infixName) {
+			let innercodespan = null;
+			innercodespan = document.createElement("span");
+			innercodespan.classList.add('innercodespan');
+			if (this.isEditing) {
+				innercodespan.classList.add('editing');
+			} else {
+				innercodespan.classList.remove('editing');
+			}
+			if (renderFlags & RENDER_FLAG_EXPLODED) {
+				innercodespan.classList.add('exploded');
+			} else {
+				innercodespan.classList.remove('exploded');
+			}
+			if (infixOperator) {
+				innercodespan.innerHTML = this.commandtext;
+			} else { // infixName
+				innercodespan.innerHTML = this.getInfixPart(childNum + 1, this.commandtext);
+			}
+			let domNode = renderNode.getDomNode();
+			domNode.appendChild(innercodespan);
+		}		
 	}
 
 	renderTags(domNode, renderFlags, editor) {
@@ -689,7 +700,7 @@ class Command extends NexContainer {
 	}
 
 	getDefaultHandler() {
-		return 'standardDefault';
+		return 'commandDefault';
 	}
 
 	getEventTable(context) {
@@ -725,6 +736,15 @@ class CommandEditor extends Editor {
 		this.nex.revertToCanonicalName();
 	}
 
+	startEditing() {
+		super.startEditing();
+		this.oldVal = this.nex.getCommandText();
+	}
+
+	abort() {
+		this.nex.setCommandText(this.oldVal);
+	}
+
 	doBackspaceEdit() {
 		this.nex.deleteLastCommandLetter();
 	}
@@ -732,7 +752,7 @@ class CommandEditor extends Editor {
 	doAppendEdit(text) {
 		// if the user types a space, we know they mean a dash.
 		if (text == ' ') {
-			text = '-';
+			text = '--';
 		}
 		this.nex.appendCommandText(text);
 	}

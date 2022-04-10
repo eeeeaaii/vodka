@@ -188,6 +188,15 @@ class InstantiatorEditor extends Editor {
 		return this.nex.getOrgName() != '';
 	}
 
+	startEditing() {
+		super.startEditing();
+		this.oldVal = this.nex.getOrgName();
+	}
+
+	abort() {
+		this.nex.setOrgName(this.oldVal);
+	}
+
 	shouldAppend(text) {
 		if (/^[a-zA-Z0-9:_-]$/.test(text)) return true; // normal chars
 		if (/^[/<>=+*]$/.test(text)) return true;

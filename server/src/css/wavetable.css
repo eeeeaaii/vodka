@@ -2,7 +2,6 @@
 
 .wavetable {
 	border: 3px solid var(--unselected-border);
-	border-radius: 5px;
 	background-color: var(--unselected-border);
 	display: flex;
 	flex-direction: column;
@@ -24,7 +23,6 @@
 
 .wavetable canvas {
 	background-color: #ffffff;
-	border-radius: 5px;
 }
 
 .wavecontrols {

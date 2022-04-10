@@ -63,14 +63,26 @@ class Editor {
 		return false;
 	}
 
+	shouldAbort(text) {
+		return text == 'Escape';
+	}
+
 	performSpecialProcessing(text) {
 		console.log('editor: ignored ' + text);
 		return false;
 	}
 
+	abort() {
+
+	}
+
 	routeKey(text) {
 		this.nex.setDirtyForRendering(true);
 		if (this.shouldIgnore(text)) {
+			return false;
+		} else if (this.shouldAbort(text)) {
+			this.abort();
+			this.finish();
 			return false;
 		} else if (this.shouldBackspace(text)) {
 			this.doBackspaceEdit();

@@ -47,6 +47,16 @@ body, html {
 	width: 100%;	
 }
 
+.glyphleft {
+	padding-right: .2em;	
+	opacity: .4;
+}
+
+.glyphright {
+	padding-left: .2em;
+	opacity: .4;
+}
+
 #vodkaroot.newselected {
 	padding: 3px;
 	border: 3px solid var(--selected-border);	
@@ -59,18 +69,6 @@ body, html {
 	/*max-width:100%;*/
 	position:static;
 
-}
-
-.prefixspan {
-	opacity:  .33;
-}
-
-.newselected > .prefixspan {
-	opacity: 1;
-}
-
-.newselected > .codespan > .prefixspan {
-	opacity: 1;
 }
 
 .duplicatednex {
@@ -121,6 +119,33 @@ body, html {
 
 #uberhelpcontainer {
 	display: none;
+	flex-direction: column;
+	position:absolute;
+	z-index: 1000;
+	margin: 20px;	
+}
+
+.helpmenupanel {
+	display: flex;
+	flex-direction: row;
+	font-family: Courier;
+	font-size: 9px;
+	border-right: 2px solid #88003f;
+	border-top: 2px solid #88003f;
+	border-bottom: 2px solid #88003f;
+	background-color: #ef99aa;
+	padding: 0px;
+	margin-bottom: 6px;
+}
+
+.helpmenuitem {
+	display: flex;
+	border-left: 2px solid #88003f;
+	padding: 6px;	
+	margin: 0px;
+	flex-grow: 1;
+	cursor: pointer;
+	text-align: center;
 }
 
 .infopanel {
@@ -130,20 +155,19 @@ body, html {
 	border: 2px solid #88003f;
 	background-color: #ef99aa;
 	padding: 20px;
-	margin: 20px;	
-	position:absolute;
-	z-index: 1000;
 }
 
 .infopanel .infotitle {
 	padding: 0;
 	margin: 0;
 	font-size: 20px;
+	margin-bottom: 18px;
 }
 
-.infopanel .infoversion {
+.infopanel .infosubheader {
 	padding: 0;
 	margin: 0;
+	margin-bottom: 12px;
 	font-size: 12px;
 }
 
@@ -383,6 +407,22 @@ body, html {
 	padding: 4px;
 	border: 2px dotted #ff7777;
 	margin: 3px;
+}
+
+#helpbutton {
+	display: none;
+	position: fixed;
+	cursor: pointer;
+	top: 0px;
+	right: 0px;
+	margin-top: 3px;
+	margin-right: 3px;
+	font-family: Courier;
+	font-size: 9px;
+	border: 2px solid #88003f;
+	background-color: #ef99aa;
+	padding: 3px 5px 5px 3px;
+	z-index: 1001;
 }
 
 
