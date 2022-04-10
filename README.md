@@ -19,7 +19,7 @@ Programming language features:
 - saving and loading files
 - control structures, logic primitives, math operations
 
-Creating coding features:
+Creative coding features:
 
 - wavetable synthesis
 - midi support
