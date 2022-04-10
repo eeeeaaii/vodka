@@ -43,6 +43,10 @@ class Float extends ValueNex {
 		return r;
 	}
 
+	rootLevelPostEvaluationStep() {
+		this.setMutable(false);
+	}
+
 	toString(version) {
 		if (version == 'v2') {
 			return this.toStringV2();

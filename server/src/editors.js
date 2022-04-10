@@ -15,8 +15,6 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { experiments } from './globalappflags.js'
-
 class Editor {
 	constructor(nex, type) {
 		this._isEditing = false;
@@ -33,15 +31,7 @@ class Editor {
 	}
 
 	shouldTerminate(text) {
-		if (experiments.ORG_Z) {
-			return text == 'Enter';
-		} else {
-			return text == 'Enter'
-				|| (
-					text == 'Backspace'
-					&& !this.hasContent()
-					)
-		}
+		return text == 'Enter';
 	}
 
 	shouldBackspace(text) {
@@ -62,12 +52,7 @@ class Editor {
 	}
 
 	shouldReroute(text) {
-		if (!experiments.BETTER_KEYBINDINGS) {
-			return false;
-		}
-		return text == 'ShiftSpace'
-			|| text == 'CtrlSpace'
-			|| text == 'AltSpace'
+		return false;
 	}
 
 	shouldTerminateAndReroute(text) {
@@ -109,11 +94,17 @@ class Editor {
 	startEditing() {
 		this._isEditing = true;
 		this.nex.isEditing = true;
+		if (this.nex.startEditing) {
+			this.nex.startEditing();
+		}
 	}
 
 	finish() {
 		this._isEditing = false;
 		this.nex.isEditing = false;
+		if (this.nex.stopEditing) {
+			this.nex.stopEditing();
+		}
 		this.nex.setDirtyForRendering(true);
 	}
 

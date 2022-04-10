@@ -92,14 +92,6 @@ class Letter extends Nex {
 		}
 	}
 
-	isLeaf() {
-		return true;
-	}
-
-	getKeyFunnel() {
-		return new LetterKeyFunnel(this);
-	}
-
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		super.renderInto(renderNode, renderFlags, withEditor);

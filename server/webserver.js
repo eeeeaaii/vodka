@@ -18,6 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 const http = require('http');
 const url = require('url');
 const fs = require('fs');
+const OSC = require('osc-js');
 const querystring = require('querystring');
 
 const { v4: uuidv4 } = require('uuid');
@@ -26,9 +27,13 @@ const hostname = '127.0.0.1';
 const endpoint_hostname = 'localhost:3000';
 const port = 3000;
 
+const osc_config = { udpClient: { port : 57110 }}
+const osc = new OSC({ plugin: new OSC.BridgePlugin(osc_config)})
+
 const webenv_vars = {}
 
 const ERROR = "Rather than a beep<br>Or a rude error message,<br>These words: \"File not found.\"";
+
 
 /*
 If you pass a session ID in the cookie, it will fail if there isn't a directory with that name.
@@ -40,6 +45,7 @@ const server = http.createServer((req, resp) => {
 	let query = parsedUrl.query;
 	let path = parsedUrl.path;
 	let isApi = (path == '/api');
+
 	let sessionIdFromCookie = getSessionIdFromCookie(req);
 	if (isApi && !sessionIdFromCookie) {
 		sendResponse(resp, 401, 'text/html', "session cookie needed for API request.", 'ERROR');			
@@ -179,6 +185,8 @@ function serviceRequestForRegularFile(sessionId, path, resp) {
 	if (z > -1) {
 		path = path.substr(0, z);
 	}
+	// You have to decode the path because it might have %20 in it
+	path = decodeURI(path);
 	let mimetype = getMimeTypeFromExt(path);
 	fs.readFile(path, function(err, data) {
 		if (err) {
@@ -245,6 +253,13 @@ function getMimeTypeFromExt(fname) {
 			return 'text/css';
 		case '.mp3':
 			return 'audio/mpeg';
+		case '.ogg':
+			return 'application/ogg';
+		case '.wav':
+			return 'audio/x-wav';
+		case '.aiff':
+		case '.aifc':
+			return 'audio/x-aiff';
 		case '.wasm':
 			return 'application/wasm';
 	}
@@ -254,11 +269,13 @@ function getMimeTypeFromExt(fname) {
 function setLocalWebEnv() {
 	webenv_vars.canSaveOverLibraries = true;
 	webenv_vars.redirectHostname = 'localhost:3000';
+	webenv_vars.isLocal = true;
 }
 
 function setRemoteWebEnv() {
 	webenv_vars.canSaveOverLibraries = false;
 	webenv_vars.redirectHostname = 'vodka.church';
+	webenv_vars.isLocal = false;
 }
 
 function loadWebEnv(cb) {
@@ -293,7 +310,7 @@ function createSessionIdDirectory(sessionId, cb) {
 	if (containsIllegalSessionCharacters(sessionId)) {
 		return false;
 	}
-	let dirpath = `./sessions/${sessionId}`;
+	let dirpath = `${getSessionDirectory(sessionId)}`;
 	fs.mkdir(dirpath, function(err) {
 		if (err) {
 			cb(false);
@@ -304,14 +321,14 @@ function createSessionIdDirectory(sessionId, cb) {
 }
 
 function checkIfSessionExists(sessionId, cb) {
-	let dirpath = `./sessions/${sessionId}`;
+	let dirpath = `${getSessionDirectory(sessionId)}`;
 	fs.access(dirpath, fs.constants.F_OK, function(err) {
 		cb(!err);
 	})
 }
 
 function checkIfFileExists(sessionId, path, cb) {
-	let filepath = `./sessions/${sessionId}/${path}`;
+	let filepath = `${getSessionDirectory(sessionId)}/${path}`;
 	fs.access(filepath, fs.constants.F_OK, function(err) {
 		cb(!err);
 	})
@@ -323,24 +340,27 @@ function cookieFromSessionId(sessionId) {
 
 function serviceApiRequest(sessionId, resp, data) {
 	let i = data.indexOf('\t');
-	let func = data.substr(0, i);
+	let opcode = data;
+	let arg = null;
+	if (i >= 0) {
+		opcode = data.substr(0, i);
+		arg = data.substr(i + 1);
+	}
 	let cb = function(respData) {
 		sendResponse(resp, 200, 'text/xml', respData, 'apipath');
 	}
-	if (func == 'save') {
-		serviceApiSaveRequest(data.substr(i+1), sessionId, cb);
-	} else if (func == 'load') {
-		serviceApiLoadRequest(data.substr(i+1), sessionId, cb);
-	} else if (func == 'savepackage') {
-		serviceApiPackageSaveRequest(data.substr(i+1), sessionId, cb);
-	} else if (func == 'loadpackage') {
-		serviceApiPackageLoadRequest(data.substr(i+1), sessionId, cb);
+	if (opcode == 'save') {
+		serviceApiSaveRequest(arg, sessionId, cb);
+	} else if (opcode == 'load') {
+		serviceApiLoadRequest(arg, sessionId, cb);
 	// these are currently identical to save/load but may not be
 	// in the future due to tab escaping or -- idk, security shit
-	} else if (func == 'saveraw') {
-		serviceApiSaveRequest(data.substr(i+1), sessionId, cb);
-	} else if (func == 'loadraw') {
-		serviceApiLoadRequest(data.substr(i+1), sessionId, cb);
+	} else if (opcode == 'saveraw') {
+		serviceApiSaveRequest(arg, sessionId, cb);
+	} else if (opcode == 'loadraw') {
+		serviceApiLoadRequest(arg, sessionId, cb);
+	} else if (opcode == 'listfiles') {
+		serviceApiListFilesRequest(sessionId, cb);
 	}
 }
 
@@ -349,16 +369,24 @@ function containsIllegalFilenameCharacters(fn) {
 	return !isIdentifier;
 }
 
+function getSessionDirectory(sessionId) {
+	if (sessionId == 'packages' && webenv_vars.isLocal) {
+		return './packages/'
+	} else {
+		return `./sessions/${sessionId}/`;
+	}
+}
+
 function serviceApiSaveRequest(data, sessionId, cb) {
 	let i = data.indexOf('\t');
 	let nm = data.substr(0, i);
 	if (containsIllegalFilenameCharacters(nm)) {
-		cb(`v2:?"save failed. Sorry!"`);
+		cb(`v2:?"save failed (illegal filename). Sorry!"`);
 		return;
 	}
 	let savedata = data.substr(i+1);
 
-	let path = `./sessions/${sessionId}/${nm}`;
+	let path = `${getSessionDirectory(sessionId)}/${nm}`;
 
 	fs.writeFile(path, savedata, function(err) {
 		if (err) {
@@ -366,16 +394,16 @@ function serviceApiSaveRequest(data, sessionId, cb) {
 				let i = data.indexOf('\t');
 				let nm = data.substr(0, i);
 				let savedata = data.substr(i+1);
-				let filepath = `./sessions/${sessionId}/${nm}`;
+				let filepath = `${getSessionDirectory(sessionId)}/${nm}`;
 				fs.writeFile(filepath, savedata, function(err2) {
 					if (err2) {
-						cb(`v2:?"save failed. Sorry!"`);
+						cb(`v2:?"save failed 1. Sorry!"`);
 					} else {
 						cb(`v2:?{2||success}`);
 					}
 				})
 			} else {
-				cb(`v2:?"save failed. Sorry!"`);
+				cb(`v2:?"save failed 2. Sorry!"`);
 			}
 		} else {
 			cb(`v2:?{2||success}`);
@@ -383,33 +411,9 @@ function serviceApiSaveRequest(data, sessionId, cb) {
 	})
 }
 
-function serviceApiPackageSaveRequest(data, sessionId, cb) {
-	let i = data.indexOf('\t');
-	let nm = data.substr(0, i);
-	if (containsIllegalFilenameCharacters(nm)) {
-		cb(`v2:?"save failed. Sorry!"`);
-		return;
-	}
-	let savedata = data.substr(i+1);
-
-	let path = `./packages/${nm}`;
-	if (!webenv_vars.canSaveOverLibraries) {
-		cb(`v2:?"cannot save over library code."`);
-		return;
-	}
-
-	fs.writeFile(path, savedata, function(err) {
-		if (err) {
-			cb(`v2:?"save failed. Sorry!"`);
-		} else {
-			cb(`v2:?{2||success}`);
-		}
-	})
-}
-
-function serviceApiPackageLoadRequest(data, sessionId, cb) {
+function serviceApiLoadRequest(data, sessionId, cb) {
 	let nm = data;
-	let path = `./packages/${nm}`;
+	let path = `${getSessionDirectory(sessionId)}/${nm}`;
 	fs.readFile(path, function(err, data) {
 		if (err) {
 			cb(`v2:?"file not found: '${nm}'. Sorry!"`);
@@ -419,15 +423,23 @@ function serviceApiPackageLoadRequest(data, sessionId, cb) {
 	})	
 }
 
-
-function serviceApiLoadRequest(data, sessionId, cb) {
-	let nm = data;
-	let path = `./sessions/${sessionId}/${nm}`;
-	fs.readFile(path, function(err, data) {
+function serviceApiListFilesRequest(sessionId, cb) {
+	let path = `${getSessionDirectory(sessionId)}`;
+	fs.readdir(path, function(err, data) {
 		if (err) {
-			cb(`v2:?"file not found: '${nm}'. Sorry!"`);
+			cb(`v2:?"could not get directory listing. Sorry!"`);
 		} else {
-			cb(data)
+			let s = 'v2:(|';
+			let first = true;
+			for (let i = 0; i < data.length; i++) {
+				if (!first) {
+					s += ' ';
+				}
+				s += '$"' + data[i] + '"';
+				first = false;
+			}
+			s += '|)';
+			cb(s);
 		}
 	})	
 }
@@ -493,9 +505,13 @@ function getHeadInjectData() {
 		let files = fs.readdirSync("./sounds");
 
 		// <audio src="myCoolTrack.mp3" type="audio/mpeg"></audio>
+		// "myCoolTrack.mp3",
 		for (let i = 0; i < files.length; i++) {
 			let fileName = files[i];
-			includeString += `<audio src="./sounds/${fileName}" type="audio/mpeg"></audio>
+			if (fileName.charAt(0) == '.') {
+				continue;
+			}
+			includeString += `"${fileName}",
 			`;
 		}
 		return includeString;
@@ -508,6 +524,7 @@ function getHeadInjectData() {
 
 loadWebEnv(function() {
 	server.listen(port, hostname, () => {
+  	  osc.open();
 	  console.log(`Server running at http://${hostname}:${port}/`);
 	});	
 })

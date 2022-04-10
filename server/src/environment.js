@@ -44,41 +44,6 @@ class Environment {
 		this.listOfPackagesUsed = null;
 	}
 
-	copy(shareParent) {
-		throw new Error('dont do this');
-		let newEnv = new Environment(null);
-		for (let sym in this.symbols) {
-			let rec = this.symbols[sym];
-			let copiedRecord = this.copyBindingRecord(rec);
-			newEnv.symbols[sym] = copiedRecord;
-		}
-		newEnv.currentPackageForBinding = this.currentPackageForBinding;
-		if (this.packages) {
-			newEnv.packages = [];
-			for (let i = 0; i < this.packages.length; i++) {
-				newEnv.packages[i] = this.packages[i];
-			}
-		}
-		if (this.listOfPackagesUsed) {
-			newEnv.listOfPackagesUsed = [];
-			for (let i = 0; i < this.listOfPackagesUsed.length; i++) {
-				newEnv.listOfPackagesUsed[i] = this.listOfPackagesUsed[i];
-			}
-		}
-		if (this.parentEnv) {
-			if (shareParent) {
-				newEnv.parentEnv = this.parentEnv;
-			} else {
-				newEnv.parentEnv = this.parentEnv.copy();
-			}
-		}
-		return newEnv;
-	}
-
-	copyJustThisScope() {
-		return this.copy(true /* share parent */)
-	}
-
 	toString() {
 		let r = '';
 		for (let name in this.symbols) {
@@ -216,10 +181,6 @@ class Environment {
 		}
 	}
 
-	hasSymbolItself(name) {
-		return !!this.symbols[name];
-	}
-
 	// private
 	_recursiveLookup(name, listOfListOfPackagesUsed) {
 		// this can also be a package binding if the person
@@ -250,10 +211,6 @@ class Environment {
 			return this.parentEnv._recursiveLookup(name, listOfListOfPackagesUsed);
 		}
 		return null;
-	}
-
-	getNextReference(org, name) {
-		let c = org.getChildWithTag(name);
 	}
 
  	isDereferenceable(n) {
@@ -358,33 +315,6 @@ class Environment {
 			binding.val = val;
 		}
 	}
-
-
-
-/*
-		let binding = this._recursiveLookup(name, [this.listOfPackagesUsed]);
-		if (!binding) {
-			throw new EError(`undefined symbol ${name}, cannot set. Sorry!`)
-		}
-		if (optionalTag) {
-			// need to find child of binding that has this tag.
-			let v = binding.val;
-			if (!(v instanceof NexContainer)) {
-				throw new EError('cannot dereference a non-org');
-			}
-			for (let i = 0; i < v.numChildren(); i++) {
-				if (v.getChildAt(i).hasTag(optionalTag)) {
-					val.addTag(optionalTag);
-					v.replaceChildAt(val, i);
-					return;
-				}
-			}
-		} else {
-			binding.val = val;
-		}
-	}
-	*/
-
 }
 
 // global lexical environment.

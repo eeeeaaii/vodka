@@ -46,6 +46,11 @@ class Line extends NexContainer {
 		this.setHorizontal();
 	}
 
+	rootLevelPostEvaluationStep() {
+		this.setMutable(false);
+	}
+
+
 	/** @override */
 	getTypeName() {
 		return '-line-';

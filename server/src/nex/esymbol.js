@@ -111,6 +111,12 @@ class ESymbol extends ValueNex {
 	evaluate(env) {
 		systemState.pushStackLevel();
 		let b = env.lookupBinding(this.getTypedValue());
+		if (this.hasTags()) {
+			b = b.makeCopy();
+			for (let i = 0; i < this.numTags(); i++) {
+				b.addTag(this.getTag(0));
+			}
+		}
 		if (CONSOLE_DEBUG) {
 			console.log(`${INDENT()}symbol ${this.value} bound to ${b.debugString()}`);
 		}

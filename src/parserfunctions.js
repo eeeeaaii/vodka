@@ -30,6 +30,7 @@ import { Expectation } from '../server/src/nex/expectation.js';
 import { Lambda } from '../server/src/nex/lambda.js';
 import { Command } from '../server/src/nex/command.js';
 import { Word } from '../server/src/nex/word.js';
+import { Wavetable } from '../server/src/nex/wavetable.js';
 import { Line } from '../server/src/nex/line.js';
 import { Doc } from '../server/src/nex/doc.js';
 import { Zlist } from '../server/src/nex/zlist.js';
@@ -182,6 +183,9 @@ function makeInstanceAtom(instname, privatedata, taglist, nonmutable) {
 			break;
 		case 'nil':
 			t = new Nil();
+			break;
+		case 'wavetable':
+			t = new Wavetable(concatParserString(privatedata));
 			break;
 		case 'letter':
 			t = new Letter(concatParserString(privatedata));

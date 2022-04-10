@@ -27,6 +27,7 @@ import { ESymbol } from './nex/esymbol.js'
 import { EString } from './nex/estring.js' 
 import { RenderNode } from './rendernode.js' 
 import { Word } from './nex/word.js' 
+import { Wavetable } from './nex/wavetable.js' 
 import { Command } from './nex/command.js' 
 import { Bool } from './nex/bool.js' 
 import { Line } from './nex/line.js' 
@@ -2042,43 +2043,31 @@ class Manipulator {
 		return r;
 	}
 
+	newWavetable() {
+		let l = new Wavetable();
+		l.setMutable(true);
+		let r = new RenderNode(l);
+		return r;
+	}
+
+
 	// this is garbage crap
 	newNexForKey(key) {
-		if (experiments.ORG_Z) {
-			switch(key) {
-				case '~': return this.newCommand();
-				case '!': return this.newBool();
-				case '@': return this.newESymbol();
-				case '#': return this.newInteger();
-				case '$': return this.newEString();
-				case '%': return this.newFloat();
-				case '^': return this.newNil();
-				case '&': return this.newLambda();
-				case '*': return this.newExpectation();
-				case '(': return this.newOrg();
-				case '{': return this.newDoc();
-				case '[': return this.newLine();
-				case '<': return this.newWord();
-			}
-
-		} else {
-			switch(key) {
-				case '~': return this.newCommand();
-				case '!': return this.newBool();
-				case '@': return this.newESymbol();
-				case '#': return this.newInteger();
-				case '$': return this.newEString();
-				case '%': return this.newFloat();
-				case '^': return this.newNil();
-				case '&': return this.newLambda();
-				case '*': return this.newExpectation();
-				case '(': return this.newWord();
-				case ')': return this.newOrg();
-				case '{': return this.newDoc();
-				case '[': return this.newLine();
-				case '<': return this.newZlist();
-			}
-
+		switch(key) {
+			case '~': return this.newCommand();
+			case '!': return this.newBool();
+			case '@': return this.newESymbol();
+			case '#': return this.newInteger();
+			case '$': return this.newEString();
+			case '%': return this.newFloat();
+			case '^': return this.newNil();
+			case '&': return this.newLambda();
+			case '*': return this.newExpectation();
+			case '(': return this.newOrg();
+			case '{': return this.newDoc();
+			case '[': return this.newLine();
+			case '<': return this.newWord();
+			case '_': return this.newWavetable();
 		}
 		// either letter or separator
 		let letterRegex = /^[a-zA-Z0-9']$/;

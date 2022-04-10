@@ -20,28 +20,36 @@ import * as Utils from '../utils.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { Builtin } from '../nex/builtin.js'
 import { Nil } from '../nex/nil.js'
+import { EError } from '../nex/eerror.js'
 import { Org } from '../nex/org.js'
 import { Expectation, incFFGen } from '../nex/expectation.js'
 import { UNBOUND } from '../environment.js'
 import { Lambda } from '../nex/lambda.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { experiments } from '../globalappflags.js'
+import { Tag } from '../tag.js'
+
+import {
+	ImmediateActivationFunctionGenerator,
+	DelayActivationFunctionGenerator,
+	ClickActivationFunctionGenerator,
+	ContentsChangedActivationFunctionGenerator
+} from '../asyncfunctions.js'
+
 
 
 function createAsyncBuiltins() {
 
 	Builtin.createBuiltin(
-		'ff',
+		'activate',
 		[ 'exp1*'],
-		function $ff(env, executionEnvironment) {
+		function $activate(env, executionEnvironment) {
 			let exp1 = env.lb('exp1');
 			exp1.activate();
 			return exp1; // or 2?
 		},
 		'activates the expectation.'
 	);
-
-	Builtin.aliasBuiltin('act', 'ff');
 
 	Builtin.createBuiltin(
 		'cancel-ff',
@@ -115,73 +123,87 @@ function createAsyncBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'set-click',
+		'autoreset',
 		[ 'exp*' ],
-		function $setClick(env, executionEnvironment) {
+		function $setDelay(env, executionEnvironment) {
 			let exp = env.lb('exp');
-			if (exp.numChildren() > 1) {
-				return new EError('set-click: more than one clickable object unsupported');
-			}
-			if (exp.numChildren() == 0) {
-				return new EError('set-click: must have at least one clickable object');
-			}
-			exp.setExptextSetname('click');
-			exp.set(exp.getBuiltinAsyncType('click'));
+			exp.setAutoreset(true);
 			return exp;
 		},
-		'sets |exp to fulfill when clicked on.'
+		'makes it so that |exp automatically resets itself after being fulfilled (so it can be used again).'
 	);
 
 	Builtin.createBuiltin(
-		'set-delay',
+		'noautoreset',
+		[ 'exp*' ],
+		function $setDelay(env, executionEnvironment) {
+			let exp = env.lb('exp');
+			exp.setAutoreset(false);
+			return exp;
+		},
+		'makes it so that |exp automatically resets itself after being fulfilled (so it can be used again).'
+	);
+
+	Builtin.createBuiltin(
+		'prime-nothing',
+		[ 'exp*'],
+		function $setNothing(env, executionEnvironment) {
+			let exp = env.lb('exp');
+			let afg = new ImmediateActivationFunctionGenerator();
+			exp.set(afg);
+			return exp;
+		},
+		'primes |exp to wait for nothing (fulfill immediately).'
+	);
+	Builtin.aliasBuiltin('set-immediate', 'prime-nothing');
+	Builtin.aliasBuiltin('set-nothing', 'prime-nothing');
+
+
+	Builtin.createBuiltin(
+		'prime-delay',
 		[ 'exp*', 'time#' ],
 		function $setDelay(env, executionEnvironment) {
 			let time = env.lb('time').getTypedValue();
 			let exp = env.lb('exp');
-			exp.setExptextSetname('delay');
-			exp.set(exp.getBuiltinAsyncType('delay'));
+			let afg = new DelayActivationFunctionGenerator(time);
+			exp.set(afg);
 			return exp;
 		},
-		'sets |exp to fulfill after the specified delay.'
+		'primes |exp to fulfill after the specified delay (in milliseconds).'
 	);
+	Builtin.aliasBuiltin('set-delay', 'prime-delay');
 
 	Builtin.createBuiltin(
-		'set-repeat',
-		[ 'exp*', 'time#' ],
-		function setRepeat(env, executionEnvironment) {
-			let time = env.lb('time').getTypedValue();
+		'prime-click',
+		[ 'exp*' ],
+		function $setClick(env, executionEnvironment) {
 			let exp = env.lb('exp');
-			exp.setExptextSetname('repeat');
-			exp.setAutoreset(true);
-			exp.set(exp.getBuiltinAsyncType('repeat'));
+			if (exp.numChildren() > 1) {
+				return new EError('prime-click: more than one clickable object unsupported');
+			}
+			if (exp.numChildren() == 0) {
+				return new EError('prime-click: must have at least one clickable object');
+			}
+			let afg = new ClickActivationFunctionGenerator();
+			exp.set(afg);
 			return exp;
 		},
-		'sets |exp to repeatedly fulfill at the specified rate.'
+		'primes |exp to fulfill when clicked on.'
 	);
+	Builtin.aliasBuiltin('set-click', 'prime-click');
 
 	Builtin.createBuiltin(
-		'set-contents-changed',
+		'prime-contents-changed',
 		[ 'exp*' ],
 		function $setContentsChanged(env, executionEnvironment) {
 			let exp = env.lb('exp');
-			exp.setExptextSetname('contents-changed');
-			exp.set(exp.getBuiltinAsyncType('contents-changed'));
+			let afg = new ContentsChangedActivationFunctionGenerator();
+			exp.set(afg);
 			return exp;
 		},
-		'sets |exp to fulfill when the contents of its children change.'
+		'primes |exp to fulfill when the contents of its children change.'
 	);
-
-	Builtin.createBuiltin(
-		'set-immediate',
-		[ 'exp*'],
-		function $setImmediate(env, executionEnvironment) {
-			let exp = env.lb('exp');
-			exp.setExptextSetname('immediate');
-			exp.set(exp.getBuiltinAsyncType('immediate'));
-			return exp;
-		},
-		'sets |exp to fulfill immediately.'
-	);
+	Builtin.aliasBuiltin('set-contents-changed', 'prime-contents-changed');
 
 }
 

@@ -1,20 +1,32 @@
 #!/bin/zsh
 
+# the reason you have to export these function is that they are called
+# from js code that the emscripten compiler doesn't know about
+
 EXPORTS='['
-EXPORTS="$EXPORTS\"_evaluate\","
-EXPORTS="$EXPORTS\"_create_integer\","
+EXPORTS="$EXPORTS\"_Evaluate\","
+EXPORTS="$EXPORTS\"_CreateInteger\","
 EXPORTS="$EXPORTS\"_set_integer_value\","
 EXPORTS="$EXPORTS\"_get_integer_value\","
+EXPORTS="$EXPORTS\"_CreateCommand\","
+EXPORTS="$EXPORTS\"_set_command_value\","
+EXPORTS="$EXPORTS\"_get_command_value\","
 EXPORTS="$EXPORTS\"_main\""
 EXPORTS="$EXPORTS]"
 
 echo $EXPORTS
 
-emcc main.cc \
-	-o runtime.js \
+
+# if I get really sick of STL I can use some boost containers
+# 	-sUSE_BOOST_HEADERS=2 \
+
+
+emcc $(find ./src | grep \.cc) \
+	-g \
+	-o ./runtime.js \
+	-sASSERTIONS \
 	-s EXPORTED_FUNCTIONS="$EXPORTS" \
-	-s EXPORTED_RUNTIME_METHODS='["ccall"]' \
+	-s EXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
 	&& \
 	cp runtime.js ../server/src/asm/ && \
 	cp runtime.wasm ../server/src/asm/
-	

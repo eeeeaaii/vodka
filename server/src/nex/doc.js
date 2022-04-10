@@ -41,6 +41,11 @@ class Doc extends NexContainer {
 		return '{' + super.childrenToString() + '}';
 	}
 
+	rootLevelPostEvaluationStep() {
+		this.setMutable(false);
+	}
+
+
 	toStringV2() {
 		return `[${this.toStringV2Literal()}doc]${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}

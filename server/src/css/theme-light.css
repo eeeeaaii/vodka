@@ -19,6 +19,11 @@
   --org-border: #c7c7c7;
 
   --cursor-blink-color: black;
+
+  --string-background: white;
+   --string-ta-text: black;
+
+
 }
 
 body {

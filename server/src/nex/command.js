@@ -60,7 +60,45 @@ class Command extends NexContainer {
 		this.searchingOn = null;
 		this.previousMatch = null;
 		this.skipAlert = false;
+
+		if (experiments.ASM_RUNTIME) {
+			this.wasmSetup();
+		}
 	}
+
+	wasmSetup() {
+		this.runtimeId = Module.ccall("create_command",
+			'number',
+			[]);
+		this.setWasmValue = Module.cwrap("set_command_value",
+			'number',
+			['number', 'string']);
+		this.getWasmValue = Module.cwrap("get_command_value",
+			'string',
+			['number']);
+	}
+
+	getCommandText() {
+		if (experiments.ASM_RUNTIME) {
+			return this.getWasmValue(this.runtimeId);
+		} else {
+			return this.commandtext;
+		}
+	}
+
+	setCommandText(t) {
+		if (experiments.ASM_RUNTIME) {
+			this.setWasmValue(this.runtimeId, t);
+		} else {
+			this.commandtext = t;
+			this.cacheClosureIfCommandTextIsBound();
+			this.searchingOn = null;
+			this.previousMatch = null;
+
+		}
+	}
+
+
 
 	setSkipAlertAnimation(skipAlert) {
 		this.skipAlert = skipAlert;
@@ -484,23 +522,6 @@ class Command extends NexContainer {
 			if (ghostDiv) {
 				codespan.appendChild(ghostDiv);
 			}
-			// let codespanHtml = experiments.NO_TILDE ? '' : '<span class="tilde">&#8766;</span>';
-			// if (experiments.INFIX_OPERATORS) {
-			// 	let gclosure = this.getClosureForGhost();
-			// 	if (gclosure && Utils.isClosure(gclosure) && gclosure.getLambda().isInfix() /*this.isInfix(this.commandtext)*/ && this.numChildren() > 1) {
-			// 	} else {
-			// 		codespanHtml += this.getInfixPart(0, this.commandtext);
-			// 	}
-			// } else {
-			// 	codespanHtml += this.commandtext;
-			// }
-			// codespan.innerHTML = codespanHtml;
-			// if (experiments.NEW_CLOSURE_DISPLAY && this.isEditing && renderNode.isSelected()) {
-			// 	let gclosure = this.getClosureForGhost();
-			// 	if (gclosure && Utils.isClosure(gclosure)) {
-			// 		codespan.appendChild(this.createGhostDiv(gclosure));
-			// 	}
-			// }
 		}
 	}
 
@@ -549,17 +570,6 @@ class Command extends NexContainer {
 
 	renderChildrenIfNormal() {
 		return false;
-	}
-
-	getCommandText() {
-		return this.commandtext;
-	}
-
-	setCommandText(t) {
-		this.commandtext = t;
-		this.cacheClosureIfCommandTextIsBound();
-		this.searchingOn = null;
-		this.previousMatch = null;
 	}
 
 	isEmpty() {

@@ -29,37 +29,35 @@ function createLogicBuiltins() {
 
 	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
 
-	function $and(env, executionEnvironment) {
-		return new Bool(env.lb('val1').getTypedValue() && env.lb('val2').getTypedValue());		
-	}
 
 	Builtin.createBuiltin(
 		'and',
 		[ 'val1!', 'val2!' ],
-		$and,
+		function $and(env, executionEnvironment) {
+			return new Bool(env.lb('val1').getTypedValue() && env.lb('val2').getTypedValue());		
+		},
 		'returns true if both |val1 and |val2 evaluate to boolean true.',
 		true /* infix */
 	)
 
 	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
 
-	function $firstNonNil(env, executionEnvironment) {
-		throw new Error('deprecated');
-		let nex = env.lb('nex');
-		for (let i = 0; i < nex.numChildren(); i++) {
-			let c = nex.getChildAt(i);
-			let result = evaluateNexSafely(c, executionEnvironment);
-			if (result.getTypeName() != '-nil-') {
-				return result;
-			}
-		}
-		return new Nil();
-	}
 
 	Builtin.createBuiltin(
 		'first-non-nil',
 		[ '_nex...'],
-		$firstNonNil,
+		function $firstNonNil(env, executionEnvironment) {
+			throw new Error('deprecated');
+			let nex = env.lb('nex');
+			for (let i = 0; i < nex.numChildren(); i++) {
+				let c = nex.getChildAt(i);
+				let result = evaluateNexSafely(c, executionEnvironment);
+				if (result.getTypeName() != '-nil-') {
+					return result;
+				}
+			}
+			return new Nil();
+		},
 		'returns the first argument that does not evaluate to nil, ignoring the rest.'
 	)
 
@@ -90,27 +88,8 @@ function createLogicBuiltins() {
 		},
 		'evalutes |cond, and if it is true, return |iftrue, otherwise return |iffalse.'
 	)
+	Builtin.aliasBuiltin('if', 'if--then--else');
 
-	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
-
-	Builtin.createBuiltin(
-		'if--then',
-		[ 'cond!', '_iftrue'],
-		function $if(env, executionEnvironment) {
-			let b = env.lb('cond').getTypedValue();
-			let iftrue = env.lb('iftrue');
-			if (b) {
-				let iftrueresult = evaluateNexSafely(iftrue, executionEnvironment);
-				if (Utils.isFatalError(iftrueresult)) {
-					return wrapError('&szlig;', 'if(-then(-else)): error in argument 2', iftrueresult);
-				}
-				return iftrueresult;
-			} else {
-				return new Nil();
-			}
-		},
-		'evalutes |cond, and if it is true, return |iftrue, otherwise return nil.'
-	)
 
 	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
 

@@ -19,6 +19,7 @@ import * as Utils from './utils.js'
 
 import { systemState } from './systemstate.js'
 import { LambdaEditor } from './nex/lambda.js'
+import { WavetableEditor } from './nex/wavetable.js'
 import { BoolEditor } from './nex/bool.js'
 import { FloatEditor } from './nex/float.js'
 import { IntegerEditor } from './nex/integer.js'
@@ -48,6 +49,9 @@ import {
 
 import { experiments } from './globalappflags.js'
 import { alertAnimator } from './alertanimator.js'
+
+// I think it's bad that we use INSERT_UNSPECIFIED, like we can reset to that,
+// but we still want the if statements to only do pips if the thing is selected.
 
 const INSERT_UNSPECIFIED = 0;
 const INSERT_AFTER = 1;
@@ -157,6 +161,8 @@ class RenderNode {
 
 	getEditorForType(nex) {
 		switch(nex.getTypeName()) {
+			case '-wavetable-':
+				return new WavetableEditor(nex);
 			case '-lambda-':
 				return new LambdaEditor(nex);
 			case '-bool-':
@@ -242,7 +248,7 @@ class RenderNode {
 			if (p) {
 				this.renderMode = p.getRenderMode();
 			} else {
-				this.renderMode = RENDER_MODE_NORM;
+				this.renderMode = RENDER_MODE_EXPLO;
 			}
 		}
 		return this.renderMode;
@@ -509,24 +515,44 @@ class RenderNode {
 		this.nex.renderAfterChild(i, this, useFlags, this.getCurrentEditor());
 	}
 
-	doInsertionPip(renderNodeToCheckIfEditing) {
+	// this method is called on the parent of the selected node for insertion modes of
+	// INSERT_AFTER, INSERT_BEFORE, and INSERT_AROUND
+	// it's called on the actual selected node for
+	// INSERT_INSIDE
+
+	doInsertionPip(selectedNode) {
 		let pip = document.createElement('div');
+		pip.classList.add('cursorblink');
 		let ss = "";
 		ss += "width:5px;";
 		ss += "height:6px;";
 		ss += "padding:0px;";
 		ss += "color:#ff7777;";
 		ss += "line-height:0.4;";
-		let p = renderNodeToCheckIfEditing.getParent();
-		if (p && p.nex.getTypeName() == '-root-') {
+		let p = selectedNode.getParent();
+		let isRoot = (!p);
+		let objectUnderRoot = (!isRoot && p.nex.getTypeName() == '-root-' && (selectedNode.insertionMode == INSERT_BEFORE || selectedNode.insertionMode == INSERT_AFTER));
+		if (isRoot) {
+			// emphasis root-level pips for visibility
 			ss += "align-self:flex-start;"
+//			ss += "margin-left:10px;"
+//			ss += "margin-top:10px;"
+//			ss += "margin-bottom:10px;"
+			ss += "font-size:1.2em"
+		} else if (objectUnderRoot) {
+			ss += "align-self:flex-start;"
+			ss += "margin-top:4px;"
+			ss += "margin-bottom:4px;"
+			ss += "margin-left:4px;"
+			ss += "font-size:1.2em"
 		} else {
 			ss += "align-self:center;"
 		}
-		if (renderNodeToCheckIfEditing.usingEditor()) {
+		if (selectedNode.usingEditor()) {
 			ss += "opacity:.33;";
+			pip.classList.remove('cursorblink');
+			pip.classList.add('faintcursorblink');
 		}
-
 		pip.setAttribute("style", ss);
 		pip.innerHTML = "&bull;";
 		this.domNode.appendChild(pip);			

@@ -70,18 +70,11 @@ const experiments = {
 	// ugh why did I use both ctrl and option?
 	'THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO': true,
 
-
-	// save evaluates contents
-	'SAVE_EVALUATES_CONTENTS': true,
-
 	// massive overhaul of orgs
 	'ORG_OVERHAUL': true,
 
 	// stop being lenient
 	'V2_INSERTION_LENIENT_DOC_FORMAT': false,
-
-	// orgs can have a z direction
-	'ORG_Z': true,
 
 	// infix operators
 	'INFIX_OPERATORS': true,

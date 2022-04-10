@@ -109,6 +109,8 @@ class Nex {
 		return str;
 	}
 
+	rootLevelPostEvaluationStep() {}
+
 	setMutable(val) {
 		this.mutable = val;
 	}
@@ -322,6 +324,10 @@ class Nex {
 
 	hasTagWithString(s) {
 		return this.hasTag(new Tag(s));
+	}
+
+	hasTags() {
+		return this.tags.length > 0;
 	}
 
 	hasTag(tag) {
@@ -538,10 +544,6 @@ class Nex {
 		for (let i = 0; i < this.tags.length; i++) {
 			this.tags[i].draw(domNode, isExploded);
 		}		
-	}
-
-	isLeaf() {
-		return true;
 	}
 
 	isSelected() {

@@ -19,6 +19,9 @@
   --org-border: #3a3a3a;
 
   --cursor-blink-color: white;
+
+  --string-background: black;
+  --string-ta-text: white;
 }
 
 /* dark theme has a different default font for letters. */

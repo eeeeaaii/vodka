@@ -34,7 +34,6 @@ import { otherflags } from '../globalappflags.js'
 import { experiments } from '../globalappflags.js'
 import { Editor } from '../editors.js'
 
-
 function incFFGen() {
 	FF_GEN++;
 }
@@ -98,11 +97,11 @@ class Expectation extends NexContainer {
 		this.ffClosure = null;
 		this.ffExecutionEnvironment = null;
 		this.activationFunction = null; // this starts the async process, whatever it is
+		this.activationFunctionGenerator = null;
 		this.virtualChildren = [];
 
 		this.lastReturnedDelayTime = -1;
 
-		// NEW_EXPECTATION_SYNTAX
 		this.exptext = '';
 
 		this.autoreset = false;
@@ -111,16 +110,14 @@ class Expectation extends NexContainer {
 		// handling it here so I can implement parsing and tests for it
 		this.privateData = '';
 
+//		this.numRootLevelPostEvaluates = 0;
+
 		gc.register(this);
 	}
 
 	evaluate(executionEnv) {
-		// we copy empty, dumb expectations because they are all equivalent anyway,
-		// and it means I can use them in code
 
-		if (experiments.NEW_EXPECTATION_SYNTAX) {
-			this.ffWithFromBindingName(executionEnv);
-		}
+		this.ffWithFromBindingName(executionEnv);
 
 		// same as nex if mutable experiment
 		if (experiments.MUTABLES) {
@@ -141,9 +138,15 @@ class Expectation extends NexContainer {
 				return this;
 			}
 		}
-
-
 	}
+
+	rootLevelPostEvaluationStep() {
+		this.setMutable(false);
+//		if (this.numRootLevelPostEvaluates++ >= 1 && !this.isActivated()) {
+		this.activate();
+//		}
+	}
+
 
 	isInFlight() {
 		return this.activated && !this.fulfilled;
@@ -226,8 +229,9 @@ class Expectation extends NexContainer {
 			this.callbackRouter = new CallbackRouter();
 			this.callbackRouter.addExpecting(this);
 		}
+		this.setExptextSetname(activationFunctionGenerator.getName());
 		this.activationFunctionGenerator = activationFunctionGenerator;
-		this.activationFunction = activationFunctionGenerator(this.getCallbackForSet(), this);
+		this.activationFunction = activationFunctionGenerator.getFunction(this.getCallbackForSet(), this);
 	}
 
 	ffWithFromBindingName(executionEnvironment) {
@@ -270,32 +274,6 @@ class Expectation extends NexContainer {
 		eventQueueDispatcher.enqueueRenderOnlyDirty()
 	}
 
-	// returns true if reset
-	resetDelayTimeFromChildren() {
-		if (this.getExptextSetname() == 'delay-time') {
-			for (let i = 0; i < this.numChildren(); i++) {
-				let c = this.getChildAt(i);
-				if (c.hasTagWithString('delay-time') && Utils.isInteger(c)) {
-					let val = c.getTypedValue();
-					if (val >= 0) {
-						this.lastReturnedDelayTime = val;
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-	getLastReturnedDelayTime() {
-		if (this.lastReturnedDelayTime >= 0) {
-			let r = this.lastReturnedDelayTime;
-			this.lastReturnedDelayTime = -1;
-			return r;
-		}
-		return -1;
-	}
-
 	testForReactivationBeforeNotifying() {
 		if (this.autoreset) {
 			this.reset();
@@ -306,13 +284,7 @@ class Expectation extends NexContainer {
 	}
 
 	testForReactivationAfterFFClosure() {
-		// if this is a delay, we check for a child tagged with 'delay'
-
-		let delay = -1;
-		if ((delay = this.resetDelayTimeFromChildren())) {
-			this.reset();
-			this.activate();
-		} else if (this.autoreset) {
+		if (this.autoreset) {
 			this.reset();
 			this.activate();
 		} else if (this.isFulfilled()) {
@@ -370,55 +342,27 @@ class Expectation extends NexContainer {
 	}
 
 	callFFClosureOnAllChildren() {
-		if (experiments.NEW_EXPECTATION_SYNTAX) {
 
-			// instead of separately calling ffwith on each child (weird)
-			// I call ffwith on all of them
-			// maybe there's a way to specify one or the other way
+		// instead of separately calling ffwith on each child (weird)
+		// I call ffwith on all of them
+		// maybe there's a way to specify one or the other way
 
-			let info = getParameterInfo(this.ffClosure.lambda.paramsArray);
-			let ffNumArgs = info.maxArgCount;
-			let results = [];
-			let args = [];
-			for (let i = 0; i < this.numChildren(); i++) {
-				args.push(this.getChildAt(i));
-			}
-			while(this.consumeChildrenForFF(ffNumArgs, results, args));
-			this.removeAllChildren();
-			for (let i = 0; i < results.length; i++) {
-				this.appendChild(results[i]);
-			}
-
-			this.doOrWaitToDo(function() {
-				this.testForReactivationAfterFFClosure();
-			}.bind(this));		
-		} else {
-
-			// just call it on all children first.
-			for (let i = 0; i < this.numChildren(); i++) {
-				if (otherflags.DEBUG_EXPECTATIONS) {
-					console.log(`calling fff on child ${i} for ` + this.debugString());
-				}
-				let child = this.getChildAt(i);
-				let cmd = Command.makeCommandWithClosure(this.ffClosure, child);
-				let result = evaluateNexSafely(cmd, this.ffExecutionEnvironment);
-				if (result.getID() != child.getID()) {
-					this.replaceChildAt(result, i);
-				}
-			}
-			if (this.numChildren() == 0) {
-				if (otherflags.DEBUG_EXPECTATIONS) {
-					console.log('tried to evaluate fff on children, but there were no children, for ' + this.debugString());
-				}
-			}
-			if (otherflags.DEBUG_EXPECTATIONS) {
-				console.log('finished calling fff, need to see if child exps were returned, for ' + this.debugString());
-			}
-			// ffClosure could have returned expectations, so we wait again.
-			this.doOrWaitToDo(function() {
-				this.testForReactivationAfterFFClosure();
-			}.bind(this));		
+		let info = getParameterInfo(this.ffClosure.lambda.paramsArray);
+		let ffNumArgs = info.maxArgCount;
+		let results = [];
+		let args = [];
+		for (let i = 0; i < this.numChildren(); i++) {
+			args.push(this.getChildAt(i));
 		}
+		while(this.consumeChildrenForFF(ffNumArgs, results, args));
+		this.removeAllChildren();
+		for (let i = 0; i < results.length; i++) {
+			this.appendChild(results[i]);
+		}
+
+		this.doOrWaitToDo(function() {
+			this.testForReactivationAfterFFClosure();
+		}.bind(this));		
 	}
 
 	completeFulfill() {
@@ -463,7 +407,13 @@ class Expectation extends NexContainer {
 			if (otherflags.DEBUG_EXPECTATIONS) {
 				console.log('new child provided to fulfill for ' + this.debugString());
 			}
-			this.replaceChildAt(result, 0);
+			// if the expectation is empty and we get a result, we will just put it in there,
+			// otherwise we replace the contents.
+			if (this.hasChildren()) {
+				this.replaceChildAt(result, 0);
+			} else {
+				this.appendChild(result);
+			}
 		}
 		// it's possible that unfulfilled exps could have
 		// been added while async operation was in process,
@@ -487,7 +437,7 @@ class Expectation extends NexContainer {
 			if (otherflags.DEBUG_EXPECTATIONS) {
 				console.log('completing activation and beginning async process for ' + this.debugString());
 			}
-			this.activationFunction(this);
+			this.activationFunction();
 		} else {
 			// this means the exp was not set. We just fulfill immediately.
 			if (otherflags.DEBUG_EXPECTATIONS) {
@@ -683,108 +633,25 @@ class Expectation extends NexContainer {
 			} else {
 				dotspan.classList.remove('exploded');
 			}
-			if (experiments.NEW_EXPECTATION_SYNTAX) {
-				if (this.isEditing) {
-					dotspan.classList.add('editing');
-				} else {
-					dotspan.classList.remove('editing');
-				}
-				if (this.isFulfilled()) {
-					dotspan.innerText = '(' + this.exptext + ')';
-				} else if (this.isActivated()) {
-					dotspan.innerText = '...' + this.exptext + '...';
-				} else {
-					dotspan.innerText = this.exptext;
-				}
+			if (this.isEditing) {
+				dotspan.classList.add('editing');
 			} else {
-				this.unsetDotSpanPaddingClasses(dotspan);
-				this.setDotSpanPaddingClass(dotspan);
-				this.unsetDotSpanParentPaddingClasses(domNode);
-				this.setDotSpanParentPaddingClass(domNode);
-				dotspan.innerHTML = this.getDotSpanHTML();
+				dotspan.classList.remove('editing');
+			}
+			if (this.isFulfilled()) {
+				dotspan.innerText = '(' + this.exptext + ')';
+			} else if (this.isActivated()) {
+				dotspan.innerText = '!' + this.exptext + '!';
+			} else if (this.isSet()) {
+				dotspan.innerText = '...' + this.exptext + '...';
+			} else {
+				dotspan.innerText = this.exptext;
 			}
 		}
 	}
 
-	setDotSpanPaddingClass(dotspan) {
-		let s = 'dsstate';
-		if (this.isSet()) {
-			s += '-set';
-		}
-		if (this.hasFFF()) {
-			s += '-fff';
-		}
-		if (this.isActivated()) {
-			s += '-activated';
-		}
-		if (this.isFulfilled()) {
-			s += '-fulfilled';
-		}
-		dotspan.classList.add(s);
-	}
-
-	setDotSpanParentPaddingClass(dotspanParent) {
-		let s = 'parentdsstate';
-		if (this.isSet()) {
-			s += '-set';
-		}
-		if (this.hasFFF()) {
-			s += '-fff';
-		}
-		if (this.isActivated()) {
-			s += '-activated';
-		}
-		if (this.isFulfilled()) {
-			s += '-fulfilled';
-		}
-		dotspanParent.classList.add(s);
-	}
-
-	getDotSpanHTML() {
-		let s = '';
-		if (this.isSet()) {
-			s += '.';
-		}
-		if (this.hasFFF()) {
-			s += ',';
-		}
-		if (this.isActivated()) {
-			s += '&bull;';
-		}
-		if (this.isFulfilled()) {
-			s += '*';
-		}
-		return s;
-	}
-
-	unsetDotSpanPaddingClasses(dotspan) {
-		dotspan.classList.remove('dsstate');
-		dotspan.classList.remove('dsstate-set');
-		dotspan.classList.remove('dsstate-set-fff');
-		dotspan.classList.remove('dsstate-set-fff-activated');
-		dotspan.classList.remove('dsstate-set-fff-activated-fulfilled');
-		dotspan.classList.remove('dsstate-fff');
-		dotspan.classList.remove('dsstate-set-activated');
-		dotspan.classList.remove('dsstate-set-activated-fulfilled');
-		dotspan.classList.remove('dsstate-fff-activated-fulfilled');
-		dotspan.classList.remove('dsstate-activated-fulfilled');
-	}
-
-	unsetDotSpanParentPaddingClasses(dotspanParent) {
-		dotspanParent.classList.remove('parentdsstate');
-		dotspanParent.classList.remove('parentdsstate-set');
-		dotspanParent.classList.remove('parentdsstate-set-fff');
-		dotspanParent.classList.remove('parentdsstate-set-fff-activated');
-		dotspanParent.classList.remove('parentdsstate-set-fff-activated-fulfilled');
-		dotspanParent.classList.remove('parentdsstate-fff');
-		dotspanParent.classList.remove('parentdsstate-set-activated');
-		dotspanParent.classList.remove('parentdsstate-set-activated-fulfilled');
-		dotspanParent.classList.remove('parentdsstate-fff-activated-fulfilled');
-		dotspanParent.classList.remove('parentdsstate-activated-fulfilled');
-	}
-
 	callDeleteHandler() {
-		this.cancel();
+		this.cancel(); 
 	}
 
 	isEmpty() {
@@ -806,173 +673,72 @@ class Expectation extends NexContainer {
 	getEventTable(context) {
 		// most of these have no tests?
 		return {
-			'Enter': (experiments.NEW_EXPECTATION_SYNTAX ? 'activate-or-return-exp-child' : 'return-exp-child' ),
+			'Enter': 'activate-or-return-exp-child',
 			// special stuff for expectations that gets rid of the js timeout
-			'Backspace': 
-				(experiments.NEW_EXPECTATION_SYNTAX ?
-					'start-main-editor' :
-					'call-delete-handler-then-remove-selected-and-select-previous-sibling'),
+			'Backspace': 'start-main-editor',
 			'ShiftBackspace': 'call-delete-handler-then-remove-selected-and-select-previous-sibling',
 		}
 	}
 
+	parseExptext(text) {
+		// 'apple,banana' or just 'apple'
+		if (text.indexOf('+') >= 0) {
+			let a = text.split('+');
+			return {
+				waitfor: a[0],
+				ff: a[1]
+			}
+		} else {
+			return {
+				waitfor: text
+			}
+		}
+	}
+
+	constructExptext(s) {
+		if (s.waitfor && s.ff) {
+			return s.waitfor + '+' + s.ff;
+		} else if (s.ff) {
+			return '+' + s.ff;
+		} else if (s.waitfor) {
+			return s.waitfor;
+		} else {
+			return '';
+		}
+	}
+
 	deleteLastExptextLetter() {
-		this.exptext = this.exptext.substr(0, this.exptext.length - 1);
-		let nm = this.getExptextSetname();
-		let f = this.getBuiltinAsyncType(nm);
-		if (f) {
-			this.set(f);
+		let s = this.parseExptext(this.exptext);
+		if (s.ff.length > 0) {
+			s.ff = s.ff.substring(0, s.ff.length - 1);
 		}
+		this.exptext = this.constructExptext(s);
 	}
 
-	appendExptext(t) {
-		this.exptext = this.exptext + t;
-		let nm = this.getExptextSetname();
-		let f = this.getBuiltinAsyncType(nm);
-		if (f) {
-			this.set(f);
-		}
+	appendExptextLetter(t) {
+		let s = this.parseExptext(this.exptext);
+		s.ff = s.ff + t;
+		this.exptext = this.constructExptext(s);
 	}
 
-	getExptextArg(def) {
-		let r = '';
-		if (this.exptext.indexOf(',') > 0) {
-			let a = this.exptext.split(',');
-			r = a[0];
-		} else {
-			r = this.exptext;
-		}
-		if (r.indexOf('(') >= 0) {
-			return r.substring(r.indexOf('(') + 1, r.indexOf(')'))
-		} else {
-			return def;
-		}
-	}
-
-	getExptextSetname() {
-		let r = '';
-		if (this.exptext.indexOf(',') > 0) {
-			let a = this.exptext.split(',');
-			r = a[0];
-		} else {
-			r = this.exptext;
-		}
-		if (r.indexOf('(') >= 0) {
-			r = r.substr(0, r.indexOf('('));
-		}
-		return r;
+	setExptextSetname(setname) {
+		let s = this.parseExptext(this.exptext);
+		s.waitfor = setname;
+		this.exptext = this.constructExptext(s);
 	}
 
 	getExptextFfname() {
-		if (this.exptext.indexOf(',') > 0) {
-			let a = this.exptext.split(',');
-			return a[1];
-		} else {
-			return null;
-		}
+		let s = this.parseExptext(this.exptext);
+		return s.ff;
 	}
 
 	getExptext() {
 		return this.exptext;
 	}
-
-	setExptextSetname(setname) {
-		// do not do lookup as this is called only by the builtins
-		if (this.exptext.indexOf(',') > 0) {
-			let a = this.exptext.split(',');
-			this.exptext = setname + ',' + a[1];
-		} else {
-			this.exptext = setname;
-		}
-	}
-
-	// supported types:
-	// click, delay, set-contents-changed, immediate
-	// 'and' is a synonym for immediate (because 'and' is the default behavior)
-	// these types can be set directly by changing the exptext
-	// not all types can be set that way
-	getBuiltinAsyncType(type) {
-
-		switch(type) {
-			case 'and':
-			case 'immediate':
-				return function(callback) {
-					return function(exp) {
-						exp.setAutoreset(false);
-						callback(null);
-					}
-				};
-			case 'repeat':
-				return function(callback) {
-					return function(exp) {
-						exp.setAutoreset(true);
-						let timeout = exp.getLastReturnedDelayTime();
-						if (timeout < 0) {
-							timeout = exp.getExptextArg('1000');
-						}
-						timeout = Number(timeout);
-						setTimeout(function() {
-							callback(null /* do not set a value, the default is whatever the child is of the exp */);
-						}, timeout)							
-					}
-				}
-			case 'delay':
-				return function(callback) {
-					return function(exp) {
-						exp.setAutoreset(false);
-						let timeout = exp.getLastReturnedDelayTime();
-						if (timeout < 0) {
-							timeout = exp.getExptextArg('1000');
-						}
-						timeout = Number(timeout);
-						setTimeout(function() {
-							callback(null /* do not set a value, the default is whatever the child is of the exp */);
-						}, timeout)							
-					}
-				}
-			case 'click':
-				return function(callback, ex) {
-					return function(exp) {
-						exp.setAutoreset(false);
-						ex.getChildAt(0).extraClickHandler = function() {
-							callback();
-						}
-					}
-				};
-			case 'set-contents-changed':
-				return function(callback) {
-					return function(exp) {
-						// the expectation will fulfill when its first child's contents
-						// change in any way. We ignore 2nd and later children.
-						// we fulfill immediately if there are no children, or if the
-						// first child is not a container.
-						exp.setAutoreset(false);
-						let n = exp.numChildren();
-						if (n == 0) {
-							callback(null);
-						} else {
-							let c1 = exp.getChildAt(0);
-							if (!Utils.isNexContainer(c1)) {
-								callback(null);
-							} else {
-								c1.setOnContentsChangedCallback(function() {
-									callback(null);
-								})
-							}
-						}
-					}
-				};
-		}
-		return null;
-	}
-
-
 }
 
-// NEW_EXPECTATION_SYNTAX
 class ExpectationEditor extends Editor {
-
-	constructor(nex) {
+constructor(nex) {
 		super(nex, 'ExpectationEditor');
 	}
 
@@ -985,7 +751,7 @@ class ExpectationEditor extends Editor {
 	}
 
 	doAppendEdit(text) {
-		this.nex.appendExptext(text);
+		this.nex.appendExptextLetter(text);
 	}
 
 	hasContent() {

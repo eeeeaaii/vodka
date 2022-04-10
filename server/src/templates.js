@@ -24,6 +24,8 @@ import { Closure } from './nex/closure.js'
 import { EString } from './nex/estring.js'
 import { Tag } from './tag.js'
 import { Org } from './nex/org.js'
+import { Integer } from './nex/integer.js'
+import { Float } from './nex/float.js'
 import { ForeignClosure } from './nex/foreignclosure.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { BUILTINS, BINDINGS } from './environment.js'
@@ -93,15 +95,6 @@ class TemplateStore  {
 				dst.appendChild(c.makeCopy());
 			}
 		}
-	}
-
-	static getChildTagged(org, tagname) {
-		for (let i = 0; i < org.numChildren() ; i++) {
-			let c = org.getChildAt(i);
-			if (c.numTags() == 1 && c.getTag(0).getName() == tagname) {
-				return c;
-			}
-		}		
 	}
 
 	getSingleTagName(nex) {
@@ -235,7 +228,7 @@ class Template {
 	getDocs() {
 		let firstline = '';
 		if (!this.docs) {
-			let docs = TemplateStore.getChildTagged(this.org, ':info');
+			let docs = this.org.getChildTagged(':info');
 			if (docs && docs.getTypeName() == '-page-') {
 				firstline = docs.getValueAsString();
 			} else {
@@ -244,7 +237,7 @@ class Template {
 		} else {
 			firstline = this.docs;
 		}
-		let initializer = TemplateStore.getChildTagged(this.org, ':init');
+		let initializer = this.org.getChildTagged(':init');
 		if (initializer) {
 			let secondline = ''
 			if (initializer.getTypeName() == '-closure-') {
@@ -263,7 +256,26 @@ class Template {
 	}
 }
 
+
 const templateStore = new TemplateStore();
 
-export { templateStore  }
+function convertJSMapToOrg(m) {
+	let r = new Org();
+	for (let key in m) {
+		let value = m[key];
+		let v = new EString('' + value);
+		if (!isNaN(value)) {
+			if (Math.floor(value) == value) {
+				v = new Integer(Math.floor(value));
+			} else {
+				v = new Float(value);
+			}
+		}
+		v.addTag(new Tag(key));
+		r.appendChild(v);
+	}
+	return r;
+}
+
+export { templateStore, convertJSMapToOrg  }
 

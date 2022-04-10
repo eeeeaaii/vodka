@@ -31,7 +31,7 @@ import { experiments } from './globalappflags.js'
  */
 function evaluateNexSafely(nex, executionEnvironment, skipActivation /* TODO: remove this param */) {
 	if (experiments.ASM_RUNTIME) {
-		Module.ccall("evaluate")
+		Module.ccall("evaluate", 'number', ['number'], [nex.getRuntimeId()]);
 	}
 
 	let result;
@@ -51,9 +51,6 @@ function evaluateNexSafely(nex, executionEnvironment, skipActivation /* TODO: re
 			}
 		}
 
-		// if (result.getTypeName() == '-expectation-' && nex.getTypeName() == '-command-' && !skipActivation) {
-		// 	result.activate();
-		// }
 		let tn = result.getTypeName();
 		if (tn == '-org-' || tn == '-nativeorg-') {
 			// forget multiple dereference for now we will do that soon/someday/sometime

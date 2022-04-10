@@ -41,6 +41,8 @@ import { createSyscalls } from './builtins/syscalls.js'
 import { createTagBuiltins } from './builtins/tagbuiltins.js'
 import { createTestBuiltins } from './builtins/testbuiltins.js'
 import { createTypeConversionBuiltins } from './builtins/typeconversions.js'
+import { createWavetableBuiltins } from './builtins/wavetablebuiltins.js'
+import { createMidiBuiltins } from './builtins/midibuiltins.js'
 import { loadAndRun } from './servercommunication.js'
 import { RenderNode } from './rendernode.js'
 import { Root } from './nex/root.js'
@@ -59,6 +61,8 @@ import {
 import { evaluateNexSafely } from './evaluator.js'
 import { BINDINGS } from './environment.js'
 import { rootManager } from './rootmanager.js'
+import { setAPIDocCategory, writeDocs } from './documentation.js'
+import { maybeKillSound } from './webaudio.js'
 
 
 // EXPERIMENTS
@@ -74,13 +78,18 @@ let sessionId = null;
 let funnelConnected = true;
 
 var justPressedShift;
+var enterIsDown;
 
 var mobileMode = false;
 
 var mileInputMode = false;
 
+var helpIsShowing = false;
+
 // used by emscripten
 var Module = {}
+
+let apiDocCategory = '';
 
 function dumpPerf() {
 	perfmon.dump();
@@ -96,7 +105,6 @@ function doRealKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
 	// if it returns false, it means we handled the keystroke and we are
 	// canceling the browser event - this also means something 'happened' so we render.
 	if (!r) {
-		//eventQueueDispatcher.enqueueTopLevelRender();
 		eventQueueDispatcher.enqueueRenderOnlyDirty()
 	}
 	return r;	
@@ -111,6 +119,8 @@ function doKeyInputNotForTests(keycode, whichkey, hasShift, hasCtrl, hasMeta, ha
 var testEventQueue = [];
 
 // DO NOT RENAME THIS METHOD OR YOU WILL BREAK ALL THE OLD TESTS
+// it is actually used for every test, to send the escape keys
+// that bookend "normal" and "exploded" screenshots
 function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta) {
 	// in order to make this simulate user activity better I'd need
 	// to go modify all the tests so they don't call this method
@@ -124,24 +134,27 @@ function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta) {
 	return false; // we no longer know if we can honor the browser event?
 }
 
-function createBuiltins() {
-	createAsyncBuiltins();
-	createBasicBuiltins();
-	createContractBuiltins();
-	createEnvironmentBuiltins();
-	createFileBuiltins();
-	createIterationBuiltins();
-	createLogicBuiltins();
-	createMakeBuiltins();
-	createMathBuiltins();
-	createOrgBuiltins();
-	createStringBuiltins();
-	createSyscalls();
-	createTagBuiltins();
-	createTestBuiltins();
-	createTypeConversionBuiltins();
 
-	createNativeOrgs();
+function createBuiltins() {
+	// in the order we want them in the docs
+	setAPIDocCategory('Basic Builtins'); createBasicBuiltins();
+	setAPIDocCategory('Environment Builtins'); createEnvironmentBuiltins();
+	setAPIDocCategory('Iteration Builtins'); createIterationBuiltins();
+	setAPIDocCategory('Logic Builtins'); createLogicBuiltins();
+	setAPIDocCategory('Math Builtins'); createMathBuiltins();
+	setAPIDocCategory('Syscalls'); createSyscalls();
+	setAPIDocCategory('Tag Builtins'); createTagBuiltins();
+	setAPIDocCategory('Contract Builtins'); createContractBuiltins();
+	setAPIDocCategory('Async Builtins'); createAsyncBuiltins();
+	setAPIDocCategory('File Builtins'); createFileBuiltins();
+	setAPIDocCategory('Org Builtins'); createOrgBuiltins();
+	setAPIDocCategory('String Builtins'); createStringBuiltins();
+	setAPIDocCategory('Wavetable Builtins'); createWavetableBuiltins();
+	setAPIDocCategory('Midi Builtins'); createMidiBuiltins();
+	setAPIDocCategory('NativeOrgs'); createNativeOrgs();
+	setAPIDocCategory('Make Builtins'); createMakeBuiltins();
+	setAPIDocCategory('Type Conversion Builtins'); createTypeConversionBuiltins();
+	setAPIDocCategory('Test Builtins'); createTestBuiltins();
 }
 
 function nodeLevelRender(node) {
@@ -182,16 +195,14 @@ function setDocRootFromStart() {
 	loadAndRun(':start', function(result) {
 		let expNode = root.appendChild(result);
 		expNode.setSelected(false);
-		root.setRenderMode(RENDER_MODE_NORM);
+		root.setRenderMode(RENDER_MODE_EXPLO);
 		systemState.setGlobalCurrentDefaultRenderFlags(0);	
 	});
 }
 
 function setEmptyDocRoot() {
-	let d = new Doc();
-	d.setMutable(true);
-	let docNode = root.appendChild(d);
-	docNode.setSelected(false /* don't render yet */);
+	root.setRenderMode(RENDER_MODE_EXPLO);
+	root.setSelected(false);
 }
 
 function getCookie(key) {
@@ -233,49 +244,87 @@ function setSessionId() {
 	}
 }
 
-function checkHelpMessage() {
+function setupHelp() {
 	document.getElementById('showhotkeys').onclick = function(c) {
-		document.getElementById('intro').style.display = 'none';
-		document.getElementById('hotkeyreference').style.display = 'block';
+		showHelpPage('hotkeyreference');
+	}
+	document.getElementById('showapi').onclick = function(c) {
+		showHelpPage('fullapireference');
+	}
+	document.getElementById('showapi2').onclick = function(c) {
+		showHelpPage('fullapireference');
+	}
+	document.getElementById('showwelcome').onclick = function(c) {
+		showHelpPage('intro');
 	}
 	document.getElementById('closehotkeyreference').onclick = function(c) {
-		document.getElementById('hotkeyreference').style.display = 'none';
-		window.scrollTo(0,0);
+		hideHelp();
 	}
 	document.getElementById('closeintro').onclick = function(c) {
-		document.getElementById('intro').style.display = 'none';
-		window.scrollTo(0,0);
+		hideHelp();
 	}
 	document.getElementById('closeintropermanently').onclick = function(c) {
-		document.getElementById('intro').style.display = 'none';
+		hideHelp();
 		document.cookie = 'hasbeenhelped=true';
-		window.scrollTo(0,0);
 	}
 	document.getElementById('sessionid').innerText = sessionId;
 	document.getElementById('sessionlink').href = `http://${FEATURE_VECTOR.hostname}?sessionId=${sessionId}`;
 	document.getElementById('newsessionlink').href = `http://${FEATURE_VECTOR.hostname}?new=1`;
-	let userSaidDoNotRemind = !!getCookie('hasbeenhelped');
-	let showIt = function() {
-		document.getElementById('intro').style.display = 'block';
-	}
-	let showIt2 = function() {
-		document.getElementById('hotkeyreference').style.display = 'block';
-	}
-	if (!userSaidDoNotRemind && !experiments.NO_SPLASH) {
-		showIt();
-	} else {
-		var params = new URLSearchParams(window.location.search);
-		params.forEach(function(value, key) {
-			if (key == 'help') {
-				if (value == 'hotkeys') {
-					showIt2();
-				} else {
-					showIt();
-				}
-			}
-		})
+}
 
+function hasShowHelpInQueryString() {
+	var params = new URLSearchParams(window.location.search);
+	params.forEach(function(value, key) {
+		if (key == 'help') {
+			return true;
+		}
+	});
+	return false;
+}
+
+function showHelpIfNotSuppressed() {
+	let userSaidDoNotRemind = !!getCookie('hasbeenhelped');
+	if (experiments.NO_SPLASH) {
+		hideHelp();
+	} else if (userSaidDoNotRemind && !hasShowHelpInQueryString()) {
+		// odds are users who said not to remind want the quick ref, not the intro
+		showHelpPage('hotkeyreference');
+		hideHelp();
+	} else {
+		showHelp();
+		showHelpPage('intro');
 	}
+}
+
+function showHelp() {
+	helpIsShowing = true;
+	document.getElementById('uberhelpcontainer').style.display = 'block';
+}
+
+function hideHelp() {
+	helpIsShowing = false;
+	document.getElementById('uberhelpcontainer').style.display = 'none';
+	window.scrollTo(0,0);
+}
+
+function toggleHelp() {
+	if (helpIsShowing) {
+		hideHelp();
+	} else {
+		showHelp();
+	}
+}
+
+// help pages:
+//    intro
+//    hotkeyreference
+function showHelpPage(id) {
+	document.getElementById('intro').style.display = 'none';
+	document.getElementById('hotkeyreference').style.display = 'none';
+	document.getElementById('fullapireference').style.display = 'none';
+
+	document.getElementById(id).style.display = 'block';
+	window.scrollTo(0,0);
 }
 
 function replSetup() {
@@ -384,8 +433,6 @@ function setupMobile() {
 	systemState.setIsMobile(true);
 	document.getElementById("mobilecontrolpanel").style.display = 'flex';
 	document.getElementById("codepane").classList.add('mobile');
-//	document.getElementById("content").style.position = 'absolute';
-//	document.getElementById("content").style.top = '225px';
 
 	document.getElementById("mobile_out").onclick = function() {
 		showOrDoFakeEvent("Tab", true, false, false, false, false);
@@ -490,12 +537,8 @@ function doKeydownEvent(e) {
 
 function getUiCallbackObject() {
 	return {
-		'helpCallback': function() {
-			document.getElementById('intro').style.display = 'block';
-		},
-		'helpCallback2': function() {
-			document.getElementById('intro').style.display = 'none';
-			document.getElementById('hotkeyreference').style.display = 'block';
+		'toggleHelp': function() {
+			toggleHelp();
 		},
 		'setExplodedState': function(exploded) {
 			document.getElementById("mobile_esc").innerText = (exploded) ? 'explode' : 'contract'
@@ -510,7 +553,8 @@ function setup() {
 	setAppFlags();
 	setSessionId();
 	macSubst();
-	checkHelpMessage();
+	setupHelp();
+	showHelpIfNotSuppressed()
 	eventQueue.initialize();
 
 	if (getQSVal('mobile')) {
@@ -518,33 +562,13 @@ function setup() {
 		mobileMode = true;
 	}
 
-	keyDispatcher.setCloseHelp(function() {
-		let closedIt = false;
-		if (document.getElementById('intro').style.display != 'none') {
-			document.getElementById('intro').style.display = 'none';
-			closedIt = true;
-		}
-		if (document.getElementById('hotkeyreference').style.display != 'none') {
-			document.getElementById('hotkeyreference').style.display = 'none';
-			closedIt = true;
-		}
-		if (closedIt) {
-			window.scrollTo(0,0);
-		}
-	})
 	keyDispatcher.setUiCallbackObject(getUiCallbackObject());
-	// keyDispatcher.setHelpCallback(function() {
-	// 	document.getElementById('intro').style.display = 'block';
-	// })
-	// keyDispatcher.setHelp2Callback(function() {
-	// 	document.getElementById('intro').style.display = 'none';
-	// 	document.getElementById('hotkeyreference').style.display = 'block';
-	// })
 
 	// testharness.js needs this
 	window.doKeyInput = doKeyInput;
 	window.runTest = runTest;
 	createBuiltins();
+	writeDocs();
 	// because of https://github.com/eeeeaaii/vodka/issues/29
 	if (NEXT_NEX_ID > 1000) {
 		throw new Error('too many builtins, increase starting nex ID');
@@ -558,6 +582,7 @@ function setup() {
 
 	justPressedShift = false;
 
+
 	document.onclick = function(e) {
 		checkRecordState(e, 'mouse');
 		return true;
@@ -568,6 +593,7 @@ function setup() {
 			return doKeyInputNotForTests('NakedShift', e.code, e.shiftKey, e.ctrlKey, e.metaKey, e.altKey);
 			justPressedShift = false;
 		}
+		maybeKillSound();
 		return true;
 	}
 	document.onkeydown = function(e) {
@@ -584,7 +610,6 @@ function setup() {
 	} else {
 		setEmptyDocRoot();
 	}
-	//eventQueueDispatcher.enqueueTopLevelRender();
 	eventQueueDispatcher.enqueueRenderOnlyDirty()
 }
 

@@ -61,6 +61,11 @@ class EString extends ValueNex {
 		this.attachedJS = js;
 	}
 
+	rootLevelPostEvaluationStep() {
+		this.setMutable(false);
+	}
+
+
 	/**
 	 * Retrieves the attached js for this estring
 	 * @see {@link setAttachedJS}

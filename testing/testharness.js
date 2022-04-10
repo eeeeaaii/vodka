@@ -192,7 +192,7 @@ function runTestImpl(testinput, method, legacy, flags) {
 		}
 		if (method == 'direct') {
 			await page.evaluate(function() {
-				doKeyInput('Escape', 'Escape', false, false, false);
+				doKeyInput('{', '{', false, false, false);
 			})
 			// we have logged all browser interactions directly, the new way.
 			for (let i = 0; i < testinput.length; i++) {
@@ -243,7 +243,7 @@ function runTestImpl(testinput, method, legacy, flags) {
 		// 	await delay(10000);
 		// }
 		await page.evaluate(function() {
-			doKeyInput('Escape', 'Escape', false, false, false);
+			doKeyInput('ShiftEscape', 'ShiftEscape', false, false, false);
 		})
 		await rl.close();
 		await page.screenshot({path: normal_out});

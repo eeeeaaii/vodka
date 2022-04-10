@@ -30,26 +30,11 @@ import { experiments } from './globalappflags.js'
 class KeyDispatcher {
 	constructor() {
 		this.nqmarks = 0;
-		// this.helpcallback = null;
-		// this.help2callback = null;
-		this.closeHelp = null;
 		this.uiCallbackObject = null;
 	}
 
 	setUiCallbackObject(obj) {
 		this.uiCallbackObject = obj;
-	}
-
-	// setHelpCallback(cb) {
-	// 	this.helpcallback = cb;
-	// }
-
-	// setHelp2Callback(cb) {
-	// 	this.help2callback = cb;
-	// }
-
-	setCloseHelp(cb) {
-		this.closeHelp = cb;
 	}
 
 	dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
@@ -72,20 +57,9 @@ class KeyDispatcher {
 			}
 		}
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
-		if (eventName == '?') {
-			if (this.nqmarks == 2) {
-				this.uiCallbackObject.helpCallback();
-				this.nqmarks++
-			} else if (this.nqmarks == 3) {
-				this.uiCallbackObject.helpCallback2();
-				this.nqmarks = 0;
-			} else {
-				this.closeHelp();
-				this.nqmarks++;
-			}
-		} else {
-			this.closeHelp();
-			this.nqmarks = 0;
+		if (eventName == 'Escape') {
+			this.uiCallbackObject.toggleHelp();
+			return false;
 		}
 
 
@@ -132,9 +106,9 @@ class KeyDispatcher {
 			undo.saveStateForUndo();
 			manipulator.doPaste();
 			return false; // to cancel browser event
-		} else if (eventName == 'Escape') {
+		} else if (eventName == 'ShiftEscape') {
 			// do not save state for undo as esc is non-destructive
-			this.doEscape();
+			this.toggleGlobalExplodedMode();
 			return false; // to cancel browser event
 		} else if (eventName == 'MetaEnter') {
 			// TODO: only save state for undo first time we hit meta-enter (step execute)
@@ -241,6 +215,10 @@ class KeyDispatcher {
 			return 'ShiftArrowLeft';
 
 
+		} else if (keycode == 'Escape' && hasAlt && hasShift) {
+			return 'ShiftAltEscape';
+		} else if (keycode == 'Escape' && hasAlt) {
+			return 'AltEscape';
 		} else if (keycode == 'Escape' && hasShift) {
 			return 'ShiftEscape';
 
@@ -268,6 +246,8 @@ class KeyDispatcher {
 			return 'Alt~';
 		} else if (keycode == 'Dead' && whichKey == 'Backquote' && hasAlt && !hasShift) {
 			return 'Alt`';
+		} else if (whichKey == 'Digit6' && hasAlt && hasShift) {
+			return 'Alt^';
 		} else if (whichKey == 'Digit7' && hasAlt && hasShift) {
 			return 'Alt&';
 		} else if (whichKey == 'Digit8' && hasAlt && hasShift) {
@@ -395,7 +375,7 @@ class KeyDispatcher {
 		return false;
 	}
 
-	doEscape() {
+	toggleGlobalExplodedMode() {
 		let root = systemState.getRoot();
 		this.uiCallbackObject.setExplodedState(root.isExploded())
 		root.toggleRenderMode();
@@ -477,11 +457,7 @@ class KeyDispatcher {
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
 			'Backspace': (
 					experiments.BETTER_KEYBINDINGS
-					? (
-							experiments.ORG_Z
-							? 'start-main-editor'
-							: 'start-main-editor-or-delete'
-					)
+					?  'start-main-editor'
 					: 'remove-selected-and-select-previous-sibling-v2'
 			),
 
@@ -512,14 +488,14 @@ class KeyDispatcher {
 			'^': experiments.ORG_OVERHAUL ? 'insert-instantiator-at-insertion-point-v2' : 'insert-nil-at-insertion-point-v2',
 			'&': 'insert-lambda-at-insertion-point-v2',
 			'*': 'insert-expectation-at-insertion-point-v2',
-			'(': experiments.ORG_Z ? 'insert-org-at-insertion-point-v2' : 'insert-word-at-insertion-point-v2',
-			')': experiments.ORG_Z ? 'close-off-org' : 'insert-org-at-insertion-point-v2',
+			'(': 'insert-org-at-insertion-point-v2',
+			')': 'close-off-org',
 			'[': 'insert-line-at-insertion-point-v2',
-			']': experiments.ORG_Z ? 'close-off-line' : null,
+			']': 'close-off-line',
 			'{': 'insert-doc-at-insertion-point-v2',
-			'}': experiments.ORG_Z ? 'close-off-doc' : null,
-			'<': experiments.ORG_Z ? 'insert-word-at-insertion-point-v2' : null,
-			'>': experiments.ORG_Z ? 'close-off-word' : null,
+			'}': 'close-off-doc',
+			'<': 'insert-word-at-insertion-point-v2',
+			'>': 'close-off-word',
 			'`': 'add-tag',
 			'Alt`': 'remove-all-tags',
 
@@ -529,7 +505,8 @@ class KeyDispatcher {
 			'Alt(': 'wrap-in-word',
 			'Alt)': 'wrap-in-org',
 			'Alt[': 'wrap-in-line',
-			'Alt{': 'wrap-in-doc'
+			'Alt{': 'wrap-in-doc',
+			'Alt^': 'wrap-in-instantiator'
 		};			
 	}
 
@@ -554,11 +531,7 @@ class KeyDispatcher {
 
 			'Backspace': (
 					experiments.BETTER_KEYBINDINGS
-					? (
-							experiments.ORG_Z
-							? 'start-main-editor'
-							: 'start-main-editor-or-delete'
-					)
+					?  'start-main-editor'
 					: 'remove-selected-and-select-previous-sibling-v2'
 			),
 
@@ -569,7 +542,7 @@ class KeyDispatcher {
 				(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
 				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
 
-			'ShiftEscape': 'toggle-exploded',
+			'ShiftAltEscape': 'toggle-exploded',
 
 			'CtrlEnter': (
 				experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null
@@ -578,7 +551,7 @@ class KeyDispatcher {
 				(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
 				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
 
-			'ShiftEscape': 'toggle-exploded',
+			'ShiftAltEscape': 'toggle-exploded',
 			'Enter': 'evaluate-v2',
 			'~': 'insert-command-at-insertion-point-v2',
 			'!': 'insert-bool-at-insertion-point-v2',
@@ -590,14 +563,16 @@ class KeyDispatcher {
 			'&': 'insert-lambda-at-insertion-point-v2',
 			'*': 'insert-expectation-at-insertion-point-v2',
 
-			'(': experiments.ORG_Z ? 'insert-org-at-insertion-point-v2' : 'insert-word-at-insertion-point-v2',
-			')': experiments.ORG_Z ? 'close-off-org' : 'insert-org-at-insertion-point-v2',
+			'(': 'insert-org-at-insertion-point-v2',
+			')': 'close-off-org',
 			'[': 'insert-line-at-insertion-point-v2',
-			']': experiments.ORG_Z ? 'close-off-line' : null,
+			']': 'close-off-line',
 			'{': 'insert-doc-at-insertion-point-v2',
-			'}': experiments.ORG_Z ? 'close-off-doc' : null,
-			'<': experiments.ORG_Z ? 'insert-word-at-insertion-point-v2' : null,
-			'>': experiments.ORG_Z ? 'close-off-word' : null,
+			'}': 'close-off-doc',
+			'<': 'insert-word-at-insertion-point-v2',
+			'>': 'close-off-word',
+
+			'_': 'insert-wavetable-at-insertion-point-v2',
 
 			'`': 'add-tag',
 			'Alt`': 'remove-all-tags',
@@ -607,7 +582,8 @@ class KeyDispatcher {
 			'Alt(': 'wrap-in-word',
 			'Alt)': 'wrap-in-org',
 			'Alt[': 'wrap-in-line',
-			'Alt{': 'wrap-in-doc'
+			'Alt{': 'wrap-in-doc',
+			'Alt^': 'wrap-in-instantiator'
 		};
 	}
 }

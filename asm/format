@@ -1,0 +1,6 @@
+#!/bin/zsh
+
+
+clang-format -i $(find ./src | grep \.cc)
+clang-format -i $(find ./src | grep \.h)
+

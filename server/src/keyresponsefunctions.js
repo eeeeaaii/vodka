@@ -24,6 +24,7 @@ import { ValueNex } from './nex/valuenex.js';
 import { Bool } from './nex/bool.js'; 
 import { Builtin } from './nex/builtin.js'; 
 import { Closure } from './nex/closure.js'; 
+import { Wavetable } from './nex/wavetable.js'; 
 import { Command } from './nex/command.js'; 
 import { Doc } from './nex/doc.js'; 
 import { EError } from './nex/eerror.js'; 
@@ -75,7 +76,7 @@ function isNormallyHandled(key) {
 	if (!(/^.$/.test(key))) {
 		return true;
 	}
-	if (/^[~!@#$%`^*&)([\]{}<>]$/.test(key)) {
+	if (/^[~!@#$%`^*&_)([\]{}<>]$/.test(key)) {
 		return true;
 	}
 	return false;
@@ -156,6 +157,24 @@ const DefaultHandlers = {
 	},
 
 	'nilDefault': function(nex, txt) {
+		if (isNormallyHandled(txt)) {
+			return false;
+		}
+		let letterRegex = /^[a-zA-Z0-9']$/;
+		let isSeparator = !letterRegex.test(txt);
+
+		if (isSeparator) {
+			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt))
+		} else {
+			let w = manipulator.newWord();
+			w.appendChild(manipulator.newLetter(txt));
+			manipulator.defaultInsertForV2(manipulator.selected(), w);
+			w.setSelected();
+		}
+		return true;
+	},
+
+	'wavetableDefault': function(nex, txt) {
 		if (isNormallyHandled(txt)) {
 			return false;
 		}
@@ -681,6 +700,7 @@ const KeyResponseFunctions = {
 	'insert-actual-[-at-insertion-point-from-letter': function(s) { manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator('[')); },
 	'insert-actual-{-at-insertion-point-from-letter': function(s) { manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator('{')); },
 	'insert-actual-<-at-insertion-point-from-letter': function(s) { manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator('<')); },
+	'insert-actual-_-at-insertion-point-from-letter': function(s) { manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator('_')); },
 
 	'insert-command-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newCommand()); },
 	'insert-bool-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newBool()); },
@@ -697,6 +717,7 @@ const KeyResponseFunctions = {
 	'insert-doc-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newDoc()); },
 	'insert-org-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newOrg()); },
 	'insert-zlist-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newZlist()); },
+	'insert-wavetable-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newWavetable()); },
 
 	'close-off-org': function(s) { manipulator.closeOffOrg(s); },
 	'close-off-line': function(s) { manipulator.closeOffLine(s); },
@@ -713,6 +734,7 @@ const KeyResponseFunctions = {
 	'wrap-in-word': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newWord()); },
 	'wrap-in-line': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newLine()); },
 	'wrap-in-doc': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newDoc()); },
+	'wrap-in-instantiator': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newInstantiator()); },
 	'wrap-in-org': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newOrg()); },
 
 	'force-insert-inside': function(s) { manipulator.forceInsertInside(); },
@@ -753,6 +775,13 @@ const KeyResponseFunctions = {
 
 	'do-line-break-always': function(s) {
 		manipulator.doLineBreakAlwaysV2(s);
+	},
+
+	'audition-wave': function(s) {
+		s.getNex().auditionWave();
+	},
+	'stop-auditioning-wave': function(s) {
+		s.getNex().stopAuditioningWave();
 	},
 
 	// I hate commas

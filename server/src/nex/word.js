@@ -43,6 +43,11 @@ class Word extends NexContainer {
 		return '-word-';
 	}
 
+	rootLevelPostEvaluationStep() {
+		this.setMutable(false);
+	}
+
+
 	makeCopy(shallow) {
 		let r = new Word();
 		this.copyChildrenTo(r, shallow);

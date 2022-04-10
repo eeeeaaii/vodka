@@ -38,6 +38,11 @@ class Bool extends ValueNex {
 		super(val, '!', 'boolean')
 	}
 
+	rootLevelPostEvaluationStep() {
+		this.setMutable(false);
+	}
+
+
 	getTypeName() {
 		return '-bool-';
 	}

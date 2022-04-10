@@ -1,5 +1,14 @@
 # Contributing How-To
 
+## Update: March 2022
+I've changed what the escape key does, which will have effectively broken all the tests. I'll be fixing them eventually but I'm planning to rely less on screenshot tests for things that don't need screenshots.
+
+Also: generating the parser requires the dev version of pegjs. Install it this way:
+
+```
+npm install -g pegjs@0.11.0-master.b7b87ea
+```
+
 ## Introduction
 
 Vodka is implemented in plain vanilla JavaScript with no frameworks,

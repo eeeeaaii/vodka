@@ -43,6 +43,10 @@ class Org extends NexContainer {
 		return `[org]`;
 	}
 
+	rootLevelPostEvaluationStep() {
+		this.setMutable(false);
+	}
+
 	prettyPrintInternal(lvl, hdir) {
 		return this.standardListPrettyPrint(lvl, '[org]', hdir);
 	}
@@ -158,9 +162,7 @@ class Org extends NexContainer {
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('org');
 		domNode.classList.add('data');
-		if (experiments.ORG_Z) {
-			domNode.classList.add('redorgs');
-		}
+		domNode.classList.add('redorgs');
 		if (this.drawfunction) {
 			let r = this.drawfunction(domNode.innerHTML);
 			if (typeof(r) == 'string') {
@@ -205,14 +207,9 @@ class Org extends NexContainer {
 		}
 	}
 
-	static makeTaggedOrgWithContents(tag) {
-		let org = new Org();
-		org.addTag(tag);
-		for (let i = 1; i < arguments.length; i++) {
-			org.appendChild(arguments[i]);
-		}
-		return org;
-	}
+	// convenience method?
+	
+
 }
 
 

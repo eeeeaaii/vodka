@@ -34,6 +34,7 @@ import { evaluateNexSafely } from './evaluator.js'
  * @param {RenderNode} s - the RenderNode to evaluate and replace (probably the selected node)
  */
 function evaluateAndReplace(s) {
+
 	let n = evaluateNexSafely(s.getNex(), BINDINGS);
 	if (Utils.isFatalError(n)) {
 		Utils.beep();
@@ -42,26 +43,11 @@ function evaluateAndReplace(s) {
 		return;
 	}
 
-	if (n.getTypeName() == '-expectation-' && !n.isActivated()) {
-	// ONLY AT TOP LEVEL we activate expectations.
-		n.activate();
-	} else if (shouldChangeMutability(n)) {
-		n.setMutable(false);
-	}
+	n.rootLevelPostEvaluationStep();
+
 	if (n) {
 		manipulator.replaceSelectedWith(new RenderNode(n));
 	}
-}
-
-function shouldChangeMutability(nex) {
-	return nex && (Utils.isBool(nex) ||
-			Utils.isEString(nex) ||
-			Utils.isFloat(nex) ||
-			Utils.isInteger(nex) ||
-			Utils.isDoc(nex) ||
-			Utils.isLine(nex) ||
-			Utils.isWord(nex) ||
-			Utils.isOrg(nex))
 }
 
 /**
@@ -81,24 +67,27 @@ function evaluateAndKeep(s) {
 	if (Utils.isFatalError(n)) {
 		Utils.beep();
 		manipulator.insertBeforeSelectedAndSelect(n);
-	} else if (Utils.isExpectation(n)) {
-		if (!n.isActivated()) {
-			// ONLY AT TOP LEVEL we activate expectations.
-			n.activate();
-		}
-		n.addPendingCallback(function() {
-			if (n.hasChildren() && Utils.isFatalError(n.getChildAt(0))) {
-				Utils.beep();
-				manipulator.insertBeforeSelectedAndSelect(n);
-				//eventQueueDispatcher.enqueueTopLevelRender();
-				eventQueueDispatcher.enqueueRenderOnlyDirty()
-			}
-		})
-	} else if (shouldChangeMutability(n)) {
-		n.setMutable(true);
-		n.setDirtyForRendering(true);
-
+	} else {
+		n.rootLevelPostEvaluationStep();
 	}
+	// 	if (Utils.isExpectation(n)) {
+	// 	if (!n.isActivated()) {
+	// 		// ONLY AT TOP LEVEL we activate expectations.
+	// 		n.activate();
+	// 	}
+	// 	n.addPendingCallback(function() {
+	// 		if (n.hasChildren() && Utils.isFatalError(n.getChildAt(0))) {
+	// 			Utils.beep();
+	// 			manipulator.insertBeforeSelectedAndSelect(n);
+	// 			//eventQueueDispatcher.enqueueTopLevelRender();
+	// 			eventQueueDispatcher.enqueueRenderOnlyDirty()
+	// 		}
+	// 	})
+	// } else if (shouldChangeMutability(n)) {
+	// 	n.setMutable(true);
+	// 	n.setDirtyForRendering(true);
+
+	// }
 	eventQueueDispatcher.enqueueAlertAnimation(s);
 }
 

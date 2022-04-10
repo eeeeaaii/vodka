@@ -264,71 +264,71 @@ var peg$e45 = peg$classExpectation(["`"], true, false);
   var peg$e53 = peg$classExpectation([" ", "\r", "\n", "\t"], false, false);
 
   var peg$f0 = function(NEX) { return NEX; };
-  var peg$f1 = function(INST_NAME, PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); };
-  var peg$f2 = function(INST_NAME, PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonliteral */); };
-  var peg$f3 = function(INST_NAME, PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonliteral */); };
+  var peg$f1 = function(INST_NAME, PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); };
+  var peg$f2 = function(INST_NAME, PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonmutable */); };
+  var peg$f3 = function(INST_NAME, PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonmutable */); };
   var peg$f4 = function(INST_NAME, PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); };
   var peg$f5 = function(INST_NAME, PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'v'); };
   var peg$f6 = function(INST_NAME, PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'z'); };
-  var peg$f7 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); };
-  var peg$f8 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonliteral */); };
-  var peg$f9 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonliteral */); };
+  var peg$f7 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); };
+  var peg$f8 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonmutable */); };
+  var peg$f9 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonmutable */); };
   var peg$f10 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'h'); };
   var peg$f11 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'v'); };
   var peg$f12 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeOrgList(CHILDREN, PRIVATE, TAGLIST, 'z'); };
-  var peg$f13 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); };
-  var peg$f14 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonliteral */); };
-  var peg$f15 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonliteral */); };
+  var peg$f13 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); };
+  var peg$f14 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonmutable */); };
+  var peg$f15 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonmutable */); };
   var peg$f16 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h'); };
   var peg$f17 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'v'); };
   var peg$f18 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'z'); };
-  var peg$f19 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); };
-  var peg$f20 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonliteral */); };
-  var peg$f21 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonliteral */); };
+  var peg$f19 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); };
+  var peg$f20 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonmutable */); };
+  var peg$f21 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonmutable */); };
   var peg$f22 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'h'); };
   var peg$f23 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'v'); };
   var peg$f24 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeLambdaList(CHILDREN, PRIVATE, TAGLIST, 'z'); };
-  var peg$f25 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); };
-  var peg$f26 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonliteral */); };
-  var peg$f27 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonliteral */); };
-  var peg$f28 = function(PRIVATE, TAGLIST, NAME, CHILDREN) { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); };
-  var peg$f29 = function(PRIVATE, TAGLIST, NAME, CHILDREN) { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonliteral */); };
-  var peg$f30 = function(PRIVATE, TAGLIST, NAME, CHILDREN) { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonliteral */); };
+  var peg$f25 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); };
+  var peg$f26 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonmutable */); };
+  var peg$f27 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonmutable */); };
+  var peg$f28 = function(PRIVATE, TAGLIST, NAME, CHILDREN) { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); };
+  var peg$f29 = function(PRIVATE, TAGLIST, NAME, CHILDREN) { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonmutable */); };
+  var peg$f30 = function(PRIVATE, TAGLIST, NAME, CHILDREN) { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonmutable */); };
   var peg$f31 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'h'); };
   var peg$f32 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'v'); };
   var peg$f33 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeCommandList(null, CHILDREN, PRIVATE, TAGLIST, 'z'); };
   var peg$f34 = function(PRIVATE, TAGLIST, NAME, CHILDREN) { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'h'); };
   var peg$f35 = function(PRIVATE, TAGLIST, NAME, CHILDREN) { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'v'); };
   var peg$f36 = function(PRIVATE, TAGLIST, NAME, CHILDREN) { return PF.makeCommandList(NAME, CHILDREN, PRIVATE, TAGLIST, 'z'); };
-  var peg$f37 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonliteral */); };
-  var peg$f38 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonliteral */); };
-  var peg$f39 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonliteral */); };
+  var peg$f37 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); };
+  var peg$f38 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonmutable */); };
+  var peg$f39 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonmutable */); };
   var peg$f40 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'h'); };
   var peg$f41 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'v'); };
   var peg$f42 = function(PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstantiatorList(CHILDREN, PRIVATE, TAGLIST, 'z'); };
   var peg$f43 = function(SYM) { return SYM; };
   var peg$f44 = function(NAME) { return NAME; };
   var peg$f45 = function(CHILDREN) { return CHILDREN; };
-  var peg$f46 = function(INST_NAME, PRIVATE, TAGLIST) { return PF.makeInstanceAtom(INST_NAME, PRIVATE, TAGLIST, true /* nonliteral */); };
+  var peg$f46 = function(INST_NAME, PRIVATE, TAGLIST) { return PF.makeInstanceAtom(INST_NAME, PRIVATE, TAGLIST, true /* nonmutable */); };
   var peg$f47 = function(INST_NAME, PRIVATE, TAGLIST) { return PF.makeInstanceAtom(INST_NAME, PRIVATE, TAGLIST); };
   var peg$f48 = function(INST_NAME_DATA) { return INST_NAME_DATA; };
-  var peg$f49 = function(TAGLIST) { return PF.makeBool(true, TAGLIST, true /* nonliteral */); };
-  var peg$f50 = function(TAGLIST) { return PF.makeBool(false, TAGLIST, true /* nonliteral */); };
+  var peg$f49 = function(TAGLIST) { return PF.makeBool(true, TAGLIST, true /* nonmutable */); };
+  var peg$f50 = function(TAGLIST) { return PF.makeBool(false, TAGLIST, true /* nonmutable */); };
   var peg$f51 = function(TAGLIST) { return PF.makeBool(true, TAGLIST); };
   var peg$f52 = function(TAGLIST) { return PF.makeBool(false, TAGLIST); };
-  var peg$f53 = function(TAGLIST, SYMBOL) { return PF.makeSymbol(SYMBOL, TAGLIST, true /* nonliteral */); };
+  var peg$f53 = function(TAGLIST, SYMBOL) { return PF.makeSymbol(SYMBOL, TAGLIST, true /* nonmutable */); };
   var peg$f54 = function(TAGLIST, SYMBOL) { return PF.makeSymbol(SYMBOL, TAGLIST); };
   var peg$f55 = function(SYMBOL_CHAR) { return SYMBOL_CHAR; };
   var peg$f56 = function() { return '_'; };
-  var peg$f57 = function(TAGLIST, NEGATION, DIGITS) { return PF.makeInteger(NEGATION, DIGITS, TAGLIST, true /* nonliteral */); };
+  var peg$f57 = function(TAGLIST, NEGATION, DIGITS) { return PF.makeInteger(NEGATION, DIGITS, TAGLIST, true /* nonmutable */); };
   var peg$f58 = function(TAGLIST, NEGATION, DIGITS) { return PF.makeInteger(NEGATION, DIGITS, TAGLIST); };
-  var peg$f59 = function(TAGLIST, DATA) { return PF.makeString(DATA, TAGLIST, true /* nonliteral */); };
+  var peg$f59 = function(TAGLIST, DATA) { return PF.makeString(DATA, TAGLIST, true /* nonmutable */); };
   var peg$f60 = function(TAGLIST, DATA) { return PF.makeString(DATA, TAGLIST); };
-  var peg$f61 = function(TAGLIST, DATA) { return PF.makeError(DATA, TAGLIST, true /* nonliteral */); };
-  var peg$f62 = function(TAGLIST, FLOAT) { return PF.makeFloat(FLOAT, TAGLIST, true /* nonliteral */); };
+  var peg$f61 = function(TAGLIST, DATA) { return PF.makeError(DATA, TAGLIST, true /* nonmutable */); };
+  var peg$f62 = function(TAGLIST, FLOAT) { return PF.makeFloat(FLOAT, TAGLIST, true /* nonmutable */); };
   var peg$f63 = function(TAGLIST, FLOAT) { return PF.makeFloat(FLOAT, TAGLIST); };
-  var peg$f64 = function(TAGLIST) { return PF.makeNil(TAGLIST, true /* nonliteral */) };
-  var peg$f65 = function() { return PF.makeNil(null, true /* nonliteral */) };
+  var peg$f64 = function(TAGLIST) { return PF.makeNil(TAGLIST, true /* nonmutable */) };
+  var peg$f65 = function() { return PF.makeNil(null, true /* nonmutable */) };
   var peg$f66 = function(INT_PART, DEC_DIGITS) {return DEC_DIGITS; };
   var peg$f67 = function(INT_PART, DEC_PART) { return  DEC_PART ? (INT_PART + '.' + DEC_PART) : INT_PART};
   var peg$f68 = function(DEC_DIGITS) { return '0.' + DEC_DIGITS; };
@@ -628,7 +628,7 @@ var peg$e45 = peg$classExpectation(["`"], true, false);
     }
 
     s0 = peg$currPos;
-    s1 = peg$parsenonliteral_instance_name();
+    s1 = peg$parsenonmutable_instance_name();
     if (s1 !== peg$FAILED) {
       s2 = peg$parseprivate_data_section();
       if (s2 !== peg$FAILED) {
@@ -679,7 +679,7 @@ var peg$e45 = peg$classExpectation(["`"], true, false);
     }
     if (s0 === peg$FAILED) {
       s0 = peg$currPos;
-      s1 = peg$parsenonliteral_instance_name();
+      s1 = peg$parsenonmutable_instance_name();
       if (s1 !== peg$FAILED) {
         s2 = peg$parseprivate_data_section();
         if (s2 !== peg$FAILED) {
@@ -730,7 +730,7 @@ var peg$e45 = peg$classExpectation(["`"], true, false);
       }
       if (s0 === peg$FAILED) {
         s0 = peg$currPos;
-        s1 = peg$parsenonliteral_instance_name();
+        s1 = peg$parsenonmutable_instance_name();
         if (s1 !== peg$FAILED) {
           s2 = peg$parseprivate_data_section();
           if (s2 !== peg$FAILED) {
@@ -781,7 +781,7 @@ var peg$e45 = peg$classExpectation(["`"], true, false);
         }
         if (s0 === peg$FAILED) {
           s0 = peg$currPos;
-          s1 = peg$parsenonliteral_instance_name();
+          s1 = peg$parsenonmutable_instance_name();
           if (s1 !== peg$FAILED) {
             s2 = peg$parseprivate_data_section();
             if (s2 !== peg$FAILED) {
@@ -4242,7 +4242,7 @@ var peg$e45 = peg$classExpectation(["`"], true, false);
     }
 
     s0 = peg$currPos;
-    s1 = peg$parsenonliteral_instance_name();
+    s1 = peg$parsenonmutable_instance_name();
     if (s1 !== peg$FAILED) {
       s2 = peg$parseprivate_data_section();
       if (s2 !== peg$FAILED) {
@@ -4366,7 +4366,7 @@ var peg$e45 = peg$classExpectation(["`"], true, false);
     return s0;
   }
 
-  function peg$parsenonliteral_instance_name() {
+  function peg$parsenonmutable_instance_name() {
     var s0, s1, s2, s3;
 
     var rule$expects = function (expected) {

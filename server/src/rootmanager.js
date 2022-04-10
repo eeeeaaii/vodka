@@ -44,7 +44,7 @@ class RootManager  {
 			args.mode = RENDER_MODE_NORM;
 		}
 		if (!args.id) {
-			args.id = 'mixroot';
+			args.id = 'vodkaroot';
 		}
 		let rootnex = new Root(true /* attached */);
 		let root = new RenderNode(rootnex);

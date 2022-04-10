@@ -34,28 +34,37 @@ class Integer extends ValueNex {
 		this.minusPressed = false; // TODO: move to editor
 	}
 
+	wasmSetup() {
+		this.runtimeId = Module.ccall("create_integer",
+			'number',
+			[]);
+		this.setWasmValue = Module.cwrap("set_integer_value",
+			'number',
+			['number', 'number']);
+		this.getWasmValue = Module.cwrap("get_integer_value",
+			'number',
+			['number']);
+	}
+
 	setValue(v) {
-		super.setValue(v);
 		if (experiments.ASM_RUNTIME) {
-			Module.ccall("set_integer_value",
-					'number',
-					['number', 'number'],
-					[this.runtimeId, Number(v)]
-					);
+			this.setWasmValue(this.runtimeId, Number(v));
+		} else {
+			super.setValue(v);
 		}
 	}
 
 	getValue() {
 		if (experiments.ASM_RUNTIME) {
-			return '' + Module.ccall("get_integer_value",
-					'number',
-					['number'],
-					[this.runtimeId]
-					);
+			return '' + this.getWasmValue(this.runtimeId);
+		} else {
+			return this.value;
 		}		
-		return this.value;
 	}
 
+	rootLevelPostEvaluationStep() {
+		this.setMutable(false);
+	}
 
 	getTypeName() {
 		return '-integer-';

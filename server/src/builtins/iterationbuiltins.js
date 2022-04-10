@@ -32,117 +32,118 @@ function createIterationBuiltins() {
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
-	function $filterWith(env, executionEnvironment) {
-		let list = env.lb('list');
-		let closure = env.lb('func');
-		let resultList = list.makeCopy(true /* shallow */);
-		let appendIterator = null;
-		let i = 0;
-		try {
-			list.doForEachChild(function(item) {
-				let cmd = Command.makeCommandWithClosureOneArg(closure, Command.quote(item));
-				cmd.setSkipAlertAnimation(true);
-				let result = evaluateNexSafely(cmd, executionEnvironment);
-				if (Utils.isFatalError(result)) {
-					throw wrapError('&szlig;', `filter-with: error returned from item ${i+1}`, result);
-				}
-				if (result.getTypedValue()) {
-					appendIterator = resultList.fastAppendChildAfter(list.getChildAt(i), appendIterator);
-				}
-				i++;
-			})
-		} catch (e) {
-			if (Utils.isFatalError(e)) {
-				return e;
-			} else {
-				throw e; // shouldn't be possible for this to be a non-fatal EError.
-			}
-		}
-		return resultList;
-	}
-
 	Builtin.createBuiltin(
 		'filter--with',
 		[ 'list()', 'func&' ],
-		$filterWith,
+		function $filterWith(env, executionEnvironment) {
+			let list = env.lb('list');
+			let closure = env.lb('func');
+			let resultList = list.makeCopy(true /* shallow */);
+			let appendIterator = null;
+			let i = 0;
+			try {
+				list.doForEachChild(function(item) {
+					let cmd = Command.makeCommandWithClosureOneArg(closure, Command.quote(item));
+					cmd.setSkipAlertAnimation(true);
+					let result = evaluateNexSafely(cmd, executionEnvironment);
+					if (Utils.isFatalError(result)) {
+						throw wrapError('&szlig;', `filter-with: error returned from item ${i+1}`, result);
+					}
+					if (result.getTypedValue()) {
+						appendIterator = resultList.fastAppendChildAfter(list.getChildAt(i), appendIterator);
+					}
+					i++;
+				})
+			} catch (e) {
+				if (Utils.isFatalError(e)) {
+					return e;
+				} else {
+					throw e; // shouldn't be possible for this to be a non-fatal EError.
+				}
+			}
+			return resultList;
+		},
 		'returns a new list containing only the elements of |list for which |func calls true when it is called on that element.'
 	);
 
+	Builtin.aliasBuiltin('filter', 'filter--with');
 
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
-	function $mapWith(env, executionEnvironment) {
-		let closure = env.lb('func');
-		let list = env.lb('list');
-		// until we congeal things down to a single list type
-		// I'll try to honor the list type of the starting list
-		let resultList = list.makeCopy(true /* shallow */);
-		let appendIterator = null;
-		let i = 0;
-		try {
-			list.doForEachChild(function(item) {
-				let cmd = Command.makeCommandWithClosureOneArg(closure, Command.quote(item))
-				cmd.setSkipAlertAnimation(true);
-				let result = evaluateNexSafely(cmd, executionEnvironment);
-				if (Utils.isFatalError(result)) {
-					throw wrapError('&szlig;', `map-with: error returned from item ${i+1}`, result);
-				}
-				appendIterator = resultList.fastAppendChildAfter(result, appendIterator);
-				i++;
-			});
-		} catch (e) {
-			if (Utils.isFatalError(e)) {
-				return e;
-			} else {
-				throw e;
-			}
-		}
-		return resultList;
-	}
 
 	Builtin.createBuiltin(
 		'map--with',
 		[ 'list()', 'func&' ],
-		$mapWith,
+		function $mapWith(env, executionEnvironment) {
+			let closure = env.lb('func');
+			let list = env.lb('list');
+			// until we congeal things down to a single list type
+			// I'll try to honor the list type of the starting list
+			let resultList = list.makeCopy(true /* shallow */);
+			let appendIterator = null;
+			let i = 0;
+			try {
+				list.doForEachChild(function(item) {
+					let cmd = Command.makeCommandWithClosureOneArg(closure, Command.quote(item))
+					cmd.setSkipAlertAnimation(true);
+					let result = evaluateNexSafely(cmd, executionEnvironment);
+					if (Utils.isFatalError(result)) {
+						throw wrapError('&szlig;', `map-with: error returned from item ${i+1}`, result);
+					}
+					appendIterator = resultList.fastAppendChildAfter(result, appendIterator);
+					i++;
+				});
+			} catch (e) {
+				if (Utils.isFatalError(e)) {
+					return e;
+				} else {
+					throw e;
+				}
+			}
+			return resultList;
+		},
 		'goes through all the elements in |list and replaces each one with the result of calling |func on that element.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
+	Builtin.aliasBuiltin('map', 'map--with');
 
-	function $reduceWithGiven(env, executionEnvironment) {
-		let list = env.lb('list');
-		let closure = env.lb('func');
-		let sn = env.lb('startvalue');
-		let p = sn;
-		let i = 0;
-		try {
-			list.doForEachChild(function(item) {
-				let cmd = Command.makeCommandWithClosureTwoArgs(closure, Command.quote(item), Command.quote(p));
-				cmd.setSkipAlertAnimation(true);
-				let result = evaluateNexSafely(cmd, executionEnvironment);
-				if (Utils.isFatalError(result)) {
-					throw wrapError('&szlig;', `reduce-with-given: error returned from item ${i+1}`, result);
-				}
-				p = result;
-				i++;
-			});
-		} catch(e) {
-			if (Utils.isFatalError(e)) {
-				return e;
-			} else {
-				throw e;
-			}
-		}
-		return p;
-	}
+	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
 	Builtin.createBuiltin(
 		'reduce--with--given',
 		[ 'list()', 'func&', 'startvalue' ],
-		$reduceWithGiven,
+		function $reduceWithGiven(env, executionEnvironment) {
+			let list = env.lb('list');
+			let closure = env.lb('func');
+			let sn = env.lb('startvalue');
+			let p = sn;
+			let i = 0;
+			try {
+				list.doForEachChild(function(item) {
+					let cmd = Command.makeCommandWithClosureTwoArgs(closure, Command.quote(item), Command.quote(p));
+					cmd.setSkipAlertAnimation(true);
+					let result = evaluateNexSafely(cmd, executionEnvironment);
+					if (Utils.isFatalError(result)) {
+						throw wrapError('&szlig;', `reduce-with-given: error returned from item ${i+1}`, result);
+					}
+					p = result;
+					i++;
+				});
+			} catch(e) {
+				if (Utils.isFatalError(e)) {
+					return e;
+				} else {
+					throw e;
+				}
+			}
+			return p;
+		},
 		'progressively updates a value, starting with |startvalue, by calling |func on each element in |list, passing in 1. the list element and 2. the progressively updated value, returning the final updated value.'
 	);
+
+	Builtin.aliasBuiltin('reduce', 'reduce--with--given');
+
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 

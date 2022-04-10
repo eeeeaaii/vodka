@@ -18,7 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from './utils.js'
 
 import { evaluateNexSafely, wrapError } from './evaluator.js'
-import { Word } from './nex/word.js'
+import { Org } from './nex/org.js'
 import { EError } from './nex/eerror.js'
 import { ERROR_TYPE_FATAL} from './nex/eerror.js'
 
@@ -63,7 +63,6 @@ class ArgEvaluator {
 		this.argContainer = argContainer;
 		this.executionEnvironment = executionEnvironment;
 		this.paramInfo = getParameterInfo(this.params);
-//		this.verifyParameterCorrectness();
 	}
 
 	debugString() {
@@ -80,35 +79,6 @@ class ArgEvaluator {
 		}
 		return s;
 	}
-
-/*
-	verifyParameterCorrectness() {
-		this.hasoptionals = false;
-		this.hasvariadics = false;
-		this.minArgCount = 0;
-		for (let i = 0; i < this.params.length; i++) {
-			let param = this.params[i];
-			if (param.optional) {
-				if (this.hasvariadics) {
-					throw new Error("can't have variadics and also optionals.");
-				}
-				this.hasoptionals = true;
-				continue;
-			}
-			if (param.variadic) {
-				if (this.hasoptionals) {
-					throw new Error("can't have variadics and also optionals.");
-				}
-				if (this.hasvariadics) {
-					throw new Error("can't have multiple variadics");
-				}
-				this.hasvariadics = true;
-				continue;
-			}
-			this.minArgCount++;
-		}
-	}
-	*/
 
 	checkMinNumArgs() {
 		if (this.argContainer.numArgs() < this.paramInfo.minArgCount) {
@@ -188,11 +158,11 @@ class ArgEvaluator {
 		for (let i = 0; i < this.params.length; i++) {
 			let param = this.params[i];
 			if (param.variadic) {
-				let w = new Word();
+				let org = new Org();
 				for (let j = i; j < this.argContainer.numArgs(); j++) {
-					w.appendChild(this.argContainer.getArgAt(j));
+					org.appendChild(this.argContainer.getArgAt(j));
 				}
-				scope.bind(param.name, w);
+				scope.bind(param.name, org);
 			} else if (param.optional) {
 				if (i < this.argContainer.numArgs()) {
 					scope.bind(param.name, this.argContainer.getArgAt(i));

@@ -47,7 +47,7 @@ function createEnvironmentBuiltins() {
 		},
 		'binds a new global variable named |name with a value of |nex.'
 	);
-//	Builtin.aliasBuiltin('bind', 'bind--to');
+	Builtin.aliasBuiltin('bind', 'bind--to');
 
 
 	Builtin.createBuiltin(
@@ -133,7 +133,7 @@ function createEnvironmentBuiltins() {
 		},
 		'binds |name to |nex in the current closure\'s local scope.'
 	);
-//	Builtin.aliasBuiltin('let', 'let--be');
+	Builtin.aliasBuiltin('let', 'let--be');
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
@@ -153,7 +153,7 @@ function createEnvironmentBuiltins() {
 		'set',
 		[ '_name@', 'nex' ],
 		$set,
-		'changes the value of |name to |nex (|name can be a local variable or globally bound symbol).'
+		'changes |name to be bound to |nex regardless of scope (|name can be a local variable, in an enclosing scope, or a globally bound symbol).'
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -224,6 +224,42 @@ function createEnvironmentBuiltins() {
 		$using,
 		'makes it so bindings in the packages in |namelist can be dereferenced without the package identifier when evaluating the rest of the arguments.'
 	);	
+
+	Builtin.createBuiltin(
+		'dump-memory',
+		[ 'closure&' ],
+		function $dumpMemory(env, executionEnvironment) {
+			let closure = env.lb('closure');
+			let lexenv = closure.getLexicalEnvironment();
+			let doLevel = function(envAtLevel) {
+				let r = new Org();
+				envAtLevel.doForEachBinding(function(binding) {
+					let rec = new Org();
+					rec.appendChild(new ESymbol(binding.name));
+					rec.appendChild(binding.val);
+					r.appendChild(rec);
+				})
+				if (envAtLevel.getParent()) {
+					r.appendChild(doLevel(envAtLevel.getParent()));
+				}
+				return r;
+			}
+			return doLevel(lexenv);
+		},
+		'returns the memory environment of |exp, in the form of a list containing all bound symbols along with their values.'
+	);
+
+
+	Builtin.createBuiltin(
+		'see-id',
+		[ 'nex' ],
+		function $seeId(env, executionEnvironment) {
+			let nex = env.lb('nex');
+			return new EString('' + nex.getID());
+		},
+		'returns the in-memory ID of |nex as a string.'
+	);
+
 
 }
 

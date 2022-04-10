@@ -20,6 +20,7 @@ import { ParamParser } from '../paramparser.js'
 import { BUILTINS } from '../environment.js'
 import { PERFORMANCE_MONITOR, perfmon } from '../perfmon.js'
 import { experiments } from '../globalappflags.js'
+import { documentBuiltin } from '../documentation.js'
 
 /**
  * Nex that represents an *uncompiled* builtin function. Compiled builtins
@@ -120,8 +121,6 @@ class Builtin extends Lambda {
 	}
 
 	static createBuiltin(name, paramsArray, f, docstring, infix) {
-
-
 		let parser = new ParamParser(true /* isBuiltin */);
 		parser.parse(paramsArray);
 		let params = parser.getParams();
@@ -139,6 +138,7 @@ class Builtin extends Lambda {
 		// stuff in a package.
 		closure.setLexicalEnvironment(BUILTINS);
 		Builtin.bindBuiltinObject(name, closure);
+		documentBuiltin(name, paramsArray, docstring);
 	}
 
 	static aliasBuiltin(aliasName, boundName) {

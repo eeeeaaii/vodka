@@ -37,8 +37,19 @@ function sendToServer(payload, cb, errcb) {
 	}
 }
 
-function loadNex(name, method, callback) {
-	let payload = `${method}\t${name}`;
+function listFiles(callback) {
+	let payload = `listfiles`;
+
+	sendToServer(payload, function(data) {
+		parseReturnPayload(data, callback);
+	}, function() {
+		callback(serverError());
+	});
+}
+
+
+function loadNex(name, callback) {
+	let payload = `load\t${name}`;
 
 	sendToServer(payload, function(data) {
 		document.title = name;
@@ -48,8 +59,8 @@ function loadNex(name, method, callback) {
 	});
 }
 
-function loadRaw(name, method, callback) {
-	let payload = `${method}\t${name}`;
+function loadRaw(name, callback) {
+	let payload = `loadraw\t${name}`;
 
 	sendToServer(payload, function(data) {
 		callback(data);
@@ -58,8 +69,8 @@ function loadRaw(name, method, callback) {
 	});
 }
 
-function saveNex(name, nex, method, callback) {
-	let payload = `${method}\t${name}\t${'v2:' + nex.toString('v2')}`;
+function saveNex(name, nex, callback) {
+	let payload = `save\t${name}\t${'v2:' + nex.toString('v2')}`;
 
 	sendToServer(payload, function(data) {
 		parseReturnPayload(data, callback);
@@ -68,8 +79,8 @@ function saveNex(name, nex, method, callback) {
 	});
 }
 
-function saveRaw(name, data, method, callback) {
-	let payload = `${method}\t${name}\t${data}`;
+function saveRaw(name, data, callback) {
+	let payload = `saveraw\t${name}\t${data}`;
 
 	sendToServer(payload, function(data) {
 		parseReturnPayload(data, callback);
@@ -78,8 +89,8 @@ function saveRaw(name, data, method, callback) {
 	});
 }
 
-function importNex(name, method, callback) {
-	let payload = `${method}\t${name}`;
+function importNex(name, callback) {
+	let payload = `load\t${name}`;
 
 	sendToServer(payload, function(data) {
 		parseReturnPayload(data, function(nex) {
@@ -164,19 +175,8 @@ function evaluatePackage(nex) {
 // It's more of an ide shortcut kind of thing.
 function saveShortcut(namesym, val, callback) {
 	let nametype = namesym.getTypeName();
-	let savemethod = '';
 	let nm = '';
-	if (nametype == '-symbol-') {
-		savemethod = 'savepackage';
-		nm = namesym.getTypedValue();
-	} else if (nametype == '-string-') {
-		savemethod = 'save';
-		nm = namesym.getFullTypedValue();
-	} else {
-		callback("wrong arg type"); // I guess we're not saving anything
-		return;
-	}
-	saveNex(nm, val, savemethod, function(result) {
+	saveNex(nm, val, function(result) {
 		if (result.getTypeName() == '-error-'
 			&& result.getErrorType() == ERROR_TYPE_INFO) {
 			callback(null);
@@ -190,6 +190,7 @@ export {
 	saveNex,
 	importNex,
 	loadNex,
+	listFiles,
 	loadRaw,
 	saveRaw,
 	loadAndRun,

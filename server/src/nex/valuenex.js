@@ -22,17 +22,15 @@ class ValueNex extends Nex {
 	constructor(val, prefix, className) {
 		super();
 		if (experiments.ASM_RUNTIME) {
-			if (className == 'integer') {
-				this.runtimeId = Module.ccall("create_" + className,
-						'number',
-						[],
-						[]
-						);
-			}
+			this.wasmSetup();
 		}
 		this.setValue(String(val));
 		this.prefix = prefix;
 		this.className = className;
+	}
+
+	getRuntimeId() {
+		return this.runtimeId;
 	}
 
 	isEmpty() {
@@ -41,10 +39,6 @@ class ValueNex extends Nex {
 
 	toString() {
 		return '' + this.prefix + this.getValue();
-	}
-
-	getKeyFunnel() {
-		return new ValueKeyFunnel(this);
 	}
 
 	renderValue() {
@@ -77,6 +71,8 @@ class ValueNex extends Nex {
 	getTypedValue() {
 		return this.getValue();
 	}
+
+	wasmSetup() {}
 
 	setValue(v) {
 		this.value = v;

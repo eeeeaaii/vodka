@@ -20,7 +20,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	box-sizing:border-box;
 }
 
-body {
+body, html {
 	cursor: default;
 	margin: 0;
 	padding: 0;
@@ -35,6 +35,21 @@ body {
 	the hiddenroot is used for width calculations
 	but if the width is not 10000 then the contents get wrapped
 	*/
+}
+
+#codepane {
+	height: 100%;
+	width: 100%;
+}
+
+#vodkaroot {
+	height: 100%;
+	width: 100%;	
+}
+
+#vodkaroot.newselected {
+	padding: 3px;
+	border: 3px solid var(--selected-border);	
 }
 
 .data {
@@ -104,22 +119,18 @@ body {
 	z-index: 100;
 }
 
-#intro {
-	display: none;
-}
-
-#hotkeyreference {
+#uberhelpcontainer {
 	display: none;
 }
 
 .infopanel {
+	display: block;
 	font-family: Courier;
 	font-size: 9px;
 	border: 2px solid #88003f;
 	background-color: #ef99aa;
 	padding: 20px;
 	margin: 20px;	
-	visibility: hidden;
 	position:absolute;
 	z-index: 1000;
 }
@@ -150,6 +161,25 @@ body {
 	font-size: 10px;	
 }
 
+.infopanel .infospacer{
+	padding: 0;
+	margin: 0;
+	font-size: 10px;	
+	height: 12px;
+}
+
+.infopanel .infolinemargin {
+	padding: 0;
+	margin: 0;
+	margin-top: 4px;
+	margin-bottom: 4px;
+	font-size: 10px;	
+}
+
+.infopanel .infoindent {
+	padding-left: 16px;
+}
+
 .alwaysvisible {
 	visibility: visible !important;
 }
@@ -177,3 +207,118 @@ body {
 	border: 1px solid #88003f;	
 	background-color: #f1dce5;
 }
+
+.infopanel .infohotkeylarge {
+	font-size: 1.6em;
+}
+
+#wavetablemanipulator {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	display: none; /* code changes it to block */
+	justify-content: center;
+	align-items: center;
+}
+
+#wtmpanel {
+	width: 400px;
+	height: 300px;
+	opacity: 0.1;
+	background-color: #333333;
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+
+#wtmclosebutton {
+	width: 30px;
+	height: 30px;
+	background-color: #000000;
+}
+
+#wtmvertzoom {
+	width: 60px;
+	background-color: #000000;
+	align-self: stretch;
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+
+#wtmhorizgroup {
+	align-self: stretch;
+	width: 200px;
+	display: flex;
+	flex-direction: column;	
+	align-items: stretch;
+	justify-content: space-between;
+	margin-right: 20px;
+	margin-bottom: 20px;
+	margin-top: 20px;
+}
+
+#wtmhorizzoom {
+	height: 80px;
+	background-color: #000000;
+}
+
+#wtmhorizscroll {
+	height: 80px;
+	background-color: #000000;
+}
+
+#wtmhorizsize {
+	height: 80px;
+	background-color: #000000;
+}
+
+.cursorblink {
+  animation: blink 2s linear infinite;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  51% {
+    opacity: 0;
+  }
+  99% {
+    opacity: 0;
+  }
+}
+
+.faintcursorblink {
+  animation: faintblink 2s linear infinite;
+}
+
+@keyframes faintblink {
+  0% {
+    opacity: .33;
+  }
+  50% {
+    opacity: .33;
+  }
+  51% {
+    opacity: 0;
+  }
+  99% {
+    opacity: 0;
+  }
+}
+
+
+/*
+			<div id="wtmclosebutton"></div>
+			<div id="wtmvertzoom"></div>
+			<div id="wtmhorizgroup">
+				<div id="wtmhorizzoom"></div>
+				<div id="wtmhorizmove"></div>
+				<div id="wtmhorizsize"></div>
+			</div>
+*/
