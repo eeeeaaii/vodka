@@ -31,7 +31,7 @@ import {
 	getReferenceFrequency,
 	getSampleRate,
 	getConstantSignalFromValue } from '../wavetablefunctions.js'
-import { loopPlay, channelPlay } from '../webaudio.js'
+import { loopPlay, oneshotPlay, abortPlayback } from '../webaudio.js'
 import { Tag } from '../tag.js'
 import { EError } from '../nex/eerror.js'
 import { ERROR_TYPE_INFO } from '../nex/eerror.js'
@@ -55,30 +55,52 @@ function createWavetableBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'channel-play',
-		[ 'wt', 'output#?' ],
-		function $play(env, executionEnvironment) {
+		'oneshot-play',
+		[ 'wt', 'channel#?' ],
+		function $oneshotPlay(env, executionEnvironment) {
 			let wt = env.lb('wt');
-			let output = env.lb('output');
-			if (output == UNBOUND) {
-				output = new Integer(0);
+			let channel = env.lb('channel');
+			if (channel == UNBOUND) {
+				channel = new Integer(0);
 			}
-			let outnum = output.getTypedValue();
+			let channelnumber = channel.getTypedValue();
 
 
-			channelPlay(wt.getData(), outnum);
+			oneshotPlay(wt.getData(), channelnumber);
 			return wt;
 		},
 		'plays the sound immediately on the given channel'
 	);
 
 	Builtin.createBuiltin(
-		'loop-play',
-		[ 'wt' ],
-		function $play(env, executionEnvironment) {
-			let wt = env.lb('wt');
+		'abort-playback',
+		[ 'channel#?' ],
+		function $abortPlayback(env, executionEnvironment) {
+			let channel = env.lb('channel');
+			if (channel == UNBOUND) {
+				channel = new Integer(0);
+			}
+			let channelnumber = channel.getTypedValue();
 
-			loopPlay(wt.getData());
+			abortPlayback(channelnumber);
+			return new Nil();
+		},
+		'starts playing the sound at the next measure start'
+	);
+
+
+	Builtin.createBuiltin(
+		'loop-play',
+		[ 'wt', 'channel#?' ],
+		function $loopPlay(env, executionEnvironment) {
+			let wt = env.lb('wt');
+			let channel = env.lb('channel');
+			if (channel == UNBOUND) {
+				channel = new Integer(0);
+			}
+			let channelnumber = channel.getTypedValue();
+
+			loopPlay(wt.getData(), channelnumber);
 			return wt;
 		},
 		'starts playing the sound at the next measure start'

@@ -43,7 +43,7 @@ let SAMPLE_RATE = 48000.0;
 let BPM = 120;
 let DEFAULT_TIMEBASE = 'BEATS';
 
-// our reference note will be a 220
+// our reference note will be A-220 (A3)
 let REFERENCE_NOTE = 57;
 let REFERENCE_NOTE_FREQ = 220;
 
@@ -169,7 +169,7 @@ function getTimebaseSuffix(tb) {
 function numSamplesForNoteNum(n) {
 	// for this to work right at all the reference pitch has to be the pitch we use here
 
-	n = REFERENCE_NOTE - n;
+	n = n - REFERENCE_NOTE;
 	let fn = REFERENCE_NOTE_FREQ * Math.pow(1.059463094359, n);
 	// okay so fn is the frequency, but we want samples
 	return Math.round(getSampleRate() / fn);

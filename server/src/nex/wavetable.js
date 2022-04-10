@@ -17,7 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Nex } from './nex.js'
 import { experiments } from '../globalappflags.js'
-import { startAuditioningBuffer, stopAuditioningBuffer, getFileAsBuffer } from '../webaudio.js'
+import { startAuditioningBuffer, getFileAsBuffer } from '../webaudio.js'
 
 import { setGlobalPixelsPerSample,
 		 getGlobalPixelsPerSample,
@@ -360,7 +360,6 @@ class Wavetable extends Nex {
 		if (this.auditioning) {
 			this.auditioning = false;
 			this.sectionBeingAuditioned = null;
-			stopAuditioningBuffer();
 			this.setDirtyForRendering(true);
 			eventQueueDispatcher.enqueueTopLevelRender();			
 		}

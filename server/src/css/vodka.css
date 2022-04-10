@@ -312,6 +312,79 @@ body, html {
   }
 }
 
+.squareblink {
+	animation: sblink 2s linear infinite;
+}
+
+@keyframes sblink {
+	0% {
+		border: 2px dotted #ff7777;
+	}
+	50% {
+		border: 2px dashed #ff7777;
+	}
+}
+
+.faintsquareblink {
+	animation: fsblink 2s linear infinite;
+}
+
+@keyframes fsblink {
+	0% {
+		border: 2px dotted #ff7777;
+	}
+	50% {
+		border: 2px dashed #ff7777;
+	}
+}
+
+
+.insertionpip {
+	width: 5px;
+	height: 6px;
+	padding: 0px;
+	color: #ff7777;
+	line-height: 0.4;
+	align-self: flex-start;
+	font-size: 1.2em;
+}
+
+.pipvparentindent {
+	margin-top: 3px;
+	margin-bottom: 3px;
+	margin-left: 25px;
+}
+
+.pipvparent {
+	margin-top: 3px;
+	margin-bottom: 3px;
+	margin-left: 4px;
+}
+
+.piphparent {
+	margin-left: 3px;
+	margin-right: 3px;
+}
+
+.pipinhcontainer {
+	margin-left: 3px;
+	margin-right: 3px;
+}
+
+.pipinvcontainer {
+
+}
+
+.pipparentusingeditor {
+	opacity: .33;
+}
+
+.insertionsquare {
+	padding: 4px;
+	border: 2px dotted #ff7777;
+	margin: 3px;
+}
+
 
 /*
 			<div id="wtmclosebutton"></div>

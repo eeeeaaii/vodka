@@ -15,13 +15,14 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { NexContainer } from './nexcontainer.js'
+import { NexContainer, V_DIR } from './nexcontainer.js'
 import { ContextType } from '../contexttype.js'
 
 class Root extends NexContainer {
 	constructor(attached) {
 		super();
 		this.attached = attached;
+		this.dir = V_DIR;
 	}
 
 	makeCopy(shallow) {

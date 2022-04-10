@@ -21,17 +21,114 @@ let ctx = null;
 let channelMergerNode = null;
 let SAMPLE_RATE = 48000;
 
-let auditioningSource = null;
-
-let currentlyPlayingSampleStartTime = 0;
-let currentlyPlayingSampleLength; // has to be in seconds
-let currentOutputSource = null;
-
-let outputSourceWaitingForDeletion = null;
-
 let thingAuditioning = null;
 
-let playingSounds = [];
+let channelPlayers = [];
+
+class AuditionPlayer {
+	constructor(data, channel, nex) {
+		this.source = getSourceFromBuffer(data, true /* loop */);
+		this.source.connect(channelMergerNode, 0, channel);
+		this.source.start();
+
+		this.channel = channel;
+	}
+
+	canChangeLoopData() {
+		return false;
+	}
+
+	abortPlay() {
+		this.source.stop();
+		this.source.disconnect(channelMergerNode);
+		if (channelPlayers[this.channel] == this) {
+			channelPlayers[this.channel] = null;
+		}
+	}
+}
+
+class OneshotPlayer {
+	constructor(data, channel) {
+		this.channel = channel;
+
+		this.source = getSourceFromBuffer(data, false);
+		this.source.connect(channelMergerNode, 0, channel);
+		this.source.start();
+
+		let sampleLength = data.length / SAMPLE_RATE;
+
+		window.setTimeout(function() {
+			this.source.disconnect(channelMergerNode);
+			if (channelPlayers[this.channel] == this) {
+				channelPlayers[this.channel] = null;
+			}
+		}.bind(this), sampleLength * 1.05 * 1000)
+	}
+
+	canChangeLoopData() {
+		return false;
+	}
+
+	abortPlay() {
+		this.source.stop();
+		this.source.disconnect(channelMergerNode);
+		if (channelPlayers[this.channel] == this) {
+			channelPlayers[this.channel] = null;
+		}
+	}
+}
+
+class LoopingPlayer {
+	constructor(data, channel) {
+		this.channel = channel;
+		this.source = getSourceFromBuffer(data, true);
+		this.source.connect(channelMergerNode, 0, channel);
+		this.source.start();
+		this.currentlyPlayingSampleStartTime = ctx.currentTime;
+		this.currentlyPlayingSampleLength = data.length / SAMPLE_RATE;
+		this.outputSourceWaitingForDeletion = null;
+	}
+
+	abortPlay() {
+		this.source.stop();
+		this.source.disconnect(channelMergerNode);
+		if (channelPlayers[this.channel] == this) {
+			channelPlayers[this.channel] = null;
+		}
+	}
+
+	canChangeLoopData() {
+		return (this.outputSourceWaitingForDeletion == null);
+	}
+
+	changeLoopData(data) {
+		let newsource = getSourceFromBuffer(data, true);
+
+		let startTime = 0;
+		let currentTime = ctx.currentTime;
+
+		let howLongBeenPlaying = currentTime - this.currentlyPlayingSampleStartTime;
+		let howManyRepetitions = Math.floor(howLongBeenPlaying / this.currentlyPlayingSampleLength);
+		startTime = (howManyRepetitions + 1) * this.currentlyPlayingSampleLength + this.currentlyPlayingSampleStartTime;
+		let timeUntilChange = startTime - currentTime;
+
+		this.source.stop(startTime);
+		newsource.start(startTime);
+		// we can connect the source now but we can't disconnect the previous one until after it stops playing.
+		newsource.connect(channelMergerNode, 0, this.channel);
+
+		this.outputSourceWaitingForDeletion = this.source;
+		this.source = newsource;
+		this.currentlyPlayingSampleStartTime = startTime;
+ 		this.currentlyPlayingSampleLength = data.length / SAMPLE_RATE;
+
+		window.setTimeout(function() {
+			this.outputSourceWaitingForDeletion.disconnect(channelMergerNode);
+			this.outputSourceWaitingForDeletion = null;
+		}.bind(this), timeUntilChange * 1.05 * 1000)
+	}
+
+}
 
 function maybeCreateAudioContext() {
 	if (ctx == null) {
@@ -57,84 +154,59 @@ function getSourceFromBuffer(data, loop) {
 	return source;
 }
 
-function channelPlay(data, channel) {
+// this plays immediately
+function oneshotPlay(data, channel) {
 	maybeCreateAudioContext();	
+	if (!channel) {
+		channel = 0;
+	}
 
-	let source = getSourceFromBuffer(data, false);
+	if (channelPlayers[channel]) {
+		channelPlayers[channel].abortPlay();
+	}
 
-	source.connect(channelMergerNode, 0, channel);
-	source.start();
-
-	let sampleLength = data.length / SAMPLE_RATE;
-
-	window.setTimeout(function() {
-		source.disconnect(channelMergerNode);
-	}, sampleLength * 1.05 * 1000)
+	channelPlayers[channel] = new OneshotPlayer(data, channel);
 
 }
 
-function loopPlay(data) {
-	maybeCreateAudioContext();	
+// we don't need to stop nicely at end of loop
+// because user can do that by putting in a gain(0, ...) or something
+// this is for abort/free resources/etc.
+function abortPlayback(channel) {
+	if (channelPlayers[channel]) {
+		channelPlayers[channel].abortPlay();
+	}
+}
 
-	if (currentOutputSource == null) {
-		let source = getSourceFromBuffer(data, true);
+function loopPlay(data, channel) {
+	maybeCreateAudioContext();
+	if (!channel) {
+		channel = 0;
+	}
 
-		source.connect(ctx.destination);
-		source.start();
-		currentlyPlayingSampleStartTime = ctx.currentTime;
-		currentlyPlayingSampleLength = data.length / SAMPLE_RATE;
-		currentOutputSource = source;
-
-	} else if (outputSourceWaitingForDeletion != null) {
-		// we can't schedule this sound, we are waiting for another one to start playing
-
+	if (channelPlayers[channel]) {
+		if (channelPlayers[channel].canChangeLoopData()) {
+			channelPlayers[channel].changeLoopData(data);
+		}
 	} else {
-		let source = getSourceFromBuffer(data, true);
-
-		let startTime = 0;
-		let currentTime = ctx.currentTime;
-
-		let howLongBeenPlaying = currentTime - currentlyPlayingSampleStartTime;
-		let howManyRepetitions = Math.floor(howLongBeenPlaying / currentlyPlayingSampleLength);
-		startTime = (howManyRepetitions + 1) * currentlyPlayingSampleLength + currentlyPlayingSampleStartTime;
-		let timeUntilChange = startTime - currentTime;
-
-		currentOutputSource.stop(startTime);
-		source.start(startTime);
-		// we can connect the source now but we can't disconnect the previous one until after it stops playing.
-		source.connect(ctx.destination);
-
-		outputSourceWaitingForDeletion = currentOutputSource;
-		currentOutputSource = source;
-		currentlyPlayingSampleStartTime = startTime;
- 		currentlyPlayingSampleLength = data.length / SAMPLE_RATE;
-
-		window.setTimeout(function() {
-			outputSourceWaitingForDeletion.disconnect(ctx.destination);
-			outputSourceWaitingForDeletion = null;
-		}, timeUntilChange * 1.05 * 1000)
+		channelPlayers[channel] = new LoopingPlayer(data, channel);
 	}
 }
 
 function startAuditioningBuffer(data, nex) {
 	maybeCreateAudioContext();
-
-	auditioningSource = getSourceFromBuffer(data, true /* loop */);
-
-	auditioningSource.connect(ctx.destination);
-	auditioningSource.start();
-
+	// channel is always 1
+	if (channelPlayers[1]) {
+		channelPlayers[1].abortPlay();
+	}
+	channelPlayers[1] = new AuditionPlayer(data, 1);
 	thingAuditioning = nex;
-}
-
-function stopAuditioningBuffer() {
-	auditioningSource.stop();
-	auditioningSource = null;
 }
 
 function maybeKillSound() {
 	if (thingAuditioning) {
 		thingAuditioning.stopAuditioningWave();
+		channelPlayers[1].abortPlay();
 		thingAuditioning = null;
 	}
 }
@@ -148,4 +220,5 @@ async function getFileAsBuffer(filepath) {
 }
 
 
-export { maybeKillSound, startAuditioningBuffer, stopAuditioningBuffer, getFileAsBuffer, channelPlay, loopPlay }
+export { maybeKillSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback }
+

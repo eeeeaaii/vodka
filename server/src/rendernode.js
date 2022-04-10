@@ -522,51 +522,61 @@ class RenderNode {
 
 	doInsertionPip(selectedNode) {
 		let pip = document.createElement('div');
-		pip.classList.add('cursorblink');
-		let ss = "";
-		ss += "width:5px;";
-		ss += "height:6px;";
-		ss += "padding:0px;";
-		ss += "color:#ff7777;";
-		ss += "line-height:0.4;";
+		pip.classList.add('insertionpip');
+
+		let beforeafter = (selectedNode.insertionMode == INSERT_BEFORE || selectedNode.insertionMode == INSERT_AFTER);
 		let p = selectedNode.getParent();
-		let isRoot = (!p);
-		let objectUnderRoot = (!isRoot && p.nex.getTypeName() == '-root-' && (selectedNode.insertionMode == INSERT_BEFORE || selectedNode.insertionMode == INSERT_AFTER));
-		if (isRoot) {
-			// emphasis root-level pips for visibility
-			ss += "align-self:flex-start;"
-//			ss += "margin-left:10px;"
-//			ss += "margin-top:10px;"
-//			ss += "margin-bottom:10px;"
-			ss += "font-size:1.2em"
-		} else if (objectUnderRoot) {
-			ss += "align-self:flex-start;"
-			ss += "margin-top:4px;"
-			ss += "margin-bottom:4px;"
-			ss += "margin-left:4px;"
-			ss += "font-size:1.2em"
+		if (p) {
+			// it has a parent
+//			let objectUnderRoot = (p.nex.getTypeName() == '-root-' && (selectedNode.insertionMode == INSERT_BEFORE || selectedNode.insertionMode == INSERT_AFTER));
+			if (beforeafter) {
+				if (p.nex.isVertical()) {
+					if (p.nex.getTypeName() == '-command-'
+							|| p.nex.getTypeName() == '-lambda-') {
+						pip.classList.add('pipvparentindent');
+					} else {
+						pip.classList.add('pipvparent');
+					}
+				} else {
+					pip.classList.add('piphparent');
+				}				
+			} else {
+				if (selectedNode.nex.isVertical()) {
+					pip.classList.add('pipinvcontainer');
+				} else {
+					pip.classList.add('pipinhcontainer');
+				}								
+			}
 		} else {
-			ss += "align-self:center;"
+			if (beforeafter) {
+				pip.classList.add('pipunderroot');
+			}
 		}
+		// let objectUnderRoot = (!isRoot && p.nex.getTypeName() == '-root-' && (selectedNode.insertionMode == INSERT_BEFORE || selectedNode.insertionMode == INSERT_AFTER));
+		// if (isRoot) {
+		// 	pip.classList.add('rootpip')
+		// } else if (objectUnderRoot) {
+		// 	pip.classList.add('pipunderroot')
+		// }
+
 		if (selectedNode.usingEditor()) {
-			ss += "opacity:.33;";
-			pip.classList.remove('cursorblink');
 			pip.classList.add('faintcursorblink');
+			pip.classList.add('pipparentusingeditor');
+		} else {
+			pip.classList.add('cursorblink');			
 		}
-		pip.setAttribute("style", ss);
+
 		pip.innerHTML = "&bull;";
 		this.domNode.appendChild(pip);			
 	}
 
 	doInsertionSquare(i, childRenderNode) {
 		let square = document.createElement('div');
-		let ss = "";
-		ss += "padding:5px;";
-		ss += "border:2px dotted #ff7777;";
+		square.classList.add('insertionsquare');
+		square.classList.add('squareblink');			
 		if (childRenderNode.usingEditor()) {
-			ss += "opacity:.33;";
+			square.classList.add('pipparentusingeditor')
 		}
-		square.setAttribute("style", ss);
 		this.wrapperDomNodes[i] = square;
 		this.domNode.appendChild(this.wrapperDomNodes[i]);
 		this.wrapperDomNodes[i].appendChild(childRenderNode.getDomNode());
