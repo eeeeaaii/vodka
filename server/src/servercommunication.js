@@ -47,6 +47,16 @@ function listFiles(callback) {
 	});
 }
 
+function listStandardFunctionFiles(callback) {
+	let payload = `liststandardfunctionfiles`;
+
+	sendToServer(payload, function(data) {
+		parseReturnPayload(data, callback);
+	}, function() {
+		callback(serverError());
+	});
+}
+
 
 function loadNex(name, callback) {
 	let payload = `load\t${name}`;
@@ -191,6 +201,7 @@ export {
 	importNex,
 	loadNex,
 	listFiles,
+	listStandardFunctionFiles,
 	loadRaw,
 	saveRaw,
 	loadAndRun,

@@ -1,1 +1,0 @@
-v2:~(|template @Grid (|#<`width`>30 #<`height`>20 (|<`data`>|) &(|<`:init`>~(_let @makerow &(|~(_let @row (||)_) ~(_loop-over &"n"(|~(_let @row ~(_cons #0 @row_)_)|) ~(_range @self.width_)_) @row|)_) ~(_loop-over &"n"(|~(_set @self.data ~(_cons ~(_makerow _) @self.data_)_)|) ~(_range @self.height_)_)|)|)|)

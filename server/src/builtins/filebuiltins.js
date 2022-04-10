@@ -28,13 +28,24 @@ import { Org } from '../nex/org.js'
 import { ESymbol } from '../nex/esymbol.js'
 import { ERROR_TYPE_INFO } from '../nex/eerror.js'
 import { wrapError } from '../evaluator.js'
-import { saveShortcut, saveNex, loadNex, importNex, loadRaw, saveRaw, listFiles } from '../servercommunication.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { BINDINGS } from '../environment.js'
 import { experiments } from '../globalappflags.js'
 import {
 	GenericActivationFunctionGenerator
 } from '../asyncfunctions.js'
+
+import {
+	saveShortcut,
+	saveNex,
+	loadNex,
+	importNex,
+	loadRaw,
+	saveRaw,
+	listFiles,
+	listStandardFunctionFiles
+} from '../servercommunication.js'
+
 
 function createFileBuiltins() {
 
@@ -59,7 +70,29 @@ function createFileBuiltins() {
 			exp.appendChild(loadingMessage)
 			return exp;
 		},
-		'lists all files available in current session'
+		'lists all user files available in current session'
+	);	
+
+	Builtin.createBuiltin(
+		'list-standard-function-files',
+		[ ],
+		function $load(env, executionEnvironment) {
+			let exp = new Expectation();
+			exp.set(new GenericActivationFunctionGenerator(
+				'list-standard-function-files', 
+				function(callback, exp) {
+					listStandardFunctionFiles(function(files) {
+						// turn files into an org or whatever
+						callback(files);
+					})
+				}
+			));
+			let loadingMessage = new EError(`listing standard function files`);
+			loadingMessage.setErrorType(ERROR_TYPE_INFO);
+			exp.appendChild(loadingMessage)
+			return exp;
+		},
+		'lists the standard library function files available to all users'
 	);	
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  	

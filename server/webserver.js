@@ -360,7 +360,9 @@ function serviceApiRequest(sessionId, resp, data) {
 	} else if (opcode == 'loadraw') {
 		serviceApiLoadRequest(arg, sessionId, cb);
 	} else if (opcode == 'listfiles') {
-		serviceApiListFilesRequest(sessionId, cb);
+		serviceApiListFilesRequest(sessionId, cb, false /*standard*/);
+	} else if (opcode == 'liststandardfunctionfiles') {
+		serviceApiListFilesRequest(sessionId, cb, true /*standard*/);
 	}
 }
 
@@ -372,9 +374,12 @@ function containsIllegalFilenameCharacters(fn) {
 function getSessionDirectory(sessionId) {
 	if (sessionId == 'packages' && webenv_vars.isLocal) {
 		return './packages/'
-	} else {
-		return `./sessions/${sessionId}/`;
 	}
+	if (sessionId == 'samples' && webenv_vars.isLocal) {
+		return './samples/';
+	}
+
+	return `./sessions/${sessionId}/`;
 }
 
 function serviceApiSaveRequest(data, sessionId, cb) {
@@ -423,8 +428,10 @@ function serviceApiLoadRequest(data, sessionId, cb) {
 	})	
 }
 
-function serviceApiListFilesRequest(sessionId, cb) {
-	let path = `${getSessionDirectory(sessionId)}`;
+function serviceApiListFilesRequest(sessionId, cb, standard) {
+	let path = (standard
+		? `${getSessionDirectory('packages')}`
+		: `${getSessionDirectory(sessionId)}`)
 	fs.readdir(path, function(err, data) {
 		if (err) {
 			cb(`v2:?"could not get directory listing. Sorry!"`);
@@ -432,6 +439,10 @@ function serviceApiListFilesRequest(sessionId, cb) {
 			let s = 'v2:(|';
 			let first = true;
 			for (let i = 0; i < data.length; i++) {
+				let filename = data[i];
+				if (filename.charAt(0) == '.') {
+					continue;
+				}
 				if (!first) {
 					s += ' ';
 				}
