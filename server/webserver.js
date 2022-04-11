@@ -351,13 +351,13 @@ function serviceApiRequest(sessionId, resp, data) {
 	if (opcode == 'save') {
 		serviceApiSaveRequest(arg, sessionId, cb);
 	} else if (opcode == 'load') {
-		serviceApiLoadRequest(arg, sessionId, cb);
+		serviceApiLoadRequestUserSession(arg, sessionId, cb, true /*fallback*/);
 	// these are currently identical to save/load but may not be
 	// in the future due to tab escaping or -- idk, security shit
 	} else if (opcode == 'saveraw') {
 		serviceApiSaveRequest(arg, sessionId, cb);
 	} else if (opcode == 'loadraw') {
-		serviceApiLoadRequest(arg, sessionId, cb);
+		serviceApiLoadRequestUserSession(arg, sessionId, cb);
 	} else if (opcode == 'listfiles') {
 		serviceApiListFilesRequest(sessionId, cb, false /*standard*/);
 	} else if (opcode == 'liststandardfunctionfiles') {
@@ -415,9 +415,27 @@ function serviceApiSaveRequest(data, sessionId, cb) {
 	})
 }
 
-function serviceApiLoadRequest(data, sessionId, cb) {
+function serviceApiLoadRequestUserSession(data, sessionId, cb, fallback) {
 	let nm = data;
 	let path = `${getSessionDirectory(sessionId)}/${nm}`;
+	fs.readFile(path, function(err, data) {
+		if (err) {
+			if (fallback) {
+				// if it could not be loaded from the user's session, we try packages.
+				serviceApiLoadRequestPackages(nm, cb);
+			} else {
+				cb(`v2:?"file not found: '${nm}'. Sorry!"`);
+			}
+		} else {
+			cb(data)
+		}
+	})	
+}
+
+
+function serviceApiLoadRequestPackages(data, cb) {
+	let nm = data;
+	let path = `${getSessionDirectory('packages')}/${nm}`;
 	fs.readFile(path, function(err, data) {
 		if (err) {
 			cb(`v2:?"file not found: '${nm}'. Sorry!"`);
