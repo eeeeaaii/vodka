@@ -45,7 +45,7 @@ If you install Vodka locally, you can make changes or use your own audio samples
 
 ## Documentation
 
-In-app documentation is available by hitting the escape key. If you can't get to the documentation, add "help=me" to your browser query string.
+In-app documentation is available by clicking on the help button. If you can't get to the documentation, add "help=me" to your browser query string.
 
 ## Interested in Contributing?
 
