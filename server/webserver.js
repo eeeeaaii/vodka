@@ -18,7 +18,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 const http = require('http');
 const url = require('url');
 const fs = require('fs');
-const OSC = require('osc-js');
 const querystring = require('querystring');
 
 const { v4: uuidv4 } = require('uuid');
@@ -27,8 +26,6 @@ const hostname = '127.0.0.1';
 const endpoint_hostname = 'localhost:3000';
 const port = 3000;
 
-const osc_config = { udpClient: { port : 57110 }}
-const osc = new OSC({ plugin: new OSC.BridgePlugin(osc_config)})
 
 const webenv_vars = {}
 
@@ -535,7 +532,6 @@ function getHeadInjectData() {
 
 loadWebEnv(function() {
 	server.listen(port, hostname, () => {
-  	  osc.open();
 	  console.log(`Server running at http://${hostname}:${port}/`);
 	});	
 })
