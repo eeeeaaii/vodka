@@ -7,8 +7,11 @@
 - Added help files
 - Updated documentation
 - Defaulting to "exploded" mode
-- escape key now goes to documentation (shift-escape toggles exploded/normal mode)
-- changed "set" to "prime" for expectations
+- changed visual display so that backspace-to-edit is more intuitive
+- changed "set" to "wait-for" for expectations
+- reorganized and cleaned up library files and made a new samples directory
+- changed pip traversal to be more intuitive, and made it so you can see the pip easier
+- escape key in editor cancels/aborts the edit
 - created "autoreset" builtin for expectations and got rid of "repeat" expectation
 - cleaned up save/load to be more intuitive
 - modify packages directory by modifying query string
