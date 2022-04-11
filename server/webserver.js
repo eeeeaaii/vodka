@@ -30,7 +30,7 @@ const port = 3000;
 const webenv_vars = {}
 
 const ERROR = "Rather than a beep<br>Or a rude error message,<br>These words: \"File not found.\"";
-
+ 
 
 /*
 If you pass a session ID in the cookie, it will fail if there isn't a directory with that name.
@@ -299,6 +299,8 @@ function isFileNotFound(error) {
 }
 
 function containsIllegalSessionCharacters(fn) {
+	if (fn == 'packages') return true;
+	if (fn == 'samples') return true;
 	let isIdentifier = /^[a-zA-Z0-9_-]+$/.test(fn);
 	return !isIdentifier;
 }
@@ -307,7 +309,7 @@ function createSessionIdDirectory(sessionId, cb) {
 	if (containsIllegalSessionCharacters(sessionId)) {
 		return false;
 	}
-	let dirpath = `${getSessionDirectory(sessionId)}`;
+	let dirpath = `${getSessionDirectory(sessionId, true /*local only*/)}`;
 	fs.mkdir(dirpath, function(err) {
 		if (err) {
 			cb(false);
@@ -318,7 +320,7 @@ function createSessionIdDirectory(sessionId, cb) {
 }
 
 function checkIfSessionExists(sessionId, cb) {
-	let dirpath = `${getSessionDirectory(sessionId)}`;
+	let dirpath = `${getSessionDirectory(sessionId, true /*local only*/)}`;
 	fs.access(dirpath, fs.constants.F_OK, function(err) {
 		cb(!err);
 	})
@@ -368,11 +370,11 @@ function containsIllegalFilenameCharacters(fn) {
 	return !isIdentifier;
 }
 
-function getSessionDirectory(sessionId) {
-	if (sessionId == 'packages' && webenv_vars.isLocal) {
+function getSessionDirectory(sessionId, localAccessOnly) {
+	if (sessionId == 'packages' && (!localAccessOnly || webenv_vars.isLocal)) {
 		return './packages/'
 	}
-	if (sessionId == 'samples' && webenv_vars.isLocal) {
+	if (sessionId == 'samples' && (!localAccessOnly || webenv_vars.isLocal)) {
 		return './samples/';
 	}
 
@@ -388,7 +390,7 @@ function serviceApiSaveRequest(data, sessionId, cb) {
 	}
 	let savedata = data.substr(i+1);
 
-	let path = `${getSessionDirectory(sessionId)}/${nm}`;
+	let path = `${getSessionDirectory(sessionId, true /*local only*/)}/${nm}`;
 
 	fs.writeFile(path, savedata, function(err) {
 		if (err) {
@@ -396,7 +398,7 @@ function serviceApiSaveRequest(data, sessionId, cb) {
 				let i = data.indexOf('\t');
 				let nm = data.substr(0, i);
 				let savedata = data.substr(i+1);
-				let filepath = `${getSessionDirectory(sessionId)}/${nm}`;
+				let filepath = `${getSessionDirectory(sessionId, true /*local only*/)}/${nm}`;
 				fs.writeFile(filepath, savedata, function(err2) {
 					if (err2) {
 						cb(`v2:?"save failed 1. Sorry!"`);
