@@ -216,13 +216,8 @@ class Lambda extends NexContainer {
 		}
 	}
 
-	renderTags(domNode, renderFlags, editor) {
-		if (experiments.ORG_OVERHAUL) {
-			let codespan = domNode.firstChild;
-			super.renderTags(codespan, renderFlags, editor);
-		} else {
-			super.renderTags(domNode, renderFlags, editor);
-		}
+	getTagHolder(domNode) {
+		return domNode.firstChild;
 	}
 
 	needsEvaluation() {

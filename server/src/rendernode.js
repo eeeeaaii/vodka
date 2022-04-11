@@ -503,7 +503,10 @@ class RenderNode {
 				}
 			}
 		}
-		this.nex.renderTags(this.domNode, useFlags, this.getCurrentEditor());
+		if (this.nex.hasTags()) {
+			let tagHolder = this.nex.getTagHolder(this.domNode);
+			this.nex.renderTags(tagHolder, useFlags, this.getCurrentEditor());
+		}
 		this.setRenderNodeDirtyForRendering(false);
 	}
 

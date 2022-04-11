@@ -25,6 +25,8 @@ let thingAuditioning = null;
 
 let channelPlayers = [];
 
+let mediaRecorder = null;
+
 class AuditionPlayer {
 	constructor(data, channel, nex) {
 		this.source = getSourceFromBuffer(data, true /* loop */);
@@ -130,6 +132,46 @@ class LoopingPlayer {
 
 }
 
+function stopRecordingAudio(wt) {
+	mediaRecorder.stop();
+	wt.stopRecording();
+}
+
+function startRecordingAudio(wt) {
+	maybeCreateAudioContext();	
+	if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+		navigator.mediaDevices.getUserMedia({
+			audio:true
+		}).then(function(stream) {
+			wt.startRecording();
+			mediaRecorder = new MediaRecorder(stream);
+			mediaRecorder.ondataavailable = function(e) {
+				let blob = e.data;
+				wt.addBlob(blob);
+				let allblobs = wt.getBlobsAsOneBlob();
+				allblobs.arrayBuffer().then(function(ab) {
+					ctx.decodeAudioData(ab, function(buffer) {
+						// now have an audio buffer of the data
+						wt.setRecordedData(buffer.getChannelData(0));
+					}, function(err) {
+						console.log('oh well');
+					})
+				})
+			}
+			mediaRecorder.start(500);
+			window.setTimeout(function() {
+				if (wt.isRecording()) {
+					stopRecordingAudio(wt);
+				}
+			}, 30000)
+		}).catch(function(err) {
+			console.log('couldnt open audio stream');
+		})
+	} else {
+		console.log('no user media');
+	}
+}
+
 function maybeCreateAudioContext() {
 	if (ctx == null) {
 		ctx = new AudioContext();
@@ -220,5 +262,5 @@ async function getFileAsBuffer(filepath) {
 }
 
 
-export { maybeKillSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback }
+export { maybeKillSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 

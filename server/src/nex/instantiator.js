@@ -144,8 +144,11 @@ class Instantiator extends NexContainer {
 			} else {
 				codespan.classList.remove('editing');
 			}
-			codespan.innerHTML = '<span class="caret">^</span>' + this.orgname;
-			// also tooltip should be here
+			let html = '<span class="caret glyphleft">^</span>' + this.orgname;
+			if (!this.isEditing) {
+				html += '<span class="caret glyphright">^</span>'
+			}
+			codespan.innerHTML = html;
 			if (this.isEditing && renderNode.isSelected()) {
 				let template = this.maybeGetTemplate(this.orgname);
 				if (template) {
@@ -155,15 +158,9 @@ class Instantiator extends NexContainer {
 		}
 	}
 
-	renderTags(domNode, renderFlags, editor) {
-		if (experiments.ORG_OVERHAUL) {
-			let codespan = domNode.firstChild;
-			super.renderTags(codespan, renderFlags, editor);			
-		} else {
-			super.renderTags(domNode, renderFlags, editor);
-		}
+	getTagHolder(domNode) {
+		return domNode.firstChild;
 	}
-
 
 	getDefaultHandler() {
 		return 'standardDefault';

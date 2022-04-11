@@ -30,83 +30,58 @@ import { Command } from '../nex/command.js'
 
 function createOrgBuiltins() {
 
-	if (experiments.ORG_OVERHAUL) {
-		Builtin.createBuiltin(
-			'template',
-			[ '_name@', '_org()' ],
-			function $template(env, executionEnvironment) {
-				let name = env.lb('name');
-				let org = env.lb('org');
-				try {
-					let template = templateStore.createTemplate(name, org, executionEnvironment);
-					let r = new EError(`created template ${template.getName()}`);
-					r.setErrorType(ERROR_TYPE_INFO);
-					return r;
-				} catch (e) {
-					if (Utils.isFatalError(e)) {
-						return e;
-					} else {
-						throw e;
-					}
+	Builtin.createBuiltin(
+		'template',
+		[ '_name@', '_org()' ],
+		function $template(env, executionEnvironment) {
+			let name = env.lb('name');
+			let org = env.lb('org');
+			try {
+				let template = templateStore.createTemplate(name, org, executionEnvironment);
+				let r = new EError(`created template ${template.getName()}`);
+				r.setErrorType(ERROR_TYPE_INFO);
+				return r;
+			} catch (e) {
+				if (Utils.isFatalError(e)) {
+					return e;
+				} else {
+					throw e;
 				}
-			},
-			'creates a template with a name equal to the passed-in symbol.'
-		);		
+			}
+		},
+		'creates a template with a name equal to the passed-in symbol.'
+	);		
 
-		Builtin.createBuiltin(
-			'save-template--as',
-			[ '_org()', '_name@' ],
-			function $template(env, executionEnvironment) {
-				let name = env.lb('name');
-				let org = env.lb('org');
-				try {
-					let template = templateStore.createTemplate(name, org, executionEnvironment);
-					// successfully created template, so we also save it.
-					let namesym = new ESymbol(name.getTypedValue() + '-template');
-					let toSave = Command.makeCommandWithArgs("template", name, org);
-					toSave.setMutable(true);
-					saveShortcut(namesym, toSave, function(result) {
-						if (result != null) {
-							alert('save-template: save failed! Check result: ' + result.debugString());
-						}
-					});
-					let r = new EError(`created template ${template.getName()}`);
-					r.setErrorType(ERROR_TYPE_INFO);
-					return r;					
-				} catch (e) {
-					if (Utils.isFatalError(e)) {
-						return e;
-					} else {
-						throw e;
+	Builtin.createBuiltin(
+		'save-template--as',
+		[ '_org()', '_name@' ],
+		function $template(env, executionEnvironment) {
+			let name = env.lb('name');
+			let org = env.lb('org');
+			try {
+				let template = templateStore.createTemplate(name, org, executionEnvironment);
+				// successfully created template, so we also save it.
+				let namesym = new ESymbol(name.getTypedValue() + '-template');
+				let toSave = Command.makeCommandWithArgs("template", name, org);
+				toSave.setMutable(true);
+				saveShortcut(namesym, toSave, function(result) {
+					if (result != null) {
+						alert('save-template: save failed! Check result: ' + result.debugString());
 					}
+				});
+				let r = new EError(`created template ${template.getName()}`);
+				r.setErrorType(ERROR_TYPE_INFO);
+				return r;					
+			} catch (e) {
+				if (Utils.isFatalError(e)) {
+					return e;
+				} else {
+					throw e;
 				}
-			},
-			'Creates a template and also attempts to save it in an appropriately-named file. Notifies the user with a javascript alert dialog if the save failed, otherwise no notification is given of success.'
-		);		
-
-	} else {
-		Builtin.createBuiltin(
-			'template',
-			[ 'nix^', 'org()' ],
-			function $template(env, executionEnvironment) {
-				let nix = env.lb('nix');
-				let org = env.lb('org');
-				try {
-					let template = templateStore.createTemplate(nix, org, executionEnvironment);
-					let r = new EError(`created template ${template.getName()}`);
-					r.setErrorType(ERROR_TYPE_INFO);
-					return r;
-				} catch (e) {
-					if (Utils.isFatalError(e)) {
-						return e;
-					} else {
-						throw e;
-					}
-				}
-			},
-			'creates a template identified by the nix tag.'
-		);		
-	}
+			}
+		},
+		'Creates a template and also attempts to save it in an appropriately-named file. Notifies the user with a javascript alert dialog if the save failed, otherwise no notification is given of success.'
+	);		
 
 
 	Builtin.createBuiltin(

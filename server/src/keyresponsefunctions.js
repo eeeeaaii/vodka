@@ -60,16 +60,7 @@ import {
 
 
 function isNormallyHandledInDocContext(key) {
-	if (!experiments.BETTER_KEYBINDINGS) {
-		return isNormallyHandled(key);
-	}
-	if (!(/^.$/.test(key))) {
-		return true;
-	}
-	if (/^[~`]$/.test(key)) {
-		return true;
-	}
-	return false;	
+	return isNormallyHandled(key);
 }
 
 function isNormallyHandled(key) {
@@ -151,287 +142,7 @@ const DefaultHandlers = {
 		}
 	},
 
-	// 'rootDefault': function(nex, txt) {
-	// 	if (isNormallyHandled(txt)) {
-	// 		return false;
-	// 	}
-	// 	let letterRegex = /^[a-zA-Z0-9']$/;
-	// 	let isSeparator = !letterRegex.test(txt);
-	// 	if (isSeparator) {
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt))
-	// 	} else {
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt))
-	// 	}
-	// 	return true;
-	// },
-
-	// 'zlistDefault': function(nex, txt, context) {
-	// 	if (isNormallyHandled(txt)) {
-	// 		return false;
-	// 	}
-	// 	let isCommand = (context == ContextType.COMMAND);
-	// 	let letterRegex = /^[a-zA-Z0-9']$/;
-	// 	let isSeparator = !letterRegex.test(txt);
-	// 	if (isSeparator) {
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt))
-	// 	} else {
-	// 		if (isCommand) {
-	// 			if (nex.hasChildren()) {
-	// 				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt))
-	// 			} else {
-	// 				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-	// 			}							
-	// 		} else {
-	// 			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-	// 		}
-	// 	}
-	// 	return true;
-	// },
-
-	// 'orgDefault': function(nex, txt, context) {
-	// 	if (isNormallyHandled(txt)) {
-	// 		return false;
-	// 	}
-	// 	let isCommand = (context == ContextType.COMMAND);
-	// 	let letterRegex = /^[a-zA-Z0-9']$/;
-	// 	let isSeparator = !letterRegex.test(txt);
-	// 	if (isSeparator) {
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
-	// 	} else {
-	// 		if (isCommand) {
-	// 			if (nex.hasChildren()) {
-	// 				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-	// 			} else {
-	// 				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-	// 			}							
-	// 		} else {
-	// 			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-	// 		}
-	// 	}
-	// 	return true;
-	// },
-
-	// 'nilDefault': function(nex, txt) {
-	// 	if (isNormallyHandled(txt)) {
-	// 		return false;
-	// 	}
-	// 	let letterRegex = /^[a-zA-Z0-9']$/;
-	// 	let isSeparator = !letterRegex.test(txt);
-
-	// 	if (isSeparator) {
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt))
-	// 	} else {
-	// 		let w = manipulator.newWord();
-	// 		w.appendChild(manipulator.newLetter(txt));
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), w);
-	// 		w.setSelected();
-	// 	}
-	// 	return true;
-	// },
-
-	// 'wavetableDefault': function(nex, txt) {
-	// 	if (isNormallyHandled(txt)) {
-	// 		return false;
-	// 	}
-	// 	let letterRegex = /^[a-zA-Z0-9']$/;
-	// 	let isSeparator = !letterRegex.test(txt);
-
-	// 	if (isSeparator) {
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt))
-	// 	} else {
-	// 		let w = manipulator.newWord();
-	// 		w.appendChild(manipulator.newLetter(txt));
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), w);
-	// 		w.setSelected();
-	// 	}
-	// 	return true;
-	// },
-
-	// 'integerDefault': function(nex, txt, context, sourcenode) {
-	// 	if (experiments.REMAINING_EDITORS) {
-	// 		if (isNormallyHandled(txt)) {
-	// 			return false;
-	// 		}
-	// 		let letterRegex = /^[a-zA-Z0-9']$/;
-	// 		let isSeparator = !letterRegex.test(txt);
-	// 		if (isSeparator) {
-	// 			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
-	// 		} else {
-	// 			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-	// 		}
-	// 		return true;
-
-	// 	} else {
-	// 		if (txt == 'Backspace') {
-	// 			if (nex.value == '0') {
-	// 				manipulator.removeAndSelectPreviousSiblingV2(sourcenode);
-	// 			} else {
-	// 				nex.deleteLastLetter();
-	// 			}
-	// 			return true;
-	// 		}
-	// 		if (isNormallyHandled(txt)) {
-	// 			return false;
-	// 		}
-	// 		let okRegex = /^[0-9-]$/;
-	// 		let letterRegex = /^[a-zA-Z0-9']$/;
-	// 		let isSeparator = !letterRegex.test(txt);
-	// 		if (okRegex.test(txt)) {
-	// 			nex.appendText(txt);
-	// 		} else if (isSeparator) {
-	// 			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
-	// 		} else {
-	// 			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-	// 		}
-	// 		return true;
-	// 	}
-	// },
-
-	// 'floatDefault': function(nex, txt, context, sourcenode) {
-	// 	if (experiments.REMAINING_EDITORS) {
-	// 		if (isNormallyHandled(txt)) {
-	// 			return false;
-	// 		}
-	// 		let letterRegex = /^[a-zA-Z0-9']$/;
-	// 		let isSeparator = !letterRegex.test(txt);
-	// 		if (isSeparator) {
-	// 			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
-	// 		} else {
-	// 			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-	// 		}
-	// 		return true;
-	// 	} else {
-	// 		if (txt == 'Backspace') {
-	// 			// do backspace hack
-	// 			if (nex.value == '0') {
-	// 				manipulator.removeSelectedAndSelectPreviousLeafV2(sourcenode);
-	// 			} else {
-	// 				nex.deleteLastLetter();
-	// 			}
-	// 			return true;
-	// 		}
-	// 		if (isNormallyHandled(txt)) {
-	// 			return false;
-	// 		}
-	// 		let okRegex = /^[e0-9.-]$/;
-	// 		let letterRegex = /^[a-zA-Z0-9']$/;
-	// 		let isSeparator = !letterRegex.test(txt);
-	// 		if (okRegex.test(txt)) {
-	// 			nex.appendText(txt);
-	// 		} else if (isSeparator) {
-	// 			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
-	// 		} else {
-	// 			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-	// 		}
-	// 		return true;
-	// 	}
-	// },
-
-	// 'expectationDefault': function(nex, txt) {
-	// 	if (isNormallyHandled(txt)) {
-	// 		return false;
-	// 	}
-	// 	let letterRegex = /^[a-zA-Z0-9']$/;
-	// 	let isSeparator = !letterRegex.test(txt);
-
-	// 	let toInsert = null;
-	// 	if (isSeparator) {
-	// 		toInsert = manipulator.newSeparator(txt);
-	// 	} else {
-	// 		toInsert = manipulator.newLetter(txt);
-	// 	}
-	// 	if (nex.hasChildren()) {
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), toInsert)
-	// 	} else {
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), toInsert);
-	// 	}
-	// 	return true;
-	// },
-
-	// 'estringDefault': function(nex, txt) {
-	// 	if (isNormallyHandled(txt)) {
-	// 		return false;
-	// 	}
-	// 	let letterRegex = /^[a-zA-Z0-9']$/;
-	// 	let isSeparator = !letterRegex.test(txt);
-
-	// 	if (isSeparator) {
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt))
-	// 	} else {
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-	// 	}		
-	// },
-
-	// 'eerrorDefault': function(nex, txt) {
-	// 	if (isNormallyHandled(txt)) {
-	// 		return false;
-	// 	}
-	// 	let letterRegex = /^[a-zA-Z0-9']$/;
-	// 	let isSeparator = !letterRegex.test(txt);
-
-	// 	if (isSeparator) {
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt))
-	// 	} else {
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
-	// 	}
-	// 	return true;
-	// },
-
-	// 'boolDefault': function(nex, txt) {
-	// 	if (isNormallyHandled(txt)) {
-	// 		return false;
-	// 	}
-	// 	let letterRegex = /^[a-zA-Z0-9']$/;
-	// 	let isSeparator = !letterRegex.test(txt);
-	// 	if (isSeparator) {
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt))
-	// 	} else {
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt))
-	// 	}
-	// 	return true;
-	// },
-
-	// 'lambdaDefault': function(nex, txt) {
-	// 	if (isNormallyHandled(txt)) {
-	// 		return false;
-	// 	}
-	// 	let letterRegex = /^[a-zA-Z0-9']$/;
-	// 	let isSeparator = !letterRegex.test(txt);
-	// 	if (isSeparator) {
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt))
-	// 	} else {
-	// 		manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt))
-	// 	}
-	// 	return true;
-	// },
-
-	// 'standardDefault': function(nex, txt, context) {
-	// 	if (isNormallyHandled(txt)) {
-	// 		return false;
-	// 	}
-	// 	let singleCharRegex = /^.$/;
-	// 	if (!singleCharRegex.test(txt)) {
-	// 		return false;
-	// 	}
-	// 	let letterRegex = /^[a-zA-Z0-9']$/;
-	// 	let isSeparator = !letterRegex.test(txt);
-
-	// 	if (isSeparator) {
-	// 		manipulator.insertAtSelectedObjInsertionPoint(manipulator.newSeparator(txt));
-	// 	} else {
-	// 		manipulator.insertAtSelectedObjInsertionPoint(manipulator.newLetter(txt));
-	// 	}
-	// 	return true;
-	// },
-
 	'letterDefault': function(nex, txt, context) {
-//		if (isNormallyHandledInDocContext(txt)) {
-//			return false;
-//		}
-		// zlists are experimental I guess?
-		if (txt == '<') {
-			return false;
-		}
 		let inWord = (context == ContextType.WORD || context == ContextType.IMMUTABLE_WORD);
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
@@ -448,9 +159,6 @@ const DefaultHandlers = {
 	},
 
 	'separatorDefault': function (nex, txt, context) {
-//		if (isNormallyHandledInDocContext(txt)) {
-//			return false;
-//		}
 		let isLine = (context == ContextType.LINE || context == ContextType.IMMUTABLE_LINE)
 		if (!(/^.$/.test(txt))) {
 			throw UNHANDLED_KEY;
@@ -481,9 +189,6 @@ const DefaultHandlers = {
 	},
 
 	'wordDefault' : function(nex, txt, context) {
-//		if (isNormallyHandledInDocContext(txt)) {
-//			return false;
-//		}
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		let isCommand = (context == ContextType.COMMAND);
@@ -508,9 +213,6 @@ const DefaultHandlers = {
 	},
 
 	'lineDefault': function(nex, txt, context) {
-//		if (isNormallyHandledInDocContext(txt)) {
-//			return false;
-//		}
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		let isCommand = (context == ContextType.COMMAND);
@@ -553,9 +255,6 @@ const DefaultHandlers = {
 	},
 
 	'docDefault' : function(nex, txt, context) {
-//		if (isNormallyHandledInDocContext(txt)) {
-//			return false;
-//		}
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		let isCommand = (context == ContextType.COMMAND);

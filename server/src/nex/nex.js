@@ -527,6 +527,14 @@ class Nex {
 	renderAfterChild(childNum, renderNode, renderFlags, withEditor) {
 	}
 
+	// only called if there are tags
+	getTagHolder(domNode) {
+		let tagHolder = document.createElement('div');
+		tagHolder.classList.add('tagholder');
+		domNode.prepend(tagHolder);
+		return tagHolder;
+	}
+
 	/**
 	 * Renders the tags for a nex.
 	 *
@@ -535,6 +543,7 @@ class Nex {
 	 * @param {Editor} editor currently unused
 	 */
 	renderTags(domNode, renderFlags, editor) {
+		// ignore domNode, use tagholder.
 		if (
 			(renderFlags & RENDER_FLAG_SHALLOW)
 			&& (renderFlags & RENDER_FLAG_RERENDER)) {

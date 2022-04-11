@@ -58,22 +58,6 @@ class KeyDispatcher {
 			}
 		}
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
-		// if (eventName == 'Escape') {
-		// 	this.uiCallbackObject.toggleHelp();
-		// 	return false;
-		// }
-
-
-		if (!experiments.BETTER_KEYBINDINGS) {
-			if (eventName == 'NakedShift') {
-				// if we get a naked shift while editing, we leave the editor.
-				if (systemState.getGlobalSelectedNode().usingEditor()) {
-					systemState.getGlobalSelectedNode().forceCloseEditor();
-				}
-				systemState.getGlobalSelectedNode().nextInsertionMode();
-				return false;
-			}
-		}
 
 		if (systemState.getGlobalSelectedNode().usingEditor()) {
 			// will return whether or not to "reroute"
@@ -315,6 +299,8 @@ class KeyDispatcher {
 			return 'Meta-x';
 		} else if (keycode == 'c' && hasMeta) {
 			return 'Meta-c';
+		} else if (keycode == 'v' && hasMeta) {
+			return 'Meta-v';
 		} else if (keycode == 's' && hasMeta) {
 			return 'Meta-s';
 		} else {
@@ -460,41 +446,27 @@ class KeyDispatcher {
 			'ArrowDown': 'move-right-down-v2',
 			'ArrowRight': 'move-right-down-v2',
 
-			'AltArrowUp': (experiments.BETTER_KEYBINDINGS ? 'force-insert-before' : null),
-			'AltArrowDown': (experiments.BETTER_KEYBINDINGS ? 'force-insert-after' : null),
-			'AltArrowLeft': (experiments.BETTER_KEYBINDINGS ? 'force-insert-before' : null),
-			'AltArrowRight': (experiments.BETTER_KEYBINDINGS ? 'force-insert-after' : null),
+			'AltArrowUp': 'force-insert-before',
+			'AltArrowDown': 'force-insert-after',
+			'AltArrowLeft': 'force-insert-before',
+			'AltArrowRight': 'force-insert-after',
 
-			'AltTab': (experiments.BETTER_KEYBINDINGS ? 'force-insert-inside' : null),
-			'ShiftAltTab': (experiments.BETTER_KEYBINDINGS ? 'force-insert-around' : null),
+			'AltTab': 'force-insert-inside',
+			'ShiftAltTab': 'force-insert-around',
 
-			'ShiftEnter': (experiments.BETTER_KEYBINDINGS ? 'evaluate-nex-and-keep' : null),
-			'Enter': (experiments.BETTER_KEYBINDINGS ? 'evaluate-nex' : null),
+			'ShiftEnter': 'evaluate-nex-and-keep',
+			'Enter': 'evaluate-nex',
 
-			'ShiftSpace': (experiments.BETTER_KEYBINDINGS ? 'toggle-dir' : null),
+			'ShiftSpace': 'toggle-dir',
 
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
-			'Backspace': (
-					experiments.BETTER_KEYBINDINGS
-					?  'start-main-editor'
-					: 'remove-selected-and-select-previous-sibling-v2'
-			),
+			'Backspace': 'start-main-editor',
 
-			'CtrlBackspace': (
-				experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null
-				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
-			'AltBackspace': (
-				(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
-				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
+			'AltBackspace': 'start-main-editor',
 
 			'ShiftEscape': 'toggle-exploded',
 
-			'CtrlEnter': (
-				experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null
-				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
-			'AltEnter': (
-				(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
-				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
+			'AltEnter': 'start-main-editor',
 
 
 
@@ -504,7 +476,7 @@ class KeyDispatcher {
 			'#': 'insert-integer-at-insertion-point-v2',
 			'$': 'insert-string-at-insertion-point-v2',
 			'%': 'insert-float-at-insertion-point-v2',
-			'^': experiments.ORG_OVERHAUL ? 'insert-instantiator-at-insertion-point-v2' : 'insert-nil-at-insertion-point-v2',
+			'^': 'insert-instantiator-at-insertion-point-v2',
 			'&': 'insert-lambda-at-insertion-point-v2',
 			'*': 'insert-expectation-at-insertion-point-v2',
 			'(': 'insert-org-at-insertion-point-v2',
@@ -540,36 +512,22 @@ class KeyDispatcher {
 			'ArrowLeft': 'move-left-up-v2',
 			'ArrowRight': 'move-right-down-v2',
 
-			'AltArrowUp': (experiments.BETTER_KEYBINDINGS ? 'force-insert-before' : null),
-			'AltArrowDown': (experiments.BETTER_KEYBINDINGS ? 'force-insert-after': null),
-			'AltArrowLeft': (experiments.BETTER_KEYBINDINGS ? 'force-insert-before': null),
-			'AltArrowRight': (experiments.BETTER_KEYBINDINGS ? 'force-insert-after': null),
+			'AltArrowUp': 'force-insert-before' ,
+			'AltArrowDown': 'force-insert-after',
+			'AltArrowLeft': 'force-insert-before',
+			'AltArrowRight': 'force-insert-after',
 
-			'ShiftAltTab': (experiments.BETTER_KEYBINDINGS ? 'force-insert-around' : null),
+			'ShiftAltTab': 'force-insert-around' ,
 
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
 
-			'Backspace': (
-					experiments.BETTER_KEYBINDINGS
-					?  'start-main-editor'
-					: 'remove-selected-and-select-previous-sibling-v2'
-			),
+			'Backspace': 'start-main-editor',
 
-			'CtrlBackspace': (
-				experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null
-				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
-			'AltBackspace': (
-				(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
-				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
+			'AltBackspace': 'start-main-editor',
 
 			'ShiftEscape': 'toggle-exploded',
 
-			'CtrlEnter': (
-				experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null
-				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
-			'AltEnter': (
-				(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
-				: (experiments.BETTER_KEYBINDINGS ? 'start-main-editor' : null)),
+			'AltEnter': 'start-main-editor',
 
 			'ShiftEscape': 'toggle-exploded',
 			'Enter': 'evaluate-v2',
@@ -579,7 +537,7 @@ class KeyDispatcher {
 			'#': 'insert-integer-at-insertion-point-v2',
 			'$': 'insert-string-at-insertion-point-v2',
 			'%': 'insert-float-at-insertion-point-v2',
-			'^': experiments.ORG_OVERHAUL ? 'insert-instantiator-at-insertion-point-v2' : 'insert-nil-at-insertion-point-v2',
+			'^': 'insert-instantiator-at-insertion-point-v2',
 			'&': 'insert-lambda-at-insertion-point-v2',
 			'*': 'insert-expectation-at-insertion-point-v2',
 

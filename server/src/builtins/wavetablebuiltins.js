@@ -31,7 +31,7 @@ import {
 	getReferenceFrequency,
 	getSampleRate,
 	getConstantSignalFromValue } from '../wavetablefunctions.js'
-import { loopPlay, oneshotPlay, abortPlayback } from '../webaudio.js'
+import { loopPlay, oneshotPlay, abortPlayback, startRecordingAudio, stopRecordingAudio } from '../webaudio.js'
 import { Tag } from '../tag.js'
 import { EError } from '../nex/eerror.js'
 import { ERROR_TYPE_INFO } from '../nex/eerror.js'
@@ -52,6 +52,29 @@ function createWavetableBuiltins() {
 			return new Nil();
 		},
 		'looks at the tags on |a and sets the default timebase based on their values.'
+	);
+
+	Builtin.createBuiltin(
+		'start-recording-into',
+		[ '_wt'],
+		function $recordInto(env, executionEnvironment) {
+			let wt = env.lb('wt');
+			startRecordingAudio(wt);
+			return wt;
+		},
+		'starts recording audio into the wavetable.'
+	);
+
+
+	Builtin.createBuiltin(
+		'stop-recording',
+		[ '_wt'],
+		function $stopRecording(env, executionEnvironment) {
+			let wt = env.lb('wt');
+			stopRecordingAudio(wt);
+ 			return wt;
+		},
+		'starts recording audio into the wavetable.'
 	);
 
 	Builtin.createBuiltin(
@@ -227,6 +250,44 @@ function createWavetableBuiltins() {
 	);	
 
 	Builtin.createBuiltin(
+		'slew',
+		[ 'wt1', 'wt2' ],
+		function $singlepole(env, executionEnvironment) {
+			let wt1 = env.lb('wt1');
+			let wt2 = env.lb('wt2');
+
+			if (!(wt2.getTypeName() == '-wavetable-')) {
+				wt2 = getConstantSignalFromValue(wt2.getTypedValue(), wt1.getDuration())
+			}	
+
+			let data = [];
+			let dur = Math.max(wt1.getDuration(), wt2.getDuration());
+
+			let previousValue = wt1.valueAtSample(0);
+			data[0] = previousValue;
+			for (let i = 1 ; i < dur; i++) {
+				let thisval = wt1.valueAtSample(i);
+				let maxchange = Math.max(0, wt2.valueAtSample(i));
+
+				let diff = thisval - previousValue;
+
+				if (diff > maxchange) {
+					data[i] = previousValue + maxchange;
+				} else if (diff < -maxchange) {
+					data[i] = previousValue - maxchange;
+				} else {
+					data[i] = thisval;
+				}
+				previousValue = data[i];
+			}
+			let r = new Wavetable();
+			r.initWith(data);
+			return r;
+		},
+		'slows down rate of change of |wt1 to a maximum value per sample given by |wt2'
+	);	
+
+	Builtin.createBuiltin(
 		'wavecalc',
 		[ 'wt', 'f&' ],
 		function $const(env, executionEnvironment) {
@@ -301,6 +362,34 @@ function createWavetableBuiltins() {
 		},
 		'returns a wavetable of a sine wave'
 	);
+
+	Builtin.createBuiltin(
+		'gate',
+		[ 'nn#%?' ],
+		function $squarewave(env, executionEnvironment) {
+			let nn = env.lb('nn');
+			if (nn == UNBOUND) {
+				nn = new Integer(1);
+				nn.addTag(new Tag('b'))
+			}
+
+			let dur = convertTimeToSamples(nn);
+
+			let data = [];
+
+			for (let i = 0; i < dur; i++) {
+				if (i < (dur/2)) {
+					data[i] = 0;
+				} else {
+					data[i] = 1;
+				}
+			}
+			let wt = new Wavetable();
+			wt.initWith(data);
+			return wt;
+		},
+		'returns a wavetable of a gate signal'
+	);	
 
 	Builtin.createBuiltin(
 		'squarewave',
@@ -622,24 +711,25 @@ function createWavetableBuiltins() {
 
 	Builtin.createBuiltin(
 		'repeat',
-		[ 'wt', 'n#'],
+		[ 'wt', 'dur%#?'],
 		function $repeat(env, executionEnvironment) {
-			let timesnex = env.lb('n');
-			let times = timesnex.getTypedValue();
 			let wt = env.lb('wt');
-
-			let rdata = [];
-			for (let i = 0; i < times; i++) {
-				for (let j = 0; j < wt.getDuration(); j++) {
-					rdata.push(wt.valueAtSample(j));
-				}
+			let dur = env.lb('dur');
+			if (dur == UNBOUND) {
+				dur = new Integer(4);
+				dur.addTag(new Tag('beats'));
 			}
-			let wtr = new Wavetable();
-			wtr.initWith(rdata);
-			wtr.calculateAmplitude();
-			return wtr;
+			dur = convertTimeToSamples(dur);
+
+			let data = [];
+			for (let i = 0; i < dur; i++) {
+				data[i] = wt.valueAtSample(i);
+			}
+			let r = new Wavetable();
+			r.initWith(data);
+			return r;
 		},
-		'repeats a signal n times'
+		'repeats a signal for |dur time.'
 	);
 
 	Builtin.createBuiltin(

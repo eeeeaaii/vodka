@@ -262,11 +262,6 @@ class NexContainer extends Nex {
 
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
-		if (this.hasTags()) {
-			this.tagHolder = document.createElement('div');
-			this.tagHolder.classList.add('tagholder');
-			domNode.appendChild(this.tagHolder);
-		}
 		super.renderInto(renderNode, renderFlags, withEditor);
 		switch(this.dir) {
 			case V_DIR:
@@ -283,15 +278,6 @@ class NexContainer extends Nex {
 				break;
 		}
 	}
-
-	renderTags(domNode, renderFlags, editor) {
-		if (this.hasTags()) {
-			super.renderTags(this.tagHolder, renderFlags, editor);
-		} else {
-			super.renderTags(domNode, renderFlags, editor);
-		}
-	}
-
 
 	renderChildrenIfNormal() {
 		return true;

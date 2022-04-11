@@ -75,13 +75,19 @@ class Float extends ValueNex {
 	}
 
 	renderValue() {
-		if (isNaN(this.value)) return this.value;
+		return this.value;
+	}
+
+	finalizeValue() {
+		if (isNaN(this.value)) {
+			this.value = '0.0';
+		}
 		let n = Number(this.value);
 		if (Math.round(n) == n) {
-			return '' + n + '.0';
+			this.value = '' + n + '.0';
 		} else {
-			return '' + n;
-		}
+			this.value = '' + n;
+		}	
 	}
 
 	getTypedValue() {
@@ -174,6 +180,11 @@ class Float extends ValueNex {
 class FloatEditor extends Editor {
 	constructor(nex) {
 		super(nex, 'FloatEditor');
+	}
+
+	finish() {
+		this.nex.finalizeValue();
+		return super.finish();
 	}
 
 	hasContent() {

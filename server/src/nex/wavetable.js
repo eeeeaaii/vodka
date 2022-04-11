@@ -66,6 +66,46 @@ class Wavetable extends Nex {
 		this.centerSample = -1;
 		this.markers = [];
 		this.sectionBeingAuditioned = null;
+		this.recording = false;
+		this.blobs = [];
+	}
+
+	addBlob(blob) {
+		this.blobs.push(blob);
+	}
+
+	getBlobsAsOneBlob(blob) {
+		return new Blob(this.blobs);
+	}
+
+	resetBlobs() {
+		this.blobs = [];
+	}
+
+	isRecording() {
+		return this.recording;
+	}
+
+	startRecording() {
+		this.data = [];
+		this.resetBlobs();
+		this.recording = true;
+	}
+
+	stopRecording() {
+		this.recording = false;
+		this.setDirtyForRendering(true);
+		eventQueueDispatcher.enqueueTopLevelRender();			
+	}
+
+	setRecordedData(buf) {
+		this.data = [];
+		for (let i = 0; i < buf.length; i++) {
+			this.data.push(buf[i]);
+		}
+		this.calculateAmplitude();
+		this.setDirtyForRendering(true);
+		eventQueueDispatcher.enqueueTopLevelRender();			
 	}
 
 	startEditing() {
@@ -458,6 +498,9 @@ class Wavetable extends Nex {
 		topcontrols.classList.add('wavecontrols')
 		domNode.appendChild(topcontrols);
 		topcontrols.appendChild(this.createTimelabel())
+		if (this.recording) {
+			topcontrols.appendChild(this.createRecordinglabel())
+		}
 		topcontrols.appendChild(this.createSpacer())
 		if (this.isEditing) {
 			topcontrols.appendChild(this.createMarkerNums())
@@ -490,6 +533,14 @@ class Wavetable extends Nex {
 		timelabel.innerText = '' + n + ' ' + suffix;
 		return timelabel;		
 	}
+
+	createRecordinglabel() {
+		let recordinglabel = document.createElement('div');
+		recordinglabel.classList.add('wavecontrol');
+		recordinglabel.innerText = 'RECORDING'
+		return recordinglabel;		
+	}
+
 
 	createAddMarker() {
 		let addMarker = document.createElement('div');
