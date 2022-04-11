@@ -415,8 +415,7 @@ function serviceApiSaveRequest(data, sessionId, cb) {
 	})
 }
 
-function serviceApiLoadRequestUserSession(data, sessionId, cb, fallback) {
-	let nm = data;
+function serviceApiLoadRequestUserSession(nm, sessionId, cb, fallback) {
 	let path = `${getSessionDirectory(sessionId)}/${nm}`;
 	fs.readFile(path, function(err, data) {
 		if (err) {
@@ -433,8 +432,7 @@ function serviceApiLoadRequestUserSession(data, sessionId, cb, fallback) {
 }
 
 
-function serviceApiLoadRequestPackages(data, cb) {
-	let nm = data;
+function serviceApiLoadRequestPackages(nm, cb) {
 	let path = `${getSessionDirectory('packages')}/${nm}`;
 	fs.readFile(path, function(err, data) {
 		if (err) {
