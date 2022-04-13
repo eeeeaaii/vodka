@@ -24,7 +24,6 @@ import { Line } from '../nex/line.js'
 import { Command } from '../nex/command.js' 
 import { Expectation } from '../nex/expectation.js' 
 import { Lambda } from '../nex/lambda.js' 
-import { Zlist } from '../nex/zlist.js' 
 import { Org } from '../nex/org.js' 
 import { ERROR_TYPE_INFO, ERROR_TYPE_FATAL, ERROR_TYPE_WARN } from '../nex/eerror.js'
 
@@ -136,20 +135,6 @@ function createMakeBuiltins() {
 			return r;
 		},
 		'creates a new word containing the args as children.'
-	);
-
-	Builtin.createBuiltin(
-		'make-zlist',
-		['nex...'],
-		function $makeZlist(env, executionEnvironment) {
-			let args = env.lb('nex');
-			let r = new Zlist();
-			for (let i = 0 ; i < args.numChildren(); i++) {
-				r.appendChild(args.getChildAt(i));
-			}
-			return r;
-		},
-		'creates a new zlist containing the args as children.'
 	);
 
 	Builtin.createBuiltin(

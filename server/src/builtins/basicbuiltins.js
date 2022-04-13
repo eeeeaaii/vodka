@@ -40,7 +40,6 @@ import { Org } from '../nex/org.js';
 import { Root } from '../nex/root.js'; 
 import { Separator } from '../nex/separator.js'; 
 import { Word } from '../nex/word.js'; 
-import { Zlist } from '../nex/zlist.js'; 
 
 import { evaluateNexSafely, wrapError } from '../evaluator.js'
 
@@ -218,8 +217,6 @@ function createBasicBuiltins() {
 			} else if (lhs instanceof Line && rhs instanceof Line) {
 				return new EError('equal: equal for lists is not implemented yet. Sorry!')
 			} else if (lhs instanceof Word && rhs instanceof Word) {
-				return new EError('equal: equal for lists is not implemented yet. Sorry!')
-			} else if (lhs instanceof Zlist && rhs instanceof Zlist) {
 				return new EError('equal: equal for lists is not implemented yet. Sorry!')
 			} else if (lhs instanceof Expectation && rhs instanceof Expectation) {
 				return new EError('equal: equal for lists is not implemented yet. Sorry!')

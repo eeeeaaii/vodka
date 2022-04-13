@@ -31,7 +31,6 @@ import { Wavetable } from './nex/wavetable.js'
 import { Command } from './nex/command.js' 
 import { Bool } from './nex/bool.js' 
 import { Line } from './nex/line.js' 
-import { Zlist } from './nex/zlist.js' 
 import { Org } from './nex/org.js' 
 import { Float } from './nex/float.js' 
 import { Expectation } from './nex/expectation.js' 
@@ -708,7 +707,7 @@ class Manipulator {
 	// THESE NEED A BETTER NAMING CONVENTION THAT TELLS YOU
 	// WHAT NEX FIRES THEM IN RESPONSE TO WHAT KEYSTROKES
 
-	deleteLeafV2(s) {
+	deleteLeaf(s) {
 		if (this._isOnlyLeafInLine(s)) {
 			if (this.isInsertAfter(s)) {
 				let line = this.getEnclosingLineInSameDoc(s);
@@ -747,17 +746,17 @@ class Manipulator {
 			}
 		} else {
 			// simpler delete for "naked" letters
-			this.removeAndSelectPreviousSiblingV2(s);
+			this.removeAndSelectPreviousSibling(s);
 		}
 	}
 
-	maybeDeleteEmptyLineV2(s) {
+	maybeDeleteEmptyLine(s) {
 		if (this._isEmptyLineInDoc(s)) {
 			this._deleteEmptyLine(s);
 		}
 	}
 
-	removeAndSelectPreviousSiblingV2(s) {
+	removeAndSelectPreviousSibling(s) {
 		let b = this._getSiblingBefore(s);
 		let a = this._getSiblingAfter(s);
 		let p = s.getParent();
@@ -773,39 +772,13 @@ class Manipulator {
 		}
 	}
 
-
-	removeSelectedAndSelectPreviousLeafV2(s) {
-		// this is used by other things that are not letters or separators
-		// when they are in a line context I guess?
-		// or at various times.
-		// basically most of the time it's the same as the old way
-		// but we have to put in special code for like
-		// for example if this was the only thing in a line--
-		// in the old way, there would be a newline object preceding this
-		// but now there isn't
-		let p = s.getParent();
-
-		if (Utils.isLine(p) && p.numChildren() == 1) {
-			this._deleteNode(s);
-			p.setSelected();
-			this._forceInsertionMode(INSERT_INSIDE, p);
-			return;
-		}
-
-		let toDel = this.selected();
-		let r = (
-			this.attemptToRemoveLastItemInCommand()
-			||
-			(this.selectPreviousLeaf() || this.selectParent())
-			&&
-			this.removeNex(toDel)
-		);	
-		if (!p.hasChildren() && (Utils.isWord(p) || Utils.isLine(p))) {
-			manipulator.removeNex(p);
+	removeAndSelectPreviousSiblingIfEmpty(s) {
+		if (!s.hasChildren()) {
+			this.removeAndSelectPreviousSibling(s);
 		}
 	}
 
-	selectPreviousLeafV2(s) {
+	selectPreviousLeaf(s) {
 		if (this._isFirstLeafInLine(s)) {
 			if (s.getInsertionMode() == INSERT_BEFORE) {
 				this.selectPreviousLeaf();
@@ -842,7 +815,7 @@ class Manipulator {
 		}
 	}
 
-	selectNextLeafV2(s) {
+	selectNextLeaf(s) {
 		if (s.getInsertionMode() == INSERT_BEFORE) {
 			this._forceInsertionMode(INSERT_AFTER, this.selected());
 			return;
@@ -886,25 +859,7 @@ class Manipulator {
 		}
 	}
 
-	doLineBreakAlwaysV2(s) {
-		let line = this.newLine();
-		let p = s.getParent();
-		if (!p) return false;
-		if (!this._splitParentAfterAndPutIn(s, line)) {
-			this._appendAfterAndSelect(line, p);
-		} else {
-			let child = this._getFirstLeafInside(line);
-			if (child) {
-				child.setSelected();
-				this._forceInsertionMode(INSERT_BEFORE, child);
-			} else {
-				line.setSelected();
-				this._forceInsertionMode(INSERT_INSIDE, line);
-			}
-		}
-	}
-
-	moveLeftUpV2(s) {
+	moveLeftUp(s) {
 		if (s.getInsertionMode() == INSERT_AFTER) {
 			if (Utils.isNexContainer(s)) {
 				this._forceInsertionMode(INSERT_INSIDE, s);
@@ -915,25 +870,12 @@ class Manipulator {
 			this._forceInsertionMode(INSERT_BEFORE, s);
 		} else {
 			if (this.selectPreviousSibling()) {
-				if (Utils.isNexContainer(this.selected())) {
-					this._forceInsertionMode(INSERT_INSIDE, this.selected());
-				} else {
-					this._forceInsertionMode(INSERT_BEFORE, this.selected());
-				}
+				this._forceInsertionMode(INSERT_BEFORE, this.selected());
 			}
-
-//			this.selectPreviousSibling()
-//				&&  this._forceInsertionMode(INSERT_BEFORE, this.selected());
-			//
-			// if (this.selectPreviousSibling()) {
-			// 	this._forceInsertionMode(INSERT_AFTER, this.selected());
-			// } else {
-			// 	this._forceInsertionMode(INSERT_BEFORE, this.selected())			
-			// }
 		}
 	}
 
-	moveRightDownV2(s) {
+	moveRightDown(s) {
 		if (s.getInsertionMode() == INSERT_BEFORE) {
 			if (Utils.isNexContainer(s)) {
 				this._forceInsertionMode(INSERT_INSIDE, s);
@@ -944,119 +886,13 @@ class Manipulator {
 			this._forceInsertionMode(INSERT_AFTER, s);
 		} else {
 			if (this.selectNextSibling()) {
-				if (Utils.isNexContainer(this.selected())) {
-					this._forceInsertionMode(INSERT_INSIDE, this.selected());
-				} else {
-					this._forceInsertionMode(INSERT_AFTER, this.selected());
-				}
+				this._forceInsertionMode(INSERT_AFTER, this.selected());
 			}
 		}		
 	}
 
-	moveRightV3(s) {
-		let isVert = s.getParent().getNex().isVertical();
-		if (isVert) {
-			this.selectParent();
-		} else {
-			if (s.getInsertionMode() == INSERT_BEFORE) {
-				this._forceInsertionMode(INSERT_AFTER, s);
-			} else {
-				if (this.selectNextSibling()) {
-					this._forceInsertionMode(INSERT_AFTER, this.selected());
-				} else {
-					this.selectParent();
-				}
-				
-			}			
-		}
-	}
 
-	moveLeftV3(s) {
-		let isVert = s.getParent().getNex().isVertical();
-		if (isVert) {
-			this.selectParent();
-		} else {
-			if (!this.selectPreviousSibling()) {
-				let mode = s.getInsertionMode();
-				if (mode != INSERT_BEFORE) {
-					this._forceInsertionMode(INSERT_BEFORE, this.selected())					
-				} else {
-					this.selectParent();
-				}
-			}
-		}
-	}
-
-	moveDownV3(s) {
-		let isVert = s.getParent().getNex().isVertical();
-		if (!isVert) {
-			this.selectParent();
-		} else {
-			if (s.getInsertionMode() == INSERT_BEFORE) {
-				this._forceInsertionMode(INSERT_AFTER, s);
-			} else {
-				if (this.selectNextSibling()) {
-					this._forceInsertionMode(INSERT_AFTER, this.selected());
-				} else {
-					this.selectParent();
-				}
-				
-			}			
-		}
-	}
-
-	moveUpV3(s) {
-		let isVert = s.getParent().getNex().isVertical();
-		if (!isVert) {
-			this.selectParent();
-		} else {
-			if (!this.selectPreviousSibling()) {
-				let mode = s.getInsertionMode();
-				if (mode != INSERT_BEFORE) {
-					this._forceInsertionMode(INSERT_BEFORE, this.selected())					
-				} else {
-					this.selectParent();
-				}
-			}
-		}
-	}
-
-	forceInsertUpV3(s) {
-		let isVert = s.getParent().getNex().isVertical();
-		if (isVert) {
-			this._forceInsertionMode(INSERT_BEFORE, this.selected());
-		} else {
-			this._forceInsertionMode(INSERT_AROUND, this.selected());
-		}
-	}
-
-	forceInsertDownV3(s) {
-		let isVert = s.getParent().getNex().isVertical();
-		if (isVert) {
-			this._forceInsertionMode(INSERT_AFTER, this.selected());
-		} else {
-			this._forceInsertionMode(INSERT_INSIDE, this.selected());
-		}
-	}
-
-	forceInsertLeftV3(s) {
-		let isVert = s.getParent().getNex().isVertical();
-		if (isVert) {
-			this._forceInsertionMode(INSERT_AROUND, this.selected());
-		} else {
-			this._forceInsertionMode(INSERT_BEFORE, this.selected());
-		}
-	}
-
-	forceInsertRightV3(s) {
-		let isVert = s.getParent().getNex().isVertical();
-		if (isVert) {
-			this._forceInsertionMode(INSERT_INSIDE, this.selected());
-		} else {
-			this._forceInsertionMode(INSERT_AFTER, this.selected());
-		}
-	}
-
+	// in use
 	selectFirstChildOrMoveInsertionPoint(s) {
 		if (!this.selectFirstChild()) {
 			this._forceInsertionMode(INSERT_INSIDE, this.selected());
@@ -1072,7 +908,8 @@ class Manipulator {
 
 	}
 
-	defaultInsertForV2(insertInto, toInsert) {
+	// heavily used
+	defaultInsertFor(insertInto, toInsert) {
 		// ahem this only works if insertInto is selected
 		switch(insertInto.getInsertionMode()) {
 			case INSERT_AFTER:
@@ -1090,28 +927,35 @@ class Manipulator {
 		}
 	}
 
+	// These are used by the exact keystrokes you think
 	forceInsertBefore() {
 			this._forceInsertionMode(INSERT_BEFORE, this.selected());		
 	}
 
+	// These are used by the exact keystrokes you think
 	forceInsertAfter() {
 			this._forceInsertionMode(INSERT_AFTER, this.selected());		
 	}
 
+	// These are used by the exact keystrokes you think
 	forceInsertAround() {
 			this._forceInsertionMode(INSERT_AROUND, this.selected());		
 	}
 
+	// These are used by the exact keystrokes you think
 	forceInsertInside() {
 			this._forceInsertionMode(INSERT_INSIDE, this.selected());		
 	}
+
+
+	// JUST DOC THINGS
 
 	insertSeparatorBeforeOrAfterSelectedLetter(newSeparator) {
 		let s = this.selected();
 
 		let inDocFormat = this._isLetterInDocFormatUpToLine(s);
 		if (experiments.BETTER_KEYBINDINGS && !inDocFormat) {
-			this.defaultInsertForV2(s, newSeparator);
+			this.defaultInsertFor(s, newSeparator);
 			return;			
 		}
 
@@ -1139,7 +983,7 @@ class Manipulator {
 
 	// doc elements get special insert methods I guess
 	// I'm going to hold the line on keeping regexes out of this file
-	insertLetterFromLineV2(newLetter, line) {
+	insertLetterFromLine(newLetter, line) {
 		if (line.getInsertionMode() == INSERT_INSIDE) {
 			if (this._isEmpty(line) || !Utils.isWord(this._getFirstChildOf(line))) {
 				let word = this.newWord();
@@ -1154,20 +998,12 @@ class Manipulator {
 				return true;
 			}
 		} else {
-			return this.defaultInsertForV2(line, newLetter);
+			return this.defaultInsertFor(line, newLetter);
 		}
 	}
 
-	insertSeparatorFromLineV2(newSeparator, line) {
-		return this.defaultInsertForV2(line, newSeparator);
-	}
-
-	getPreviousLine(line) {
-		let p = line.getParent();
-		if (!p) return null;
-		let sib = p.getPreviousSibling(line);
-		if (!Utils.isLine(sib)) return null;
-		return sib;
+	insertSeparatorFromLine(newSeparator, line) {
+		return this.defaultInsertFor(line, newSeparator);
 	}
 
 	insertAsFirstChild(data) {
@@ -1179,21 +1015,7 @@ class Manipulator {
 	}
 
 
-	// wtf is this 
-	putAllNextSiblingsIn(nex) {
-		nex = this._conformData(nex);
-		let s = (systemState.getGlobalSelectedNode());
-		let p = s.getParent();
-		if (!p) return false;
-		let c;
-		while (c = p.getChildAfter(s)) {
-			p.removeChild(c);
-			nex.appendChild(c);
-		}
-		return true;		
-	}
-
-	selectCorrespondingLetterInPreviousLineV2(s) {
+	selectCorrespondingLetterInPreviousLine(s) {
 		let thisLine = Utils.isLine(s) ? s : this.getEnclosingLineInSameDoc(s);
 		// Okay in the weird/wrong event that we have a word inside a doc that's not
 		// inside a line, we just... do our best.
@@ -1247,7 +1069,7 @@ class Manipulator {
 		return true;
 	}
 
-	selectCorrespondingLetterInNextLineV2(s) {
+	selectCorrespondingLetterInNextLine(s) {
 		let thisLine = Utils.isLine(s) ? s : this.getEnclosingLineInSameDoc(s);
 		// Okay in the weird/wrong event that we have a word inside a doc that's not
 		// inside a line, we just... do our best.
@@ -1654,23 +1476,13 @@ class Manipulator {
 		return false;
 	}
 
+	// this is used by an old function that is only used by expectations
 	removeSelectedAndSelectPreviousSibling() {
 		let toDel = (systemState.getGlobalSelectedNode());
 		return (
 			this.attemptToRemoveLastItemInCommand()
 			||
 			(this.selectPreviousSibling() || this.selectParent())
-			&&
-			this.removeNex(toDel)
-		);	
-	}
-
-	removeSelectedAndSelectPreviousLeaf() {
-		let toDel = (systemState.getGlobalSelectedNode());
-		return (
-			this.attemptToRemoveLastItemInCommand()
-			||
-			(this.selectPreviousLeaf() || this.selectParent())
 			&&
 			this.removeNex(toDel)
 		);	
@@ -1799,11 +1611,6 @@ class Manipulator {
 	}
 
 
-
-	putAllNextSiblingsInNewLine() {
-		return this.split(new Line())
-	}
-
 	splitCurrentWordIntoTwo() {
 		return this.split(new Word())
 	}
@@ -1877,11 +1684,10 @@ class Manipulator {
 		}
 	}
 
-	// deprecated
-	startNewEString() {
-		(systemState.getGlobalSelectedNode()).createNewEString();
-		return true;
-	}
+
+
+    /////////// KEYDISPATCHER STUFF BELOW THIS
+
 
 	copyTextToSystemClipboard(txt) {
 		navigator.permissions.query({name: "clipboard-write"}).then(result => {
@@ -1903,6 +1709,7 @@ class Manipulator {
 		this.removeNex(x);
 	}
 
+	// used in keydispatcher.js
 	doSave() {
 		let p = this.selected();
 
@@ -1917,7 +1724,7 @@ class Manipulator {
 
 		let cmd = this.newCommandWithText('save-in--unevaluated', true /* skip editor */);
 		cmd.nex.setVertical();
-		let sym = this.newESymbolWithText('untitled-functions');
+		let sym = this.newESymbolWithText(systemState.getDefaultFileName());
 		sym.setSelected();
 		cmd.appendChild(sym);
 
@@ -1975,6 +1782,8 @@ class Manipulator {
 				break;
 		}
 	}
+
+	// CREATING STUFF DOWN HERE
 
 	possiblyMakeImmutable(nex, context) {
 		if (Utils.isImmutableContext(context)) {
@@ -2108,13 +1917,6 @@ class Manipulator {
 		e.setMutable(true);
 		let r = new RenderNode(e);
 		r.possiblyStartMainEditor();
-		return r;		
-	}
-
-	newZlist() {
-		let zl = new Zlist();
-		zl.setMutable(true);
-		let r = new RenderNode(zl);
 		return r;		
 	}
 

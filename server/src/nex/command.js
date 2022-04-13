@@ -698,24 +698,14 @@ class Command extends NexContainer {
 	}
 
 	getEventTable(context) {
-		if (experiments.BETTER_KEYBINDINGS) {
-			return {
-				'CtrlSpace': (
-					experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null
-					: (experiments.BETTER_KEYBINDINGS ? 'autocomplete' : null)),
-				'AltSpace': (
-					(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
-					: (experiments.BETTER_KEYBINDINGS ? 'autocomplete' : null)),
-			};
-		} else {
-			return {
-				'ShiftEnter': 'evaluate-nex-and-keep',
-				'Enter': 'evaluate-nex',
-				'CtrlSpace': 'autocomplete',
-				'ShiftSpace': 'toggle-dir',
-				'Backspace': 'delete-last-command-letter-or-remove-selected-and-select-previous-sibling'
-			};
-		}
+		return {
+			'CtrlSpace': (
+				experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null
+				: (experiments.BETTER_KEYBINDINGS ? 'autocomplete' : null)),
+			'AltSpace': (
+				(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
+				: (experiments.BETTER_KEYBINDINGS ? 'autocomplete' : null)),
+		};
 	}
 }
 

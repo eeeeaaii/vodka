@@ -60,11 +60,13 @@ class KeyDispatcher {
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
 
 		if (systemState.getGlobalSelectedNode().usingEditor()) {
-			// will return whether or not to "reroute"
-			// rerouting means the editor didn't handle the key AND wants keydispatcher
-			// to handle it instead
-			let reroute = this.doEditorEvent(eventName);
-			if (!reroute) {
+			// Will either return a keycode, or null.
+			// if a keycode, we reroute that keycode (handle it below), else we exit.
+			// if it returns null it means that the editor handled the key
+			// usually it won't change the keycode, but it can.
+
+			eventName = this.doEditorEvent(eventName);
+			if (eventName === null) {
 				return false;
 			}
 		}
@@ -359,23 +361,23 @@ class KeyDispatcher {
 		if ((typeof f) == 'string') {
 			KeyResponseFunctions[f](systemState.getGlobalSelectedNode(), context);
 			return true;
-		} else if ((typeof f) == 'function') {
-			f(systemState.getGlobalSelectedNode(), context);
-			return true;
-		} else if ((typeof f) == 'object') {
-			// contains different functions for different contexts
-			let f2 = f[context];
-			if (!f2) {
-				f2 = f[ContextType.DEFAULT];
-				if (!f2) {
-					throw new Error('must specify a default context if associating a key with a map')
-				}
-			}
-			KeyResponseFunctions[f2](systemState.getGlobalSelectedNode(), context);
- 			return true;
-		} else if (f instanceof Nex) {
-			evaluateNexSafely(f, BINDINGS)
-			return true;
+		// } else if ((typeof f) == 'function') {
+		// 	f(systemState.getGlobalSelectedNode(), context);
+		// 	return true;
+		// } else if ((typeof f) == 'object') {
+		// 	// contains different functions for different contexts
+		// 	let f2 = f[context];
+		// 	if (!f2) {
+		// 		f2 = f[ContextType.DEFAULT];
+		// 		if (!f2) {
+		// 			throw new Error('must specify a default context if associating a key with a map')
+		// 		}
+		// 	}
+		// 	KeyResponseFunctions[f2](systemState.getGlobalSelectedNode(), context);
+ 	// 		return true;
+		// } else if (f instanceof Nex) {
+		// 	evaluateNexSafely(f, BINDINGS)
+		// 	return true;
 		}
 		return false;
 	}
@@ -441,10 +443,10 @@ class KeyDispatcher {
 			'ShiftTab': 'select-parent',
 			'Tab': 'select-first-child-or-force-insert-inside-insertion-mode',
 
-			'ArrowUp': 'move-left-up-v2',
-			'ArrowLeft': 'move-left-up-v2',
-			'ArrowDown': 'move-right-down-v2',
-			'ArrowRight': 'move-right-down-v2',
+			'ArrowUp': 'move-left-up',
+			'ArrowLeft': 'move-left-up',
+			'ArrowDown': 'move-right-down',
+			'ArrowRight': 'move-right-down',
 
 			'AltArrowUp': 'force-insert-before',
 			'AltArrowDown': 'force-insert-after',
@@ -459,7 +461,9 @@ class KeyDispatcher {
 
 			'ShiftSpace': 'toggle-dir',
 
-			'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
+			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
+			'LastBackspace': 'remove-selected-and-select-previous-sibling-if-empty',
+
 			'Backspace': 'start-main-editor',
 
 			'AltBackspace': 'start-main-editor',
@@ -470,23 +474,23 @@ class KeyDispatcher {
 
 
 
-			'~': 'insert-command-at-insertion-point-v2',
-			'!': 'insert-bool-at-insertion-point-v2',
-			'@': 'insert-symbol-at-insertion-point-v2',
-			'#': 'insert-integer-at-insertion-point-v2',
-			'$': 'insert-string-at-insertion-point-v2',
-			'%': 'insert-float-at-insertion-point-v2',
-			'^': 'insert-instantiator-at-insertion-point-v2',
-			'&': 'insert-lambda-at-insertion-point-v2',
-			'*': 'insert-expectation-at-insertion-point-v2',
-			'(': 'insert-org-at-insertion-point-v2',
+			'~': 'insert-command-at-insertion-point',
+			'!': 'insert-bool-at-insertion-point',
+			'@': 'insert-symbol-at-insertion-point',
+			'#': 'insert-integer-at-insertion-point',
+			'$': 'insert-string-at-insertion-point',
+			'%': 'insert-float-at-insertion-point',
+			'^': 'insert-instantiator-at-insertion-point',
+			'&': 'insert-lambda-at-insertion-point',
+			'*': 'insert-expectation-at-insertion-point',
+			'(': 'insert-org-at-insertion-point',
 			')': 'close-off-org',
-			'[': 'insert-line-at-insertion-point-v2',
+			'[': 'insert-line-at-insertion-point',
 			']': 'close-off-line',
-			'{': 'insert-doc-at-insertion-point-v2',
+			'{': 'insert-doc-at-insertion-point',
 			'}': 'close-off-doc',
-			'<': 'insert-word-at-insertion-point-v2',
-			'_': 'insert-wavetable-at-insertion-point-v2',
+			'<': 'insert-word-at-insertion-point',
+			'_': 'insert-wavetable-at-insertion-point',
 			'>': 'close-off-word',
 			'`': 'add-tag',
 			'Alt`': 'remove-all-tags',
@@ -505,12 +509,12 @@ class KeyDispatcher {
 	getNexGenericTable() {
 		return {
 			'ShiftTab': 'select-parent',
-			'Tab': 'move-right-down-v2',
+			'Tab': 'move-right-down',
 
-			'ArrowUp': 'move-left-up-v2',
-			'ArrowDown': 'move-right-down-v2',
-			'ArrowLeft': 'move-left-up-v2',
-			'ArrowRight': 'move-right-down-v2',
+			'ArrowUp': 'move-left-up',
+			'ArrowDown': 'move-right-down',
+			'ArrowLeft': 'move-left-up',
+			'ArrowRight': 'move-right-down',
 
 			'AltArrowUp': 'force-insert-before' ,
 			'AltArrowDown': 'force-insert-after',
@@ -519,7 +523,8 @@ class KeyDispatcher {
 
 			'ShiftAltTab': 'force-insert-around' ,
 
-			'ShiftBackspace': 'remove-selected-and-select-previous-sibling-v2',
+			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
+			'LastBackspace': 'remove-selected-and-select-previous-sibling',
 
 			'Backspace': 'start-main-editor',
 
@@ -530,27 +535,27 @@ class KeyDispatcher {
 			'AltEnter': 'start-main-editor',
 
 			'ShiftEscape': 'toggle-exploded',
-			'Enter': 'evaluate-v2',
-			'~': 'insert-command-at-insertion-point-v2',
-			'!': 'insert-bool-at-insertion-point-v2',
-			'@': 'insert-symbol-at-insertion-point-v2',
-			'#': 'insert-integer-at-insertion-point-v2',
-			'$': 'insert-string-at-insertion-point-v2',
-			'%': 'insert-float-at-insertion-point-v2',
-			'^': 'insert-instantiator-at-insertion-point-v2',
-			'&': 'insert-lambda-at-insertion-point-v2',
-			'*': 'insert-expectation-at-insertion-point-v2',
+			'Enter': 'evaluate',
+			'~': 'insert-command-at-insertion-point',
+			'!': 'insert-bool-at-insertion-point',
+			'@': 'insert-symbol-at-insertion-point',
+			'#': 'insert-integer-at-insertion-point',
+			'$': 'insert-string-at-insertion-point',
+			'%': 'insert-float-at-insertion-point',
+			'^': 'insert-instantiator-at-insertion-point',
+			'&': 'insert-lambda-at-insertion-point',
+			'*': 'insert-expectation-at-insertion-point',
 
-			'(': 'insert-org-at-insertion-point-v2',
+			'(': 'insert-org-at-insertion-point',
 			')': 'close-off-org',
-			'[': 'insert-line-at-insertion-point-v2',
+			'[': 'insert-line-at-insertion-point',
 			']': 'close-off-line',
-			'{': 'insert-doc-at-insertion-point-v2',
+			'{': 'insert-doc-at-insertion-point',
 			'}': 'close-off-doc',
-			'<': 'insert-word-at-insertion-point-v2',
+			'<': 'insert-word-at-insertion-point',
 			'>': 'close-off-word',
 
-			'_': 'insert-wavetable-at-insertion-point-v2',
+			'_': 'insert-wavetable-at-insertion-point',
 
 			'`': 'add-tag',
 			'Alt`': 'remove-all-tags',

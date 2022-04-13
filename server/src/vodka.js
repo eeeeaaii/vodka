@@ -77,7 +77,6 @@ let root = null;
 let sessionId = null;
 let funnelConnected = true;
 
-var justPressedShift;
 var enterIsDown;
 
 var mobileMode = false;
@@ -588,11 +587,6 @@ function setupMobile() {
 function doKeydownEvent(e) {
 	checkRecordState(e, 'down');
 	if (systemState.isKeyFunnelActive()) {
-		if (e.key == 'Shift') {
-			justPressedShift = true;
-		} else {
-			justPressedShift = false;
-		}
 		return doKeyInputNotForTests(e.key, e.code, e.shiftKey, e.ctrlKey, e.metaKey, e.altKey);
 	} else {
 		return true;
@@ -646,19 +640,12 @@ function setup() {
 	// note this is duplicated in undo.js
 	root = rootManager.createNewRoot();
 
-	justPressedShift = false;
-
-
 	document.onclick = function(e) {
 		checkRecordState(e, 'mouse');
 		return true;
 	}
 	document.onkeyup = function(e) {
 		checkRecordState(e, 'up');
-		if (justPressedShift && systemState.isKeyFunnelActive()) {
-			return doKeyInputNotForTests('NakedShift', e.code, e.shiftKey, e.ctrlKey, e.metaKey, e.altKey);
-			justPressedShift = false;
-		}
 		maybeKillSound();
 		return true;
 	}

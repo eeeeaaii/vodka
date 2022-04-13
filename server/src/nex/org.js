@@ -196,15 +196,9 @@ class Org extends NexContainer {
 	}
 
 	getEventTable(context) {
-		if (experiments.BETTER_KEYBINDINGS) {
-			return {};
-		} else {
-			return {
-				'ShiftEnter': 'evaluate-nex-and-keep',
-				'Enter': 'evaluate-nex',
-				'ShiftSpace': 'toggle-dir',
-			};
-		}
+		return {
+			'Backspace': 'remove-selected-and-select-previous-sibling-if-empty',
+		};
 	}
 
 	// convenience method?

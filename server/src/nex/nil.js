@@ -68,13 +68,7 @@ class Nil extends ValueNex {
 	}
 
 	getEventTable(context) {
-		if (experiments.BETTER_KEYBINDINGS) {
-			return {
-			}
-		} else {
-			return {
-				'Enter': 'do-line-break-always',
-			}
+		return {
 		}
 	}
 }

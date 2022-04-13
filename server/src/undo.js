@@ -26,6 +26,21 @@ import { otherflags } from './globalappflags.js'
 
 const UNDO_LIMIT = 10;
 
+
+let actionQueue = [];
+
+class Action {
+	constructor(s, fname) {
+		this.s = s;
+		this.fname = fname;
+	}
+}
+
+function enqueueAction(s, action) {
+
+}
+
+
 class Undo {
 	constructor() {
 		this.undobuffer = [];
@@ -98,4 +113,4 @@ class Undo {
 
 const undo = new Undo();
 
-export { undo }
+export { undo, actionQueue }

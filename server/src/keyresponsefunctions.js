@@ -42,7 +42,6 @@ import { Org } from './nex/org.js';
 import { Root } from './nex/root.js'; 
 import { Separator } from './nex/separator.js'; 
 import { Word } from './nex/word.js'; 
-import { Zlist } from './nex/zlist.js'; 
 import { ContextType } from './contexttype.js'
 import { manipulator } from './manipulator.js'
 import { RenderNode } from './rendernode.js'; 
@@ -150,10 +149,10 @@ const DefaultHandlers = {
 			if (inWord) {
 				manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator(txt));
 			} else {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));				
+				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt));				
 			}
 		} else {
-			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+			manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
 		}
 		return true;
 	},
@@ -166,7 +165,7 @@ const DefaultHandlers = {
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		if (isSeparator) {
-			manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
+			manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt));
 		} else {
 			if (isLine) {
 				// special case - when user is typing into a doc, we want to preserve the general
@@ -178,11 +177,11 @@ const DefaultHandlers = {
 				}
 				let newletter = manipulator.newLetter(txt);
 				newword.appendChild(newletter);
-				manipulator.defaultInsertForV2(manipulator.selected(), newword);
+				manipulator.defaultInsertFor(manipulator.selected(), newword);
 				manipulator.joinToSiblingIfSame(newword);
 				newletter.setSelected();
 			} else {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
 			}
 		}
 		return true;
@@ -194,18 +193,18 @@ const DefaultHandlers = {
 		let isCommand = (context == ContextType.COMMAND);
 		if (isSeparator) {
 			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
+				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
 			} else {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
+				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt));
 			}
 		} else {
 			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
+				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
 			} else {
 				if (manipulator.selectLastChild()) {
-					manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+					manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
 				} else {
-					manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt))
+					manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt))
 				}
 			}
 		}
@@ -218,36 +217,36 @@ const DefaultHandlers = {
 		let isCommand = (context == ContextType.COMMAND);
 		if (isSeparator) {
 			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
+				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
 			} else {
 				if (experiments.BETTER_KEYBINDINGS) {
 					if (manipulator.selectLastChild()) {
-						manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt));
+						manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt));
 					} else {
-						manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(txt))
+						manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt))
 					}
 				} else {
-					manipulator.insertSeparatorFromLineV2(manipulator.newSeparator(txt), manipulator.selected())
+					manipulator.insertSeparatorFromLine(manipulator.newSeparator(txt), manipulator.selected())
 				}
 			}
 		} else {
 			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
+				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
 			} else {
 				if (experiments.BETTER_KEYBINDINGS) {
 					if (manipulator.selectLastChild()) {
 						if (manipulator.selectLastChild()) {
-							manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+							manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
 						} else {
-							manipulator.defaultInsertForV2(manipulator.selected(), manipulator.possiblyMakeImmutable(manipulator.newWord(), context));
-							manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+							manipulator.defaultInsertFor(manipulator.selected(), manipulator.possiblyMakeImmutable(manipulator.newWord(), context));
+							manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
 						}
 					} else {
-						manipulator.defaultInsertForV2(manipulator.selected(), manipulator.possiblyMakeImmutable(manipulator.newWord(), context));
-						manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newLetter(txt));
+						manipulator.defaultInsertFor(manipulator.selected(), manipulator.possiblyMakeImmutable(manipulator.newWord(), context));
+						manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
 					}
 				} else {
-					manipulator.insertLetterFromLineV2(manipulator.newLetter(txt), manipulator.selected())
+					manipulator.insertLetterFromLine(manipulator.newLetter(txt), manipulator.selected())
 				}
 			}
 		}
@@ -260,7 +259,7 @@ const DefaultHandlers = {
 		let isCommand = (context == ContextType.COMMAND);
 		if (isSeparator) {
 			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
+				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
 			} else {
 				manipulator.selectLastChild()
 					|| manipulator.appendAndSelect(manipulator.possiblyMakeImmutable(manipulator.newLine(), context));
@@ -269,7 +268,7 @@ const DefaultHandlers = {
 			}
 		} else {
 			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
-				manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newNexForKey(txt));
+				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
 			} else {
 				// if we are inserting a letter inside an empty doc, we decide whether to make the line and word
 				// immutable based on the mutability of the doc itself, not its context.
@@ -298,10 +297,6 @@ const KeyResponseFunctions = {
 
 	'do-nothing' : function(s) {},
 
-	'select-next-sibling': function(s) {
-		manipulator.selectNextSibling();
-	},
-
 	'evaluate-nex': function(s) {
 		evaluateAndReplace(s);
 	},
@@ -320,10 +315,6 @@ const KeyResponseFunctions = {
 
 	'select-parent': function(s) { manipulator.selectParent(); },
 
-	'start-modal-editing': function(s) {
-		s.getNex().startModalEditing();
-	},
-
 	'activate-or-return-exp-child': function(s) {
 		let exp = s.getNex();
 		if (!exp.isActivated()) {
@@ -334,65 +325,50 @@ const KeyResponseFunctions = {
 		// else no-op, it's still thinking.
 	},
 
-	'return-exp-child': function(s) {
-		manipulator.replaceSelectedWithFirstChildOfSelected();
-	},
-
 	'autocomplete': function(s) {
 		s.getNex().autocomplete();
 	},
 
 	'start-main-editor': function(s) { s.possiblyStartMainEditor(); },
 
-	'start-main-editor-or-delete': function(s) {
-		let editor = s.possiblyStartMainEditor();
-		if (!editor) {
-			manipulator.removeAndSelectPreviousSiblingV2(s);
-		} else {
-			if (editor.hasContent()) {
-				editor.routeKey('Backspace');
-			}
-		}
-	},
-
-	'evaluate-v2': function(s) {
+	'evaluate': function(s) {
 		evaluateAndReplace(s);
 	},
 
-	'delete-letter-v2': function(s) {
-		manipulator.deleteLeafV2(s);
+	'delete-letter': function(s) {
+		manipulator.deleteLeaf(s);
 	},
 
-	'delete-separator-v2': function(s) {
-		manipulator.deleteLeafV2(s);
+	'delete-separator': function(s) {
+		manipulator.deleteLeaf(s);
 	},
 
-	'delete-line-v2': function(s) {
-		manipulator.maybeDeleteEmptyLineV2(s);
+	'delete-line': function(s) {
+		manipulator.maybeDeleteEmptyLine(s);
 	},
 
-	'remove-selected-and-select-previous-leaf-v2': function(s) {
-		manipulator.removeSelectedAndSelectPreviousLeafV2(s);
+	'remove-selected-and-select-previous-sibling': function(s) {
+		manipulator.removeAndSelectPreviousSibling(s);
 	},
 
-	'remove-selected-and-select-previous-sibling-v2': function(s) {
-		manipulator.removeAndSelectPreviousSiblingV2(s);
+	'remove-selected-and-select-previous-sibling-if-empty': function(s) {
+		manipulator.removeAndSelectPreviousSiblingIfEmpty(s);
 	},
 
-	'move-left-up-v2': function(s) {
-		manipulator.moveLeftUpV2(s);
+	'move-left-up': function(s) {
+		manipulator.moveLeftUp(s);
 	},
 
-	'move-right-down-v2': function(s) {
-		manipulator.moveRightDownV2(s);
+	'move-right-down': function(s) {
+		manipulator.moveRightDown(s);
 	},
 
-	'move-to-previous-leaf-v2': function(s) {
-		manipulator.selectPreviousLeafV2(s);
+	'move-to-previous-leaf': function(s) {
+		manipulator.selectPreviousLeaf(s);
 	},
 
-	'move-to-next-leaf-v2': function(s) {		
-		manipulator.selectNextLeafV2(s);
+	'move-to-next-leaf': function(s) {		
+		manipulator.selectNextLeaf(s);
 	},
 
 	'select-first-child-or-force-insert-inside-insertion-mode': function(s) {
@@ -407,39 +383,35 @@ const KeyResponseFunctions = {
 		}
 	},
 
-	'do-line-break-from-line-v2': function(s, context) {
-		manipulator.doLineBreakForLine(s, context);
-	},
-
-	'do-line-break-for-letter-v2': function(s, context) {
+	'do-line-break-for-letter': function(s, context) {
 		manipulator.doLineBreakForLetter(s, context);
 	},
 
-	'do-line-break-for-separator-v2': function(s, context) {
+	'do-line-break-for-separator': function(s, context) {
 		manipulator.doLineBreakForSeparator(s, context);
 	},
 
-	'move-to-corresponding-letter-in-previous-line-v2': function(s) {
-		manipulator.selectCorrespondingLetterInPreviousLineV2(s);
+	'move-to-corresponding-letter-in-previous-line': function(s) {
+		manipulator.selectCorrespondingLetterInPreviousLine(s);
 	},
 
-	'move-to-corresponding-letter-in-next-line-v2': function(s) {
-		manipulator.selectCorrespondingLetterInNextLineV2(s);
+	'move-to-corresponding-letter-in-next-line': function(s) {
+		manipulator.selectCorrespondingLetterInNextLine(s);
 	},
 
-	'insert-actual-!-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator('!')); },
-	'insert-actual-@-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator('@')); },
-	'insert-actual-#-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator('#')); },
-	'insert-actual-$-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator('$')); },
-	'insert-actual-%-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator('%')); },
-	'insert-actual-^-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator('^')); },
-	'insert-actual-&-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator('&')); },
-	'insert-actual-*-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator('*')); },
-	'insert-actual-(-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator('(')); },
-	'insert-actual-)-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator(')')); },
-	'insert-actual-[-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator('[')); },
-	'insert-actual-{-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator('{')); },
-	'insert-actual-<-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertForV2(manipulator.selected(), manipulator.newSeparator('<')); },
+	'insert-actual-!-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator('!')); },
+	'insert-actual-@-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator('@')); },
+	'insert-actual-#-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator('#')); },
+	'insert-actual-$-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator('$')); },
+	'insert-actual-%-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator('%')); },
+	'insert-actual-^-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator('^')); },
+	'insert-actual-&-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator('&')); },
+	'insert-actual-*-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator('*')); },
+	'insert-actual-(-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator('(')); },
+	'insert-actual-)-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(')')); },
+	'insert-actual-[-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator('[')); },
+	'insert-actual-{-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator('{')); },
+	'insert-actual-<-at-insertion-point-from-separator': function(s) { manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator('<')); },
 
 	'insert-actual-!-at-insertion-point-from-letter': function(s) { manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator('!')); },
 	'insert-actual-@-at-insertion-point-from-letter': function(s) { manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator('@')); },
@@ -456,22 +428,21 @@ const KeyResponseFunctions = {
 	'insert-actual-<-at-insertion-point-from-letter': function(s) { manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator('<')); },
 	'insert-actual-_-at-insertion-point-from-letter': function(s) { manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator('_')); },
 
-	'insert-command-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newCommand()); },
-	'insert-bool-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newBool()); },
-	'insert-symbol-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newESymbol()); },
-	'insert-integer-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newInteger()); },
-	'insert-string-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newEString()); },
-	'insert-float-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newFloat()); },
-	'insert-nil-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newNil()); },
-	'insert-instantiator-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newInstantiator()); },
-	'insert-lambda-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newLambda()); },
-	'insert-expectation-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newExpectation()); },
-	'insert-word-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newWord()); },
-	'insert-line-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newLine()); },
-	'insert-doc-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newDoc()); },
-	'insert-org-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newOrg()); },
-	'insert-zlist-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newZlist()); },
-	'insert-wavetable-at-insertion-point-v2': function(s) { manipulator.defaultInsertForV2(s, manipulator.newWavetable()); },
+	'insert-command-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newCommand()); },
+	'insert-bool-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newBool()); },
+	'insert-symbol-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newESymbol()); },
+	'insert-integer-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newInteger()); },
+	'insert-string-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newEString()); },
+	'insert-float-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newFloat()); },
+	'insert-nil-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newNil()); },
+	'insert-instantiator-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newInstantiator()); },
+	'insert-lambda-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newLambda()); },
+	'insert-expectation-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newExpectation()); },
+	'insert-word-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newWord()); },
+	'insert-line-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newLine()); },
+	'insert-doc-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newDoc()); },
+	'insert-org-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newOrg()); },
+	'insert-wavetable-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newWavetable()); },
 
 	'close-off-org': function(s) { manipulator.closeOffOrg(s); },
 	'close-off-line': function(s) { manipulator.closeOffLine(s); },
@@ -496,46 +467,14 @@ const KeyResponseFunctions = {
 	'force-insert-after': function(s) { manipulator.forceInsertAfter(); },
 	'force-insert-before': function(s) { manipulator.forceInsertBefore(); },
 
-	'append-letter-to-doc': function(s) {
-		manipulator.selectLastChild()
-			|| manipulator.appendAndSelect(manipulator.newLine());
-		manipulator.selectLastChild()
-			|| manipulator.appendAndSelect(manipulator.newWord());
-		if (manipulator.selectLastChild()) {
-			manipulator.insertAfterSelectedAndSelect(manipulator.newLetter(s));
-		} else {
-			manipulator.appendAndSelect(manipulator.newLetter(s))
-		}
-	},
-
-	'append-separator-to-doc': function(s) {
-		manipulator.selectLastChild()
-			|| manipulator.appendAndSelect(manipulator.newLine());
-		manipulator.appendAndSelect(manipulator.newSeparator(s));
-	},
-
+	// used by expectation - delete handler gets rid of garbage
 	'call-delete-handler-then-remove-selected-and-select-previous-sibling': function(s) {
 		s.getNex().callDeleteHandler();
 		manipulator.removeSelectedAndSelectPreviousSibling();
 	},
 
-	'delete-last-command-letter-or-remove-selected-and-select-previous-sibling': function(s) {
-		if (!s.getNex().isEmpty()) {
-			s.getNex().deleteLastCommandLetter();
-		} else {
-			manipulator.removeSelectedAndSelectPreviousSibling();
-		}
-	},
-
-	'do-line-break-always': function(s) {
-		manipulator.doLineBreakAlwaysV2(s);
-	},
-
 	'audition-wave': function(s) {
 		s.getNex().auditionWave();
-	},
-	'stop-auditioning-wave': function(s) {
-		s.getNex().stopAuditioningWave();
 	},
 
 	// I hate commas

@@ -140,11 +140,6 @@ class Word extends NexContainer {
 		let domNode = renderNode.getDomNode();
 
 		let wordspan = null;
-		// if (experiments.MUTABLES && !(renderFlags & RENDER_FLAG_SHALLOW)) {
-		// 	wordspan = document.createElement("span");
-		// 	wordspan.classList.add('wordspan');
-		// 	domNode.appendChild(wordspan);
-		// }
 
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('word');
@@ -161,14 +156,6 @@ class Word extends NexContainer {
 		if (experiments.MUTABLES) {
 			domNode.classList.add('newword');
 		}
-
-		// if (experiments.MUTABLES && !(renderFlags & RENDER_FLAG_SHALLOW)) {
-		// 	if (renderFlags & RENDER_FLAG_EXPLODED) {
-		// 		wordspan.classList.add('exploded');
-		// 	} else {
-		// 		wordspan.classList.remove('exploded');
-		// 	}
-		// }
 	}
 
 	setPfont(pfstring) {
@@ -190,17 +177,7 @@ class Word extends NexContainer {
 	}
 
 	getEventTable(context) {
-		if (experiments.BETTER_KEYBINDINGS) {
-			return {
-				'ShiftSpace' : 'do-nothing',
-			}
-		} else {
-			return {
-				'Enter': 'do-line-break-always',
-				'ArrowUp': 'move-to-corresponding-letter-in-previous-line-v2',
-				'ArrowDown': 'move-to-corresponding-letter-in-next-line-v2',
-			}
-		}
+		return {}
 	}
 }
 

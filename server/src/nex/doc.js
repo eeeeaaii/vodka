@@ -138,26 +138,12 @@ class Doc extends NexContainer {
 
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
-		// let docspan = null;
-		// if (experiments.MUTABLES && !(renderFlags & RENDER_FLAG_SHALLOW)) {
-		// 	docspan = document.createElement("span");
-		// 	docspan.classList.add('docspan');
-		// 	domNode.appendChild(docspan);
-		// }
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('doc');
 		domNode.classList.add('data');
 		if (experiments.MUTABLES) {
 			domNode.classList.add('newdoc');
 		}
-
-		// if (experiments.MUTABLES && !(renderFlags & RENDER_FLAG_SHALLOW)) {
-		// 	if (renderFlags & RENDER_FLAG_EXPLODED) {
-		// 		docspan.classList.add('exploded');
-		// 	} else {
-		// 		docspan.classList.remove('exploded');
-		// 	}
-		// }
 	}
 
 	setMutable(val) {
@@ -175,15 +161,10 @@ class Doc extends NexContainer {
 	}
 
 	getEventTable(context) {
-		if (experiments.BETTER_KEYBINDINGS) {
-			return {
-				'ShiftSpace' : 'do-nothing',
-			}			
-		} else {
-			return {
-				'Enter': 'do-line-break-always',
-			}			
-		}
+		return {
+			'ShiftSpace' : 'do-nothing',
+			'Backspace': 'remove-selected-and-select-previous-sibling-if-empty',
+		}			
 	}
 }
 

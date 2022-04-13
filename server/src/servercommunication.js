@@ -19,6 +19,7 @@ import { BINDINGS } from './environment.js'
 import { EError, ERROR_TYPE_FATAL, ERROR_TYPE_WARN, ERROR_TYPE_INFO } from './nex/eerror.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { parse } from './nexparser2.js';
+import { systemState } from './systemstate.js'
 
 function sendToServer(payload, cb, errcb) {
 	let xhr = new XMLHttpRequest();
@@ -63,6 +64,7 @@ function loadNex(name, callback) {
 
 	sendToServer(payload, function(data) {
 		document.title = name;
+		systemState.setDefaultFileName(name);
 		parseReturnPayload(data, callback);
 	}, function() {
 		callback(serverError());

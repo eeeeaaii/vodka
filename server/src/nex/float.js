@@ -162,16 +162,7 @@ class Float extends ValueNex {
 	}
 
 	getEventTable(context) {
-		if (experiments.BETTER_KEYBINDINGS) {
-			return {
-			}
-		} else {
-			return {
-				// these 2 are questionable but make tests pass?
-				'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
-				'Backspace': 'remove-selected-and-select-previous-leaf-v2',
-				'Enter': 'do-line-break-always',
-			}
+		return {
 		}
 	}
 }

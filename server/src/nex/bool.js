@@ -107,15 +107,7 @@ class Bool extends ValueNex {
 	}
 
 	getEventTable(context) {
-		if (experiments.BETTER_KEYBINDINGS) {
-			return {};
-		} else {
-			return {
-				// these 2 are questionable but make tests pass?
-				'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
-				'Backspace': 'remove-selected-and-select-previous-leaf-v2',
-			}
-		}
+		return {};
 	}
 }
 
@@ -139,26 +131,15 @@ class BoolEditor extends Editor {
 	doAppendEdit(text) {
 		let v = this.nex.getValue();
 		this.nex.setValue((v == 'yes') ? 'no' : 'yes');
-		// if (/^[yY]$/.test(text)) {
-		// 	this.nex.setValue('yes');
-		// } else if (/^[nN]$/.test(text)) {
-		// 	this.nex.setValue('no');
-		// }
 	}
 
 	shouldAppend(text) {
-//		return true;
 		return /^[a-zA-Z0-9]$/.test(text);
-//		return /^[yYnN]$/.test(text);
 	}
 
 	shouldTerminateAndReroute(text) {
 		if (super.shouldTerminateAndReroute()) return true;
 		return !(/^[a-zA-Z0-9]$/.test(text));
-		//if (text == 'Enter') return true;
-		//return false;
-//		return false;
-//		return !(/^[yYnN]$/.test(text));
 	}
 }
 

@@ -73,14 +73,14 @@ class Separator extends Letter {
 
 	getEventTable() {
 		return {
-			'Tab': 'move-to-next-leaf-v2',
-			'ArrowUp': 'move-to-corresponding-letter-in-previous-line-v2',
-			'ArrowDown': 'move-to-corresponding-letter-in-next-line-v2',
-			'ArrowLeft': 'move-to-previous-leaf-v2',
-			'ArrowRight': 'move-to-next-leaf-v2',
-			'ShiftBackspace': 'delete-separator-v2',
-			'Backspace': 'delete-separator-v2',
-			'Enter': 'do-line-break-for-separator-v2',
+			'Tab': 'move-to-next-leaf',
+			'ArrowUp': 'move-to-corresponding-letter-in-previous-line',
+			'ArrowDown': 'move-to-corresponding-letter-in-next-line',
+			'ArrowLeft': 'move-to-previous-leaf',
+			'ArrowRight': 'move-to-next-leaf',
+			'ShiftBackspace': 'delete-separator',
+			'Backspace': 'delete-separator',
+			'Enter': 'do-line-break-for-separator',
 
 			'!': (experiments.BETTER_KEYBINDINGS ? 'insert-actual-!-at-insertion-point-from-separator' : null),
 			'@': (experiments.BETTER_KEYBINDINGS ? 'insert-actual-@-at-insertion-point-from-separator' : null),

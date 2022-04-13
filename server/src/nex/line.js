@@ -217,22 +217,9 @@ class Line extends NexContainer {
 	}
 
 	getEventTable(context) {
-		if (experiments.BETTER_KEYBINDINGS) {
-			return {
-				'ShiftSpace' : 'do-nothing',
-				'Enter': 'do-line-break-or-eval',
-				'Backspace': 'delete-line-v2',
-			}
-		} else {
-			return {
-				'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
-				'Backspace': 'remove-selected-and-select-previous-leaf-v2',
-				'Enter': 'do-line-break-from-line-v2',
-				'ArrowUp': 'move-to-corresponding-letter-in-previous-line-v2',
-				'ArrowDown': 'move-to-corresponding-letter-in-next-line-v2',
-				'ArrowLeft': 'move-to-previous-leaf-v2',
-				'ArrowRight': 'move-to-next-leaf-v2',
-			}
+		return {
+			'Enter': 'do-line-break-or-eval',
+			'Backspace': 'delete-line',
 		}
 	}
 }

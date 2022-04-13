@@ -44,11 +44,7 @@ class Editor {
 	}
 
 	shouldIgnore(text) {
-		return text == 'Shift'
-			|| text == 'NakedShift'
-			|| text == 'Control'
-			|| text == 'Meta'
-			|| text == 'Alt';
+		return false;
 	}
 
 	shouldReroute(text) {
@@ -67,37 +63,62 @@ class Editor {
 		return text == 'Escape';
 	}
 
+	lastBackspaceReroute(text) {
+		return text == 'Backspace'
+			&& !this.hasContent();
+	}
+
 	performSpecialProcessing(text) {
 		console.log('editor: ignored ' + text);
-		return false;
+		return text;
 	}
 
 	abort() {
 
 	}
 
+	// if you return a keycode, that keycode is rerouted
+	// if you return null, you've handled the key, nothing happens
 	routeKey(text) {
 		this.nex.setDirtyForRendering(true);
+
+		// shouldIgnore is only overridden by the wavetable editor.
 		if (this.shouldIgnore(text)) {
-			return false;
+			return null;
 		} else if (this.shouldAbort(text)) {
 			this.abort();
 			this.finish();
-			return false;
+			return null;
+
+		// currently shouldBackspace and shouldTerminate are
+		// only overridden by the tag editor.
 		} else if (this.shouldBackspace(text)) {
 			this.doBackspaceEdit();
-			return false;
+			return null;
+
+		// also overridden by tag editor
+		} else if (this.lastBackspaceReroute(text)) {
+			return 'LastBackspace';
+
 		} else if (this.shouldTerminate(text)) {
 			this.finish();
-			return false;
+			return null;
+
+		// this is not overridden anywhere.
 		} else if (this.shouldReroute(text)) {
-			return true;
+			return text;
+
+		// These next two are overridden by most of
+		// the nex editors and they are used to do things
+		// like make sure only digits are understood
+		// by the integer editor, etc.
 		} else if (this.shouldTerminateAndReroute(text)) {
 			this.finish();
-			return true;
+			return text;
 		} else if (this.shouldAppend(text)) {
 			this.doAppendEdit(text);
-			return false;
+			return null;
+
 		} else {
 			return this.performSpecialProcessing(text);
 		}

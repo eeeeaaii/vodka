@@ -39,7 +39,6 @@ import { Org } from '../nex/org.js'
 import { Root } from '../nex/root.js' 
 import { Separator } from '../nex/separator.js' 
 import { Word } from '../nex/word.js' 
-import { Zlist } from '../nex/zlist.js' 
 import { evaluateNexSafely } from '../evaluator.js'
 
 

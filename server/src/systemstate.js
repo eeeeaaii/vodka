@@ -32,6 +32,7 @@ class SystemState {
 		this.mouse_funnel_active = true;
 		this.stackLevel = 0;
 		this.isMobile = false;
+		this.defaultFileName = 'untitled-functions';
 	}
 
 	setIsMobile(val) {
@@ -108,6 +109,14 @@ class SystemState {
 
 	popStackLevel() {
 		this.stackLevel--;
+	}
+
+	setDefaultFileName(n) {
+		this.defaultFileName = n;
+	}
+
+	getDefaultFileName() {
+		return this.defaultFileName;
 	}
 
 	stackCheck() {

@@ -138,6 +138,20 @@ class EError extends NexContainer {
 		return this.standardListPrettyPrint(lvl, '?', hdir);
 	}	
 
+	insertChildAt(c, i) {
+		if (!c.getTypeName() == '-error-') {
+			throw new EError('errors can only hold other errors.');
+		}
+		super.insertChildAt(c, i);
+	}
+
+	fastAppendChildAfter(c, after) {
+		if (!c.getTypeName() == '-error-') {
+			throw new EError('errors can only hold other errors.');
+		}
+		super.fastAppendChildAfter(c, after);
+	}
+
 
 	deserializePrivateData(data) {
 		let a = data.split('|');
@@ -193,13 +207,7 @@ class EError extends NexContainer {
 	}
 
 	getEventTable(context) {
-		if (experiments.BETTER_KEYBINDINGS) {
-			return {};
-		} else {
-			return {
-				'Enter': 'do-line-break-always'
-			}
-		}
+		return {};
 	}
 }
 

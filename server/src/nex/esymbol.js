@@ -140,24 +140,9 @@ class ESymbol extends ValueNex {
 	}
 
 	getEventTable(context) {
-		if (experiments.BETTER_KEYBINDINGS) {
-			return {
-				'CtrlSpace': (
-					experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null
-					: (experiments.BETTER_KEYBINDINGS ? 'autocomplete' : null)),
-				'AltSpace': (
-					(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
-					: (experiments.BETTER_KEYBINDINGS ? 'autocomplete' : null)),
-			};
-		} else {
-			return {
-				'ShiftBackspace': 'remove-selected-and-select-previous-leaf-v2',
-				'Backspace': 'remove-selected-and-select-previous-leaf-v2',
-				'ShiftEnter': 'evaluate-nex',
-				'Enter': 'evaluate-nex',
-				'CtrlSpace': 'autocomplete',
-			}
-		}
+		return {
+			'AltSpace': 'autocomplete'
+		};
 	}
 }
 
@@ -181,6 +166,10 @@ class ESymbolEditor extends Editor {
 
 	abort() {
 		this.nex.setValue(this.oldVal);
+	}
+
+	hasContent() {
+		return this.nex.getValue() != '';
 	}
 
 	doAppendEdit(text) {

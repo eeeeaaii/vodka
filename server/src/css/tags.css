@@ -40,6 +40,13 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	color: #414141;
 }
 
+.tag-ghost.exploded {
+	background-color: #dddddd;
+	border: 1px solid #6e6e6e;
+	padding: 3px 7px 3px 7px;
+	color: #414141;
+}
+
 /*
 
 for "ask tags" (switch colors?)

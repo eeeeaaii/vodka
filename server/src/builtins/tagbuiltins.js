@@ -19,71 +19,78 @@ import { Builtin } from '../nex/builtin.js'
 import { EError } from '../nex/eerror.js'
 import { Bool } from '../nex/bool.js'
 import { Tag } from '../tag.js'
+import { contractEnforcer } from '../contractfunctions.js';
 
 function createTagBuiltins() {
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
-	function $addTag(env, executionEnvironment) {
-		let n = env.lb('nex');
-		let tagname = env.lb('tag').getFullTypedValue();
-		n.addTag(new Tag(tagname));
-		return n;
-	}
 
 	Builtin.createBuiltin(
 		'add-tag--to',
 		[ 'tag$', 'nex' ],
-		$addTag
+		function $addTag(env, executionEnvironment) {
+			let nex = env.lb('nex');
+			let tagname = env.lb('tag').getFullTypedValue();
+			let tag = new Tag(tagname);
+			let errorMessage = contractEnforcer.enforce(tag, nex);
+			if (errorMessage) {
+				let e = new EError(errorMessage);
+				return e;
+			}
+			nex.addTag(new Tag(tagname));
+			return nex;
+		},
+		'adds the tag |tag to |nex'
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
-	function $clearTags(env, executionEnvironment) {
-		let n = env.lb('_nex');
-		n.clearTags();
-		return n;
-	}
 
 	Builtin.createBuiltin(
 		'clear-tags-from',
 		[ 'nex' ],
-		$clearTags
+		function $clearTags(env, executionEnvironment) {
+			let n = env.lb('_nex');
+			n.clearTags();
+			return n;
+		},
+		'clears all tags from |nex'
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
-	function $hasTag(env, executionEnvironment) {
-		let n = env.lb('nex');
-		let tagname = env.lb('tag').getFullTypedValue();
-		let tag = new Tag(tagname);
-		if (n.hasTag(tag)) {
-			return new Bool(true);
-		} else {
-			return new Bool(false);
-		}
-	}
 
 	Builtin.createBuiltin(
 		'--has-tag',
 		[ 'nex', 'tag$' ],
-		$hasTag
+		function $hasTag(env, executionEnvironment) {
+			let n = env.lb('nex');
+			let tagname = env.lb('tag').getFullTypedValue();
+			let tag = new Tag(tagname);
+			if (n.hasTag(tag)) {
+				return new Bool(true);
+			} else {
+				return new Bool(false);
+			}
+		},
+		'returns true if |nex has a tag equal to |tag'
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
-	function $removeTag(env, executionEnvironment) {
-		let n = env.lb('nex');
-		let tagname = env.lb('tag').getFullTypedValue();
-		let tag = new Tag(tagname);
-		n.removeTag(tag);
-		return n;
-	}
 
 	Builtin.createBuiltin(
 		'remove-tag--from',
 		[ 'tag$', 'nex' ],
-		$removeTag
+		function $removeTag(env, executionEnvironment) {
+			let n = env.lb('nex');
+			let tagname = env.lb('tag').getFullTypedValue();
+			let tag = new Tag(tagname);
+			n.removeTag(tag);
+			return n;
+		},
+		'removes tag |tag from |nex'
 	);
 }
 

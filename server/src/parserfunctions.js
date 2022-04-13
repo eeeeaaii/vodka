@@ -33,7 +33,6 @@ import { Word } from './nex/word.js';
 import { Wavetable } from './nex/wavetable.js';
 import { Line } from './nex/line.js';
 import { Doc } from './nex/doc.js';
-import { Zlist } from './nex/zlist.js';
 import { EError } from './nex/eerror.js';
 import { Letter } from './nex/letter.js';
 import { Separator } from './nex/separator.js';
@@ -216,10 +215,6 @@ function makeInstanceList(instname, children, privatedata, taglist, verthoriz, n
 			break;
 		case 'doc':
 			t = new Doc();
-			isList = true;
-			break;
-		case 'zlist':
-			t = new Zlist();
 			isList = true;
 			break;
 		default:

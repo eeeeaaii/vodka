@@ -38,7 +38,6 @@ import { Org } from '../nex/org.js'
 import { Root } from '../nex/root.js' 
 import { Separator } from '../nex/separator.js' 
 import { Word } from '../nex/word.js' 
-import { Zlist } from '../nex/zlist.js' 
 
 function createTestBuiltins() {
 
@@ -251,17 +250,6 @@ function createTestBuiltins() {
 		$isWord
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isZlist(env, executionEnvironment) {
-		return new Bool(env.lb('nex') instanceof Zlist);
-	}
-
-	Builtin.createBuiltin(
-		'is-zlist',
-		[ 'nex' ],
-		$isZlist
-	);
 }
 
 export { createTestBuiltins }

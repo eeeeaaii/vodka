@@ -28,7 +28,7 @@ import { EStringEditor } from './nex/estring.js'
 import { CommandEditor } from './nex/command.js'
 import { ExpectationEditor } from './nex/expectation.js'
 import { InstantiatorEditor } from './nex/instantiator.js'
-import { TagEditor } from './tag.js'
+import { TagEditor } from './tageditor.js'
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import {
 	RENDER_FLAG_SELECTED,
@@ -128,19 +128,19 @@ class RenderNode {
 
 	routeKeyToCurrentEditor(keycode) {
 		try {
-			let reroute = this.getCurrentEditor().routeKey(keycode);
+			let newkeycode = this.getCurrentEditor().routeKey(keycode);
 			// the editor will decide when it's finished and will stop editing
 			if (!this.getCurrentEditor().isEditing()) {
 				this.stopEditing();
 			}
-			return reroute;
+			return newkeycode;
 		} catch (e) {
 			if (e.getTypeName && e.getTypeName() == '-error-') {
 				// YOU HAVE TO SET THE CURRENT EDITOR TO NULL FIRST
 				// because replacing self triggers a forceClose via select/unselect
 				this.stopEditing();
 				this.replaceSelfInParentWith(e);
-				return false;
+				return null;
 			} else {
 				throw e;
 			}

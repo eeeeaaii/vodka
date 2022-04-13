@@ -280,15 +280,7 @@ class EString extends ValueNex {
 	}
 
 	getEventTable(context) {
-		if (experiments.BETTER_KEYBINDINGS) {
-			return {
-			};
-		} else {
-			return {
-				'ShiftEnter': 'start-modal-editing',
-				'Enter': 'do-line-break-always',
-			};
-		}
+		return {};
 	}
 }
 

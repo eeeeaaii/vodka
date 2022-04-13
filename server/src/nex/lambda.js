@@ -306,17 +306,10 @@ class Lambda extends NexContainer {
 	}
 
 	getEventTable(context) {
-		if (experiments.BETTER_KEYBINDINGS) {
-			return {
-				'Backspace': 'start-main-editor',
-				'ShiftSpace': 'toggle-dir'
-			};
-		} else {
-			return {
-				'Enter': 'start-main-editor',
-				'ShiftSpace': 'toggle-dir'
-			};
-		}
+		return {
+			'Backspace': 'start-main-editor',
+			'ShiftSpace': 'toggle-dir'
+		};
 	}
 
 	static makeLambda(argstring, maybeargs) {
