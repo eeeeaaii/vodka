@@ -25,14 +25,28 @@ import * as Utils from './utils.js'
 class TagEditor extends Editor {
 	constructor(nex) {
 		super(nex, 'TagEditor');
-		this.managedTag = new Tag('');
-		this.managedTag.setIsEditing(true);
+		this.managedTag == null;
 		this.nex = nex;
 		this.previousValue = null; // only used if you arrow around
-		nex.addTag(this.managedTag);
+	}
+
+	getStateForUndo() {
+		return this.nex.getAllTags();
+	}
+	setStateForUndo(val) {
+		this.nex.setAllTags(val);
+	};
+
+	createManagedTagIfNone() {
+		if (!this.managedTag) {
+			this.managedTag = new Tag('');
+			this.managedTag.setIsEditing(true);
+			this.nex.addTag(this.managedTag);
+		}
 	}
 
 	doBackspaceEdit() {
+		this.createManagedTagIfNone();
 		if (this.managedTag.getName() == '') {
 			// this should never be null because of the check in shouldBackspace
 			let newManagedTag = this.nex.getTagBefore(this.managedTag);
@@ -46,6 +60,7 @@ class TagEditor extends Editor {
 	}
 
 	doAppendEdit(text) {
+		this.createManagedTagIfNone();
 		let oldval = this.managedTag.getName();
 		let newval = oldval + '' + text;
 		this.managedTag.setName(newval);
@@ -72,6 +87,7 @@ class TagEditor extends Editor {
 
 
 	hasContent() {
+		this.createManagedTagIfNone();
 		return this.managedTag.getName() != '';
 	}
 
@@ -87,6 +103,7 @@ class TagEditor extends Editor {
 	}
 
 	performSpecialProcessing(text) {
+		this.createManagedTagIfNone();
 		let newManagedTag = null;
 		if (text == 'ShiftBackspace') {
 			newManagedTag = this.nex.getTagBefore(this.managedTag);
@@ -130,6 +147,7 @@ class TagEditor extends Editor {
 	}
 
 	revertInvalidTagEntry() {
+		this.createManagedTagIfNone();
 		if (this.previousValue) {
 			this.managedTag.setName(this.previousValue);
 			this.managedTag.setIsEditing(false);

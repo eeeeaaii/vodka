@@ -47,6 +47,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	font-weight: normal;
 }
 
+.ghost-match {
+	opacity: 0.4;
+}
+
 .ghostline {
 	position:absolute;
 	width: 35px;

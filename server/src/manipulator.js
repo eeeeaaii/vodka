@@ -31,6 +31,7 @@ import { Wavetable } from './nex/wavetable.js'
 import { Command } from './nex/command.js' 
 import { Bool } from './nex/bool.js' 
 import { Line } from './nex/line.js' 
+import { ContextType } from './contexttype.js'
 import { Org } from './nex/org.js' 
 import { Float } from './nex/float.js' 
 import { Expectation } from './nex/expectation.js' 
@@ -1783,6 +1784,20 @@ class Manipulator {
 		}
 	}
 
+	// CONTEXT
+
+	getContextForNode(node) {
+		let context = ContextType.COMMAND;
+		let p = node.getParent();
+		if (p) {
+			while((context = p.getNex().getContextType()) == ContextType.PASSTHROUGH) {
+				p = p.getParent();
+			}
+		}
+		return context;
+	}
+
+
 	// CREATING STUFF DOWN HERE
 
 	possiblyMakeImmutable(nex, context) {
@@ -1794,23 +1809,32 @@ class Manipulator {
 		return nex;
 	}
 
+	getMostRecentInsertedRenderNode() {
+		return this.mostRecentInsertedRenderNode;
+	}
 
 	newDoc() {
 		let d = new Doc();
 		d.setMutable(true);
-		return new RenderNode(d);
+		let r = new RenderNode(d);
+		this.mostRecentInsertedRenderNode = r;
+		return r;
 	}
 
 	newWord() {
 		let w = new Word();
 		w.setMutable(true);
-		return new RenderNode(w);
+		let r = new RenderNode(w);
+		this.mostRecentInsertedRenderNode = r;
+		return r;
 	}
 
 	newLine() {
 		let line = new Line();
 		line.setMutable(true);
-		return new RenderNode(line);
+		let r = new RenderNode(line);
+		this.mostRecentInsertedRenderNode = r;
+		return r;
 	}
 
 	// public
@@ -1819,6 +1843,7 @@ class Manipulator {
 		l.setMutable(true);
 		let r = new RenderNode(l);		
 		r.possiblyStartMainEditor();
+		this.mostRecentInsertedRenderNode = r;
 		return r;
 	}
 
@@ -1827,6 +1852,7 @@ class Manipulator {
 		e.setMutable(true);
 		let r = new RenderNode(e);
 		r.possiblyStartMainEditor();
+		this.mostRecentInsertedRenderNode = r;
 		return r;
 	}
 
@@ -1835,6 +1861,7 @@ class Manipulator {
 		e.setMutable(true);
 		let r = new RenderNode(e);
 		r.possiblyStartMainEditor();
+		this.mostRecentInsertedRenderNode = r;
 		return r;
 	}
 
@@ -1845,6 +1872,7 @@ class Manipulator {
 		if (!skipEditor) {
 			r.possiblyStartMainEditor();
 		}
+		this.mostRecentInsertedRenderNode = r;
 		return r;
 	}
 
@@ -1854,6 +1882,7 @@ class Manipulator {
 		c.setMutable(true);
 		let r = new RenderNode(c);		
 		r.possiblyStartMainEditor();
+		this.mostRecentInsertedRenderNode = r;
 		return r;
 	}
 
@@ -1862,6 +1891,7 @@ class Manipulator {
 		b.setMutable(true);
 		let r = new RenderNode(b);		
 		r.possiblyStartMainEditor();
+		this.mostRecentInsertedRenderNode = r;
 		return r;
 	}
 
@@ -1870,6 +1900,7 @@ class Manipulator {
 		i.setMutable(true);
 		let r = new RenderNode(i);		
 		r.possiblyStartMainEditor();
+		this.mostRecentInsertedRenderNode = r;
 		return r;		
 	}
 
@@ -1878,6 +1909,7 @@ class Manipulator {
 		i.setMutable(true);
 		let r = new RenderNode(i);		
 		r.possiblyStartMainEditor();
+		this.mostRecentInsertedRenderNode = r;
 		return r;		
 	}
 
@@ -1886,6 +1918,7 @@ class Manipulator {
 		e.setMutable(true);
 		let r = new RenderNode(e);
 		r.possiblyStartMainEditor();
+		this.mostRecentInsertedRenderNode = r;
 		return r;
 	}
 
@@ -1894,6 +1927,7 @@ class Manipulator {
 		f.setMutable(true);
 		let r = new RenderNode(f);
 		r.possiblyStartMainEditor();
+		this.mostRecentInsertedRenderNode = r;
 		return r;		
 	}
 
@@ -1902,6 +1936,7 @@ class Manipulator {
 		i.setMutable(true);
 		let r = new RenderNode(i);
 		r.possiblyStartMainEditor();
+		this.mostRecentInsertedRenderNode = r;
 		return r;		
 	}
 
@@ -1909,6 +1944,7 @@ class Manipulator {
 		let n = new Nil();
 		n.setMutable(true);
 		let r = new RenderNode(n);
+		this.mostRecentInsertedRenderNode = r;
 		return r;		
 	}
 
@@ -1917,6 +1953,7 @@ class Manipulator {
 		e.setMutable(true);
 		let r = new RenderNode(e);
 		r.possiblyStartMainEditor();
+		this.mostRecentInsertedRenderNode = r;
 		return r;		
 	}
 
@@ -1924,6 +1961,7 @@ class Manipulator {
 		let o = new Org();
 		o.setMutable(true);
 		let r = new RenderNode(o);
+		this.mostRecentInsertedRenderNode = r;
 		return r;
 	}
 
@@ -1931,6 +1969,7 @@ class Manipulator {
 		let s = new Separator(txt);
 		s.setMutable(true);
 		let r = new RenderNode(s);
+		this.mostRecentInsertedRenderNode = r;
 		return r;
 	}
 
@@ -1938,6 +1977,7 @@ class Manipulator {
 		let l = new Letter(txt);
 		l.setMutable(true);
 		let r = new RenderNode(l);
+		this.mostRecentInsertedRenderNode = r;
 		return r;
 	}
 
@@ -1945,6 +1985,7 @@ class Manipulator {
 		let l = new Wavetable();
 		l.setMutable(true);
 		let r = new RenderNode(l);
+		this.mostRecentInsertedRenderNode = r;
 		return r;
 	}
 

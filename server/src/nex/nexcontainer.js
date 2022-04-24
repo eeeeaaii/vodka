@@ -236,6 +236,15 @@ class NexContainer extends Nex {
 		this.setDirtyForRendering(true);
 	}
 
+	getDir() {
+		return this.dir;
+	}
+
+	setDir(dir) {
+		this.dir = dir;
+		this.setDirtyForRendering(true);
+	}
+
 	setVertical() {
 		this.dir = V_DIR;
 	}

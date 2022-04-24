@@ -21,9 +21,7 @@ import { UNHANDLED_KEY, RENDER_MODE_EXPLO, RENDER_MODE_NORM } from './globalcons
 import { systemState } from './systemstate.js';
 import { BINDINGS } from './environment.js';
 import { manipulator } from './manipulator.js';
-import { undo } from './undo.js';
-import { ContextType } from './contexttype.js';
-import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
+import { actionFactory, enqueueAndPerformAction, undo, redo } from './actions.js'
 import { evaluateNexSafely } from './evaluator.js';
 import { evaluateAndKeep } from './evaluatorinterface.js';
 import { experiments } from './globalappflags.js'
@@ -50,13 +48,6 @@ class KeyDispatcher {
 		if (hasMeta && (keycode == '2')) {
 			return true;
 		}
-		let keyContext = ContextType.COMMAND;
-		let p = systemState.getGlobalSelectedNode().getParent();
-		if (p) {
-			while((keyContext = p.getNex().getContextType()) == ContextType.PASSTHROUGH) {
-				p = p.getParent();
-			}
-		}
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
 
 		if (systemState.getGlobalSelectedNode().usingEditor()) {
@@ -76,13 +67,10 @@ class KeyDispatcher {
 			// vertical bar is unusable - 'internal use only'
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-z') {
-			// do not save state for undo obv
-			if (undo.canUndo()) {
-				undo.performUndo();
-			}
-			return false; // to cancel browser event
+			return undo();
+		} else if (eventName == 'Meta-y') {
+			return redo();
 		} else if (eventName == 'Meta-s') {
-			undo.saveStateForUndo();
 			let rn = manipulator.doSave();
 			if (rn) {
 				evaluateAndKeep(rn)
@@ -90,28 +78,18 @@ class KeyDispatcher {
 
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-x') {
-			undo.saveStateForUndo();
 			manipulator.doCut();
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-c') {
-			undo.saveStateForUndo();
 			manipulator.doCopy();
 			return false; // to cancel browser event
 		} else if (eventName == 'Meta-v') {
-			undo.saveStateForUndo();
 			manipulator.doPaste();
 			return false; // to cancel browser event
 		} else if (eventName == 'Escape' && !systemState.getGlobalSelectedNode().usingEditor()) {
-			// do not save state for undo as esc is non-destructive
 			this.toggleGlobalExplodedMode();
 			return false; // to cancel browser event
-		} else if (eventName == 'MetaEnter') {
-			// TODO: only save state for undo first time we hit meta-enter (step execute)
-			undo.saveStateForUndo();
-			this.doMetaEnter();
-			return false; // to cancel browser event
 		} else {
-			undo.saveStateForUndo();
 			// 1. look in override table
 			// 2. look in regular table
 			// 3. call defaultHandle
@@ -125,19 +103,32 @@ class KeyDispatcher {
 				eventName = 'Enter';
 			}
 			try {
-				let sourceNex = (systemState.getGlobalSelectedNode().getNex());
-				let parentNex = null;
-				if (systemState.getGlobalSelectedNode().getParent()) {
-					parentNex = systemState.getGlobalSelectedNode().getParent().getNex();
+				let sourceNode = systemState.getGlobalSelectedNode();
+
+				let actionName = this.getActionNameFromRegularTable(sourceNode, eventName);
+				if (!actionName) {
+					actionName = this.getActionNameFromGenericTable(sourceNode, eventName);
 				}
-				// returning false here means we tell the browser not to process the event.
-				if (this.runFunctionFromRegularTable(sourceNex, eventName, keyContext)) return false;
-				if (this.runFunctionFromGenericTable(sourceNex, eventName, keyContext)) return false;
-				if (this.runDefaultHandle(sourceNex, eventName, keyContext, systemState.getGlobalSelectedNode())) return false;
-				undo.eraseLastSavedState();
-				return true; // didn't handle it.
+				if (!actionName) {
+					actionName = this.getDefaultHandleActionName(sourceNode, eventName);
+				}
+				if (actionName) {
+					// we don't save the source node because it becomes irrelevant
+					// if we undo and then redo
+					let action = actionFactory(actionName, eventName);
+					return enqueueAndPerformAction(action);
+				} else {
+					return true; // didn't handle it.
+				}
+
+
+
+				// // returning false here means we tell the browser not to process the event.
+				// if (this.runFunctionFromRegularTable(sourceNode, eventName)) return false;
+				// if (this.runFunctionFromGenericTable(sourceNode, eventName)) return false;
+				// if (this.runDefaultHandle(sourceNode, eventName)) return false;
+				// return true; // didn't handle it.
 			} catch (e) {
-				undo.eraseLastSavedState();
 				if (e == UNHANDLED_KEY) {
 					console.log("UNHANDLED KEY " +
 									':' + 'keycode=' + keycode +
@@ -149,6 +140,43 @@ class KeyDispatcher {
 				} else throw e;
 			}
 		}
+	}
+
+	getActionNameFromRegularTable(sourceNode, eventName) {
+		let table = sourceNode.nex.getEventTable();
+		if (!table) {
+			return '';
+		}
+		let f = table[eventName];
+		if (f) {
+			return f;
+		}
+		return '';
+	}
+
+	getActionNameFromGenericTable(sourceNode, eventName) {
+		let table = null;
+		if (sourceNode.nex.isNexContainer()) {
+			table = this.getNexContainerGenericTable();
+		} else {
+			table = this.getNexGenericTable();
+		}
+		let f = table[eventName];
+		if (f) {
+			return f;
+		}
+		return '';
+	}
+
+	getDefaultHandleActionName(sourceNode, eventName) {
+		let fname = 'standardDefault';
+		if (sourceNode.nex.getDefaultHandler) {
+			let f = sourceNode.nex.getDefaultHandler();
+			if (f) {
+				return f;
+			}
+		}
+		return '';
 	}
 
 	doEditorEvent(eventName) {
@@ -303,6 +331,8 @@ class KeyDispatcher {
 			return 'Meta-c';
 		} else if (keycode == 'v' && hasMeta) {
 			return 'Meta-v';
+		} else if (keycode == 'y' && hasMeta) {
+			return 'Meta-y';
 		} else if (keycode == 's' && hasMeta) {
 			return 'Meta-s';
 		} else {
@@ -310,132 +340,10 @@ class KeyDispatcher {
 		}
 	}
 
-	runDefaultHandle(sourceNex, eventName, context, sourceNode) {
-		if (sourceNex.getDefaultHandler) {
-			let handleFunction = sourceNex.getDefaultHandler();
-			if (handleFunction) {
-				let handler = DefaultHandlers[handleFunction];
-				if (handler) {
-					return handler(sourceNex, eventName, context, sourceNode);
-				} else {
-					// TODO: return false instead once I fix defaults
-					handler = DefaultHandlers['standardDefault'];
-					return handler(sourceNex, eventName, context, sourceNode);
-				}
-			}
-		}
-		if (sourceNex.defaultHandle) {
-			return sourceNex.defaultHandle(eventName, context, sourceNode);
-		}
-		return false;
-	}
-
-	runFunctionFromGenericTable(sourceNex, eventName, context) {
-		let table = null;
-		if (sourceNex.isNexContainer()) {
-			table = this.getNexContainerGenericTable();
-		} else {
-			table = this.getNexGenericTable();
-		}
-		let f = table[eventName];
-		if (f && this.actOnFunction(f, context)) {
-			return true;
-		}
-		return false;
-	}
-
-	runFunctionFromRegularTable(sourceNex, eventName, context) {
-		let table = sourceNex.getEventTable();
-		if (!table) {
-			return false;
-		}
-		let f = table[eventName];
-		if (f && this.actOnFunction(f, context)) {
-			return true;
-		}
-		return false;
-	}
-
-	// returns true if it was a valid function that could be run
-	actOnFunction(f, context) {
-		if ((typeof f) == 'string') {
-			KeyResponseFunctions[f](systemState.getGlobalSelectedNode(), context);
-			return true;
-		// } else if ((typeof f) == 'function') {
-		// 	f(systemState.getGlobalSelectedNode(), context);
-		// 	return true;
-		// } else if ((typeof f) == 'object') {
-		// 	// contains different functions for different contexts
-		// 	let f2 = f[context];
-		// 	if (!f2) {
-		// 		f2 = f[ContextType.DEFAULT];
-		// 		if (!f2) {
-		// 			throw new Error('must specify a default context if associating a key with a map')
-		// 		}
-		// 	}
-		// 	KeyResponseFunctions[f2](systemState.getGlobalSelectedNode(), context);
- 	// 		return true;
-		// } else if (f instanceof Nex) {
-		// 	evaluateNexSafely(f, BINDINGS)
-		// 	return true;
-		}
-		return false;
-	}
-
 	toggleGlobalExplodedMode() {
 		let root = systemState.getRoot();
 		this.uiCallbackObject.setExplodedState(root.isExploded())
 		root.toggleRenderMode();
-	}
-
-	doMetaEnter() {
-		isStepEvaluating = true;
-		try {
-			let s = systemState.getGlobalSelectedNode().getNex();
-			let phaseExecutor = s.phaseExecutor;
-			let firstStep = false;
-			if (!phaseExecutor) {
-				firstStep = true;
-				phaseExecutor = new PhaseExecutor();
-				// need to copy the selected nex, replace it in the parent, and discard!
-				let copiedNex = systemState.getGlobalSelectedNode().getNex().makeCopy();
-				let parentNode = systemState.getGlobalSelectedNode().getParent();
-				let parentNex = parentNode.getNex();
-				parentNex.replaceChildWith(systemState.getGlobalSelectedNode().getNex(), copiedNex);
-				parentNode.childnodes = []; // wtf
-				// hack: rerender the parent to refresh/fix the cached childnodes in it
-				// we cannot use eventqueue because this thread needs this data later on :(
-				parentNode.render(current_default_render_flags);
-				let index = parentNex.getIndexOfChild(copiedNex);
-				let newSelectedNode = parentNode.getChildAt(index);
-				newSelectedNode.setSelected();
-				// gross
-				topLevelRender();
-				s = systemState.getGlobalSelectedNode().getNex();
-				s.pushNexPhase(phaseExecutor, BINDINGS);
-			}
-			phaseExecutor.doNextStep();
-			topLevelRender();
-			if (!phaseExecutor.finished()) {
-				// the resolution of an expectation will change the selected nex,
-				// so need to set it back
-				if (firstStep) {
-					// the first step is PROBABLY an expectation phase
-					let operativeNode = s.getRenderNodes()[0].getParent();
-					let operativeNex = operativeNode.getNex();
-					operativeNode.setSelected();
-					operativeNex.phaseExecutor = phaseExecutor;
-				} else {
-					s.getRenderNodes()[0].setSelected();
-				}
-			} else {
-				// if I don't explicitly set the selected nex, it'll be the
-				// result of the last resolved expectation, probably
-				s.phaseExecutor = null;
-			}
-		} finally {
-			isStepEvaluating = false;
-		}
 	}
 
 	getNexContainerGenericTable() {
@@ -493,7 +401,6 @@ class KeyDispatcher {
 			'_': 'insert-wavetable-at-insertion-point',
 			'>': 'close-off-word',
 			'`': 'add-tag',
-			'Alt`': 'remove-all-tags',
 
 			'Alt~': 'wrap-in-command',
 			'Alt&': 'wrap-in-lambda',
@@ -535,7 +442,7 @@ class KeyDispatcher {
 			'AltEnter': 'start-main-editor',
 
 			'ShiftEscape': 'toggle-exploded',
-			'Enter': 'evaluate',
+			'Enter': 'evaluate-nex',
 			'~': 'insert-command-at-insertion-point',
 			'!': 'insert-bool-at-insertion-point',
 			'@': 'insert-symbol-at-insertion-point',
@@ -558,7 +465,6 @@ class KeyDispatcher {
 			'_': 'insert-wavetable-at-insertion-point',
 
 			'`': 'add-tag',
-			'Alt`': 'remove-all-tags',
 			'Alt~': 'wrap-in-command',
 			'Alt&': 'wrap-in-lambda',
 			'Alt*': 'wrap-in-expectation',

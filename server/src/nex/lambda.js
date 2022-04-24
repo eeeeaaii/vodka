@@ -292,6 +292,7 @@ class Lambda extends NexContainer {
 		if (newval == this.amptext) return;
 		this.amptext = newval;
 		this.cacheParamNames();
+		this.setDirtyForRendering(true);
 	}
 
 	doNotProcess(key) {
@@ -302,14 +303,11 @@ class Lambda extends NexContainer {
 	}
 
 	getDefaultHandler() {
-		return 'lambdaDefault';
+		return 'standardDefault';
 	}
 
 	getEventTable(context) {
-		return {
-			'Backspace': 'start-main-editor',
-			'ShiftSpace': 'toggle-dir'
-		};
+		return {};
 	}
 
 	static makeLambda(argstring, maybeargs) {
@@ -333,6 +331,15 @@ class LambdaEditor extends Editor {
 	constructor(nex) {
 		super(nex, 'LambdaEditor');
 	}
+
+	getStateForUndo() {
+		return this.nex.getAmpText();
+	}
+
+	setStateForUndo(val) {
+		this.nex.setAmpText(val);
+	}
+
 
 	doBackspaceEdit() {
 		this.nex.deleteLastAmpLetter();

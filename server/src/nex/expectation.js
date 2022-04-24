@@ -666,7 +666,7 @@ class Expectation extends NexContainer {
 	}
 
 	getDefaultHandler() {
-		return 'expectationDefault';
+		return 'standardDefault';
 	}
 
 	getEventTable(context) {
@@ -707,10 +707,12 @@ class Expectation extends NexContainer {
 
 	setFFText(t) {
 		this.fftext = t;
+		this.setDirtyForRendering(true);
 	}
 
 	setExptext(setname) {
 		this.exptext = setname;
+		this.setDirtyForRendering(true);
 	}
 
 	getExptext() {
@@ -727,6 +729,15 @@ constructor(nex) {
 	finish() {
 		super.finish();
 	}
+
+	getStateForUndo() {
+		return this.nex.getFFText();
+	}
+
+	setStateForUndo(val) {
+		this.nex.setFFText(val);
+	}
+
 
 	startEditing() {
 		super.startEditing();

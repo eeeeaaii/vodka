@@ -21,6 +21,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	display: none;
 }
 
+.tagholder {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+}
+
 .tag.exploded {
 	background-color:#6e6e6e;
 	color:#dddddd;

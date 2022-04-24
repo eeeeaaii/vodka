@@ -173,7 +173,7 @@ class Integer extends ValueNex {
 	}
 
 	getDefaultHandler() {
-		return 'integerDefault';
+		return 'standardDefault';
 	}
 
 }
@@ -182,6 +182,15 @@ class IntegerEditor extends Editor {
 	constructor(nex) {
 		super(nex, 'IntegerEditor');
 	}
+
+	getStateForUndo() {
+		return this.nex.getValue();
+	}
+
+	setStateForUndo(val) {
+		this.nex.setValue(val);
+	}
+
 
 	hasContent() {
 		return this.nex.renderValue() != '0';

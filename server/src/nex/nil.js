@@ -58,7 +58,7 @@ class Nil extends ValueNex {
 	}
 
 	getDefaultHandler() {
-		return 'nilDefault';
+		return 'standardDefault';
 	}
 
 	renderInto(renderNode, renderFlags, withEditor) {

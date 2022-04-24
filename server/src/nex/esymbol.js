@@ -103,9 +103,11 @@ class ESymbol extends ValueNex {
 	autocomplete() {
 		let searchText = this.searchingOn ? this.searchingOn : this.getAsString();
 		let match = autocomplete.findNextMatchAfter(searchText, this.previousMatch);
-		this.setValue(match);
-		this.searchingOn = searchText;
-		this.previousMatch = match;
+		if (match) {
+			this.setValue(match.name);
+			this.searchingOn = searchText;
+			this.previousMatch = match;
+		}
 	}
 
 	evaluate(env) {
@@ -149,6 +151,14 @@ class ESymbol extends ValueNex {
 class ESymbolEditor extends Editor {
 	constructor(nex) {
 		super(nex, 'ESymbolEditor');
+	}
+
+	getStateForUndo() {
+		return this.nex.getValue();
+	}
+
+	setStateForUndo(val) {
+		this.nex.setValue(val);
 	}
 
 	hasContent() {

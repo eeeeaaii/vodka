@@ -276,7 +276,7 @@ class EString extends ValueNex {
 	}
 
 	getDefaultHandler() {
-		return 'estringDefault';
+		return 'standardDefault';
 	}
 
 	getEventTable(context) {
@@ -288,6 +288,15 @@ class EStringEditor extends Editor {
 	constructor(nex) {
 		super(nex, 'EStringEditor');
 	}
+
+	getStateForUndo() {
+		return this.nex.getFullTypedValue();
+	}
+
+	setStateForUndo(val) {
+		return this.nex.setFullValue(val);
+	}
+
 
 	hasContent() {
 		return this.nex.getFullTypedValue() != '';

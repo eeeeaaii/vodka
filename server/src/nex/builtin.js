@@ -142,6 +142,7 @@ class Builtin extends Lambda {
 	}
 
 	static aliasBuiltin(aliasName, boundName) {
+		// temporarily a no-op because this messes up autocomplete
 		let bound = BUILTINS.lookupBinding(boundName);
 		Builtin.bindBuiltinObject(aliasName, bound);
 	}

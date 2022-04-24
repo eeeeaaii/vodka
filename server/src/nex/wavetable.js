@@ -174,6 +174,11 @@ class Wavetable extends Nex {
 		this.data[i] = d;
 	}
 
+	setData(d) {
+		this.data = d;
+		this.setDirtyForRendering(true);
+	}
+
 	// this makes sure you don't set the window origin to be less than zero
 	// or large enough that empty space appears to the right of the sample
 	setWindowOriginSample(n) {
@@ -336,7 +341,7 @@ class Wavetable extends Nex {
 	}
 
 	getDefaultHandler() {
-		return 'wavetableDefault';
+		return 'standardDefault';
 	}
 
 	auditionSection(n) {
@@ -829,6 +834,15 @@ class WavetableEditor extends Editor {
 	constructor(nex) {
 		super(nex, 'WavetableEditor');
 	}
+
+	getStateForUndo() {
+		return this.nex.getData();
+	}
+
+	setStateForUndo(val) {
+		this.nex.setData(val);
+	}
+
 
 	shouldIgnore(text) {
 		if (/^[1-9v]$/.test(text)) return false;

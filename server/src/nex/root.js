@@ -45,7 +45,7 @@ class Root extends NexContainer {
 	}
 
 	getDefaultHandler() {
-		return 'lambdaDefault';
+		return 'standardDefault';
 	}
 
 	// dead code?

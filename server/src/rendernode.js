@@ -222,8 +222,14 @@ class RenderNode {
 		toSetDirty.nex.setDirtyForRendering(true);
 	}
 
+	getTagEditorForType(nex) {
+		return new TagEditor(nex);
+	}
+
 	startTagEditor() {
-		this.startEditor(new TagEditor(this.getNex()));
+		let tagEditor = this.getTagEditorForType(this.getNex());
+		tagEditor.createManagedTagIfNone();
+		this.startEditor(tagEditor);
 	}
 
 	removeAllTags() {
@@ -589,6 +595,11 @@ class RenderNode {
 		this.wrapperDomNodes[i].appendChild(childRenderNode.getDomNode());
 	}
 
+
+	getInsertionMode() {
+		return this.insertionMode;
+	}
+
 	setInsertionMode(mode) {
 		if (Utils.isRoot(this.nex)) {
 			this.insertionMode = (mode == INSERT_UNSPECIFIED) ? mode : INSERT_INSIDE;
@@ -632,10 +643,6 @@ class RenderNode {
 					this.setInsertionMode(INSERT_AFTER);
 			}
 		}
-	}
-
-	getInsertionMode() {
-		return this.insertionMode;
 	}
 
 	getDefaultInsertionMode(nex) {

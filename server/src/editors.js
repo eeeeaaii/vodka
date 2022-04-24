@@ -22,6 +22,9 @@ class Editor {
 		this.type = type;
 	}
 
+	getStateForUndo() {}
+	setStateForUndo(val) {};
+
 	doBackspaceEdit() {
 		// override
 	}
@@ -44,7 +47,7 @@ class Editor {
 	}
 
 	shouldIgnore(text) {
-		return false;
+		return text == 'AltSpace';
 	}
 
 	shouldReroute(text) {

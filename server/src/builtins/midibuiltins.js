@@ -61,7 +61,7 @@ function createMidiBuiltins() {
 
 
 	Builtin.createBuiltin(
-		'prime-midi',
+		'wait-for-midi',
 		[ 'exp*', 'midiport()' ],
 		function $setMidi(env, executionEnvironment) {
 			let exp = env.lb('exp');
@@ -69,7 +69,7 @@ function createMidiBuiltins() {
 			let ismidiport = midiport.hasTag(new Tag('midiport'))
 			let id = midiport.getChildTagged(new Tag('id'));
 			if (!ismidiport || !id) {
-				return new EError('set-midi: must pass in a midiport object with a valid ID');
+				return new EError('wait-for-midi: must pass in a midiport object with a valid ID');
 			}
 			exp.setAutoreset(true);
 			let afg = new MidiActivationFunctionGenerator(id.getTypedValue());

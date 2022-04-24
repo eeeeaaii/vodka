@@ -16,7 +16,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { ValueNex } from './valuenex.js'
-import { isNormallyHandled } from '../keyresponsefunctions.js'
 import { experiments } from '../globalappflags.js'
 import { Editor } from '../editors.js'
 
@@ -86,7 +85,7 @@ class Bool extends ValueNex {
 	}
 
 	getDefaultHandler() {
-		return 'boolDefault';
+		return 'standardDefault';
 	}
 
 	renderInto(renderNode, renderFlags, withEditor) {
@@ -114,6 +113,14 @@ class Bool extends ValueNex {
 class BoolEditor extends Editor {
 	constructor(nex) {
 		super(nex, 'BoolEditor');
+	}
+
+	getStateForUndo() {
+		return this.nex.getValue();
+	}
+
+	setStateForUndo(val) {
+		this.nex.setValue(val);
 	}
 
 	doBackspaceEdit() {

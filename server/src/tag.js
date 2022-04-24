@@ -26,6 +26,13 @@ class Tag  {
 		this.isGhost = false;
 	}
 
+	copy() {
+		let r = new Tag(this.name);
+		r.isEditing = this.isEditing;
+		r.isGhost = this.isGhost;
+		return r;
+	}
+
 	setName(text) {
 		this.name = text;
 	}

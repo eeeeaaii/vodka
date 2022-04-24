@@ -21,7 +21,6 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { INDENT, systemState } from '../systemstate.js'
 import { autocomplete } from '../autocomplete.js'
 import { NexContainer } from './nexcontainer.js'
-import { isNormallyHandled } from '../keyresponsefunctions.js'
 import { BUILTINS, BINDINGS } from '../environment.js'
 import { perfmon, PERFORMANCE_MONITOR } from '../perfmon.js'
 import { EError } from './eerror.js'
@@ -60,6 +59,7 @@ class Command extends NexContainer {
 		this.searchingOn = null;
 		this.previousMatch = null;
 		this.skipAlert = false;
+		this.ghostMatch = null;
 
 		if (experiments.ASM_RUNTIME) {
 			this.wasmSetup();
@@ -90,11 +90,12 @@ class Command extends NexContainer {
 		if (experiments.ASM_RUNTIME) {
 			this.setWasmValue(this.runtimeId, t);
 		} else {
+	 		this.ghostMatch = null;
 			this.commandtext = t;
 			this.cacheClosureIfCommandTextIsBound();
 			this.searchingOn = null;
 			this.previousMatch = null;
-
+			this.setDirtyForRendering(true);
 		}
 	}
 
@@ -199,6 +200,13 @@ class Command extends NexContainer {
 
 	getLambdaFromCachedClosure() {
 		return this.cachedClosure.getLambda();
+	}
+
+	commitMatch() {
+		if (this.ghostMatch) {
+			this.setCommandText(this.ghostMatch.name);
+			this.ghostMatch = null;
+		}
 	}
 
 	revertToCanonicalName() {
@@ -381,8 +389,12 @@ class Command extends NexContainer {
 			// environment, etc.
 			// for ghost display of command info, we do want to consult bindings,
 			// but lexical env is not gonna happen (yet?)
-			if (BINDINGS.hasBinding(this.commandtext)) {
-				let closure = BINDINGS.lookupBinding(this.commandtext);
+			let txt = this.commandtext;
+			if (this.ghostMatch) {
+				txt = this.ghostMatch.name;
+			}
+			if (BINDINGS.hasBinding(txt)) {
+				let closure = BINDINGS.lookupBinding(txt);
 				if (closure) {
 					return closure;
 				}
@@ -410,7 +422,7 @@ class Command extends NexContainer {
 	// Since we are supporting infix operators we want to support things like
 	// IF something THEN something ELSE something
 	// 
-	getInfixPart(position, cmdname) {
+	getInfixPart(position) {
 		// each double hyphen in the name stands for a child.
 		// but if there are n hyphens and less than n children,
 		// the last time we call getInfixPart, we need to display
@@ -419,33 +431,105 @@ class Command extends NexContainer {
 		// so if the name is foo--bar--baz, it's supposed to have 2 children.
 		//
 		// if there are zero children:
-		//   getInfixPart(0, ...) returns 'foo--bar--baz'
-		//   getInfixPart(1, ...) never gets called
+		//   getInfixPart(0) returns 'foo--bar--baz'
+		//   getInfixPart(1) never gets called
 		//
 		// if there is one child
-		//   getInfixPart(0, ...) returns 'foo'
-		//   getInfixPart(1, ...) returns 'bar-baz'
-		//   getInfixPart(2, ...) never gets called
+		//   getInfixPart(0) returns 'foo'
+		//   getInfixPart(1) returns 'bar-baz'
+		//   getInfixPart(2) never gets called
 		//
 		// if there are two children
-		//   getInfixPart(0, ...) returns 'foo'
-		//   getInfixPart(1, ...) returns 'bar'
-		//   getInfixPart(2, ...) returns 'baz'
-		//   getInfixPart(3, ...) never gets called
+		//   getInfixPart(0) returns 'foo'
+		//   getInfixPart(1) returns 'bar'
+		//   getInfixPart(2) returns 'baz'
+		//   getInfixPart(3) never gets called
 		//
 		// if there are three children
-		//   getInfixPart(0, ...) returns 'foo'
-		//   getInfixPart(1, ...) returns 'bar'
-		//   getInfixPart(2, ...) returns 'baz'
-		//   getInfixPart(3, ...) returns ''
+		//   getInfixPart(0) returns 'foo'
+		//   getInfixPart(1) returns 'bar'
+		//   getInfixPart(2) returns 'baz'
+		//   getInfixPart(3) returns ''
+
+		let isGhost = !!this.ghostMatch;
+		let cmdtext = this.commandtext;
+		if (this.ghostMatch) {
+			cmdtext = this.ghostMatch.name;
+		}
+		cmdtext = cmdtext.replace('--', ' ').replace('__', ' ');
+
+		let words = [];
+		words[0] = [];
+		let currentWord = 0;
+
+		if (cmdtext.length == 0) {
+			return '';
+		}
+
+		if (this.isEditing && position == 0) {
+			for (let i = 0; i < cmdtext.length; i++) {
+				let letter = cmdtext.charAt(i);
+				words[0].push({
+					letter: letter,
+					ghost: (isGhost && (i < this.ghostMatch.matchStart || i >= this.ghostMatch.matchEnd))
+				})
+			}
+		} else {
+			for (let i = 0; i < cmdtext.length; i++) {
+				let letter = cmdtext.charAt(i);
+				if (letter == ' ') {
+					currentWord++;
+					words[currentWord] = [];
+					continue;
+				}
+				words[currentWord].push({
+					letter: letter,
+					ghost: (isGhost && (i < this.ghostMatch.matchStart || i >= this.ghostMatch.matchEnd))
+				})
+			}
+
+			for (let i = words.length - 1; i >= 0 ; i--) {
+				let w = words[i];
+				if (i > this.numChildren()) {
+					let pw = words[i - 1];
+					pw.push({
+						letter: ' ',
+						ghost: pw[pw.length - 1].ghost
+					});
+					for (let j = 0 ; j < w.length ; j++) {
+						pw.push(w[j]);
+					}
+				}
+			}
+		}
+
+		if (position >= words.length) {
+			return '';
+		}
+
+
+		let theword = words[position];
+
+		let r = '';
+		for (let i = 0; i < theword.length; i++) {
+			let w = theword[i];
+			let letter = (w.letter == ' ') ? '&nbsp;' : w.letter
+			if (w.ghost) {
+				r += '<span class="ghost-match">' + letter + '</span>'
+			} else {
+				r += letter;
+			}
+		}
+		return r;
+
+
+/*
+
 
 		let righttilde = '<span class="tilde glyphright">&#8766;</span>';
 
 		if (this.isEditing && position == 0) {
 			return cmdname.replace(/--/g, '__');
-//			if (!this.isEditing) {
-//				codespanHtml += righttilde;
-//			}
 		}
 
 		let commandWords = (cmdname == "") ? [] : cmdname.split('--')
@@ -474,6 +558,7 @@ class Command extends NexContainer {
 		} else {
 			return '';
 		}
+*/
 	}
 
 	getGhostDiv(renderNode) {
@@ -496,7 +581,8 @@ class Command extends NexContainer {
 				gclosure.getLambda().isInfix() &&
 				this.numChildren() > 1);
 		if (!operatorInfix) {
-			codespanHtml += this.getInfixPart(0, this.commandtext);
+			// argh
+			codespanHtml += this.getInfixPart(0);
 		}
 
 		return codespanHtml;
@@ -544,7 +630,7 @@ class Command extends NexContainer {
 				&& Utils.isClosure(gclosure)
 				&& gclosure.getLambda().isInfix()
 				&& childNum < this.numChildren() - 1);
-		let infixName = (!!this.getInfixPart(childNum + 1, this.commandtext));
+		let infixName = (!!this.getInfixPart(childNum + 1));
 		if (infixOperator || infixName) {
 			let innercodespan = null;
 			innercodespan = document.createElement("span");
@@ -562,7 +648,7 @@ class Command extends NexContainer {
 			if (infixOperator) {
 				innercodespan.innerHTML = this.commandtext;
 			} else { // infixName
-				innercodespan.innerHTML = this.getInfixPart(childNum + 1, this.commandtext);
+				innercodespan.innerHTML = this.getInfixPart(childNum + 1);
 			}
 			let domNode = renderNode.getDomNode();
 			domNode.appendChild(innercodespan);
@@ -582,6 +668,7 @@ class Command extends NexContainer {
 	}
 
 	deleteLastCommandLetter() {
+		this.ghostMatch = null;
 		this.commandtext = this.commandtext.substr(0, this.commandtext.length - 1);
 		this.cacheClosureIfCommandTextIsBound();
 		this.searchingOn = null;
@@ -589,6 +676,7 @@ class Command extends NexContainer {
 	}
 
 	appendCommandText(txt) {
+		this.ghostMatch = null;
 		this.commandtext = this.commandtext + txt;
 		this.cacheClosureIfCommandTextIsBound();
 		this.searchingOn = null;
@@ -602,10 +690,32 @@ class Command extends NexContainer {
 	autocomplete() {
 		let searchText = this.searchingOn ? this.searchingOn : this.getCommandText();
 		let match = autocomplete.findNextMatchAfter(searchText, this.previousMatch);
-		this.setCommandText(match);
+		if (match) {
+			this.ghostMatch = null;
+			this.setCommandText(match.name);
+			this.searchingOn = searchText;
+			this.previousMatch = match;
+			this.setDirtyForRendering(true);
+		}
+	}
+
+	ghostedAutocomplete() {
+		let searchText = this.searchingOn ? this.searchingOn : this.getCommandText();
+		this.ghostMatch = autocomplete.findNextMatchAfter(searchText, this.previousMatch);
+
 		this.searchingOn = searchText;
-		this.previousMatch = match;
+		this.previousMatch = this.ghostMatch;
 		this.setDirtyForRendering(true);
+
+		// if (match.length > searchText.length) {
+		// 	let ghostMatch = match.substr(searchText.length, match.length);
+		// 	this.ghostMatch = ghostMatch;
+		// } else {
+		// 	this.ghostMatch = null;
+		// }
+		// this.searchingOn = searchText;
+		// this.previousMatch = match;
+		// this.setDirtyForRendering(true);
 	}
 
 	static quote(item) {
@@ -694,17 +804,12 @@ class Command extends NexContainer {
 	}
 
 	getDefaultHandler() {
-		return 'commandDefault';
+		return 'standardDefault';
 	}
 
 	getEventTable(context) {
 		return {
-			'CtrlSpace': (
-				experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO ? null
-				: (experiments.BETTER_KEYBINDINGS ? 'autocomplete' : null)),
-			'AltSpace': (
-				(!experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) ? null
-				: (experiments.BETTER_KEYBINDINGS ? 'autocomplete' : null)),
+			'AltSpace': 'autocomplete'
 		};
 	}
 }
@@ -715,8 +820,21 @@ class CommandEditor extends Editor {
 		super(nex, 'CommandEditor');
 	}
 
+	shouldIgnore(text) {
+		return false; // don't ignore autocomplete
+	}
+
+	getStateForUndo() {
+		return this.nex.getCommandText();
+	}
+
+	setStateForUndo(val) {
+		this.nex.setCommandText(val);
+	}
+
 	finish() {
 		super.finish();
+		this.nex.commitMatch();
 		this.nex.revertToCanonicalName();
 	}
 
@@ -734,9 +852,9 @@ class CommandEditor extends Editor {
 	}
 
 	doAppendEdit(text) {
-		// if the user types a space, we know they mean a dash.
-		if (text == ' ') {
-			text = '--';
+		if (text == 'AltSpace') {
+			this.nex.ghostedAutocomplete();
+			return;
 		}
 		this.nex.appendCommandText(text);
 	}
@@ -746,12 +864,14 @@ class CommandEditor extends Editor {
 	}
 
 	shouldAppend(text) {
+		if (text == 'AltSpace') return true;
 		if (/^[a-zA-Z0-9:. -]$/.test(text)) return true; // normal chars
 		if (/^[/<>=+*]$/.test(text)) return true;
 		return false;
 	}
 
 	shouldTerminateAndReroute(input) {
+		if (input == 'AltSpace') return false;
 		if (super.shouldTerminateAndReroute()) return true;
 		// don't terminate for math stuff, this is temporary
 		if (/^[/<>=+*]$/.test(input)) return false;

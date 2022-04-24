@@ -192,7 +192,7 @@ class Org extends NexContainer {
 	}
 
 	getDefaultHandler() {
-		return 'orgDefault';
+		return 'standardDefault';
 	}
 
 	getEventTable(context) {

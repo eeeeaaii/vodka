@@ -158,7 +158,7 @@ class Float extends ValueNex {
 	}
 
 	getDefaultHandler() {
-		return 'floatDefault';
+		return 'standardDefault';
 	}
 
 	getEventTable(context) {
@@ -176,6 +176,14 @@ class FloatEditor extends Editor {
 	finish() {
 		this.nex.finalizeValue();
 		return super.finish();
+	}
+
+	getStateForUndo() {
+		return this.nex.getValue();
+	}
+
+	setStateForUndo(val) {
+		this.nex.setValue(val);
 	}
 
 	hasContent() {

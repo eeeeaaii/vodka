@@ -83,6 +83,7 @@ class Instantiator extends NexContainer {
 
 	setOrgName(n) {
 		this.orgname = n;
+		this.setDirtyForRendering(true);
 	}
 
 	getOrgName() {
@@ -172,6 +173,15 @@ class InstantiatorEditor extends Editor {
 	constructor(nex) {
 		super(nex, 'InstantiatorEditor');
 	}
+
+	getStateForUndo() {
+		return this.nex.getOrgName();
+	}
+
+	setStateForUndo(val) {
+		this.nex.setOrgName(val);
+	}
+
 
 	doBackspaceEdit() {
 		this.nex.deleteLastOrgNameLetter();

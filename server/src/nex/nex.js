@@ -389,6 +389,19 @@ class Nex {
 		return this.tags[n].copy();
 	}
 
+	getAllTags() {
+		let r = [];
+		this.tags.forEach(function(tag) {
+			r.push(tag.copy());
+		});
+		return r;
+	}
+
+	setAllTags(t) {
+		this.tags = t;
+		this.setDirtyForRendering(true);
+	}
+
 	// by reference
 	getTagAfter(tag) {
 		for (let i = 0; i < this.tags.length; i++) {
@@ -557,10 +570,6 @@ class Nex {
 
 	isSelected() {
 		return this.selected;
-	}
-
-	defaultHandle() {
-		
 	}
 
 	getEventTable(context) {

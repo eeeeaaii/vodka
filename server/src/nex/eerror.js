@@ -203,7 +203,7 @@ class EError extends NexContainer {
 	}
 
 	getDefaultHandler() {
-		return 'eerrorDefault';
+		return 'standardDefault';
 	}
 
 	getEventTable(context) {

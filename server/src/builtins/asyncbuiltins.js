@@ -113,7 +113,7 @@ function createAsyncBuiltins() {
 		},
 		'sets the and-then-function of |exp to be |val (if it\'s a closure), or a closure that returns |val (if it\'s not).'
 	);
-	Builtin.aliasBuiltin('ff-of', 'and-then');
+	Builtin.aliasBuiltin('ff-with', 'and-then');
 
 	Builtin.createBuiltin(
 		'reset',

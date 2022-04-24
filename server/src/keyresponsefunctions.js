@@ -58,19 +58,6 @@ import {
 } from './rendernode.js'
 
 
-function isNormallyHandledInDocContext(key) {
-	return isNormallyHandled(key);
-}
-
-function isNormallyHandled(key) {
-	if (!(/^.$/.test(key))) {
-		return true;
-	}
-	if (/^[~!@#$%`^*&_)([\]{}<>]$/.test(key)) {
-		return true;
-	}
-	return false;
-}
 
 // All of these are to some extent deprecated:
 // to be replaced with editors or more generic handlers.
@@ -99,7 +86,8 @@ function figureOutWhatItCanBe(txt) {
 
 const DefaultHandlers = {
 
-	'standardDefault': function(nex, txt, context) {
+	'standardDefault': function(node, txt) {
+		let nex = node.nex;
 		let canBe = figureOutWhatItCanBe(txt);
 
 		if (canBe.integer) {
@@ -113,35 +101,9 @@ const DefaultHandlers = {
 		}
 	},
 
-	'commandDefault': function(nex, txt, context) {
-		let canBe = figureOutWhatItCanBe(txt);
-
-		if (canBe.integer) {
-			manipulator.insertAtSelectedObjInsertionPoint(manipulator.newIntegerWithValue(txt));
-			return true;
-		} else if (canBe.command) {
-			manipulator.insertAtSelectedObjInsertionPoint(manipulator.newCommandWithText(txt));				
-			return true;
-		} else {
-			return false;
-		}
-	},
-
-	'lambdaDefault': function(nex, txt, context) {
-		let canBe = figureOutWhatItCanBe(txt);
-
-		if (canBe.integer) {
-			manipulator.insertAtSelectedObjInsertionPoint(manipulator.newIntegerWithValue(txt));
-			return true;
-		} else if (canBe.command) {
-			manipulator.insertAtSelectedObjInsertionPoint(manipulator.newCommandWithText(txt));
-			return true;
-		} else {
-			return false;
-		}
-	},
-
-	'letterDefault': function(nex, txt, context) {
+	'letterDefault': function(node, txt) {
+		let nex = node.nex;
+		let context = manipulator.getContextForNode(node);
 		let inWord = (context == ContextType.WORD || context == ContextType.IMMUTABLE_WORD);
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
@@ -157,7 +119,9 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	'separatorDefault': function (nex, txt, context) {
+	'separatorDefault': function(node, txt) {
+		let nex = node.nex;
+		let context = manipulator.getContextForNode(node);
 		let isLine = (context == ContextType.LINE || context == ContextType.IMMUTABLE_LINE)
 		if (!(/^.$/.test(txt))) {
 			throw UNHANDLED_KEY;
@@ -187,7 +151,9 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	'wordDefault' : function(nex, txt, context) {
+	'wordDefault' : function(node, txt) {
+		let nex = node.nex;
+		let context = manipulator.getContextForNode(node);
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		let isCommand = (context == ContextType.COMMAND);
@@ -211,7 +177,9 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	'lineDefault': function(nex, txt, context) {
+	'lineDefault': function(node, txt) {
+		let nex = node.nex;
+		let context = manipulator.getContextForNode(node);
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		let isCommand = (context == ContextType.COMMAND);
@@ -253,7 +221,9 @@ const DefaultHandlers = {
 		return true;
 	},
 
-	'docDefault' : function(nex, txt, context) {
+	'docDefault' : function(node, txt) {
+		let nex = node.nex;
+		let context = manipulator.getContextForNode(node);
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		let isCommand = (context == ContextType.COMMAND);
@@ -331,10 +301,6 @@ const KeyResponseFunctions = {
 
 	'start-main-editor': function(s) { s.possiblyStartMainEditor(); },
 
-	'evaluate': function(s) {
-		evaluateAndReplace(s);
-	},
-
 	'delete-letter': function(s) {
 		manipulator.deleteLeaf(s);
 	},
@@ -375,7 +341,8 @@ const KeyResponseFunctions = {
 		manipulator.selectFirstChildOrMoveInsertionPoint(s);
 	},
 
-	'do-line-break-or-eval': function(s, context) {
+	'do-line-break-or-eval': function(s) {
+		let context = manipulator.getContextForNode(s);
 		if (context == ContextType.DOC || context == ContextType.IMMUTABLE_DOC) {
 			manipulator.doLineBreakForLine(s, context);
 		} else {
@@ -383,11 +350,13 @@ const KeyResponseFunctions = {
 		}
 	},
 
-	'do-line-break-for-letter': function(s, context) {
+	'do-line-break-for-letter': function(s) {
+		let context = manipulator.getContextForNode(s);
 		manipulator.doLineBreakForLetter(s, context);
 	},
 
-	'do-line-break-for-separator': function(s, context) {
+	'do-line-break-for-separator': function(s) {
+		let context = manipulator.getContextForNode(s);
 		manipulator.doLineBreakForSeparator(s, context);
 	},
 
@@ -451,8 +420,6 @@ const KeyResponseFunctions = {
 
 	'add-tag': function(s) { s.startTagEditor(); },
 
-	'remove-all-tags': function(s) { s.removeAllTags(); },
-
 	'wrap-in-command': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newCommand()); },
 	'wrap-in-lambda': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newLambda()); },
 	'wrap-in-expectation': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newExpectation()); },
@@ -482,7 +449,7 @@ const KeyResponseFunctions = {
 }
 
 export {
-	isNormallyHandled,
 	KeyResponseFunctions,
-	DefaultHandlers
+	DefaultHandlers,
+	figureOutWhatItCanBe
 }
