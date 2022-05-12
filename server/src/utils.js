@@ -20,6 +20,48 @@ import { ContextType } from './contexttype.js'
 import { ERROR_TYPE_FATAL} from './nex/eerror.js'
 
 
+function figureOutWhatItCanBe(txt) {
+	let intRegex = /^[0-9]/;
+	let commandRegex = /^[a-zA-Z0-9:. /<>=+*-]$/;
+	let symbolRegex = /^[a-zA-Z0-9-_']$/;
+
+	return {
+		integer: intRegex.test(txt),
+		symbol: symbolRegex.test(txt),
+		command: commandRegex.test(txt)	
+	}
+}
+
+
+function getQSVal(k) {
+	let params = new URLSearchParams(window.location.search);
+	let lastVal = null;
+	params.forEach(function(value, key) {
+		if (key == k) {
+			lastVal = value;
+		}
+	});
+	return lastVal;
+}
+
+
+function getCookie(key) {
+	let cookies = document.cookie;
+	let a = cookies.split('; ');
+	for (let i = 0; i < a.length; i++) {
+		let b = a[i];
+		let c = b.split('=');
+		if (c[0] == key) {
+			return c[1];
+		}
+	}
+	return null;
+}
+
+function setCookie(key, val) {
+	document.cookie = `${key}=${val}`;
+}
+
 function isError(n) {
 	if (!n) return false;
 	return n.getTypeName() == '-error-';
@@ -49,10 +91,20 @@ function isDocContainerType(n) {
 	return isDoc(n) || isLine(n) || isWord(n);
 }
 
-function isExpectation(n) {
+function isDeferred(n) {
+	return isDeferredValue(n) || isDeferredCommand(n)
+}
+
+function isDeferredValue(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-if (!n) return false;
-	return n.getTypeName() == '-expectation-';
+	if (!n) return false;
+	return n.getTypeName() == '-deferredvalue-';
+}
+
+function isDeferredCommand(n) {
+	if (n instanceof RenderNode) n = n.getNex();
+	if (!n) return false;
+	return n.getTypeName() == '-deferredcommand-';
 }
 
 function isDoc(n) {
@@ -79,6 +131,12 @@ function isOrg(n) {
 	return n.getTypeName() == '-org-';
 }
 
+function isNativeOrg(n) {
+	if (n instanceof RenderNode) n = n.getNex();
+	if (!n) return false;
+	return n.getTypeName() == '-nativeorg-';
+}
+
 function isSeparator(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n) return false;
@@ -92,7 +150,7 @@ function isLetter(n) {
 }
 
 function isCodeContainer(n) {
-	return isCommand(n) || isExpectation(n) || isLambda(n);
+	return isCommand(n) || isDeferredCommand(n) || isLambda(n);
 }
 
 function isNexContainer(n) {
@@ -209,7 +267,9 @@ export {
 	isInDocContext,
 	isDocElement,
 	isDocContainerType,
-	isExpectation,
+	isDeferredValue,
+	isDeferredCommand,
+	isDeferred,
 	isDoc,
 	isLine,
 	isWord,
@@ -231,5 +291,9 @@ export {
 	isOrg,
 	convertV2StringToMath,
 	convertMathToV2String,
-	isImmutableContext
+	isImmutableContext,
+	getCookie,
+	setCookie,
+	getQSVal,
+	figureOutWhatItCanBe
 }

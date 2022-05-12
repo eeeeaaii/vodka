@@ -26,7 +26,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 .line.exploded {
 	padding: 5px;
-	border: 1px solid #a7a7de;
+	border: 1px solid var(--line-selected);
 	border-radius: 6px;	
 }
 
@@ -48,27 +48,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border-width: 3px;	
 }
 
-/*
-.linespan {
-	display: none;
-}
-
-.newselected > .linespan.exploded {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	background-color: #a7a7de;
-	height: 20px;
-	width: 3px;
-	border-radius: 6px 6px 6px 6px;
-	margin: 0px 3px 0px -2px;
-}
-
-.newselected > .linespan.exploded.mutable {
-	margin: 0px 3px 0px -4px;
-}
-*/
-
 .emptyline {
 	height:1.12em;	
 }
@@ -76,29 +55,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 .emptyline.selected {
 	background-color: black;
 	width:1px;
-}
-
-
-@keyframes show-line-execution-selected-1 {
-	0% {border-color: var(--selected-border);}
-	5% {border-color: #ffff77;}
-	100% {border-color: #a7a7de;}
-}
-
-@keyframes show-line-execution-selected-2 {
-	0% {border-color: var(--selected-border);}
-	5% {border-color: #ffff77;}
-	100% {border-color: #a7a7de;}
-}
-
-.animating-selected-line-executable-1 {
-	animation-duration: .7s;
-	animation-name: show-line-execution-selected-1;
-}
-
-.animating-selected-line-executable-2 {
-	animation-duration: .70s;
-	animation-name: show-line-execution-selected-2;
 }
 
 

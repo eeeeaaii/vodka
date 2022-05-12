@@ -15,13 +15,19 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+/*
+I wanted the borders to be 1 3 1 3 and 3 1 3 1 depending on horiz or vert
+but there is a weird rendering bug where you get a hairline!
+That's why the weird "3.2px"
+*/
+
 
 .codelist.exploded {
 	display: flex;
 	flex-direction: row;
 	align-items: flex-start;
 	/*border: 3px solid var(--unselected-border);*/
-	border-width: 1px 3px 1px 3px;
+	border-width: 1px 4px 1px 4px;
 	border-style: solid;
 	border-color: var(--unselected-border);
 	border-radius: 6px;	
@@ -43,7 +49,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 .codelist.exploded.vdir {
 	flex-direction: column;
-	border-width: 3px 1px 3px 1px;
+	border-width: 4px 1px 4px 1px;
 	padding: 0px 5px 2px 5px;
 }
 
@@ -63,7 +69,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	font-family: "Courier";
 	color: var(--info-text);
 	font-style: italic;
-	font-size: 15px;
+	font-size: .95em;
 	background-color: var(--unselected-border);
 	border: 0px;
 	padding: 3px 7px 4px 5px;
@@ -131,90 +137,3 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	background-color: var(--selected-border);
 }
 
-@keyframes show-execution-selected-1 {
-	0% {border-color: var(--selected-border);}
-	5% {border-color: #ffff77;}
-	100% {border-color: var(--selected-border);}
-}
-
-@keyframes show-execution-unselected-1 {
-	0% {border-color: var(--unselected-border);}
-	5% {border-color: yellow;}
-	100% {border-color: var(--unselected-border);}
-}
-
-@keyframes show-execution-selected-bg-1 {
-	0% {background-color: var(--selected-border);}
-	5% {background-color: #ffff77;}
-	100% {background-color: var(--selected-border);}
-}
-
-@keyframes show-execution-unselected-bg-1 {
-	0% {background-color: var(--unselected-border);}
-	5% {background-color: yellow;}
-	100% {background-color: var(--unselected-border);}
-}
-
-@keyframes show-execution-selected-2 {
-	0% {border-color: var(--selected-border);}
-	5% {border-color: #ffff77;}
-	100% {border-color: var(--selected-border);}
-}
-
-@keyframes show-execution-unselected-2 {
-	0% {border-color: var(--unselected-border);}
-	5% {border-color: yellow;}
-	100% {border-color: var(--unselected-border);}
-}
-
-@keyframes show-execution-selected-bg-2 {
-	0% {background-color: var(--selected-border);}
-	5% {background-color: #ffff77;}
-	100% {background-color: var(--selected-border);}
-}
-
-@keyframes show-execution-unselected-bg-2 {
-	0% {background-color: var(--unselected-border);}
-	5% {background-color: yellow;}
-	100% {background-color: var(--unselected-border);}
-}
-
-.animating-selected-executable-1 {
-	animation-duration: .7s;
-	animation-name: show-execution-selected-1;
-}
-
-.animating-unselected-executable-1 {
-	animation-duration: .7s;
-	animation-name: show-execution-unselected-1;
-}
-
-.animating-selected-bg-executable-1 {
-	animation-duration: .7s;
-	animation-name: show-execution-selected-bg-1;
-}
-
-.animating-unselected-bg-executable-1 {
-	animation-duration: .7s;
-	animation-name: show-execution-unselected-bg-1;
-}
-
-.animating-selected-executable-2 {
-	animation-duration: .70s;
-	animation-name: show-execution-selected-2;
-}
-
-.animating-unselected-executable-2 {
-	animation-duration: .70s;
-	animation-name: show-execution-unselected-2;
-}
-
-.animating-selected-bg-executable-2 {
-	animation-duration: .70s;
-	animation-name: show-execution-selected-bg-2;
-}
-
-.animating-unselected-bg-executable-2 {
-	animation-duration: .70s;
-	animation-name: show-execution-unselected-bg-2;
-}

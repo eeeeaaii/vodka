@@ -20,66 +20,43 @@ class AlertAnimator {
 	// set the same style again, it won't trigger the animation.
 	// you have to set to a different version of the same animation.
 
-	setAlertStyle(selected, node, codespan) {
-		let sel = selected ? `selected` : `unselected`;
-		let other = this.otherFragment(node);
-		let currentNumber = node.classList.contains(`animating-${sel}${other}-executable-1`) ? "1" : "2"
+	setAlertStyle(node) {
+		let currentNumber = this.getCurrentNumber(node.classList);
 		let newNumber = currentNumber == "1" ? "2" : "1";
-		node.classList.remove(`animating-${sel}${other}-executable-${currentNumber}`);
-		node.classList.add(`animating-${sel}${other}-executable-${newNumber}`);
-		if (codespan) {
-			codespan.classList.remove(`animating-${sel}-bg-executable-${currentNumber}`);
-			codespan.classList.add(`animating-${sel}-bg-executable-${newNumber}`);			
+		node.classList.remove(`alertanimation-${currentNumber}`);
+		node.classList.add(`alertanimation-${newNumber}`);
+	}
+
+	getCurrentNumber(classlist) {
+		if (classlist.contains("alertanimation-2")) {
+			return "2";
+		} else {
+			return "1"
 		}
 	}
 
-	isDoc(domNode) {
-		return domNode.classList.contains('doc');
-	}
-
-	isLine(domNode) {
-		return domNode.classList.contains('line');
-	}
-
-	isWord(domNode) {
-		return domNode.classList.contains('word');
-	}
-
-	otherFragment(domNode) {
-		if (this.isDoc(domNode)) {
-			return '-doc'
-		}
-		if (this.isLine(domNode)) {
-			return '-line'
-		}
-		if (this.isWord(domNode)) {
-			return '-word'
-		}
-		else return '';
-	}
-
-	getCodespanForAlertAnimation(domNode) {
-		let codespan = null;
+	getSpansToAnimate(domNode) {
+		let spans = [];
 		for (let i = 0; i < domNode.childNodes.length; i++) {
 			let child = domNode.childNodes[i];
-			if (child.classList && child.classList.contains('codespan')) {
-				// this is the part of the lambda that has the params etc
-				codespan = child;
+			if (child.classList && (
+					child.classList.contains('codespan') ||
+					child.classList.contains('innercodespan') ||
+					child.classList.contains('dotspan')
+					)) {
+				spans.push(child);
 			}
 		}
-		// might be null
-		return codespan;
+		return spans;
 	}
 
-	doAlertAnimation(selected, domNode) {
-		let codespan = this.getCodespanForAlertAnimation(domNode);
-		if (!codespan && !this.isDoc(domNode) && !this.isLine(domNode) && !this.isWord(domNode)) {
-			return;
-		}
-		if (!selected && (this.isDoc(domNode) || this.isWord(domNode) || this.isLine(domNode))) {
-			return;
-		}
-		this.setAlertStyle(selected, domNode, codespan);
+
+	doAlertAnimation(domNode) {
+		let spans = this.getSpansToAnimate(domNode);
+		spans.forEach((span) => {
+			this.setAlertStyle(span);
+		});
+		this.setAlertStyle(domNode);
 	}
 }
 

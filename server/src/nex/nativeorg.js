@@ -92,12 +92,9 @@ class NativeOrg extends Org {
 			case '$':
 				return new EString(returnValue);
 			case '^':
-				if (!experiments.ORG_OVERHAUL) {
-					return new Nil();
-				}
 				// otherwise FALL THROUGH
 			default:
-				if (experiments.ORG_OVERHAUL && typeof(returnValue) == 'undefined') {
+				if (typeof(returnValue) == 'undefined') {
 					// function didn't return anything, vodka needs a nil.
 					return new Nil();
 				} else {

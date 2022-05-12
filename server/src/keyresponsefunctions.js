@@ -30,7 +30,6 @@ import { Doc } from './nex/doc.js';
 import { EError } from './nex/eerror.js'; 
 import { EString } from './nex/estring.js'; 
 import { ESymbol } from './nex/esymbol.js'; 
-import { Expectation } from './nex/expectation.js'; 
 import { Float } from './nex/float.js'; 
 import { Integer } from './nex/integer.js'; 
 import { Lambda } from './nex/lambda.js'; 
@@ -72,23 +71,12 @@ import {
 // on Manipulator
 
 
-function figureOutWhatItCanBe(txt) {
-	let intRegex = /^[0-9]/;
-	let commandRegex = /^[a-zA-Z0-9:. /<>=+*-]$/;
-	let symbolRegex = /^[a-zA-Z0-9-_']$/;
-
-	return {
-		integer: intRegex.test(txt),
-		symbol: symbolRegex.test(txt),
-		command: commandRegex.test(txt)	
-	}
-}
 
 const DefaultHandlers = {
 
 	'standardDefault': function(node, txt) {
 		let nex = node.nex;
-		let canBe = figureOutWhatItCanBe(txt);
+		let canBe = Utils.figureOutWhatItCanBe(txt);
 
 		if (canBe.integer) {
 			manipulator.insertAtSelectedObjInsertionPoint(manipulator.newIntegerWithValue(txt));
@@ -158,13 +146,13 @@ const DefaultHandlers = {
 		let isSeparator = !letterRegex.test(txt);
 		let isCommand = (context == ContextType.COMMAND);
 		if (isSeparator) {
-			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
+			if (isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
 				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
 			} else {
 				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt));
 			}
 		} else {
-			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
+			if (isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
 				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
 			} else {
 				if (manipulator.selectLastChild()) {
@@ -184,37 +172,29 @@ const DefaultHandlers = {
 		let isSeparator = !letterRegex.test(txt);
 		let isCommand = (context == ContextType.COMMAND);
 		if (isSeparator) {
-			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
+			if (isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
 				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
 			} else {
-				if (experiments.BETTER_KEYBINDINGS) {
-					if (manipulator.selectLastChild()) {
-						manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt));
-					} else {
-						manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt))
-					}
+				if (manipulator.selectLastChild()) {
+					manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt));
 				} else {
-					manipulator.insertSeparatorFromLine(manipulator.newSeparator(txt), manipulator.selected())
+					manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt))
 				}
 			}
 		} else {
-			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
+			if (isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
 				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
 			} else {
-				if (experiments.BETTER_KEYBINDINGS) {
+				if (manipulator.selectLastChild()) {
 					if (manipulator.selectLastChild()) {
-						if (manipulator.selectLastChild()) {
-							manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
-						} else {
-							manipulator.defaultInsertFor(manipulator.selected(), manipulator.possiblyMakeImmutable(manipulator.newWord(), context));
-							manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
-						}
+						manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
 					} else {
 						manipulator.defaultInsertFor(manipulator.selected(), manipulator.possiblyMakeImmutable(manipulator.newWord(), context));
 						manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
 					}
 				} else {
-					manipulator.insertLetterFromLine(manipulator.newLetter(txt), manipulator.selected())
+					manipulator.defaultInsertFor(manipulator.selected(), manipulator.possiblyMakeImmutable(manipulator.newWord(), context));
+					manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
 				}
 			}
 		}
@@ -228,7 +208,7 @@ const DefaultHandlers = {
 		let isSeparator = !letterRegex.test(txt);
 		let isCommand = (context == ContextType.COMMAND);
 		if (isSeparator) {
-			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
+			if (isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
 				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
 			} else {
 				manipulator.selectLastChild()
@@ -237,7 +217,7 @@ const DefaultHandlers = {
 
 			}
 		} else {
-			if (experiments.BETTER_KEYBINDINGS && isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
+			if (isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
 				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
 			} else {
 				// if we are inserting a letter inside an empty doc, we decide whether to make the line and word
@@ -406,7 +386,7 @@ const KeyResponseFunctions = {
 	'insert-nil-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newNil()); },
 	'insert-instantiator-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newInstantiator()); },
 	'insert-lambda-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newLambda()); },
-	'insert-expectation-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newExpectation()); },
+	'insert-deferredcommand-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newDeferredCommand()); },
 	'insert-word-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newWord()); },
 	'insert-line-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newLine()); },
 	'insert-doc-at-insertion-point': function(s) { manipulator.defaultInsertFor(s, manipulator.newDoc()); },
@@ -422,7 +402,7 @@ const KeyResponseFunctions = {
 
 	'wrap-in-command': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newCommand()); },
 	'wrap-in-lambda': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newLambda()); },
-	'wrap-in-expectation': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newExpectation()); },
+	'wrap-in-deferredcommand': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newDeferredCommand()); },
 	'wrap-in-word': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newWord()); },
 	'wrap-in-line': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newLine()); },
 	'wrap-in-doc': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newDoc()); },
@@ -434,7 +414,6 @@ const KeyResponseFunctions = {
 	'force-insert-after': function(s) { manipulator.forceInsertAfter(); },
 	'force-insert-before': function(s) { manipulator.forceInsertBefore(); },
 
-	// used by expectation - delete handler gets rid of garbage
 	'call-delete-handler-then-remove-selected-and-select-previous-sibling': function(s) {
 		s.getNex().callDeleteHandler();
 		manipulator.removeSelectedAndSelectPreviousSibling();
@@ -450,6 +429,5 @@ const KeyResponseFunctions = {
 
 export {
 	KeyResponseFunctions,
-	DefaultHandlers,
-	figureOutWhatItCanBe
+	DefaultHandlers
 }

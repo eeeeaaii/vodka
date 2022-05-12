@@ -144,6 +144,10 @@ class NexContainer extends Nex {
 		}
 	}
 
+	canDoInsertInside() {
+		return true;
+	}
+
 	setMutableRecursive(val) {
 		this.setMutable(val);
 		this.doForEachChild(function(c) {
@@ -312,6 +316,13 @@ class NexContainer extends Nex {
 			}
 		}
 		return -100;// I have reasons
+	}
+
+	// can be overridden in subclasses (for example, deferred command)
+	// so that a different set of children (other than the real children)
+	// can be rendered if the circumstances warrant it.
+	getRenderableChildAt(i, useDefault) {
+		return this.getChildAt(i, useDefault);
 	}
 
 	getChildAt(i, useDefault) {

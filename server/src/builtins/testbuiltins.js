@@ -15,241 +15,176 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { Nex } from '../nex/nex.js' 
-import { NexContainer } from '../nex/nexcontainer.js' 
-import { ValueNex } from '../nex/valuenex.js' 
-import { Bool } from '../nex/bool.js' 
+import * as Utils from '../utils.js'
+
 import { Builtin } from '../nex/builtin.js' 
-import { Closure } from '../nex/closure.js' 
-import { Command } from '../nex/command.js' 
-import { Doc } from '../nex/doc.js' 
-import { EError } from '../nex/eerror.js' 
-import { EString } from '../nex/estring.js' 
-import { ESymbol } from '../nex/esymbol.js' 
-import { Expectation } from '../nex/expectation.js' 
-import { Float } from '../nex/float.js' 
-import { Integer } from '../nex/integer.js' 
-import { Lambda } from '../nex/lambda.js' 
-import { Letter } from '../nex/letter.js' 
-import { Line } from '../nex/line.js' 
-import { NativeOrg } from '../nex/nativeorg.js' 
-import { Nil } from '../nex/nil.js' 
-import { Org } from '../nex/org.js' 
-import { Root } from '../nex/root.js' 
-import { Separator } from '../nex/separator.js' 
-import { Word } from '../nex/word.js' 
+import { Bool } from '../nex/bool.js' 
 
 function createTestBuiltins() {
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isBoolean(env, executionEnvironment) {
-		return new Bool(env.lb('nex') instanceof Bool);
-	}
 
 	Builtin.createBuiltin(
 		'is-boolean',
 		[ 'nex' ],
-		$isBoolean
+		function $isBoolean(env, executionEnvironment) {
+			return new Bool(Utils.isBool(env.lb('nex')));
+		},
+		`returns true if |nex is a boolean.`
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isCommand(env, executionEnvironment) {
-		return new Bool(env.lb('nex') instanceof Command);
-	}
 
 	Builtin.createBuiltin(
 		'is-command',
 		[ 'nex' ],
-		$isCommand
+		function $isCommand(env, executionEnvironment) {
+			return new Bool(Utils.isCommand(env.lb('nex')));
+		},
+		`returns true if |nex is a command.`
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isDoc(env, executionEnvironment) {
-		return new Bool(env.lb('nex') instanceof Doc);
-	}
 
 	Builtin.createBuiltin(
-		'is-page',
+		'is-doc',
 		[ 'nex' ],
-		$isDoc
+		function $isDoc(env, executionEnvironment) {
+			return new Bool(Utils.isDoc(env.lb('nex')));
+		},
+		`returns true if |nex is a doc.`
 	);
-
-	Builtin.aliasBuiltin('is-doc', 'is-page');
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isEmpty(env, executionEnvironment) {
-		let lst = env.lb('list');
-		let rb = !lst.hasChildren();
-		return new Bool(rb);
-	}
 
 	Builtin.createBuiltin(
 		'is-empty',
 		[ 'list()' ],
-		$isEmpty
+		function $isEmpty(env, executionEnvironment) {
+			let lst = env.lb('list');
+			let rb = !lst.hasChildren();
+			return new Bool(rb);
+		},
+		`returns true if |list is empty.`
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isExpectation(env, executionEnvironment) {
-		return new Bool(env.lb('nex') instanceof Expectation);
-	}
 
 	Builtin.createBuiltin(
-		'is-expectation',
+		'is-deferred-command',
 		[ 'nex' ],
-		$isExpectation
+		function $isDeferredCommand(env, executionEnvironment) {
+			return new Bool(Utils.isDeferredCommand(env.lb('nex')));
+		},
+		`returns true if |nex is a deferred command.`
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isError(env, executionEnvironment) {
-		return new Bool(env.lb('nex') instanceof EError);
-	}
+	Builtin.createBuiltin(
+		'is-deferred-value',
+		[ 'nex' ],
+		function $isDeferredValue(env, executionEnvironment) {
+			return new Bool(Utils.isDeferredValue(env.lb('nex')));
+		},
+		`returns true if |nex is a deferred value.`
+	);
 
 	Builtin.createBuiltin(
 		'is-error',
 		[ 'nex' ],
-		$isError
+		function $isError(env, executionEnvironment) {
+			return new Bool(Utils.isError(env.lb('nex')));
+		},
+		`returns true if |nex is an error.`
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isFloat(env, executionEnvironment) {
-		return new Bool(env.lb('nex') instanceof Float);
-	}
 
 	Builtin.createBuiltin(
 		'is-float',
 		[ 'nex' ],
-		$isFloat
+		function $isFloat(env, executionEnvironment) {
+			return new Bool(Utils.isFloat(env.lb('nex')));
+		},
+		`returns true if |nex is a float.`
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isInteger(env, executionEnvironment) {
-		return new Bool(env.lb('nex') instanceof Integer);
-	}
 
 	Builtin.createBuiltin(
 		'is-integer',
 		[ 'nex' ],
-		$isInteger
+		function $isInteger(env, executionEnvironment) {
+			return new Bool(Utils.isInteger(env.lb('nex')));
+		},
+		`returns true if |nex is an integer.`
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isLambda(env, executionEnvironment) {
-		return new Bool(env.lb('nex') instanceof Lambda);
-	}
 
 	Builtin.createBuiltin(
 		'is-lambda',
 		[ 'nex' ],
-		$isLambda
+		function $isLambda(env, executionEnvironment) {
+			return new Bool(Utils.isLambda(env.lb('nex')));
+		},
+		`returns true if |nex is a lambda.`
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isLetter(env, executionEnvironment) {
-		return new Bool(env.lb('nex') instanceof Letter);
-	}
 
 	Builtin.createBuiltin(
 		'is-letter',
 		[ 'nex' ],
-		$isLetter
+		function $isLetter(env, executionEnvironment) {
+			return new Bool(Utils.isLetter(env.lb('nex')));
+		},
+		`returns true if |nex is a letter.`
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isLine(env, executionEnvironment) {
-		return new Bool(env.lb('nex') instanceof Line);
-	}
 
 	Builtin.createBuiltin(
 		'is-line',
 		[ 'nex' ],
-		$isLine
+		function $isLine(env, executionEnvironment) {
+			return new Bool(Utils.isLine(env.lb('nex')));
+		},
+		`returns true if |nex is a line.`
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isList(env, executionEnvironment) {
-		return new Bool(env.lb('nex') instanceof NexContainer);
-	}
 
 	Builtin.createBuiltin(
 		'is-list',
 		[ 'nex' ],
-		$isList
+		function $isList(env, executionEnvironment) {
+			return new Bool(Utils.isNexContainer(env.lb('nex')));
+		},
+		`returns true if |nex is a list.`
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isNil(env, executionEnvironment) {
-		return new Bool(env.lb('nex') instanceof Nil);
-	}
 
 	Builtin.createBuiltin(
 		'is-nil',
 		[ 'nex' ],
-		$isNil
+		function $isNil(env, executionEnvironment) {
+			return new Bool(Utils.isNil(env.lb('nex')));
+		},
+		`returns true if |nex is nil.`
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isSeparator(env, executionEnvironment) {
-		return new Bool(env.lb('nex') instanceof Separator
-			&& !(env.lb('nex') instanceof Letter));
-	}
 
 	Builtin.createBuiltin(
 		'is-separator',
 		[ 'nex' ],
-		$isSeparator
+		function $isSeparator(env, executionEnvironment) {
+			return new Bool(Utils.isSeparator(env.lb('nex')));
+		},
+		`returns true if |nex is a separator.`
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isString(env, executionEnvironment) {
-		return new Bool(env.lb('nex') instanceof EString);
-	}
 
 	Builtin.createBuiltin(
 		'is-string',
 		[ 'nex' ],
-		$isString
+		function $isString(env, executionEnvironment) {
+			return new Bool(Utils.isString(env.lb('nex')));
+		},
+		`returns true if |nex is a string.`
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isSymbol(env, executionEnvironment) {
-		return new Bool(env.lb('nex') instanceof ESymbol);
-	}
 
 	Builtin.createBuiltin(
 		'is-symbol',
 		[ 'nex' ],
-		$isSymbol
+		function $isSymbol(env, executionEnvironment) {
+			return new Bool(Utils.isSymbol(env.lb('nex')));
+		},
+		`returns true if |nex is a symbol.`
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $isWord(env, executionEnvironment) {
-		return new Bool(env.lb('nex') instanceof Word);
-	}
 
 	Builtin.createBuiltin(
 		'is-word',
 		[ 'nex' ],
-		$isWord
+		function $isWord(env, executionEnvironment) {
+			return new Bool(Utils.isWord(env.lb('nex')));
+		},
+		`returns true if |nex is a word.`
 	);
-
 }
 
 export { createTestBuiltins }

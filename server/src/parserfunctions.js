@@ -26,7 +26,7 @@ import { Float } from './nex/float.js';
 import { Nil } from './nex/nil.js';
 import { Org } from './nex/org.js';
 import { Instantiator } from './nex/instantiator.js';
-import { Expectation } from './nex/expectation.js';
+import { DeferredCommand } from './nex/deferredcommand.js';
 import { Lambda } from './nex/lambda.js';
 import { Command } from './nex/command.js';
 import { Word } from './nex/word.js';
@@ -49,11 +49,9 @@ function concatParserString(arr) {
 }
 
 function decorateNex(nex, tags, nonmutable) {
-	if (experiments.MUTABLES) {
-		if (!nonmutable) {
-			nex.setMutable(true);
-		}		
-	}
+	if (!nonmutable) {
+		nex.setMutable(true);
+	}		
 	if (!tags) {
 		return nex;
 	}
@@ -134,8 +132,8 @@ function makeOrgList(children, privateData, taglist, verthoriz, nonmutable) {
 	return t;
 }
 
-function makeExpList(children, privateData, taglist, verthoriz, nonmutable) {
-	let t = new Expectation();
+function makeDeferredCommandList(children, privateData, taglist, verthoriz, nonmutable) {
+	let t = new DeferredCommand();
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
 	decorateNex(t, taglist, nonmutable);
@@ -237,7 +235,7 @@ export {
 	makeCommandList,
 	makeLambdaList,
 	makeOrgList,
-	makeExpList,
+	makeDeferredCommandList,
 	makeInstanceList,
 	makeInstanceAtom,
 	makeInstantiatorList,

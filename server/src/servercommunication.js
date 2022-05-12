@@ -183,7 +183,7 @@ function evaluatePackage(nex) {
 // This util is meant to be used from functions like
 // save-template and save-package.
 // These aren't meant to be called from "code" because it doesn't
-// give you access to success/failure, or the returned expectation.
+// give you access to success/failure, or the returned deferred value.
 // It's more of an ide shortcut kind of thing.
 function saveShortcut(namesym, val, callback) {
 	let nametype = namesym.getTypeName();

@@ -145,7 +145,8 @@ class Instantiator extends NexContainer {
 			} else {
 				codespan.classList.remove('editing');
 			}
-			let html = '<span class="caret glyphleft">^</span>' + this.orgname;
+			let html = this.isEditing ? '<span class="caret glyphleft">^</span>' : '';
+			html += this.orgname;
 			if (!this.isEditing) {
 				html += '<span class="caret glyphright">^</span>'
 			}

@@ -36,7 +36,7 @@ import { experiments } from '../globalappflags.js'
 function createEnvironmentBuiltins() {
 
 	Builtin.createBuiltin(
-		'bind--to',
+		'bind',
 		[ '_name@', 'nex' ],
 		function $bind(env, executionEnvironment) {
 			let val = env.lb('nex');
@@ -45,9 +45,9 @@ function createEnvironmentBuiltins() {
 			BINDINGS.bindInPackage(namestr, val);
 			return name;
 		},
-		'binds a new global variable named |name with a value of |nex.'
+		'Binds a new global variable named |name to |nex. Aliases: bind to'
 	);
-	Builtin.aliasBuiltin('bind', 'bind--to');
+	Builtin.aliasBuiltin('bind to', 'bind');
 
 
 	Builtin.createBuiltin(
@@ -60,18 +60,15 @@ function createEnvironmentBuiltins() {
 				ss = ssnex.getTypedValue();
 			}
 			let matches = autocomplete.findAllBindingsMatching(ss);
-			if (matches.length == 1) {
-				return new ESymbol(matches[0]);
-			} else {
-				let r = new Doc();
-				for (let j = 0; j < matches.length; j++) {
-					r.appendChild(new ESymbol(matches[j]))
-				}
-				return r;
+			let r = new Doc();
+			for (let j = 0; j < matches.length; j++) {
+				r.appendChild(new ESymbol(matches[j].name))
 			}
+			return r;
 		},
-		'returns a list of all globally bound variables.'
+		'Returns a list of all globally bound variables.'
 	);
+
 
 	Builtin.createBuiltin(
 		'builtins',
@@ -83,18 +80,15 @@ function createEnvironmentBuiltins() {
 				ss = ssnex.getTypedValue();
 			}
 			let matches = autocomplete.findAllBuiltinsMatching(ss);
-			if (matches.length == 1) {
-				return new ESymbol(matches[0]);
-			} else {
-				let r = new Doc();
-				for (let j = 0; j < matches.length; j++) {
-					r.appendChild(new ESymbol(matches[j]))
-				}
-				return r;
+			let r = new Doc();
+			for (let j = 0; j < matches.length; j++) {
+				r.appendChild(new ESymbol(matches[j].name))
 			}
+			return r;
 		},
-		'returns a list of all vodka builtins.'
+		'Returns a list of all standard Vodka builtin functions.'
 	);
+
 
 	Builtin.createBuiltin(
 		'is-bound',
@@ -115,11 +109,12 @@ function createEnvironmentBuiltins() {
 				}
 			}
 		},
-		'returns true if the symbol |name is bound in the global environment.'
+		'Returns true if the symbol |name is bound in the global environment.'
 	);
 
+
 	Builtin.createBuiltin(
-		'let--be',
+		'let',
 		[ '_name@', 'nex' ],
 		function $let(env, executionEnvironment) {
 			let rhs = env.lb('nex');
@@ -131,99 +126,88 @@ function createEnvironmentBuiltins() {
 			}
 			return rhs;
 		},
-		'binds |name to |nex in the current closure\'s local scope.'
+		'Binds the variable |name to |nex in the current closure\'s local scope. Aliases: let be'
 	);
-	Builtin.aliasBuiltin('let', 'let--be');
+	Builtin.aliasBuiltin('let be', 'let');
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $set(env, executionEnvironment) {
-		let rhs = env.lb('nex');
-		let namenex = env.lb('name');
-		let name = namenex.getTypedValue();
-		let tag = null;
-		if (namenex.numTags() == 1) {
-			tag = namenex.getTag(0);
-		}
-		executionEnvironment.set(name, rhs, tag);
-		return rhs;
-	}
 
 	Builtin.createBuiltin(
 		'set',
 		[ '_name@', 'nex' ],
-		$set,
-		'changes |name to be bound to |nex regardless of scope (|name can be a local variable, in an enclosing scope, or a globally bound symbol).'
+		function $set(env, executionEnvironment) {
+			let namenex = env.lb('name');
+			let rhs = env.lb('nex');
+			let name = namenex.getTypedValue();
+			let tag = null;
+			if (namenex.numTags() == 1) {
+				tag = namenex.getTag(0);
+			}
+			executionEnvironment.set(name, rhs, tag);
+			return rhs;
+		},
+		`Changes the binding for |name so that it becomes bound to |nex, regardless of the scope of |name (it can be a local variable, in an enclosing scope, or a globally bound symbol). This function doesn't change the scope of |name.`
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $unclose(env, executionEnvironment) {
-		// replaces the closure with the dynamic scope of the function we are in
-		let rhs = env.lb('closure');
-		rhs.setLexicalEnvironment(executionEnvironment);
-		return rhs;
-	}
 
 	Builtin.createBuiltin(
 		'unclose',
 		[ 'closure&' ],
-		$unclose,
-		'replaces the lexical environment of |closure with the current lexical environment.'
+		function $unclose(env, executionEnvironment) {
+			// replaces the closure with the dynamic scope of the function we are in
+			let rhs = env.lb('closure');
+			rhs.setLexicalEnvironment(executionEnvironment);
+			return rhs;
+		},
+		'Replaces the lexical environment of |closure with the current lexical environment.'
 	);	
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $use(env, executionEnvironment) {
-		let packageName = env.lb('name').getTypedValue();
-		if (!BINDINGS.isKnownPackageName(packageName)) {
-			return new EError(`use: invalid package name ${packageName}. Sorry!`);
-		}
-		executionEnvironment.usePackage(packageName);
-		return new Nil();
-	}
 
 	Builtin.createBuiltin(
 		'use',
 		[ '_name@' ],
-		$use,
-		'makes it so bindings in the package |name can be dereferenced without the package identifier (effect lands for the remainder of the current scope).'
-	);	
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $using(env, executionEnvironment) {
-		let packageList = env.lb('namelist');
-		for (let i = 0; i < packageList.numChildren(); i++) {
-			let c = packageList.getChildAt(i);
-			if (!(c.getTypeName() == '-symbol-')) {
-				return new EError(`using: first arg must be a list of symbols that denote package names, but ${c.prettyPrint()} is not a symbol. Sorry!`);
-			}
-			let packageName = c.getTypedValue();
+		function $use(env, executionEnvironment) {
+			let packageName = env.lb('name').getTypedValue();
 			if (!BINDINGS.isKnownPackageName(packageName)) {
-				return new EError(`using: invalid package name ${packageName}. Sorry!`);
+				return new EError(`use: invalid package name ${packageName}. Sorry!`);
 			}
 			executionEnvironment.usePackage(packageName);
-		}
-		let lst = env.lb('nex');
-		let result = new Nil();
-		for (let j = 0; j < lst.numChildren(); j++) {
-			let c = lst.getChildAt(j);
-			result = evaluateNexSafely(c, executionEnvironment);
-			if (Utils.isFatalError(result)) {
-				result = wrapError('&szlig;', `using: error in expression ${j+1}, cannot continue. Sorry!`, result);
-				return result;
-			}
-		}
-		return result;
-	}
+			return new Nil();
+		},
+		'Makes it so bindings in the package |name can be dereferenced without the package identifier. Stays in effect for the remainder of the current scope.'
+	);	
+
 
 	Builtin.createBuiltin(
 		'using',
 		[ '_namelist()', '_nex...' ],
-		$using,
+		function $using(env, executionEnvironment) {
+			let packageList = env.lb('namelist');
+			for (let i = 0; i < packageList.numChildren(); i++) {
+				let c = packageList.getChildAt(i);
+				if (!(c.getTypeName() == '-symbol-')) {
+					return new EError(`using: first arg must be a list of symbols that denote package names, but ${c.prettyPrint()} is not a symbol. Sorry!`);
+				}
+				let packageName = c.getTypedValue();
+				if (!BINDINGS.isKnownPackageName(packageName)) {
+					return new EError(`using: invalid package name ${packageName}. Sorry!`);
+				}
+				executionEnvironment.usePackage(packageName);
+			}
+			let lst = env.lb('nex');
+			let result = new Nil();
+			for (let j = 0; j < lst.numChildren(); j++) {
+				let c = lst.getChildAt(j);
+				result = evaluateNexSafely(c, executionEnvironment);
+				if (Utils.isFatalError(result)) {
+					result = wrapError('&szlig;', `using: error in expression ${j+1}, cannot continue. Sorry!`, result);
+					return result;
+				}
+			}
+			return result;
+		},
 		'makes it so bindings in the packages in |namelist can be dereferenced without the package identifier when evaluating the rest of the arguments.'
 	);	
+
 
 	Builtin.createBuiltin(
 		'dump-memory',
@@ -246,7 +230,7 @@ function createEnvironmentBuiltins() {
 			}
 			return doLevel(lexenv);
 		},
-		'returns the memory environment of |exp, in the form of a list containing all bound symbols along with their values.'
+		'Returns the memory environment of |closure, in the form of a list containing all bound symbols along with their values.'
 	);
 
 
@@ -257,7 +241,7 @@ function createEnvironmentBuiltins() {
 			let nex = env.lb('nex');
 			return new EString('' + nex.getID());
 		},
-		'returns the in-memory ID of |nex as a string.'
+		'Returns the in-memory ID of |nex as a string.'
 	);
 
 

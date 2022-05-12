@@ -15,8 +15,6 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-const AudioContext = window.AudioContext || window.webkitAudioContext;
-
 let ctx = null;
 let channelMergerNode = null;
 let SAMPLE_RATE = 48000;
@@ -174,6 +172,7 @@ function startRecordingAudio(wt) {
 
 function maybeCreateAudioContext() {
 	if (ctx == null) {
+		let AudioContext = window.AudioContext || window.webkitAudioContext;
 		ctx = new AudioContext();
 		ctx.destination.channelCount = ctx.destination.maxChannelCount;
 		channelMergerNode = ctx.createChannelMerger(ctx.destination.maxChannelCount);

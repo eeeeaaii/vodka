@@ -25,7 +25,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 // we have:
 // - user events, which preempt everything because responsiveness
-// - expectation fulfill, which should preempt rendering because they affect how things get rendered
+// - deferred fulfill, which should preempt rendering because they affect how things get rendered
 // - rendering
 // - true low priority things, like alert animation
 // additionally, in certain contexts we need to enqueue render events at an equal priority
@@ -34,7 +34,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 // do not do the thing where you have multiple names for a queue
 const USER_EVENT_PRIORITY = 0;
-const EXPECTATION_PRIORITY = 1;
+const DEFERRED_PRIORITY = 1;
 const RENDER_PRIORITY = 2;
 const ALERT_ANIMATION_PRORITY = 3;
 const GC_PRIORITY = 4;
@@ -52,7 +52,7 @@ class EventQueue {
 	constructor() {
 		this.queueSet = [];
 		this.queueSet[USER_EVENT_PRIORITY] = [];
-		this.queueSet[EXPECTATION_PRIORITY] = [];
+		this.queueSet[DEFERRED_PRIORITY] = [];
 		this.queueSet[RENDER_PRIORITY] = [];
 		this.queueSet[ALERT_ANIMATION_PRORITY] = [];
 		this.queueSet[GC_PRIORITY] = [];
@@ -64,8 +64,8 @@ class EventQueue {
 		eventQueueDispatcher.createDelegate('enqueueDoKeyInput', this);
 		eventQueueDispatcher.createDelegate('enqueueDoClickHandlerAction', this);
 		eventQueueDispatcher.createDelegate('enqueueImportantTopLevelRender', this);
-		eventQueueDispatcher.createDelegate('enqueueExpectationFulfill', this);
-		eventQueueDispatcher.createDelegate('enqueueExpectationCallback', this);
+		eventQueueDispatcher.createDelegate('enqueueDeferredFulfill', this);
+		eventQueueDispatcher.createDelegate('enqueueDeferredFulfillWithRepeat', this);
 		eventQueueDispatcher.createDelegate('enqueueTopLevelRender', this);
 		eventQueueDispatcher.createDelegate('enqueueGC', this);
 	}
@@ -179,37 +179,35 @@ class EventQueue {
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
-	enqueueExpectationFulfill(exp, result) {
-		EVENT_DEBUG ? console.log('enqueueing: ExpectationFulfill'):null;
+	enqueueDeferredFulfill(deferred, result) {
+		EVENT_DEBUG ? console.log('enqueueing: DeferredFulfill'):null;
 		let item = {
-			action: "expectationFulfill",
-			exp: exp,
+			action: "deferredFulfill",
+			deferred: deferred,
 			result: result,
 			shouldDedupe: false,
 			equals: null, // not needed when shouldDedupe = false
-			do: function doExpectationFulfill() {
-				this.exp.fulfill(this.result);
+			do: function doDeferredFulfill() {
+				this.deferred.finish(this.result);
 			}
 		};
-		this.queueSet[EXPECTATION_PRIORITY].push(item);
+		this.queueSet[DEFERRED_PRIORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
-	// this is actually pretty generic but the point is that it gets put
-	// at expectation priority
-	enqueueExpectationCallback(callback, result) {
-		EVENT_DEBUG ? console.log('enqueueing: ExpectationCallback'):null;
+	enqueueDeferredFulfillWithRepeat(deferred, result) {
+		EVENT_DEBUG ? console.log('enqueueing: DeferredFulfillWithRepeat'):null;
 		let item = {
-			action: "expectationCallback",
+			action: "deferredFulfillWithRepeat",
+			deferred: deferred,
 			result: result,
-			callback: callback,
 			shouldDedupe: false,
 			equals: null, // not needed when shouldDedupe = false
-			do: function doExpectationCallback() {
-				this.callback(this.result);
+			do: function doDeferredFulfillWithRepeat() {
+				this.deferred.finishWithRepeat(this.result);
 			}
 		};
-		this.queueSet[EXPECTATION_PRIORITY].push(item);
+		this.queueSet[DEFERRED_PRIORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 

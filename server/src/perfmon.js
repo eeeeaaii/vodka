@@ -28,7 +28,6 @@ class PerformanceMonitor {
 		this.calls = 0;
 		this.returns = 0;
 		this.active = false;
-		this.stackLevel = 0;
 	}
 
 	getCallStackString() {
@@ -66,18 +65,11 @@ class PerformanceMonitor {
 		if (!this.methods[methodName]) {
 			this.registerMethod(methodName);
 		}
-		// this.callstack[this.stackLevel++] = ':' + methodName;
 		let now = window.performance.now();
 		let previousMethod = this.methods[this.inMethod];
 		previousMethod.privateTime += now - this.lastStartOrEnd;
 		this.inMethod = methodName;
 		this.methods[methodName].calls++;
-		// let callFrom = this.getCallStackString();
-		// if (!this.methods[methodName].callsFrom[callFrom]) {
-		// 	this.methods[methodName].callsFrom[callFrom] = 0;
-		// } else {
-		// 	this.methods[methodName].callsFrom[callFrom]++;
-		// }
 		this.lastStartOrEnd = now;
 		this.calls++;
 

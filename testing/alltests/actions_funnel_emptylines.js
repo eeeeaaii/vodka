@@ -25,27 +25,49 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testspec// [none]
 //starttest//
 var harness = require('../testharness');
-harness.runTest(function() {
-doKeyInput('Escape', 'Escape', false, false, false);
-doKeyInput('e', 'KeyE', false, false, false);
-doKeyInput('m', 'KeyM', false, false, false);
-doKeyInput('p', 'KeyP', false, false, false);
-doKeyInput('t', 'KeyT', false, false, false);
-doKeyInput('y', 'KeyY', false, false, false);
-doKeyInput('l', 'KeyL', false, false, false);
-doKeyInput('i', 'KeyI', false, false, false);
-doKeyInput('n', 'KeyN', false, false, false);
-doKeyInput('e', 'KeyE', false, false, false);
-doKeyInput('s', 'KeyS', false, false, false);
-doKeyInput('Enter', 'Enter', false, false, false);
-doKeyInput('Enter', 'Enter', false, false, false);
-doKeyInput('Enter', 'Enter', false, false, false);
-doKeyInput('Enter', 'Enter', false, false, false);
-doKeyInput('t', 'KeyT', false, false, false);
-doKeyInput('h', 'KeyH', false, false, false);
-doKeyInput('e', 'KeyE', false, false, false);
-doKeyInput('r', 'KeyR', false, false, false);
-doKeyInput('e', 'KeyE', false, false, false);
-doKeyInput('.', 'Period', false, false, false);
-});
+
+var testactions = [];
+
+testactions.push({type:'keydown',code:'KeyE'});
+testactions.push({type:'keyup',code:'KeyE'});
+testactions.push({type:'keydown',code:'KeyM'});
+testactions.push({type:'keyup',code:'KeyM'});
+testactions.push({type:'keydown',code:'KeyP'});
+testactions.push({type:'keyup',code:'KeyP'});
+testactions.push({type:'keydown',code:'KeyT'});
+testactions.push({type:'keyup',code:'KeyT'});
+testactions.push({type:'keydown',code:'KeyY'});
+testactions.push({type:'keyup',code:'KeyY'});
+testactions.push({type:'keydown',code:'KeyL'});
+testactions.push({type:'keyup',code:'KeyL'});
+testactions.push({type:'keydown',code:'KeyI'});
+testactions.push({type:'keyup',code:'KeyI'});
+testactions.push({type:'keydown',code:'KeyN'});
+testactions.push({type:'keyup',code:'KeyN'});
+testactions.push({type:'keydown',code:'KeyE'});
+testactions.push({type:'keyup',code:'KeyE'});
+testactions.push({type:'keydown',code:'KeyS'});
+testactions.push({type:'keyup',code:'KeyS'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keydown',code:'KeyT'});
+testactions.push({type:'keyup',code:'KeyT'});
+testactions.push({type:'keydown',code:'KeyH'});
+testactions.push({type:'keyup',code:'KeyH'});
+testactions.push({type:'keydown',code:'KeyE'});
+testactions.push({type:'keyup',code:'KeyE'});
+testactions.push({type:'keydown',code:'KeyR'});
+testactions.push({type:'keyup',code:'KeyR'});
+testactions.push({type:'keydown',code:'KeyE'});
+testactions.push({type:'keyup',code:'KeyE'});
+testactions.push({type:'keydown',code:'Period'});
+testactions.push({type:'keyup',code:'Period'});
+
+harness.runTestNew(testactions, 'direct-legacy');
 //endtest//

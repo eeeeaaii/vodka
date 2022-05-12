@@ -1,4 +1,4 @@
-import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
+import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 
 class ManipulatorDragHandler {
 

@@ -37,6 +37,7 @@ body, html {
 	*/
 }
 
+
 #codepane {
 	height: 100%;
 	width: 100%;
@@ -56,6 +57,10 @@ body, html {
 	opacity: .4;
 }
 
+.faint {
+	opacity: .4;
+}
+
 #vodkaroot.newselected {
 	padding: 3px;
 	border: 3px solid var(--selected-border);	
@@ -65,7 +70,6 @@ body, html {
 }
 
 .nex {
-	/*max-width:100%;*/
 	position:static;
 
 }
@@ -111,135 +115,18 @@ body, html {
 	opacity: 0.2;
 }
 
-.selected.exploded > .objecttag {
+.newselected.exploded > .objecttag {
 	opacity: 1.0;
 	z-index: 100;
 }
 
-#uberhelpcontainer {
-	display: none;
-	flex-direction: column;
-	position:absolute;
-	z-index: 1000;
-	margin: 20px;	
-}
 
-.helpmenupanel {
-	display: flex;
-	flex-direction: row;
-	font-family: Courier;
-	font-size: 9px;
-	border-right: 2px solid #88003f;
-	border-top: 2px solid #88003f;
-	border-bottom: 2px solid #88003f;
-	background-color: #ef99aa;
-	padding: 0px;
-	margin-bottom: 6px;
-}
-
-.helpmenuitem {
-	display: flex;
-	border-left: 2px solid #88003f;
-	padding: 6px;	
-	margin: 0px;
-	flex-grow: 1;
-	cursor: pointer;
-	text-align: center;
-}
-
-.infopanel {
-	display: block;
-	font-family: Courier;
-	font-size: 9px;
-	border: 2px solid #88003f;
-	background-color: #ef99aa;
-	padding: 20px;
-}
-
-.infopanel .infotitle {
-	padding: 0;
-	margin: 0;
-	font-size: 20px;
-	margin-bottom: 18px;
-}
-
-.infopanel .infosubheader {
-	padding: 0;
-	margin: 0;
-	margin-bottom: 12px;
-	font-size: 12px;
-}
-
-.infopanel .infoheading {
-	padding: 0;
-	margin: 0;
-	font-size: 14px;
-	font-weight: bold;	
-}
-
-
-.infopanel .infoline {
-	padding: 0;
-	margin: 0;
-	font-size: 10px;	
-}
-
-.infopanel .infospacer{
-	padding: 0;
-	margin: 0;
-	font-size: 10px;	
-	height: 12px;
-}
-
-.infopanel .infolinemargin {
-	padding: 0;
-	margin: 0;
-	margin-top: 4px;
-	margin-bottom: 4px;
-	font-size: 10px;	
-}
-
-.infopanel .infoindent {
-	padding-left: 16px;
-}
-
-.alwaysvisible {
-	visibility: visible !important;
-}
-
-.infopanel .qmark {
-	display: inline-block;
-	font-size:26px;
-	padding: 6px;
-	margin: 0;
-	font-family: Georgia;
-	background-color: #f1dce5;
-	border: 1px solid #88003f;
-}
-
-.infopanel .infohotkey {
-	display: inline-block;
-	font-size: 1.2em;
-	font-weight: bold;
-	margin-right: 5px;
-	margin-top: 1px;
-	margin-bottom: 1px;
-	padding-left: 3px;
-	padding-right: 3px;
-	padding-bottom: 2px;
-	border: 1px solid #88003f;	
-	background-color: #f1dce5;
-}
-
-.infopanel .infohotkeylarge {
-	font-size: 1.6em;
-}
-
+/*
 #wavetablemanipulator {
 	position: absolute;
 	width: 100%;
 	height: 100%;
-	display: none; /* code changes it to block */
+	display: none; / * code changes it to block * /
 	justify-content: center;
 	align-items: center;
 }
@@ -295,142 +182,4 @@ body, html {
 #wtmhorizsize {
 	height: 80px;
 	background-color: #000000;
-}
-
-.cursorblink {
-  animation: blink 2s linear infinite;
-}
-
-@keyframes blink {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 1;
-  }
-  51% {
-    opacity: 0;
-  }
-  99% {
-    opacity: 0;
-  }
-}
-
-.faintcursorblink {
-  animation: faintblink 2s linear infinite;
-}
-
-@keyframes faintblink {
-  0% {
-    opacity: .33;
-  }
-  50% {
-    opacity: .33;
-  }
-  51% {
-    opacity: 0;
-  }
-  99% {
-    opacity: 0;
-  }
-}
-
-.squareblink {
-	animation: sblink 2s linear infinite;
-}
-
-@keyframes sblink {
-	0% {
-		border: 2px dotted #ff7777;
-	}
-	50% {
-		border: 2px dashed #ff7777;
-	}
-}
-
-.faintsquareblink {
-	animation: fsblink 2s linear infinite;
-}
-
-@keyframes fsblink {
-	0% {
-		border: 2px dotted #ff7777;
-	}
-	50% {
-		border: 2px dashed #ff7777;
-	}
-}
-
-
-.insertionpip {
-	width: 5px;
-	height: 6px;
-	padding: 0px;
-	color: #ff7777;
-	line-height: 0.4;
-	align-self: flex-start;
-	font-size: 1.2em;
-}
-
-.pipvparentindent {
-	margin-top: 3px;
-	margin-bottom: 3px;
-	margin-left: 25px;
-}
-
-.pipvparent {
-	margin-top: 3px;
-	margin-bottom: 3px;
-	margin-left: 4px;
-}
-
-.piphparent {
-	margin-left: 3px;
-	margin-right: 3px;
-}
-
-.pipinhcontainer {
-	margin-left: 3px;
-	margin-right: 3px;
-}
-
-.pipinvcontainer {
-
-}
-
-.pipparentusingeditor {
-	opacity: .33;
-}
-
-.insertionsquare {
-	padding: 4px;
-	border: 2px dotted #ff7777;
-	margin: 3px;
-}
-
-#helpbutton {
-	display: none;
-	position: fixed;
-	cursor: pointer;
-	top: 0px;
-	right: 0px;
-	margin-top: 3px;
-	margin-right: 3px;
-	font-family: Courier;
-	font-size: 9px;
-	border: 2px solid #88003f;
-	background-color: #ef99aa;
-	padding: 3px 5px 5px 3px;
-	z-index: 1001;
-}
-
-
-/*
-			<div id="wtmclosebutton"></div>
-			<div id="wtmvertzoom"></div>
-			<div id="wtmhorizgroup">
-				<div id="wtmhorizzoom"></div>
-				<div id="wtmhorizmove"></div>
-				<div id="wtmhorizsize"></div>
-			</div>
-*/
+}*/

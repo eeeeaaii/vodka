@@ -25,14 +25,29 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testspec// [none]
 //starttest//
 var harness = require('../testharness');
-harness.runTest(function() {
-doKeyInput('Escape', 'Escape', false, false, false);
-doKeyInput('Shift', 'ShiftRight', true, false, false);
-doKeyInput('#', 'Digit3', true, false, false);
-doKeyInput('#', 'Digit3', true, false, false);
-doKeyInput('#', 'Digit3', true, false, false);
-doKeyInput('#', 'Digit3', true, false, false);
-doKeyInput('ArrowUp', 'ArrowUp', false, false, false);
-doKeyInput('ArrowUp', 'ArrowUp', false, false, false);
-});
+
+var testactions = [];
+
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Digit3'});
+testactions.push({type:'keyup',code:'Digit3'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Digit3'});
+testactions.push({type:'keyup',code:'Digit3'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Digit3'});
+testactions.push({type:'keyup',code:'Digit3'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Digit3'});
+testactions.push({type:'keyup',code:'Digit3'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'ArrowUp'});
+testactions.push({type:'keyup',code:'ArrowUp'});
+testactions.push({type:'keydown',code:'ArrowUp'});
+testactions.push({type:'keyup',code:'ArrowUp'});
+
+harness.runTestNew(testactions, 'direct-legacy');
 //endtest//

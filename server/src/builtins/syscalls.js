@@ -92,7 +92,7 @@ function createSyscalls() {
 	);
 
 	Builtin.createBuiltin(
-		'apply-css-style--to',
+		'apply-css-style to',
 		[ 'style$', 'nex' ],
 		function $applyCssStyleTo(env, executionEnvironment) {
 			let s = env.lb('style').getFullTypedValue();
@@ -103,7 +103,7 @@ function createSyscalls() {
 	);
 
 	Builtin.createBuiltin(
-		'apply-pfont--to',
+		'apply-pfont to',
 		[ 'pfont$', 'nex' ],
 		function $applyPfontTo(env, executionEnvironment) {
 			let pf = env.lb('pfont').getFullTypedValue();

@@ -81,7 +81,7 @@ function failingTestOutput() {
 		'test': basename,
 		'is_repl': isrepl,
 		'docstring': docstring,
-		'goldenmissing': (goldenstatus == 'missing'),
+		'goldenmissing': (!isrepl && goldenstatus == 'missing'),
 		'node_ignored': false,
 		'node_success': false
 	}
@@ -110,7 +110,7 @@ testnames.forEach((testpath) => {
 
 	let ignore = getContentsOfFile(tpath('.ignore'));
 	if (ignore && ignore == '1') {
-		ignored_tests.push(basename)
+		ignored_tests.push({name:basename, num:2})
 		testjson = ignoredTestOutput();
 	} else {
 		let success = getContentsOfFile(tpath('.testsuccess'));
@@ -122,30 +122,36 @@ testnames.forEach((testpath) => {
 				let ispassing = false;
 				let isfailing = false;
 				let neededgolden = false;
+				let numpassing = 0;
+				let numfailing = 0;
+				let numneeded = 0;
 				for (let i = 0; i < testjson.diffs.length; i++) {
 					let diff = testjson.diffs[i];
 					if (diff.diff_succeeded) {
+						numpassing++;
 						ispassing = true;
 					} else {
 						isfailing = true;
+						numfailing++;
 					}
 					if (diff.regenerated_golden) {
 						neededgolden = true;
+						numneeded++;
 					}
 				}
 				// but can add in more than one place if one test passes and one fails
-				if (ispassing) passing_tests.push(basename);
-				if (isfailing) failing_tests.push(basename);
-				if (neededgolden) goldens_needed.push(basename);
+				if (ispassing) passing_tests.push({name:basename, num:numpassing});
+				if (isfailing) failing_tests.push({name:basename, num:numfailing});
+				if (neededgolden) goldens_needed.push({name:basename, num:numneeded});
 			} else {
-				passing_tests.push(basename);
+				passing_tests.push({name:basename, num:2});
 			}
 		} else {
 			testjson = failingTestOutput(basename);
 			if (testjson.goldenmissing) {
-				goldens_needed.push(basename);
+				goldens_needed.push({name:basename, num:2});
 			} else {
-				failing_tests.push(basename);
+				failing_tests.push({name:basename, num:2});
 			}
 		}
 	}

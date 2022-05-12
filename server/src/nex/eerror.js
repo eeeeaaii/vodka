@@ -80,6 +80,28 @@ class EError extends NexContainer {
 		return '-error-';
 	}
 
+	fastAppendChildAfter(c, after) {
+		c.clickActive = false;
+		return super.fastAppendChildAfter(c, after);
+	}
+
+
+	insertChildAt(c, i) {
+		c.clickActive = false;
+		return super.insertChildAt(c, i);
+	}
+
+	replaceChildAt(c, i) {
+		c.clickActive = false;
+		return super.replaceChildAt(c, i);
+	}
+
+
+	// errors are containers but we don't let you insert things in the editor
+	canDoInsertInside() {
+		return false;
+	}
+
 	makeCopy(shallow) {
 		let r = new EError(this.getFullTypedValue());
 		this.copyChildrenTo(r, shallow);
@@ -139,14 +161,14 @@ class EError extends NexContainer {
 	}	
 
 	insertChildAt(c, i) {
-		if (!c.getTypeName() == '-error-') {
+		if (c.getTypeName() != '-error-') {
 			throw new EError('errors can only hold other errors.');
 		}
 		super.insertChildAt(c, i);
 	}
 
 	fastAppendChildAfter(c, after) {
-		if (!c.getTypeName() == '-error-') {
+		if (c.getTypeName() != '-error-') {
 			throw new EError('errors can only hold other errors.');
 		}
 		super.fastAppendChildAfter(c, after);
@@ -179,6 +201,10 @@ class EError extends NexContainer {
 			this.innerspan.innerHTML = '? ' + this.escape('' + this.displayValue);
 			domNode.appendChild(this.innerspan);
 		}
+	}
+
+	evaluate() {
+		return this;
 	}
 
 	renderInto(renderNode, renderFlags, withEditor) {

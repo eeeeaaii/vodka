@@ -48,8 +48,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	<link rel="stylesheet" href="css/closure.css">
 	<link rel="stylesheet" href="css/tags.css">
 	<link rel="stylesheet" href="css/org.css">
-	<link rel="stylesheet" href="css/expectation.css">
+	<link rel="stylesheet" href="css/deferredvalue.css">
+	<link rel="stylesheet" href="css/deferredcommand.css">
 	<link rel="stylesheet" href="css/mobile.css">
+	<link rel="stylesheet" href="css/alertanimation.css">
+	<link rel="stylesheet" href="css/help.css">
+	<link rel="stylesheet" href="css/pip.css">
 	<script type="text/javascript">
 		document.write('<link rel="stylesheet" href="css/theme-' + CSS_THEME + '.css">');
 	</script>
@@ -75,167 +79,192 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 		</div>
 	</div>
 	<div id="uberhelpcontainer">
-		<div class="helpmenupanel">
-			<div class="helpmenuitem" id="showwelcome">Welcome</div>&nbsp;&nbsp;
-		 	<div class="helpmenuitem" id="showhotkeys">Quick Reference</div>&nbsp;&nbsp;
-		 	<div class="helpmenuitem" id="showapi">Full API reference</div>&nbsp;&nbsp;
-			<div class="helpmenuitem" id="closehelp">Close Help</div>&nbsp;&nbsp;
-			<div class="helpmenuitem" id="closehelppermanently">Close Help and Hide Help Button</div>
-			<div class="helpmenuitem" id="bringbackhelp">Close Help and Show Help Button</div>
+		<div id="tutorialpanel">
+			<div id="tutorial" class="infopanel">
+				<p id="tutorialtitle" class="infotitle">Tutorial</p>
+				<div id="tutorialcontent">
+				</div>
+				<p class="infospacer"></p>
+				<div id="infothingstotry">
+					<p class="infoline">Things to try:</p>
+					<div id="tryset">
+					</div>
+				</div>
+				<p class="infospacer"></p>
+				<p class="infoline">(click and drag to move this panel)</p>
+			</div>
+			<div id="helpbottommenu" class="helpmenupanel">
+				<div class="helpmenuitem helpbutton" id="closetutorialpage">Close Panel</div>&nbsp;&nbsp;
+			 	<div class="helpmenuitem helpbutton" id="previoustutorialpagebutton">Previous Panel</div>&nbsp;&nbsp;
+			 	<div class="helpmenuitem helpbutton" id="nexttutorialpagebutton">Next Panel</div>&nbsp;&nbsp;
+			 	<div class="helpmenuitem helpbutton" id="endtutorial">End Tutorial</div>&nbsp;&nbsp;
+			</div>
 		</div>
-		<div id="intro" class="infopanel">
-			<p class="infotitle">Vodka</p>
-			<p class="infosubheader">Release 4</p>
-			<p class="infoline"><a href="https://github.com/eeeeaaii/vodka/blob/main/CHANGES.md">Release Notes</a></p>
-			<p class="infospacer"></p>
-			<p class="infoline">Vodka is a creative coding environment for music and text.</p>
-			<p class="infospacer"></p>
-			<p class="infoline">More info about Vodka can be found at:</p>
-			<p class="infoline"><a href="https://github.com/eeeeaaii/vodka">Github</a></p>
-			<p class="infospacer"></p>
-			<p class="infoline">Your session ID is <span id="sessionid">1234</span>.</p>
-			<p class="infoline">All data you save via the (_save_) and (_save-file_) builtins is sandboxed to this session.</p>
-			<p class="infoline">You can access this session again with <a id="sessionlink" href="">this link</a>.</p>
-			<p class="infoline">You can leave this session and start a whole new session with <a id="newsessionlink" href="">this link</a>.</p>
-			<p class="infospacer"></p>
-			<p class="infoline">Vodka is in alpha and is under active development. I will <b>do my best</b> to preserve your data as much as I can. However:</p>
-			<p class="infoline">- Sessions and sandbox contents may need to be deleted at any time without notice.</p>
-			<p class="infoline">- Long term persistence of session contents is not guaranteed.</p>
-			<p class="infoline">- Uptime or availability is not guaranteed.</p>
-			<p class="infoline">- Sessions are not backed up in any way.</p>
-			<p class="infoline">In addition, in the absence of problems, I may still periodically go through and delete old, inactive sessions. In other words, if you make something you like, it's probably prudent to capture it in some other way besides storing it here.</p>
-			<p class="infospacer"></p>
-			<p class="infoline">Abusive, harmful or illegal content of any kind is not allowed on this server.</p>
-			<p class="infoline">The site admin (eeeeaaii) is the sole arbiter of what is allowed.</p>
-			<p class="infoline">Disallowed content will be deleted immediately.</p>
-			<p class="infospacer"></p>
-			<p class="infoline">Vodka is created by <a href="https://twitter.com/eeeeaaii">Jason Scherer (eeeeaaii)</a></p>
-			<p class="infoline">You retain all copyright to any creative works you make with Vodka.</p>
-			<p class="infoline">Changes to the Vodka framework itself are protected by <a href="https://www.gnu.org/licenses/">the GPL</a>.</p>
-			<p class="infoline">If you have questions or want to report a problem, join <a href="https://groups.google.com/g/vodka-users">vodka-users@googlegroups.com</a> and send an email.</p>
-			<p class="infospacer"></p>
-		</div>
-		<div id="hotkeyreference" class="infopanel">
-			<p class="infotitle">Basic Usage</p>
-			<p class="infosubheader">Some general notes:</p>
-			<p class="infolinemargin">You can insert different sorts of objects (sometimes called "nexes").</p>
-			<p class="infolinemargin">Depending on its type, an object will usually have some kind of associated data, like a string value or a number.</p>
-			<p class="infolinemargin">Some objects also are containers for other objects. Others are "atoms" and just have associated data, but no child objects.</p>
-			<p class="infolinemargin">One (and only one) object can be selected at a time. It will have a red border.</p>
-			<p class="infolinemargin">You can use the "movement" hotkeys to change which object is selected, or click to select an object.</p>
-			<p class="infolinemargin">The small dot near the currently selected object is the "insertion pip." This tells you where the next inserted object will appear. The insertion pip can be moved around, but it will always be near the selected object.</p>
-			<p class="infolinemargin">To edit the data associated with an object, you have to be in "edit mode" (the object will have a pink background). You have to exit edit mode to insert more objects.</p>
-			<p class="infolinemargin">Objects with thin borders are immutable, and their associated data can't be edited.</p>
-			<p class="infolinemargin">Objects can be evaluated, which causes them to "do something".</p>
-			<p class="infolinemargin">Evaluating commands will execute some code.</p>
-			<p class="infolinemargin">Objects can be given tags, which are used for various annotation-type purposes.</p>
-			<p class="infoline"></p>
-			<p class="infospacer"></p>
-			<p class="infosubheader">Atomic types:</p>
-			<p class="infoline"><span class="infohotkey">!</span>insert a boolean</p>
-			<p class="infoline"><span class="infohotkey">@</span>insert a symbol</p>
-			<p class="infoline"><span class="infohotkey">#</span>insert an integer</p>
-			<p class="infoline"><span class="infohotkey">$</span>insert a string</p>
-			<p class="infoline"><span class="infohotkey">%</span>insert a float</p>
-			<p class="infospacer"></p>
-			<p class="infosubheader">Container types:</p>
-			<p class="infoline"><span class="infohotkey">~</span>insert a command</p>
-			<p class="infoline"><span class="infohotkey">^</span>insert an instantiator</p>
-			<p class="infoline"><span class="infohotkey">&</span>insert a lambda</p>
-			<p class="infoline"><span class="infohotkey">*</span>insert an expectation</p>
-			<p class="infoline"><span class="infohotkey">(</span>insert an obj</p>
-			<p class="infospacer"></p>
-			<p class="infosubheader">Special types:</p>
-			<p class="infoline"><span class="infohotkey">_</span>insert a wavetable</p>
-			<p class="infoline"><span class="infohotkey">{</span>insert a doc</p>
-			<p class="infoline"><span class="infohotkey">[</span>insert a line</p>
-			<p class="infoline"><span class="infohotkey"><</span>insert a word</p>
-			<p class="infoline">Typing letters inside docs, lines, or words will insert letter objects.</p>
-			<p class="infospacer"></p>
-			<p class="infosubheader">Movement:</p>
-			<p class="infoline"><span class="infohotkey">rightarrow</span>or <span class="infohotkey">downarrow</span>select next object in this container (to the right or below)</p>
-			<p class="infoline"><span class="infohotkey">leftarrow</span>or <span class="infohotkey">uparrow</span>select previous object in this container (to the left or above)</p>
-			<p class="infoline"><span class="infohotkey">tab</span>"go in" -- select first child of selected container (just moves insertion pip if container is empty)</p>
-			<p class="infoline"><span class="infohotkey">shift-tab</span>"come out" -- select parent of selected object</p>
-			<p class="infospacer"></p>
-			<p class="infoline"><span class="infohotkey"><span class="optionkey">option</span>-leftarrow</span>or <span class="infohotkey"><span class="optionkey">option</span>-uparrow</span>move the insertion pip to before the currently selected object</p>
-			<p class="infoline"><span class="infohotkey"><span class="optionkey">option</span>-rightarrow</span>or <span class="infohotkey"><span class="optionkey">option</span>-downarrow</span>move the insertion pip to after the currently selected object</p>
-			<p class="infoline"><span class="infohotkey"><span class="optionkey">option</span>-tab</span>move the insertion pip inside the currently selected container</p>
-			<p class="infoline"><span class="infohotkey"><span class="optionkey">option</span>-shift-tab</span>set the insertion pip to be a rectangle enclosing the currently selected object (only containers can be inserted this way)</p>
-			<p class="infospacer"></p>
-			<p class="infoline">
-				<span class="infohotkey">)</span>
-				<span class="infohotkey">&gt;</span>
-				<span class="infohotkey">}</span>
-				<span class="infohotkey">]</span>"close parens" -- move up to nearest corresponding container type and put insertion pip after it</p>
+		<div id="helpholder">
+			<div id="helptopmenu" class="helpmenupanel">
+				<div class="helpmenuitem helpbutton" id="showwelcome">Welcome</div>&nbsp;&nbsp;
+			 	<div class="helpmenuitem helpbutton" id="showhotkeys">Quick Reference</div>&nbsp;&nbsp;
+			 	<div class="helpmenuitem helpbutton" id="showapi">Full API reference</div>&nbsp;&nbsp;
+				<div class="helpmenuitem helpbutton" id="starttutorialbutton">Start Tutorial</div>&nbsp;&nbsp;
+				<div class="helpmenuitem helpbutton" id="closehelp">Close Help</div>&nbsp;&nbsp;
+				<div class="helpmenuitem helpbutton" id="closehelppermanently">Close Help and Hide Help Button</div>
+				<div class="helpmenuitem helpbutton" id="bringbackhelp">Close Help and Show Help Button</div>
+			</div>
+			<div id="intro" class="infopanel">
+				<p class="infotitle">Vodka</p>
+				<p class="infosubheader">Release 4</p>
+				<p class="infoline"><a href="https://github.com/eeeeaaii/vodka/blob/main/CHANGES.md">Release Notes</a></p>
+				<p class="infospacer"></p>
+				<p class="infoline">Vodka is a creative coding environment for music and text.</p>
+				<p class="infospacer"></p>
+				<p class="infoline">More info about Vodka can be found at:</p>
+				<p class="infoline"><a href="https://github.com/eeeeaaii/vodka">Github</a></p>
+				<p class="infospacer"></p>
+				<p class="infoline">There are also help pages and a tutorial/walkthrough accessible by the links above.</p>
+				<p class="infospacer"></p>
+				<p class="infoline">Your session ID is <span id="sessionid">1234</span>.</p>
+				<p class="infoline">All data you save via the (_save_) and (_save-file_) builtins is sandboxed to this session.</p>
+				<p class="infoline">You can access this session again with <a id="sessionlink" href="">this link</a>.</p>
+				<p class="infoline">You can leave this session and start a whole new session with <a id="newsessionlink" href="">this link</a>.</p>
+				<p class="infospacer"></p>
+				<p class="infoline">Vodka is in alpha and is under active development. I will <b>do my best</b> to preserve your data as much as I can. However:</p>
+				<p class="infoline">- Sessions and sandbox contents may need to be deleted at any time without notice.</p>
+				<p class="infoline">- Long term persistence of session contents is not guaranteed.</p>
+				<p class="infoline">- Uptime or availability is not guaranteed.</p>
+				<p class="infoline">- Sessions are not backed up in any way.</p>
+				<p class="infoline">In addition, in the absence of problems, I may still periodically go through and delete old, inactive sessions. In other words, if you make something you like, it's probably prudent to capture it in some other way besides storing it here.</p>
+				<p class="infospacer"></p>
+				<p class="infoline">Abusive, harmful or illegal content of any kind is not allowed on this server.</p>
+				<p class="infoline">The site admin (eeeeaaii) is the sole arbiter of what is allowed.</p>
+				<p class="infoline">Disallowed content will be deleted immediately.</p>
+				<p class="infospacer"></p>
+				<p class="infoline">Vodka is created by <a href="https://twitter.com/eeeeaaii">Jason Scherer (eeeeaaii)</a></p>
+				<p class="infoline">You retain all copyright to any creative works you make with Vodka.</p>
+				<p class="infoline">Changes to the Vodka framework itself are protected by <a href="https://www.gnu.org/licenses/">the GPL</a>.</p>
+				<p class="infoline">If you have questions or want to report a problem, join <a href="https://groups.google.com/g/vodka-users">vodka-users@googlegroups.com</a> and send an email.</p>
+				<p class="infospacer"></p>
+			</div>
+			<div id="hotkeyreference" class="infopanel">
+				<p class="infotitle">Basic Usage</p>
+				<p class="infosubheader">Some general notes:</p>
+				<p class="infolinemargin">You can insert different sorts of objects (sometimes called "nexes").</p>
+				<p class="infolinemargin">Depending on its type, an object will usually have some kind of associated data, like a string value or a number.</p>
+				<p class="infolinemargin">Some objects also are containers for other objects. Others are "atoms" and just have associated data, but no child objects.</p>
+				<p class="infolinemargin">One (and only one) object can be selected at a time. It will have a red border.</p>
+				<p class="infolinemargin">You can use the "movement" hotkeys to change which object is selected, or click to select an object.</p>
+				<p class="infolinemargin">The small dot near the currently selected object is the "insertion pip." This tells you where the next inserted object will appear. The insertion pip can be moved around, but it will always be near the selected object.</p>
+				<p class="infolinemargin">To edit the data associated with an object, you have to be in "edit mode" (the object will have a pink background). You have to exit edit mode to insert more objects.</p>
+				<p class="infolinemargin">Objects with thin borders are immutable, and their associated data can't be edited.</p>
+				<p class="infolinemargin">Objects can be evaluated, which causes them to "do something".</p>
+				<p class="infolinemargin">Evaluating commands will execute some code.</p>
+				<p class="infolinemargin">Objects can be given tags, which are used for various annotation-type purposes.</p>
+				<p class="infoline"></p>
+				<p class="infospacer"></p>
+				<p class="infosubheader">Atomic types:</p>
+				<p class="infoline"><span class="infohotkey">!</span>insert a boolean</p>
+				<p class="infoline"><span class="infohotkey">@</span>insert a symbol</p>
+				<p class="infoline"><span class="infohotkey">#</span>insert an integer</p>
+				<p class="infoline"><span class="infohotkey">$</span>insert a string</p>
+				<p class="infoline"><span class="infohotkey">%</span>insert a float</p>
+				<p class="infospacer"></p>
+				<p class="infosubheader">Container types:</p>
+				<p class="infoline"><span class="infohotkey">~</span>insert a command</p>
+				<p class="infoline"><span class="infohotkey">^</span>insert an instantiator</p>
+				<p class="infoline"><span class="infohotkey">&</span>insert a lambda</p>
+				<p class="infoline"><span class="infohotkey">*</span>insert a deferred command</p>
+				<p class="infoline"><span class="infohotkey">(</span>insert an obj</p>
+				<p class="infospacer"></p>
+				<p class="infosubheader">Special types:</p>
+				<p class="infoline"><span class="infohotkey">_</span>insert a wavetable</p>
+				<p class="infoline"><span class="infohotkey">{</span>insert a doc</p>
+				<p class="infoline"><span class="infohotkey">[</span>insert a line</p>
+				<p class="infoline"><span class="infohotkey"><</span>insert a word</p>
+				<p class="infoline">Typing letters inside docs, lines, or words will insert letter objects.</p>
+				<p class="infospacer"></p>
+				<p class="infosubheader">Movement:</p>
+				<p class="infoline"><span class="infohotkey">rightarrow</span>or <span class="infohotkey">downarrow</span>select next object in this container (to the right or below)</p>
+				<p class="infoline"><span class="infohotkey">leftarrow</span>or <span class="infohotkey">uparrow</span>select previous object in this container (to the left or above)</p>
+				<p class="infoline"><span class="infohotkey">tab</span>"go in" -- select first child of selected container (just moves insertion pip if container is empty)</p>
+				<p class="infoline"><span class="infohotkey">shift-tab</span>"come out" -- select parent of selected object</p>
+				<p class="infospacer"></p>
+				<p class="infoline"><span class="infohotkey"><span class="optionkey">option</span>-leftarrow</span>or <span class="infohotkey"><span class="optionkey">option</span>-uparrow</span>move the insertion pip to before the currently selected object</p>
+				<p class="infoline"><span class="infohotkey"><span class="optionkey">option</span>-rightarrow</span>or <span class="infohotkey"><span class="optionkey">option</span>-downarrow</span>move the insertion pip to after the currently selected object</p>
+				<p class="infoline"><span class="infohotkey"><span class="optionkey">option</span>-tab</span>move the insertion pip inside the currently selected container</p>
+				<p class="infoline"><span class="infohotkey"><span class="optionkey">option</span>-shift-tab</span>set the insertion pip to be a rectangle enclosing the currently selected object (only containers can be inserted this way)</p>
+				<p class="infospacer"></p>
+				<p class="infoline">
+					<span class="infohotkey">)</span>
+					<span class="infohotkey">&gt;</span>
+					<span class="infohotkey">}</span>
+					<span class="infohotkey">]</span>"close parens" -- move up to nearest corresponding container type and put insertion pip after it</p>
 
-			<p class="infospacer"></p>
-			<p class="infospacer"></p>
-			<p class="infosubheader">Other:</p>
-			<p class="infoline"><span class="infohotkey">`</span>activate the tag editor for the selected object</p>
-			<p class="infospacer"></p>
-			<p class="infoline"><span class="infohotkey">enter</span>evaluate the currently selected object and replace it with the result.</p>
-			<p class="infoline"><span class="infohotkey">shift-enter</span>evaluate the currently selected nex for side effects, but don't replace it.</p>
-			<p class="infospacer"></p>
-			<p class="infoline"><span class="infohotkey">delete</span>enters edit mode for currently selected object</p>
-			<p class="infospacer"></p>
-			<p class="infoline"><span class="infohotkey">shift-delete</span>deletes current object completely, including all children if it is a container</p>
-			<p class="infospacer"></p>
-			<p class="infoline"><span class="infohotkey">shift-space</span>toggles direction of current container (horizontal/vertical)</p>
-			<p class="infospacer"></p>
-			<p class="infoline"><span class="infohotkey">shift-escape</span>toggle exploded/normal modes for entire document</p>
-			<p class="infoline"><span class="infohotkey">shift-alt-escape</span>toggle exploded/normal modes for selected object (and its children)</p>
-			<p class="infospacer"></p>
-			<p class="infoline"><span class="infohotkey"><span class="optionkey">option</span>-shift</span>and any of&nbsp;<span class="infohotkey">~&*^({[<</span>wrap-inserts the specified container around the currently selected object</p>
-			<p class="infospacer"></p>
-			<p class="infoline"><span class="infohotkey"><span class="metakey">cmd</span>-c</span>copy</p>
-			<p class="infoline"><span class="infohotkey"><span class="metakey">cmd</span>-x</span>cut</p>
-			<p class="infoline"><span class="infohotkey"><span class="metakey">cmd</span>-v</span>paste</p>
-			<p class="infoline"><span class="infohotkey"><span class="metakey">cmd</span>-z</span>undo</p>
-			<p class="infoline"><span class="infohotkey"><span class="metakey">cmd</span>-z</span>redo</p>
-			<p class="infoline"><span class="infohotkey"><span class="metakey">cmd</span>-s</span>save</p>
-			<p class="infospacer"></p>
-			<p class="infosubheader">In command or symbol editor:</p>
-			<p class="infoline"><span class="infohotkey">enter</span>leave edit mode</p>
-			<p class="infoline"><span class="infohotkey">escape</span>abort editing and restore previous value</p>
-			<p class="infoline">Any of <span class="infohotkey">a-zA-Z0-9:-_&lt;&gt;=+-/*</span>can be used in names of commands or symbols.</p>
-			<p class="infoline"><span class="infohotkey">delete</span>deletes previous character</p>
-			<p class="infoline"><span class="infohotkey"><span class="optionkey">option</span>-space</span>autocomplete</p>
-			<p class="infospacer"></p>
-			<p class="infosubheader">In lambda editor:</p>
-			<p class="infoline"><span class="infohotkey">enter</span>leave edit mode</p>
-			<p class="infoline"><span class="infohotkey">escape</span>abort editing and restore previous value</p>
-			<p class="infoline">Any of <span class="infohotkey">a-zA-Z0-9_-</span>can be used in names of function parameters. Spaces separate parameters.</p>
-			<p class="infoline"><span class="infohotkey">delete</span>deletes previous character</p>
-			<p class="infospacer"></p>
-			<p class="infosubheader">lambda function parameter syntax:</p>
-			<p class="infoline"><span class="infohotkey">n!</span>n must evaluate to a boolean</p>
-			<p class="infoline"><span class="infohotkey">n@</span>n must evaluate to a symbol</p>
-			<p class="infoline"><span class="infohotkey">n#</span>n must evaluate to an integer</p>
-			<p class="infoline"><span class="infohotkey">n$</span>n must evaluate to a string</p>
-			<p class="infoline"><span class="infohotkey">n%</span>n must evaluate to a float</p>
-			<p class="infoline"><span class="infohotkey">n^</span>n must evaluate to a nil</p>
-			<p class="infoline"><span class="infohotkey">n&</span>n must evaluate to a closure</p>
-			<p class="infoline"><span class="infohotkey">n*</span>n must evaluate to an expectation</p>
-			<p class="infoline"><span class="infohotkey">n()</span>n must evaluate to some kind of container<//p>
-			<p class="infoline"><span class="infohotkey">_n</span>n will not be evaluated before passing to function (call by reference)</p>
-			<p class="infoline"><span class="infohotkey">n...</span>variable number of arguments (only valid as last parameter)</p>
-			<p class="infoline"><span class="infohotkey">#%</span>or <span class="infohotkey">%#</span>either float or integer types allowed</p>
-			<p class="infoline"><span class="infohotkey">?</span>optional parameter (non-optional parameters cannot follow optional ones)</p>
-			<p class="infoline">Multiple parameter specifiers can be combined, for example <span class="infohotkey">_n#%...</span>,<span class="infohotkey">n()?</span></p>
-			<p class="infoline">If no type is specified, any type is allowed.</p>
-			<p class="infospacer"></p>
-			<p class="infosubheader">In tag editor:</p>
-			<p class="infolinemargin">Any object can be tagged. Any character including spaces can be used in a tag.</p>
-			<p class="infoline"><span class="infohotkey">delete</span>deletes previous character, or current tag if empty.</p>
-			<p class="infoline"><span class="infohotkey">leftarrow</span>or <span class="infohotkey">rightarrow</span>go to next tag, or create new tag if no tag there (duplicate tags are deleted).</p>
-			<p class="infoline"><span class="infohotkey">enter</span>or <span class="infohotkey">`</span>finish editing tags and quit tag editor (empty tags are deleted when leaving editor).</p>
-			<p class="infospacer"></p>
-			<p class="infosubheader">In string editor:</p>
-			<p class="infoline">Type or paste the desired string in the box. Drag the handle to make the editor larger. All other hotkeys are disabled while you are editing the string. To finish editing the string, click the "done" button.</p>
-		</div>
-		<!-- full api ref is automagically populated -->
-		<div id="fullapireference" class="infopanel">
+				<p class="infospacer"></p>
+				<p class="infospacer"></p>
+				<p class="infosubheader">Other:</p>
+				<p class="infoline"><span class="infohotkey">`</span>activate the tag editor for the selected object</p>
+				<p class="infospacer"></p>
+				<p class="infoline"><span class="infohotkey">enter</span>evaluate the currently selected object and replace it with the result.</p>
+				<p class="infoline"><span class="infohotkey">shift-enter</span>evaluate the currently selected nex for side effects, but don't replace it.</p>
+				<p class="infospacer"></p>
+				<p class="infoline"><span class="infohotkey">delete</span>enters edit mode for currently selected object</p>
+				<p class="infospacer"></p>
+				<p class="infoline"><span class="infohotkey">shift-delete</span>deletes current object completely, including all children if it is a container</p>
+				<p class="infospacer"></p>
+				<p class="infoline"><span class="infohotkey">shift-space</span>toggles direction of current container (horizontal/vertical)</p>
+				<p class="infospacer"></p>
+				<p class="infoline"><span class="infohotkey">shift-escape</span>toggle exploded/normal modes for entire document</p>
+				<p class="infoline"><span class="infohotkey">shift-alt-escape</span>toggle exploded/normal modes for selected object (and its children)</p>
+				<p class="infospacer"></p>
+				<p class="infoline"><span class="infohotkey"><span class="optionkey">option</span>-shift</span>and any of&nbsp;<span class="infohotkey">~&*^({[<</span>wrap-inserts the specified container around the currently selected object</p>
+				<p class="infospacer"></p>
+				<p class="infoline"><span class="infohotkey"><span class="metakey">cmd</span>-c</span>copy</p>
+				<p class="infoline"><span class="infohotkey"><span class="metakey">cmd</span>-x</span>cut</p>
+				<p class="infoline"><span class="infohotkey"><span class="metakey">cmd</span>-v</span>paste</p>
+				<p class="infoline"><span class="infohotkey"><span class="metakey">cmd</span>-z</span>undo</p>
+				<p class="infoline"><span class="infohotkey"><span class="metakey">cmd</span>-z</span>redo</p>
+				<p class="infoline"><span class="infohotkey"><span class="metakey">cmd</span>-s</span>save</p>
+				<p class="infospacer"></p>
+				<p class="infosubheader">In command or symbol editor:</p>
+				<p class="infoline"><span class="infohotkey">enter</span>leave edit mode</p>
+				<p class="infoline"><span class="infohotkey">escape</span>abort editing and restore previous value</p>
+				<p class="infoline">Any of <span class="infohotkey">a-zA-Z0-9:-_&lt;&gt;=+-/*</span>can be used in names of commands or symbols.</p>
+				<p class="infoline"><span class="infohotkey">delete</span>deletes previous character</p>
+				<p class="infoline"><span class="infohotkey"><span class="optionkey">option</span>-space</span>autocomplete</p>
+				<p class="infospacer"></p>
+				<p class="infosubheader">In lambda editor:</p>
+				<p class="infoline"><span class="infohotkey">enter</span>leave edit mode</p>
+				<p class="infoline"><span class="infohotkey">escape</span>abort editing and restore previous value</p>
+				<p class="infoline">Any of <span class="infohotkey">a-zA-Z0-9_-</span>can be used in names of function parameters. Spaces separate parameters.</p>
+				<p class="infoline"><span class="infohotkey">delete</span>deletes previous character</p>
+				<p class="infospacer"></p>
+				<p class="infosubheader">lambda function parameter syntax:</p>
+				<p class="infoline"><span class="infohotkey">n!</span>n must evaluate to a boolean</p>
+				<p class="infoline"><span class="infohotkey">n@</span>n must evaluate to a symbol</p>
+				<p class="infoline"><span class="infohotkey">n#</span>n must evaluate to an integer</p>
+				<p class="infoline"><span class="infohotkey">n$</span>n must evaluate to a string</p>
+				<p class="infoline"><span class="infohotkey">n%</span>n must evaluate to a float</p>
+				<p class="infoline"><span class="infohotkey">n^</span>n must evaluate to a nil</p>
+				<p class="infoline"><span class="infohotkey">n&</span>n must evaluate to a closure</p>
+				<p class="infoline"><span class="infohotkey">n*</span>n must evaluate to a deferred value or command</p>
+				<p class="infoline"><span class="infohotkey">n()</span>n must evaluate to some kind of container<//p>
+				<p class="infoline"><span class="infohotkey">_n</span>n will not be evaluated before passing to function (call by reference)</p>
+				<p class="infoline"><span class="infohotkey">n...</span>variable number of arguments (only valid as last parameter)</p>
+				<p class="infoline"><span class="infohotkey">#%</span>or <span class="infohotkey">%#</span>either float or integer types allowed</p>
+				<p class="infoline"><span class="infohotkey">?</span>optional parameter (non-optional parameters cannot follow optional ones)</p>
+				<p class="infoline">Multiple parameter specifiers can be combined, for example <span class="infohotkey">_n#%...</span>,<span class="infohotkey">n()?</span></p>
+				<p class="infoline">If no type is specified, any type is allowed.</p>
+				<p class="infospacer"></p>
+				<p class="infosubheader">In tag editor:</p>
+				<p class="infolinemargin">Any object can be tagged. Any character including spaces can be used in a tag.</p>
+				<p class="infoline"><span class="infohotkey">delete</span>deletes previous character, or current tag if empty.</p>
+				<p class="infoline"><span class="infohotkey">leftarrow</span>or <span class="infohotkey">rightarrow</span>go to next tag, or create new tag if no tag there (duplicate tags are deleted).</p>
+				<p class="infoline"><span class="infohotkey">enter</span>or <span class="infohotkey">`</span>finish editing tags and quit tag editor (empty tags are deleted when leaving editor).</p>
+				<p class="infospacer"></p>
+				<p class="infosubheader">In string editor:</p>
+				<p class="infoline">Type or paste the desired string in the box. Drag the handle to make the editor larger. All other hotkeys are disabled while you are editing the string. To finish editing the string, click the "done" button.</p>
+			</div>
+			<!-- full api ref is automagically populated -->
+			<div id="fullapireference" class="infopanel"></div>
 		</div>
 	</div>
 	<div id="codepane">
@@ -290,7 +319,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 			<input class="mobilecontrolpanelitem" id="mobile_input">
 		</div>
 	</div>
-	<div id="helpbutton">Help</div>
+	<div id="helpbutton" class="upperrightbutton  helpbutton">Help</div>
+	<div id="endtutorialtopbutton" class="upperrightbutton  helpbutton">End Tutorial</div>
 	<div id="audiotagsforrecording"></div>
 </body>
 <!-- serverinject:beforebootstrap -->

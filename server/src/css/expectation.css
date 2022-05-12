@@ -14,7 +14,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
-
+/*
 
 
 .expectation {
@@ -51,11 +51,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border-color: var(--selected-border);
 }
 
-.dotspan.exploded {
+.expectation > .dotspan.exploded {
 	border: 1px solid var(--unselected-border);
 	margin: 0px 6px 0px 0px;
 	display: inline-block;
-/*	line-height: .6;*/
 	padding: 2px 4px 2px 4px;
 	border-radius:6px 6px 6px 6px;
 	font-family: "Courier";
@@ -65,7 +64,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	background-color: var(--value-background);
 }
 
-.dotspan.exploded.editing {
+.expectation > .dotspan.exploded.editing {
 	font-weight: bold;
 	background-color: var(--editing-background)	
 }
@@ -78,3 +77,4 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 .expectation.exploded.newselected > .dotspan {
 	border-color: var(--selected-border);
 }
+*/

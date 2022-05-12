@@ -23,7 +23,7 @@ import { EError } from './nex/eerror.js'
 import { Closure } from './nex/closure.js'
 import { EString } from './nex/estring.js'
 import { Tag } from './tag.js'
-import { Org } from './nex/org.js'
+import { Org, convertJSMapToOrg } from './nex/org.js'
 import { Integer } from './nex/integer.js'
 import { Float } from './nex/float.js'
 import { ForeignClosure } from './nex/foreignclosure.js'
@@ -48,14 +48,7 @@ class TemplateStore  {
 
 	createTemplate(nonce, org, env) {
 		let name = '';
-		if (experiments.ORG_OVERHAUL) {
-			name = nonce.getTypedValue();
-		} else {
-			if (nonce.numTags() != 1) {
-				throw new EError('Cannot create template, need a single name tag.');
-			}
-			let name = nonce.getTag(0);
-		}
+		name = nonce.getTypedValue();
 		let template = new Template(name, org, env);
 		this.templates[name] = template;
 		return template;
@@ -259,23 +252,6 @@ class Template {
 
 const templateStore = new TemplateStore();
 
-function convertJSMapToOrg(m) {
-	let r = new Org();
-	for (let key in m) {
-		let value = m[key];
-		let v = new EString('' + value);
-		if (!isNaN(value)) {
-			if (Math.floor(value) == value) {
-				v = new Integer(Math.floor(value));
-			} else {
-				v = new Float(value);
-			}
-		}
-		v.addTag(new Tag(key));
-		r.appendChild(v);
-	}
-	return r;
-}
 
 export { templateStore, convertJSMapToOrg  }
 

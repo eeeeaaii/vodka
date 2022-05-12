@@ -94,7 +94,7 @@
 			<textarea id="goldenoutput"></textarea>
 		</div>
 		<div class="summarylist">
-			<div class="summaryname failed">Failing Tests: {{summary.num_failing}}</div>
+			<div class="summaryname failed">Has Failing Test: {{summary.num_failing}}</div>
         <div class="summarylistitem">
           <span class="cbhint">-n</span>
           <span class="cbhint">-e</span>
@@ -108,17 +108,18 @@
 				</div>
 				{{#each summary.failing}}
 				<div class="summarylistitem"> 
-          <input type="checkbox" class="regennormalgoldenfailing" data-testname="{{this}}">
-          <input type="checkbox" class="regenexplodedgoldenfailing" data-testname="{{this}}">
-					<input type="checkbox" class="rerunfailing" data-testname="{{this}}">
-					<a class="listtestname" href="./alltests/{{this}}/{{this}}_testresults.html">{{this}}</a>
-          (<a href="#" onclick="return show(this, '{{this}}')">show</a>)
-          <div class="detail" id="DETAILFRAME-{{this}}"></div>
+          <input type="checkbox" class="regennormalgoldenfailing" data-testname="{{this.name}}">
+          <input type="checkbox" class="regenexplodedgoldenfailing" data-testname="{{this.name}}">
+					<input type="checkbox" class="rerunfailing" data-testname="{{this.name}}">
+					<a class="listtestname" href="./alltests/{{this.name}}/{{this.name}}_testresults.html">{{this.name}}</a>
+          ({{this.num}} failing)
+          (<a href="#" onclick="return show(this, '{{this.name}}')">show</a>)
+          <div class="detail" id="DETAILFRAME-{{this.name}}"></div>
 				</div>
 				{{/each}}
 		</div>
     <div class="summarylist">
-      <div class="summaryname neededgolden">Tests that Needed New Goldens: {{summary.num_goldenneeded}}</div>
+      <div class="summaryname neededgolden">Has Test that Needed New Goldens: {{summary.num_goldenneeded}}</div>
         <div class="summarylistitem">
           <span class="cbhint">-n</span>
           <span class="cbhint">-e</span>
@@ -132,17 +133,18 @@
         </div>
         {{#each summary.neededgolden}}
         <div class="summarylistitem">
-          <input type="checkbox" class="regennormalgoldenneededgolden" data-testname="{{this}}">
-          <input type="checkbox" class="regenexplodedgoldenneededgolden" data-testname="{{this}}">
-          <input type="checkbox" class="rerunneededgolden" data-testname="{{this}}">
-          <a class="listtestname" href="./alltests/{{this}}/{{this}}_testresults.html">{{this}}</a>
-          (<a href="#" onclick="return show(this, '{{this}}')">show</a>)
-          <div class="detail" id="DETAILFRAME-{{this}}"></div>
+          <input type="checkbox" class="regennormalgoldenneededgolden" data-testname="{{this.name}}">
+          <input type="checkbox" class="regenexplodedgoldenneededgolden" data-testname="{{this.name}}">
+          <input type="checkbox" class="rerunneededgolden" data-testname="{{this.name}}">
+          <a class="listtestname" href="./alltests/{{this.name}}/{{this.name}}_testresults.html">{{this.name}}</a>
+          ({{this.num}} needed golden)
+          (<a href="#" onclick="return show(this, '{{this.name}}')">show</a>)
+          <div class="detail" id="DETAILFRAME-{{this.name}}"></div>
         </div>
         {{/each}}
     </div>
 		<div class="summarylist">
-			<div class="summaryname passed">Passing Tests: {{summary.num_passing}}</div>
+			<div class="summaryname passed">Has Passing Test: {{summary.num_passing}}</div>
         <div class="summarylistitem">
           <span class="cbhint">-n</span>
           <span class="cbhint">-e</span>
@@ -156,17 +158,18 @@
 				</div>
 				{{#each summary.passing}}
 				<div class="summarylistitem">
-          <input type="checkbox" class="regennormalgoldenpassing" data-testname="{{this}}">
-          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="{{this}}">
-          <input type="checkbox" class="rerunpassing" data-testname="{{this}}">
-          <a class="listtestname" href="./alltests/{{this}}/{{this}}_testresults.html">{{this}}</a>
-          (<a href="#" onclick="return show(this, '{{this}}')">show</a>)
-          <div class="detail" id="DETAILFRAME-{{this}}"></div>
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="{{this.name}}">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="{{this.name}}">
+          <input type="checkbox" class="rerunpassing" data-testname="{{this.name}}">
+          <a class="listtestname" href="./alltests/{{this.name}}/{{this.name}}_testresults.html">{{this.name}}</a>
+          ({{this.num}} passing)
+          (<a href="#" onclick="return show(this, '{{this.name}}')">show</a>)
+          <div class="detail" id="DETAILFRAME-{{this.name}}"></div>
 				</div>
 				{{/each}}
 		</div>
 		<div class="summarylist">
-			<div class="summaryname ignored">Ignored Tests: {{summary.num_ignored}}</div>
+			<div class="summaryname ignored">Has Ignored Test: {{summary.num_ignored}}</div>
         <div class="summarylistitem">
           <span class="cbhint">-n</span>
           <span class="cbhint">-e</span>
@@ -180,12 +183,13 @@
         </div>
 				{{#each summary.ignored}}
 				<div class="summarylistitem">
-          <input type="checkbox" class="regennormalgoldenignored" data-testname="{{this}}">
-          <input type="checkbox" class="regenexplodedgoldenignored" data-testname="{{this}}">
-          <input type="checkbox" class="rerunignored" data-testname="{{this}}">
-          <a class="listtestname" href="./alltests/{{this}}/{{this}}_testresults.html">{{this}}</a>
-          (<a href="#" onclick="return show(this, '{{this}}')">show</a>)
-          <div class="detail" id="DETAILFRAME-{{this}}"></div>
+          <input type="checkbox" class="regennormalgoldenignored" data-testname="{{this.name}}">
+          <input type="checkbox" class="regenexplodedgoldenignored" data-testname="{{this.name}}">
+          <input type="checkbox" class="rerunignored" data-testname="{{this.name}}">
+          <a class="listtestname" href="./alltests/{{this.name}}/{{this.name}}_testresults.html">{{this.name}}</a>
+          ({{this.num}} ignored)
+          (<a href="#" onclick="return show(this, '{{this.name}}')">show</a>)
+          <div class="detail" id="DETAILFRAME-{{this.name}}"></div>
 				</div>
 				{{/each}}
 		</div>

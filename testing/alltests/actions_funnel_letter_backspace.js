@@ -25,11 +25,17 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testspec// [none]
 //starttest//
 var harness = require('../testharness');
-harness.runTest(function() {
-doKeyInput('Escape', 'Escape', false, false, false);
-doKeyInput('a', 'KeyA', false, false, false);
-doKeyInput('b', 'KeyB', false, false, false);
-doKeyInput('c', 'KeyC', false, false, false);
-doKeyInput('Backspace', 'Backspace', false, false, false);
-});
+
+var testactions = [];
+
+testactions.push({type:'keydown',code:'KeyA'});
+testactions.push({type:'keyup',code:'KeyA'});
+testactions.push({type:'keydown',code:'KeyB'});
+testactions.push({type:'keyup',code:'KeyB'});
+testactions.push({type:'keydown',code:'KeyC'});
+testactions.push({type:'keyup',code:'KeyC'});
+testactions.push({type:'keydown',code:'Backspace'});
+testactions.push({type:'keyup',code:'Backspace'});
+
+harness.runTestNew(testactions, 'direct-legacy');
 //endtest//

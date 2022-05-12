@@ -33,6 +33,15 @@ class SystemState {
 		this.stackLevel = 0;
 		this.isMobile = false;
 		this.defaultFileName = 'untitled-functions';
+		this.sessionId = '';
+	}
+
+	getSessionId() {
+		return this.sessionId;
+	}
+
+	setSessionId(s) {
+		this.sessionId = s;
 	}
 
 	setIsMobile(val) {

@@ -1,0 +1,105 @@
+/*
+This file is part of Vodka.
+
+Vodka is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Vodka is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+
+
+.deferredvalue {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+}
+
+.deferredvalue > .dotspan {
+	display:none;
+}
+
+.deferredvalue.exploded > .dotspan {
+	display:flex;
+	align-self: stretch;
+}
+
+.deferredvalue.exploded {
+	background-color: var(--value-background);
+	border: 1px solid var(--unselected-border);
+}
+
+.deferredvalue.exploded.mutable {
+	border-width: 3px;	
+}
+
+.deferredvalue.exploded > .nex {
+	margin: 3px;
+}
+
+
+.deferredvalue.exploded.selected {
+	border-color: var(--selected-border);
+}
+
+.deferredvalue.exploded.newselected {
+	border-color: var(--selected-border);
+}
+
+.deferredvalue > .dotspan.exploded {
+	padding: 0px 4px 0px 4px;
+	font-family: "Courier";
+	font-size: 1.15em;
+	color: var(--info-text);
+	background-color: var(--unselected-border);
+	margin: 3px 3px 3px 3px;
+}
+
+
+.deferredvalue.exploded.newselected > .dotspan {
+	background-color: var(--selected-border);
+}
+
+@keyframes deferredspin {
+  0% {
+  	transform: rotate(0);
+  }
+  25% {
+  	transform: rotate(90deg);
+  }
+  50% {
+  	transform: rotate(180deg);
+  }
+  75% {
+  	transform: rotate(270deg);
+  }
+  100% {
+  	transform: rotate(360deg);
+  }
+
+}
+
+.dspin {
+  display: block;
+  height: 25px;
+  align-self: center;
+  transform-origin: 50% 55%;
+  animation: deferredspin 2s linear infinite;
+}
+
+.dnospin {
+	font-size: 1.3em;
+  display: block;
+  align-self: center;
+  height: 25px;
+}
+
+

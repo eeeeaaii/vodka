@@ -112,7 +112,6 @@ function TEST_eventqueue_events_dokeyinput() {
 function TEST_eventqueue_events_expectationcallback() {
 	let result = new Object();
 	let callback = new Object();
-	eventQueueDispatcher.enqueueExpectationCallback(callback, result);
 	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'expectationCallback',
@@ -131,7 +130,7 @@ function TEST_eventqueue_events_expectationcallback() {
 function TEST_eventqueue_events_expectationfulfill() {
 	let exp = new Object();
 	let result = new Object();
-	eventQueueDispatcher.enqueueExpectationFulfill(exp, result);
+	eventQueueDispatcher.enqueueDeferredFulfill(exp, result);
 	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'expectationFulfill',
@@ -190,7 +189,7 @@ function TEST_eventqueue_priority_inverseordering() {
 	eventQueueDispatcher.enqueueGC();
 	eventQueueDispatcher.enqueueAlertAnimation(obj);
 	eventQueueDispatcher.enqueueRenderOnlyDirty();
-	eventQueueDispatcher.enqueueExpectationFulfill(obj, obj)
+	eventQueueDispatcher.enqueueDeferredFulfill(obj, obj)
 	eventQueueDispatcher.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
 	assertEqual(eventQueue.retrieveNextItem().action, 'doKeyInput');
 	assertEqual(eventQueue.retrieveNextItem().action, 'expectationFulfill');
@@ -205,7 +204,7 @@ function TEST_eventqueue_priority_addedwhiledequeueing() {
 	eventQueueDispatcher.enqueueGC();
 	eventQueueDispatcher.enqueueAlertAnimation(obj);
 	eventQueueDispatcher.enqueueRenderOnlyDirty();
-	eventQueueDispatcher.enqueueExpectationFulfill(obj, obj)
+	eventQueueDispatcher.enqueueDeferredFulfill(obj, obj)
 	eventQueueDispatcher.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
 	assertEqual(eventQueue.retrieveNextItem().action, 'doKeyInput');
 	assertEqual(eventQueue.retrieveNextItem().action, 'expectationFulfill');

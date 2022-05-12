@@ -26,14 +26,13 @@ import { Float } from './nex/float.js';
 import { Nil } from './nex/nil.js';
 import { Org } from './nex/org.js';
 import { Instantiator } from './nex/instantiator.js';
-import { Expectation } from './nex/expectation.js';
+import { DeferredCommand } from './nex/deferredcommand.js';
 import { Lambda } from './nex/lambda.js';
 import { Command } from './nex/command.js';
 import { Word } from './nex/word.js';
 import { Wavetable } from './nex/wavetable.js';
 import { Line } from './nex/line.js';
 import { Doc } from './nex/doc.js';
-import { Zlist } from './nex/zlist.js';
 import { EError } from './nex/eerror.js';
 import { Letter } from './nex/letter.js';
 import { Separator } from './nex/separator.js';
@@ -135,8 +134,8 @@ function makeOrgList(children, privateData, taglist, verthoriz, nonmutable) {
 	return t;
 }
 
-function makeExpList(children, privateData, taglist, verthoriz, nonmutable) {
-	let t = new Expectation();
+function makeDeferredCommandList(children, privateData, taglist, verthoriz, nonmutable) {
+	let t = new DeferredCommand();
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
 	decorateNex(t, taglist, nonmutable);
@@ -218,10 +217,6 @@ function makeInstanceList(instname, children, privatedata, taglist, verthoriz, n
 			t = new Doc();
 			isList = true;
 			break;
-		case 'zlist':
-			t = new Zlist();
-			isList = true;
-			break;
 		default:
 			throw new Error('unrecognized list instance type: ' + instname);
 	}
@@ -242,7 +237,7 @@ export {
 	makeCommandList,
 	makeLambdaList,
 	makeOrgList,
-	makeExpList,
+	makeDeferredCommandList,
 	makeInstanceList,
 	makeInstanceAtom,
 	makeInstantiatorList,

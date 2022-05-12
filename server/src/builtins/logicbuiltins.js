@@ -66,7 +66,7 @@ function createLogicBuiltins() {
 	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
 
 	Builtin.createBuiltin(
-		'if--then--else',
+		'if then else',
 		[ 'cond!', '_iftrue', '_iffalse' ],
 		function $if(env, executionEnvironment) {
 			let b = env.lb('cond').getTypedValue();
@@ -75,20 +75,20 @@ function createLogicBuiltins() {
 			if (b) {
 				let iftrueresult = evaluateNexSafely(iftrue, executionEnvironment);
 				if (Utils.isFatalError(iftrueresult)) {
-					return wrapError('&szlig;', 'if--then--else: error in argument 2', iftrueresult);
+					return wrapError('&szlig;', 'if then else: error in argument 2', iftrueresult);
 				}
 				return iftrueresult;
 			} else {
 				let iffalseresult = evaluateNexSafely(iffalse, executionEnvironment);
 				if (Utils.isFatalError(iffalseresult)) {
-					return wrapError('&szlig;', 'if--then--else: error in argument 3', iffalseresult);
+					return wrapError('&szlig;', 'if then else: error in argument 3', iffalseresult);
 				}
 				return iffalseresult;
 			}
 		},
 		'evalutes |cond, and if it is true, return |iftrue, otherwise return |iffalse.'
 	)
-	Builtin.aliasBuiltin('if', 'if--then--else');
+	Builtin.aliasBuiltin('if', 'if then else');
 
 
 	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 

@@ -195,11 +195,7 @@ class Closure extends ValueNex {
 	}
 
 	getInnerHTMLForDisplay() {
-		if (experiments.NEW_CLOSURE_DISPLAY) {
-			return this.getRenderedHTML();
-		} else {
-			return '' + this.prefix + this.escape(this.oldRenderValue());
-		}		
+		return this.getRenderedHTML();
 	}
 
 	renderInto(renderNode, renderFlags, withEditor) {
@@ -208,14 +204,6 @@ class Closure extends ValueNex {
 		domNode.classList.add(this.className);
 		domNode.classList.add('valuenex');
 		domNode.innerHTML = this.getInnerHTMLForDisplay();
-	}
-
-	shouldActivateReturnedExpectations() {
-		let rvp = this.lambda.getReturnValueParam();
-		if (rvp && rvp.skipactivate) {
-			return false;
-		}
-		return true;
 	}
 
 	closureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags) {
@@ -235,7 +223,7 @@ class Closure extends ValueNex {
 	lambdaClosureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags) {
 		let scope = this.lexicalEnvironment.pushEnv();
 		argEvaluator.bindArgs(scope);
-		let r = experiments.ORG_OVERHAUL ? new Org() : new Nil();
+		let r = new Org();
 		let i = 0;
 		let numc = this.lambda.numChildren();
 		for (let i = 0; i < numc; i++) {

@@ -206,11 +206,14 @@ class Lambda extends NexContainer {
 			} else {
 				codespan.classList.remove('editing');
 			}
+			let innerhtml = '';
 			let lambdasignleft = '<span class="lambdasign glyphleft">' + this.getSymbolForCodespan() + '</span>';
 			let lambdasignright = '<span class="lambdasign glyphright">' + this.getSymbolForCodespan() + '</span>';
-			let innerhtml = lambdasignleft + this.amptext.replace(/ /g, '&nbsp;');
-			if (!this.isEditing) {
-				innerhtml += lambdasignright;
+			let faintleftdot = '<span class="tilde glyphleft faint">·</span>';
+			if (this.isEditing) {
+				innerhtml = lambdasignleft + this.amptext.replace(/ /g, '&nbsp;');
+			} else {
+				innerhtml = faintleftdot + this.amptext.replace(/ /g, '&nbsp;') + lambdasignright;
 			}
 			codespan.innerHTML = innerhtml;
 		}
@@ -225,7 +228,9 @@ class Lambda extends NexContainer {
 	}
 
 	evaluate(env) {
-		return new Closure(this, env);
+		let r = new Closure(this, env);
+		this.copyTagsTo(r);
+		return r;
 	}
 
 	cacheParamNames() {

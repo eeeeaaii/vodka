@@ -29,6 +29,7 @@ import { setGlobalPixelsPerSample,
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { showManipulator } from '../wtmanip.js'
 import { Editor } from '../editors.js'
+import { doTutorial } from '../help.js'
 
 
 // zoom essentially means a number of pixels equals a number of samples
@@ -48,6 +49,7 @@ var HEIGHT_PIXELS_FULL_SCALE = 50;
 class Wavetable extends Nex {
 	constructor(initSize) {
 		super();
+		doTutorial('wavetable');
 		let d = [];
 		if (!initSize) initSize = 256;
 		for (let i = 0; i < initSize; i++) {

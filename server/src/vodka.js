@@ -63,6 +63,8 @@ import { BINDINGS } from './environment.js'
 import { rootManager } from './rootmanager.js'
 import { setAPIDocCategory, writeDocs } from './documentation.js'
 import { maybeKillSound } from './webaudio.js'
+import { setupMobile, doMobileKeyDown } from './mobile.js'
+import { setupHelp } from './help.js'
 
 
 // EXPERIMENTS
@@ -70,26 +72,11 @@ import { maybeKillSound } from './webaudio.js'
 // all these should go into SystemState
 // possibly some of them would be moved into Render-specific
 // SystemState objects (for example, screen rendering vs. audio rendering)
-let isStepEvaluating = false; // allows some performance-heavy operations while step evaluating
-let stackLevel = 0;
+
 let root = null;
-
-let sessionId = null;
-let funnelConnected = true;
-
-var enterIsDown;
-
-var mobileMode = false;
-
-var mileInputMode = false;
-
-var helpIsShowing = false;
-var helpButtonIsShowing = true;
 
 // used by emscripten
 var Module = {}
-
-let apiDocCategory = '';
 
 function dumpPerf() {
 	perfmon.dump();
@@ -113,7 +100,8 @@ function doRealKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
 // omgg
 function doKeyInputNotForTests(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
 	eventQueueDispatcher.enqueueDoKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt);
-	return false; // we no longer know if we can honor the browser event?
+	// will return true if we want the browser event to propagate
+	return keyDispatcher.shouldBubble(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt);
 }
 
 var testEventQueue = [];
@@ -122,6 +110,12 @@ var testEventQueue = [];
 // it is actually used for every test, to send the escape keys
 // that bookend "normal" and "exploded" screenshots
 function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta) {
+	//if you have to debug an old test you can alert the keycode
+	// and run with -s
+	//alert(keycode);
+
+
+
 	// in order to make this simulate user activity better I'd need
 	// to go modify all the tests so they don't call this method
 	// synchronously. Instead I will force a full-screen render
@@ -205,189 +199,17 @@ function setEmptyDocRoot() {
 	root.setSelected(false);
 }
 
-function getCookie(key) {
-	let cookies = document.cookie;
-	let a = cookies.split('; ');
-	for (let i = 0; i < a.length; i++) {
-		let b = a[i];
-		let c = b.split('=');
-		if (c[0] == key) {
-			return c[1];
-		}
-	}
-	return null;
-}
-
-function setCookie(key, val) {
-	document.cookie = `${key}=${val}`;
-}
-
-function getQSVal(k) {
-	let params = new URLSearchParams(window.location.search);
-	let lastVal = null;
-	params.forEach(function(value, key) {
-		if (key == k) {
-			lastVal = value;
-		}
-	});
-	return lastVal;
-}
-
 
 function setSessionId() {
 	let params = new URLSearchParams(window.location.search);
+	let sessionId = null;
 	if (params.has('sessionId')) {
 		sessionId = params.get('sessionId');
-		setCookie('sessionId', sessionId);
+		Utils.setCookie('sessionId', sessionId);
 	} else {
-		sessionId = getCookie('sessionId');
+		sessionId = Utils.getCookie('sessionId');
 	}
-}
-
-function setupHelp() {
-
-	document.getElementById('helpbutton').onclick = function(c) {
-		toggleHelp();
-	}
-	document.getElementById('showhotkeys').onclick = function(c) {
-		showHelpPage('hotkeyreference');
-	}
-	document.getElementById('showapi').onclick = function(c) {
-		showHelpPage('fullapireference');
-	}
-	document.getElementById('showwelcome').onclick = function(c) {
-		showHelpPage('intro');
-	}
-	document.getElementById('closehelp').onclick = function(c) {
-		toggleHelp();
-	}
-	document.getElementById('closehelppermanently').onclick = function(c) {
-		doPermanentHelpHide();
-	}
-	document.getElementById('bringbackhelp').onclick = function(c) {
-		bringBackHelp();
-	}
-	document.getElementById('sessionid').innerText = sessionId;
-	document.getElementById('sessionlink').href = `http://${FEATURE_VECTOR.hostname}?sessionId=${sessionId}`;
-	document.getElementById('newsessionlink').href = `http://${FEATURE_VECTOR.hostname}?new=1`;
-}
-
-function toggleHelpButtonButtons() {
-	// TODO: make hiding the help button a more difficult thing
-//	if (isFirstVisit()) {
-		document.getElementById('bringbackhelp').style.display = 'none';
-		document.getElementById('closehelppermanently').style.display = 'none';				
-// 	} else if (userAskedToHideHelpButton()) {
-// 		document.getElementById('bringbackhelp').style.display = 'flex';
-// 		document.getElementById('closehelppermanently').style.display = 'none';		
-// 	} else {
-// 		document.getElementById('bringbackhelp').style.display = 'none';
-// 		document.getElementById('closehelppermanently').style.display = 'flex';		
-// 	}
- }
-
-function doPermanentHelpHide() {
-	if (confirm(
-`Note: clicking "ok" will permanently hide the help button.
-You can always get back to help by adding "help=me" to the query string.
-Only do this if you know what you're doing!
-`)) {
-		hideHelpPanel();
-		hideHelpButton();
-		document.cookie = 'hidehelpbutton=true';
-		toggleHelpButtonButtons();
-	}
-}
-
-function bringBackHelp() {
-	hideHelpPanel();
-	showHelpButton();
-	document.cookie = 'hidehelpbutton=false';
-	toggleHelpButtonButtons();
-}
-
-function hasShowHelpInQueryString() {
-	var params = new URLSearchParams(window.location.search);
-	return params.has('help');
-}
-
-function userAskedToHideHelpButton() {
-	return (getCookie('hidehelpbutton') == 'true');
-}
-
-function isFirstVisit() {
-	return !getCookie('userhasvisited');	
-}
-
-function setVeteranCookie() {
-	if (isFirstVisit()) {
-		document.cookie = 'userhasvisited=true';	
-	}
-}
-
-function maybeShowHelp() {
-	showHelpPage('hotkeyreference');
-	if (experiments.NO_SPLASH) {
-		// this is used in tests
-		hideHelpPanel();
-		hideHelpButton();
-	} else if (hasShowHelpInQueryString()) {
-		showHelpPanel();
-		hideHelpButton();
-	} else if (isFirstVisit()) {
-		showHelpPanel();
-		showHelpPage('intro');
-		hideHelpButton();
-	} else if (userAskedToHideHelpButton()) {
-		hideHelpPanel();
-		hideHelpButton();
-	} else {
-		hideHelpPanel();
-		showHelpButton();
-	}
-}
-
-function showHelpButton() {
-	helpButtonIsShowing = true;
-	document.getElementById('helpbutton').style.display = 'block';
-}
-
-function hideHelpButton() {
-	helpButtonIsShowing = false;
-	document.getElementById('helpbutton').style.display = 'none';
-}
-
-function showHelpPanel() {
-	helpIsShowing = true;
-	document.getElementById('uberhelpcontainer').style.display = 'flex';
-}
-
-function hideHelpPanel() {
-	helpIsShowing = false;
-	document.getElementById('uberhelpcontainer').style.display = 'none';
-	window.scrollTo(0,0);
-}
-
-function toggleHelp() {
-	if (helpIsShowing) {
-		hideHelpPanel();
-		showHelpButton();
-	} else {
-		showHelpPanel();
-		hideHelpButton();
-	}
-}
-
-// help pages:
-//    intro
-//    hotkeyreference
-function showHelpPage(id) {
-	document.getElementById('intro').style.display = 'none';
-	document.getElementById('hotkeyreference').style.display = 'none';
-	document.getElementById('fullapireference').style.display = 'none';
-
-	document.getElementById(id).style.display = 'block';
-	window.scrollTo(0,0);
+	systemState.setSessionId(sessionId);
 }
 
 function replSetup() {
@@ -413,176 +235,6 @@ function macSubst() {
 	}
 }
 
-function doFakeEvent(key, shift, ctrl, alt, cmd, meta) {
-	mobileClearInput();
-	let e = {};
-	e.key = key;
-	e.altKey = alt;
-	e.ctrlKey = ctrl;
-	e.shiftKey = shift;
-	e.metaKey = meta;
-	doKeydownEvent(e);
-}
-
-var mobileControlPanelVisible = false;
-var hideTimeout = null;
-
-function setHideTimeout() {
-	if (hideTimeout) {
-		clearTimeout(hideTimeout);
-	}
-	hideTimeout = setTimeout(function() {
-		document.getElementById("mobilecontrolpanel").style.opacity = 0.0;
-		mobileControlPanelVisible = false;
-	}, 30000);
-}
-
-function showOrDoFakeEvent(key, shift, ctrl, alt, cmd, meta) {
-	if (!mobileControlPanelVisible) {
-		mobileControlPanelVisible = true;
-		document.getElementById("mobilecontrolpanel").style.opacity = 1;
-		setHideTimeout();
-		return;
-	}
-	setHideTimeout();
-	doFakeEvent(key, shift, ctrl, alt, cmd, meta);
-}
-
-function mobileClearInput() {
-	document.getElementById('mobile_input').value = '';
-}
-
-function doMobileKeyDown(e) {
-	if (e.key == 'Enter') {
-		mobileClearInput();
-	}
-}
-
-var prev = null
-function setupMobile() {
-	var mobileInput = document.getElementById("mobile_input");
-	mobileInput.onchange = function(e) {
-		// lol this is basically when enter
-		prev = "";
-		doFakeEvent("Enter", false, false, false, false, false);
-		setTimeout(function() {
-			mobileInput.value = prev;
-		}, 1);
-	}
-	mobileInput.oninput = function(e) {
-		if (prev === null) {
-			// well I guess we added stuff
-			prev = mobileInput.value;
-			doFakeEvent(prev, false, false, false, false, false);
-		} else {
-			// either it's shorter or longer!
-			let newone = mobileInput.value;
-			if (newone.length > prev.length) {
-				let k = newone.charAt(newone.length - 1);
-				prev = newone;
-				doFakeEvent(k, false, false, false, false, false);
-			} else {
-				prev = newone;
-				// gotta be shorter?
-				doFakeEvent("Backspace", false, false, false, false, false);
-			}
-		}
-		setTimeout(function() {
-			mobileInput.value = prev;
-		}, 1);
-		return true;
-	}
-
-	systemState.setIsMobile(true);
-	document.getElementById("mobilecontrolpanel").style.display = 'flex';
-	document.getElementById("codepane").classList.add('mobile');
-
-	document.getElementById("mobile_out").onclick = function() {
-		showOrDoFakeEvent("Tab", true, false, false, false, false);
-	}
-	document.getElementById("mobile_in").onclick = function() {
-		showOrDoFakeEvent("Tab", false, false, false, false, false);
-	}
-	document.getElementById("mobile_prev").onclick = function() {
-		showOrDoFakeEvent("ArrowLeft", false, false, false, false, false);
-	}
-	document.getElementById("mobile_next").onclick = function() {
-		showOrDoFakeEvent("ArrowRight", false, false, false, false, false);
-	}
-
-	document.getElementById("mobile_del").onclick = function() {
-		showOrDoFakeEvent("Backspace", false, false, false, false, false);
-	}
-	document.getElementById("mobile_sde").onclick = function() {
-		showOrDoFakeEvent("Backspace", true, false, false, false, false);
-	}
-	document.getElementById("mobile_esc").onclick = function() {
-		showOrDoFakeEvent("Escape", false, false, false, false, false);
-	}
-	document.getElementById("mobile_til").onclick = function() {
-		showOrDoFakeEvent("~", true, false, false, false, false);
-	}
-	document.getElementById("mobile_exc").onclick = function() {
-		showOrDoFakeEvent("!", true, false, false, false, false);
-	}
-	document.getElementById("mobile_ats").onclick = function() {
-		showOrDoFakeEvent("@", true, false, false, false, false);
-	}
-	document.getElementById("mobile_num").onclick = function() {
-		showOrDoFakeEvent("#", true, false, false, false, false);
-	}
-	document.getElementById("mobile_dol").onclick = function() {
-		showOrDoFakeEvent("$", true, false, false, false, false);
-	}
-	document.getElementById("mobile_per").onclick = function() {
-		showOrDoFakeEvent("%", true, false, false, false, false);
-	}
-	document.getElementById("mobile_car").onclick = function() {
-		showOrDoFakeEvent("^", true, false, false, false, false);
-	}
-	document.getElementById("mobile_amp").onclick = function() {
-		showOrDoFakeEvent("&", true, false, false, false, false);
-	}
-	document.getElementById("mobile_ast").onclick = function() {
-		showOrDoFakeEvent("*", true, false, false, false, false);
-	}
-	document.getElementById("mobile_par").onclick = function() {
-		showOrDoFakeEvent("(", true, false, false, false, false);
-	}
-	document.getElementById("mobile_bce").onclick = function() {
-		showOrDoFakeEvent("{", true, false, false, false, false);
-	}
-	document.getElementById("mobile_brk").onclick = function() {
-		showOrDoFakeEvent("[", true, false, false, false, false);
-	}
-	document.getElementById("mobile_flp").onclick = function() {
-		showOrDoFakeEvent(" ", true, false, false, false, false);
-	}
-
-	document.getElementById("mobile_edit").onclick = function() {
-		showOrDoFakeEvent("Enter", false, true, false, false, false);
-	}
-	document.getElementById("mobile_sted").onclick = function() {
-		showOrDoFakeEvent("Enter", false, false, false, false, false);
-	}
-
-	document.getElementById("mobile_cut").onclick = function() {
-		showOrDoFakeEvent("x", false, false, false, false, true);
-	}
-	document.getElementById("mobile_copy").onclick = function() {
-		showOrDoFakeEvent("c", false, false, false, false, true);
-	}
-	document.getElementById("mobile_paste").onclick = function() {
-		showOrDoFakeEvent("v", false, false, false, false, true);
-	}
-
-	document.getElementById("mobile_eval").onclick = function() {
-		showOrDoFakeEvent("Enter", false, false, false, false, false);
-	}
-	document.getElementById("mobile_quiet").onclick = function() {
-		showOrDoFakeEvent("Enter", true, false, false, false, false);
-	}
-}
 
 function doKeydownEvent(e) {
 	checkRecordState(e, 'down');
@@ -593,36 +245,26 @@ function doKeydownEvent(e) {
 	}
 }
 
-function getUiCallbackObject() {
-	return {
-		'toggleHelp': function() {
-			toggleHelp();
-		},
-		'setExplodedState': function(exploded) {
-			document.getElementById("mobile_esc").innerText = (exploded) ? 'explode' : 'contract'
-		}
-	}
-}
-
 
 // app main entry point
 
 function setup() {
 	setAppFlags();
+	// do session id before doing help
 	setSessionId();
 	macSubst();
+
 	setupHelp();
-	maybeShowHelp()
-	toggleHelpButtonButtons();
-	setVeteranCookie();
 	eventQueue.initialize();
 
-	if (getQSVal('mobile')) {
+	if (Utils.getQSVal('mobile')) {
 		setupMobile();
-		mobileMode = true;
 	}
 
-	keyDispatcher.setUiCallbackObject(getUiCallbackObject());
+	keyDispatcher.setUiCallbackObject({
+		'setExplodedState': function(exploded) {
+			document.getElementById("mobile_esc").innerText = (exploded) ? 'explode' : 'contract'
+		}});
 
 	// testharness.js needs this
 	window.doKeyInput = doKeyInput;
@@ -650,9 +292,6 @@ function setup() {
 		return true;
 	}
 	document.onkeydown = function(e) {
-		if (mobileMode) {
-			return true;
-		}
 		doMobileKeyDown(e);
 		return doKeydownEvent(e);
 	}

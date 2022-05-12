@@ -25,23 +25,41 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testspec// [none]
 //starttest//
 var harness = require('../testharness');
-harness.runTest(function() {
-doKeyInput('Escape', 'Escape', false, false, false);
-doKeyInput(';', 'Semicolon', false, false, false);
-doKeyInput('s', 'KeyS', false, false, false);
-doKeyInput('t', 'KeyT', false, false, false);
-doKeyInput('a', 'KeyA', false, false, false);
-doKeyInput('r', 'KeyR', false, false, false);
-doKeyInput('t', 'KeyT', false, false, false);
-doKeyInput(' ', 'Space', false, false, false);
-doKeyInput('w', 'KeyW', false, false, false);
-doKeyInput('i', 'KeyI', false, false, false);
-doKeyInput('t', 'KeyT', false, false, false);
-doKeyInput('h', 'KeyH', false, false, false);
-doKeyInput(' ', 'Space', false, false, false);
-doKeyInput('s', 'KeyS', false, false, false);
-doKeyInput('e', 'KeyE', false, false, false);
-doKeyInput('m', 'KeyM', false, false, false);
-doKeyInput('i', 'KeyI', false, false, false);
-});
+
+var testactions = [];
+
+testactions.push({type:'keydown',code:'Semicolon'});
+testactions.push({type:'keyup',code:'Semicolon'});
+testactions.push({type:'keydown',code:'KeyS'});
+testactions.push({type:'keyup',code:'KeyS'});
+testactions.push({type:'keydown',code:'KeyT'});
+testactions.push({type:'keyup',code:'KeyT'});
+testactions.push({type:'keydown',code:'KeyA'});
+testactions.push({type:'keyup',code:'KeyA'});
+testactions.push({type:'keydown',code:'KeyR'});
+testactions.push({type:'keyup',code:'KeyR'});
+testactions.push({type:'keydown',code:'KeyT'});
+testactions.push({type:'keyup',code:'KeyT'});
+testactions.push({type:'keydown',code:'Space'});
+testactions.push({type:'keyup',code:'Space'});
+testactions.push({type:'keydown',code:'KeyW'});
+testactions.push({type:'keyup',code:'KeyW'});
+testactions.push({type:'keydown',code:'KeyI'});
+testactions.push({type:'keyup',code:'KeyI'});
+testactions.push({type:'keydown',code:'KeyT'});
+testactions.push({type:'keyup',code:'KeyT'});
+testactions.push({type:'keydown',code:'KeyH'});
+testactions.push({type:'keyup',code:'KeyH'});
+testactions.push({type:'keydown',code:'Space'});
+testactions.push({type:'keyup',code:'Space'});
+testactions.push({type:'keydown',code:'KeyS'});
+testactions.push({type:'keyup',code:'KeyS'});
+testactions.push({type:'keydown',code:'KeyE'});
+testactions.push({type:'keyup',code:'KeyE'});
+testactions.push({type:'keydown',code:'KeyM'});
+testactions.push({type:'keyup',code:'KeyM'});
+testactions.push({type:'keydown',code:'KeyI'});
+testactions.push({type:'keyup',code:'KeyI'});
+
+harness.runTestNew(testactions, 'direct-legacy');
 //endtest//

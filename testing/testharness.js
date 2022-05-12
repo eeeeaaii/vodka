@@ -150,6 +150,18 @@ function getLegacyDefaultFlags() {
 	};
 }
 
+function doFlagOverrides(flags) {
+	// Note: globalappflags.js has flag overrides that are
+	// recorded when the user records a new test.
+	// However the overrides here are for when you want to forever override
+	// behavior, even for old tests. Example: you changed some behavior
+	// that broke all the old tests, and for the time being you want
+	// to keep the old behavior to keep the old tests passing.
+	flags.OLD_ARROW_KEY_TRAVERSAL = true;
+	return flags;
+
+}
+
 function runTestImpl(testinput, method, legacy, flags) {
 	(async() => {
 		let normal_out = process.argv[2];
@@ -163,10 +175,10 @@ function runTestImpl(testinput, method, legacy, flags) {
 			}			
 		} else {
 			if (!flags) {
-				params = toQueryString(getLegacyDefaultFlags())
-			} else {
-				params = toQueryString(flags);
+				flags = getLegacyDefaultFlags();
 			}
+			flags = doFlagOverrides(flags);
+			params = toQueryString(flags);
 		}
 		let dolog = headful;
 		let browser = null;
@@ -190,7 +202,7 @@ function runTestImpl(testinput, method, legacy, flags) {
 				window.legacyEnterBehaviorForTests = true;
 			})
 		}
-		if (method == 'direct') {
+		if (method == 'direct' || method == 'direct-legacy') {
 			await page.evaluate(function() {
 				doKeyInput('{', '{', false, false, false);
 			})
@@ -243,7 +255,7 @@ function runTestImpl(testinput, method, legacy, flags) {
 		// 	await delay(10000);
 		// }
 		await page.evaluate(function() {
-			doKeyInput('ShiftEscape', 'ShiftEscape', false, false, false);
+			doKeyInput('Escape', 'Escape', false, false, false);
 		})
 		await rl.close();
 		await page.screenshot({path: normal_out});

@@ -26,27 +26,49 @@ even tho this was created before orgs.
 //enddescription//
 //starttest//
 var harness = require('../testharness');
-harness.runTest(function() {
-doKeyInput('Escape', 'Escape', false, false, false);
-doKeyInput('h', 'KeyH', false, false, false);
-doKeyInput('e', 'KeyE', false, false, false);
-doKeyInput('l', 'KeyL', false, false, false);
-doKeyInput('l', 'KeyL', false, false, false);
-doKeyInput('o', 'KeyO', false, false, false);
-doKeyInput('Shift', 'ShiftRight', true, false, false);
-doKeyInput('@', 'Digit2', true, false, false);
-doKeyInput('a', 'KeyA', false, false, false);
-doKeyInput('b', 'KeyB', false, false, false);
-doKeyInput('c', 'KeyC', false, false, false);
-doKeyInput('Shift', 'ShiftLeft', true, false, false);
-doKeyInput(')', 'Digit0', true, false, false);
-doKeyInput('a', 'KeyA', false, false, false);
-doKeyInput('Backspace', 'Backspace', false, false, false);
-doKeyInput('Backspace', 'Backspace', false, false, false);
-doKeyInput('Backspace', 'Backspace', false, false, false);
-doKeyInput('Backspace', 'Backspace', false, false, false);
-doKeyInput('Backspace', 'Backspace', false, false, false);
-doKeyInput('Backspace', 'Backspace', false, false, false);
-doKeyInput('Backspace', 'Backspace', false, false, false);
-});
+
+var testactions = [];
+
+testactions.push({type:'keydown',code:'KeyH'});
+testactions.push({type:'keyup',code:'KeyH'});
+testactions.push({type:'keydown',code:'KeyE'});
+testactions.push({type:'keyup',code:'KeyE'});
+testactions.push({type:'keydown',code:'KeyL'});
+testactions.push({type:'keyup',code:'KeyL'});
+testactions.push({type:'keydown',code:'KeyL'});
+testactions.push({type:'keyup',code:'KeyL'});
+testactions.push({type:'keydown',code:'KeyO'});
+testactions.push({type:'keyup',code:'KeyO'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Digit2'});
+testactions.push({type:'keyup',code:'Digit2'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'KeyA'});
+testactions.push({type:'keyup',code:'KeyA'});
+testactions.push({type:'keydown',code:'KeyB'});
+testactions.push({type:'keyup',code:'KeyB'});
+testactions.push({type:'keydown',code:'KeyC'});
+testactions.push({type:'keyup',code:'KeyC'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Digit0'});
+testactions.push({type:'keyup',code:'Digit0'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'KeyA'});
+testactions.push({type:'keyup',code:'KeyA'});
+testactions.push({type:'keydown',code:'Backspace'});
+testactions.push({type:'keyup',code:'Backspace'});
+testactions.push({type:'keydown',code:'Backspace'});
+testactions.push({type:'keyup',code:'Backspace'});
+testactions.push({type:'keydown',code:'Backspace'});
+testactions.push({type:'keyup',code:'Backspace'});
+testactions.push({type:'keydown',code:'Backspace'});
+testactions.push({type:'keyup',code:'Backspace'});
+testactions.push({type:'keydown',code:'Backspace'});
+testactions.push({type:'keyup',code:'Backspace'});
+testactions.push({type:'keydown',code:'Backspace'});
+testactions.push({type:'keyup',code:'Backspace'});
+testactions.push({type:'keydown',code:'Backspace'});
+testactions.push({type:'keyup',code:'Backspace'});
+
+harness.runTestNew(testactions, 'direct-legacy');
 //endtest//

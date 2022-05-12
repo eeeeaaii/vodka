@@ -25,17 +25,29 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testspec// [none]
 //starttest//
 var harness = require('../testharness');
-harness.runTest(function() {
-doKeyInput('Escape', 'Escape', false, false, false);
-doKeyInput('Shift', 'ShiftLeft', true, false, false);
-doKeyInput('H', 'KeyH', true, false, false);
-doKeyInput('e', 'KeyE', false, false, false);
-doKeyInput('l', 'KeyL', false, false, false);
-doKeyInput('l', 'KeyL', false, false, false);
-doKeyInput('o', 'KeyO', false, false, false);
-doKeyInput('Shift', 'ShiftRight', true, false, false);
-doKeyInput('~', 'Backquote', true, false, false);
-doKeyInput(' ', 'Space', false, false, false);
-doKeyInput('a', 'KeyA', false, false, false);
-});
+
+var testactions = [];
+
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'KeyH'});
+testactions.push({type:'keyup',code:'KeyH'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'KeyE'});
+testactions.push({type:'keyup',code:'KeyE'});
+testactions.push({type:'keydown',code:'KeyL'});
+testactions.push({type:'keyup',code:'KeyL'});
+testactions.push({type:'keydown',code:'KeyL'});
+testactions.push({type:'keyup',code:'KeyL'});
+testactions.push({type:'keydown',code:'KeyO'});
+testactions.push({type:'keyup',code:'KeyO'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Backquote'});
+testactions.push({type:'keyup',code:'Backquote'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Space'});
+testactions.push({type:'keyup',code:'Space'});
+testactions.push({type:'keydown',code:'KeyA'});
+testactions.push({type:'keyup',code:'KeyA'});
+
+harness.runTestNew(testactions, 'direct-legacy');
 //endtest//

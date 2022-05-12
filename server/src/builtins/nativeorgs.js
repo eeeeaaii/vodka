@@ -33,8 +33,6 @@ class ForeignGlobalData {
 const foreignGlobalData = new ForeignGlobalData();
 
 function createNativeOrgs() {
-	let nillynil = experiments.ORG_OVERHAUL ? '' : '^ ';
-
 	// this works
 	templateStore.bindForeignClosure('alert', ' =a', 'pops up an alert.', function(a) {
 		alert(a[0].prettyPrint());
@@ -46,7 +44,7 @@ function createNativeOrgs() {
 		[
 			{
 				'name': 'show',
-				'args': `${nillynil}a$`,
+				'args': `a$`,
 				'docs': 'shows a notification with |a in it.',
 				'func': function(a) {
 					Notification.requestPermission().then(
@@ -73,7 +71,7 @@ function createNativeOrgs() {
 			},
 			{
 				'name': ':init',
-				'args': `${nillynil}w# h#`,
+				'args': `w# h#`,
 				'docs': 'initializes the Canvas.',
 				'func': function(args) {
 					// we don't want the contents of the canvas to get destroyed in between calls to draw
@@ -173,7 +171,7 @@ function createNativeOrgs() {
 			},
 			{
 				'name': 'dot',
-				'args': `${nillynil}color() x# y#`,
+				'args': `color() x# y#`,
 				'docs': 'draws a dot with color |color at |x and |y.',
 				'func': function(args) {
 					this.setFillFromColor(args[0]);
@@ -184,7 +182,7 @@ function createNativeOrgs() {
 			},
 			{
 				'name': 'rect',
-				'args': `${nillynil}color() x# y# w# h#`,
+				'args': `color() x# y# w# h#`,
 				'docs': 'draws a rectangle with color |color at |x, |y with width |w and height |h.',
 				'func': function(args) {
 					this.setFillFromColor(args[0]);
@@ -197,7 +195,7 @@ function createNativeOrgs() {
 			},
 			{
 				'name': 'line',
-				'args': `${nillynil}color() a0# a1# a2# a3#`,
+				'args': `color() a0# a1# a2# a3#`,
 				'docs': 'draws a line with color |color from point |a0, |a1 to point |a2, |a3.',
 				'func': function(args) {
 					this.setStrokeFromColor(args[0]);
@@ -209,7 +207,7 @@ function createNativeOrgs() {
 			},
 			{
 				'name': 'fill-background',
-				'args': `${nillynil}color()`,
+				'args': `color()`,
 				'docs': 'fills the background of the canvas with color |color.',
 				'func': function(args) {
 					let color = args[0];

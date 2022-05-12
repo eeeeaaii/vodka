@@ -19,8 +19,7 @@ import { Builtin } from '../nex/builtin.js';
 import { getMidiDevices } from '../midifunctions.js'
 import { Org } from '../nex/org.js'; 
 import { EError, ERROR_TYPE_INFO } from '../nex/eerror.js'
-import { Expectation } from '../nex/expectation.js'
-import { convertJSMapToOrg } from '../templates.js'
+import { convertJSMapToOrg } from '../nex/org.js'
 import { Tag } from '../tag.js'
 import {
 	MidiActivationFunctionGenerator,
@@ -33,8 +32,8 @@ function createMidiBuiltins() {
 		'list-midi-inputs',
 		[ ],
 		function $listMidiInputs(env, executionEnvironment) {
-			let exp = new Expectation();
-			exp.set(new GenericActivationFunctionGenerator(
+			let dv = new DeferredValue();
+			dv.set(new GenericActivationFunctionGenerator(
 				'list-midi-inputs', 
 				function(callback, exp) {
 					getMidiDevices(function(devs) {
@@ -53,8 +52,8 @@ function createMidiBuiltins() {
 			));
 			let waitmessage = new EError(`listing midi inputs`);
 			waitmessage.setErrorType(ERROR_TYPE_INFO);
-			exp.appendChild(waitmessage)
-			return exp;
+			dv.appendChild(waitmessage)
+			return dv;
 		},
 		'lists midi inputs'
 	);
@@ -62,21 +61,22 @@ function createMidiBuiltins() {
 
 	Builtin.createBuiltin(
 		'wait-for-midi',
-		[ 'exp*', 'midiport()' ],
+		[ 'midiport()' ],
 		function $setMidi(env, executionEnvironment) {
-			let exp = env.lb('exp');
 			let midiport = env.lb('midiport');
 			let ismidiport = midiport.hasTag(new Tag('midiport'))
 			let id = midiport.getChildTagged(new Tag('id'));
 			if (!ismidiport || !id) {
 				return new EError('wait-for-midi: must pass in a midiport object with a valid ID');
 			}
-			exp.setAutoreset(true);
+			let dv = new DeferredValue();
+			dv.setAutoreset(true);
 			let afg = new MidiActivationFunctionGenerator(id.getTypedValue());
-			exp.set(afg);
-			return exp;
+			dv.set(afg);
+			dv.activate();
+			return dv;
 		},
-		'primes |exp to fulfill when a midi event is received.'
+		'returns a deferred value that updates any time a midi event is received.'
 	);
 	
 }

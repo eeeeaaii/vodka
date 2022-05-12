@@ -36,17 +36,28 @@ class KeyDispatcher {
 		this.uiCallbackObject = obj;
 	}
 
+	shouldBubble(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
+		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);		
+		if (eventName == 'Meta-+' || eventName == 'Meta--') {
+			return true;
+		}
+		if (hasMeta && (keycode == '2')) {
+			return true;
+		}
+		return false;
+	}
+
 	dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
 		// don't need to do anything with modifier key presses directly, and having them go through the pipline
 		// makes it hard to debug key presses.
-		if (keycode == 'CapsLock') return true;
-		if (keycode == 'Shift') return true;
-		if (keycode == 'Alt') return true;
-		if (keycode == 'Meta') return true;
-		if (keycode == 'Control') return true;
+		if (keycode == 'CapsLock') return;
+		if (keycode == 'Shift') return;
+		if (keycode == 'Alt') return;
+		if (keycode == 'Meta') return;
+		if (keycode == 'Control') return;
 
 		if (hasMeta && (keycode == '2')) {
-			return true;
+			return;
 		}
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
 
@@ -58,37 +69,31 @@ class KeyDispatcher {
 
 			eventName = this.doEditorEvent(eventName);
 			if (eventName === null) {
-				return false;
+				return;
 			}
 		}
+
 
 		// there are a few special cases
 		if (eventName == '|') {
 			// vertical bar is unusable - 'internal use only'
-			return false; // to cancel browser event
 		} else if (eventName == 'Meta-z') {
-			return undo();
+			undo();
 		} else if (eventName == 'Meta-y') {
-			return redo();
+			redo();
 		} else if (eventName == 'Meta-s') {
 			let rn = manipulator.doSave();
 			if (rn) {
 				evaluateAndKeep(rn)
 			}
-
-			return false; // to cancel browser event
 		} else if (eventName == 'Meta-x') {
 			manipulator.doCut();
-			return false; // to cancel browser event
 		} else if (eventName == 'Meta-c') {
 			manipulator.doCopy();
-			return false; // to cancel browser event
 		} else if (eventName == 'Meta-v') {
 			manipulator.doPaste();
-			return false; // to cancel browser event
 		} else if (eventName == 'Escape' && !systemState.getGlobalSelectedNode().usingEditor()) {
 			this.toggleGlobalExplodedMode();
-			return false; // to cancel browser event
 		} else {
 			// 1. look in override table
 			// 2. look in regular table
@@ -116,18 +121,8 @@ class KeyDispatcher {
 					// we don't save the source node because it becomes irrelevant
 					// if we undo and then redo
 					let action = actionFactory(actionName, eventName);
-					return enqueueAndPerformAction(action);
-				} else {
-					return true; // didn't handle it.
+					enqueueAndPerformAction(action);
 				}
-
-
-
-				// // returning false here means we tell the browser not to process the event.
-				// if (this.runFunctionFromRegularTable(sourceNode, eventName)) return false;
-				// if (this.runFunctionFromGenericTable(sourceNode, eventName)) return false;
-				// if (this.runDefaultHandle(sourceNode, eventName)) return false;
-				// return true; // didn't handle it.
 			} catch (e) {
 				if (e == UNHANDLED_KEY) {
 					console.log("UNHANDLED KEY " +
@@ -136,7 +131,6 @@ class KeyDispatcher {
 									',' + 'hasShift=' + hasShift +
 									',' + 'hasCtrl=' + hasCtrl +
 									',' + 'hasMeta=' + hasMeta);
-					return true;
 				} else throw e;
 			}
 		}
@@ -190,9 +184,7 @@ class KeyDispatcher {
 
 	getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichKey) {
 		let eventName = this.getEventNameImpl(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichKey);
-		if (experiments.THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO) {
-			eventName = eventName.replace(/^Ctrl/, 'Alt');
-		}
+		eventName = eventName.replace(/^Ctrl/, 'Alt');
 		return eventName;
 	}
 
@@ -335,6 +327,10 @@ class KeyDispatcher {
 			return 'Meta-y';
 		} else if (keycode == 's' && hasMeta) {
 			return 'Meta-s';
+		} else if (keycode == '=' && hasMeta) {
+			return 'Meta-+';
+		} else if (keycode == '-' && hasMeta) {
+			return 'Meta--';
 		} else {
 			return keycode;
 		}
@@ -390,7 +386,7 @@ class KeyDispatcher {
 			'%': 'insert-float-at-insertion-point',
 			'^': 'insert-instantiator-at-insertion-point',
 			'&': 'insert-lambda-at-insertion-point',
-			'*': 'insert-expectation-at-insertion-point',
+			'*': 'insert-deferredcommand-at-insertion-point',
 			'(': 'insert-org-at-insertion-point',
 			')': 'close-off-org',
 			'[': 'insert-line-at-insertion-point',
@@ -404,7 +400,7 @@ class KeyDispatcher {
 
 			'Alt~': 'wrap-in-command',
 			'Alt&': 'wrap-in-lambda',
-			'Alt*': 'wrap-in-expectation',
+			'Alt*': 'wrap-in-deferredcommand',
 			'Alt(': 'wrap-in-word',
 			'Alt)': 'wrap-in-org',
 			'Alt[': 'wrap-in-line',
@@ -451,7 +447,7 @@ class KeyDispatcher {
 			'%': 'insert-float-at-insertion-point',
 			'^': 'insert-instantiator-at-insertion-point',
 			'&': 'insert-lambda-at-insertion-point',
-			'*': 'insert-expectation-at-insertion-point',
+			'*': 'insert-deferredcommand-at-insertion-point',
 
 			'(': 'insert-org-at-insertion-point',
 			')': 'close-off-org',
@@ -467,7 +463,7 @@ class KeyDispatcher {
 			'`': 'add-tag',
 			'Alt~': 'wrap-in-command',
 			'Alt&': 'wrap-in-lambda',
-			'Alt*': 'wrap-in-expectation',
+			'Alt*': 'wrap-in-deferredcommand',
 			'Alt(': 'wrap-in-word',
 			'Alt)': 'wrap-in-org',
 			'Alt[': 'wrap-in-line',

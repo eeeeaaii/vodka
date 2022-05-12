@@ -26,21 +26,17 @@ import { Float } from '../server/src/nex/float.js';
 import { Nil } from '../server/src/nex/nil.js';
 import { Org } from '../server/src/nex/org.js';
 import { Instantiator } from '../server/src/nex/instantiator.js';
-import { Expectation } from '../server/src/nex/expectation.js';
+import { DeferredCommand } from '../server/src/nex/deferredcommand.js';
 import { Lambda } from '../server/src/nex/lambda.js';
 import { Command } from '../server/src/nex/command.js';
 import { Word } from '../server/src/nex/word.js';
 import { Wavetable } from '../server/src/nex/wavetable.js';
 import { Line } from '../server/src/nex/line.js';
 import { Doc } from '../server/src/nex/doc.js';
-import { Zlist } from '../server/src/nex/zlist.js';
 import { EError } from '../server/src/nex/eerror.js';
 import { Letter } from '../server/src/nex/letter.js';
 import { Separator } from '../server/src/nex/separator.js';
 import { Tag } from '../server/src/tag.js'
-
-import { experiments } from '../server/src/globalappflags.js'
-
 
 function concatParserString(arr) {
 	if (arr == null) {
@@ -50,11 +46,9 @@ function concatParserString(arr) {
 }
 
 function decorateNex(nex, tags, nonmutable) {
-	if (experiments.MUTABLES) {
-		if (!nonmutable) {
-			nex.setMutable(true);
-		}		
-	}
+	if (!nonmutable) {
+		nex.setMutable(true);
+	}		
 	if (!tags) {
 		return nex;
 	}
@@ -135,8 +129,8 @@ function makeOrgList(children, privateData, taglist, verthoriz, nonmutable) {
 	return t;
 }
 
-function makeExpList(children, privateData, taglist, verthoriz, nonmutable) {
-	let t = new Expectation();
+function makeDeferredCommandList(children, privateData, taglist, verthoriz, nonmutable) {
+	let t = new DeferredCommand();
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
 	decorateNex(t, taglist, nonmutable);
@@ -218,10 +212,6 @@ function makeInstanceList(instname, children, privatedata, taglist, verthoriz, n
 			t = new Doc();
 			isList = true;
 			break;
-		case 'zlist':
-			t = new Zlist();
-			isList = true;
-			break;
 		default:
 			throw new Error('unrecognized list instance type: ' + instname);
 	}
@@ -242,7 +232,7 @@ export {
 	makeCommandList,
 	makeLambdaList,
 	makeOrgList,
-	makeExpList,
+	makeDeferredCommandList,
 	makeInstanceList,
 	makeInstanceAtom,
 	makeInstantiatorList,

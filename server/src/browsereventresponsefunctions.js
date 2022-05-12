@@ -29,7 +29,7 @@ function getParentNexOfDomElement(elt) {
 
 function respondToClickEvent(nex, renderNode, browserEvent) {
 	if (nex.extraClickHandler) {
-		nex.extraClickHandler();
+		nex.extraClickHandler(browserEvent.clientX, browserEvent.clientY);
 		return;
 	}
 	if (systemState.isMouseFunnelActive()) {

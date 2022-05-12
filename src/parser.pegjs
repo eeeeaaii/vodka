@@ -65,14 +65,14 @@ org_list
  ;
 
 exp_list
- = '*;' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
- / '*;' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
- / '*;' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonmutable */); }
- / '*;' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonmutable */); }
- / '*' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
- / '*' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
- / '*' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'v'); }
- / '*' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeExpList(CHILDREN, PRIVATE, TAGLIST, 'z'); }
+ = '*;' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeDeferredCommandList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
+ / '*;' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeDeferredCommandList(CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); }
+ / '*;' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeDeferredCommandList(CHILDREN, PRIVATE, TAGLIST, 'v', true /* nonmutable */); }
+ / '*;' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeDeferredCommandList(CHILDREN, PRIVATE, TAGLIST, 'z', true /* nonmutable */); }
+ / '*' PRIVATE:private_data_section '(' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ')' { return PF.makeDeferredCommandList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ / '*' PRIVATE:private_data_section '(_' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '_)' { return PF.makeDeferredCommandList(CHILDREN, PRIVATE, TAGLIST, 'h'); }
+ / '*' PRIVATE:private_data_section '(|' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  '|)' { return PF.makeDeferredCommandList(CHILDREN, PRIVATE, TAGLIST, 'v'); }
+ / '*' PRIVATE:private_data_section '(,' TAGLIST:taglist? CHILDREN:(nex_with_space *) _  ',)' { return PF.makeDeferredCommandList(CHILDREN, PRIVATE, TAGLIST, 'z'); }
  ;
 
 lambda_list

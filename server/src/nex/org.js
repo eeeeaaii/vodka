@@ -20,7 +20,10 @@ import * as Utils from '../utils.js'
 import { NexContainer, V_DIR, H_DIR, Z_DIR } from './nexcontainer.js'
 import { experiments } from '../globalappflags.js'
 import { wrapError, evaluateNexSafely } from '../evaluator.js'
-
+import { EString } from './estring.js'
+import { Integer } from './integer.js'
+import { Float } from './float.js'
+import { Tag } from '../tag.js'
 
 class Org extends NexContainer {
 	constructor() {
@@ -89,22 +92,6 @@ class Org extends NexContainer {
 
 	serializePrivateData(data) {
 		return this.privateData;
-	}
-	
-	evaluate(env) {
-		if (experiments.MUTABLES && this.mutable) {
-			// shallow copy, then evaluate children.
-			let listcopy = this.makeCopy(true);
-			let iterator = null;
-			this.doForEachChild(function(child) {
-				let newchild = evaluateNexSafely(child, env);
-				// we don't throw exceptions, we just embed them - this isn't a function.
-				iterator = listcopy.fastAppendChildAfter(newchild, iterator);
-			})
-			return listcopy;
-		} else {
-			return this;
-		}
 	}
 
 	getTypeName() {
@@ -191,6 +178,28 @@ class Org extends NexContainer {
 		return result;		
 	}
 
+	/*
+	should be in the superclass (nexcontainer) but it creates a circular dependency graph somehow
+	*/
+	evaluate(env) {
+		if (this.mutable) {
+			// shallow copy, then evaluate children.
+			let listcopy = this.makeCopy(true);
+			let iterator = null;
+			this.doForEachChild(function(child) {
+				let newchild = evaluateNexSafely(child, env);
+				// we don't throw exceptions, we just embed them - this isn't a function.
+				iterator = listcopy.fastAppendChildAfter(newchild, iterator);
+			})
+			listcopy.setMutable(false);
+			return listcopy;
+		} else {
+			return this;
+		}
+	}
+
+
+
 	getDefaultHandler() {
 		return 'standardDefault';
 	}
@@ -206,7 +215,24 @@ class Org extends NexContainer {
 
 }
 
+function convertJSMapToOrg(m) {
+	let r = new Org();
+	for (let key in m) {
+		let value = m[key];
+		let v = new EString('' + value);
+		if (!isNaN(value)) {
+			if (Math.floor(value) == value) {
+				v = new Integer(Math.floor(value));
+			} else {
+				v = new Float(value);
+			}
+		}
+		v.addTag(new Tag(key));
+		r.appendChild(v);
+	}
+	return r;
+}
 
 
-export { Org }
+export { Org, convertJSMapToOrg }
 

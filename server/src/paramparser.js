@@ -147,8 +147,7 @@ class ParamParser {
 		switch(typechar) {
 			case '!': return 'Bool';
 			case '~': return 'Command';
-			case '*': return 'Expectation';
-			case ',': return 'Expectation'; // TODO: remove support for this version
+			case '*': return 'Deferred';
 			case '()': return 'NexContainer';
 			case '$': return 'EString';
 			case '@': return 'ESymbol';
@@ -156,7 +155,7 @@ class ParamParser {
 			case '#%': return 'Number';
 			case '%#': return 'Number';
 			case '#': return 'Integer';
-			case '^': return experiments.ORG_OVERHAUL ? 'Instantiator' : 'Nil';
+			case '^': 'Instantiator';
 			case '&': return 'Closure';
 		}
 		return '*';

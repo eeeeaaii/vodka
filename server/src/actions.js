@@ -16,7 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { systemState } from './systemstate.js';
-import { KeyResponseFunctions, DefaultHandlers, figureOutWhatItCanBe } from './keyresponsefunctions.js';
+import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
 import { manipulator } from './manipulator.js';
 import { EError, ERROR_TYPE_WARN } from './nex/eerror.js';
 
@@ -55,25 +55,16 @@ function enqueueAndPerformAction(action) {
 	} else {
 		nextPosition = advance(nextPosition);
 	}
-	return action.doAction();
+	action.doAction();
 }
-
-
-// NOTE:
-// return false means success
-// return true means failure
-// I don't make the rules
-// well, I do make the rules, but I made bad rules
 
 
 function redo() {
 	if (nextPosition != queueTop) {
-		let r = actionStack[nextPosition].doAction();
+		actionStack[nextPosition].doAction();
 		nextPosition = advance(nextPosition);
-		return r;
 	} else {
 		console.log('cannot redo');
-		return true;
 	}
 }
 
@@ -81,10 +72,9 @@ function undo() {
 	let pos = retreat(nextPosition);
 	if (actionStack[pos].canUndo()) {
 		nextPosition = pos;
-		return actionStack[nextPosition].undoAction();
+		actionStack[nextPosition].undoAction();
 	} else {
 		console.log('cannot undo');
-		return true;
 	}
 }
 
@@ -115,11 +105,9 @@ class NoOpAction extends Action {
 	}
 
 	doAction() {
-		return false;
 	}
 
 	undoAction() {
-		return false;
 	}
 }
 
@@ -138,14 +126,12 @@ class TagEditorContentChangeAction extends Action {
 		let fakeEditor = selectedNode.getTagEditorForType(selectedNode.nex);
 		this.savedEditorData = fakeEditor.getStateForUndo();
 		KeyResponseFunctions[this.actionName](selectedNode);
-		return false;
 	}
 
 	undoAction() {
 		let selectedNode = systemState.getGlobalSelectedNode();
 		let fakeEditor = selectedNode.getTagEditorForType(selectedNode.nex);
 		fakeEditor.setStateForUndo(this.savedEditorData);
-		return false;
 	}
 }
 
@@ -163,7 +149,6 @@ class EditorContentChangeAction extends Action {
 		let fakeEditor = selectedNode.getEditorForType(selectedNode.nex);
 		this.savedEditorData = fakeEditor.getStateForUndo();
 		KeyResponseFunctions[this.actionName](selectedNode);
-		return false;
 	}
 
 	undoAction() {
@@ -173,7 +158,6 @@ class EditorContentChangeAction extends Action {
 		let selectedNode = systemState.getGlobalSelectedNode();
 		let fakeEditor = selectedNode.getEditorForType(selectedNode.nex);
 		fakeEditor.setStateForUndo(this.savedEditorData);
-		return false;
 	}
 }
 
@@ -196,9 +180,6 @@ class WrapInNewParentNodeAction extends Action {
 			let fakeEditor = this.newNode.getEditorForType(this.newNode.nex);
 			fakeEditor.setStateForUndo(this.editorDataSavedForRedo);
 		}
-
-
-		return false;
 	}
 
 	undoAction() {
@@ -216,7 +197,6 @@ class WrapInNewParentNodeAction extends Action {
 		p.insertChildAt(this.savedChildNode, index);
 		this.savedChildNode.setInsertionMode(this.savedInsertionMode);
 		this.savedChildNode.setSelected();
-		return false;
 	}
 }
 
@@ -240,7 +220,6 @@ class InsertNewChildNodeAction extends Action {
 			let fakeEditor = this.newNode.getEditorForType(this.newNode.nex);
 			fakeEditor.setStateForUndo(this.editorDataSavedForRedo);
 		}
-		return false;
 	}
 
 	undoAction() {
@@ -258,7 +237,6 @@ class InsertNewChildNodeAction extends Action {
 		manipulator.removeNex(this.newNode);
 		this.savedSelectedNode.setSelected();
 		this.savedSelectedNode.setInsertionMode(this.savedInsertionMode);
-		return false;
 	}
 }
 
@@ -276,12 +254,10 @@ class ChangeDirectionAction extends Action {
 		this.savedSelectedNode = systemState.getGlobalSelectedNode();
 		this.savedDir = this.savedSelectedNode.nex.getDir();
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
-		return false;
 	}
 
 	undoAction() {
 		this.savedSelectedNode.nex.setDir(this.savedDir);
-		return false;
 	}
 }
 
@@ -298,13 +274,11 @@ class ChangeSelectedNodeAction extends Action {
 		this.savedSelectedNode = systemState.getGlobalSelectedNode();
 		this.savedInsertionMode = systemState.getGlobalSelectedNode().getInsertionMode();
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
-		return false;
 	}
 
 	undoAction() {
 		this.savedSelectedNode.setSelected();
 		this.savedSelectedNode.setInsertionMode(this.savedInsertionMode);
-		return false;
 	}
 }
 
@@ -320,14 +294,37 @@ class LegacyKeyResponseFunctionAction extends Action {
 
 	doAction() {
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
-		return false;
 	}
 
 	undoAction() {
 		console.log('cannot undo this action');
-		return true;
 	}
 }
+
+// For things that can be performed but not undone or redone
+// example: auditioning a wavetable
+class TriviallyUndoableKeyResponseFunctionAction extends Action {
+	constructor(actionName) {
+		super(actionName);
+		this.hasBeenDone = false;
+	}
+
+	canUndo() {
+		return true;
+	}
+
+	doAction() {
+		if (!this.hasBeenDone) {
+			this.hasBeenDone = true;
+			KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
+		}
+	}
+
+	undoAction() {
+		// no op
+	}
+}
+
 
 class DeleteNexAction extends Action {
 	constructor(actionName) {
@@ -344,14 +341,12 @@ class DeleteNexAction extends Action {
 		this.index = this.parentOfNodeWeAreDeleting.getIndexOfChild(this.savedNodeToRestore);
 		this.savedInsertionMode = this.savedNodeToRestore.getInsertionMode();
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
-		return false;
 	}
 
 	undoAction() {
 		this.parentOfNodeWeAreDeleting.insertChildAt(this.savedNodeToRestore, this.index);
 		this.savedNodeToRestore.setSelected();
 		this.savedNodeToRestore.setInsertionMode(this.savedInsertionMode);
-		return false;
 	}
 }
 
@@ -370,7 +365,6 @@ class EvaluateAndReplaceAction extends Action {
 		this.index = this.parentOfNodeBeingEvaluated.getIndexOfChild(this.nodeBeingEvaluated);
 		this.savedInsertionMode = this.nodeBeingEvaluated.getInsertionMode();
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
-		return false;
 	}
 
 	undoAction() {
@@ -384,7 +378,6 @@ class EvaluateAndReplaceAction extends Action {
 		let ee = new EError("Warning: undoing code evaluation does not undo side effects.");
 		ee.setErrorType(ERROR_TYPE_WARN);
 		this.parentOfNodeBeingEvaluated.insertChildBefore(ee, this.nodeBeingEvaluated);
-		return false;
 	}
 }
 
@@ -402,14 +395,12 @@ class EvaluateInPlaceAction extends Action {
 		this.nodeBeingEvaluated = systemState.getGlobalSelectedNode();
 		this.parentOfNodeBeingEvaluated = this.nodeBeingEvaluated.getParent();
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
-		return false;
 	}
 
 	undoAction() {
 		let ee = new EError("Warning: undoing code evaluation does not undo side effects.")
 		ee.setErrorType(ERROR_TYPE_WARN);
 		this.parentOfNodeBeingEvaluated.insertChildBefore(ee, this.nodeBeingEvaluated);
-		return false;
 	}
 }
 
@@ -426,12 +417,10 @@ class ChangeRenderModeAction extends Action {
 	doAction() {
 		this.savedRenderMode = systemState.getGlobalSelectedNode().getRenderMode();
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
-		return false;
 	}
 
 	undoAction() {
 		systemState.getGlobalSelectedNode().setRenderMode(this.savedRenderMode);
-		return false;
 	}
 }
 
@@ -460,7 +449,6 @@ class StandardDefaultHandlerAction extends Action {
 				fakeEditor.setStateForUndo(this.editorDataSavedForRedo);
 			}
 		}
-		return false;
 	}
 
 	undoAction() {
@@ -481,8 +469,6 @@ class StandardDefaultHandlerAction extends Action {
 			this.savedSelectedNode.setSelected();
 			this.savedSelectedNode.setInsertionMode(this.savedInsertionMode);
 		}
-
-		return false;
 	}
 }
 
@@ -505,7 +491,6 @@ class LegacyDefaultHandlerAction extends Action {
 
 	undoAction() {
 		console.log('cannot undo this action');
-		return true;
 	}
 }
 
@@ -513,8 +498,9 @@ class LegacyDefaultHandlerAction extends Action {
 function actionFactory(actionName, eventName) {
 	switch(actionName) {
 		case 'do-nothing':
+			return new NoOpAction(actionName);
  		case 'audition-wave':
-			return new NoOpAction(actionName, eventName);
+			return new TriviallyUndoableKeyResponseFunctionAction(actionName);
 		case 'move-left-up':
 		case 'move-right-down':
 		case 'select-parent':
@@ -543,7 +529,7 @@ function actionFactory(actionName, eventName) {
 		case 'insert-float-at-insertion-point':
 		case 'insert-instantiator-at-insertion-point':
 		case 'insert-lambda-at-insertion-point':
-		case 'insert-expectation-at-insertion-point':
+		case 'insert-deferredcommand-at-insertion-point':
 		case 'insert-org-at-insertion-point':
 		case 'insert-line-at-insertion-point':
 		case 'insert-doc-at-insertion-point':
@@ -574,7 +560,7 @@ function actionFactory(actionName, eventName) {
 
 		case 'wrap-in-command':
 		case 'wrap-in-doc':
-		case 'wrap-in-expectation':
+		case 'wrap-in-deferredcommand':
 		case 'wrap-in-instantiator':
 		case 'wrap-in-lambda':
 		case 'wrap-in-line':
@@ -594,9 +580,6 @@ function actionFactory(actionName, eventName) {
 			// basically autocomplete should be handled by the editor when editing,
 			// otherwise autocomplete on a non-editing thing is a straight change of its contents,
 			// so easy to undo
-
-		case 'activate-or-return-exp-child':
-			// when hitting enter on an expectation
 
 		// Document related stuff (to do later)
 

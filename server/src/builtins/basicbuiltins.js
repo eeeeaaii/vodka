@@ -28,7 +28,7 @@ import { Doc } from '../nex/doc.js';
 import { EError } from '../nex/eerror.js'; 
 import { EString } from '../nex/estring.js'; 
 import { ESymbol } from '../nex/esymbol.js'; 
-import { Expectation } from '../nex/expectation.js'; 
+import { DeferredCommand } from '../nex/deferredcommand.js'; 
 import { Float } from '../nex/float.js'; 
 import { Integer } from '../nex/integer.js'; 
 import { Lambda } from '../nex/lambda.js'; 
@@ -56,8 +56,9 @@ function createBasicBuiltins() {
 				return lst.getChildAt(lst.numChildren() - 1);
 			}
 		},
-		'all arguments are evaluated in order from first to last, and the result of the last evaluation is returned.'
+		'Evaluates all arguments in order from first to last, returning only the result of the last evaluation.'
 	);
+
 
 	Builtin.createBuiltin(
 		'head',
@@ -69,29 +70,11 @@ function createBasicBuiltins() {
 			}
 			return lst.getFirstChild();
 		},
-		'returns the first element of |list, without altering |list in any way.'
+		'Returns the first element of |list without altering |list. Aliases: car, first.'
 	);
-
 	Builtin.aliasBuiltin('car', 'head');
 	Builtin.aliasBuiltin('first', 'head');
 
-	Builtin.createBuiltin(
-		'hard-head',
-		[ 'list()' ],
-		function $hardHead(env, executionEnvironment) {
-			let c = env.lb('list');
-			if (c.numChildren() == 0) {
-				return new EError("hard-head: cannot get first element of empty list. Sorry!");
-			}
-			let r = c.getChildAt(0);
-			c.removeChild(c.getChildAt(0));
-			return r;
-		},
-		'destructively and permanently removes the first element of |list, and returns the removed element.'
-	);
-
-	Builtin.aliasBuiltin('cap', 'hard-head');
-//	Builtin.aliasBuiltin('hard-first', 'hard-head');
 
 	Builtin.createBuiltin(
 		'tail',
@@ -105,11 +88,45 @@ function createBasicBuiltins() {
 			c.getChildrenForCdr(newOne);
 			return newOne;
 		},
-		'returns a new list containing all elements of |list except the first one.'
+		'Returns a copy of |list containing all elements of |list except the first one. Aliases: cdr, rest.'
 	);
-
 	Builtin.aliasBuiltin('cdr', 'tail');
 	Builtin.aliasBuiltin('rest', 'tail');
+
+
+	Builtin.createBuiltin(
+		'push into',
+		[ 'nex', 'list()' ],
+		function $pushInto(env, executionEnvironment) {
+			let nex = env.lb('nex');
+			let lst = env.lb('list');
+			let newOne = lst.makeCopy(true);
+			lst.setChildrenForCons(nex, newOne);
+			return newOne;
+		},
+		'Returns a new list created by prepending |nex to a copy of |list. Aliases: cons.'
+	);
+	Builtin.aliasBuiltin('cons', 'push into');
+
+
+	Builtin.createBuiltin(
+		'hard-head',
+		[ 'list()' ],
+		function $hardHead(env, executionEnvironment) {
+			let c = env.lb('list');
+			if (c.numChildren() == 0) {
+				return new EError("hard-head: cannot get first element of empty list. Sorry!");
+			}
+			let r = c.getChildAt(0);
+			c.removeChild(c.getChildAt(0));
+			return r;
+		},
+		'Removes the first element of |list, destructively altering list, and returns the removed element. Aliases: hard-car, hard-first, decap.'
+	);
+	Builtin.aliasBuiltin('hard-car', 'hard-head');
+	Builtin.aliasBuiltin('hard-first', 'hard-head');
+	Builtin.aliasBuiltin('decap', 'hard-head');
+
 
 	Builtin.createBuiltin(
 		'hard-tail',
@@ -122,37 +139,26 @@ function createBasicBuiltins() {
 			c.removeChild(c.getChildAt(0));
 			return c;
 		},
-		'destructively and permanently removes the first element of |list, and returns |list.'
+		'Destructively removes the first element of |list, and returns the altered |list. Aliases: hard-cdr, hard-rest, chomp.'
 	);
+	Builtin.aliasBuiltin('hard-cdr', 'hard-tail');
+	Builtin.aliasBuiltin('hard-rest', 'hard-tail');
+	Builtin.aliasBuiltin('chomp', 'hard-tail');
 
-	Builtin.aliasBuiltin('chop', 'hard-tail');
-//	Builtin.aliasBuiltin('hard-rest', 'hard-tail');
 
 	Builtin.createBuiltin(
-		'push--into',
+		'hard-push into',
 		[ 'nex', 'list()' ],
-		function $create(env, executionEnvironment) {
-			let nex = env.lb('nex');
-			let lst = env.lb('list');
-			let newOne = lst.makeCopy(true);
-			lst.setChildrenForCons(nex, newOne);
-			return newOne;
-		},
-		'creates a new list by prepending |nex to |list, and returns the new list.'
-	);
-	Builtin.aliasBuiltin('cons', 'push--into');
-
-	Builtin.createBuiltin(
-		'hard-push--into',
-		[ 'nex', 'list()' ],
-		function $hardCreate(env, executionEnvironment) {
+		function $hardPushInto(env, executionEnvironment) {
 			let lst = env.lb('list');
 			lst.prependChild(env.lb('nex'));
 			return lst;
 		},
-		'permanently alters |list by prepending |nex to it.'
+		'Destructively alters |list by prepending |nex to it. Aliases: cram.'
 	);
-	Builtin.aliasBuiltin('cram', 'hard-push--into');
+	Builtin.aliasBuiltin('cram', 'hard-push into');
+
+
 
 	Builtin.createBuiltin(
 		'copy',
@@ -160,8 +166,9 @@ function createBasicBuiltins() {
 		function $copy(env, executionEnvironment) {
 			return env.lb('nex').makeCopy();
 		},
-		'returns a deep copy of |nex (if |nex is a list, list elements are also copied).'
+		'Returns a deep copy of |nex (if |nex is a list, list elements are also copied).'
 	);
+
 
 	Builtin.createBuiltin(
 		'eq',
@@ -171,8 +178,9 @@ function createBasicBuiltins() {
 			let rhs = env.lb('rhs');
 			return new Bool(rhs.getID() == lhs.getID());
 		},
-		'returns true if |lhs and |rhs refer to the same in-memory object.'
+		'returns true if |lhs and |rhs refer to the same in-memory object (pointer equality).'
 	);
+
 
 	Builtin.createBuiltin(
 		'equal',
@@ -218,13 +226,13 @@ function createBasicBuiltins() {
 				return new EError('equal: equal for lists is not implemented yet. Sorry!')
 			} else if (lhs instanceof Word && rhs instanceof Word) {
 				return new EError('equal: equal for lists is not implemented yet. Sorry!')
-			} else if (lhs instanceof Expectation && rhs instanceof Expectation) {
+			} else if (lhs instanceof DeferredCommand && rhs instanceof DeferredCommand) {
 				return new EError('equal: equal for lists is not implemented yet. Sorry!')
 			} else {
 				return new Bool(false);
 			}
 		},
-		'returns true if |lhs and |rhs have the same semantic value (specific implementation depends on the type |lhs and |rhs).'
+		'Attempts to test |rhs and |lhs for semantic equality (for example, different integers will test as equal if they represent the same numeric value). Works for most atomic types (lists not yet implemented).'
 	);
 
 	// Note the args to the eval function are evaluated.
@@ -238,7 +246,7 @@ function createBasicBuiltins() {
 			// the caller deal with it
 			return newresult;
 		},
-		'returns the result of evaluating |nex.'
+		'Returns the result of evaluating |nex. Since the argument to this function is already evaluated anyway, this will actually result in a double evaluation.'
 	);
 
 	Builtin.createBuiltin(
@@ -247,41 +255,41 @@ function createBasicBuiltins() {
 		function $quote(env, executionEnvironment) {
 			return env.lb('nex');
 		},
-		'returns the unevaluated form of |nex.'
+		'Returns |nex without evaluating it. Can be used to stop a function argument from being evaluated.'
 	);
 
 	Builtin.createBuiltin(
 		'horizontal',
-		[ 'nex' ],
+		[ 'list()' ],
 		function $horizontal(env, executionEnvironment) {
-			let n = env.lb('nex');
+			let n = env.lb('list');
 			n.setHorizontal();
 			return n;
 		},
-		'sets direction of |nex to horizontal'
+		'Sets the direction of |list to horizontal.'
 	);
 
 
 	Builtin.createBuiltin(
 		'vertical',
-		[ 'nex' ],
+		[ 'list()' ],
 		function $vertical(env, executionEnvironment) {
-			let n = env.lb('nex');
+			let n = env.lb('list');
 			n.setHorizontal();
 			return n;
 		},
-		'sets direction of |nex to vertical'
+		'Sets the direction of |list to vertical.'
 	);
 
 	Builtin.createBuiltin(
 		'zdirectional',
-		[ 'nex' ],
+		[ 'list()' ],
 		function $zdirectional(env, executionEnvironment) {
-			let n = env.lb('nex');
+			let n = env.lb('list');
 			n.setHorizontal();
 			return n;
 		},
-		'sets direction of |nex to zdirectional'
+		'Sets the direction of |list to "zdirectional" (elements appear overlapping each other, coming "out" of the screen)'
 	);
 
 	Builtin.createBuiltin(
@@ -292,7 +300,7 @@ function createBasicBuiltins() {
 			n.setMutable(true);
 			return n;
 		},
-		'makes |nex mutable'
+		'Makes |nex mutable.'
 	);
 
 	Builtin.createBuiltin(
@@ -303,7 +311,7 @@ function createBasicBuiltins() {
 			n.setMutable(false);
 			return n;
 		},
-		'makes |nex immutable'
+		'Makes |nex immutable.'
 	);
 }
 

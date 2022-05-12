@@ -27,7 +27,7 @@ function createTagBuiltins() {
 
 
 	Builtin.createBuiltin(
-		'add-tag--to',
+		'add-tag to',
 		[ 'tag$', 'nex' ],
 		function $addTag(env, executionEnvironment) {
 			let nex = env.lb('nex');
@@ -62,7 +62,7 @@ function createTagBuiltins() {
 
 
 	Builtin.createBuiltin(
-		'--has-tag',
+		' has-tag',
 		[ 'nex', 'tag$' ],
 		function $hasTag(env, executionEnvironment) {
 			let n = env.lb('nex');
@@ -81,7 +81,7 @@ function createTagBuiltins() {
 
 
 	Builtin.createBuiltin(
-		'remove-tag--from',
+		'remove-tag from',
 		[ 'tag$', 'nex' ],
 		function $removeTag(env, executionEnvironment) {
 			let n = env.lb('nex');

@@ -26,10 +26,10 @@ import { IntegerEditor } from './nex/integer.js'
 import { ESymbolEditor } from './nex/esymbol.js'
 import { EStringEditor } from './nex/estring.js'
 import { CommandEditor } from './nex/command.js'
-import { ExpectationEditor } from './nex/expectation.js'
 import { InstantiatorEditor } from './nex/instantiator.js'
 import { TagEditor } from './tageditor.js'
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
+import { doTutorial } from './help.js'
 import {
 	RENDER_FLAG_SELECTED,
 	RENDER_FLAG_SHALLOW,
@@ -170,29 +170,22 @@ class RenderNode {
 			case '-command-':
 				return new CommandEditor(nex);
 			case '-float-':
-				return (experiments.REMAINING_EDITORS ? new FloatEditor(nex) : null);
+				return new FloatEditor(nex);
 			case '-integer-':
-				return (experiments.REMAINING_EDITORS ? new IntegerEditor(nex) : null);
+				return new IntegerEditor(nex);
 			case '-symbol-':
 				return new ESymbolEditor(nex);
 			case '-instantiator-':
 				return new InstantiatorEditor(nex);
 			case '-string-':
-				if (experiments.BETTER_KEYBINDINGS) {
-					return new EStringEditor(nex);
-				} else {
+				return new EStringEditor(nex);
+			case '-deferredcommand-':
+				// special case: we cannot edit fulfilled or active deferreds.
+				if (nex.isActivated() || nex.isFulfilled()) {
 					return false;
-				}
-			case '-expectation-':
-				if (experiments.NEW_EXPECTATION_SYNTAX) {
-					// special case: we cannot edit fulfilled or active expectations.
-					if (nex.isActivated() || nex.isFulfilled()) {
-						return false;
-					} else {
-						return new ExpectationEditor(nex);
-					}
 				} else {
-					return false;
+					// use the same editor as command.
+					return new CommandEditor(nex);
 				}
 			default:
 				return null;
@@ -200,7 +193,7 @@ class RenderNode {
 	}
 
 	possiblyStartMainEditor() {
-		if (experiments.MUTABLES && !this.getNex().isMutable()) {
+		if (!this.getNex().isMutable()) {
 			return null;
 		}
 		let editor = this.getEditorForType(this.getNex());
@@ -227,9 +220,13 @@ class RenderNode {
 	}
 
 	startTagEditor() {
+		if (!this.getNex().canUseTagEditor()) {
+			return;
+		}
 		let tagEditor = this.getTagEditorForType(this.getNex());
 		tagEditor.createManagedTagIfNone();
 		this.startEditor(tagEditor);
+		doTutorial('tag-editor');
 	}
 
 	removeAllTags() {
@@ -237,7 +234,7 @@ class RenderNode {
 	}
 
 	doAlertAnimation() {
-		alertAnimator.doAlertAnimation(this.selected, this.domNode);
+		alertAnimator.doAlertAnimation(this.domNode);
 	}
 
 	setRenderDepth(depth) {
@@ -274,32 +271,6 @@ class RenderNode {
 			this.setRenderMode(RENDER_MODE_NORM);
 		} else {
 			this.setRenderMode(RENDER_MODE_EXPLO);			
-		}
-	}
-
-	createChildRenderNodes(nex) {
-		if (!(nex.isNexContainer())) return;
-		for (let i = 0; i < nex.numChildren(); i++) {
-			let child = nex.getChildAt(i);
-			let childRenderNode = new RenderNode(child);
-			childRenderNode.setParent(this, i);
-			this.domNode.appendChild(childRenderNode.domNode);
-			this.childnodes.push(childRenderNode);
-		}
-	}
-
-	doOnRenderNodeTree(f) {
-		let stopNow = f(this);
-		if (stopNow) {
-			return true;
-		} else {
-			for (let i = 0; i < this.childnodes.length; i++) {
-				let childRenderNode = this.childnodes[i];
-				if (childRenderNode.doOnRenderNodeTree(f)) {
-					return true;
-				}
-			}
-			return false;
 		}
 	}
 
@@ -453,10 +424,10 @@ class RenderNode {
 					break;
 				}
 				let childRenderNode = this.childnodes[i];
-				if (childRenderNode.getNex().getID() != this.getNex().getChildAt(i).getID()) {
+				if (childRenderNode.getNex().getID() != this.getNex().getRenderableChildAt(i).getID()) {
 					// the child changed since the last time we rendered!!!
 					// need to fix.
-					this.childnodes[i] = childRenderNode = new RenderNode(this.getNex().getChildAt(i));
+					this.childnodes[i] = childRenderNode = new RenderNode(this.getNex().getRenderableChildAt(i));
 					this.childnodes[i].setParent(this, i);
 				}
 				childRenderNode.setRenderDepth(this.renderDepth + 1);
@@ -493,13 +464,6 @@ class RenderNode {
 				}
 				for ( ; i < n; i++) {
 					this.renderNewChildAt(i, childFlags, useFlags, true);
-					// let newNode = new RenderNode(this.getNex().getChildAt(i));
-					// newNode.setParent(this, i);
-					// newNode.setRenderDepth(this.renderDepth + 1);
-					// this.childnodes[i] = newNode;
-					// this.domNode.appendChild(newNode.getDomNode());
-					// newNode.render(childFlags);
-					// this.nex.renderAfterChild(i, this, useFlags, this.getCurrentEditor());
 				}
 				if (truncated) {
 					// we are truncating because too many children, first display the ellipses
@@ -517,7 +481,7 @@ class RenderNode {
 	}
 
 	renderNewChildAt(i, childFlags, useFlags, doChildNode) {
-		let newNode = new RenderNode(this.getNex().getChildAt(i));
+		let newNode = new RenderNode(this.getNex().getRenderableChildAt(i));
 		newNode.setParent(this, i);
 		newNode.setRenderDepth(this.renderDepth + 1);
 		if (doChildNode) {
@@ -602,8 +566,7 @@ class RenderNode {
 
 	setInsertionMode(mode) {
 		if (Utils.isRoot(this.nex)) {
-			this.insertionMode = (mode == INSERT_UNSPECIFIED) ? mode : INSERT_INSIDE;
-			return;
+			mode = (mode == INSERT_UNSPECIFIED) ? mode : INSERT_INSIDE;
 		}
 		if (mode != this.insertionMode) {
 			let p = this.getParent();
@@ -612,8 +575,11 @@ class RenderNode {
 			} else {
 				this.setRenderNodeDirtyForRendering(true);
 			}
+			this.insertionMode = mode;
+			return true;
+		} else {
+			return false; // no change
 		}
-		this.insertionMode = mode;
 	}
 
 	nextInsertionMode() {

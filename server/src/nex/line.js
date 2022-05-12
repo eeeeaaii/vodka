@@ -86,26 +86,6 @@ class Line extends NexContainer {
 		this.setCurrentStyle(data);
 	}
 
-/*
-	// maybe put this back if we want evaluating docs to do this
-
-	evaluate(env) {
-		if (!experiments.MUTABLES || this.mutable) {
-			// shallow copy, then evaluate children.
-			let linecopy = this.makeCopy(true);
-			let iterator = null;
-			this.doForEachChild(function(child) {
-				let newchild = evaluateNexSafely(child, env);
-				// we don't throw exceptions. We just embed them. We don't want to erase someone's doc
-				// because they put bad code in it.
-				iterator = linecopy.fastAppendChildAfter(child.evaluate(env), iterator);
-			})
-			return linecopy;
-		} else {
-			return this;
-		}
-	}
-*/
 	setMutable(val) {
 		super.setMutable(val)
 		// make doc-type children also have the same mutability
@@ -174,13 +154,6 @@ class Line extends NexContainer {
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 
-		// let linespan = null;
-		// if (experiments.MUTABLES && !(renderFlags & RENDER_FLAG_SHALLOW)) {
-		// 	linespan = document.createElement("span");
-		// 	linespan.classList.add('linespan');
-		// 	domNode.appendChild(linespan);
-		// }
-
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('line');
 		domNode.classList.add('data');
@@ -207,10 +180,30 @@ class Line extends NexContainer {
 		} else {
 			domNode.classList.remove('emptyline');
 		}
-		if (experiments.MUTABLES) {
-			domNode.classList.add('newversionofline');
+		domNode.classList.add('newversionofline');
+	}
+
+	/*
+	should be in the superclass (nexcontainer) but it creates a circular dependency graph somehow
+	*/
+	evaluate(env) {
+		if (this.mutable) {
+			// shallow copy, then evaluate children.
+			let listcopy = this.makeCopy(true);
+			let iterator = null;
+			this.doForEachChild(function(child) {
+				let newchild = evaluateNexSafely(child, env);
+				// we don't throw exceptions, we just embed them - this isn't a function.
+				iterator = listcopy.fastAppendChildAfter(newchild, iterator);
+			})
+			listcopy.setMutable(false);
+			return listcopy;
+		} else {
+			return this;
 		}
 	}
+
+
 
 	getDefaultHandler() {
 		return 'lineDefault';

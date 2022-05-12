@@ -116,13 +116,11 @@ class Integer extends ValueNex {
 
 	renderInto(renderNode, renderFlags, withEditor) {
 		super.renderInto(renderNode, renderFlags, withEditor);
-		if (experiments.REMAINING_EDITORS) {
-			let domNode = renderNode.getDomNode();
-			if (this.isEditing) {
-				domNode.classList.add('editing');
-			} else {
-				domNode.classList.remove('editing');
-			}
+		let domNode = renderNode.getDomNode();
+		if (this.isEditing) {
+			domNode.classList.add('editing');
+		} else {
+			domNode.classList.remove('editing');
 		}
 	}
 
@@ -211,6 +209,11 @@ class IntegerEditor extends Editor {
 
 	doAppendEdit(text) {
 		this.nex.appendText(text);
+	}
+
+	shouldIgnore(text) {
+		if (text == '.') return true;
+		return super.shouldIgnore(text);
 	}
 
 	shouldAppend(text) {

@@ -46,7 +46,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 const experiments = {
 	'DISABLE_ALERT_ANIMATIONS': false,
-	'BETTER_KEYBINDINGS': true,
 
 	// This is the max render depth. We want some tests to be saved with a small
 	// max render depth, because test screenshots are small (example, see
@@ -58,36 +57,15 @@ const experiments = {
 	// of course interfere with screenshots.
 	'NO_SPLASH': false,
 
-	// editors for the rest of the nexes.
-	'REMAINING_EDITORS': true,
-
-	// can delete last thing in root
-	'CAN_HAVE_EMPTY_ROOT': true,
-
-	// new closure display
-	'NEW_CLOSURE_DISPLAY': true,
-
-	// ugh why did I use both ctrl and option?
-	'THE_GREAT_MAC_WINDOWS_OPTION_CTRL_SWITCHAROO': true,
-
-	// massive overhaul of orgs
-	'ORG_OVERHAUL': true,
-
 	// stop being lenient
 	'V2_INSERTION_LENIENT_DOC_FORMAT': false,
-
-	// infix operators
-	'INFIX_OPERATORS': true,
-
-	// mutables
-	'MUTABLES': true,
-
-	// expectations that have names
-	'NEW_EXPECTATION_SYNTAX': true,
 
 	// runtime in webasm
 	'ASM_RUNTIME': false,
 	// See note above about changing testharness.js when adding new flags.
+
+	// I think I will make this a user-settable option at some point
+	'OLD_ARROW_KEY_TRAVERSAL': false,
 };
 
 // These flags aren't saved as part of the test. You should probably
@@ -113,6 +91,10 @@ const otherflags = {
 // should probably also set the flag this way in getLegacyDefaultFlags
 // for legacy tests (even if these flags are maybe not the
 // way those legacy tests were originally recorded)
+//
+// Note 5/11/2022: if you want flag overrides that only apply to newly
+// recorded tests, put them here. However if you want to globally override
+// a flag, even for old tests, do it in testharness.js.
 const overrides = {
 	'DISABLE_ALERT_ANIMATIONS': true,
 	'NO_SPLASH': true,

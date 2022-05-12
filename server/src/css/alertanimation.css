@@ -1,0 +1,178 @@
+
+
+/* animate to yellow for things that are selected-border */
+
+@keyframes border-alertanimation-selected-1 {
+	0% {border-color: var(--selected-border);}
+	5% {border-color: #ffff77;}
+	100% {border-color: var(--selected-border);}
+}
+@keyframes border-alertanimation-selected-2 {
+	0% {border-color: var(--selected-border);}
+	5% {border-color: #ffff77;}
+	100% {border-color: var(--selected-border);}
+}
+
+/* animate to yellow for things that are unselected-border */
+
+@keyframes border-alertanimation-unselected-1 {
+	0% {border-color: var(--unselected-border);}
+	5% {border-color: yellow;}
+	100% {border-color: var(--unselected-border);}
+}
+@keyframes border-alertanimation-unselected-2 {
+	0% {border-color: var(--unselected-border);}
+	5% {border-color: yellow;}
+	100% {border-color: var(--unselected-border);}
+}
+
+
+
+@keyframes background-alertanimation-selected-1 {
+	0% {background-color: var(--selected-border);}
+	5% {background-color: #ffff77;}
+	100% {background-color: var(--selected-border);}
+}
+@keyframes background-alertanimation-selected-2 {
+	0% {background-color: var(--selected-border);}
+	5% {background-color: #ffff77;}
+	100% {background-color: var(--selected-border);}
+}
+
+/* animate to yellow for things that are unselected-border */
+
+@keyframes background-alertanimation-unselected-1 {
+	0% {background-color: var(--unselected-border);}
+	5% {background-color: yellow;}
+	100% {background-color: var(--unselected-border);}
+}
+@keyframes background-alertanimation-unselected-2 {
+	0% {background-color: var(--unselected-border);}
+	5% {background-color: yellow;}
+	100% {background-color: var(--unselected-border);}
+}
+
+
+@keyframes border-alertanimation-doc-1 {
+	0% {border-color: var(--doc-selected);}
+	5% {border-color: #ffff77;}
+	100% {border-color: var(--doc-selected);}
+}
+@keyframes border-alertanimation-doc-2 {
+	0% {border-color: var(--doc-selected);}
+	5% {border-color: #ffff77;}
+	100% {border-color: var(--doc-selected);}
+}
+
+
+@keyframes border-alertanimation-line-1 {
+	0% {border-color: var(--line-selected);}
+	5% {border-color: #ffff77;}
+	100% {border-color: var(--line-selected);}
+}
+
+@keyframes border-alertanimation-line-2 {
+	0% {border-color: var(--line-selected);}
+	5% {border-color: #ffff77;}
+	100% {border-color: var(--line-selected);}
+}
+
+
+@keyframes border-alertanimation-word-1 {
+	0% {border-color: var(--word-selected);}
+	5% {border-color: #ffff77;}
+	100% {border-color: var(--word-selected);}
+}
+
+@keyframes border-alertanimation-word-2 {
+	0% {border-color: var(--word-selected);}
+	5% {border-color: #ffff77;}
+	100% {border-color: var(--word-selected);}
+}
+
+
+
+
+.alertanimation-1 {
+	animation-duration: .7s;
+	animation-name: border-alertanimation-unselected-1;
+}
+
+.alertanimation-2 {
+	animation-duration: .7s;
+	animation-name: border-alertanimation-unselected-2;
+}
+
+.newselected.alertanimation-1 {
+	animation-duration: .7s;
+	animation-name: border-alertanimation-selected-1;
+}
+
+.newselected.alertanimation-2 {
+	animation-duration: .7s;
+	animation-name: border-alertanimation-selected-2;
+}
+
+.newselected > .dotspan.alertanimation-1 {
+	animation-duration: .7s;
+	animation-name: background-alertanimation-selected-1;
+}
+
+.newselected > .dotspan.alertanimation-2 {
+	animation-duration: .7s;
+	animation-name: background-alertanimation-selected-2;
+}
+
+.newselected > .codespan.alertanimation-1 {
+	animation-duration: .7s;
+	animation-name: background-alertanimation-selected-1;
+}
+
+.newselected > .codespan.alertanimation-2 {
+	animation-duration: .7s;
+	animation-name: background-alertanimation-selected-2;
+}
+
+.newselected > .innercodespan.alertanimation-1 {
+	animation-duration: .7s;
+	animation-name: background-alertanimation-selected-1;
+}
+
+.newselected > .innercodespan.alertanimation-2 {
+	animation-duration: .7s;
+	animation-name: background-alertanimation-selected-2;
+}
+
+
+.newdoc.newselected.alertanimation-1 {
+	animation-duration: .7s;
+	animation-name: border-alertanimation-doc-1;
+}
+
+.newdoc.newselected.alertanimation-2 {
+	animation-duration: .7s;
+	animation-name: border-alertanimation-doc-2;
+}
+
+.newline.newselected.alertanimation-1 {
+	animation-duration: .7s;
+	animation-name: border-alertanimation-line-1;
+}
+
+.newline.newselected.alertanimation-2 {
+	animation-duration: .7s;
+	animation-name: border-alertanimation-line-2;
+}
+
+.newword.newselected.alertanimation-1 {
+	animation-duration: .7s;
+	animation-name: border-alertanimation-word-1;
+}
+
+.newword.newselected.alertanimation-2 {
+	animation-duration: .7s;
+	animation-name: border-alertanimation-word-2;
+}
+
+
+

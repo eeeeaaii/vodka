@@ -36,7 +36,7 @@ function createContractBuiltins() {
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
 	Builtin.createBuiltin(
-		'certify--satisfies',
+		'certify satisfies',
 		[ 'tag$', 'contract' ],
 		function $mustBe(env, executionEnvironment) {
 			let tagname = env.lb('tag');
@@ -46,8 +46,9 @@ function createContractBuiltins() {
 			c.addContractTag(tag);
 			return c;
 		},
-		'declares that anything with |tag must satisfy !contract'
+		'Declares that any object tagged with |tag must satisfy the passed-in |contract.'
 	);
+
 
 	Builtin.createBuiltin(
 		'has-tag-contract',
@@ -58,7 +59,7 @@ function createContractBuiltins() {
 			let cnex = new Contract(contractImpl);
 			return cnex;
 		},
-		'creates a contract that is satisfied if something is tagged with |tag'
+		'Returns a contract that is satisfied if something is tagged with |tag.'
 	);
 
 
@@ -71,7 +72,7 @@ function createContractBuiltins() {
 			let cnex = new Contract(contractImpl);
 			return cnex;
 		},
-		'creates an identity contract, only satisfied for the specific object |nex.'
+		'Returns a contract that is only satisfied for the specific passed-in object |nex.'
 	);
 
 
@@ -83,7 +84,7 @@ function createContractBuiltins() {
 			let contractImpl = new TypeContract(nex.getTypeName());
 			return new Contract(contractImpl);
 		},
-		'creates a type contract, only satisified if an object has the same type as |nex.'
+		'Returns a contract that is only satisified if an object has the same type as |nex.'
 	);
 
 	Builtin.createBuiltin(
@@ -98,24 +99,35 @@ function createContractBuiltins() {
 			let contractImpl = new AllOfContract(constituentContracts);
 			return new Contract(contractImpl);
 		},
-		'creates a contract that is only satisfied if all the constituent contracts |c are satisfied.'
+		'Returns a contract that is only satisfied if all the constituent contracts |c are satisfied.'
 	);
 
-	Builtin.createBuiltin(
-		'contains-exactly-contract',
-		[ 'c...' ],
-		function $containsExactly(env, executionEnvironment) {
-			let c = env.lb('c');
-			let contractImpl = new ContainsExactlyContract();
-			let r = new Contract(contractImpl);
+	// What we actually want are:
+	/*
+	has-child-contract -- satisfied if it has a child with the given contract
+	no-child-contract -- satisfied if no child has that contract
+	no-child-except-contract -- satisfied if there are no children that don't satisfy that contract
+	any-of-contract -- satisfied if any of the listed contracts are satisfied
+	none-of-contract -- satisifed if none of the contracts are satisfied
 
-			for (let i = 0; i < c.numChildren(); i++) {
-				r.appendChild(c.getChildAt(i));
-			}
-			return r;
-		},
-		'creates a contract that is only satisfied the object has children that exactly match the child contracts.'
-	);
+
+	*/
+
+	// Builtin.createBuiltin(
+	// 	'contains-exactly-contract',
+	// 	[ 'c...' ],
+	// 	function $containsExactly(env, executionEnvironment) {
+	// 		let c = env.lb('c');
+	// 		let contractImpl = new ContainsExactlyContract();
+	// 		let r = new Contract(contractImpl);
+
+	// 		for (let i = 0; i < c.numChildren(); i++) {
+	// 			r.appendChild(c.getChildAt(i));
+	// 		}
+	// 		return r;
+	// 	},
+	// 	'Returns a contract that is only satisfied if the object has children that exactly match the child contracts.'
+	// );
 }
 
 

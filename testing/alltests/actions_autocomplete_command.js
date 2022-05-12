@@ -216,6 +216,8 @@ testactions.push({type:'keydown',code:'ControlLeft'});
 testactions.push({type:'keydown',code:'Space'});
 testactions.push({type:'keyup',code:'Space'});
 testactions.push({type:'keyup',code:'ControlLeft'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
 
 
 const experiment_flags = {

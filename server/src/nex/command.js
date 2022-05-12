@@ -18,21 +18,20 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from '../utils.js';
 
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
-import { INDENT, systemState } from '../systemstate.js'
 import { autocomplete } from '../autocomplete.js'
 import { NexContainer } from './nexcontainer.js'
 import { BUILTINS, BINDINGS } from '../environment.js'
-import { perfmon, PERFORMANCE_MONITOR } from '../perfmon.js'
 import { EError } from './eerror.js'
-import { CopiedArgContainer } from '../argcontainer.js'
 import { Closure } from './closure.js'
 import { Org } from './org.js'
 import { NativeOrg } from './nativeorg.js'
 import { ContextType } from '../contexttype.js'
 import { evaluateNexSafely } from '../evaluator.js'
-import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED, CONSOLE_DEBUG } from '../globalconstants.js'
+import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 import { Editor } from '../editors.js'
 import { experiments } from '../globalappflags.js'
+import { doTutorial } from '../help.js'
+import { executeRunInfo, ArgContainer, Arg, RunInfo } from '../commandfunctions.js'
 
 
 /**
@@ -43,7 +42,6 @@ class Command extends NexContainer {
 		super();
 		this.commandtext = (val ? val : "");
 		this.cachedClosure = null;
-		this.notReallyCachedClosure = null; // a wonderful hack
 		// a lot of the builtins and other code generate commands with null command strings
 		// and append a lambda as the first argument - there's no need to attempt
 		// caching in those cases and it's a real performance hit.
@@ -98,8 +96,6 @@ class Command extends NexContainer {
 			this.setDirtyForRendering(true);
 		}
 	}
-
-
 
 	setSkipAlertAnimation(skipAlert) {
 		this.skipAlert = skipAlert;
@@ -221,27 +217,12 @@ class Command extends NexContainer {
 		this.setCommandText(canonicalName);
 	}
 
+	// used for deprecated step executation
 	needsEvaluation() {
 		return true;
 	}
 
-	getEvaluatedFirstChild() {
-		let c = this.getChildAt(0);
-		// if it's a symbol we can incidentally get the command name
-		if (c.getTypeName() == '-symbol-') {
-			cmdname = c.getTypedValue();
-		}
-		// evaluate the first arg, could be a symbol bound to a closure, a lamba, a command that returns a closure, etc.
-		closure = evaluateNexSafely(c, executionEnv);
-		if (!(closure instanceof Closure)) {
-			// oops it's not a closure.
-			throw new EError(`command: stopping because first child "${c.debugString()}" of unnamed command does not evaluate to a closure. Sorry! Debug string for evaluted value of type ${closure.getTypeName()} follows: ${closure.debugString()}`)
-		}				
-		// we already evaluated the first arg, we don't pass it to the arg evaluator
-		skipFirstArg = true;
-	}
-
-	evalSetup(executionEnv) {
+	createRunInfo(executionEnv) {
 		// do not cache the entire eval state by doing
 		// something like if (this.evalState) return;
 		//
@@ -313,11 +294,23 @@ class Command extends NexContainer {
 			cmdname = `\nunnamed function:\n${closure.getLambda().prettyPrint()}\n`;
 		}
 
-		this.evalState = {
-			closure: closure,
-			cmdname: cmdname,
-			skipFirstArg: skipFirstArg
+		let argContainer = new ArgContainer(this);
+		let start = skipFirstArg ? 1 : 0;
+		for (let i = start; i < this.numChildren(); i++) {
+			argContainer.addArg(new Arg(this.getChildAt(i)));
 		}
+
+		let argEvaluator = closure.getArgEvaluator(cmdname, argContainer, executionEnv);
+
+		return new RunInfo(
+			closure,
+			cmdname,
+			closure.getReturnValueParam(),
+			argContainer,
+			argEvaluator,
+			this.debugString(),
+			this.skipAlert,
+			this.getAllTags());
 	}
 
 	getExpectedReturnType() {
@@ -332,52 +325,11 @@ class Command extends NexContainer {
 		this.evalState = null;
 	}
 
-	// the executionEnv is captured and becomes the lexical environment of any closures that are
-	//   created by evaluating lambdas.
-	// it is also used for special forms that have skipeval = true
-	// it is also used to look up symbol bindings
-
 	evaluate(executionEnv) {
-		return this.runCommand(executionEnv);
-	}
-
-	runCommand(executionEnv) {
-		systemState.pushStackLevel();
-		systemState.stackCheck(); // not for step eval, this is to prevent call stack overflow.
-
-		if (CONSOLE_DEBUG) {
-			console.log(`${INDENT()}evaluating command: ${this.debugString()}`);
-			console.log(`${INDENT()}closure is: ${this.evalState.closure.debugString()}`);
-		}
-		// the arg container holds onto the args and is used by the arg evaluator.
-		// I think this is useful for step eval but I can't remember
-		let argContainer = new CopiedArgContainer(this, this.evalState.skipFirstArg);
-		// in the future there will be one arg evaluator used by both builtins and lambdas.
+		let runInfo = this.createRunInfo(executionEnv);
 		// the job of the evaluator is to evaluate the args AND bind them to variables in the new scope.
-		let argEvaluator = this.evalState.closure.getArgEvaluator(this.evalState.cmdname, argContainer, executionEnv);
-		argEvaluator.evaluateArgs();
-		if (PERFORMANCE_MONITOR) {
-			perfmon.logMethodCallStart(this.evalState.closure.getCmdName());
-		}
-		if (!experiments.DISABLE_ALERT_ANIMATIONS && !this.skipAlert) {
-			this.evalState.closure.doAlertAnimation();
-		}
-		// actually run the code.
-		this.notReallyCachedClosure = this.evalState.closure;
-		let r = this.evalState.closure.closureExecutor(executionEnv, argEvaluator, this.evalState.cmdname, this.tags);
-		//let r = this.evalState.closure.closureStatementExecutor(executionEnv, argEvaluator, this.evalState.cmdname, this.tags);
-		if (PERFORMANCE_MONITOR) {
-			perfmon.logMethodCallEnd(this.evalState.closure.getCmdName());
-		}
-		if (CONSOLE_DEBUG) {
-			console.log(`${INDENT()}command returned: ${r.debugString()}`);
-		}
-		systemState.popStackLevel();
-		return r;
-	}
-
-	shouldActivateReturnedExpectations() {
-		return this.notReallyCachedClosure.shouldActivateReturnedExpectations();
+		runInfo.argEvaluator.evaluateArgs();
+		return executeRunInfo(runInfo, executionEnv);
 	}
 
 	getClosureForGhost() {
@@ -404,6 +356,7 @@ class Command extends NexContainer {
 	}
 
 	createGhostDiv(gclosure) {
+		doTutorial('tooltip');
 		let ghost = document.createElement('div');
 		ghost.classList.add('ghost');
 		let val = gclosure.getInnerHTMLForDisplay();
@@ -451,41 +404,49 @@ class Command extends NexContainer {
 		//   getInfixPart(2) returns 'baz'
 		//   getInfixPart(3) returns ''
 
+		let righttilde = '<span class="tilde glyphright">&#8766;</span>';
+		let spacechar = ' '; // it was going to be bullet.
+
 		let isGhost = !!this.ghostMatch;
 		let cmdtext = this.commandtext;
 		if (this.ghostMatch) {
 			cmdtext = this.ghostMatch.name;
 		}
-		cmdtext = cmdtext.replace('--', ' ').replace('__', ' ');
+//		cmdtext = cmdtext.replace(/--/g, spacechar).replace(/__/g, spacechar).replace(/ /g, spacechar);
+		cmdtext = cmdtext.replace(/ /g, spacechar);
 
 		let words = [];
 		words[0] = [];
 		let currentWord = 0;
 
 		if (cmdtext.length == 0) {
-			return '';
+			return (!this.isEditing && position == 0) ? righttilde : '';
 		}
 
 		if (this.isEditing && position == 0) {
 			for (let i = 0; i < cmdtext.length; i++) {
 				let letter = cmdtext.charAt(i);
-				words[0].push({
+				let ltobj = {
 					letter: letter,
-					ghost: (isGhost && (i < this.ghostMatch.matchStart || i >= this.ghostMatch.matchEnd))
-				})
+					ghost: (isGhost && (i < this.ghostMatch.matchStart || i >= this.ghostMatch.matchEnd)),
+					doTilde: i == cmdtext.length - 1
+				};
+				words[0].push(ltobj)
 			}
 		} else {
 			for (let i = 0; i < cmdtext.length; i++) {
 				let letter = cmdtext.charAt(i);
-				if (letter == ' ') {
+				if (letter == spacechar) {
 					currentWord++;
 					words[currentWord] = [];
 					continue;
 				}
-				words[currentWord].push({
+				let ltobj = {
 					letter: letter,
-					ghost: (isGhost && (i < this.ghostMatch.matchStart || i >= this.ghostMatch.matchEnd))
-				})
+					ghost: (isGhost && (i < this.ghostMatch.matchStart || i >= this.ghostMatch.matchEnd)),
+					doTilde: i == cmdtext.length - 1
+				};
+				words[currentWord].push(ltobj)
 			}
 
 			for (let i = words.length - 1; i >= 0 ; i--) {
@@ -493,8 +454,8 @@ class Command extends NexContainer {
 				if (i > this.numChildren()) {
 					let pw = words[i - 1];
 					pw.push({
-						letter: ' ',
-						ghost: pw[pw.length - 1].ghost
+						letter: spacechar,
+						ghost: pw[pw.length - 1].ghost,
 					});
 					for (let j = 0 ; j < w.length ; j++) {
 						pw.push(w[j]);
@@ -513,56 +474,23 @@ class Command extends NexContainer {
 		let r = '';
 		for (let i = 0; i < theword.length; i++) {
 			let w = theword[i];
-			let letter = (w.letter == ' ') ? '&nbsp;' : w.letter
+			let letter = w.letter;
+//			let letter = (w.letter == spacechar) ? '&nbsp;' : w.letter
 			if (w.ghost) {
 				r += '<span class="ghost-match">' + letter + '</span>'
 			} else {
 				r += letter;
 			}
-		}
-		return r;
-
-
-/*
-
-
-		let righttilde = '<span class="tilde glyphright">&#8766;</span>';
-
-		if (this.isEditing && position == 0) {
-			return cmdname.replace(/--/g, '__');
-		}
-
-		let commandWords = (cmdname == "") ? [] : cmdname.split('--')
-		if (position >= commandWords.length) {
-			return '';
-		}
-		// sometimes last command word is null if user types '--' at the end of the string
-		let lastCommandWord = commandWords[commandWords.length - 1];
-		if (lastCommandWord == '') {
-			commandWords.pop();
-			commandWords[commandWords.length - 1] += '--';
-		}
-		let numActualChildren = this.numChildren();
-		// if there are more command words than there are children,
-		// we modify the array (basically unsplit the last few words)
-		while(commandWords.length > numActualChildren + 1) {
-			let lastWord = commandWords.pop();
-			commandWords[commandWords.length - 1] += '--' + lastWord;
-		}
-		if (position < commandWords.length) {
-			let r = commandWords[position].replace(/--/g, '__');
-			if (position == commandWords.length - 1) {
+			if (!this.isEditing && w.doTilde) {
 				r += righttilde;
 			}
-			return r;
-		} else {
-			return '';
 		}
-*/
+
+		return r;
 	}
 
 	getGhostDiv(renderNode) {
-		if (experiments.NEW_CLOSURE_DISPLAY && this.isEditing && renderNode.isSelected()) {
+		if (this.isEditing && renderNode.isSelected()) {
 			let gclosure = this.getClosureForGhost();
 			if (gclosure && Utils.isClosure(gclosure)) {
 				return this.createGhostDiv(gclosure);
@@ -573,8 +501,9 @@ class Command extends NexContainer {
 
 	getInitialCodespanContents(renderNode) {
 		let lefttilde = '<span class="tilde glyphleft">&#8766;</span>';
+		let faintleftdot = '<span class="tilde glyphleft faint">·</span>';
 		let righttilde = '<span class="tilde glyphright">&#8766;</span>';
-		let codespanHtml = lefttilde;
+		let codespanHtml = (this.isEditing ? lefttilde : faintleftdot);
 		let gclosure = this.getClosureForGhost();
 		let operatorInfix = (gclosure &&
 				Utils.isClosure(gclosure) &&
@@ -586,6 +515,11 @@ class Command extends NexContainer {
 		}
 
 		return codespanHtml;
+	}
+
+	// I guess there should be an abstract command superclass
+	skipRenderInto(renderNode, renderFlags, withEditor) {
+		super.renderInto(renderNode, renderFlags, withEditor);
 	}
 
 	renderInto(renderNode, renderFlags, withEditor) {

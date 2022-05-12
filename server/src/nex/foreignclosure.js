@@ -145,9 +145,6 @@ class ForeignClosure extends Closure {
 			case '$':
 				return new EString(returnValue);
 			case '^':
-				if (!experiments.ORG_OVERHAUL) {
-					return new Nil();
-				}
 				// fall through, nil already taken care of by first line
 			default:
 				throw new Error('unsupported return value');

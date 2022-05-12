@@ -22,7 +22,6 @@ import { Command } from '../nex/command.js'
 import { Lambda } from '../nex/lambda.js'
 import { EError } from '../nex/eerror.js'
 import { EString } from '../nex/estring.js'
-import { Expectation } from '../nex/expectation.js'
 import { Nil } from '../nex/nil.js'
 import { Org } from '../nex/org.js'
 import { ESymbol } from '../nex/esymbol.js'
@@ -49,16 +48,14 @@ import {
 
 function createFileBuiltins() {
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  	
-
 	Builtin.createBuiltin(
 		'list-files',
 		[ ],
 		function $load(env, executionEnvironment) {
-			let exp = new Expectation();
-			exp.set(new GenericActivationFunctionGenerator(
+			let deferredValue = new DeferredValue();
+			deferredValue.set(new GenericActivationFunctionGenerator(
 				'list-files', 
-				function(callback, exp) {
+				function(callback, deferredValue) {
 					listFiles(function(files) {
 						// turn files into an org or whatever
 						callback(files);
@@ -67,17 +64,17 @@ function createFileBuiltins() {
 			));
 			let loadingMessage = new EError(`listing files`);
 			loadingMessage.setErrorType(ERROR_TYPE_INFO);
-			exp.appendChild(loadingMessage)
-			return exp;
+			deferredValue.appendChild(loadingMessage)
+			return deferredValue;
 		},
-		'lists all user files available in current session'
+		'Lists all user files available in current session.'
 	);	
 
 	Builtin.createBuiltin(
 		'list-standard-function-files',
 		[ ],
 		function $load(env, executionEnvironment) {
-			let exp = new Expectation();
+			let exp = new DeferredValue();
 			exp.set(new GenericActivationFunctionGenerator(
 				'list-standard-function-files', 
 				function(callback, exp) {
@@ -92,7 +89,7 @@ function createFileBuiltins() {
 			exp.appendChild(loadingMessage)
 			return exp;
 		},
-		'lists the standard library function files available to all users'
+		'Lists the standard library function files available to all users.'
 	);	
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  	
@@ -106,7 +103,7 @@ function createFileBuiltins() {
 			// need to look for illegal filename characters if it's a string?
 			let nm = nametype == '-symbol-' ? name.getTypedValue() : name.getFullTypedValue();
 
-			let exp = new Expectation();
+			let exp = new DeferredValue();
 			exp.set(new GenericActivationFunctionGenerator(
 				'load', 
 				function(callback, exp) {
@@ -120,25 +117,22 @@ function createFileBuiltins() {
 			exp.appendChild(loadingMessage)
 			return exp;
 		},
-		'loads the file |name as a Nex (parsing it)'
+		'loads the file |name as a nex/object (parsing it)'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-
 	Builtin.createBuiltin(
-		'save-in--after-evaluating',
-		[ 'val', '_name', 'val' ],
-		function $save(env, executionEnvironment) {
+		'eval-and-save',
+		[ '_name', 'val' ],
+		function $evalAndSave(env, executionEnvironment) {
 			let val = env.lb('val');
-
 			let name = env.lb('name');
+
 			let nametype = name.getTypeName();
 			// need to look for illegal filename characters if it's a string?
 			let nm = nametype == '-symbol-' ? name.getTypedValue() : name.getFullTypedValue();
 
 
-			let exp = new Expectation();
+			let exp = new DeferredValue();
 			exp.set(new GenericActivationFunctionGenerator(
 				'save', 
 				function(callback, exp) {
@@ -154,11 +148,11 @@ function createFileBuiltins() {
 			return exp;			
 
 		},
-		'saves |nex in the file |name (|nex is evaluated).'
+		'saves |val in the file |name (|val is evaluated).'
 	);
 
 	Builtin.createBuiltin(
-		'save-in--unevaluated',
+		'save',
 		[ '_name', '_val' ],
 		function $save(env, executionEnvironment) {
 
@@ -169,7 +163,7 @@ function createFileBuiltins() {
 			// need to look for illegal filename characters if it's a string?
 			let nm = nametype == '-symbol-' ? name.getTypedValue() : name.getFullTypedValue();
 
-			let exp = new Expectation();
+			let exp = new DeferredValue();
 			exp.set(new GenericActivationFunctionGenerator(
 				'save', 
 				function(callback, exp) {
@@ -184,40 +178,36 @@ function createFileBuiltins() {
 			exp.appendChild(savingMessage)
 			return exp;			
 		},
-		'saves |nex in the file |name (without evaluating |nex).'
-	);
-	Builtin.aliasBuiltin('save', 'save-in--unevaluated');
-
-	Builtin.createBuiltin(
-		'save-in--then-eval',
-		[ '_name', '_nex' ],
-		function $save(env, executionEnvironment) {
-			let nex = env.lb('nex');
-
-			let name = env.lb('name');
-			let nametype = name.getTypeName();
-			// need to look for illegal filename characters if it's a string?
-			let nm = nametype == '-symbol-' ? name.getTypedValue() : name.getFullTypedValue();
-
-			let r = evaluateNexSafely(nex, executionEnvironment);
-			if (Utils.isFatalError(r)) {
-				// don't need to alert because for syncronous errors it's handled
-			} else {
-				saveShortcut(name, nex, function(result) {
-					if (result != null) {
-						alert('saveqr: save failed! Check result: ' + result.debugString());
-					}
-				});
-			}
-			return r;
-		},
-		'saves |nex in the file |name (without evaluating |nex), then evaluates nex and returns it. If the save fails, the user will see an alert message.'
+		'Saves |val in the file |name (without evaluating |val).'
 	);
 
+	// Builtin.createBuiltin(
+	// 	'eval-and-save',
+	// 	[ '_name', '_nex' ],
+	// 	function $save(env, executionEnvironment) {
+	// 		let nex = env.lb('nex');
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
+	// 		let name = env.lb('name');
+	// 		let nametype = name.getTypeName();
+	// 		// need to look for illegal filename characters if it's a string?
+	// 		let nm = nametype == '-symbol-' ? name.getTypedValue() : name.getFullTypedValue();
 
-	
+	// 		let r = evaluateNexSafely(nex, executionEnvironment);
+	// 		if (Utils.isFatalError(r)) {
+	// 			// don't need to alert because for syncronous errors it's handled
+	// 		} else {
+	// 			saveShortcut(name, nex, function(result) {
+	// 				if (result != null) {
+	// 					alert('saveqr: save failed! Check result: ' + result.debugString());
+	// 				}
+	// 			});
+	// 		}
+	// 		return r;
+	// 	},
+	// 	'saves |nex in the file |name (without evaluating |nex), then evaluates nex and returns it. If the save fails, the user will see an alert message.'
+	// );
+
+
 
 	Builtin.createBuiltin(
 		'load-raw',
@@ -228,7 +218,7 @@ function createFileBuiltins() {
 			// need to look for illegal filename characters if it's a string?
 			let nm = nametype == '-symbol-' ? name.getTypedValue() : name.getFullTypedValue();
 
-			let exp = new Expectation();
+			let exp = new DeferredValue();
 			exp.set(new GenericActivationFunctionGenerator(
 				'load-raw', 
 				function(callback, exp) {
@@ -242,10 +232,8 @@ function createFileBuiltins() {
 			exp.appendChild(loadingMessage)
 			return exp;
 		},
-		'loads raw bytes from the file |name into a string.'
+		'Loads raw bytes from the file |name into a string, and returns it.'
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
 
 	Builtin.createBuiltin(
@@ -260,7 +248,7 @@ function createFileBuiltins() {
 			let val = env.lb('val');
 			let saveval = val.getFullTypedValue();
 
-			let exp = new Expectation();
+			let exp = new DeferredValue();
 			exp.set(new GenericActivationFunctionGenerator(
 				'save-string-as', 
 				function(callback, exp) {
@@ -274,11 +262,8 @@ function createFileBuiltins() {
 			exp.appendChild(savingMessage)
 			return exp;
 		},
-		'saves |nex in the file |name.'
+		'Saves the raw bytes of string |val in the file |name.'
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
 
 
 	Builtin.createBuiltin(
@@ -290,7 +275,7 @@ function createFileBuiltins() {
 			// need to look for illegal filename characters if it's a string?
 			let nm = nametype == '-symbol-' ? name.getTypedValue() : name.getFullTypedValue();
 
-			let exp = new Expectation();
+			let exp = new DeferredValue();
 			exp.set(new GenericActivationFunctionGenerator(
 				'import', 
 				function(callback, exp) {
@@ -309,64 +294,61 @@ function createFileBuiltins() {
 			exp.activate();
 			return exp;
 		},
-		'imports the package in file |name, loading the file and binding the package contents into memory.'
+		'Imports the package in file |name, loading the file and binding the package contents into memory.'
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-	// this could be a util function I guess
 
 	
-
-	Builtin.createBuiltin(
-		'with-imports',
-		[ '_nexes...' ],
-		function $withImports(env, executionEnvironment) {
-			let nexes = env.lb('nexes');
-			let innerExpArgs = [];
-			let toReturn = new Nil();
-			for (let i = 0; i < nexes.numChildren(); i++) {
-				let nex = nexes.getChildAt(i);
-				if (i == nexes.numChildren() - 1) {
-					toReturn = nex;
-				} else {
-					if (!nex.getTypeName() == '-symbol-') {
-						return new EError(`Cannot import ${nex.prettyPrint()}.`);
-					}
-					innerExpArgs.push(Command.makeCommandWithArgs("import", nex));
-				}
-			}
-			// the reason for outer/inner exp is that
-			// if we set ff-with on the inner exp
-			// (the one that contains multiple items)
-			// we will get ff-with called for each item
-			let cmd =
-			//Command.makeCommandWithArgs(
-			//	"ff",
-				Command.makeCommandWithArgs(
-					"ff-with",
-					Command.makeCommandWithArgs(
-						"make-expectation",
-						Command.makeCommandWithArgs(
-							"make-expectation",
-							innerExpArgs)),
-					Lambda.makeLambda(
-						"n",
-						toReturn));
-			return evaluateNexSafely(cmd, executionEnvironment);
-		},
-		'imports the packages named in the args one after the other, and then executes the last arg with those packages imported and loaded.'
-	);
+	// // TODO: reimplement this without all these nested command things
+	// Builtin.createBuiltin(
+	// 	'with-imports',
+	// 	[ '_nexes...' ],
+	// 	function $withImports(env, executionEnvironment) {
+	// 		let nexes = env.lb('nexes');
+	// 		let innerExpArgs = [];
+	// 		let toReturn = new Nil();
+	// 		for (let i = 0; i < nexes.numChildren(); i++) {
+	// 			let nex = nexes.getChildAt(i);
+	// 			if (i == nexes.numChildren() - 1) {
+	// 				toReturn = nex;
+	// 			} else {
+	// 				if (!nex.getTypeName() == '-symbol-') {
+	// 					return new EError(`Cannot import ${nex.prettyPrint()}.`);
+	// 				}
+	// 				innerExpArgs.push(Command.makeCommandWithArgs("import", nex));
+	// 			}
+	// 		}
+	// 		// the reason for outer/inner exp is that
+	// 		// if we set ff-with on the inner exp
+	// 		// (the one that contains multiple items)
+	// 		// we will get ff-with called for each item
+	// 		let cmd =
+	// 		//Command.makeCommandWithArgs(
+	// 		//	"ff",
+	// 			Command.makeCommandWithArgs(
+	// 				"ff-with",
+	// 				Command.makeCommandWithArgs(
+	// 					"make-expectation",
+	// 					Command.makeCommandWithArgs(
+	// 						"make-expectation",
+	// 						innerExpArgs)),
+	// 				Lambda.makeLambda(
+	// 					"n",
+	// 					toReturn));
+	// 		return evaluateNexSafely(cmd, executionEnvironment);
+	// 	},
+	// 	'imports the packages named in the args one after the other, and then executes the last arg with those packages imported and loaded.'
+	// );
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
 	
 
 	Builtin.createBuiltin(
-		'package-named--is',
-		[ '_name@', '_nex...' ],
+		'package',
+		[ '_name@', '_block...' ],
 		function $package(env, executionEnvironment) {
 			let packageName = env.lb('name').getTypedValue();
-			let lst = env.lb('nex');
+			let lst = env.lb('block');
 			BINDINGS.setPackageForBinding(packageName);
 			let lastresult = new Nil();
 			for (let i = 0; i < lst.numChildren(); i++) {
@@ -377,50 +359,47 @@ function createFileBuiltins() {
 			BINDINGS.setPackageForBinding(null);
 			return new Nil();
 		},
-		'creates a package named |name (all bindings in |nex will be bound with the package name as their scope identifier).'
+		'Defines a package. All args in |block are evaluated, and any bindings are bound with |name as their package scope identifier.'
 	);
-	Builtin.aliasBuiltin('package', 'package-named--is');
 
-	// run it AND save it *mind=blown*
-	
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 	// need to make it so that if it fails you don't lose all your work.
 
-	Builtin.createBuiltin(
-		'save-package--as',
-		[ '_nex', '_name@' ],
-		function $savePackage(env, executionEnvironment) {
-			// figure out the real name
-			let namesym = env.lb('name');
-			let nametype = namesym.getTypeName();
-			let nm = '';
-			let val = env.lb('nex');
-			// evaluate the thing. It's probably a package but doesn't have to be.
-			let result = evaluateNexSafely(val, executionEnvironment);
-			if (Utils.isFatalError(result)) {
-				let r = new EError(`save-package: error evaluating package, see contents of this error`);
-				r.appendChild(result);					
-				r.appendChild(val);
-				return r;					
-			}
+	// Builtin.createBuiltin(
+	// 	'save-package as',
+	// 	[ '_nex', '_name@' ],
+	// 	function $savePackage(env, executionEnvironment) {
+	// 		// figure out the real name
+	// 		let namesym = env.lb('name');
+	// 		let nametype = namesym.getTypeName();
+	// 		let nm = '';
+	// 		let val = env.lb('nex');
+	// 		// evaluate the thing. It's probably a package but doesn't have to be.
+	// 		let result = evaluateNexSafely(val, executionEnvironment);
+	// 		if (Utils.isFatalError(result)) {
+	// 			let r = new EError(`save-package: error evaluating package, see contents of this error`);
+	// 			r.appendChild(result);					
+	// 			r.appendChild(val);
+	// 			return r;					
+	// 		}
 
-			let exp = new Expectation();
-			exp.set(new GenericActivationFunctionGenerator(
-				'save-package-as', 
-				function(callback, exp) {
-					saveNex(nm, val, 'save', function(saveResult) {
-						callback(saveResult);
-					})
-				}
-			));
-			let savingMessage = new EError(`save in file ${nm} this data: ${val.prettyPrint()}`);
-			savingMessage.setErrorType(ERROR_TYPE_INFO);
-			exp.appendChild(savingMessage)
-			exp.appendChild(val)
-			return exp;
-		},
-		'evaluates |nex for its side effects, but saves the unevaluated version in the file |name.'
-	);
+	// 		let exp = new DeferredValue();
+	// 		exp.set(new GenericActivationFunctionGenerator(
+	// 			'save-package-as', 
+	// 			function(callback, exp) {
+	// 				saveNex(nm, val, 'save', function(saveResult) {
+	// 					callback(saveResult);
+	// 				})
+	// 			}
+	// 		));
+	// 		let savingMessage = new EError(`save in file ${nm} this data: ${val.prettyPrint()}`);
+	// 		savingMessage.setErrorType(ERROR_TYPE_INFO);
+	// 		exp.appendChild(savingMessage)
+	// 		exp.appendChild(val)
+	// 		return exp;
+	// 	},
+	// 	'evaluates |nex for its side effects, but saves the unevaluated version in the file |name.'
+	// );
 
 }
 

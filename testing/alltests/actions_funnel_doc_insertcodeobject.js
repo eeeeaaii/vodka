@@ -25,18 +25,39 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testspec// [none]
 //starttest//
 var harness = require('../testharness');
-harness.runTest(function() {
-doKeyInput('Escape', 'Escape', false, false, false);
-doKeyInput('Shift', 'ShiftRight', true, false, false);
-doKeyInput('!', 'Digit1', true, false, false);
-doKeyInput('!', 'Digit1', true, false, false);
-doKeyInput('!', 'Digit1', true, false, false);
-doKeyInput('Shift', 'ShiftLeft', true, false, false);
-doKeyInput('{', 'BracketLeft', true, false, false);
-doKeyInput('Shift', 'ShiftRight', true, false, false);
-doKeyInput('~', 'Backquote', true, false, false);
-doKeyInput('~', 'Backquote', true, false, false);
-doKeyInput('~', 'Backquote', true, false, false);
-doKeyInput('Enter', 'Enter', false, false, false);
-});
+
+var testactions = [];
+
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Digit1'});
+testactions.push({type:'keyup',code:'Digit1'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Digit1'});
+testactions.push({type:'keyup',code:'Digit1'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Digit1'});
+testactions.push({type:'keyup',code:'Digit1'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'BracketLeft'});
+testactions.push({type:'keyup',code:'BracketLeft'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Backquote'});
+testactions.push({type:'keyup',code:'Backquote'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Backquote'});
+testactions.push({type:'keyup',code:'Backquote'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Backquote'});
+testactions.push({type:'keyup',code:'Backquote'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
+
+harness.runTestNew(testactions, 'direct-legacy');
 //endtest//

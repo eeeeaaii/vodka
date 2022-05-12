@@ -16,7 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Tag } from './tag.js'
-import { Org } from './nex/org.js'
+import { Org, convertJSMapToOrg } from './nex/org.js'
 import { Integer } from './nex/integer.js'
 
 
@@ -85,15 +85,11 @@ function doNote(msg, type) {
 	let channel = msg.data[0] & 0x0F;
 	let nn = msg.data[1] & 0x7F;
 	let vel = msg.data[2] & 0x7F;
-	let r = new Org();
-	let rnn = new Integer(nn);
-	let rvel = new Integer(vel);
-	rnn.addTag(new Tag('note'));
-	rvel.addTag(new Tag('vel'));
-	r.addTag(new Tag(type))
-	r.appendChild(rnn);
-	r.appendChild(rvel);
-	return r;
+	return convertJSMapToOrg({
+		'note': nn,
+		'vel': vel,
+		'type': type
+	})
 }
 
 function parseMidiMessage(msg) {

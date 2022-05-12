@@ -24,7 +24,8 @@ import { systemState } from '../systemstate.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { RENDER_FLAG_SELECTED, RENDER_FLAG_SHALLOW, RENDER_FLAG_NORMAL, RENDER_FLAG_RERENDER, RENDER_FLAG_EXPLODED, RENDER_FLAG_DEPTH_EXCEEDED } from '../globalconstants.js'
 import { checkRecordState } from '../testrecorder.js'
-import { experiments } from '../globalappflags.js'
+import { doTutorial } from '../help.js'
+import { Tag } from '../tag.js'
 
 /**
  * This is the parent class for all nexes, aka pieces of vodka code, aka s-expressions.
@@ -50,6 +51,7 @@ class Nex {
 		this.inPackage = null; // well here we go with more things in the env I guess.
 		this.dirtyForRendering = true;
 		this.mutable = true;
+		this.clickActive = true;
 	}
 
     /**
@@ -124,7 +126,7 @@ class Nex {
 	}
 
 	toStringV2Literal() {
-		if (experiments.MUTABLES && !this.mutable) {
+		if (!this.mutable) {
 			return ';';
 		} else {
 			return '';
@@ -261,6 +263,7 @@ class Nex {
 
 	prependObjectTag(renderNode) {
 		if (!renderNode) return;
+		doTutorial('object-tags');
 		let domNode = renderNode.getDomNode();
 		if (!domNode) return;
 		let firstChild = domNode.firstChild;
@@ -299,9 +302,7 @@ class Nex {
 	copyFieldsTo(nex) {
 		nex.setCurrentStyle(this.currentStyle);
 		nex.copiedFromID = this.id;
-		for (let i = 0; i < this.tags.length; i++) {
-			nex.tags[i] = this.tags[i].copy();
-		}
+		this.copyTagsTo(nex);
 	}
 
 	needsEvaluation() {
@@ -427,10 +428,20 @@ class Nex {
 		this.setDirtyForRendering(true);
 	}
 
+	copyTagsTo(n) {
+		for (let i = 0; i < this.tags.length; i++) {
+			n.tags.push(this.tags[i].copy());
+		}
+	}
+
 	// evaluation flow
 
 	evalSetup(executionEnv) {
 
+	}
+
+	canUseTagEditor() {
+		return true;
 	}
 
 	getExpectedReturnType() {
@@ -442,14 +453,10 @@ class Nex {
 	}
 
 	evaluate(env) {
-		if (experiments.MUTABLES) {
-			if (this.mutable) {
-				return this.makeCopy();
-			} else {
-				return this;
-			}
-		} else {
+		if (this.mutable) {
 			return this.makeCopy();
+		} else {
+			return this;
 		}
 	}
 
@@ -499,6 +506,7 @@ class Nex {
 
 	_setClickHandler(renderNode) {
 		renderNode.getDomNode().onmousedown = (event) => {
+			if (!this.clickActive) return true;
 			checkRecordState(event, 'mouse');
 			eventQueueDispatcher.enqueueDoClickHandlerAction(this, renderNode, event)
 			event.stopPropagation();
@@ -512,20 +520,14 @@ class Nex {
 		}
 		domNode.classList.add('nex');
 
-		if (experiments.MUTABLES) {
-			if (renderFlags & RENDER_FLAG_SELECTED) {
-				domNode.classList.add('newselected');		
-			}
-		} else {
-			if (renderFlags & RENDER_FLAG_SELECTED) {
-				domNode.classList.add('selected');		
-			}
+		if (renderFlags & RENDER_FLAG_SELECTED) {
+			domNode.classList.add('newselected');		
 		}
 		let isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
 		if (isExploded) {
 			domNode.classList.add('exploded');
 		}
-		if (experiments.MUTABLES && this.mutable) {
+		if (this.mutable) {
 			domNode.classList.add('mutable');
 		}
 		if (systemState.getIsMobile()) {

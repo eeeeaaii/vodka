@@ -181,6 +181,10 @@ is_vk() {
 }
 
 run() {
+	echo "Vodka test runner. Options:"
+	echo "  --show      launches visible chrome instance so you can watch the test"
+	echo "  --testdir   use a different directory to look for tests"
+	echo "  --params    pass params to test"
 	if [ "$TESTFILE" == "*" ]; then
 		NUMTESTS=$(ls ./${TESTDIR}/*.js ./${TESTDIR}/*.vk | wc | awk '{ print $1 }')
 		CURRENTTESTNUM=1
@@ -203,6 +207,7 @@ run() {
 		do_test ${BASENAME}
 	fi
 	node parsetestoutput.js
+	echo "Tests finished! Results in testresults.html."
 }
 
 

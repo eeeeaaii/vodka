@@ -18,7 +18,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { ValueNex } from './valuenex.js'
 import { CONSOLE_DEBUG } from '../globalconstants.js'
 import { INDENT, systemState } from '../systemstate.js'
-import { experiments } from '../globalappflags.js'
 import { Editor } from '../editors.js'
 import { autocomplete } from '../autocomplete.js'
 
@@ -64,9 +63,7 @@ class ESymbol extends ValueNex {
 	}
 
 	renderValue() {
-		// em dash
-		return this.value.replace(/--/g, '__');
-		//return this.value;
+		return this.value;
 	}
 
 	pushNexPhase(phaseExecutor, env) {
@@ -183,26 +180,15 @@ class ESymbolEditor extends Editor {
 	}
 
 	doAppendEdit(text) {
-		if (text == ' ') {
-			text = '-';
-		}
 		this.nex.appendText(text);
 	}
 
 	shouldAppend(text) {
 		let firstLetter = (this.nex.getValue().length == 0);
 		if (firstLetter) {
-			if (experiments.ORG_OVERHAUL) {
-				return /^[a-zA-Z:. -]$/.test(text);
-			} else {
-				return /^[a-zA-Z: -]$/.test(text);
-			}
+			return /^[a-zA-Z:. _-]$/.test(text);
 		} else {
-			if (experiments.ORG_OVERHAUL) {
-				return /^[a-zA-Z0-9:. -]$/.test(text);
-			} else {
-				return /^[a-zA-Z0-9: -]$/.test(text);
-			}
+			return /^[a-zA-Z0-9:. _-]$/.test(text);
 		}
 	}
 

@@ -70,26 +70,6 @@ class Word extends NexContainer {
 		return this.standardListPrettyPrint(lvl, '[word]', hdir);
 	}
 
-/*
-	// maybe put this back if we want evaluating docs to do this
-
-	evaluate(env) {
-		if (!experiments.MUTABLES || this.mutable) {
-			// shallow copy, then evaluate children.
-			let wordcopy = this.makeCopy(true);
-			let iterator = null;
-			this.doForEachChild(function(child) {
-				let newchild = evaluateNexSafely(child, env);
-				// we don't throw exceptions. We just embed them. We don't want to erase someone's doc
-				// because they put bad code in it.
-				iterator = wordcopy.fastAppendChildAfter(child.evaluate(env), iterator);
-			})
-			return wordcopy;
-		} else {
-			return this;
-		}
-	}
-*/
 	setMutable(val) {
 		super.setMutable(val)
 		// make doc-type children also have the same mutability
@@ -153,9 +133,7 @@ class Word extends NexContainer {
 		} else if (renderFlags & RENDER_FLAG_INSERT_INSIDE) {
 			domNode.classList.add('bottominsert');			
 		}
-		if (experiments.MUTABLES) {
-			domNode.classList.add('newword');
-		}
+		domNode.classList.add('newword');
 	}
 
 	setPfont(pfstring) {
@@ -171,6 +149,28 @@ class Word extends NexContainer {
 		}
 		super.insertChildAt(c, i);
 	}
+
+	/*
+	should be in the superclass (nexcontainer) but it creates a circular dependency graph somehow
+	*/
+	evaluate(env) {
+		if (this.mutable) {
+			// shallow copy, then evaluate children.
+			let listcopy = this.makeCopy(true);
+			let iterator = null;
+			this.doForEachChild(function(child) {
+				let newchild = evaluateNexSafely(child, env);
+				// we don't throw exceptions, we just embed them - this isn't a function.
+				iterator = listcopy.fastAppendChildAfter(newchild, iterator);
+			})
+			listcopy.setMutable(false);
+			return listcopy;
+		} else {
+			return this;
+		}
+	}
+
+
 
 	getDefaultHandler() {
 		return 'wordDefault';

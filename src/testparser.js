@@ -143,7 +143,7 @@ testParse(`
 	_)`, '(_#234 %54 #;6434_)');
 //testParse('(|#234 %54 (_$"apple" ^ @hello_) #554|)', '(|#234 %54 (_$"apple" [nil] @hello_) #554|)');
 testParse('(|#234 %54 (_$"apple" [nil] @hello_) #554|)', '(|#234 %54 (_$"apple" [nil] @hello_) #554|)');
-// expectation
+// deferred command
 testParse('*(__)');
 testParse('*;(__)');
 // lambda

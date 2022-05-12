@@ -15,9 +15,11 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from './utils.js';
+
 import { EError } from './nex/eerror.js'
-import { ArgEvaluator } from './argevaluator.js'
 import { experiments } from './globalappflags.js'
+import { doTutorial } from './help.js'
 
 /** @module evaluator */
 
@@ -36,34 +38,38 @@ function evaluateNexSafely(nex, executionEnvironment, skipActivation /* TODO: re
 
 	let result;
 	try {
-		nex.evalSetup(executionEnvironment);
-		let returnValueParam = nex.getExpectedReturnType();
-		let cmdname = nex.maybeGetCommandName();
+//		nex.evalSetup(executionEnvironment);
+//		let returnValueParam = nex.getExpectedReturnType();
+//		let cmdname = nex.maybeGetCommandName();
 		result = nex.evaluate(executionEnvironment);
 
-		if (returnValueParam != null) {
-			let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[returnValueParam.type](result);
-			if (!typeChecksOut) {
-				return wrapError('&amp;', `${cmdname}: should return ${returnValueParam.type} but returned ${result.getTypeName()}`, result);
-				// if (arg.getTypeName() == '-error-') {
-				// 	throw wrapError('&szlig;', `${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, arg);
-				// }
-			}
+		if (!doTutorial('evaluation')) {
+			if (result.isMutable) doTutorial('mutability');
 		}
 
-		let tn = result.getTypeName();
-		if (tn == '-org-' || tn == '-nativeorg-') {
-			// forget multiple dereference for now we will do that soon/someday/sometime
-			// just find a tag
-			for (let i = 0; i < nex.numTags(); i++) {
-				let tag = nex.getTag(i);
-				if (result.hasChildTag(tag)) {
-					let child = result.getChildWithTag(tag);
-					let childResult = evaluateNexSafely(child, executionEnvironment);
-					result = childResult;
-				}
-			}
-		}
+		// if (returnValueParam != null) {
+		// 	let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[returnValueParam.type](result);
+		// 	if (!typeChecksOut) {
+		// 		return wrapError('&amp;', `${cmdname}: should return ${returnValueParam.type} but returned ${result.getTypeName()}`, result);
+		// 		// if (arg.getTypeName() == '-error-') {
+		// 		// 	throw wrapError('&szlig;', `${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, arg);
+		// 		// }
+		// 	}
+		// }
+
+		// let tn = result.getTypeName();
+		// if (tn == '-org-' || tn == '-nativeorg-') {
+		// 	// forget multiple dereference for now we will do that soon/someday/sometime
+		// 	// just find a tag
+		// 	for (let i = 0; i < nex.numTags(); i++) {
+		// 		let tag = nex.getTag(i);
+		// 		if (result.hasChildTag(tag)) {
+		// 			let child = result.getChildWithTag(tag);
+		// 			let childResult = evaluateNexSafely(child, executionEnvironment);
+		// 			result = childResult;
+		// 		}
+		// 	}
+		// }
 	} catch (e) {
 		if (e instanceof EError) {
 			result = e;

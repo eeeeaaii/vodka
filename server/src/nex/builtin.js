@@ -36,18 +36,11 @@ class Builtin extends Lambda {
 		this.docstring = docstring ? docstring : ' - no docs - ';
 		this.infix = false;
 		let amp = '';
-		if (experiments.NEW_CLOSURE_DISPLAY) {
-			for (let i = 0; i < params.length; i++) {
-				if (amp != '') {
-					amp += ' ';
-				}
-				amp += params[i].name;
+		for (let i = 0; i < params.length; i++) {
+			if (amp != '') {
+				amp += ' ';
 			}
-		} else {
-			amp = name;
-			for (let i = 0; i < params.length; i++) {
-				amp += ' ' + params[i].name;
-			}
+			amp += params[i].name;
 		}
 		this.amptext = amp;
 		this.f = null;

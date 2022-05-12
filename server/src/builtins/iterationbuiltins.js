@@ -33,7 +33,7 @@ function createIterationBuiltins() {
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
 	Builtin.createBuiltin(
-		'filter--with',
+		'filter with',
 		[ 'list()', 'func&' ],
 		function $filterWith(env, executionEnvironment) {
 			let list = env.lb('list');
@@ -66,14 +66,11 @@ function createIterationBuiltins() {
 		'returns a new list containing only the elements of |list for which |func calls true when it is called on that element.'
 	);
 
-	Builtin.aliasBuiltin('filter', 'filter--with');
-
-
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
 
 	Builtin.createBuiltin(
-		'map--with',
+		'map with',
 		[ 'list()', 'func&' ],
 		function $mapWith(env, executionEnvironment) {
 			let closure = env.lb('func');
@@ -106,12 +103,10 @@ function createIterationBuiltins() {
 		'goes through all the elements in |list and replaces each one with the result of calling |func on that element.'
 	);
 
-	Builtin.aliasBuiltin('map', 'map--with');
-
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
 	Builtin.createBuiltin(
-		'reduce--with--given',
+		'reduce with',
 		[ 'list()', 'func&', 'startvalue' ],
 		function $reduceWithGiven(env, executionEnvironment) {
 			let list = env.lb('list');
@@ -142,14 +137,11 @@ function createIterationBuiltins() {
 		'progressively updates a value, starting with |startvalue, by calling |func on each element in |list, passing in 1. the list element and 2. the progressively updated value, returning the final updated value.'
 	);
 
-	Builtin.aliasBuiltin('reduce', 'reduce--with--given');
-
-
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
 
 	Builtin.createBuiltin(
-		'loop--over',
+		'loop over',
 		[ 'func&', 'list()' ],
 		function $loopOver(env, executionEnvironment) {
 			let closure = env.lb('func');
@@ -178,101 +170,94 @@ function createIterationBuiltins() {
 		'loops over a list, evaluating a function on each member, and returning the last result.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
-
-	function $range(env, executionEnvironment) {
-		let startorstop_n = env.lb('startorstop');
-		let stop_n = env.lb('stop');
-		let inc_n = env.lb('inc');
-		let start = 0;
-		let stop = 0;
-		let inc = 1;
-		if (stop_n == UNBOUND) {
-			stop = startorstop_n.getTypedValue();
-		} else {
-			start = startorstop_n.getTypedValue();
-			stop = stop_n.getTypedValue();
-			if (inc_n != UNBOUND) {
-				inc = inc_n.getTypedValue();
-			}
-		}
-		if (inc == 0 || start < stop && inc < 0 || stop < start && inc > 0) {
-			return new EError('range statement will not terminate.');
-		}
-		let result = new Org();
-		let appendIterator = null;
-		for (let i = start ; i != stop; i += inc) {
-			let thisnum = new Integer(i);
-			appendIterator = result.fastAppendChildAfter(thisnum, appendIterator);
-		}
-		return result;
-	}
-
 	Builtin.createBuiltin(
 		'range',
 		[ 'startorstop#', 'stop#?', 'inc#?' ],
-		$range,
-		'returns a list containing all the integers from 0 to n'
+		function $range(env, executionEnvironment) {
+			let startorstop_n = env.lb('startorstop');
+			let stop_n = env.lb('stop');
+			let inc_n = env.lb('inc');
+			let start = 0;
+			let stop = 0;
+			let inc = 1;
+			if (stop_n == UNBOUND) {
+				stop = startorstop_n.getTypedValue();
+			} else {
+				start = startorstop_n.getTypedValue();
+				stop = stop_n.getTypedValue();
+				if (inc_n != UNBOUND) {
+					inc = inc_n.getTypedValue();
+				}
+			}
+			if (inc == 0 || start < stop && inc < 0 || stop < start && inc > 0) {
+				return new EError('range statement will not terminate.');
+			}
+			let result = new Org();
+			let appendIterator = null;
+			for (let i = start ; i != stop; i += inc) {
+				let thisnum = new Integer(i);
+				appendIterator = result.fastAppendChildAfter(thisnum, appendIterator);
+			}
+			return result;
+		},
+		`returns a list containing all the integers from 0 to n`
 	)
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
-	function $for(env, executionEnvironment) {
-		let start = env.lb('start');
-		let test = env.lb('test');
-		let inc = env.lb('inc');
-		let body = env.lb('body');
-
-		// starting condition
-		let startcmd = Command.makeCommandWithClosureZeroArgs(start);
-		startcmd.setSkipAlertAnimation(true);
-		let iterationvalue = evaluateNexSafely(startcmd, executionEnvironment);
-		if (Utils.isFatalError(iterationvalue)) {
-			return wrapError('&szlig;', `for: error returned from initializer`, iterationvalue);
-		}
-
-		let bodyresult = new Nil();
-		while(true) {
-			// check for continuation condition
-			let testcmd = Command.makeCommandWithClosureOneArg(test, Command.quote(iterationvalue));
-			testcmd.setSkipAlertAnimation(true);
-			let testval = evaluateNexSafely(testcmd, executionEnvironment);
-			if (Utils.isFatalError(testval)) {
-				return wrapError('&szlig;', `for: error returned from test`, testval);
-			}
-			if (testval.getTypeName() != '-bool-') {
-				return new EError('for: test lambda must return a boolean');
-			}
-			if (!testval.getTypedValue()) {
-				break;
-			}
-			// execute body
-			let bodycmd = Command.makeCommandWithClosureOneArg(body, Command.quote(iterationvalue));
-			bodycmd.setSkipAlertAnimation(true);
-			bodyresult = evaluateNexSafely(bodycmd, executionEnvironment);
-			if (Utils.isFatalError(bodyresult)) {
-				return wrapError('&szlig;', `for: error returned from body, iterator=${iterationvalue.toString()}`, bodyresult);
-			}
-			// increment
-			let inccmd = Command.makeCommandWithClosureOneArg(inc, Command.quote(iterationvalue));
-			inccmd.setSkipAlertAnimation(true);
-			iterationvalue = evaluateNexSafely(inccmd, executionEnvironment);
-			if (Utils.isFatalError(iterationvalue)) {
-				return wrapError('&szlig;', `for: error returned from then-with`, iterationvalue);
-			}
-		}
-		return bodyresult;
-	}
 
 	Builtin.createBuiltin(
-		'starting-with--while--do--then-with',
+		'for-loop',
 		[ 'start&', 'test&', 'body&', 'inc&'],
-		$for,
-		'classic for loop: start, test, and increment are all closures.'
+		function $forLoop(env, executionEnvironment) {
+			let start = env.lb('start');
+			let test = env.lb('test');
+			let inc = env.lb('inc');
+			let body = env.lb('body');
+
+			// starting condition
+			let startcmd = Command.makeCommandWithClosureZeroArgs(start);
+			startcmd.setSkipAlertAnimation(true);
+			let iterationvalue = evaluateNexSafely(startcmd, executionEnvironment);
+			if (Utils.isFatalError(iterationvalue)) {
+				return wrapError('&szlig;', `for: error returned from initializer`, iterationvalue);
+			}
+
+			let bodyresult = new Nil();
+			while(true) {
+				// check for continuation condition
+				let testcmd = Command.makeCommandWithClosureOneArg(test, Command.quote(iterationvalue));
+				testcmd.setSkipAlertAnimation(true);
+				let testval = evaluateNexSafely(testcmd, executionEnvironment);
+				if (Utils.isFatalError(testval)) {
+					return wrapError('&szlig;', `for: error returned from test`, testval);
+				}
+				if (testval.getTypeName() != '-bool-') {
+					return new EError('for: test lambda must return a boolean');
+				}
+				if (!testval.getTypedValue()) {
+					break;
+				}
+				// execute body
+				let bodycmd = Command.makeCommandWithClosureOneArg(body, Command.quote(iterationvalue));
+				bodycmd.setSkipAlertAnimation(true);
+				bodyresult = evaluateNexSafely(bodycmd, executionEnvironment);
+				if (Utils.isFatalError(bodyresult)) {
+					return wrapError('&szlig;', `for: error returned from body, iterator=${iterationvalue.toString()}`, bodyresult);
+				}
+				// increment
+				let inccmd = Command.makeCommandWithClosureOneArg(inc, Command.quote(iterationvalue));
+				inccmd.setSkipAlertAnimation(true);
+				iterationvalue = evaluateNexSafely(inccmd, executionEnvironment);
+				if (Utils.isFatalError(iterationvalue)) {
+					return wrapError('&szlig;', `for: error returned from then-with`, iterationvalue);
+				}
+			}
+			return bodyresult;
+		},
+		`Classic "for loop". First |start is evaluated, then |test. If |test returns true, |body and |inc are evaluated, and then we go back to |test. Alias: starting-with while do then-with.`
 	)
 
-	Builtin.aliasBuiltin('for', 'starting-with--while--do--then-with');
-	Builtin.aliasBuiltin('while', 'starting-with--while--do--then-with');
+	Builtin.aliasBuiltin('starting-with while do then-with', 'for-loop');
 
 }
 

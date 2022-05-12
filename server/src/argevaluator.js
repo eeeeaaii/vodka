@@ -56,6 +56,10 @@ function getParameterInfo(params) {
 
 
 
+/**
+ * The job of the arg evaluator is to evaluate the arguments (if needed)
+ * and bind them to variables in the new scope.
+ */
 class ArgEvaluator {
 	constructor(name, params, argContainer, executionEnvironment) {
 		this.name = name;
@@ -109,27 +113,75 @@ class ArgEvaluator {
 		let param = this.effectiveParams[i];
 		let expectedType = param.type;
 		let arg = this.argContainer.getArgAt(i);
+		let argnex = arg.getNex();
 		if (!param.skipeval) {
-			arg = evaluateNexSafely(arg, this.executionEnvironment, param.skipactivate);
-			if (Utils.isFatalError(arg)) {
-				throw wrapError('&szlig;', `when calling ${this.name}: fatal error in argument ${i + 1} (expected type ${param.type}), cannot continue. Sorry!`, arg);
+			argnex = evaluateNexSafely(argnex, this.executionEnvironment, param.skipactivate);
+			if (Utils.isFatalError(argnex)) {
+				throw wrapError('&szlig;', `when calling ${this.name}: fatal error in argument ${i + 1} (expected type ${param.type}), cannot continue. Sorry!`, argnex);
 			}
 		}
-		let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[expectedType](arg);
+		let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[expectedType](argnex);
 
 		if (!typeChecksOut) {
-			if (arg.getTypeName() == '-error-') {
-				throw wrapError('&szlig;', `when calling ${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, arg);
+			if (argnex.getTypeName() == '-error-') {
+				throw wrapError('&szlig;', `when calling ${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, argnex);
 			} else {
-				throw new EError(`when calling ${this.name}: stopping because expected ${expectedType} for arg ${i + 1} but got ${arg.getTypeName()}. Sorry!`);
+				throw new EError(`when calling ${this.name}: stopping because expected ${expectedType} for argnex ${i + 1} but got ${argnex.getTypeName()}. Sorry!`);
 			}
 		}
-		this.argContainer.setArgAt(arg, i);
+		arg.setNex(argnex);
+	}
+
+
+	processSinglePotentiallyDeferredArg(i) {
+		let param = this.effectiveParams[i];
+		if (param.skipEval) {
+			return;
+		}
+		let arg = this.argContainer.getArgAt(i);
+		if (arg.isChecked()) {
+			return;
+		}
+		let argnex = arg.getNex();
+		if (!arg.isEvaluated()) {
+			argnex = evaluateNexSafely(argnex, this.executionEnvironment, param.skipactivate);
+			if (Utils.isFatalError(argnex)) {
+				throw wrapError('&szlig;', `when calling ${this.name}: fatal error in argument ${i + 1} (expected type ${param.type}), cannot continue. Sorry!`, argnex);
+			}
+			arg.setEvaluated(true);
+		}
+		while (Utils.isDeferred(argnex) && argnex.isFinished()) {
+			argnex = evaluateNexSafely(argnex, this.executionEnvironment, param.skipactivate);
+			if (Utils.isFatalError(argnex)) {
+				throw wrapError('&szlig;', `when calling ${this.name}: fatal error in argument ${i + 1} (expected type ${param.type}), cannot continue. Sorry!`, argnex);
+			}
+		}
+
+		// if we finally don't have a deferred, we check type
+		if (!Utils.isDeferred(argnex)) {
+			let expectedType = param.type;
+			let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[expectedType](argnex);
+			if (!typeChecksOut) {
+				if (argnex.getTypeName() == '-error-') {
+					throw wrapError('&szlig;', `when calling ${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, argnex);
+				} else {
+					throw new EError(`when calling ${this.name}: stopping because expected ${expectedType} for argnex ${i + 1} but got ${argnex.getTypeName()}. Sorry!`);
+				}
+			}
+			arg.setChecked(true);
+		}
+		arg.setNex(argnex);
 	}
 
 	processArgs() {
 		for (let i = 0; i < this.argContainer.numArgs(); i++) {
 			this.processSingleArg(i);
+		}
+	}
+
+	processPotentiallyDeferredArgs() {
+		for (let i = 0; i < this.argContainer.numArgs(); i++) {
+			this.processSinglePotentiallyDeferredArg(i);
 		}
 	}
 
@@ -140,15 +192,15 @@ class ArgEvaluator {
 			if (param.variadic) {
 				let r2 = [];
 				for (let j = i; j < this.argContainer.numArgs(); j++) {
-					r2.push(this.argContainer.getArgAt(j));
+					r2.push(this.argContainer.getArgAt(j).getNex());
 				}
 				r.push(r2);
 			} else if (param.optional) {
 				if (i < this.argContainer.numArgs()) {
-					r.push(this.argContainer.getArgAt(i));
+					r.push(this.argContainer.getArgAt(i).getNex());
 				}
 			} else {
-				r.push(this.argContainer.getArgAt(i));
+				r.push(this.argContainer.getArgAt(i).getNex());
 			}
 		}
 		return r;
@@ -160,23 +212,35 @@ class ArgEvaluator {
 			if (param.variadic) {
 				let org = new Org();
 				for (let j = i; j < this.argContainer.numArgs(); j++) {
-					org.appendChild(this.argContainer.getArgAt(j));
+					org.appendChild(this.argContainer.getArgAt(j).getNex());
 				}
 				scope.bind(param.name, org);
 			} else if (param.optional) {
 				if (i < this.argContainer.numArgs()) {
-					scope.bind(param.name, this.argContainer.getArgAt(i));
+					scope.bind(param.name, this.argContainer.getArgAt(i).getNex());
 				}
 			} else {
-				scope.bind(param.name, this.argContainer.getArgAt(i));
+				scope.bind(param.name, this.argContainer.getArgAt(i).getNex());
 			}
 		}
 	}
 
-	evaluateArgs() {
+	prepareToEvaluate() {
 		this.checkMinNumArgs();
 		this.padEffectiveParams();
 		this.checkMaxNumArgs();
+		this.prepared = true;	
+	}
+
+	evaluatePotentiallyDeferredArgs() {
+		if (!this.prepared) {
+			this.prepareToEvaluate();
+		}
+		this.processPotentiallyDeferredArgs();
+	}
+
+	evaluateArgs() {
+		this.prepareToEvaluate();
 		this.processArgs();
 	}
 }
@@ -187,7 +251,7 @@ ArgEvaluator.ARG_VALIDATORS = {
 	'NexContainer': arg => (arg.isNexContainer()),
 	'Bool': arg => (arg.getTypeName() == '-bool-'),
 	'Command': arg => (arg.getTypeName() == '-command-'),
-	'Expectation': arg => (arg.getTypeName() == '-expectation-'),
+	'Deferred': arg => (arg.getTypeName() == '-deferredcommand-' || arg.getTypeName() == '-deferredvalue-'),
 	'Doc': arg => (arg.getTypeName() == '-page-'),
 	'EString': arg => (arg.getTypeName() == '-string-'),
 	'ESymbol': arg => (arg.getTypeName() == '-symbol-'),

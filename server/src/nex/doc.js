@@ -107,27 +107,6 @@ class Doc extends NexContainer {
 		return s;
 	}
 
-/*
-	// maybe put this back if we want evaluating docs to do this
-
-	evaluate(env) {
-		if (!experiments.MUTABLES || this.mutable) {
-			// shallow copy, then evaluate children.
-			let doccopy = this.makeCopy(true);
-			let iterator = null;
-			this.doForEachChild(function(child) {
-				let newchild = evaluateNexSafely(child, env);
-				// we don't throw exceptions. We just embed them. We don't want to erase someone's doc
-				// because they put bad code in it.
-				iterator = doccopy.fastAppendChildAfter(child.evaluate(env), iterator);
-			})
-			return doccopy;
-		} else {
-			return this;
-		}
-	}
-*/
-
 	getContextType() {
 		if (this.isMutable()) {
 			return ContextType.DOC;
@@ -141,10 +120,29 @@ class Doc extends NexContainer {
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('doc');
 		domNode.classList.add('data');
-		if (experiments.MUTABLES) {
-			domNode.classList.add('newdoc');
+		domNode.classList.add('newdoc');
+	}
+	
+	/*
+	should be in the superclass (nexcontainer) but it creates a circular dependency graph somehow
+	*/
+	evaluate(env) {
+		if (this.mutable) {
+			// shallow copy, then evaluate children.
+			let listcopy = this.makeCopy(true);
+			let iterator = null;
+			this.doForEachChild(function(child) {
+				let newchild = evaluateNexSafely(child, env);
+				// we don't throw exceptions, we just embed them - this isn't a function.
+				iterator = listcopy.fastAppendChildAfter(newchild, iterator);
+			})
+			listcopy.setMutable(false);
+			return listcopy;
+		} else {
+			return this;
 		}
 	}
+
 
 	setMutable(val) {
 		super.setMutable(val)

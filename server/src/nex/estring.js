@@ -167,7 +167,7 @@ class EString extends ValueNex {
 		super.renderInto(renderNode, renderFlags, withEditor);
 		// this one always can rerender because it's not a container
 		// we only need to care about rerenders when it's a container type
-		domNode.innerHTML = this.prefix;
+		domNode.innerHTML = (this.isEditing ? this.prefix : '');
 		domNode.classList.add(this.className);
 		domNode.classList.add('valuenex');
 		if (this.mode == MODE_NORMAL) {
@@ -179,15 +179,25 @@ class EString extends ValueNex {
 
 	drawNormal(renderNode) {
 		let domNode = renderNode.getDomNode();
+
+		let leftdot = document.createElement('span');
+		leftdot.classList.add('tilde');
+		leftdot.classList.add('glyph');
+		leftdot.classList.add('faint');
+		leftdot.innerText = '.';
+
+		let rightspan = document.createElement('span');
+		rightspan.classList.add('glyphright');
+		rightspan.innerText = this.prefix;
+
+		domNode.appendChild(leftdot);
 		if (this.displayValue !== '') {
 			this.innerspan = document.createElement("div");
 			this.innerspan.classList.add('innerspan');
 			this.innerspan.innerHTML = this.escape(this.displayValue);
 			domNode.appendChild(this.innerspan);
-			domNode.appendChild(document.createTextNode(this.prefix));
-		} else {
-			domNode.appendChild(document.createTextNode(this.prefix));
 		}
+		domNode.appendChild(rightspan);
 	}
 
 	drawExpanded(renderNode) {
@@ -256,12 +266,7 @@ class EString extends ValueNex {
 			// already closed
 			return;
 		}
-		if (experiments.BETTER_KEYBINDINGS) {
-			renderNode.forceCloseEditor();
-
-		} else {
-			this.finishInput(renderNode);
-		}
+		renderNode.forceCloseEditor();
 	}
 
 	finishInput(renderNode) {

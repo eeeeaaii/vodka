@@ -22,21 +22,33 @@ import { EError } from '../nex/eerror.js'
 import { Doc } from '../nex/doc.js' 
 import { Line } from '../nex/line.js' 
 import { Command } from '../nex/command.js' 
-import { Expectation } from '../nex/expectation.js' 
+import { DeferredCommand } from '../nex/deferredcommand.js' 
 import { Lambda } from '../nex/lambda.js' 
 import { Org } from '../nex/org.js' 
 import { ERROR_TYPE_INFO, ERROR_TYPE_FATAL, ERROR_TYPE_WARN } from '../nex/eerror.js'
 
 function createMakeBuiltins() {
 
-  Builtin.createBuiltin(
-  	'make-nil',
-  	[],
-  	function $makeNil(env, executionEnvironment) {
-  		return new Nil();
-  	},
-  	'creates a nil object.'
-  );
+	Builtin.createBuiltin(
+		'make-wavetable',
+		[],
+		function $makeWavetable(env, executionEnvironment) {
+			let args = env.lb('nex');
+			let r = new Wavetable();
+			return r;
+		},
+		'creates a new wavetable.'
+	);
+
+
+	Builtin.createBuiltin(
+		'make-nil',
+		[],
+		function $makeNil(env, executionEnvironment) {
+			return new Nil();
+		},
+		'creates a nil object.'
+	);
 
 	Builtin.createBuiltin(
 		'make-command',
@@ -46,14 +58,9 @@ function createMakeBuiltins() {
 			let cmd = new Command();
 			for (let i = 0 ; i < args.numChildren(); i++) {
 				let arg = args.getChildAt(i);
-				if (i == 0) {
-					// should be name of command
-					if (arg.getTypeName() == '-symbol-') {
-						cmd = new Command(arg.getTypedValue())
-					} else {
-						cmd = new Command();
-						cmd.appendChild(arg);
-					}
+				// first one could be name of command
+				if (i == 0 && arg.getTypeName() == '-symbol-') {
+					cmd = new Command(arg.getTypedValue())
 				} else {
 					cmd.appendChild(arg);
 				}
@@ -64,7 +71,7 @@ function createMakeBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'make-page',
+		'make-doc',
 		['nex...'],
 		function $makeDoc(env, executionEnvironment) {
 			let args = env.lb('nex');
@@ -74,24 +81,22 @@ function createMakeBuiltins() {
 			}
 			return r;
 		},
-		'creates a new page containing the args as children.'
+		'creates a new doc containing the args as children.'
 	);
 
-	Builtin.aliasBuiltin('make-doc', 'make-page');
-
 	Builtin.createBuiltin(
-		'make-expectation',
-		[ 'nex...' ],
-		function $makeExpectation(env, executionEnvironment) {
-			let exps = env.lb('nex');
-			let r = new Expectation();
-			for (let i = 0 ; i < exps.numChildren(); i++) {
-				let c = exps.getChildAt(i);
+		'make-deferred-command',
+		[ 'args...' ],
+		function $makeDeferredCommand(env, executionEnvironment) {
+			let args = env.lb('args');
+			let r = new DeferredCommand();
+			for (let i = 0 ; i < args.numChildren(); i++) {
+				let c = children.getChildAt(i);
 				r.appendChild(c);
 			}
 			return r;
 		},
-		'creates a new expectation containing the args as children.'
+		'creates a new deferred command containing |args as children.'
 	);
 
 	Builtin.createBuiltin(

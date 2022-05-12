@@ -44,6 +44,10 @@ class Root extends NexContainer {
 		return 1;
 	}
 
+	canUseTagEditor() {
+		return false; // no tagging the root
+	}
+
 	getDefaultHandler() {
 		return 'standardDefault';
 	}

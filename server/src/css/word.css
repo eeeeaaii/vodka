@@ -27,7 +27,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 .word.exploded {
 	padding: 5px;
-	border: 1px solid #c7c747;
+	border: 1px solid var(--word-selected);
 	border-radius: 6px;	
 }
 
@@ -47,45 +47,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 .newword.exploded.mutable {
 	padding: 3px;
 	border-width: 3px;	
-}
-
-/*
-.newselected > .wordspan.exploded {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	background-color: #c7c747;
-	height: 20px;
-	width: 3px;
-	border-radius: 6px 6px 6px 6px;
-	margin: 0px 3px 0px -2px;
-}
-
-.newselected > .wordspan.exploded.mutable {
-	margin: 0px 3px 0px -4px;
-}
-*/
-
-@keyframes show-word-execution-selected-1 {
-	0% {border-color: var(--selected-border);}
-	5% {border-color: #ffff77;}
-	100% {border-color: #c7c747;}
-}
-
-@keyframes show-word-execution-selected-2 {
-	0% {border-color: var(--selected-border);}
-	5% {border-color: #ffff77;}
-	100% {border-color: #c7c747;}
-}
-
-.animating-selected-word-executable-1 {
-	animation-duration: .7s;
-	animation-name: show-word-execution-selected-1;
-}
-
-.animating-selected-word-executable-2 {
-	animation-duration: .70s;
-	animation-name: show-word-execution-selected-2;
 }
 
 

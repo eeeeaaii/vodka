@@ -53,7 +53,7 @@ function createOrgBuiltins() {
 	);		
 
 	Builtin.createBuiltin(
-		'save-template--as',
+		'save-template as',
 		[ '_org()', '_name@' ],
 		function $template(env, executionEnvironment) {
 			let name = env.lb('name');

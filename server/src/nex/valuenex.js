@@ -45,6 +45,12 @@ class ValueNex extends Nex {
 		return this.getValue();
 	}
 
+	evaluate(env) {
+		let r = super.evaluate(env);
+		r.setMutable(false);
+		return r;
+	}
+
 	escapedRenderValue() {
 		return this.escape(this.renderValue());
 	}
@@ -57,11 +63,17 @@ class ValueNex extends Nex {
 		let val = this.escapedRenderValue();
 		let inner = '';
 		let leftspan = '<span class="glyphleft">' + this.prefix + '</span>'
+		let faintleftdot = '<span class="tilde glyphleft faint">·</span>';
 		let rightspan = '<span class="glyphright">' + this.prefix + '</span>'
-		inner = '' + leftspan + this.escapedRenderValue();
-		if (!this.isEditing) {
-			inner += rightspan;
+		if (this.isEditing) {
+			inner = '' + leftspan + this.escapedRenderValue();
+		} else {
+			inner = '' + faintleftdot + this.escapedRenderValue() + rightspan;
 		}
+//		inner = '' + leftspan + this.escapedRenderValue();
+//		if (!this.isEditing) {
+//			inner += rightspan;
+//		}
 		domNode.innerHTML = inner;
 	}
 

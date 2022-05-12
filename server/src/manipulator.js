@@ -34,8 +34,8 @@ import { Line } from './nex/line.js'
 import { ContextType } from './contexttype.js'
 import { Org } from './nex/org.js' 
 import { Float } from './nex/float.js' 
-import { Expectation } from './nex/expectation.js' 
 import { Integer } from './nex/integer.js' 
+import { DeferredCommand } from './nex/deferredcommand.js' 
 import { Letter } from './nex/letter.js' 
 import { Doc } from './nex/doc.js' 
 import { Separator } from './nex/separator.js' 
@@ -43,6 +43,7 @@ import { Nil } from './nex/nil.js'
 import { Instantiator } from './nex/instantiator.js' 
 import { experiments } from './globalappflags.js'
 import { isRecordingTest } from './testrecorder.js'
+import { doTutorial } from './help.js'
 import {
 	INSERT_UNSPECIFIED,
 	INSERT_AFTER,
@@ -222,8 +223,7 @@ class Manipulator {
 	}
 
 	_forceInsertionMode(mode, node) {
-		node.setInsertionMode(mode);
-		return true;
+		return node.setInsertionMode(mode);
 	}
 
 	//////// *********************** --------------------------------------------------
@@ -396,11 +396,6 @@ class Manipulator {
 	_deleteNode(node) {
 		let p = node.getParent();
 		if (!p) return false;
-		if (!experiments.CAN_HAVE_EMPTY_ROOT) {
-			if (Utils.isRoot(p) && p.getNex().numChildren() == 1) {
-				return false; // can't remove last child of root
-			}			
-		}
 		if (node.isSelected()) {
 			p.setSelected();
 		}
@@ -758,6 +753,7 @@ class Manipulator {
 	}
 
 	removeAndSelectPreviousSibling(s) {
+		doTutorial('delete');
 		let b = this._getSiblingBefore(s);
 		let a = this._getSiblingAfter(s);
 		let p = s.getParent();
@@ -861,40 +857,70 @@ class Manipulator {
 	}
 
 	moveLeftUp(s) {
+		if (experiments.OLD_ARROW_KEY_TRAVERSAL) {
+			this.selectPreviousSibling()
+				|| this._forceInsertionMode(INSERT_BEFORE, this.selected());
+			return;
+		}
+
+		let r = false;
 		if (s.getInsertionMode() == INSERT_AFTER) {
-			if (Utils.isNexContainer(s)) {
-				this._forceInsertionMode(INSERT_INSIDE, s);
+			if (Utils.isNexContainer(s) && s.nex.canDoInsertInside()) {
+				r = this._forceInsertionMode(INSERT_INSIDE, s);
 			} else {
-				this._forceInsertionMode(INSERT_BEFORE, s);
+				r = this._forceInsertionMode(INSERT_BEFORE, s);
 			}
 		} else if (s.getInsertionMode() == INSERT_INSIDE) {
-			this._forceInsertionMode(INSERT_BEFORE, s);
+			r = this._forceInsertionMode(INSERT_BEFORE, s);
 		} else {
-			if (this.selectPreviousSibling()) {
+			if (r = this.selectPreviousSibling()) {
 				this._forceInsertionMode(INSERT_BEFORE, this.selected());
 			}
 		}
+		if (r) {
+			doTutorial('movement');
+		}
+		return r;
 	}
 
 	moveRightDown(s) {
-		if (s.getInsertionMode() == INSERT_BEFORE) {
-			if (Utils.isNexContainer(s)) {
-				this._forceInsertionMode(INSERT_INSIDE, s);
-			} else {
+		if (experiments.OLD_ARROW_KEY_TRAVERSAL) {
+			if (s.getInsertionMode() == INSERT_BEFORE) {
 				this._forceInsertionMode(INSERT_AFTER, s);
+			} else {
+				this.selectNextSibling()
+					||  this._forceInsertionMode(INSERT_AFTER, this.selected());
+			}
+			return;
+		}
+
+		let r = false;
+		if (s.getInsertionMode() == INSERT_BEFORE) {
+			if (Utils.isNexContainer(s) && s.nex.canDoInsertInside()) {
+				r = this._forceInsertionMode(INSERT_INSIDE, s);
+			} else {
+				r = this._forceInsertionMode(INSERT_AFTER, s);
 			}
 		} else if (s.getInsertionMode() == INSERT_INSIDE) {
-			this._forceInsertionMode(INSERT_AFTER, s);
+			r = this._forceInsertionMode(INSERT_AFTER, s);
 		} else {
-			if (this.selectNextSibling()) {
+			if (r = this.selectNextSibling()) {
 				this._forceInsertionMode(INSERT_AFTER, this.selected());
 			}
-		}		
+		}
+		if (r) {
+			doTutorial('movement');
+		}
+		return r;
 	}
 
 
 	// in use
 	selectFirstChildOrMoveInsertionPoint(s) {
+		if (!s.nex.canDoInsertInside()) {
+			return;
+		}
+		doTutorial('movement');
 		if (!this.selectFirstChild()) {
 			this._forceInsertionMode(INSERT_INSIDE, this.selected());
 		} else {
@@ -955,7 +981,7 @@ class Manipulator {
 		let s = this.selected();
 
 		let inDocFormat = this._isLetterInDocFormatUpToLine(s);
-		if (experiments.BETTER_KEYBINDINGS && !inDocFormat) {
+		if (!inDocFormat) {
 			this.defaultInsertFor(s, newSeparator);
 			return;			
 		}
@@ -1374,6 +1400,7 @@ class Manipulator {
 	}
 
 	selectParent() {
+		doTutorial('movement');
 		let s = (systemState.getGlobalSelectedNode());
 		let p = s.getParent();
 		if (!p) return false;
@@ -1477,7 +1504,7 @@ class Manipulator {
 		return false;
 	}
 
-	// this is used by an old function that is only used by expectations
+	// this is used by an old function that is only used by deferredcommand (maybe)
 	removeSelectedAndSelectPreviousSibling() {
 		let toDel = (systemState.getGlobalSelectedNode());
 		return (
@@ -1497,16 +1524,6 @@ class Manipulator {
 		}
 		let p = toDel.getParent();
 		if (!p) return false;
-		if (
-			!experiments.CAN_HAVE_EMPTY_ROOT
-			&&
-			((p.getNex()) instanceof Root)
-			&&
-			(p.getNex()).numChildren() == 1
-			) {
-			toDel.setSelected();
-			return false; // can't remove last child of root
-		}
 		if (toDel.isSelected()) {
 			p.setSelected();
 		}
@@ -1818,6 +1835,7 @@ class Manipulator {
 		d.setMutable(true);
 		let r = new RenderNode(d);
 		this.mostRecentInsertedRenderNode = r;
+		doTutorial('doc');
 		return r;
 	}
 
@@ -1844,6 +1862,7 @@ class Manipulator {
 		let r = new RenderNode(l);		
 		r.possiblyStartMainEditor();
 		this.mostRecentInsertedRenderNode = r;
+		doTutorial('make-lambda');
 		return r;
 	}
 
@@ -1853,6 +1872,7 @@ class Manipulator {
 		let r = new RenderNode(e);
 		r.possiblyStartMainEditor();
 		this.mostRecentInsertedRenderNode = r;
+		doTutorial('make-symbol');
 		return r;
 	}
 
@@ -1862,6 +1882,7 @@ class Manipulator {
 		let r = new RenderNode(e);
 		r.possiblyStartMainEditor();
 		this.mostRecentInsertedRenderNode = r;
+		doTutorial('make-symbol');
 		return r;
 	}
 
@@ -1873,6 +1894,7 @@ class Manipulator {
 			r.possiblyStartMainEditor();
 		}
 		this.mostRecentInsertedRenderNode = r;
+		doTutorial('make-command');
 		return r;
 	}
 
@@ -1883,6 +1905,7 @@ class Manipulator {
 		let r = new RenderNode(c);		
 		r.possiblyStartMainEditor();
 		this.mostRecentInsertedRenderNode = r;
+		doTutorial('make-command');
 		return r;
 	}
 
@@ -1892,6 +1915,7 @@ class Manipulator {
 		let r = new RenderNode(b);		
 		r.possiblyStartMainEditor();
 		this.mostRecentInsertedRenderNode = r;
+		doTutorial('make-boolean');
 		return r;
 	}
 
@@ -1901,7 +1925,8 @@ class Manipulator {
 		let r = new RenderNode(i);		
 		r.possiblyStartMainEditor();
 		this.mostRecentInsertedRenderNode = r;
-		return r;		
+		doTutorial('make-integer');
+		return r;
 	}
 
 	newInteger() {
@@ -1910,7 +1935,8 @@ class Manipulator {
 		let r = new RenderNode(i);		
 		r.possiblyStartMainEditor();
 		this.mostRecentInsertedRenderNode = r;
-		return r;		
+		doTutorial('make-integer');
+		return r;
 	}
 
 	newEString() {
@@ -1919,6 +1945,7 @@ class Manipulator {
 		let r = new RenderNode(e);
 		r.possiblyStartMainEditor();
 		this.mostRecentInsertedRenderNode = r;
+		doTutorial('make-string');
 		return r;
 	}
 
@@ -1928,7 +1955,8 @@ class Manipulator {
 		let r = new RenderNode(f);
 		r.possiblyStartMainEditor();
 		this.mostRecentInsertedRenderNode = r;
-		return r;		
+		doTutorial('make-float');
+		return r;
 	}
 
 	newInstantiator() {
@@ -1937,7 +1965,8 @@ class Manipulator {
 		let r = new RenderNode(i);
 		r.possiblyStartMainEditor();
 		this.mostRecentInsertedRenderNode = r;
-		return r;		
+		doTutorial('make-instantiator');
+		return r;
 	}
 
 	newNil() {
@@ -1945,16 +1974,17 @@ class Manipulator {
 		n.setMutable(true);
 		let r = new RenderNode(n);
 		this.mostRecentInsertedRenderNode = r;
-		return r;		
+		return r;
 	}
 
-	newExpectation() {
-		let e = new Expectation();
+	newDeferredCommand() {
+		let e = new DeferredCommand();
 		e.setMutable(true);
 		let r = new RenderNode(e);
 		r.possiblyStartMainEditor();
 		this.mostRecentInsertedRenderNode = r;
-		return r;		
+		doTutorial('make-deferred-command');
+		return r;
 	}
 
 	newOrg() {
@@ -1962,6 +1992,7 @@ class Manipulator {
 		o.setMutable(true);
 		let r = new RenderNode(o);
 		this.mostRecentInsertedRenderNode = r;
+		doTutorial('make-org');
 		return r;
 	}
 
@@ -2001,7 +2032,7 @@ class Manipulator {
 			case '%': return this.newFloat();
 			case '^': return this.newNil();
 			case '&': return this.newLambda();
-			case '*': return this.newExpectation();
+			case '*': return this.newDeferredCommand();
 			case '(': return this.newOrg();
 			case '{': return this.newDoc();
 			case '[': return this.newLine();

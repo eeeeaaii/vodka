@@ -28,8 +28,7 @@ import { evaluateNexSafely } from './evaluator.js'
 
 /**
  * This method is used for when you want to evaluate the Nex inside a RenderNode
- * and replace the RenderNode with the result of the computation. If it returns
- * an expectation we activate it. We also emit a beep if it's an error.
+ * and replace the RenderNode with the result of the computation.
  *
  * @param {RenderNode} s - the RenderNode to evaluate and replace (probably the selected node)
  */
@@ -43,8 +42,6 @@ function evaluateAndReplace(s) {
 		return;
 	}
 
-	n.rootLevelPostEvaluationStep();
-
 	if (n) {
 		manipulator.replaceSelectedWith(new RenderNode(n));
 	}
@@ -54,11 +51,6 @@ function evaluateAndReplace(s) {
  * This method is used to evaluate a Nex and throw away the result. Obviously only
  * useful if evaluating the Nex has side effects. If it returns an error, the error
  * will be prepended to the parent of the selected node before the selected node.
- * If an expectation is returned, it is activated.
- *
- * This currently has a hack where it looks for errors in the children of returned
- * expectations. It's not clear this is the right way to do this since the expectation could have an
- * arbitrary number of children
  *
  * @param {RenderNode} s = the RenderNode to evaluate
  */
@@ -67,27 +59,8 @@ function evaluateAndKeep(s) {
 	if (Utils.isFatalError(n)) {
 		Utils.beep();
 		manipulator.insertBeforeSelectedAndSelect(n);
-	} else {
-		n.rootLevelPostEvaluationStep();
 	}
-	// 	if (Utils.isExpectation(n)) {
-	// 	if (!n.isActivated()) {
-	// 		// ONLY AT TOP LEVEL we activate expectations.
-	// 		n.activate();
-	// 	}
-	// 	n.addPendingCallback(function() {
-	// 		if (n.hasChildren() && Utils.isFatalError(n.getChildAt(0))) {
-	// 			Utils.beep();
-	// 			manipulator.insertBeforeSelectedAndSelect(n);
-	// 			//eventQueueDispatcher.enqueueTopLevelRender();
-	// 			eventQueueDispatcher.enqueueRenderOnlyDirty()
-	// 		}
-	// 	})
-	// } else if (shouldChangeMutability(n)) {
-	// 	n.setMutable(true);
-	// 	n.setDirtyForRendering(true);
 
-	// }
 	eventQueueDispatcher.enqueueAlertAnimation(s);
 }
 
@@ -103,8 +76,6 @@ function evaluateAndReturn(nex) {
 	let n = evaluateNexSafely(nex, BINDINGS);
 	return n;
 }
-
-
 
 export {
 	evaluateAndReplace,

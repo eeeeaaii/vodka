@@ -17,11 +17,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 // change "set" to "prime"
 
-import { addMidiListener } from '../midifunctions.js'
+import { addMidiListener } from './midifunctions.js'
+import { convertJSMapToOrg } from './nex/org.js'
 
 class ActivationFunctionGenerator {
-
-	// the callback is a function in the expectation that will be called after the async operation completes
 
 	constructor() {
 	}
@@ -31,6 +30,25 @@ class ActivationFunctionGenerator {
 	getName() {}
 }
 
+class DeferredCommandActivationFunctionGenerator extends ActivationFunctionGenerator {
+	constructor(deferredCommand, env) {
+		super();
+		this.deferredCommand = deferredCommand;
+		this.env = env;
+	}
+
+	getFunction(callback, repeatCallback, exp) {
+		return function() {
+			this.deferredCommand.activate(this.env);
+		}.bind(this);
+	}
+
+	getName() {
+		return 'deferredcommand';
+	}
+}
+
+
 class GenericActivationFunctionGenerator extends ActivationFunctionGenerator {
 	constructor(name, asyncFunction) {
 		super();
@@ -38,7 +56,7 @@ class GenericActivationFunctionGenerator extends ActivationFunctionGenerator {
 		this.asyncFunction = asyncFunction;
 	}
 
-	getFunction(callback, exp) {
+	getFunction(callback, repeatCallback, exp) {
 		return function() {
 			this.asyncFunction(callback, exp);
 		}.bind(this);
@@ -51,7 +69,7 @@ class GenericActivationFunctionGenerator extends ActivationFunctionGenerator {
 
 
 class ImmediateActivationFunctionGenerator extends ActivationFunctionGenerator {
-	getFunction(callback, exp) {
+	getFunction(callback, repeatCallback, exp) {
 		return function() {
 			callback(null);
 		}
@@ -68,12 +86,12 @@ class DelayActivationFunctionGenerator extends ActivationFunctionGenerator {
 		this.timeout = timeout;
 	}
 
-	getFunction(callback, exp) {
+	getFunction(callback, repeatCallback, exp) {
 		return function() {
 			setTimeout(function() {
 				callback(null /* do not set a value, the default is whatever the child is of the exp */);
 			}, this.timeout)
-		}
+		}.bind(this);
 	}
 
 	getName() {
@@ -82,44 +100,22 @@ class DelayActivationFunctionGenerator extends ActivationFunctionGenerator {
 }
 
 class ClickActivationFunctionGenerator extends ActivationFunctionGenerator {
-	getFunction(callback, exp) {
+	constructor(nex) {
+		super();
+		this.nex = nex;
+	}
+
+	getFunction(callback, repeatCallback, exp) {
 		return function() {
-			exp.getChildAt(0).extraClickHandler = function() {
-				callback();
+			this.nex.extraClickHandler = function(x, y) {
+				let org = convertJSMapToOrg({'x':x, 'y':y});
+				repeatCallback(org);
 			}
-		}		
+		}.bind(this);
 	}
 
 	getName() {
 		return 'click';
-	}
-}
-
-class ContentsChangedActivationFunctionGenerator extends ActivationFunctionGenerator {
-	getFunction(callback, exp) {
-		return function() {
-			// the expectation will fulfill when its first child's contents
-			// change in any way. We ignore 2nd and later children.
-			// we fulfill immediately if there are no children, or if the
-			// first child is not a container.
-			let n = exp.numChildren();
-			if (n == 0) {
-				callback(null);
-			} else {
-				let c1 = exp.getChildAt(0);
-				if (!Utils.isNexContainer(c1)) {
-					callback(null);
-				} else {
-					c1.setOnContentsChangedCallback(function() {
-						callback(null);
-					})
-				}
-			}			
-		}
-	}
-
-	getName() {
-		return 'contents-changed';
 	}
 }
 
@@ -131,8 +127,8 @@ class MidiActivationFunctionGenerator extends ActivationFunctionGenerator {
 		this.expListeners = [];
 	}
 
-	getFunction(callback, exp) {
-		this.expListeners.push(callback);
+	getFunction(callback, repeatCallback, exp) {
+		this.expListeners.push(repeatCallback);
 		return function() {
 			if (!this.listening) {
 				this.listening = true;
@@ -154,8 +150,8 @@ export {
 	ImmediateActivationFunctionGenerator,
 	DelayActivationFunctionGenerator,
 	ClickActivationFunctionGenerator,
-	ContentsChangedActivationFunctionGenerator,
 	GenericActivationFunctionGenerator,
-	MidiActivationFunctionGenerator
+	MidiActivationFunctionGenerator,
+	DeferredCommandActivationFunctionGenerator
 }
 
