@@ -16,7 +16,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Builtin } from '../nex/builtin.js'
-import { ForeignLambda } from '../nex/foreignlambda.js'
 import { EError } from '../nex/eerror.js'
 import { EString } from '../nex/estring.js'
 import { Float } from '../nex/float.js'
@@ -117,16 +116,6 @@ function createSyscalls() {
 	// this is basically just for testing foreign function interface
 
 	Builtin.createBuiltin(
-		'get-alerter',
-		[],
-		function $getAlerter(env, executionEnvironment) {
-			return new ForeignLambda('^ a$', function(txt) {
-				alert(txt);
-			})
-		}
-	);
-
-	Builtin.createBuiltin(
 		'get-style-from',
 		[ 'nex' ],
 		function $getStyleFrom(env, executionEnvironment) {
@@ -221,10 +210,6 @@ function createSyscalls() {
 		function $runJs(env, executionEnvironment) {
 			let strn = env.lb('expr');
 			let lst = env.lb('nex');
-			if (strn.hasAttachedJS()) {
-				// used by nativeorg
-				return strn.getAttachedJS()(env.lb('nex'));
-			}
 			let str = strn.getFullTypedValue();
 			// the reason I'm creating these dollar sign variables
 			// is so that the javascript code we eval can refer

@@ -19,7 +19,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testname// execution_eval_integer
 //startdescription//
 /*
-verifies that pressing enter with this thing selected evalutes it, which makes a copy of it, which replaces it, which turns off the "oid" overlay
+verifies that pressing enter with this thing selected evalutes it, which makes a copy of it, which replaces it, which turns off the "oid" overlay. Note: because of mutables, this is no longer the behavior, but keeping the test.
 */
 //enddescription//
 //testspec// |Shift|~|b|i|n|d|Shift|(|Shift|Shift|Shift|@|a|Shift|Tab|Enter|Shift|~|c|r|a|m|Shift|@|a|Shift|Shift|#|1|2|Shift|Tab|Enter|Shift|~|c|a|r|Shift|@|a|Shift|Tab|Enter|Enter
@@ -44,10 +44,8 @@ testactions.push({type:'keydown',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'Digit9'});
 testactions.push({type:'keyup',code:'Digit9'});
 testactions.push({type:'keyup',code:'ShiftLeft'});
-testactions.push({type:'keydown',code:'ShiftRight'});
-testactions.push({type:'keyup',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'ShiftRight'});
-testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+testactions.push({type:'keyup',code:'ArrowLeft'});
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Digit2'});
 testactions.push({type:'keyup',code:'Digit2'});
@@ -78,8 +76,8 @@ testactions.push({type:'keyup',code:'Digit2'});
 testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'KeyA'});
 testactions.push({type:'keyup',code:'KeyA'});
-testactions.push({type:'keydown',code:'ShiftRight'});
-testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+testactions.push({type:'keyup',code:'ArrowLeft'});
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Digit3'});
 testactions.push({type:'keyup',code:'Digit3'});

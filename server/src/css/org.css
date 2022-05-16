@@ -57,14 +57,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border: 3px solid var(--selected-border);	
 }
 
-.nativeorg {
-	background-color: #c7c7c7;
-	font-family: Courier;
-	color: var(--info-text);
-	font-style: italic;
-	font-size: 11px;
-}
-
 
 .zdir {
 	align-self:flex-start;

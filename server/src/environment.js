@@ -214,7 +214,7 @@ class Environment {
 	}
 
  	isDereferenceable(n) {
-		return n.getTypeName() == '-org-' || n.getTypeName() == '-nativeorg-';
+		return n.getTypeName() == '-org-';
 	}
 
 	dereference(val, dereferencingPart) {

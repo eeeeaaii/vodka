@@ -26,7 +26,6 @@ import { Tag } from './tag.js'
 import { Org, convertJSMapToOrg } from './nex/org.js'
 import { Integer } from './nex/integer.js'
 import { Float } from './nex/float.js'
-import { ForeignClosure } from './nex/foreignclosure.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { BUILTINS, BINDINGS } from './environment.js'
 import { experiments } from './globalappflags.js'
@@ -35,11 +34,6 @@ class TemplateStore  {
 	constructor() {
 		this.templates = {};
 		this.foreigntemplates = {};
-	}
-
-	bindForeignClosure(name, params, docs, f) {
-		let fc = new ForeignClosure(params, f);
-		BUILTINS.bind(name, fc);
 	}
 
 	getTemplate(name) {
@@ -51,30 +45,6 @@ class TemplateStore  {
 		name = nonce.getTypedValue();
 		let template = new Template(name, org, env);
 		this.templates[name] = template;
-		return template;
-	}
-
-	createForeignTemplate(tagname, docs, spec) {
-		let org = new Org();
-		org.addTag(new Tag(tagname));
-		let drawCheat = null;
-		for (let i = 0; i < spec.length; i++) {
-			let member = spec[i];
-			if (member instanceof Nex) {
-				org.appendChild(member.makeCopy());
-			} else {
-				let membername = member.name;
-				if (membername == ':draw') {
-					drawCheat = member.func;
-				} else {
-					let fc = new ForeignClosure(member.args, member.func, member.docs);
-					fc.addTag(new Tag(membername));
-					org.appendChild(fc);					
-				}
-			}
-		}
-		let template = new Template(tagname, org, BINDINGS, drawCheat, docs);
-		this.templates[tagname] = template;
 		return template;
 	}
 
@@ -155,7 +125,6 @@ class TemplateStore  {
 				if (membername == ':init') {
 					initializer = closure;
 				} else if (membername == ':draw') {
-					// we should only get here if it's a non-native org
 					let df = function(prevHTML) {
 						let str = new EString(prevHTML);
 						let cmd = Command.makeCommandWithClosure(closure, str);
@@ -163,12 +132,6 @@ class TemplateStore  {
 						return rstr.getFullTypedValue();
 					}
 					org.setDrawFunction(df);
-				}
-			} else if (c instanceof ForeignClosure) {
-				c.setScopeForForeignFunction(fcscope);
-				org.appendChild(c);
-				if (membername == ':init') {
-					initializer = c;
 				}
 			} else if (c instanceof Closure) {
 				org.appendChild(c);

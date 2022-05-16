@@ -1,5 +1,9 @@
 # Vodka: Release Notes
 
+## Version 0.4.1 - 5/16/22
+
+- ...
+
 ## Release 4 - spring 2022
 
 - Added wavetable support

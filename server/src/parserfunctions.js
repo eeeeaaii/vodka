@@ -38,9 +38,6 @@ import { Letter } from './nex/letter.js';
 import { Separator } from './nex/separator.js';
 import { Tag } from './tag.js'
 
-import { experiments } from './globalappflags.js'
-
-
 function concatParserString(arr) {
 	if (arr == null) {
 		return '';

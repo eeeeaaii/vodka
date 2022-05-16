@@ -34,7 +34,6 @@ import { createIterationBuiltins } from './builtins/iterationbuiltins.js'
 import { createLogicBuiltins } from './builtins/logicbuiltins.js'
 import { createMakeBuiltins } from './builtins/makebuiltins.js'
 import { createMathBuiltins } from './builtins/mathbuiltins.js'
-import { createNativeOrgs } from './builtins/nativeorgs.js'
 import { createOrgBuiltins } from './builtins/orgbuiltins.js'
 import { createStringBuiltins } from './builtins/stringbuiltins.js'
 import { createSyscalls } from './builtins/syscalls.js'
@@ -106,9 +105,8 @@ function doKeyInputNotForTests(keycode, whichkey, hasShift, hasCtrl, hasMeta, ha
 
 var testEventQueue = [];
 
-// DO NOT RENAME THIS METHOD OR YOU WILL BREAK ALL THE OLD TESTS
-// it is actually used for every test, to send the escape keys
-// that bookend "normal" and "exploded" screenshots
+// the tests that use this legacy method are updated to use the new way,
+// but this is still used in two places in testharness.js
 function doKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta) {
 	//if you have to debug an old test you can alert the keycode
 	// and run with -s
@@ -145,7 +143,6 @@ function createBuiltins() {
 	setAPIDocCategory('String Builtins'); createStringBuiltins();
 	setAPIDocCategory('Wavetable Builtins'); createWavetableBuiltins();
 	setAPIDocCategory('Midi Builtins'); createMidiBuiltins();
-	setAPIDocCategory('NativeOrgs'); createNativeOrgs();
 	setAPIDocCategory('Make Builtins'); createMakeBuiltins();
 	setAPIDocCategory('Type Conversion Builtins'); createTypeConversionBuiltins();
 	setAPIDocCategory('Test Builtins'); createTestBuiltins();

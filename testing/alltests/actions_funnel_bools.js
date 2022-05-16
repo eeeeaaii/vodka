@@ -28,6 +28,8 @@ var harness = require('../testharness');
 
 var testactions = [];
 
+testactions.push({type:'keydown',code:'Escape'});
+testactions.push({type:'keyup',code:'Escape'});
 testactions.push({type:'keydown',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'KeyH'});
 testactions.push({type:'keyup',code:'KeyH'});
@@ -86,8 +88,6 @@ testactions.push({type:'keydown',code:'KeyN'});
 testactions.push({type:'keyup',code:'KeyN'});
 testactions.push({type:'keydown',code:'KeyD'});
 testactions.push({type:'keyup',code:'KeyD'});
-testactions.push({type:'keydown',code:'Enter'});
-testactions.push({type:'keyup',code:'Enter'});
 
 harness.runTestNew(testactions, 'direct-legacy');
 //endtest//

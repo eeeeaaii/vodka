@@ -24,7 +24,6 @@ import { BUILTINS, BINDINGS } from '../environment.js'
 import { EError } from './eerror.js'
 import { Closure } from './closure.js'
 import { Org } from './org.js'
-import { NativeOrg } from './nativeorg.js'
 import { ContextType } from '../contexttype.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
@@ -248,7 +247,7 @@ class Command extends NexContainer {
 			let c = this.getChildAt(0);
 			// evaluate the first arg, must eval to an org to deref
 			let org = evaluateNexSafely(c, executionEnv);
-			if (!(org instanceof Org || org instanceof NativeOrg)) {
+			if (!(org instanceof Org)) {
 				// oops it's not an org, can't dereference.
 				throw new EError(`command: stopping because first child "${c.debugString()}" of is not an org so cannot be dereferenced by expression ${cmdname}. Sorry! Debug string for evaluted value of type ${org.getTypeName()} follows: ${org.debugString()}`)
 			}				
@@ -799,7 +798,7 @@ class CommandEditor extends Editor {
 
 	shouldAppend(text) {
 		if (text == 'AltSpace') return true;
-		if (/^[a-zA-Z0-9:. -]$/.test(text)) return true; // normal chars
+		if (/^[a-zA-Z0-9:. _-]$/.test(text)) return true; // normal chars
 		if (/^[/<>=+*]$/.test(text)) return true;
 		return false;
 	}
@@ -811,7 +810,7 @@ class CommandEditor extends Editor {
 		if (/^[/<>=+*]$/.test(input)) return false;
 
 		// command-friendly characters
-		if (/^[a-zA-Z0-9:. -]$/.test(input)) return false;
+		if (/^[a-zA-Z0-9:. _-]$/.test(input)) return false;
 
 		// anything else, pop out
 		return true;

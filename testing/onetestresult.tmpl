@@ -74,8 +74,13 @@
 		{{/if}}
 		<div class="commandblock">
 			<input type="checkbox" data-command="./runtests.sh {{test}}">
-			to rerun: <textarea class="regencommand">./runtests.sh {{test}}</textarea>
+			to rerun: <textarea class="regencommand">runtests.sh {{test}}</textarea>
 			<a class="copyclick" onclick="doClip(event, 'runtests.sh {{test}}')">(copy)</a>
+		</div>
+		<div class="commandblock">
+			<input type="checkbox" data-command="./ignoretest.sh {{test}}">
+			to ignore: <textarea class="regencommand">ignoretest.sh {{test}}</textarea>
+			<a class="copyclick" onclick="doClip(event, 'ignoretest.sh {{test}}')">(copy)</a>
 		</div>
 		<div class="commandblock">
 			{{#if is_repl}}

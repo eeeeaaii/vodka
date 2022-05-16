@@ -77,6 +77,7 @@ do_vk_test() {
 	BASENAME=$1
 	INPUT=$(pwd)/alltests/${BASENAME}.vk
 	OUTPUT=$(pwd)/alltests/${BASENAME}/${BASENAME}.out
+	ERROUTPUT=$(pwd)/alltests/${BASENAME}/${BASENAME}.errout
 	OUTDIR=./alltests/${BASENAME}
 	GOLDEN=${OUTDIR}/${BASENAME}_GOLDEN.out
 	DIFF=${OUTDIR}/${BASENAME}_DIFF.out
@@ -91,7 +92,7 @@ do_vk_test() {
 	else
 		pushd ../src > /dev/null
 		echo -e "${BLUE}[${BASENAME}]${NC} running test"
-		vodkar --noprompt < "$INPUT" > "$OUTPUT" 2> /dev/null
+		vodkar --noprompt < "$INPUT" > "$OUTPUT" 2> "$ERROUTPUT"
 		popd > /dev/null
 		TEST_SUCCESS=false
 		DOCSTRING="eh?"

@@ -30,4 +30,6 @@ var testactions = [];
 
 testactions.push({type:'keydown',code:'KeyA'});
 testactions.push({type:'keyup',code:'KeyA'});
-})//endtest//
+harness.runTestNew(testactions, 'direct-legacy');
+
+//endtest//

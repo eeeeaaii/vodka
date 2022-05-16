@@ -30,8 +30,6 @@ var testactions = [];
 
 testactions.push({type:'keydown',code:'KeyH'});
 testactions.push({type:'keyup',code:'KeyH'});
-testactions.push({type:'keydown',code:'CapsLock'});
-testactions.push({type:'keyup',code:'CapsLock'});
 testactions.push({type:'keydown',code:'KeyE'});
 testactions.push({type:'keyup',code:'KeyE'});
 testactions.push({type:'keydown',code:'KeyL'});

@@ -47,7 +47,7 @@ rl.on('line', (input) => {
 
 var speed = 1;
 var step = false;
-var paused = false;
+var paused = false; // start paused erm...
 
 function delay(timeout) {
 	return new Promise((resolve) => {
@@ -167,6 +167,7 @@ function runTestImpl(testinput, method, legacy, flags) {
 		let normal_out = process.argv[2];
 		let exploded_out = process.argv[3];
 		let headful = (process.argv[4] == "yes");
+		if (headful) paused = true;
 		let params = '';
 		if (process.argv.length >= 6) {
 			params = process.argv[5];
@@ -193,7 +194,9 @@ function runTestImpl(testinput, method, legacy, flags) {
 			    console.log(`${i}: ${msg.args()[i]}`);
 			}
 			})
-		if (headful) console.log("enter to pause, enter to step, anything+enter to resume")
+		if (headful) console.log("Running in headful mode, starting paused.");
+		if (headful) console.log("Press enter to step through.");
+		if (headful) console.log("Press 1, 2, or 3 then enter to run at slow, medium, or fast speed.");
 		await page.goto('http://localhost:3000' + params, {waitUntil: 'networkidle2'});
 		// I recorded a bunch of tests that used shift-enter to mean "execute and replace"
 		// before I changed the meaning of shift-enter to "execute and leave"

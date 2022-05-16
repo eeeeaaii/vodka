@@ -131,12 +131,6 @@ function isOrg(n) {
 	return n.getTypeName() == '-org-';
 }
 
-function isNativeOrg(n) {
-	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
-	return n.getTypeName() == '-nativeorg-';
-}
-
 function isSeparator(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n) return false;

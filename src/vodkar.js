@@ -15,7 +15,7 @@
 
 
 import { parse } from '../server/src/nexparser2.js';
-import { evaluateAndReturn } from '../server/src/evaluator.js';
+import { evaluateAndReturn } from '../server/src/evaluatorinterface.js';
 import { replSetup } from '../server/src/vodka.js';
 
 import repl from 'repl'
@@ -41,7 +41,7 @@ function evalVodka(rawinput, context, filename, callback) {
 	try {
 		parsed = parse('v2:' + input);
 	} catch (err) {
-		callback(err);
+		callback(`unable to parse err`);
 		return;
 	}
 	let result = evaluateAndReturn(parsed);

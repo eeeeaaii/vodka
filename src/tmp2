@@ -38,9 +38,6 @@ import { Letter } from './nex/letter.js';
 import { Separator } from './nex/separator.js';
 import { Tag } from './tag.js'
 
-import { experiments } from './globalappflags.js'
-
-
 function concatParserString(arr) {
 	if (arr == null) {
 		return '';
@@ -49,11 +46,9 @@ function concatParserString(arr) {
 }
 
 function decorateNex(nex, tags, nonmutable) {
-	if (experiments.MUTABLES) {
-		if (!nonmutable) {
-			nex.setMutable(true);
-		}		
-	}
+	if (!nonmutable) {
+		nex.setMutable(true);
+	}		
 	if (!tags) {
 		return nex;
 	}

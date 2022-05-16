@@ -404,7 +404,7 @@ class RenderNode {
 				&& !this.nex.renderChildrenIfNormal()) {
 			return;
 		}
-		if (this.getNex().isNexContainer() && this.getNex().getTypeName() != '-nativeorg-' && !(useFlags & RENDER_FLAG_SHALLOW)) {
+		if (this.getNex().isNexContainer() && !(useFlags & RENDER_FLAG_SHALLOW)) {
 			if ((useFlags & RENDER_FLAG_EXPLODED) && this.insertionMode == INSERT_INSIDE) {
 				this.doInsertionPip(this);
 			}

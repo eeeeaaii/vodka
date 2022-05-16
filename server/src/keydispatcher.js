@@ -50,6 +50,8 @@ class KeyDispatcher {
 	dispatch(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
 		// don't need to do anything with modifier key presses directly, and having them go through the pipline
 		// makes it hard to debug key presses.
+		//
+		// returning true means "don't cancel browser event" - this weirdly only affects the tests
 		if (keycode == 'CapsLock') return;
 		if (keycode == 'Shift') return;
 		if (keycode == 'Alt') return;

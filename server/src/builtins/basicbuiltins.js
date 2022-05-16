@@ -34,7 +34,6 @@ import { Integer } from '../nex/integer.js';
 import { Lambda } from '../nex/lambda.js'; 
 import { Letter } from '../nex/letter.js'; 
 import { Line } from '../nex/line.js'; 
-import { NativeOrg } from '../nex/nativeorg.js'; 
 import { Nil } from '../nex/nil.js'; 
 import { Org } from '../nex/org.js'; 
 import { Root } from '../nex/root.js'; 
