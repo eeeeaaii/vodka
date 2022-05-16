@@ -2,7 +2,12 @@
 
 ## Version 0.4.1 - 5/16/22
 
-- ...
+- Added deferred value and deferred command types, removed expectations
+- Added undo
+- Added tutorial and cleaned up help system
+- Lots of code cleanup and deletion of dead code
+- Removal of some features that I don't plan to support (foreign lambdas, native orgs)
+- Fixed SOME tests (not done!)
 
 ## Release 4 - spring 2022
 
