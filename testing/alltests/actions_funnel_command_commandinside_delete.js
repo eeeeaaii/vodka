@@ -54,6 +54,8 @@ testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
 testactions.push({type:'keydown',code:'Backspace'});
 testactions.push({type:'keyup',code:'Backspace'});
+testactions.push({type:'keydown',code:'Backspace'});
+testactions.push({type:'keyup',code:'Backspace'});
 
 harness.runTestNew(testactions, 'direct');
 //endtest//

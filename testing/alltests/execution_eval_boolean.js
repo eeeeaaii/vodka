@@ -19,7 +19,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testname// execution_eval_boolean
 //startdescription//
 /*
-verifies that pressing enter with a boolean selected evalutes it, which makes a copy of it, which replaces it, which turns off the "oid" overlay
+verifies some moving around of things and cramming, hitting enter when a boolean is selected.
 */
 //enddescription//
 //testspec// |Shift|~|b|i|n|d|Shift|@|a|Shift|(|Shift|Tab|Enter|Shift|~|c|r|m|Backspace|a|m|Shift|@|Backspace|Backspace|Shift|!|Shift|@|a|Shift|Tab|Enter|Shift|~|c|a|r|Shift|@|a|Shift|Tab|Enter|Enter

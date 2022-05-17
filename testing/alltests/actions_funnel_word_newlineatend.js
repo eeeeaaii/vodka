@@ -19,7 +19,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testname// actions_funnel_word_newlineatend
 //startdescription//
 /*
-[none]
+Originally this test seems like it made sure that if were in a doc context, and you were on the last work in the line, and hit enter, it would do the same thing as hitting enter with the last letter selected, i,e. make a new line. However I think the way it acts now is correct: it should convert word that to an immutable.
 */
 //enddescription//
 //testspec// [none]

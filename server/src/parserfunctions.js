@@ -212,6 +212,14 @@ function makeInstanceList(instname, children, privatedata, taglist, verthoriz, n
 			t = new Doc();
 			isList = true;
 			break;
+
+		// zlists were deprecated but in order to get tests to pass,
+		// files to load, etc., we'll instantiate an org instead.
+		case 'zlist':
+			t = new Org();
+			isList = true;
+			break;
+
 		default:
 			throw new Error('unrecognized list instance type: ' + instname);
 	}

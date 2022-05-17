@@ -196,15 +196,6 @@ float_expression
   / '%' TAGLIST:taglist?  FLOAT:float_digits { return PF.makeFloat(FLOAT, TAGLIST); }
   ;
 
-nil_expression
-  = '^' TAGLIST:taglist ! '(' { return PF.makeNil(TAGLIST, true /* nonmutable */) }
-  / '^' TAGLIST:taglist ! '"' { return PF.makeNil(TAGLIST, true /* nonmutable */) }
-  / '^' TAGLIST:taglist ! '{' { return PF.makeNil(TAGLIST, true /* nonmutable */) }
-  / '^' ! '(' { return PF.makeNil(null, true /* nonmutable */) }
-  / '^' ! '"' { return PF.makeNil(null, true /* nonmutable */) }
-  / '^' ! '{' { return PF.makeNil(null, true /* nonmutable */) }
-  ;
-
 float_digits
   = INT_PART:integer_part DEC_PART:( '.' DEC_DIGITS:decimal_part {return DEC_DIGITS; } ) ?
       { return  DEC_PART ? (INT_PART + '.' + DEC_PART) : INT_PART} 
