@@ -19,7 +19,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testname// execution_literal_valuecopies
 //startdescription//
 /*
-tests that if you evaluate value literals such as bools, etc, it returns copies of them (does not happen for list types though)
+makes some functions that returns things, then called them - not sure what this was supposed to be testing but it's good coverage for now.
 */
 //enddescription//
 //testspec// |Shift|~|b|i|n|d|Shift|@|g|e|t|b|o|o|l|Shift|&|Enter|Shift|!|Shift|Tab|Tab|Shift|~|b|i|n|d|Shift|@|g|e|t|s|t|r|i|n|g|Shift|&|Enter|Shift|$|Shift|Tab|Tab|Shift|~|b|i|n|d|Shift|@|g|e|t|f|l|o|a|t|Shift|&|Enter|Shift|%|Shift|Tab|Tab|Shift|~|b|i|n|d|Shift|@|g|e|t|i|n|t|Shift|&|Enter|Shift|#|Shift|Tab|Tab|Shift|~|b|i|n|d|Shift|@|g|e|t|n|i|l|Shift|&|Enter|Shift|^|Shift|Tab|Tab|Shift|~|b|i|n|d|Shift|@|Backspace|Backspace|Backspace|Backspace|Backspace|Backspace|g|e|t|b|o|o|l|ArrowUp|ArrowUp|ArrowUp|ArrowUp|ArrowUp|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Shift|Enter|ArrowDown|Enter|Shift|~|g|e|t|s|t|r|i|n|g|Enter|Shift|~|g|e|t|f|l|o|a|t|Enter|Shift|~|g|e|t|i|n|t|Enter|Shift|~|g|e|t|n|i|l|Enter
@@ -220,6 +220,7 @@ testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keyup',code:'ShiftRight'});
+
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Backquote'});
 testactions.push({type:'keyup',code:'Backquote'});
@@ -242,22 +243,24 @@ testactions.push({type:'keydown',code:'KeyE'});
 testactions.push({type:'keydown',code:'KeyT'});
 testactions.push({type:'keyup',code:'KeyE'});
 testactions.push({type:'keyup',code:'KeyT'});
-testactions.push({type:'keydown',code:'KeyN'});
-testactions.push({type:'keyup',code:'KeyN'});
-testactions.push({type:'keydown',code:'KeyI'});
-testactions.push({type:'keydown',code:'KeyL'});
-testactions.push({type:'keyup',code:'KeyI'});
-testactions.push({type:'keyup',code:'KeyL'});
+testactions.push({type:'keydown',code:'KeyO'});
+testactions.push({type:'keyup',code:'KeyO'});
+testactions.push({type:'keydown',code:'KeyR'});
+testactions.push({type:'keydown',code:'KeyG'});
+testactions.push({type:'keyup',code:'KeyR'});
+testactions.push({type:'keyup',code:'KeyG'});
 testactions.push({type:'keydown',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'Digit7'});
 testactions.push({type:'keyup',code:'Digit7'});
 testactions.push({type:'keyup',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
+
 testactions.push({type:'keydown',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'Digit6'});
-testactions.push({type:'keyup',code:'Digit6'});
+testactions.push({type:'keydown',code:'Digit9'});
+testactions.push({type:'keyup',code:'Digit9'});
 testactions.push({type:'keyup',code:'ShiftRight'});
+
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
@@ -403,13 +406,13 @@ testactions.push({type:'keyup',code:'KeyG'});
 testactions.push({type:'keydown',code:'KeyE'});
 testactions.push({type:'keydown',code:'KeyT'});
 testactions.push({type:'keyup',code:'KeyE'});
-testactions.push({type:'keydown',code:'KeyN'});
+testactions.push({type:'keydown',code:'KeyO'});
 testactions.push({type:'keyup',code:'KeyT'});
-testactions.push({type:'keyup',code:'KeyN'});
-testactions.push({type:'keydown',code:'KeyI'});
-testactions.push({type:'keydown',code:'KeyL'});
-testactions.push({type:'keyup',code:'KeyI'});
-testactions.push({type:'keyup',code:'KeyL'});
+testactions.push({type:'keyup',code:'KeyO'});
+testactions.push({type:'keydown',code:'KeyR'});
+testactions.push({type:'keydown',code:'KeyG'});
+testactions.push({type:'keyup',code:'KeyR'});
+testactions.push({type:'keyup',code:'KeyG'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
 testactions.push({type:'keydown',code:'Enter'});
