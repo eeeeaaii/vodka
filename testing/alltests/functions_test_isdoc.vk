@@ -29,4 +29,3 @@
 ~(_is-doc (||)_)
 ~(_is-doc [doc](||)_)
 ~(_is-doc [line](__)_)
-~(_is-doc [zlist](__)_)

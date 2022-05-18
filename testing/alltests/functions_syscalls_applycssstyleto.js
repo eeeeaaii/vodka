@@ -60,8 +60,8 @@ testactions.push({type:'keyup',code:'KeyY'});
 testactions.push({type:'keydown',code:'KeyE'});
 testactions.push({type:'keyup',code:'KeyL'});
 testactions.push({type:'keyup',code:'KeyE'});
-testactions.push({type:'keydown',code:'Minus'});
-testactions.push({type:'keyup',code:'Minus'});
+testactions.push({type:'keydown',code:'Space'});
+testactions.push({type:'keyup',code:'Space'});
 testactions.push({type:'keydown',code:'KeyT'});
 testactions.push({type:'keydown',code:'KeyO'});
 testactions.push({type:'keyup',code:'KeyT'});
@@ -117,8 +117,8 @@ testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
 testactions.push({type:'keydown',code:'ShiftLeft'});
-testactions.push({type:'keydown',code:'Digit9'});
-testactions.push({type:'keyup',code:'Digit9'});
+testactions.push({type:'keydown',code:'Comma'});
+testactions.push({type:'keyup',code:'Comma'});
 testactions.push({type:'keyup',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'KeyH'});
@@ -138,10 +138,8 @@ testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keyup',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
-testactions.push({type:'keyup',code:'ShiftLeft'});
 
 const experiment_flags = {
 "V2_INSERTION_LENIENT_DOC_FORMAT":true,

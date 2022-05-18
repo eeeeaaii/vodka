@@ -41,13 +41,25 @@ function evalVodka(rawinput, context, filename, callback) {
 	try {
 		parsed = parse('v2:' + input);
 	} catch (err) {
-		callback(`unable to parse err`);
+		callback(null, `unable to parse err`);
 		return;
 	}
-	let result = evaluateAndReturn(parsed);
-	let resultstr = result.toString('v2');
+	let result = null;
+	try {
+		result = evaluateAndReturn(parsed);
+	} catch (e) {
+		// this is likely NOT an intended error, i.e. vodka is broken, not the input
+		callback(null,'runtime error: ' + e );
+		return;
+	}
+	let resultstr = '';
+	try {
+		resultstr = result.toString('v2');
+	} catch (e) {
+		callback(null,'error stringifying output: ' + e )
+		return;
+	}
 	callback(null, resultstr);
-
 }
 
 function writeVodka(str) {

@@ -19,7 +19,6 @@
 ~(_car [word](_[letter]"a" [letter]"p" [letter]"p" [letter]"l" [letter]"e"_)_)
 ~(_first (_[letter]"a" [letter]"p" [letter]"p" [letter]"l" [letter]"e"_)_)
 ~(_car ~(_quote ~(_car @apple_)_)_)
-~(_car *(_[letter]"a"_)_)
 ~(_car ~(_quote &" n"(|~(_apples _)|)_)_)
 
 

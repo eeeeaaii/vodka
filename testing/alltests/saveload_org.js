@@ -47,8 +47,8 @@ testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'KeyT'});
 testactions.push({type:'keyup',code:'KeyT'});
 testactions.push({type:'keydown',code:'ShiftLeft'});
-testactions.push({type:'keydown',code:'Digit0'});
-testactions.push({type:'keyup',code:'Digit0'});
+testactions.push({type:'keydown',code:'Digit9'});
+testactions.push({type:'keyup',code:'Digit9'});
 testactions.push({type:'keyup',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
@@ -57,8 +57,8 @@ testactions.push({type:'keydown',code:'Digit3'});
 testactions.push({type:'keyup',code:'Digit3'});
 testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'ShiftLeft'});
-testactions.push({type:'keydown',code:'Digit9'});
-testactions.push({type:'keyup',code:'Digit9'});
+testactions.push({type:'keydown',code:'Comma'});
+testactions.push({type:'keyup',code:'Comma'});
 testactions.push({type:'keyup',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'KeyH'});
 testactions.push({type:'keyup',code:'KeyH'});
@@ -141,5 +141,6 @@ testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
 
+testactions.push({type:'pause',length:500});
 harness.runTestNew(testactions, 'direct');
 //endtest//

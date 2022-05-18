@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+// TODO: change some of these to preferences and store in a cookie maybe.
+
 
 // These flags are recorded in the test files.
 // Whatever values are set for these flags when you record the test,
@@ -66,6 +68,13 @@ const experiments = {
 
 	// I think I will make this a user-settable option at some point
 	'OLD_ARROW_KEY_TRAVERSAL': false,
+
+	// will also be a user-settable option: if true, when you normal-eval
+	// something, and an error is returned, the error replaces the thing
+	// you normal-evaled (just like a returned non-error would have)
+	// if false, the returned error is pushed into the parent as a previous
+	// sibling of the thing you evaluated.
+	'ERRORS_REPLACE': true,
 };
 
 // These flags aren't saved as part of the test. You should probably

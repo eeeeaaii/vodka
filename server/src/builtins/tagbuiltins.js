@@ -44,9 +44,6 @@ function createTagBuiltins() {
 		'adds the tag |tag to |nex'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-
 	Builtin.createBuiltin(
 		'clear-tags-from',
 		[ 'nex' ],
@@ -57,8 +54,6 @@ function createTagBuiltins() {
 		},
 		'clears all tags from |nex'
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
 
 	Builtin.createBuiltin(

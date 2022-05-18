@@ -24,10 +24,6 @@ import { Integer } from '../nex/integer.js'
 
 function createStringBuiltins() {
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-
-
 	Builtin.createBuiltin(
 		'concatenate-strings',
 		[ 'str$...' ],
@@ -42,10 +38,8 @@ function createStringBuiltins() {
 		},
 		'concatenates the passed-in strings and returns the result.'
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	
+	// this alias makes tests pass
+	Builtin.aliasBuiltin('string-cat', 'concatenate-strings');
 
 	Builtin.createBuiltin(
 		'char-at in-string',
@@ -61,10 +55,8 @@ function createStringBuiltins() {
 		},
 		'returns the character in |str at index position |pos.'
 	);
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	
+	// this alias makes tests pass
+	Builtin.aliasBuiltin('string-char-at', 'char-at in-string');
 
 	Builtin.createBuiltin(
 		'index-of-string in-string',
@@ -77,10 +69,9 @@ function createStringBuiltins() {
 		},
 		'returns the index position of |tofind in |str.'
 	);
+	// this alias makes tests pass
+	Builtin.aliasBuiltin('string-index-of', 'index-of-string in-string');
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	
 
 	Builtin.createBuiltin(
 		'join-strings on',
@@ -97,9 +88,6 @@ function createStringBuiltins() {
 		'joins the string elements of |strs into a single string on the separator |on.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-
 
 	Builtin.createBuiltin(
 		'length-of-string',
@@ -111,10 +99,9 @@ function createStringBuiltins() {
 		},
 		'returns the length of (number of characters in) |str'
 	);
+	// this alias makes tests pass
+	Builtin.aliasBuiltin('string-length', 'length-of-string');
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	
 
 	Builtin.createBuiltin(
 		'listify-string',
@@ -131,10 +118,9 @@ function createStringBuiltins() {
 		},
 		'turns a string into a list of strings of one-letter each, one for each letter in |str.'
 	);
+	// this alias makes tests pass
+	Builtin.aliasBuiltin('string-listify', 'listify-string');
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	
 
 	Builtin.createBuiltin(
 		'split-on in-string',
@@ -153,9 +139,6 @@ function createStringBuiltins() {
 		'splits |str into separate strings on the separator |on.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	
 
 	Builtin.createBuiltin(
 		'from to in-string',
@@ -169,6 +152,7 @@ function createStringBuiltins() {
 		},
 		'retrieves a substring of |str from |start to |len'
 	);
+
 
 	Builtin.createBuiltin(
 		'is-empty-string',

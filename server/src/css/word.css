@@ -79,3 +79,30 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 
+.word.newselected.leftinsert {
+	animation-duration: 2s;
+	animation-name: letterblinkleft;
+	animation-iteration-count: 1;
+}
+.word.newselected.rightinsert {
+	animation-duration: 2s;
+	animation-name: letterblinkright;
+	animation-iteration-count: 1;
+}
+
+.word.newselected.topinsert {
+	animation-duration: 2s;
+	animation-name: letterblinktop;
+	animation-iteration-count: 1;
+}
+
+.word.newselected.bottominsert {
+	animation-duration: 2s;
+	animation-name: letterblinkbottom;
+	animation-iteration-count: 1;
+}
+
+.word.newselected.exploded {
+	animation-name: none;
+}
+

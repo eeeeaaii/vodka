@@ -126,9 +126,5 @@ testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
 testactions.push({type:'keyup',code:'ShiftLeft'});
 testactions.push({type:'pause',length:1000});
-testactions.push({type:'keydown',code:'KeyO'});
-testactions.push({type:'keyup',code:'KeyO'});
-testactions.push({type:'keydown',code:'KeyK'});
-testactions.push({type:'keyup',code:'KeyK'});
 harness.runTest(testactions, 'direct');
 //endtest//

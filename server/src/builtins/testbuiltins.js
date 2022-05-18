@@ -163,7 +163,7 @@ function createTestBuiltins() {
 		'is-string',
 		[ 'nex' ],
 		function $isString(env, executionEnvironment) {
-			return new Bool(Utils.isString(env.lb('nex')));
+			return new Bool(Utils.isEString(env.lb('nex')));
 		},
 		`returns true if |nex is a string.`
 	);
@@ -172,7 +172,7 @@ function createTestBuiltins() {
 		'is-symbol',
 		[ 'nex' ],
 		function $isSymbol(env, executionEnvironment) {
-			return new Bool(Utils.isSymbol(env.lb('nex')));
+			return new Bool(Utils.isESymbol(env.lb('nex')));
 		},
 		`returns true if |nex is a symbol.`
 	);

@@ -47,7 +47,6 @@ function createLogicBuiltins() {
 		'first-non-nil',
 		[ '_nex...'],
 		function $firstNonNil(env, executionEnvironment) {
-			throw new Error('deprecated');
 			let nex = env.lb('nex');
 			for (let i = 0; i < nex.numChildren(); i++) {
 				let c = nex.getChildAt(i);
@@ -67,11 +66,14 @@ function createLogicBuiltins() {
 
 	Builtin.createBuiltin(
 		'if then else',
-		[ 'cond!', '_iftrue', '_iffalse' ],
+		[ 'cond!', '_iftrue', '_iffalse?' ],
 		function $if(env, executionEnvironment) {
 			let b = env.lb('cond').getTypedValue();
 			let iftrue = env.lb('iftrue');
 			let iffalse = env.lb('iffalse');
+			if (iffalse == UNBOUND) {
+				iffalse = new Nil();
+			}
 			if (b) {
 				let iftrueresult = evaluateNexSafely(iftrue, executionEnvironment);
 				if (Utils.isFatalError(iftrueresult)) {

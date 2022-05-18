@@ -505,7 +505,6 @@ class RenderNode {
 		let p = selectedNode.getParent();
 		if (p) {
 			// it has a parent
-//			let objectUnderRoot = (p.nex.getTypeName() == '-root-' && (selectedNode.insertionMode == INSERT_BEFORE || selectedNode.insertionMode == INSERT_AFTER));
 			if (beforeafter) {
 				if (p.nex.isVertical()) {
 					if (p.nex.getTypeName() == '-command-'
@@ -621,8 +620,13 @@ class RenderNode {
 					&& nex.hasCachedClosure()
 					&& nex.getLambdaFromCachedClosure().getParams().length == 0) {
 				return INSERT_AFTER;
+
+			// also we don't do insert inside for NexContainers that aren't meant to have
+			// their contents modified.
+			} else if (Utils.isError(nex) || Utils.isDeferredValue(nex) || Utils.isContract(nex)) {
+				return INSERT_AFTER;
 			} else {
-				return INSERT_INSIDE;
+				return INSERT_INSIDE;				
 			}
 		} else {
 			return INSERT_AFTER;			

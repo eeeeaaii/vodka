@@ -22,6 +22,14 @@
     }    
   }
 
+  function makeIgnoreCommand(testname) {
+    commandsToRun.push(`./ignoretest.sh ${testname}`);
+  }
+
+  function makeUnignoreCommand(testname) {
+    commandsToRun.push(`./unignoretest.sh ${testname}`);
+  }
+
   function makeRerunCommand(testname) {
     commandsToRun.push(`./runtests.sh ${testname}`);
   }
@@ -40,19 +48,22 @@
     doForAllTestsChecked('regennormalgoldenfailing', makeRegenNormalGoldenCommand);
     doForAllTestsChecked('regenexplodedgoldenfailing', makeRegenExplodedGoldenCommand);
     doForAllTestsChecked('rerunfailing', makeRerunCommand);
+    doForAllTestsChecked('ignorefailing', makeIgnoreCommand);
 
     doForAllTestsChecked('regennormalgoldenneededgolden', makeRegenNormalGoldenCommand);
     doForAllTestsChecked('regenexplodedgoldenneededgolden', makeRegenExplodedGoldenCommand);
     doForAllTestsChecked('rerunneededgolden', makeRerunCommand);
+    doForAllTestsChecked('ignoreneededgolden', makeIgnoreCommand);
 
 
     doForAllTestsChecked('regennormalgoldenpassing', makeRegenNormalGoldenCommand);
     doForAllTestsChecked('regenexplodedgoldenpassing', makeRegenExplodedGoldenCommand);
     doForAllTestsChecked('rerunpassing', makeRerunCommand);
+    doForAllTestsChecked('ignorepassing', makeIgnoreCommand);
 
     doForAllTestsChecked('regennormalgoldenignored', makeRegenNormalGoldenCommand);
     doForAllTestsChecked('regenexplodedgoldenignored', makeRegenExplodedGoldenCommand);
-    doForAllTestsChecked('rerunignored', makeRerunCommand);
+    doForAllTestsChecked('unignoreignored', makeUnignoreCommand);
 
   	let val = '(';
 
@@ -99,19 +110,23 @@
           <span class="cbhint">-n</span>
           <span class="cbhint">-e</span>
           <span class="cbhint">run</span>
+          <span class="cbhint">+ig</span>
         </div>
 				<div class="summarylistitem">
           <input type="checkbox" onclick="checkAll(this, 'regennormalgoldenfailing')">
           <input type="checkbox" onclick="checkAll(this, 'regenexplodedgoldenfailing')">
-					<input type="checkbox" onclick="checkAll(this, 'rerunfailing')">
+          <input type="checkbox" onclick="checkAll(this, 'rerunfailing')">
+					<input type="checkbox" onclick="checkAll(this, 'ignorefailing')">
 					(select all)
 				</div>
 				{{#each summary.failing}}
 				<div class="summarylistitem"> 
           <input type="checkbox" class="regennormalgoldenfailing" data-testname="{{this.name}}">
           <input type="checkbox" class="regenexplodedgoldenfailing" data-testname="{{this.name}}">
-					<input type="checkbox" class="rerunfailing" data-testname="{{this.name}}">
+          <input type="checkbox" class="rerunfailing" data-testname="{{this.name}}">
+					<input type="checkbox" class="ignorefailing" data-testname="{{this.name}}">
 					<a class="listtestname" href="./alltests/{{this.name}}/{{this.name}}_testresults.html">{{this.name}}</a>
+          <span class="smalltesttypebadge {{this.type}}type">{{this.type}}</span>
           ({{this.num}} failing)
           (<a href="#" onclick="return show(this, '{{this.name}}')">show</a>)
           <div class="detail" id="DETAILFRAME-{{this.name}}"></div>
@@ -124,11 +139,13 @@
           <span class="cbhint">-n</span>
           <span class="cbhint">-e</span>
           <span class="cbhint">run</span>
+          <span class="cbhint">+ig</span>
         </div>
         <div class="summarylistitem">
           <input type="checkbox" onclick="checkAll(this, 'regennormalgoldenneededgolden')">
           <input type="checkbox" onclick="checkAll(this, 'regenexplodedgoldenneededgolden')">
           <input type="checkbox" onclick="checkAll(this, 'rerunneededgolden')">
+          <input type="checkbox" onclick="checkAll(this, 'ignoreneededgolden')">
           (select all)
         </div>
         {{#each summary.neededgolden}}
@@ -136,7 +153,9 @@
           <input type="checkbox" class="regennormalgoldenneededgolden" data-testname="{{this.name}}">
           <input type="checkbox" class="regenexplodedgoldenneededgolden" data-testname="{{this.name}}">
           <input type="checkbox" class="rerunneededgolden" data-testname="{{this.name}}">
+          <input type="checkbox" class="ignoreneededgolden" data-testname="{{this.name}}">
           <a class="listtestname" href="./alltests/{{this.name}}/{{this.name}}_testresults.html">{{this.name}}</a>
+          <span class="smalltesttypebadge {{this.type}}type">{{this.type}}</span>
           ({{this.num}} needed golden)
           (<a href="#" onclick="return show(this, '{{this.name}}')">show</a>)
           <div class="detail" id="DETAILFRAME-{{this.name}}"></div>
@@ -149,11 +168,13 @@
           <span class="cbhint">-n</span>
           <span class="cbhint">-e</span>
           <span class="cbhint">run</span>
+          <span class="cbhint">+ig</span>
         </div>
 				<div class="summarylistitem">
           <input type="checkbox" onclick="checkAll(this, 'regennormalgoldenpassing')">
           <input type="checkbox" onclick="checkAll(this, 'regenexplodedgoldenpassing')">
           <input type="checkbox" onclick="checkAll(this, 'rerunpassing')">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
           (select all)
 				</div>
 				{{#each summary.passing}}
@@ -161,7 +182,9 @@
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="{{this.name}}">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="{{this.name}}">
           <input type="checkbox" class="rerunpassing" data-testname="{{this.name}}">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
           <a class="listtestname" href="./alltests/{{this.name}}/{{this.name}}_testresults.html">{{this.name}}</a>
+          <span class="smalltesttypebadge {{this.type}}type">{{this.type}}</span>
           ({{this.num}} passing)
           (<a href="#" onclick="return show(this, '{{this.name}}')">show</a>)
           <div class="detail" id="DETAILFRAME-{{this.name}}"></div>
@@ -174,11 +197,13 @@
           <span class="cbhint">-n</span>
           <span class="cbhint">-e</span>
           <span class="cbhint">run</span>
+          <span class="cbhint">&#8209;ig</span>
         </div>
         <div class="summarylistitem">
           <input type="checkbox" onclick="checkAll(this, 'regennormalgoldenignored')">
           <input type="checkbox" onclick="checkAll(this, 'regenexplodedgoldenignored')">
           <input type="checkbox" onclick="checkAll(this, 'rerunignored')">
+          <input type="checkbox" onclick="checkAll(this, 'unignoreignored')">
           (select all)
         </div>
 				{{#each summary.ignored}}
@@ -186,7 +211,9 @@
           <input type="checkbox" class="regennormalgoldenignored" data-testname="{{this.name}}">
           <input type="checkbox" class="regenexplodedgoldenignored" data-testname="{{this.name}}">
           <input type="checkbox" class="rerunignored" data-testname="{{this.name}}">
+          <input type="checkbox" class="unignoreignored" data-testname="{{this.name}}">
           <a class="listtestname" href="./alltests/{{this.name}}/{{this.name}}_testresults.html">{{this.name}}</a>
+          <span class="smalltesttypebadge {{this.type}}type">{{this.type}}</span>
           ({{this.num}} ignored)
           (<a href="#" onclick="return show(this, '{{this.name}}')">show</a>)
           <div class="detail" id="DETAILFRAME-{{this.name}}"></div>

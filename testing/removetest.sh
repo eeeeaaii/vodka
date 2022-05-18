@@ -36,6 +36,7 @@ if [ "$CONFIRM" == "y" ]; then
 	rm ./alltests/${BASENAME}.js 2> /dev/null
 	rm ./alltests/${BASENAME}.vk 2> /dev/null
 	rm -rf ./alltests/${BASENAME}/
+	node parsetestoutput.js
 fi
 
 

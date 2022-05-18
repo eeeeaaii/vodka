@@ -100,6 +100,11 @@
 				</div>
 			{{else}}
 				{{#if is_repl}}
+					<!--  -- -- -- -- -- -- -- -- -- -- -- --  -->
+					<!--  -- -- -- -- -- -- -- -- -- -- -- --  -->
+					<!--  -- -- -- --  REPL TEST  -- -- -- --  -->
+					<!--  -- -- -- -- -- -- -- -- -- -- -- --  -->
+					<!--  -- -- -- -- -- -- -- -- -- -- -- --  -->
 					{{#if node_success}}
 						<div class="testvariant">
 							<div class="testvariantname passed">TEST PASSED</div>
@@ -136,6 +141,12 @@
 						{{else}}
 							<div class="testvariant">
 								<div class="testvariantname failed">TEST FAILED</div>
+								<div class="regengolden">
+									<input type="checkbox" data-command="./goldenupdate.sh {{test}} {{regenerate_golden_ext}}">
+									to regenerate golden:								
+									<textarea class="regencommand">./goldenupdate.sh {{test}} {{regenerate_golden_ext}}</textarea>
+									<a class="copyclick" onclick="doClip(event, './goldenupdate.sh {{test}} {{regenerate_golden_ext}}')">(copy)</a>
+								</div>
 								<div class="testoutputs">
 									<div class="codeframe" onclick="togglestyleCodeframe(this);">
 										<div class="outimgname">code</div>
@@ -148,8 +159,18 @@
 										</iframe>
 									</div>
 									<div class="codeframe" onclick="togglestyleCodeframe(this);">
+										<div class="outimgname">golden</div>
+										<iframe class="ifr" id="{{../test}}_ifr0" src="./{{./test}}_GOLDEN.out" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+										</iframe>
+									</div>
+									<div class="codeframe" onclick="togglestyleCodeframe(this);">
 										<div class="outimgname">diff</div>
 										<iframe class="ifr" id="{{../test}}_ifr0" src="./{{./test}}_DIFF.out" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
+										</iframe>
+									</div>
+									<div class="codeframe" onclick="togglestyleCodeframe(this);">
+										<div class="outimgname">err out</div>
+										<iframe class="ifr" id="{{../test}}_ifr0" src="./{{./test}}.errout" frameborder="0" onload="iframeOnload(this)" onclick="toggleParent(this)">
 										</iframe>
 									</div>
 								</div>
@@ -157,6 +178,11 @@
 						{{/if}}
 					{{/if}}
 				{{else}}
+					<!--  -- -- -- -- -- -- -- -- -- -- -- --  -->
+					<!--  -- -- -- -- -- -- -- -- -- -- -- --  -->
+					<!--  -- -- -- --   JS TEST   -- -- -- --  -->
+					<!--  -- -- -- -- -- -- -- -- -- -- -- --  -->
+					<!--  -- -- -- -- -- -- -- -- -- -- -- --  -->
 					{{#if node_success}}
 						{{#each diffs}}
 							<div class="testvariant">

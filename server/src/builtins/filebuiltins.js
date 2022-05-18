@@ -200,7 +200,7 @@ function createFileBuiltins() {
 			def.set(new GenericActivationFunctionGenerator(
 				'load-raw', 
 				function(callback, def) {
-					loadRaw(nm, 'loadraw', function(loadResult) {
+					loadRaw(nm, function(loadResult) {
 						callback(new EString(loadResult));
 					})
 				}
@@ -278,7 +278,9 @@ function createFileBuiltins() {
 	);
 
 	
-
+	// Before you go renaming the "package" builtin to something else!
+	// the name of this builtin is hardcoded into servercommunication.js
+	// idk if there is a better way, but be aware.
 	Builtin.createBuiltin(
 		'package',
 		[ '_name@', '_block...' ],

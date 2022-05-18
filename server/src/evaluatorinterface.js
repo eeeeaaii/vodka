@@ -19,7 +19,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from './utils.js'
 
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
-import { RenderNode } from './rendernode.js'
+import { RenderNode, INSERT_AFTER } from './rendernode.js'
 import { BINDINGS } from './environment.js'
 import { experiments } from './globalappflags.js'
 import { manipulator } from './manipulator.js'
@@ -37,9 +37,10 @@ function evaluateAndReplace(s) {
 	let n = evaluateNexSafely(s.getNex(), BINDINGS);
 	if (Utils.isFatalError(n)) {
 		Utils.beep();
-		// don't replace, since we don't have a functional undo, and users might like to fix and try again.
-		manipulator.insertBeforeSelectedAndSelect(n);
-		return;
+		if (!experiments.ERRORS_REPLACE) {
+			manipulator.insertBeforeSelectedAndSelect(new RenderNode(n));
+			return;
+		}
 	}
 
 	if (n) {
@@ -58,7 +59,7 @@ function evaluateAndKeep(s) {
 	let n = evaluateNexSafely(s.getNex(), BINDINGS);
 	if (Utils.isFatalError(n)) {
 		Utils.beep();
-		manipulator.insertBeforeSelectedAndSelect(n);
+		manipulator.insertBeforeSelectedAndSelect(new RenderNode(n));
 	}
 
 	eventQueueDispatcher.enqueueAlertAnimation(s);

@@ -90,8 +90,10 @@ testactions.push({type:'keydown',code:'ArrowRight'});
 testactions.push({type:'keyup',code:'ArrowRight'});
 testactions.push({type:'keydown',code:'ArrowRight'});
 testactions.push({type:'keyup',code:'ArrowRight'});
-testactions.push({type:'keydown',code:'ShiftRight'});
-testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'AltLeft'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+testactions.push({type:'keyup',code:'AltLeft'});
+testactions.push({type:'keyup',code:'ArrowLeft'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
 

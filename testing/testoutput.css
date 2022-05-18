@@ -266,6 +266,12 @@ body {
 	font-size: .6em;
 }
 
+.smalltesttypebadge {
+	border: 1px solid grey;
+	display: inline;
+	padding: 2px;
+}
+
 .vktype {
 	background-color: pink;
 }

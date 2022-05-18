@@ -138,20 +138,6 @@ testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Backquote'});
 testactions.push({type:'keyup',code:'Backquote'});
 testactions.push({type:'keyup',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'KeyQ'});
-testactions.push({type:'keyup',code:'KeyQ'});
-testactions.push({type:'keydown',code:'KeyU'});
-testactions.push({type:'keyup',code:'KeyU'});
-testactions.push({type:'keydown',code:'KeyO'});
-testactions.push({type:'keyup',code:'KeyO'});
-testactions.push({type:'keydown',code:'KeyT'});
-testactions.push({type:'keyup',code:'KeyT'});
-testactions.push({type:'keydown',code:'KeyE'});
-testactions.push({type:'keyup',code:'KeyE'});
-testactions.push({type:'keydown',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'Backquote'});
-testactions.push({type:'keyup',code:'Backquote'});
-testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'KeyP'});
 testactions.push({type:'keyup',code:'KeyP'});
 testactions.push({type:'keydown',code:'KeyA'});
@@ -274,6 +260,8 @@ testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
+// wait for deferred anim to finish
+testactions.push({type:'pause', length:1200})
 
 const experiment_flags = {
 "V2_INSERTION_LENIENT_DOC_FORMAT":true,

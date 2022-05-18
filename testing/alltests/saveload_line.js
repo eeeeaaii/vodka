@@ -98,5 +98,6 @@ testactions.push({type:'keyup',code:'Enter'});
 
 testactions.push({type:'pause',length:1000});
 
+testactions.push({type:'pause',length:500});
 harness.runTestNew(testactions, 'direct');
 //endtest//

@@ -211,6 +211,17 @@ class Line extends NexContainer {
 
 	getEventTable(context) {
 		return {
+
+			// In a doc context, lines act differently -- remember
+			// that an empty line has no letter or separator in it
+			// to select so we can't isolate all the weirdness
+			// to the letter and separator nexes.
+			'ArrowUp': 'move-up-for-line',
+			'ArrowLeft': 'move-left-for-line',
+			'ArrowDown': 'move-down-for-line',
+			'ArrowRight': 'move-right-for-line',
+
+
 			'Enter': 'do-line-break-or-eval',
 			'Backspace': 'delete-line',
 		}

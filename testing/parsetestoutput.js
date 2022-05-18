@@ -109,8 +109,9 @@ testnames.forEach((testpath) => {
 	let testjson = {};
 
 	let ignore = getContentsOfFile(tpath('.ignore'));
+	let testtype = getContentsOfFile(tpath('.testtype'));
 	if (ignore && ignore == '1') {
-		ignored_tests.push({name:basename, num:2})
+		ignored_tests.push({name:basename, num:2, type:testtype})
 		testjson = ignoredTestOutput();
 	} else {
 		let success = getContentsOfFile(tpath('.testsuccess'));
@@ -140,18 +141,18 @@ testnames.forEach((testpath) => {
 					}
 				}
 				// but can add in more than one place if one test passes and one fails
-				if (ispassing) passing_tests.push({name:basename, num:numpassing});
-				if (isfailing) failing_tests.push({name:basename, num:numfailing});
-				if (neededgolden) goldens_needed.push({name:basename, num:numneeded});
+				if (ispassing) passing_tests.push({name:basename, num:numpassing, type:testtype});
+				if (isfailing) failing_tests.push({name:basename, num:numfailing, type:testtype});
+				if (neededgolden) goldens_needed.push({name:basename, num:numneeded, type:testtype});
 			} else {
-				passing_tests.push({name:basename, num:2});
+				passing_tests.push({name:basename, num:2, type:testtype});
 			}
 		} else {
 			testjson = failingTestOutput(basename);
 			if (testjson.goldenmissing) {
-				goldens_needed.push({name:basename, num:2});
+				goldens_needed.push({name:basename, num:2, type:testtype});
 			} else {
-				failing_tests.push({name:basename, num:2});
+				failing_tests.push({name:basename, num:2, type:testtype});
 			}
 		}
 	}

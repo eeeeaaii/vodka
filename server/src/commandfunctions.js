@@ -22,6 +22,8 @@ import { ArgEvaluator } from './argevaluator.js'
 import { perfmon, PERFORMANCE_MONITOR } from './perfmon.js'
 import { CONSOLE_DEBUG } from './globalconstants.js'
 import { experiments } from './globalappflags.js'
+import { wrapError } from './evaluator.js'
+import { EError } from './nex/eerror.js'
 
 class Arg {
 	constructor(nex) {
@@ -111,10 +113,11 @@ class RunInfo {
 function executeRunInfo(runInfo, executionEnv) {
 	let result = runCommand(runInfo, executionEnv);
 
-	if (runInfo.expectedReturnType != null) {
+	if (runInfo.expectedReturnType != null && !Utils.isFatalError(result)) {
 		let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[runInfo.expectedReturnType.type](result);
 		if (!typeChecksOut) {
-			result = wrapError('&amp;', `${runInfo.cmdname}: should return ${runInfo.expectedReturnType.type} but returned ${result.getTypeName()}`, result);
+			result = new EError(`${runInfo.cmdname}: should return ${runInfo.expectedReturnType.type} but returned ${result.getTypeName()}`);
+
 		}
 	}
 

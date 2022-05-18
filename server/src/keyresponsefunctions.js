@@ -92,6 +92,9 @@ const DefaultHandlers = {
 		let nex = node.nex;
 		let context = manipulator.getContextForNode(node);
 		let inWord = (context == ContextType.WORD || context == ContextType.IMMUTABLE_WORD);
+		if (!(/^.$/.test(txt))) {
+			throw UNHANDLED_KEY;
+		};
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		if (isSeparator) {
@@ -141,6 +144,9 @@ const DefaultHandlers = {
 	'wordDefault' : function(node, txt) {
 		let nex = node.nex;
 		let context = manipulator.getContextForNode(node);
+		if (!(/^.$/.test(txt))) {
+			throw UNHANDLED_KEY;
+		};
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		let isCommand = (context == ContextType.COMMAND);
@@ -167,6 +173,9 @@ const DefaultHandlers = {
 	'lineDefault': function(node, txt) {
 		let nex = node.nex;
 		let context = manipulator.getContextForNode(node);
+		if (!(/^.$/.test(txt))) {
+			throw UNHANDLED_KEY;
+		};
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		let isCommand = (context == ContextType.COMMAND);
@@ -203,6 +212,9 @@ const DefaultHandlers = {
 	'docDefault' : function(node, txt) {
 		let nex = node.nex;
 		let context = manipulator.getContextForNode(node);
+		if (!(/^.$/.test(txt))) {
+			throw UNHANDLED_KEY;
+		};
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		let isCommand = (context == ContextType.COMMAND);
@@ -306,6 +318,22 @@ const KeyResponseFunctions = {
 
 	'move-right-down': function(s) {
 		manipulator.moveRightDown(s);
+	},
+
+	'move-left-for-line': function(s) {
+		manipulator.moveLeftForLine(s);
+	},
+
+	'move-up-for-line': function(s) {
+		manipulator.moveUpForLine(s);
+	},
+
+	'move-right-for-line': function(s) {
+		manipulator.moveRightForLine(s);
+	},
+
+	'move-down-for-line': function(s) {
+		manipulator.moveDownForLine(s);
 	},
 
 	'move-to-previous-leaf': function(s) {

@@ -54,13 +54,7 @@ import {
 
 class Manipulator {
 
-
-	// private methods start with _
-	// everything at the beginning of this file should be new
-	// everything at the end is probably deprecated
-	// look at the line number, divide by total lines in this doc
-	// that is the probability it is deprecated	
-
+	// Private methods start with underscore. This needs a big refactoring.
 
 	// deprecated
 	_conformData(data) {
@@ -68,8 +62,6 @@ class Manipulator {
 			return new RenderNode(data);
 		} else return data;
 	}
-
-	// UTILITIES HAVE THIS ASCII ART BULLSHIT SEPARATOR 'KAY
 
 	//////// *********************** --------------------------------------------------
 	//////// *********************** --------------------------------------------------
@@ -622,7 +614,7 @@ class Manipulator {
 		if (this._isSeparatorInDocFormat(s) || this._isLetterInSeparatorPosition(s)) {
 			if (this._splitParentBeforeAndPutIn(s, this.possiblyMakeImmutable(this.newLine(), context))) {
 				// split was performed, select next leaf and put insertion point before
-				this.selectPreviousLeaf();
+				this._selectPreviousLeafImpl();
 				this._forceInsertionMode(INSERT_AFTER, this.selected());
 			} else {
 				this._prependBefore(this.possiblyMakeImmutable(this.newLine(), context), this.getEnclosingLineInSameDoc(s));
@@ -639,7 +631,7 @@ class Manipulator {
 		if (this._isSeparatorInDocFormat(s) || this._isLetterInSeparatorPosition(s)) {
 			if (this._splitParentAfterAndPutIn(s, this.possiblyMakeImmutable(this.newLine(), context))) {
 				// split was performed, select next leaf and put insertion point before
-				this.selectNextLeaf();
+				this._selectNextLeafImpl();
 				this._forceInsertionMode(INSERT_BEFORE, this.selected());
 			} else {
 				// split not performed, insert new empty line
@@ -653,16 +645,21 @@ class Manipulator {
 	}
 
 	_doLineBreakBeforeLetter(s, context) {
+		let needToChangeSelectedLetter = (s.getInsertionMode() == INSERT_AFTER);
 		if (this._isLetterInDocFormat(s) || this._isSeparatorInLetterPosition(s)) {
 			// for situations where we have ( ( a S b c) )
 			if (this._splitParentAndGrandparentBeforeAndPutIn(s, this.possiblyMakeImmutable(this.newWord(), context), this.possiblyMakeImmutable(this.newLine(), context))) {
-				// split was performed, need to move selected node
-				this.selectPreviousLeaf();
-				this._forceInsertionMode(INSERT_AFTER, this.selected());
+				// split was performed
+				if (needToChangeSelectedLetter) {
+					this._selectPreviousLeafImpl();
+					this._forceInsertionMode(INSERT_AFTER, this.selected());					
+				}
 			// for situations where we have ( a ( S b c) )
 			} else if (this._splitGrandparentBeforeAndPutIn(s, this.possiblyMakeImmutable(this.newLine(), context))) {
-				this.selectPreviousLeaf();
-				this._forceInsertionMode(INSERT_AFTER, this.selected());				
+				if (needToChangeSelectedLetter) {
+					this._selectPreviousLeafImpl();
+					this._forceInsertionMode(INSERT_AFTER, this.selected());
+				}
 			} else {
 				this._prependBefore(this.possiblyMakeImmutable(this.newLine(), context), this.getEnclosingLineInSameDoc(s));
 				// leave current thing selected!
@@ -677,11 +674,11 @@ class Manipulator {
 			// for situations where we have ( ( a b S c ) )
 			if (this._splitParentAndGrandparentAfterAndPutIn(s, this.possiblyMakeImmutable(this.newWord(), context), this.possiblyMakeImmutable(this.newLine(), context))) {
 				// split was performed, need to move selected node
-				this.selectNextLeaf();
+				this._selectNextLeafImpl();
 				this._forceInsertionMode(INSERT_BEFORE, this.selected());
 			// for situations where we have ( ( a b S ) c )
 			} else if (this._splitGrandparentAfterAndPutIn(s, this.possiblyMakeImmutable(this.newLine(), context))) {
-				this.selectNextLeaf();
+				this._selectNextLeafImpl();
 				this._forceInsertionMode(INSERT_BEFORE, this.selected());				
 			} else {
 				this._appendAfterAndSelect(this.possiblyMakeImmutable(this.newLine(), context), this.getEnclosingLineInSameDoc(s));
@@ -778,7 +775,7 @@ class Manipulator {
 	selectPreviousLeaf(s) {
 		if (this._isFirstLeafInLine(s)) {
 			if (s.getInsertionMode() == INSERT_BEFORE) {
-				this.selectPreviousLeaf();
+				this._selectPreviousLeafImpl();
 				let changedWhatIsSelected = (s != this.selected());
 				if (changedWhatIsSelected) {
 					if (Utils.isLine(this.selected())) {
@@ -808,7 +805,7 @@ class Manipulator {
 				}
 			} else return false;
 		} else {
-			this.selectPreviousLeaf();
+			this._selectPreviousLeafImpl();
 		}
 	}
 
@@ -817,7 +814,7 @@ class Manipulator {
 			this._forceInsertionMode(INSERT_AFTER, this.selected());
 			return;
 		}
-		this.selectNextLeaf();
+		this._selectNextLeafImpl();
 		if (this._isFirstLeafInLine(this.selected())) {
 			this._forceInsertionMode(INSERT_BEFORE, this.selected());
 		} else {
@@ -883,6 +880,24 @@ class Manipulator {
 		return r;
 	}
 
+	moveLeftForLine(s) {
+		// if s is not in doc context, don't do anything special.
+		let context = this.getContextForNode(s);
+		if (context != ContextType.DOC && context != ContextType.IMMUTABLE_DOC) {
+			return this.moveLeftUp();
+		}
+		return this.selectPreviousLeaf(s);
+	}
+
+	moveUpForLine(s) {
+		// if s is not in doc context, don't do anything special.
+		let context = this.getContextForNode(s);
+		if (context != ContextType.DOC && context != ContextType.IMMUTABLE_DOC) {
+			return this.moveLeftUp();
+		}
+		return this.selectCorrespondingLetterInPreviousLine(s);
+	}
+
 	moveRightDown(s) {
 		if (experiments.OLD_ARROW_KEY_TRAVERSAL) {
 			if (s.getInsertionMode() == INSERT_BEFORE) {
@@ -912,6 +927,24 @@ class Manipulator {
 			doTutorial('movement');
 		}
 		return r;
+	}
+
+	moveRightForLine(s) {
+		// if s is not in doc context, don't do anything special.
+		let context = this.getContextForNode(s);
+		if (context != ContextType.DOC && context != ContextType.IMMUTABLE_DOC) {
+			return this.moveRightDown();
+		}
+		return this.selectNextLeaf(s);
+	}
+
+	moveDownForLine(s) {
+		// if s is not in doc context, don't do anything special.
+		let context = this.getContextForNode(s);
+		if (context != ContextType.DOC && context != ContextType.IMMUTABLE_DOC) {
+			return this.moveRightDown();
+		}
+		return this.selectCorrespondingLetterInNextLine(s);
 	}
 
 
@@ -1042,6 +1075,7 @@ class Manipulator {
 	}
 
 
+
 	selectCorrespondingLetterInPreviousLine(s) {
 		let thisLine = Utils.isLine(s) ? s : this.getEnclosingLineInSameDoc(s);
 		// Okay in the weird/wrong event that we have a word inside a doc that's not
@@ -1077,7 +1111,7 @@ class Manipulator {
 		// I think the dot is 5 px
 		if (putBefore) targetX -= 5;
 		let c = this._getFirstLeafInside(sib);
-		while(c && c.getLeftX() <= targetX) {
+		while(c && c.getLeftX() < targetX) {
 			let d = this._getLeafAfterFromSameLine(c);
 			if (c == d) throw new Error('not supposed to happen');
 			if (!d) {
@@ -1131,8 +1165,7 @@ class Manipulator {
 		// I think the dot is 5 px
 		if (putBefore) targetX -= 5;
 		let c = this._getFirstLeafInside(sib);
-		// should really be < but this is for getting tests to pass
-		while(c && c.getLeftX() <= targetX) {
+		while(c && c.getLeftX() < targetX) {
 			let d = this._getLeafAfterFromSameLine(c);
 			if (c == d) throw new Error('not supposed to happen');
 			if (!d) {
@@ -1151,80 +1184,6 @@ class Manipulator {
 		return true;
 	}
 
-
-	// used for up and down arrows.
-
-	selectCorrespondingLetterInPreviousLine() {
-
-		// get the current line and the previous line.
-
-		let enclosingLine = this.getEnclosingLineInSameDoc(systemState.getGlobalSelectedNode());
-		if (!enclosingLine) return false;
-		let doc = enclosingLine.getParent();
-		if (!doc) return false;
-		let previousLine = doc.getChildBefore(enclosingLine);
-		if (!previousLine) return false;
-
-		let original = (systemState.getGlobalSelectedNode());
-		let targetX = original.getLeftX();
-		let c;
-
-		previousLine.setSelected();
-		this.selectFirstLeaf();
-		let lastX = (systemState.getGlobalSelectedNode()).getLeftX();
-		if (targetX <= lastX) {
-			return true;
-		}
-
-		do {
-			if (this.getEnclosingLineInSameDoc((systemState.getGlobalSelectedNode())) != previousLine) {
-				this.selectPreviousLeaf();
-				break;
-			}
-			let x = (systemState.getGlobalSelectedNode()).getLeftX();
-			if (x > targetX) {
-				// this is the one
-				break;
-			}
-		} while(this.selectNextLeaf());
-
-		return true;
-	}
-
-	selectCorrespondingLetterInNextLine() {
-		// get the current line and the previous line.
-		let enclosingLine = this.getEnclosingLineInSameDoc((systemState.getGlobalSelectedNode()));
-		if (!enclosingLine) return false;
-		let doc = enclosingLine.getParent();
-		if (!doc) return false;
-		let nextLine = doc.getChildAfter(enclosingLine);
-		if (!nextLine) return false;
-
-		let original = (systemState.getGlobalSelectedNode());
-		let targetX = original.getLeftX();
-		let c;
-
-		nextLine.setSelected();
-		this.selectFirstLeaf();
-		let lastX = (systemState.getGlobalSelectedNode()).getLeftX();
-		if (targetX <= lastX) {
-			return true;
-		}
-
-		do {
-			if (this.getEnclosingLineInSameDoc((systemState.getGlobalSelectedNode())) != nextLine) {
-				this.selectPreviousLeaf();
-				break;
-			}
-			let x = (systemState.getGlobalSelectedNode()).getLeftX();
-			if (x > targetX) {
-				// this is the one
-				break;
-			}
-		} while(this.selectNextLeaf());
-
-		return true;
-	}
 
 	findNextSiblingThatSatisfies(f) {
 		while (this.selectNextSibling()) {
@@ -1306,7 +1265,7 @@ class Manipulator {
 	}
 
 
-	selectPreviousLeaf() {
+	_selectPreviousLeafImpl() {
 		let first = (systemState.getGlobalSelectedNode());
 		while(!this.selectPreviousSibling()) {
 			let p = this.selectParent();
@@ -1319,7 +1278,7 @@ class Manipulator {
 		return true;
 	}
 
-	selectNextLeaf() {
+	_selectNextLeafImpl() {
 		let first = (systemState.getGlobalSelectedNode());
 		while(!this.selectNextSibling()) {
 			let p = this.selectParent();

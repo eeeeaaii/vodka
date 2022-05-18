@@ -22,7 +22,7 @@
 ~(_is-nil #0_)
 ~(_is-nil $"a"_)
 ~(_is-nil %0_)
-~(_is-nil [nil]]_)
+~(_is-nil [nil]_)
 ~(_is-nil &(__)_)
 ~(_is-nil ~(_quote &(__)_)_)
 ~(_is-nil [letter]"a"_)

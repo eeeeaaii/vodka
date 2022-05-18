@@ -159,6 +159,12 @@ function isBool(n) {
 	return n.getTypeName() == '-bool-';
 }
 
+function isContract(n) {
+	if (n instanceof RenderNode) n = n.getNex();
+	if (!n) return false;
+	return n.getTypeName() == '-contract-';
+}
+
 function isFloat(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n) return false;
@@ -169,6 +175,12 @@ function isInteger(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n) return false;
 	return n.getTypeName() == '-integer-';
+}
+
+function isESymbol(n) {
+	if (n instanceof RenderNode) n = n.getNex();
+	if (!n) return false;
+	return n.getTypeName() == '-symbol-';
 }
 
 function isEString(n) {
@@ -193,6 +205,12 @@ function isClosure(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n) return false;
 	return n.getTypeName() == '-closure-';
+}
+
+function isNil(n) {
+	if (n instanceof RenderNode) n = n.getNex();
+	if (!n) return false;
+	return n.getTypeName() == '-nil-';
 }
 
 function isRoot(n) {
@@ -273,9 +291,12 @@ export {
 	isNexContainer,
 	isEString,
 	isCommand,
+	isContract,
 	isLambda,
 	isRoot,
 	isNex,
+	isESymbol,
+	isNil,
 	isBool,
 	isFloat,
 	isInteger,
