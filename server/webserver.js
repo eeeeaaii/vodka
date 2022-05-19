@@ -54,20 +54,22 @@ const server = http.createServer((req, resp) => {
 		checkIfSessionExists(query.sessionId, function(exists) {
 			if (exists) {
 				sendResponse(resp, 401, 'text/html', 'session exists already.');
-			} else {
+			} else if (isValidSessionNameForUserCreate(query.sessionId)) {
 				createSession(query.sessionId, resp, function(success) {
 					if (!success) {
 						sendResponse(resp, 401, 'text/html', 'could not create session');
 					} else {
-						serviceRequestForRegularFile(query.sessionId, path, resp);
+						sendRedirect(resp, `http://${webenv_vars.redirectHostname}/?sessionId=${query.sessionId}`);
 					}
 				});
+			} else {
+				sendResponse(resp, 401, 'text/html', 'invalid session name');				
 			}
 		});
 	} else if (query.sessionId && query.copy) {
 		checkIfSessionExists(query.sessionId, function(exists) {
 			if (exists) {
-				createNewSession(resp, function(success, newSessionId) {
+				createNewUUIDSession(resp, function(success, newSessionId) {
 					if (success) {
 						copySessionContents(query.sessionId, newSessionId, function(success) {
 							if (success) {
@@ -93,7 +95,7 @@ const server = http.createServer((req, resp) => {
 			}
 		});
 	} else if (query.new) {
-		createNewSession(resp, function(success, newSessionId) {
+		createNewUUIDSession(resp, function(success, newSessionId) {
 			if (success) {
 				sendRedirect(resp, `http://${webenv_vars.redirectHostname}/`);
 			} else {
@@ -103,7 +105,7 @@ const server = http.createServer((req, resp) => {
 	} else if (sessionIdFromCookie && query.copy) {
 		checkIfSessionExists(sessionIdFromCookie, function(exists) {
 			if (exists) {
-				createNewSession(resp, function(success, newSessionId) {
+				createNewUUIDSession(resp, function(success, newSessionId) {
 					if (success) {
 						copySessionContents(sessionIdFromCookie, newSessionId, function(success) {
 							if (success) {
@@ -130,7 +132,7 @@ const server = http.createServer((req, resp) => {
 				// their session was deleted. Since users shouldn't be manually inserting
 				// cookies into their session, we just assume this and give them a new
 				// session. But -- should we put something in the response so they know?
-				createNewSession(resp, function(success, newSessionId) {
+				createNewUUIDSession(resp, function(success, newSessionId) {
 					if (success) {
 						serviceRequestForRegularFile(newSessionId, path, resp);
 					} else {
@@ -140,7 +142,7 @@ const server = http.createServer((req, resp) => {
 			}
 		});
 	} else {
-		createNewSession(resp, function(success, newSessionId) {
+		createNewUUIDSession(resp, function(success, newSessionId) {
 			if (success) {
 				serviceRequestForRegularFile(newSessionId, path, resp);
 			} else {
@@ -150,9 +152,16 @@ const server = http.createServer((req, resp) => {
 	}
 });
 
-function createNewSession(resp, cb) {
+function createNewUUIDSession(resp, cb) {
 	let newSessionId = uuidv4();
 	createSession(newSessionId, resp, cb);
+}
+
+function isValidSessionNameForUserCreate(sessionName) {
+	if (sessionName == 'packages') return false;
+	if (sessionName == 'samples') return false;
+	let isIdentifier = /^[a-zA-Z0-9_]+$/.test(sessionName);
+	return isIdentifier;
 }
 
 function createSession(sessionId, resp, cb) {
@@ -374,11 +383,19 @@ function getSessionDirectory(sessionId, localAccessOnly) {
 	if (sessionId == 'packages' && (!localAccessOnly || webenv_vars.isLocal)) {
 		return './packages/'
 	}
-	if (sessionId == 'samples' && (!localAccessOnly || webenv_vars.isLocal)) {
-		return './samples/';
+
+	let hasDash = /-/.test(sessionId);
+
+	// we don't let users create sessions with dashes in them.
+	// only UUID sessions have dashes.
+	// that way we can keep them in separate directories.
+
+	if (!hasDash) {
+		return `./namedsessions/${sessionId}/`;
+	} else {
+		return `./sessions/${sessionId}/`;
 	}
 
-	return `./sessions/${sessionId}/`;
 }
 
 function serviceApiSaveRequest(data, sessionId, cb) {

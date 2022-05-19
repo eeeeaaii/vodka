@@ -8,6 +8,8 @@ server/packages/ig*
 server/src/favicon.ico
 server/sounds/*
 server/sessions/*
+server/namedsessions/music
+server/namedsessions/poetry
 server/src/audiotesting/*
 server/docs/*
 server/webenv.txt
