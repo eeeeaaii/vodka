@@ -158,6 +158,7 @@ function doFlagOverrides(flags) {
 	// that broke all the old tests, and for the time being you want
 	// to keep the old behavior to keep the old tests passing.
 	flags.OLD_ARROW_KEY_TRAVERSAL = true;
+	flags.STATIC_PIPS = true;
 	return flags;
 
 }

@@ -23,7 +23,7 @@ function setNextNexId(val) {
 import { systemState } from '../systemstate.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { RENDER_FLAG_SELECTED, RENDER_FLAG_SHALLOW, RENDER_FLAG_NORMAL, RENDER_FLAG_RERENDER, RENDER_FLAG_EXPLODED, RENDER_FLAG_DEPTH_EXCEEDED } from '../globalconstants.js'
-import { checkRecordState } from '../testrecorder.js'
+import { possiblyRecordAction } from '../testrecorder.js'
 import { doTutorial } from '../help.js'
 import { Tag } from '../tag.js'
 
@@ -507,7 +507,7 @@ class Nex {
 	_setClickHandler(renderNode) {
 		renderNode.getDomNode().onmousedown = (event) => {
 			if (!this.clickActive) return true;
-			checkRecordState(event, 'mouse');
+			possiblyRecordAction(event, 'mouse');
 			eventQueueDispatcher.enqueueDoClickHandlerAction(this, renderNode, event)
 			event.stopPropagation();
 		};

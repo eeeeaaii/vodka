@@ -50,9 +50,9 @@ class Command extends NexContainer {
 
 		this.evalState = null;
 
-		// private data is currently unused but I want the logic for
-		// handling it here so I can implement parsing and tests for it
-		this.privateData = '';
+		this.unparsableCommandName = '';
+
+
 		this.searchingOn = null;
 		this.previousMatch = null;
 		this.skipAlert = false;
@@ -140,7 +140,18 @@ class Command extends NexContainer {
 		if (cmdPrefix != '') {
 			cmdPrefix = cmdPrefix + ' ';
 		}
-		return `~${this.toStringV2Literal()}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}${super.childrenToString('v2')}${this.listEndV2()}`;		
+		// If the command contains characters that aren't parsable we put the command name
+		// in the private data section instead.
+		let re = /^[a-zA-Z0-9:.-]*$/;
+		if (re.test(cmdPrefix)) {
+			return `~${this.toStringV2Literal()}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}${super.childrenToString('v2')}${this.listEndV2()}`;
+		} else {
+			// I only need this when serializing
+			this.unparsableCommandName = cmdPrefix;
+			let r = `~${this.toStringV2Literal()}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+			this.unparsableCommandName = '';
+			return r;
+		}
 	}
 
 	prettyPrintInternal(lvl, hdir) {
@@ -153,11 +164,18 @@ class Command extends NexContainer {
 	}	
 
 	deserializePrivateData(data) {
-		this.privateData = data;
+		// if private data was stored with the command, it means that the command name
+		// contained unparsable characters.
+		if (data) {
+			this.commandtext = data;
+		}
 	}
 
 	serializePrivateData() {
-		return this.privateData;
+		if (this.unparsableCommandName) {
+			return this.unparsableCommandName;
+		}
+		return '';
 	}
 
 	copyFieldsTo(nex) {

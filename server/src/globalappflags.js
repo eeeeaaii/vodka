@@ -75,6 +75,9 @@ const experiments = {
 	// if false, the returned error is pushed into the parent as a previous
 	// sibling of the thing you evaluated.
 	'ERRORS_REPLACE': true,
+
+	// if true, the pips don't flash - useful for tests
+	'STATIC_PIPS': false,
 };
 
 // These flags aren't saved as part of the test. You should probably

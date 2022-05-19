@@ -50,7 +50,7 @@ import { EString } from './nex/estring.js'
 import { Doc } from './nex/doc.js'
 import { NEXT_NEX_ID, setNextNexId } from './nex/nex.js'
 import { runTest } from './tests/unittests.js';
-import { checkRecordState } from './testrecorder.js'
+import { possiblyRecordAction, startRecordingTest } from './testrecorder.js'
 import {
 	RENDER_FLAG_EXPLODED,
 	RENDER_FLAG_NORMAL,
@@ -234,7 +234,7 @@ function macSubst() {
 
 
 function doKeydownEvent(e) {
-	checkRecordState(e, 'down');
+	possiblyRecordAction(e, 'down');
 	if (systemState.isKeyFunnelActive()) {
 		return doKeyInputNotForTests(e.key, e.code, e.shiftKey, e.ctrlKey, e.metaKey, e.altKey);
 	} else {
@@ -258,6 +258,7 @@ function setup() {
 		setupMobile();
 	}
 
+
 	keyDispatcher.setUiCallbackObject({
 		'setExplodedState': function(exploded) {
 			document.getElementById("mobile_esc").innerText = (exploded) ? 'explode' : 'contract'
@@ -279,12 +280,17 @@ function setup() {
 	// note this is duplicated in undo.js
 	root = rootManager.createNewRoot();
 
+	if (Utils.getQSVal('createtest')) {
+		startRecordingTest();
+	}
+
+
 	document.onclick = function(e) {
-		checkRecordState(e, 'mouse');
+		possiblyRecordAction(e, 'mouse');
 		return true;
 	}
 	document.onkeyup = function(e) {
-		checkRecordState(e, 'up');
+		possiblyRecordAction(e, 'up');
 		maybeKillSound();
 		return true;
 	}

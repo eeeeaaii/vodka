@@ -536,10 +536,14 @@ class RenderNode {
 		// }
 
 		if (selectedNode.usingEditor()) {
-			pip.classList.add('faintcursorblink');
+			if (!experiments.STATIC_PIPS) {
+				pip.classList.add('faintcursorblink');
+			}
 			pip.classList.add('pipparentusingeditor');
 		} else {
-			pip.classList.add('cursorblink');			
+			if (!experiments.STATIC_PIPS) {
+				pip.classList.add('cursorblink');
+			}
 		}
 
 		pip.innerHTML = "&bull;";
@@ -549,7 +553,9 @@ class RenderNode {
 	doInsertionSquare(i, childRenderNode) {
 		let square = document.createElement('div');
 		square.classList.add('insertionsquare');
-		square.classList.add('squareblink');			
+		if (!experiments.STATIC_PIPS) {
+			square.classList.add('squareblink');
+		}
 		if (childRenderNode.usingEditor()) {
 			square.classList.add('pipparentusingeditor')
 		}

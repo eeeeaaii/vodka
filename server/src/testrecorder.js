@@ -42,64 +42,18 @@ function getSessionOutput() {
 `;	
 }
 
-const EXPECTING_FIRST_DOWN  = 0;
-const EXPECTING_FIRST_UP    = 1;
-const EXPECTING_SECOND_DOWN = 2;
-const EXPECTING_SECOND_UP   = 3;
-const EXPECTING_THIRD_DOWN  = 4;
-const EXPECTING_THIRD_UP    = 5;
+const NOT_RECORDING         = 1;
 const WILL_NOT_RECORD       = 6;
 const RECORDING             = 7;
 const RECORDING_DONE_EXPECTING_UP    = 8;
 const RECORDING_DONE    = 9;
 
-let state = EXPECTING_FIRST_DOWN;
+let state = NOT_RECORDING;
 
-function checkRecordState(event, type) {
+function possiblyRecordAction(event, type) {
 	let kc = event.code;
 	switch(state) {
-		case EXPECTING_FIRST_DOWN:
-			if (kc == 'Escape' && type == 'down') {
-				state = EXPECTING_FIRST_UP;
-			} else {
-				state = WILL_NOT_RECORD;
-			}
-			break;
-		case EXPECTING_FIRST_UP:
-			if (kc == 'Escape' && type == 'up') {
-				state = EXPECTING_SECOND_DOWN;
-			} else {
-				state = WILL_NOT_RECORD;
-			}
-			break;
-		case EXPECTING_SECOND_DOWN:
-			if (kc == 'Escape' && type == 'down') {
-				state = EXPECTING_SECOND_UP;
-			} else {
-				state = WILL_NOT_RECORD;
-			}
-			break;
-		case EXPECTING_SECOND_UP:
-			if (kc == 'Escape' && type == 'up') {
-				state = EXPECTING_THIRD_DOWN;
-			} else {
-				state = WILL_NOT_RECORD;
-			}
-			break;
-		case EXPECTING_THIRD_DOWN:
-			if (kc == 'Escape' && type == 'down') {
-				state = EXPECTING_THIRD_UP;
-			} else {
-				state = WILL_NOT_RECORD;
-			}
-			break;
-		case EXPECTING_THIRD_UP:
-			if (kc == 'Escape' && type == 'up') {
-				state = RECORDING;
-			} else {
-				state = WILL_NOT_RECORD;
-			}
-			break;
+		case NOT_RECORDING:
 		case WILL_NOT_RECORD:
 			break;
 		case RECORDING:
@@ -135,6 +89,10 @@ function checkRecordState(event, type) {
 	}
 }
 
+function startRecordingTest() {
+	state = RECORDING;
+}
+
 function isRecordingTest() {
 	return recording;
 }
@@ -156,5 +114,5 @@ function logKeyUpEvent(e) {
 `;	
 }
 
-export { checkRecordState, isRecordingTest }
+export { possiblyRecordAction, isRecordingTest, startRecordingTest }
 
