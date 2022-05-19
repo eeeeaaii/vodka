@@ -27,12 +27,12 @@ function getParentNexOfDomElement(elt) {
 	return elt;
 }
 
-function respondToClickEvent(nex, renderNode, browserEvent) {
+function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 	if (nex.extraClickHandler) {
 		nex.extraClickHandler(browserEvent.clientX, browserEvent.clientY);
 		return;
 	}
-	if (systemState.isMouseFunnelActive()) {
+	if (systemState.isMouseFunnelActive() && atTarget) {
 		let parentNexDomElt = getParentNexOfDomElement(browserEvent.target);
 		if (systemState.getGlobalSelectedNode().getDomNode() == parentNexDomElt) {
 			return;

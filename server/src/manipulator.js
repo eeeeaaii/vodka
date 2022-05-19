@@ -1699,7 +1699,7 @@ class Manipulator {
 
 		// oops we need to insert one
 
-		let cmd = this.newCommandWithText('save-in--unevaluated', true /* skip editor */);
+		let cmd = this.newCommandWithText('save', true /* skip editor */);
 		cmd.nex.setVertical();
 		let sym = this.newESymbolWithText(systemState.getDefaultFileName());
 		sym.setSelected();

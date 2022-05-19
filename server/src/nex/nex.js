@@ -505,12 +505,17 @@ class Nex {
 	}
 
 	_setClickHandler(renderNode) {
-		renderNode.getDomNode().onmousedown = (event) => {
+		renderNode.addEventListener('mousedown', (event) => {
 			if (!this.clickActive) return true;
-			possiblyRecordAction(event, 'mouse');
-			eventQueueDispatcher.enqueueDoClickHandlerAction(this, renderNode, event)
-			event.stopPropagation();
-		};
+			let atTarget = !event.vodkaTargetFinished;
+			event.vodkaTargetFinished = true;
+			if (atTarget) {
+				possiblyRecordAction(event, 'mouse');
+			}
+			if (atTarget || this.extraClickHandler) {
+				eventQueueDispatcher.enqueueDoClickHandlerAction(this, renderNode, atTarget, event)
+			}
+		}, false);
 	}
 
 	renderInto(renderNode, renderFlags, withEditor) {

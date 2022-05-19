@@ -135,21 +135,6 @@ class DeferredValue extends NexContainer {
 		this._activated = true;
 	}
 
-	fastAppendChildAfter(c, after) {
-		c.clickActive = false;
-		return super.fastAppendChildAfter(c, after);
-	}
-
-	insertChildAt(c, i) {
-		c.clickActive = false;
-		return super.insertChildAt(c, i);
-	}
-
-	replaceChildAt(c, i) {
-		c.clickActive = false;
-		return super.replaceChildAt(c, i);
-	}
-
 	prettyPrintInternal(lvl, hdir) {
 		return this.standardListPrettyPrint(lvl, ',', hdir);
 	}

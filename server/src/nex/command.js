@@ -137,13 +137,13 @@ class Command extends NexContainer {
 
 	toStringV2() {
 		let cmdPrefix = Utils.convertMathToV2String(this.commandtext);
-		if (cmdPrefix != '') {
-			cmdPrefix = cmdPrefix + ' ';
-		}
 		// If the command contains characters that aren't parsable we put the command name
 		// in the private data section instead.
 		let re = /^[a-zA-Z0-9:.-]*$/;
-		if (re.test(cmdPrefix)) {
+		if (cmdPrefix == '' || re.test(cmdPrefix)) {
+			if (cmdPrefix != '') {
+				cmdPrefix = cmdPrefix + ' ';
+			}
 			return `~${this.toStringV2Literal()}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}${super.childrenToString('v2')}${this.listEndV2()}`;
 		} else {
 			// I only need this when serializing
@@ -470,6 +470,10 @@ class Command extends NexContainer {
 				let w = words[i];
 				if (i > this.numChildren()) {
 					let pw = words[i - 1];
+					if (!pw[pw.length - 1]) {
+						alert('got one!');
+						console.log('got one');
+					}
 					pw.push({
 						letter: spacechar,
 						ghost: pw[pw.length - 1].ghost,

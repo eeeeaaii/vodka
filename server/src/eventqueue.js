@@ -161,7 +161,7 @@ class EventQueue {
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
-	enqueueDoClickHandlerAction(target, renderNode, event) {
+	enqueueDoClickHandlerAction(target, renderNode, eventPhase, event) {
 		EVENT_DEBUG ? console.log('enqueueing: DoClickHandlerAction'):null;
 		let item = {
 			action: "doClickHandlerAction",
@@ -169,9 +169,10 @@ class EventQueue {
 			shouldDedupe: false,
 			renderNode: renderNode,
 			event: event,
+			eventPhase: eventPhase,
 			equals: null, // not needed when shouldDedupe = false
 			do: function doDoClickHandlerAction() {
-				respondToClickEvent(this.target, this.renderNode, event);
+				respondToClickEvent(this.target, this.renderNode, eventPhase, event);
 			}
 		};
 		// TODO: test this and see if it works at render priority

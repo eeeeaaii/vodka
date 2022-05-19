@@ -85,6 +85,8 @@ class RenderNode {
 		this.renderNodeIsDirty = true;
 
 		this.nodesThatIfDroppedInvalidateTheSelection = [];
+
+		this.domNodeEventListener = null;
 	}
 
 	nodeCopy() {
@@ -96,6 +98,22 @@ class RenderNode {
 		newNode.renderMode = this.renderMode;
 		newNode.isCurrentlyExploded = this.isCurrentlyExploded;
 		return newNode;
+	}
+
+	addEventListener(type, listener, options) {
+		if (this.domNodeEventListener) {
+			this.domNode.removeEventListener(
+				this.domNodeEventListener.type,
+				this.domNodeEventListener.listener,
+				this.domNodeEventListener.options,
+				);
+		}
+		this.domNodeEventListener = {
+			type:type,
+			listener:listener,
+			options:options
+		}
+		this.domNode.addEventListener(type, listener, options);
 	}
 
 	setRenderNodeDirtyForRendering(v) {

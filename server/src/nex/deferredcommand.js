@@ -69,6 +69,19 @@ class DeferredCommand extends Command {
 		return `*${this.toStringV2Literal()}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
 	}
 
+	deserializePrivateData(data) {
+		if (data) {
+			this.setCommandText(data);
+		}
+	}
+
+	serializePrivateData() {
+		let r = this.getCommandText();
+		if (!r) return '';
+		return r;
+	}
+
+
 	prettyPrintInternal(lvl, hdir) {
 		return this.standardListPrettyPrint(lvl, '*', hdir);
 	}
@@ -90,14 +103,14 @@ class DeferredCommand extends Command {
 
 	evaluate(executionEnv) {
 
-		this._runInfo = this.createRunInfo(executionEnv);
+		let copyOfSelf = this.makeCopy(true);
 
 		let dv = new DeferredValue();
+		copyOfSelf._runInfo = this.createRunInfo(executionEnv);
+		copyOfSelf._returnedValue = dv;
 
-		this._returnedValue = dv;
-
-		dv.appendChild(this);
-		let afg = new DeferredCommandActivationFunctionGenerator(this, executionEnv);
+		dv.appendChild(copyOfSelf);
+		let afg = new DeferredCommandActivationFunctionGenerator(copyOfSelf, executionEnv);
 		dv.set(afg);
 		dv.activate();
 
@@ -199,6 +212,10 @@ class DeferredCommand extends Command {
 	}
 
 	renderAfterChild() {}
+
+	callDeleteHandler() {
+		// no op but use this if you need for cleanup
+	}
 
 	getEventTable(context) {
 		// most of these have no tests?
