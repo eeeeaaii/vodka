@@ -105,7 +105,7 @@
 			<textarea id="goldenoutput"></textarea>
 		</div>
 		<div class="summarylist">
-			<div class="summaryname failed">Has Failing Test: 0</div>
+			<div class="summaryname failed">Has Failing Test: 1</div>
         <div class="summarylistitem">
           <span class="cbhint">-n</span>
           <span class="cbhint">-e</span>
@@ -118,6 +118,17 @@
           <input type="checkbox" onclick="checkAll(this, 'rerunfailing')">
 					<input type="checkbox" onclick="checkAll(this, 'ignorefailing')">
 					(select all)
+				</div>
+				<div class="summarylistitem"> 
+          <input type="checkbox" class="regennormalgoldenfailing" data-testname="actions_editor_lambda">
+          <input type="checkbox" class="regenexplodedgoldenfailing" data-testname="actions_editor_lambda">
+          <input type="checkbox" class="rerunfailing" data-testname="actions_editor_lambda">
+					<input type="checkbox" class="ignorefailing" data-testname="actions_editor_lambda">
+					<a class="listtestname" href="./alltests/actions_editor_lambda/actions_editor_lambda_testresults.html">actions_editor_lambda</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (1 failing)
+          (<a href="#" onclick="return show(this, 'actions_editor_lambda')">show</a>)
+          <div class="detail" id="DETAILFRAME-actions_editor_lambda"></div>
 				</div>
 		</div>
     <div class="summarylist">
@@ -137,7 +148,7 @@
         </div>
     </div>
 		<div class="summarylist">
-			<div class="summaryname passed">Has Passing Test: 212</div>
+			<div class="summaryname passed">Has Passing Test: 215</div>
         <div class="summarylistitem">
           <span class="cbhint">-n</span>
           <span class="cbhint">-e</span>
@@ -235,7 +246,7 @@
           <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
           <a class="listtestname" href="./alltests/actions_editor_lambda/actions_editor_lambda_testresults.html">actions_editor_lambda</a>
           <span class="smalltesttypebadge jstype">js</span>
-          (2 passing)
+          (1 passing)
           (<a href="#" onclick="return show(this, 'actions_editor_lambda')">show</a>)
           <div class="detail" id="DETAILFRAME-actions_editor_lambda"></div>
 				</div>
@@ -1162,6 +1173,39 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'execution_wrongarg')">show</a>)
           <div class="detail" id="DETAILFRAME-execution_wrongarg"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_async_canceldeferred">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_async_canceldeferred">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_async_canceldeferred">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_async_canceldeferred/functions_async_canceldeferred_testresults.html">functions_async_canceldeferred</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_async_canceldeferred')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_async_canceldeferred"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_async_waitforclick">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_async_waitforclick">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_async_waitforclick">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_async_waitforclick/functions_async_waitforclick_testresults.html">functions_async_waitforclick</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_async_waitforclick')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_async_waitforclick"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_async_waitfornothing">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_async_waitfornothing">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_async_waitfornothing">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_async_waitfornothing/functions_async_waitfornothing_testresults.html">functions_async_waitfornothing</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_async_waitfornothing')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_async_waitfornothing"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_car">

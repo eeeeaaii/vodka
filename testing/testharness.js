@@ -151,14 +151,17 @@ function getLegacyDefaultFlags() {
 }
 
 function doFlagOverrides(flags) {
-	// Note: globalappflags.js has flag overrides that are
-	// recorded when the user records a new test.
-	// However the overrides here are for when you want to forever override
-	// behavior, even for old tests. Example: you changed some behavior
-	// that broke all the old tests, and for the time being you want
-	// to keep the old behavior to keep the old tests passing.
-	flags.OLD_ARROW_KEY_TRAVERSAL = true;
-	flags.STATIC_PIPS = true;
+	// second legacy flags? this needs cleanup
+
+	let rflags = {
+		'OLD_ARROW_KEY_TRAVERSAL': true,
+		'STATIC_PIPS': true
+	}
+
+	for (let key in flags) {
+		rflags[key] = flags[key];
+	}
+
 	return flags;
 
 }

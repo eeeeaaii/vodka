@@ -51,7 +51,7 @@ function createWavetableBuiltins() {
 			setDefaultTimebase(a);
 			return new Nil();
 		},
-		'looks at the tags on |a and sets the default timebase based on their values.'
+		'Looks at the tags on |a and sets the default timebase based on their values.'
 	);
 
 	Builtin.createBuiltin(
@@ -62,7 +62,7 @@ function createWavetableBuiltins() {
 			startRecordingAudio(wt);
 			return wt;
 		},
-		'starts recording audio into the wavetable.'
+		'Starts recording audio into the wavetable.'
 	);
 
 
@@ -74,7 +74,7 @@ function createWavetableBuiltins() {
 			stopRecordingAudio(wt);
  			return wt;
 		},
-		'starts recording audio into the wavetable.'
+		'Starts recording audio into the wavetable.'
 	);
 
 	Builtin.createBuiltin(
@@ -92,7 +92,7 @@ function createWavetableBuiltins() {
 			oneshotPlay(wt.getData(), channelnumber);
 			return wt;
 		},
-		'plays the sound immediately on the given channel'
+		'Plays the sound immediately on the given channel'
 	);
 
 	Builtin.createBuiltin(
@@ -108,7 +108,7 @@ function createWavetableBuiltins() {
 			abortPlayback(channelnumber);
 			return new Nil();
 		},
-		'starts playing the sound at the next measure start'
+		'Starts playing the sound at the next measure start'
 	);
 
 
@@ -126,7 +126,7 @@ function createWavetableBuiltins() {
 			loopPlay(wt.getData(), channelnumber);
 			return wt;
 		},
-		'starts playing the sound at the next measure start'
+		'Starts playing the sound at the next measure start'
 	);
 
 	Builtin.createBuiltin(
@@ -143,7 +143,7 @@ function createWavetableBuiltins() {
 			}
 			return r;
 		},
-		'splits a wavetable into smaller sections based on markers added in wavetable editor'
+		'Splits a wavetable into smaller sections based on markers added in wavetable editor'
 	);
 
 
@@ -171,7 +171,7 @@ function createWavetableBuiltins() {
 			r.initWith(data);
 			return r;
 		},
-		'reverses wavetable |wt'
+		'Reverses wavetable |wt'
 	);	
 
 	Builtin.createBuiltin(
@@ -189,7 +189,7 @@ function createWavetableBuiltins() {
 			r.initWith(data);
 			return r;
 		},
-		'reverses wavetable |wt'
+		'Reverses wavetable |wt'
 	);
 
 	Builtin.createBuiltin(
@@ -212,7 +212,7 @@ function createWavetableBuiltins() {
 
 			return getConstantSignalFromValue(val, dur);
 		},
-		'returns |dur samples of a constant value |val'
+		'Returns |dur samples of a constant value |val'
 	);
 
 	Builtin.createBuiltin(
@@ -246,7 +246,7 @@ function createWavetableBuiltins() {
 			r.initWith(data);
 			return r;
 		},
-		'runs |wt1 through a single pole filter with a cutoff determined by |wt2'
+		'Runs |wt1 through a single pole filter with a cutoff determined by |wt2'
 	);	
 
 	Builtin.createBuiltin(
@@ -284,7 +284,7 @@ function createWavetableBuiltins() {
 			r.initWith(data);
 			return r;
 		},
-		'slows down rate of change of |wt1 to a maximum value per sample given by |wt2'
+		'Slows down rate of change of |wt1 to a maximum value per sample given by |wt2'
 	);	
 
 	Builtin.createBuiltin(
@@ -313,7 +313,7 @@ function createWavetableBuiltins() {
 			r.initWith(data);
 			return r;
 		},
-		'calls function |f on every sample in |wt (this may take a while for long samples)'
+		'Calls function |f on every sample in |wt (this may take a while for long samples)'
 	);	
 
 	Builtin.createBuiltin(
@@ -336,7 +336,7 @@ function createWavetableBuiltins() {
 			wt.initWith(data);
 			return wt;
 		},
-		'returns dur samples (or seconds, etc) of white noise'
+		'Returns dur samples (or seconds, etc) of white noise'
 	);
 
 	Builtin.createBuiltin(
@@ -360,7 +360,7 @@ function createWavetableBuiltins() {
 			wt.initWith(data);
 			return wt;
 		},
-		'returns a wavetable of a sine wave'
+		'Returns a wavetable of a sine wave'
 	);
 
 	Builtin.createBuiltin(
@@ -388,7 +388,7 @@ function createWavetableBuiltins() {
 			wt.initWith(data);
 			return wt;
 		},
-		'returns a wavetable of a gate signal'
+		'Returns a wavetable of a gate signal'
 	);	
 
 	Builtin.createBuiltin(
@@ -425,7 +425,7 @@ function createWavetableBuiltins() {
 			wt.initWith(data);
 			return wt;
 		},
-		'returns a wavetable of a square wave'
+		'Returns a wavetable of a square wave'
 	);
 
 	Builtin.createBuiltin(
@@ -449,7 +449,7 @@ function createWavetableBuiltins() {
 			wt.initWith(data);
 			return wt;
 		},
-		'returns a wavetable of a saw wave'
+		'Returns a wavetable of a saw wave'
 	);
 
 	Builtin.createBuiltin(
@@ -473,7 +473,7 @@ function createWavetableBuiltins() {
 			wt.initWith(data);
 			return wt;
 		},
-		'returns a wavetable of a saw wave'
+		'Returns a wavetable of a saw wave'
 	);
 
 	Builtin.createBuiltin(
@@ -519,7 +519,7 @@ function createWavetableBuiltins() {
 			wtr.initWith(data);
 			return wtr;
 		},
-		'resamples the audio to a duration or frequency.'
+		'Resamples the audio to a duration or frequency.'
 	);	
 
 	Builtin.createBuiltin(
@@ -541,7 +541,7 @@ function createWavetableBuiltins() {
 			return r;
 
 		},
-		'applies a gain to a wavetable (or attenuates it)'
+		'Applies a gain to a wavetable (or attenuates it)'
 	);
 
 
@@ -583,7 +583,7 @@ function createWavetableBuiltins() {
 			r.initWith(d);
 			return r;
 		},
-		'multiplies together all the passed in numbers or waves'
+		'Multiplies together all the passed in numbers or waves'
 	);
 
 	Builtin.createBuiltin(
@@ -627,7 +627,7 @@ function createWavetableBuiltins() {
 			r.initWith(d);
 			return r;
 		},
-		'pads the beginning of the sample with silence (or trims if a negative value is passed in)'
+		'Pads the beginning of the sample with silence (or trims if a negative value is passed in)'
 	);
 
 	Builtin.createBuiltin(
@@ -638,7 +638,7 @@ function createWavetableBuiltins() {
 			let val = wt.getAmp();
 			return new Float(val);
 		},
-		'gets the amplitude of a signal (max of absolute value, not RMS)'
+		'Gets the amplitude of a signal (max of absolute value, not RMS)'
 	);
 
 	Builtin.createBuiltin(
@@ -649,7 +649,7 @@ function createWavetableBuiltins() {
 			let val = wt.getDuration();
 			return new Integer(val);
 		},
-		'gets the duration of a signal in samples'
+		'Gets the duration of a signal in samples'
 	);
 
 	Builtin.createBuiltin(
@@ -664,7 +664,7 @@ function createWavetableBuiltins() {
 			dur = convertTimeToSamples(dur);
 			return new Wavetable(dur);
 		},
-		'creates an empty wavetable (silence) with a duration of the requested number of samples'
+		'Creates an empty wavetable (silence) with a duration of the requested number of samples'
 	);
 
 	Builtin.createBuiltin(
@@ -706,7 +706,7 @@ function createWavetableBuiltins() {
 			r.initWith(d);
 			return r;
 		},
-		'mixes together all the wavetables passed in'
+		'Mixes together all the wavetables passed in'
 	);
 
 	Builtin.createBuiltin(
@@ -729,7 +729,7 @@ function createWavetableBuiltins() {
 			r.initWith(data);
 			return r;
 		},
-		'repeats a signal for |dur time.'
+		'Repeats a signal for |dur time.'
 	);
 
 	Builtin.createBuiltin(
@@ -758,7 +758,7 @@ function createWavetableBuiltins() {
 			wtr.calculateAmplitude();
 			return wtr;
 		},
-		'sequences several wavetables into a single one'
+		'Sequences several wavetables into a single one'
 	);
 
 	Builtin.createBuiltin(
@@ -774,7 +774,7 @@ function createWavetableBuiltins() {
 
 			return r;
 		},
-		'returns a list of all the available audio files.'
+		'Returns a list of all the available audio files.'
 	);
 
 	Builtin.createBuiltin(
@@ -787,7 +787,7 @@ function createWavetableBuiltins() {
 			r.loadFromFile(fname);
 			return r;
 		},
-		'returns a list of all the available audio files.'
+		'Returns a list of all the available audio files.'
 	);
 
 	Builtin.createBuiltin(
@@ -799,7 +799,7 @@ function createWavetableBuiltins() {
 			setBpm(v);
 			return new Nil();
 		},
-		'sets the global BPM used in time calculations.'
+		'Sets the global BPM used in time calculations.'
 	);
 }
 

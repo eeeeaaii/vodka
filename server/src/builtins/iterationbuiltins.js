@@ -63,7 +63,7 @@ function createIterationBuiltins() {
 			}
 			return resultList;
 		},
-		'returns a new list containing only the elements of |list for which |func calls true when it is called on that element.'
+		'Returns a new list containing only the elements of |list for which |func calls true when it is called on that element.'
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
@@ -100,7 +100,7 @@ function createIterationBuiltins() {
 			}
 			return resultList;
 		},
-		'goes through all the elements in |list and replaces each one with the result of calling |func on that element.'
+		'Goes through all the elements in |list and replaces each one with the result of calling |func on that element.'
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
@@ -134,7 +134,7 @@ function createIterationBuiltins() {
 			}
 			return p;
 		},
-		'progressively updates a value, starting with |startvalue, by calling |func on each element in |list, passing in 1. the list element and 2. the progressively updated value, returning the final updated value.'
+		'Progressively updates a value, starting with |startvalue, by calling |func on each element in |list, passing in 1. the list element and 2. the progressively updated value, returning the final updated value.'
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -167,7 +167,7 @@ function createIterationBuiltins() {
 			}
 			return result;
 		},
-		'loops over a list, evaluating a function on each member, and returning the last result.'
+		'Loops over a list, evaluating a function on each member, and returning the last result.'
 	);
 
 	Builtin.createBuiltin(
@@ -200,7 +200,7 @@ function createIterationBuiltins() {
 			}
 			return result;
 		},
-		`returns a list containing all the integers from 0 to n`
+		`Returns a list containing all the integers from 0 to n`
 	)
 
 

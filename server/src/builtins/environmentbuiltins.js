@@ -67,7 +67,7 @@ function createEnvironmentBuiltins() {
 			}
 			return r;
 		},
-		'Returns a list of all globally bound variables.'
+		'Returns a list of all globally bound variables that match the search string |search, or all if |search is omitted.'
 	);
 
 
@@ -87,7 +87,7 @@ function createEnvironmentBuiltins() {
 			}
 			return r;
 		},
-		'Returns a list of all standard Vodka builtin functions.'
+		'Returns a list of standard Vodka builtin function names that match |search, or all of them if |search arg is not provided.'
 	);
 
 
@@ -159,7 +159,7 @@ function createEnvironmentBuiltins() {
 			rhs.setLexicalEnvironment(executionEnvironment);
 			return rhs;
 		},
-		'Replaces the lexical environment of |closure with the current lexical environment.'
+		'Replaces the lexical environment of |closure with the lexical environment that exists at the call site of this call to unclose.'
 	);	
 
 

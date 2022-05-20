@@ -36,6 +36,8 @@ class DeferredValue extends NexContainer {
 
 		this.listeners = [];
 
+		this._cancelled = false;
+
 		gc.register(this);
 	}
 
@@ -60,6 +62,7 @@ class DeferredValue extends NexContainer {
 
 	cancel() {
 		this.ffgen--;
+		this._cancelled = true;
 	}
 
 	isActivated() {
@@ -105,6 +108,7 @@ class DeferredValue extends NexContainer {
 	finish(value, doRepeat) {
 		if (this.ffgen < getFFGen()) {
 			// either this was cancelled or all pending deferreds were cancelled.
+			this._cancelled = true;
 			return;
 		}
 		this.setDirtyForRendering(true);
@@ -210,7 +214,10 @@ class DeferredValue extends NexContainer {
 			} else {
 				dotspan.classList.remove('editing');
 			}
-			if (this._activated && !this._finished) {
+
+			if (this._cancelled) {
+				dotspan.innerHTML = '<span class="dnospin">⤬</span>'
+			} else if (this._activated && !this._finished) {
 				dotspan.innerHTML = '<span class="dspin">↻</span>'
 			} else {
 				dotspan.innerHTML = '<span class="dnospin">⤓</span>'

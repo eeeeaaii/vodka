@@ -36,7 +36,7 @@ function createLogicBuiltins() {
 		function $and(env, executionEnvironment) {
 			return new Bool(env.lb('val1').getTypedValue() && env.lb('val2').getTypedValue());		
 		},
-		'returns true if both |val1 and |val2 evaluate to boolean true.',
+		'Returns true if both |val1 and |val2 evaluate to boolean true.',
 		true /* infix */
 	)
 
@@ -57,7 +57,7 @@ function createLogicBuiltins() {
 			}
 			return new Nil();
 		},
-		'returns the first argument that does not evaluate to nil, ignoring the rest.'
+		'Returns the first argument that does not evaluate to nil, ignoring the rest. Alias: case.'
 	)
 
 	Builtin.aliasBuiltin('case', 'first-non-nil');
@@ -88,35 +88,28 @@ function createLogicBuiltins() {
 				return iffalseresult;
 			}
 		},
-		'evalutes |cond, and if it is true, return |iftrue, otherwise return |iffalse.'
+		'Evalutes |cond, and if it is true, return |iftrue, otherwise return |iffalse. If |iffalse is not provided, a Nil is returned if |cond is false. Alias: if.'
 	)
 	Builtin.aliasBuiltin('if', 'if then else');
 
 
-	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
-
-	function $not(env, executionEnvironment) {
-		return new Bool(!env.lb('val').getTypedValue());
-	}
-
 	Builtin.createBuiltin(
 		'not',
 		[ 'val!' ],
-		$not,
-		'evalutes to true if |val evaluates to false, or false if |val evaluates to true.'
+		function $not(env, executionEnvironment) {
+			return new Bool(!env.lb('val').getTypedValue());
+		},
+		'Evalutes to true if |val evaluates to false, or false if |val evaluates to true.'
 	)
 
-	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
-
-	function $or(env, executionEnvironment) {
-		return new Bool(env.lb('val1').getTypedValue() || env.lb('val2').getTypedValue());
-	}
 
 	Builtin.createBuiltin(
 		'or',
 		[ 'val1!', 'val2!' ],
-		$or,
-		'evaluates to true if either or both of |val1 or |val2 evaluate to true.',
+		function $or(env, executionEnvironment) {
+			return new Bool(env.lb('val1').getTypedValue() || env.lb('val2').getTypedValue());
+		},
+		'Evaluates to true if either or both of |val1 or |val2 evaluate to true.',
 		true /* infix */
 	)
 

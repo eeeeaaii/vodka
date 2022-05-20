@@ -41,17 +41,6 @@ import {
 function createAsyncBuiltins() {
 
 	Builtin.createBuiltin(
-		'activate',
-		[ 'def*'],
-		function $activate(env, executionEnvironment) {
-			let def = env.lb('def');
-			def.activate();
-			return def; // or 2?
-		},
-		'Activates an unactivated deferred |def. Most deferreds are activated by default when they are created, so this is likely not needed in most cases.'
-	);
-
-	Builtin.createBuiltin(
 		'cancel-deferred',
 		[ 'def*?' ],
 		function $cancelDeferred(env, executionEnvironment) {
@@ -64,20 +53,8 @@ function createAsyncBuiltins() {
 				return def;
 			}
 		},
-		'cancels the optional deferred argument |def (it will never complete), or, if no arguments are provided, cancels all unfinished deferreds known by the system.'
+		'Cancels the optional deferred argument |def (it will never complete), or, if no arguments are provided, cancels all unfinished deferreds known by the system.'
 	);
-
-	// deprecated, whether something is visible on the screen or not is kind of irrelevant.
-	// you might want to cancel ALL unfulfilled deferreds if you paint yourself in a corner.
-	// Builtin.createBuiltin(
-	// 	'exp-gc',
-	// 	[],
-	// 	function $expGc(env, executionEnvironment) {
-	// 		eventQueueDispatcher.enqueueGC();
-	// 		return new Nil();
-	// 	},
-	// 	'attempts to cancel any unfulfilled deferreds that are not visible on the screen.'
-	// );
 
 	Builtin.createBuiltin(
 		'wait-for-nothing',
@@ -104,7 +81,7 @@ function createAsyncBuiltins() {
 			dv.activate();
 			return dv;
 		},
-		'returns a deferred value that settles every time |nex is clicked on.'
+		'Returns a deferred value that settles every time |nex is clicked on.'
 	);
 
 	Builtin.createBuiltin(
@@ -120,7 +97,7 @@ function createAsyncBuiltins() {
 			dv.activate();
 			return dv;
 		},
-		'returns a deferred value that waits for |time milliseconds, then finishes.'
+		'Returns a deferred value that waits for |time milliseconds, then finishes.'
 	);
 
 

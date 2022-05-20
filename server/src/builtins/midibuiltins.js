@@ -55,7 +55,7 @@ function createMidiBuiltins() {
 			dv.appendChild(waitmessage)
 			return dv;
 		},
-		'lists midi inputs'
+		'Lists midi inputs.'
 	);
 
 
@@ -76,7 +76,7 @@ function createMidiBuiltins() {
 			dv.activate();
 			return dv;
 		},
-		'returns a deferred value that updates any time a midi event is received.'
+		'Returns a deferred value that updates any time a midi event is received on |midiport.'
 	);
 	
 }

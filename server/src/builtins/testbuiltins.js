@@ -28,7 +28,7 @@ function createTestBuiltins() {
 		function $isBoolean(env, executionEnvironment) {
 			return new Bool(Utils.isBool(env.lb('nex')));
 		},
-		`returns true if |nex is a boolean.`
+		`Returns true if |nex is a boolean.`
 	);
 
 	Builtin.createBuiltin(
@@ -37,7 +37,7 @@ function createTestBuiltins() {
 		function $isCommand(env, executionEnvironment) {
 			return new Bool(Utils.isCommand(env.lb('nex')));
 		},
-		`returns true if |nex is a command.`
+		`Returns true if |nex is a command.`
 	);
 
 	Builtin.createBuiltin(
@@ -46,7 +46,7 @@ function createTestBuiltins() {
 		function $isDoc(env, executionEnvironment) {
 			return new Bool(Utils.isDoc(env.lb('nex')));
 		},
-		`returns true if |nex is a doc.`
+		`Returns true if |nex is a doc.`
 	);
 
 	Builtin.createBuiltin(
@@ -57,7 +57,7 @@ function createTestBuiltins() {
 			let rb = !lst.hasChildren();
 			return new Bool(rb);
 		},
-		`returns true if |list is empty.`
+		`Returns true if |list is empty.`
 	);
 
 	Builtin.createBuiltin(
@@ -66,7 +66,7 @@ function createTestBuiltins() {
 		function $isDeferredCommand(env, executionEnvironment) {
 			return new Bool(Utils.isDeferredCommand(env.lb('nex')));
 		},
-		`returns true if |nex is a deferred command.`
+		`Returns true if |nex is a deferred command.`
 	);
 
 	Builtin.createBuiltin(
@@ -75,7 +75,7 @@ function createTestBuiltins() {
 		function $isDeferredValue(env, executionEnvironment) {
 			return new Bool(Utils.isDeferredValue(env.lb('nex')));
 		},
-		`returns true if |nex is a deferred value.`
+		`Returns true if |nex is a deferred value.`
 	);
 
 	Builtin.createBuiltin(
@@ -84,7 +84,7 @@ function createTestBuiltins() {
 		function $isError(env, executionEnvironment) {
 			return new Bool(Utils.isError(env.lb('nex')));
 		},
-		`returns true if |nex is an error.`
+		`Returns true if |nex is an error.`
 	);
 
 	Builtin.createBuiltin(
@@ -93,7 +93,7 @@ function createTestBuiltins() {
 		function $isFloat(env, executionEnvironment) {
 			return new Bool(Utils.isFloat(env.lb('nex')));
 		},
-		`returns true if |nex is a float.`
+		`Returns true if |nex is a float.`
 	);
 
 	Builtin.createBuiltin(
@@ -102,7 +102,7 @@ function createTestBuiltins() {
 		function $isInteger(env, executionEnvironment) {
 			return new Bool(Utils.isInteger(env.lb('nex')));
 		},
-		`returns true if |nex is an integer.`
+		`Returns true if |nex is an integer.`
 	);
 
 	Builtin.createBuiltin(
@@ -111,7 +111,7 @@ function createTestBuiltins() {
 		function $isLambda(env, executionEnvironment) {
 			return new Bool(Utils.isLambda(env.lb('nex')));
 		},
-		`returns true if |nex is a lambda.`
+		`Returns true if |nex is a lambda.`
 	);
 
 	Builtin.createBuiltin(
@@ -120,7 +120,7 @@ function createTestBuiltins() {
 		function $isLetter(env, executionEnvironment) {
 			return new Bool(Utils.isLetter(env.lb('nex')));
 		},
-		`returns true if |nex is a letter.`
+		`Returns true if |nex is a letter.`
 	);
 
 	Builtin.createBuiltin(
@@ -129,7 +129,7 @@ function createTestBuiltins() {
 		function $isLine(env, executionEnvironment) {
 			return new Bool(Utils.isLine(env.lb('nex')));
 		},
-		`returns true if |nex is a line.`
+		`Returns true if |nex is a line.`
 	);
 
 	Builtin.createBuiltin(
@@ -138,7 +138,7 @@ function createTestBuiltins() {
 		function $isList(env, executionEnvironment) {
 			return new Bool(Utils.isNexContainer(env.lb('nex')));
 		},
-		`returns true if |nex is a list.`
+		`Returns true if |nex is a list.`
 	);
 
 	Builtin.createBuiltin(
@@ -147,7 +147,7 @@ function createTestBuiltins() {
 		function $isNil(env, executionEnvironment) {
 			return new Bool(Utils.isNil(env.lb('nex')));
 		},
-		`returns true if |nex is nil.`
+		`Returns true if |nex is nil.`
 	);
 
 	Builtin.createBuiltin(
@@ -156,7 +156,7 @@ function createTestBuiltins() {
 		function $isSeparator(env, executionEnvironment) {
 			return new Bool(Utils.isSeparator(env.lb('nex')));
 		},
-		`returns true if |nex is a separator.`
+		`Returns true if |nex is a separator.`
 	);
 
 	Builtin.createBuiltin(
@@ -165,7 +165,7 @@ function createTestBuiltins() {
 		function $isString(env, executionEnvironment) {
 			return new Bool(Utils.isEString(env.lb('nex')));
 		},
-		`returns true if |nex is a string.`
+		`Returns true if |nex is a string.`
 	);
 
 	Builtin.createBuiltin(
@@ -174,7 +174,7 @@ function createTestBuiltins() {
 		function $isSymbol(env, executionEnvironment) {
 			return new Bool(Utils.isESymbol(env.lb('nex')));
 		},
-		`returns true if |nex is a symbol.`
+		`Returns true if |nex is a symbol.`
 	);
 
 	Builtin.createBuiltin(
@@ -183,7 +183,7 @@ function createTestBuiltins() {
 		function $isWord(env, executionEnvironment) {
 			return new Bool(Utils.isWord(env.lb('nex')));
 		},
-		`returns true if |nex is a word.`
+		`Returns true if |nex is a word.`
 	);
 }
 

@@ -41,7 +41,7 @@ function createTagBuiltins() {
 			nex.addTag(new Tag(tagname));
 			return nex;
 		},
-		'adds the tag |tag to |nex'
+		'Adds the tag |tag to |nex.'
 	);
 
 	Builtin.createBuiltin(
@@ -52,7 +52,7 @@ function createTagBuiltins() {
 			n.clearTags();
 			return n;
 		},
-		'clears all tags from |nex'
+		'Clears all tags from |nex.'
 	);
 
 
@@ -69,7 +69,7 @@ function createTagBuiltins() {
 				return new Bool(false);
 			}
 		},
-		'returns true if |nex has a tag equal to |tag'
+		'Returns true if |nex has a tag equal to |tag.'
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -85,7 +85,7 @@ function createTagBuiltins() {
 			n.removeTag(tag);
 			return n;
 		},
-		'removes tag |tag from |nex'
+		'Removes tag |tag from |nex.'
 	);
 }
 

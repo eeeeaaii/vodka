@@ -51,7 +51,7 @@ function createTypeConversionBuiltins() {
 			let n = env.lb('nex');
 			return n.getLambda().makeCopy();
 		},
-		'returns a lambda expression identical to the one used to create the passed-in closure (does not modify the closure)'
+		'Returns a lambda expression identical to the one used to create the passed-in closure (does not modify the closure)'
 		)
 
 	// TODO: actually what I should do is tag it with something like "not fatal"
@@ -89,7 +89,7 @@ function createTypeConversionBuiltins() {
 			newresult.setErrorType(errtype);
 			return newresult;
 		},
-		'if |nex is an error, converts the error type to |errtype (allowed values are "warn", "info", and "fatal"), otherwise just returns |nex.'
+		'If |nex is an error, converts the error type to |errtype (allowed values are "warn", "info", and "fatal"), otherwise just returns |nex.'
 	);
 
 	Builtin.createBuiltin(
@@ -134,7 +134,7 @@ function createTypeConversionBuiltins() {
 				return new EError(`to-float: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
 			}
 		},
-		'converts |nex to a float, or returns an error if this is impossible.'
+		'Converts |nex to a float, or returns an error if this is impossible.'
 	);
 
 	Builtin.createBuiltin(
@@ -179,7 +179,7 @@ function createTypeConversionBuiltins() {
 				return new EError(`to-integer: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
 			}
 		},
-		'converts |nex to an integer, or returns an error if this is impossible.'
+		'Converts |nex to an integer, or returns an error if this is impossible.'
 
 	);
 
@@ -214,7 +214,7 @@ function createTypeConversionBuiltins() {
 
 			}
 		},
-		'converts |nex to a string, or returns an error if this is impossible.'
+		'Converts |nex to a string, or returns an error if this is impossible.'
 
 	);
 
@@ -249,7 +249,7 @@ function createTypeConversionBuiltins() {
 				return new EError(`to-word: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
 			}
 		},
-		'converts |nex to a word, or returns an error if this is impossible.'
+		'Converts |nex to a word, or returns an error if this is impossible.'
 	);
 
 }

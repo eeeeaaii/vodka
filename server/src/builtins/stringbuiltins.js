@@ -36,7 +36,7 @@ function createStringBuiltins() {
 			}
 			return new EString(r);
 		},
-		'concatenates the passed-in strings and returns the result.'
+		'Concatenates the passed-in strings and returns the result.'
 	);
 	// this alias makes tests pass
 	Builtin.aliasBuiltin('string-cat', 'concatenate-strings');
@@ -53,7 +53,7 @@ function createStringBuiltins() {
 			let c = s.charAt(n);
 			return new EString(c);
 		},
-		'returns the character in |str at index position |pos.'
+		'Returns the character in |str at index position |pos.'
 	);
 	// this alias makes tests pass
 	Builtin.aliasBuiltin('string-char-at', 'char-at in-string');
@@ -67,7 +67,7 @@ function createStringBuiltins() {
 			let i = s.indexOf(tofind);
 			return new Integer(i);
 		},
-		'returns the index position of |tofind in |str.'
+		'Returns the index position of |tofind in |str.'
 	);
 	// this alias makes tests pass
 	Builtin.aliasBuiltin('string-index-of', 'index-of-string in-string');
@@ -85,7 +85,7 @@ function createStringBuiltins() {
 			}
 			return new EString(r);
 		},
-		'joins the string elements of |strs into a single string on the separator |on.'
+		'Joins the string elements of |strs into a single string on the separator |on.'
 	);
 
 
@@ -97,7 +97,7 @@ function createStringBuiltins() {
 			let len = s.length;
 			return new Integer(len);
 		},
-		'returns the length of (number of characters in) |str'
+		'Returns the length of (number of characters in) |str'
 	);
 	// this alias makes tests pass
 	Builtin.aliasBuiltin('string-length', 'length-of-string');
@@ -116,7 +116,7 @@ function createStringBuiltins() {
 			}
 			return r;
 		},
-		'turns a string into a list of strings of one-letter each, one for each letter in |str.'
+		'Turns a string into a list of strings of one-letter each, one for each letter in |str.'
 	);
 	// this alias makes tests pass
 	Builtin.aliasBuiltin('string-listify', 'listify-string');
@@ -136,7 +136,7 @@ function createStringBuiltins() {
 			}
 			return lst;
 		},
-		'splits |str into separate strings on the separator |on.'
+		'Splits |str into separate strings on the separator |on.'
 	);
 
 
@@ -150,7 +150,7 @@ function createStringBuiltins() {
 			let s = str.substring(start, len);
 			return new EString(s);
 		},
-		'retrieves a substring of |str from |start to |len'
+		'Retrieves a substring of |str from |start to |len'
 	);
 
 
@@ -161,7 +161,7 @@ function createStringBuiltins() {
 			let str = env.lb('str').getFullTypedValue();
 			return new Bool(str == '');
 		},
-		'returns true if |str is the empty string.'
+		'Returns true if |str is the empty string.'
 	);
 }
 

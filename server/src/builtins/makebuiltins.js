@@ -37,7 +37,7 @@ function createMakeBuiltins() {
 			let r = new Wavetable();
 			return r;
 		},
-		'creates a new wavetable.'
+		'Creates a new wavetable.'
 	);
 
 
@@ -47,7 +47,7 @@ function createMakeBuiltins() {
 		function $makeNil(env, executionEnvironment) {
 			return new Nil();
 		},
-		'creates a nil object.'
+		'Creates a nil object.'
 	);
 
 	Builtin.createBuiltin(
@@ -67,7 +67,7 @@ function createMakeBuiltins() {
 			}
 			return cmd;
 		},
-		'creates a new command containing the args as children.'
+		'Creates a new command containing the args as children.'
 	);
 
 	Builtin.createBuiltin(
@@ -81,7 +81,7 @@ function createMakeBuiltins() {
 			}
 			return r;
 		},
-		'creates a new doc containing the args as children.'
+		'Creates a new doc containing the args as children.'
 	);
 
 	Builtin.createBuiltin(
@@ -96,7 +96,7 @@ function createMakeBuiltins() {
 			}
 			return r;
 		},
-		'creates a new deferred command containing |args as children.'
+		'Creates a new deferred command containing |args as children.'
 	);
 
 	Builtin.createBuiltin(
@@ -111,7 +111,7 @@ function createMakeBuiltins() {
 			}
 			return r;
 		},
-		'creates a new lambda containing the args as children.'
+		'Creates a new lambda containing the args as children.'
 	);
 
 	Builtin.createBuiltin(
@@ -125,7 +125,7 @@ function createMakeBuiltins() {
 			}
 			return r;
 		},
-		'creates a new line containing the args as children.'
+		'Creates a new line containing the args as children.'
 	);
 
 	Builtin.createBuiltin(
@@ -139,7 +139,7 @@ function createMakeBuiltins() {
 			}
 			return r;
 		},
-		'creates a new word containing the args as children.'
+		'Creates a new word containing the args as children.'
 	);
 
 	Builtin.createBuiltin(
@@ -153,7 +153,7 @@ function createMakeBuiltins() {
 			}
 			return r;
 		},
-		'creates a new org containing the args as children.'
+		'Creates a new org containing the args as children.'
 	);
 
 	Builtin.createBuiltin(
@@ -166,7 +166,7 @@ function createMakeBuiltins() {
 			r.suppressNextCatch();
 			return r;
 		},
-		'creates a new (fatal) error with |str as the description.'
+		'Creates a new (fatal) error with |str as the description.'
 	);
 
 	Builtin.createBuiltin(
@@ -178,7 +178,7 @@ function createMakeBuiltins() {
 			r.setErrorType(ERROR_TYPE_WARN);
 			return r;
 		},
-		'creates a new warning (an error with type WARN) with |str as the description.'
+		'Creates a new warning (an error with type WARN) with |str as the description.'
 	);
 
 	Builtin.createBuiltin(
@@ -190,7 +190,7 @@ function createMakeBuiltins() {
 			r.setErrorType(ERROR_TYPE_INFO);
 			return r;
 		},
-		'creates a new info (an error with type INFO) with |str as the description.'
+		'Creates a new info (an error with type INFO) with |str as the description.'
 	);
 }
 

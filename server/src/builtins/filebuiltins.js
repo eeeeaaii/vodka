@@ -123,6 +123,34 @@ function createFileBuiltins() {
 		},
 		'loads the file |name as a nex/object (parsing it)'
 	);
+	
+	Builtin.createBuiltin(
+		'load-raw',
+		[ '_name' ],
+		function $loadFile(env, executionEnvironment) {
+			let name = env.lb('name');
+			let nametype = name.getTypeName();
+			// need to look for illegal filename characters if it's a string?
+			let nm = nametype == '-symbol-' ? name.getTypedValue() : name.getFullTypedValue();
+
+			let def = new DeferredValue();
+			def.set(new GenericActivationFunctionGenerator(
+				'load-raw', 
+				function(callback, def) {
+					loadRaw(nm, function(loadResult) {
+						callback(new EString(loadResult));
+					})
+				}
+			));
+			let loadingMessage = new EError(`load file ${nm}`);
+			loadingMessage.setErrorType(ERROR_TYPE_INFO);
+			def.appendChild(loadingMessage)
+			def.activate();
+			return def;
+		},
+		'Loads raw bytes from the file |name into a string, and returns it.'
+	);
+
 
 	Builtin.createBuiltin(
 		'eval-and-save',
@@ -185,33 +213,6 @@ function createFileBuiltins() {
 			return def;			
 		},
 		'Saves |val in the file |name (without evaluating |val).'
-	);
-
-	Builtin.createBuiltin(
-		'load-raw',
-		[ '_name' ],
-		function $loadFile(env, executionEnvironment) {
-			let name = env.lb('name');
-			let nametype = name.getTypeName();
-			// need to look for illegal filename characters if it's a string?
-			let nm = nametype == '-symbol-' ? name.getTypedValue() : name.getFullTypedValue();
-
-			let def = new DeferredValue();
-			def.set(new GenericActivationFunctionGenerator(
-				'load-raw', 
-				function(callback, def) {
-					loadRaw(nm, function(loadResult) {
-						callback(new EString(loadResult));
-					})
-				}
-			));
-			let loadingMessage = new EError(`load file ${nm}`);
-			loadingMessage.setErrorType(ERROR_TYPE_INFO);
-			def.appendChild(loadingMessage)
-			def.activate();
-			return def;
-		},
-		'Loads raw bytes from the file |name into a string, and returns it.'
 	);
 
 

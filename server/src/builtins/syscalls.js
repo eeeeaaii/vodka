@@ -57,7 +57,7 @@ function createSyscalls() {
 			webFontManager.loadFont(name);
 			return new Nil();
 		},
-		'loads a Google web font with the passed-in name (see fonts.google.com for options)'
+		'Loads a Google web font with the passed-in name (see fonts.google.com for options)'
 	);
 
 
@@ -68,7 +68,8 @@ function createSyscalls() {
 			systemState.setKeyFunnelActive(false);
 			systemState.setMouseFunnelActive(false);
 			return new Nil();
-		}
+		},
+		'Disconnects the event funnel (used to disable IDE features).'
 	);
 
 	Builtin.createBuiltin(
@@ -76,8 +77,9 @@ function createSyscalls() {
 		[ ],
 		function $getTime(env, executionEnvironment) {
 			let t = window.performance.now();
-			return new Integer(t);
-		}
+			return new Float(t);
+		},
+		'Get the date and time.'
 	);
 
 	Builtin.createBuiltin(
@@ -87,7 +89,8 @@ function createSyscalls() {
 			let n = env.lb('nex');
 			n.renderOnlyThisNex();
 			return n;
-		}
+		},
+		'Force |nex to be rerendered (redrawn on the screen).'
 	);
 
 	Builtin.createBuiltin(
@@ -98,7 +101,8 @@ function createSyscalls() {
 			let n = env.lb('nex');
 			n.setCurrentStyle(s);
 			return n;
-		}
+		},
+		'Apply the css style |style to |nex, overwriting whatever styling it already has.'
 	);
 
 	Builtin.createBuiltin(
@@ -109,23 +113,25 @@ function createSyscalls() {
 			let n = env.lb('nex');
 			n.setPfont(pf);
 			return n;
-		}
+		},
+		'Applies a parametric font style called |pfont to |nex.'
 	);
 
 	
 	// this is basically just for testing foreign function interface
 
 	Builtin.createBuiltin(
-		'get-style-from',
+		'get-css-style-from',
 		[ 'nex' ],
 		function $getStyleFrom(env, executionEnvironment) {
 			let n = env.lb('nex');
 			let s = n.getCurrentStyle();
 			return new EString(s);
-		}
+		},
+		'Return whatever css style overrides |nex currently has.'
 	);
 
-	Builtin.aliasBuiltin('get-css-style-from', 'get-style-from');
+	Builtin.aliasBuiltin('get-style-from', 'get-css-style-from');
 
 	Builtin.createBuiltin(
 		'get-pixel-height',
@@ -199,7 +205,8 @@ function createSyscalls() {
 			let nex = env.lb('nex');
 			console.log(nex.debugString());
 			return nex;
-		}
+		},
+		'Logs the |nex to the browser Javascript console.'
 
 	);
 
@@ -240,7 +247,8 @@ function createSyscalls() {
 			} else {
 				return new EString(result);
 			}
-		}
+		},
+		'Runs arbitrary Javascript code |expr.'
 	);
 }
 

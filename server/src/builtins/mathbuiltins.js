@@ -25,10 +25,6 @@ import { UNBOUND } from '../environment.js'
 
 function createMathBuiltins() {
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	
-
 	// minuend - subtrahend
 
 	Builtin.createBuiltin(
@@ -54,13 +50,10 @@ function createMathBuiltins() {
 				}
 			}
 		},
-		'subtracts |sub from |min and returns the result.',
+		'Subtracts |sub from |min and returns the result.',
 		true /* is infix */
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	
 
 	Builtin.createBuiltin(
 		/* not-equal */ '<>',
@@ -71,7 +64,7 @@ function createMathBuiltins() {
 			let r = (a != b);
 			return new Bool(r);
 		},
-		'returns true if |lhs evaluates to a number that is not equal to |rhs.',
+		'Returns true if |lhs evaluates to a number that is not equal to |rhs.',
 		true /* is infix */
 	);
 
@@ -96,7 +89,7 @@ function createMathBuiltins() {
 		/* plus */ '+',
 		[ 'add#%...' ],
 		$plus,
-		'adds the arguments and returns the result.',
+		'Adds the arguments and returns the result.',
 		true /* is infix */
 	);
 
@@ -113,7 +106,7 @@ function createMathBuiltins() {
 		/* greater-than */ '>',
 		[ 'lhs#%', 'rhs#%' ],
 		$greaterThan,
-		'returns true if |lhs evaluates to a number that is strictly greater than |rhs.',
+		'Returns true if |lhs evaluates to a number that is strictly greater than |rhs.',
 		true /* is infix */
 	);
 
@@ -130,7 +123,7 @@ function createMathBuiltins() {
 		/* greater-than-or-equal-to */ '>=',
 		[ 'lhs#%', 'rhs#%' ],
 		$greaterThanOrEqualTo,
-		'returns true if |lhs evaluates to a number that is greater than or equal to |rhs.',
+		'Returns true if |lhs evaluates to a number that is greater than or equal to |rhs.',
 		true /* is infix */
 	);
 
@@ -147,7 +140,7 @@ function createMathBuiltins() {
 		/* less-than */ '<',
 		[ 'lhs#%', 'rhs#%' ],
 		$lessThan,
-		'returns true if |lhs evaluates to a number that is strictly less than |rhs.',
+		'Returns true if |lhs evaluates to a number that is strictly less than |rhs.',
 		true /* is infix */
 	);
 
@@ -164,7 +157,7 @@ function createMathBuiltins() {
 		/* less-than-or-equal-to */ '<=',
 		[ 'lhs#%', 'rhs#%' ],
 		$lessThanOrEqualTo,
-		'returns true if |lhs evaluates to a number that is less than or equal to |rhs.',
+		'Returns true if |lhs evaluates to a number that is less than or equal to |rhs.',
 		true /* is infix */
 	);
 
@@ -189,7 +182,7 @@ function createMathBuiltins() {
 		/* divided-by */ '/',
 		[ 'divid#%', 'divis#%' ],
 		$dividedBy,
-		'divides |divid by |divis and returns the result.',
+		'Divides |divid by |divis and returns the result.',
 		true /* is infix */
 	);
 
@@ -206,7 +199,7 @@ function createMathBuiltins() {
 		/* equals */ '=',
 		[ 'lhs#%', 'rhs#%' ],
 		$equals,
-		'returns true if |lhs and |rhs evaluates to numbers that are equal.',
+		'Returns true if |lhs and |rhs evaluates to numbers that are equal.',
 		true /* is infix */
 	);
 
@@ -231,7 +224,7 @@ function createMathBuiltins() {
 		/* times */ '*',
 		[ 'fact#%...' ],
 		$times,
-		'multiplies the args and returns the result.',
+		'Multiplies the args and returns the result.',
 		true /* is infix */
 	);
 
@@ -245,7 +238,7 @@ function createMathBuiltins() {
 		'get-pi',
 		[ ],
 		$getPi,
-		'returns pi.'
+		'Returns pi.'
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -258,7 +251,7 @@ function createMathBuiltins() {
 		'get-e',
 		[ ],
 		$getE,
-		'returns e.'
+		'Returns e.'
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -273,7 +266,7 @@ function createMathBuiltins() {
 		'acos',
 		[ 'arg%' ],
 		$acos,
-		'computes the inverse cosine of |arg (the angle whose cosine is |arg)'
+		'Computes the inverse cosine of |arg (the angle whose cosine is |arg)'
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -288,7 +281,7 @@ function createMathBuiltins() {
 		'asin',
 		[ 'arg%' ],
 		$asin,
-		'computes the inverse sine of |arg (the angle whose sine is |arg)'
+		'Computes the inverse sine of |arg (the angle whose sine is |arg)'
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -303,7 +296,7 @@ function createMathBuiltins() {
 		'atan',
 		[ 'arg%' ],
 		$atan,
-		'computes the inverse tangent of |arg (the angle whose tangent is |arg)'
+		'Computes the inverse tangent of |arg (the angle whose tangent is |arg)'
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -318,7 +311,7 @@ function createMathBuiltins() {
 		'atan2',
 		[ 'y%', 'x%' ],
 		$atan2,
-		'computes the angle between the x axis and the line to (x, y), in the range from +pi and -pi.'
+		'Computes the angle between the x axis and the line to (x, y), in the range from +pi and -pi.'
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -333,7 +326,7 @@ function createMathBuiltins() {
 		'ceiling',
 		[ 'arg%' ],
 		$ceiling,
-		'returns the integer ceiling of |arg.'
+		'Returns the integer ceiling of |arg.'
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -348,7 +341,7 @@ function createMathBuiltins() {
 		'cos',
 		[ 'arg%' ],
 		$cos,
-		'returns the cosine of |arg (adjacent/hypotenuse)'
+		'Returns the cosine of |arg (adjacent/hypotenuse)'
 	);
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -362,189 +355,151 @@ function createMathBuiltins() {
 		'exp',
 		[ 'a%' ],
 		$exp,
-		'computes the exponential function of |a (e to the |a).'
+		'Computes the exponential function of |a (e to the |a).'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $floor(env, executionEnvironment) {
-		let a = env.lb('arg').getTypedValue();
-		a = Math.floor(a);
-		return new Float(a);
-	}
 
 	Builtin.createBuiltin(
 		'floor',
 		[ 'arg%' ],
-		$floor,
-		'computes the integer floor of |arg.'
+		function $floor(env, executionEnvironment) {
+			let a = env.lb('arg').getTypedValue();
+			a = Math.floor(a);
+			return new Float(a);
+		},
+		'Computes the integer floor of |arg.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
 	// log base e, helps to differentiate
 	// from methods that log things
-
-	function $logE(env, executionEnvironment) {
-		let a = env.lb('a').getTypedValue();
-		return new Float(Math.log(a));
-	}
-
 	Builtin.createBuiltin(
 		'log-e',
 		[ 'a%' ],
-		$logE,
-		'computes the log base e of |a.'
+		function $logE(env, executionEnvironment) {
+			let a = env.lb('a').getTypedValue();
+			return new Float(Math.log(a));
+		},
+		'Computes the log base e of |a.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $logTen(env, executionEnvironment) {
-		let a = env.lb('a').getTypedValue();
-		return new Float(Math.log10(a));
-	}
 
 	Builtin.createBuiltin(
 		'log-10',
 		[ 'a%' ],
-		$logTen,
-		'computes the log base 10 of |a.'
+		function $logTen(env, executionEnvironment) {
+			let a = env.lb('a').getTypedValue();
+			return new Float(Math.log10(a));
+		},
+		'Computes the log base 10 of |a.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $logTwo(env, executionEnvironment) {
-		let a = env.lb('a').getTypedValue();
-		return new Float(Math.log2(a));
-	}
 
 	Builtin.createBuiltin(
 		'log-2',
 		[ 'a%' ],
-		$logTwo,
-		'computes the log base 2 of |a.'
+		function $logTwo(env, executionEnvironment) {
+			let a = env.lb('a').getTypedValue();
+			return new Float(Math.log2(a));
+		},
+		'Computes the log base 2 of |a.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $modulo(env, executionEnvironment) {
-		let a = env.lb('divid');
-		let b = env.lb('modulus');
-		let result = a.getTypedValue() % b.getTypedValue();
-		return new Integer(result);
-	}
 
 	Builtin.createBuiltin(
 		'modulo',
 		[ 'divid#', 'modulus#' ],
-		$modulo,
-		'computes |divid modulo |modulus and returns the result.',
+		function $modulo(env, executionEnvironment) {
+			let a = env.lb('divid');
+			let b = env.lb('modulus');
+			let result = a.getTypedValue() % b.getTypedValue();
+			return new Integer(result);
+		},
+		'Computes |divid modulo |modulus and returns the result.',
 		true /* is infix */
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $nthRoot(env, executionEnvironment) {
-		let a = env.lb('a').getTypedValue();
-		let b = env.lb('b').getTypedValue();
-		return new Float(Math.pow(a, (1.0/b)));
-	}
 
 	Builtin.createBuiltin(
 		'nth-root',
 		[ 'a%', 'b%' ],
-		$nthRoot,
-		'computes the |bth root of |a.'
+		function $nthRoot(env, executionEnvironment) {
+			let a = env.lb('a').getTypedValue();
+			let b = env.lb('b').getTypedValue();
+			return new Float(Math.pow(a, (1.0/b)));
+		},
+		'Computes the |bth root of |a.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $power(env, executionEnvironment) {
-		let a = env.lb('a').getTypedValue();
-		let b = env.lb('b').getTypedValue();
-		return new Float(Math.pow(a, b));
-	}
 
 	Builtin.createBuiltin(
 		'power',
 		[ 'a%', 'b%' ],
-		$power,
-		'computes |a to the |b power and returns the result.',
+		function $power(env, executionEnvironment) {
+			let a = env.lb('a').getTypedValue();
+			let b = env.lb('b').getTypedValue();
+			return new Float(Math.pow(a, b));
+		},
+		'Computes |a to the |b power and returns the result.',
 		true /* is infix */
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $random(env, executionEnvironment) {
-		let n = Math.random();
-		return new Float(n);
-	}
 
 	Builtin.createBuiltin(
 		'random',
 		[],
-		$random,
-		'returns a random number between 0 and 1.'
+		function $random(env, executionEnvironment) {
+			let n = Math.random();
+			return new Float(n);
+		},
+		'Returns a random number between 0 and 1.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $round(env, executionEnvironment) {
-		let a = env.lb('arg').getTypedValue();
-		a = Math.round(a);
-		return new Float(a);
-	}
 
 	Builtin.createBuiltin(
 		'round',
 		[ 'arg%' ],
-		$round,
-		'return |arg rounded to the nearest integer.'
+		function $round(env, executionEnvironment) {
+			let a = env.lb('arg').getTypedValue();
+			a = Math.round(a);
+			return new Float(a);
+		},
+		'Return |arg rounded to the nearest integer.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $sin(env, executionEnvironment) {
-		let a = env.lb('arg').getTypedValue();
-		let b = Math.sin(a);
-		return new Float(b);
-	}
 
 	Builtin.createBuiltin(
 		'sin',
 		[ 'arg%' ],
-		$sin,
-		'computes the sin (opposite/hypotenuse) of |arg.'
+		function $sin(env, executionEnvironment) {
+			let a = env.lb('arg').getTypedValue();
+			let b = Math.sin(a);
+			return new Float(b);
+		},
+		'Computes the sin (opposite/hypotenuse) of |arg.'
 	);
 
-
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $squareRoot(env, executionEnvironment) {
-		let a = env.lb('a').getTypedValue();
-		return new Float(Math.sqrt(a));
-	}
 
 	Builtin.createBuiltin(
 		'square-root',
 		[ 'a%' ],
-		$squareRoot,
-		'computes the square root of |a.'
+		function $squareRoot(env, executionEnvironment) {
+			let a = env.lb('a').getTypedValue();
+			return new Float(Math.sqrt(a));
+		},
+		'Computes the square root of |a.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-	function $tan(env, executionEnvironment) {
-		let a = env.lb('arg').getTypedValue();
-		let b = Math.tan(a);
-		return new Float(b);
-	}
 
 	Builtin.createBuiltin(
 		'tan',
 		[ 'arg%' ],
-		$tan,
-		'computes the tangent (opposite/adjacent) of |arg.'
+		function $tan(env, executionEnvironment) {
+			let a = env.lb('arg').getTypedValue();
+			let b = Math.tan(a);
+			return new Float(b);
+		},
+		'Computes the tangent (opposite/adjacent) of |arg.'
 	);
 }
 
