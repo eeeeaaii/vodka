@@ -26,6 +26,11 @@ Basic copying and pasting, this test pastes things in non-doc-format which shouu
 //starttest//
 var harness = require('../testharness');
 var testactions = [];
+
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'BracketLeft'});
+testactions.push({type:'keyup',code:'BracketLeft'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'KeyH'});
 testactions.push({type:'keyup',code:'KeyH'});

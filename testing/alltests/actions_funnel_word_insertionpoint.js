@@ -25,7 +25,13 @@ tests putting an insertion point into a word, making sure it looks right
 //testspec// |h|e|l|l|o|Shift|Tab|Shift|(|Tab
 //starttest//
 var harness = require('../testharness');
+
 var testactions = [];
+
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'BracketLeft'});
+testactions.push({type:'keyup',code:'BracketLeft'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'KeyH'});
 testactions.push({type:'keyup',code:'KeyH'});
 testactions.push({type:'keydown',code:'KeyE'});

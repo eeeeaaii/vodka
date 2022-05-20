@@ -28,6 +28,10 @@ var harness = require('../testharness');
 
 var testactions = [];
 
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'BracketLeft'});
+testactions.push({type:'keyup',code:'BracketLeft'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'KeyA'});
 testactions.push({type:'keyup',code:'KeyA'});
 testactions.push({type:'keydown',code:'KeyB'});

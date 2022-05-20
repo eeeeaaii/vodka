@@ -25,7 +25,13 @@ Test to make sure that doc children of a command (like letter, line, etc) are hi
 //testspec// |Shift|H|e|l|l|o|Shift|~|Shift|(|t|h|e|r|e
 //starttest//
 var harness = require('../testharness');
+
 var testactions = [];
+
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'BracketLeft'});
+testactions.push({type:'keyup',code:'BracketLeft'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'ShiftLeft'});
 testactions.push({type:'keydown',code:'KeyH'});
 testactions.push({type:'keyup',code:'ShiftLeft'});

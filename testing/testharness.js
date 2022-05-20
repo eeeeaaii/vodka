@@ -210,9 +210,9 @@ function runTestImpl(testinput, method, legacy, flags) {
 			})
 		}
 		if (method == 'direct' || method == 'direct-legacy') {
-			await page.evaluate(function() {
-				doKeyInput('{', '{', false, false, false);
-			})
+//			await page.evaluate(function() {
+//				doKeyInput('{', '{', false, false, false);
+//			})
 			// we have logged all browser interactions directly, the new way.
 			for (let i = 0; i < testinput.length; i++) {
 				let t = testinput[i];
