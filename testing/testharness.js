@@ -162,7 +162,7 @@ function doFlagOverrides(flags) {
 		rflags[key] = flags[key];
 	}
 
-	return flags;
+	return rflags;
 
 }
 
