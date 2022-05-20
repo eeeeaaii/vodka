@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 //endgnumessage//
-//testname// actions_symbol_editor
+//testname// actions_editor_symbol
 //startdescription//
 /*
 tests symbol editor, also that you can re-edit with ctrl-enter, also that you can re-edit command with ctrl-enter (bonus)

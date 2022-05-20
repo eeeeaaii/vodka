@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 //endgnumessage//
-//testname//  actions_funnel_float_validandinvalidfloats
+//testname//  actions_editor_float
 //startdescription//
 /*
 just types in some float values, some valid and some invalid, and evalutes them to verify that good floats do nothing/return themselves and bad floats throw errors
@@ -54,6 +54,8 @@ testactions.push({type:'keydown',code:'KeyE'});
 testactions.push({type:'keyup',code:'KeyE'});
 testactions.push({type:'keydown',code:'Digit3'});
 testactions.push({type:'keyup',code:'Digit3'});
+testactions.push({type:'keydown',code:'Minus'});
+testactions.push({type:'keyup',code:'Minus'});
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Digit5'});
 testactions.push({type:'keyup',code:'Digit5'});
