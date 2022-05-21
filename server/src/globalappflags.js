@@ -110,6 +110,7 @@ const otherflags = {
 const overrides = {
 	'DISABLE_ALERT_ANIMATIONS': true,
 	'NO_SPLASH': true,
+	'STATIC_PIPS': true,
 }
 
 // some hard coded things here

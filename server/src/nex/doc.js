@@ -162,7 +162,21 @@ class Doc extends NexContainer {
 		return {
 			'ShiftSpace' : 'do-nothing',
 			'Backspace': 'remove-selected-and-select-previous-sibling-if-empty',
-		}			
+
+			'!': 'JUST_USE_DEFAULT',
+			'@': 'JUST_USE_DEFAULT',
+			'#': 'JUST_USE_DEFAULT',
+			'$': 'JUST_USE_DEFAULT',
+			'%': 'JUST_USE_DEFAULT',
+			'^': 'JUST_USE_DEFAULT',
+			'&': 'JUST_USE_DEFAULT',
+			'*': 'JUST_USE_DEFAULT',
+			'(': 'JUST_USE_DEFAULT',
+			'[': 'JUST_USE_DEFAULT',
+			'{': 'JUST_USE_DEFAULT',
+			'<': 'JUST_USE_DEFAULT',
+			'_': 'JUST_USE_DEFAULT',
+		};
 	}
 }
 

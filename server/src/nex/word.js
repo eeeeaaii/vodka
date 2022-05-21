@@ -177,7 +177,22 @@ class Word extends NexContainer {
 	}
 
 	getEventTable(context) {
-		return {}
+		return {
+			'!': 'JUST_USE_DEFAULT',
+			'@': 'JUST_USE_DEFAULT',
+			'#': 'JUST_USE_DEFAULT',
+			'$': 'JUST_USE_DEFAULT',
+			'%': 'JUST_USE_DEFAULT',
+			'^': 'JUST_USE_DEFAULT',
+			'&': 'JUST_USE_DEFAULT',
+			'*': 'JUST_USE_DEFAULT',
+			'(': 'JUST_USE_DEFAULT',
+			'[': 'JUST_USE_DEFAULT',
+			'{': 'JUST_USE_DEFAULT',
+			'<': 'JUST_USE_DEFAULT',
+			'_': 'JUST_USE_DEFAULT',
+			
+		}
 	}
 }
 

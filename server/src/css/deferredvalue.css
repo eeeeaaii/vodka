@@ -87,15 +87,18 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 }
 
-.dspin {
+.waitingglyph {
   display: block;
   height: 25px;
   align-self: center;
   transform-origin: 50% 55%;
+}
+
+.dvspin {
   animation: deferredspin 2s linear infinite;
 }
 
-.dnospin {
+.settledglyph {
 	font-size: 1.3em;
   display: block;
   align-self: center;

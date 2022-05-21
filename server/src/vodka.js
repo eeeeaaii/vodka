@@ -282,6 +282,7 @@ function setup() {
 
 	if (Utils.getQSVal('createtest')) {
 		startRecordingTest();
+		document.title = '- recording test -';
 	}
 
 

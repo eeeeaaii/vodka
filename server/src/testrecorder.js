@@ -102,9 +102,9 @@ function logMouseEvent(e) {
 `;	
 }
 function logKeyDownEvent(e) {
-	if (e.code == 'AltLeft' || e.code == 'AltRight') {
-		alert("Do not use the option key when recording tests! Puppeteer does not support this and your test will not work correctly.");
-	}
+//	if (e.code == 'AltLeft' || e.code == 'AltRight') {
+//		alert("Do not use the option key when recording tests! Puppeteer does not support this and your test will not work correctly.");
+//	}
 	shorthand += '|' + e.key;
 	recorded_session += `testactions.push({type:'keydown',code:'${e.code}'});
 `;	

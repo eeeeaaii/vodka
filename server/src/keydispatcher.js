@@ -116,7 +116,7 @@ class KeyDispatcher {
 				if (!actionName) {
 					actionName = this.getActionNameFromGenericTable(sourceNode, eventName);
 				}
-				if (!actionName) {
+				if (!actionName || actionName == 'JUST_USE_DEFAULT') {
 					actionName = this.getDefaultHandleActionName(sourceNode, eventName);
 				}
 				if (actionName) {
@@ -390,13 +390,14 @@ class KeyDispatcher {
 			'&': 'insert-lambda-at-insertion-point',
 			'*': 'insert-deferredcommand-at-insertion-point',
 			'(': 'insert-org-at-insertion-point',
-			')': 'close-off-org',
 			'[': 'insert-line-at-insertion-point',
-			']': 'close-off-line',
 			'{': 'insert-doc-at-insertion-point',
-			'}': 'close-off-doc',
 			'<': 'insert-word-at-insertion-point',
 			'_': 'insert-wavetable-at-insertion-point',
+
+			')': 'close-off-org',
+			']': 'close-off-line',
+			'}': 'close-off-doc',
 			'>': 'close-off-word',
 			'`': 'add-tag',
 

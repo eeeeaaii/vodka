@@ -224,6 +224,21 @@ class Line extends NexContainer {
 
 			'Enter': 'do-line-break-or-eval',
 			'Backspace': 'delete-line',
+
+			'!': 'JUST_USE_DEFAULT',
+			'@': 'JUST_USE_DEFAULT',
+			'#': 'JUST_USE_DEFAULT',
+			'$': 'JUST_USE_DEFAULT',
+			'%': 'JUST_USE_DEFAULT',
+			'^': 'JUST_USE_DEFAULT',
+			'&': 'JUST_USE_DEFAULT',
+			'*': 'JUST_USE_DEFAULT',
+			'(': 'JUST_USE_DEFAULT',
+			'[': 'JUST_USE_DEFAULT',
+			'{': 'JUST_USE_DEFAULT',
+			'<': 'JUST_USE_DEFAULT',
+			'_': 'JUST_USE_DEFAULT',
+
 		}
 	}
 }

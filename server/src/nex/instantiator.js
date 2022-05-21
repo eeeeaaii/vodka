@@ -207,16 +207,12 @@ class InstantiatorEditor extends Editor {
 
 	shouldAppend(text) {
 		if (/^[a-zA-Z0-9:_-]$/.test(text)) return true; // normal chars
-		if (/^[/<>=+*]$/.test(text)) return true;
 		return false;
 	}
 
 	shouldTerminateAndReroute(input) {
 		if (super.shouldTerminateAndReroute()) return true;
 		// don't terminate for math stuff, this is temporary
-		if (/^[/<>=+*]$/.test(input)) return false;
-
-		// command-friendly characters
 		if (/^[a-zA-Z0-9:_-]$/.test(input)) return false;
 
 		// anything else, pop out

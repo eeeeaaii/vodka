@@ -147,6 +147,43 @@ const DefaultHandlers = {
 		if (!(/^.$/.test(txt))) {
 			throw UNHANDLED_KEY;
 		};
+
+		let letterRegex = /^[a-zA-Z0-9']$/;
+		let isSeparator = !letterRegex.test(txt);
+
+		if (!manipulator.isInsertInside(manipulator.selected())) {
+			let isInDoc = Utils.isInDocContext(manipulator.selected());
+			let toInsert = null;
+			if (isInDoc) {
+				toInsert = isSeparator ? manipulator.newSeparator(txt) : manipulator.newLetter(txt);
+			} else {
+				let canBe = Utils.figureOutWhatItCanBe(txt);
+				if (canBe.integer) {
+					toInsert = manipulator.newIntegerWithValue(txt);
+				} else if (canBe.command) {
+					toInsert = manipulator.newCommandWithText(txt);					
+				} else {
+					toInsert = manipulator.newNexForKey(txt);
+				}
+			}
+			manipulator.defaultInsertFor(manipulator.selected(), toInsert);			
+		} else {
+			if (isSeparator) {
+				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt));
+			} else {
+				if (manipulator.selectLastChild()) {
+					manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
+				} else {
+					manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt))
+				}
+			}
+
+		}
+
+
+
+
+/*		
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 		let isCommand = (context == ContextType.COMMAND);
@@ -167,6 +204,7 @@ const DefaultHandlers = {
 				}
 			}
 		}
+*/
 		return true;
 	},
 
@@ -176,22 +214,33 @@ const DefaultHandlers = {
 		if (!(/^.$/.test(txt))) {
 			throw UNHANDLED_KEY;
 		};
+
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
-		let isCommand = (context == ContextType.COMMAND);
-		if (isSeparator) {
-			if (isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
-				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
+
+		if (!manipulator.isInsertInside(manipulator.selected())) {
+			let isInDoc = Utils.isInDocContext(manipulator.selected());
+			let toInsert = null;
+			if (isInDoc) {
+				toInsert = isSeparator ? manipulator.newSeparator(txt) : manipulator.newLetter(txt);
 			} else {
+				let canBe = Utils.figureOutWhatItCanBe(txt);
+				if (canBe.integer) {
+					toInsert = manipulator.newIntegerWithValue(txt);
+				} else if (canBe.command) {
+					toInsert = manipulator.newCommandWithText(txt);					
+				} else {
+					toInsert = manipulator.newNexForKey(txt);
+				}
+			}
+			manipulator.defaultInsertFor(manipulator.selected(), toInsert);			
+		} else {
+			if (isSeparator) {
 				if (manipulator.selectLastChild()) {
 					manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt));
 				} else {
 					manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt))
 				}
-			}
-		} else {
-			if (isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
-				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
 			} else {
 				if (manipulator.selectLastChild()) {
 					if (manipulator.selectLastChild()) {
@@ -205,6 +254,7 @@ const DefaultHandlers = {
 					manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
 				}
 			}
+
 		}
 		return true;
 	},
@@ -215,25 +265,35 @@ const DefaultHandlers = {
 		if (!(/^.$/.test(txt))) {
 			throw UNHANDLED_KEY;
 		};
+
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
-		let isCommand = (context == ContextType.COMMAND);
-		if (isSeparator) {
-			if (isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
-				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
-			} else {
-				manipulator.selectLastChild()
-					|| manipulator.appendAndSelect(manipulator.possiblyMakeImmutable(manipulator.newLine(), context));
-				manipulator.appendAndSelect(manipulator.newSeparator(txt));
+		// if we are inserting a letter inside an empty doc, we decide whether to make the line and word
+		// immutable based on the mutability of the doc itself, not its context.
+		let fakeContext = (nex.isMutable() ? ContextType.DOC : ContextType.IMMUTABLE_DOC);
 
-			}
-		} else {
-			if (isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
-				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
+		if (!manipulator.isInsertInside(manipulator.selected())) {
+			let isInDoc = Utils.isInDocContext(manipulator.selected());
+			let toInsert = null;
+			if (isInDoc) {
+				toInsert = isSeparator ? manipulator.newSeparator(txt) : manipulator.newLetter(txt);
 			} else {
-				// if we are inserting a letter inside an empty doc, we decide whether to make the line and word
-				// immutable based on the mutability of the doc itself, not its context.
-				let fakeContext = (nex.isMutable() ? ContextType.DOC : ContextType.IMMUTABLE_DOC);
+				let canBe = Utils.figureOutWhatItCanBe(txt);
+				if (canBe.integer) {
+					toInsert = manipulator.newIntegerWithValue(txt);
+				} else if (canBe.command) {
+					toInsert = manipulator.newCommandWithText(txt);					
+				} else {
+					toInsert = manipulator.newNexForKey(txt);
+				}
+			}
+			manipulator.defaultInsertFor(manipulator.selected(), toInsert);			
+		} else {
+			if (isSeparator) {
+				manipulator.selectLastChild()
+					|| manipulator.appendAndSelect(manipulator.possiblyMakeImmutable(manipulator.newLine(), fakeContext));
+				manipulator.appendAndSelect(manipulator.newSeparator(txt));
+			} else {
 				manipulator.selectLastChild()
 					|| manipulator.appendAndSelect(manipulator.possiblyMakeImmutable(manipulator.newLine(), fakeContext));
 				manipulator.selectLastChild()
@@ -244,6 +304,7 @@ const DefaultHandlers = {
 					manipulator.appendAndSelect(manipulator.newLetter(txt))
 				}
 			}
+
 		}
 		return true;
 	}

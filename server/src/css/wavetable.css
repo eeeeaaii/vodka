@@ -1,6 +1,11 @@
 
-
 .wavetable {
+	display: none;
+}
+
+
+
+.wavetable.exploded {
 	border: 3px solid var(--unselected-border);
 	background-color: var(--unselected-border);
 	display: flex;

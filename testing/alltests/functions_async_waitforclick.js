@@ -130,7 +130,6 @@ const experiment_flags = {
 "ASM_RUNTIME":false,
 "OLD_ARROW_KEY_TRAVERSAL":false,
 "ERRORS_REPLACE":true,
-"STATIC_PIPS":false
 };
 	
 

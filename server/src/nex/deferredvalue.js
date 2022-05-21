@@ -22,6 +22,7 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { NexContainer } from './nexcontainer.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 import { gc, getFFGen } from '../gc.js'
+import { experiments } from '../globalappflags.js'
 
 class DeferredValue extends NexContainer {
 	constructor() {
@@ -216,11 +217,15 @@ class DeferredValue extends NexContainer {
 			}
 
 			if (this._cancelled) {
-				dotspan.innerHTML = '<span class="dnospin">⤬</span>'
+				dotspan.innerHTML = '<span class="settledglyph">⤬</span>'
 			} else if (this._activated && !this._finished) {
-				dotspan.innerHTML = '<span class="dspin">↻</span>'
+				if (experiments.STATIC_PIPS) {
+					dotspan.innerHTML = '<span class="waitingglyph">↻</span>'
+				} else {
+					dotspan.innerHTML = '<span class="waitingglyph dvspin">↻</span>'
+				}
 			} else {
-				dotspan.innerHTML = '<span class="dnospin">⤓</span>'
+				dotspan.innerHTML = '<span class="settledglyph">⤓</span>'
 			}
 		}
 	}

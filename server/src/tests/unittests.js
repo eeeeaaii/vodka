@@ -62,7 +62,8 @@ function TEST_eventqueue_events_doclickhandleraction() {
 	let fakeTarget = new Object();
 	let fakeRenderNode = new Object();
 	let fakeEvent = new Object();
-	eventQueueDispatcher.enqueueDoClickHandlerAction(fakeTarget, fakeRenderNode, fakeEvent);
+	let fakeAtTarget = true;
+	eventQueueDispatcher.enqueueDoClickHandlerAction(fakeTarget, fakeRenderNode, fakeAtTarget, fakeEvent);
 	let item = eventQueue.retrieveNextItem();
 	let correctItem = {
 		action: 'doClickHandlerAction',

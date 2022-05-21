@@ -22,7 +22,7 @@ import { ERROR_TYPE_FATAL} from './nex/eerror.js'
 
 function figureOutWhatItCanBe(txt) {
 	let intRegex = /^[0-9]/;
-	let commandRegex = /^[a-zA-Z0-9:. /<>=+*-]$/;
+	let commandRegex = /^[a-zA-Z0-9:. /=+*-]$/;
 	let symbolRegex = /^[a-zA-Z0-9-_']$/;
 
 	return {

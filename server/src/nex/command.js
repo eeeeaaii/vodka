@@ -393,20 +393,20 @@ class Command extends NexContainer {
 	// IF something THEN something ELSE something
 	// 
 	getInfixPart(position) {
-		// each double hyphen in the name stands for a child.
-		// but if there are n hyphens and less than n children,
+		// each space in the name stands for a child.
+		// but if there are n spaces and less than n children,
 		// the last time we call getInfixPart, we need to display
 		// the entire remaining portion of the name.
 		//
-		// so if the name is foo--bar--baz, it's supposed to have 2 children.
+		// so if the name is "foo bar baz", it's supposed to have 2 children.
 		//
 		// if there are zero children:
-		//   getInfixPart(0) returns 'foo--bar--baz'
+		//   getInfixPart(0) returns 'foo bar baz'
 		//   getInfixPart(1) never gets called
 		//
 		// if there is one child
 		//   getInfixPart(0) returns 'foo'
-		//   getInfixPart(1) returns 'bar-baz'
+		//   getInfixPart(1) returns 'bar baz'
 		//   getInfixPart(2) never gets called
 		//
 		// if there are two children
@@ -421,7 +421,8 @@ class Command extends NexContainer {
 		//   getInfixPart(2) returns 'baz'
 		//   getInfixPart(3) returns ''
 
-		let righttilde = '<span class="tilde glyphright">&#8766;</span>';
+		let rightglyph = '<span class="tilde glyphright">&#8766;</span>';
+//		let rightglyph = '<span class="tilde glyphleft faint">·</span>';
 		let spacechar = ' '; // it was going to be bullet.
 
 		let isGhost = !!this.ghostMatch;
@@ -432,12 +433,14 @@ class Command extends NexContainer {
 //		cmdtext = cmdtext.replace(/--/g, spacechar).replace(/__/g, spacechar).replace(/ /g, spacechar);
 		cmdtext = cmdtext.replace(/ /g, spacechar);
 
+		// words is an array of arrays of letters.
+		// where 'letters' are these objects describing the letter.
 		let words = [];
 		words[0] = [];
 		let currentWord = 0;
 
 		if (cmdtext.length == 0) {
-			return (!this.isEditing && position == 0) ? righttilde : '';
+			return (!this.isEditing && position == 0) ? rightglyph : '';
 		}
 
 		if (this.isEditing && position == 0) {
@@ -466,17 +469,17 @@ class Command extends NexContainer {
 				words[currentWord].push(ltobj)
 			}
 
-			for (let i = words.length - 1; i >= 0 ; i--) {
+			for (let i = words.length - 1; i > 0 ; i--) {
 				let w = words[i];
 				if (i > this.numChildren()) {
 					let pw = words[i - 1];
-					if (!pw[pw.length - 1]) {
-						alert('got one!');
-						console.log('got one');
+					let space_is_ghost = false;
+					if (pw.length > 0) {
+						space_is_ghost = pw[pw.length - 1].ghost;
 					}
 					pw.push({
 						letter: spacechar,
-						ghost: pw[pw.length - 1].ghost,
+						ghost: space_is_ghost,
 					});
 					for (let j = 0 ; j < w.length ; j++) {
 						pw.push(w[j]);
@@ -497,13 +500,16 @@ class Command extends NexContainer {
 			let w = theword[i];
 			let letter = w.letter;
 //			let letter = (w.letter == spacechar) ? '&nbsp;' : w.letter
+			if (letter == ' ') {
+				letter = '&nbsp;';
+			}
 			if (w.ghost) {
 				r += '<span class="ghost-match">' + letter + '</span>'
 			} else {
 				r += letter;
 			}
 			if (!this.isEditing && w.doTilde) {
-				r += righttilde;
+				r += rightglyph;
 			}
 		}
 
@@ -522,8 +528,9 @@ class Command extends NexContainer {
 
 	getInitialCodespanContents(renderNode) {
 		let lefttilde = '<span class="tilde glyphleft">&#8766;</span>';
+		let faintlefttilde = '<span class="tilde glyphleft faint">&#8766;</span>';
 		let faintleftdot = '<span class="tilde glyphleft faint">·</span>';
-		let righttilde = '<span class="tilde glyphright">&#8766;</span>';
+//		let righttilde = '<span class="tilde glyphright">&#8766;</span>';
 		let codespanHtml = (this.isEditing ? lefttilde : faintleftdot);
 		let gclosure = this.getClosureForGhost();
 		let operatorInfix = (gclosure &&

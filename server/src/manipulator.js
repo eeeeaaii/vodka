@@ -933,7 +933,7 @@ class Manipulator {
 		// if s is not in doc context, don't do anything special.
 		let context = this.getContextForNode(s);
 		if (context != ContextType.DOC && context != ContextType.IMMUTABLE_DOC) {
-			return this.moveRightDown();
+			return this.moveRightDown(s);
 		}
 		return this.selectNextLeaf(s);
 	}
@@ -942,7 +942,7 @@ class Manipulator {
 		// if s is not in doc context, don't do anything special.
 		let context = this.getContextForNode(s);
 		if (context != ContextType.DOC && context != ContextType.IMMUTABLE_DOC) {
-			return this.moveRightDown();
+			return this.moveRightDown(s);
 		}
 		return this.selectCorrespondingLetterInNextLine(s);
 	}

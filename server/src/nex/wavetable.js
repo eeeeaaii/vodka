@@ -18,6 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { Nex } from './nex.js'
 import { experiments } from '../globalappflags.js'
 import { startAuditioningBuffer, getFileAsBuffer } from '../webaudio.js'
+import { possiblyRecordAction } from '../testrecorder.js'
 
 import { setGlobalPixelsPerSample,
 		 getGlobalPixelsPerSample,
@@ -465,7 +466,8 @@ class Wavetable extends Nex {
 		};
 
 		renderNode.getDomNode().onmousedown = (event) => {
-			eventQueueDispatcher.enqueueDoClickHandlerAction(this, renderNode, event)
+			possiblyRecordAction(event, 'mouse');
+			eventQueueDispatcher.enqueueDoClickHandlerAction(this, renderNode, true, event)
 			startf(event);
 			body = document.getElementsByTagName('body')[0];
 			body.onmousemove = mousemove;

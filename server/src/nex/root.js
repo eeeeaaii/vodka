@@ -52,6 +52,32 @@ class Root extends NexContainer {
 		return 'standardDefault';
 	}
 
+	getEventTable(context) {
+		return {
+			'Backspace': 'do-nothing',
+			'ShiftBackspace': 'do-nothing',
+			'ShiftTab': 'do-nothing',
+			'ArrowUp': 'do-nothing',
+			'ArrowLeft': 'do-nothing',
+			'ArrowDown': 'do-nothing',
+			'ArrowRight': 'do-nothing',
+			'AltArrowUp': 'do-nothing',
+			'AltArrowDown': 'do-nothing',
+			'AltArrowLeft': 'do-nothing',
+			'AltArrowRight': 'do-nothing',
+			'ShiftAltTab': 'do-nothing',
+			'ShiftEnter': 'do-nothing',
+			'Enter': 'do-nothing',
+			'ShiftSpace': 'do-nothing',
+			'ShiftBackspace': 'do-nothing',
+			'AltBackspace': 'do-nothing',
+			'AltEnter': 'do-nothing',
+
+
+		}
+	}
+
+
 	// dead code?
 	debug() {
 		this.doForEachChild(c => {
