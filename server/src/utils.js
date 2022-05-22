@@ -110,7 +110,7 @@ function isDeferredCommand(n) {
 function isDoc(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n) return false;
-	return n.getTypeName() == '-page-';
+	return n.getTypeName() == '-doc-';
 }
 
 function isLine(n) {
@@ -193,6 +193,12 @@ function isCommand(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n) return false;
 	return n.getTypeName() == '-command-';
+}
+
+function isInstantiator(n) {
+	if (n instanceof RenderNode) n = n.getNex();
+	if (!n) return false;
+	return n.getTypeName() == '-instantiator-';
 }
 
 function isLambda(n) {
@@ -304,6 +310,7 @@ export {
 	beep,
 	isMac,
 	isOrg,
+	isInstantiator,
 	convertV2StringToMath,
 	convertMathToV2String,
 	isImmutableContext,

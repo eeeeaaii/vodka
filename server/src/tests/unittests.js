@@ -150,6 +150,20 @@ function TEST_eventqueue_events_toplevelrender() {
 	assertEqual(item.shouldDedupe, correctItem.shouldDedupe);
 }
 
+function TEST_eventqueue_events_importanttoplevelrender() {
+	eventQueueDispatcher.enqueueImportantTopLevelRender();
+	let item = eventQueue.retrieveNextItem();
+	let correctItem = {
+		action: 'importantTopLevelRender',
+		shouldDedupe: true,
+	}
+	assertTruthy(item);
+	assertTruthy(item.equals(correctItem));
+	assertEqual(item.action, correctItem.action);
+	assertEqual(item.shouldDedupe, correctItem.shouldDedupe);
+}
+
+
 function TEST_eventqueue_priority_inverseordering() {
 	let obj = new Object();
 	eventQueueDispatcher.enqueueGC();

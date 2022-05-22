@@ -332,7 +332,7 @@ class DeleteNexAction extends Action {
 	}
 
 	canUndo() {
-		return !!systemState.getGlobalSelectedNode().getParent();
+		return true;
 	}
 
 	doAction() {
@@ -356,7 +356,7 @@ class EvaluateAndReplaceAction extends Action {
 	}
 
 	canUndo() {
-		return !!systemState.getGlobalSelectedNode().getParent();
+		return true;
 	}
 
 	doAction() {
@@ -388,7 +388,7 @@ class EvaluateInPlaceAction extends Action {
 	}
 
 	canUndo() {
-		return !!systemState.getGlobalSelectedNode().getParent();
+		return true;
 	}
 
 	doAction() {
@@ -424,7 +424,34 @@ class ChangeRenderModeAction extends Action {
 	}
 }
 
-class StandardDefaultHandlerAction extends Action {
+class LineBreakAction extends Action {
+	// basically to delete a line break.
+	// If the line break was "do-line-break-for-letter"
+	// then we do one of these three to undo:
+	//   delete-letter, delete-separator, or delete-line
+	// if it was "do-line-break-for-separator"
+	//   delete-separator or delete-line
+	// otherwise if it was do-line-break-for-line
+	//.  delete-line
+	// and you can just look at what is selected now basically
+	constructor(actionName) {
+		super(actionName);
+	}
+
+	canUndo() {
+		return true;
+	}
+
+	doAction() {
+		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
+	}
+
+	undoAction() {
+		manipulator.deleteAnyLineBreak();
+	}
+}
+
+class DefaultHandlerAction extends Action {
 	constructor(actionName, eventName) {
 		super(actionName);
 		this.eventName = eventName;
@@ -439,10 +466,10 @@ class StandardDefaultHandlerAction extends Action {
 		this.savedInsertionMode = systemState.getGlobalSelectedNode().getInsertionMode();
 
 		let handler = DefaultHandlers[this.actionName];
-		let success = handler(systemState.getGlobalSelectedNode(), this.eventName);
+		let result = handler(systemState.getGlobalSelectedNode(), this.eventName);
 
-		if (success) {
-			this.newNode = manipulator.getMostRecentInsertedRenderNode();
+		if (result.inserted) {
+			this.newNode = result.inserted;
 
 			if (this.editorDataSavedForRedo) {
 				let fakeEditor = this.newNode.getEditorForType(this.newNode.nex);
@@ -471,6 +498,7 @@ class StandardDefaultHandlerAction extends Action {
 		}
 	}
 }
+
 
 class LegacyDefaultHandlerAction extends Action {
 	constructor(actionName, eventName) {
@@ -517,6 +545,10 @@ function actionFactory(actionName, eventName) {
 		case 'move-to-corresponding-letter-in-previous-line':
 		case 'move-to-next-leaf':
 		case 'move-to-previous-leaf':
+		case 'move-right-for-line':
+		case 'move-left-for-line':
+		case 'move-up-for-line':
+		case 'move-down-for-line':
 			return new ChangeSelectedNodeAction(actionName);
 		case 'toggle-dir':
 			return new ChangeDirectionAction(actionName);
@@ -569,7 +601,12 @@ function actionFactory(actionName, eventName) {
 			return new WrapInNewParentNodeAction(actionName);
 
  		case 'standardDefault':
- 			return new StandardDefaultHandlerAction(actionName, eventName);
+		case 'letterDefault':
+		case 'separatorDefault':
+		case 'wordDefault':
+		case 'lineDefault':
+		case 'docDefault':
+ 			return new DefaultHandlerAction(actionName, eventName);
 
 
  		case 'toggle-exploded':
@@ -586,14 +623,7 @@ function actionFactory(actionName, eventName) {
 		case 'do-line-break-for-letter':
 		case 'do-line-break-for-separator':
 		case 'do-line-break-or-eval':
-			return new LegacyKeyResponseFunctionAction(actionName);
-
-		case 'letterDefault':
-		case 'separatorDefault':
-		case 'wordDefault':
-		case 'lineDefault':
-		case 'docDefault':
-			return new LegacyDefaultHandlerAction(actionName, eventName);
+			return new LineBreakAction(actionName);
 
 		// in case I missed any?
 		default:

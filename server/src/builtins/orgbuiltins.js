@@ -99,60 +99,6 @@ function createOrgBuiltins() {
 		},
 		'Gets the definition of a template from the template store and returns it, or returns an error if no such template.'
 	);
-
-	// Builtin.createBuiltin(
-	// 	'merge',
-	// 	[ 'nex...' ],
-	// 	function $merge(env, executionEnvironment) {
-	// 		let nexc = env.lb('nex');
-	// 		let a = [];
-	// 		for (let i = 0; i < nexc.numChildren(); i++) {
-	// 			a.push(nexc.getChildAt(i));
-	// 		}
-	// 		try {
-	// 			return templateStore.merge(a);
-	// 		} catch (e) {
-	// 			if (Utils.isFatalError(e)) {
-	// 				return e;
-	// 			} else {
-	// 				throw e;
-	// 			}
-	// 		}
-	// 	},
-	// 	'Merges the orgs passed to it, returning an org with the union of all members'
-	// );
-
-	// Builtin.createBuiltin(
-	// 	'instantiate',
-	// 	[ 'init', 'nex...' ],
-	// 	function $instantiate(env, executionEnvironment) {
-	// 		let init = env.lb('init');
-	// 		let args = env.lb('nex');
-	// 		let a = [];
-	// 		for (let i = 0; i < args.numChildren(); i++) {
-	// 			let c = args.getChildAt(i);
-	// 			a.push(c);
-	// 		}
-	// 		try {
-	// 			if (init.getTypeName() == '-nil-') {
-	// 				init = templateStore.merge([init]);					
-	// 			}
-	// 			if (!init || !init.getTypeName || init.getTypeName() != '-org-') {
-	// 				return EError('can only init with an org');
-	// 			}
-	// 			return templateStore.instantiate(init, a);
-	// 		} catch (e) {
-	// 			if (Utils.isFatalError(e)) {
-	// 				return e;
-	// 			} else {
-	// 				throw e;
-	// 			}
-	// 		}
-	// 	},
-	// 	'Instantiates a new org from the template |init, or if |init is a nix, the template named by |init.'
-	// );
-
-//	Builtin.aliasBuiltin('new', 'instantiate');
 }
 
 export { createOrgBuiltins }

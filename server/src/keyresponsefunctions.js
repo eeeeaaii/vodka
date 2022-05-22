@@ -78,13 +78,20 @@ const DefaultHandlers = {
 		let canBe = Utils.figureOutWhatItCanBe(txt);
 
 		if (canBe.integer) {
-			manipulator.insertAtSelectedObjInsertionPoint(manipulator.newIntegerWithValue(txt));
-			return true;
+			let newNode = manipulator.newIntegerWithValue(txt);
+			manipulator.insertAtSelectedObjInsertionPoint(newNode);
+			return {
+				inserted: newNode
+			};
 		} else if (canBe.command) {
-			manipulator.insertAtSelectedObjInsertionPoint(manipulator.newCommandWithText(txt));
-			return true;
+			let newNode = manipulator.newCommandWithText(txt);
+			manipulator.insertAtSelectedObjInsertionPoint(newNode);
+			return {
+				inserted: newNode
+			};
 		} else {
-			return false;
+			return {
+			};
 		}
 	},
 
@@ -97,16 +104,21 @@ const DefaultHandlers = {
 		};
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
+		let newNode = null;
 		if (isSeparator) {
+			newNode = manipulator.newSeparator(txt);
 			if (inWord) {
-				manipulator.insertSeparatorBeforeOrAfterSelectedLetter(manipulator.newSeparator(txt));
+				manipulator.insertSeparatorBeforeOrAfterSelectedLetter(newNode);
 			} else {
-				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt));				
+				manipulator.defaultInsertFor(manipulator.selected(), newNode);				
 			}
 		} else {
-			manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
+			newNode = manipulator.newLetter(txt);
+			manipulator.defaultInsertFor(manipulator.selected(), newNode);
 		}
-		return true;
+		return {
+			inserted: newNode 
+		};
 	},
 
 	'separatorDefault': function(node, txt) {
@@ -118,8 +130,12 @@ const DefaultHandlers = {
 		};
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
+
+		let newNode = null;
+
 		if (isSeparator) {
-			manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt));
+			newNode = manipulator.newSeparator(txt);
+			manipulator.defaultInsertFor(manipulator.selected(), newNode);
 		} else {
 			if (isLine) {
 				// special case - when user is typing into a doc, we want to preserve the general
@@ -132,13 +148,24 @@ const DefaultHandlers = {
 				let newletter = manipulator.newLetter(txt);
 				newword.appendChild(newletter);
 				manipulator.defaultInsertFor(manipulator.selected(), newword);
-				manipulator.joinToSiblingIfSame(newword);
+				let didJoin = manipulator.joinToSiblingIfSame(newword);
+				// if we performed a join, then when undoing this action, we want to
+				// delete the letter that was joined in, not the whole word.
+				// otherwise, we do want to delete the whole word
+				if (didJoin) {
+					newNode = newletter;
+				} else {
+					newNode = newword;
+				}
 				newletter.setSelected();
 			} else {
-				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
+				newNode = manipulator.newLetter(txt);
+				manipulator.defaultInsertFor(manipulator.selected(), newNode);
 			}
 		}
-		return true;
+		return {
+			inserted: newNode 
+		};
 	},
 
 	'wordDefault' : function(node, txt) {
@@ -151,61 +178,40 @@ const DefaultHandlers = {
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 
+		let newNode = null;
+
 		if (!manipulator.isInsertInside(manipulator.selected())) {
 			let isInDoc = Utils.isInDocContext(manipulator.selected());
-			let toInsert = null;
 			if (isInDoc) {
-				toInsert = isSeparator ? manipulator.newSeparator(txt) : manipulator.newLetter(txt);
+				newNode = isSeparator ? manipulator.newSeparator(txt) : manipulator.newLetter(txt);
 			} else {
 				let canBe = Utils.figureOutWhatItCanBe(txt);
 				if (canBe.integer) {
-					toInsert = manipulator.newIntegerWithValue(txt);
+					newNode = manipulator.newIntegerWithValue(txt);
 				} else if (canBe.command) {
-					toInsert = manipulator.newCommandWithText(txt);					
+					newNode = manipulator.newCommandWithText(txt);					
 				} else {
-					toInsert = manipulator.newNexForKey(txt);
+					newNode = manipulator.newNexForKey(txt);
 				}
 			}
-			manipulator.defaultInsertFor(manipulator.selected(), toInsert);			
+			manipulator.defaultInsertFor(manipulator.selected(), newNode);			
 		} else {
 			if (isSeparator) {
-				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt));
+				newNode = manipulator.newSeparator(txt);
+				manipulator.defaultInsertFor(manipulator.selected(), newNode);
 			} else {
+				newNode = manipulator.newLetter(txt);
 				if (manipulator.selectLastChild()) {
-					manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
+					manipulator.defaultInsertFor(manipulator.selected(), newNode);
 				} else {
-					manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt))
+					manipulator.defaultInsertFor(manipulator.selected(), newNode)
 				}
 			}
 
 		}
-
-
-
-
-/*		
-		let letterRegex = /^[a-zA-Z0-9']$/;
-		let isSeparator = !letterRegex.test(txt);
-		let isCommand = (context == ContextType.COMMAND);
-		if (isSeparator) {
-			if (isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
-				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
-			} else {
-				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt));
-			}
-		} else {
-			if (isCommand && !(manipulator.isInsertInside(manipulator.selected()))) {
-				manipulator.defaultInsertFor(manipulator.selected(), manipulator.newNexForKey(txt));
-			} else {
-				if (manipulator.selectLastChild()) {
-					manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
-				} else {
-					manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt))
-				}
-			}
-		}
-*/
-		return true;
+		return {
+			inserted: newNode 
+		};
 	},
 
 	'lineDefault': function(node, txt) {
@@ -218,45 +224,59 @@ const DefaultHandlers = {
 		let letterRegex = /^[a-zA-Z0-9']$/;
 		let isSeparator = !letterRegex.test(txt);
 
+		let newNode = null;
+
 		if (!manipulator.isInsertInside(manipulator.selected())) {
 			let isInDoc = Utils.isInDocContext(manipulator.selected());
-			let toInsert = null;
 			if (isInDoc) {
-				toInsert = isSeparator ? manipulator.newSeparator(txt) : manipulator.newLetter(txt);
+				newNode = isSeparator ? manipulator.newSeparator(txt) : manipulator.newLetter(txt);
 			} else {
 				let canBe = Utils.figureOutWhatItCanBe(txt);
 				if (canBe.integer) {
-					toInsert = manipulator.newIntegerWithValue(txt);
+					newNode = manipulator.newIntegerWithValue(txt);
 				} else if (canBe.command) {
-					toInsert = manipulator.newCommandWithText(txt);					
+					newNode = manipulator.newCommandWithText(txt);					
 				} else {
-					toInsert = manipulator.newNexForKey(txt);
+					newNode = manipulator.newNexForKey(txt);
 				}
 			}
-			manipulator.defaultInsertFor(manipulator.selected(), toInsert);			
+			manipulator.defaultInsertFor(manipulator.selected(), newNode);			
 		} else {
 			if (isSeparator) {
+				newNode = manipulator.newSeparator(txt);
 				if (manipulator.selectLastChild()) {
-					manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt));
+					manipulator.defaultInsertFor(manipulator.selected(), newNode);
 				} else {
-					manipulator.defaultInsertFor(manipulator.selected(), manipulator.newSeparator(txt))
+					manipulator.defaultInsertFor(manipulator.selected(), newNode)
 				}
 			} else {
+				let newLetter = manipulator.newLetter(txt);
+				let newWord = manipulator.newWord();
+				// pathological cases like empty word at end of line aren't handled
 				if (manipulator.selectLastChild()) {
+					// there were children, the last child is either a separator or a word
 					if (manipulator.selectLastChild()) {
-						manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
+						// it's a word, just append the letter to the last word in the line
+						manipulator.defaultInsertFor(manipulator.selected(), newLetter);
+						newNode = newLetter;
 					} else {
-						manipulator.defaultInsertFor(manipulator.selected(), manipulator.possiblyMakeImmutable(manipulator.newWord(), context));
-						manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
+						// last child was a separator, add a new word
+						manipulator.defaultInsertFor(manipulator.selected(), manipulator.possiblyMakeImmutable(newWord, context));
+						manipulator.defaultInsertFor(manipulator.selected(), newLetter);
+						newNode = newWord;
 					}
 				} else {
-					manipulator.defaultInsertFor(manipulator.selected(), manipulator.possiblyMakeImmutable(manipulator.newWord(), context));
-					manipulator.defaultInsertFor(manipulator.selected(), manipulator.newLetter(txt));
+					// this is the case where there is an empty line, add a word
+					manipulator.defaultInsertFor(manipulator.selected(), manipulator.possiblyMakeImmutable(newWord, context));
+					manipulator.defaultInsertFor(manipulator.selected(), newLetter);
+					newNode = newWord;
 				}
 			}
 
 		}
-		return true;
+		return {
+			inserted: newNode 
+		};
 	},
 
 	'docDefault' : function(node, txt) {
@@ -272,41 +292,58 @@ const DefaultHandlers = {
 		// immutable based on the mutability of the doc itself, not its context.
 		let fakeContext = (nex.isMutable() ? ContextType.DOC : ContextType.IMMUTABLE_DOC);
 
+		let newNode = null;
+
 		if (!manipulator.isInsertInside(manipulator.selected())) {
 			let isInDoc = Utils.isInDocContext(manipulator.selected());
-			let toInsert = null;
 			if (isInDoc) {
-				toInsert = isSeparator ? manipulator.newSeparator(txt) : manipulator.newLetter(txt);
+				newNode = isSeparator ? manipulator.newSeparator(txt) : manipulator.newLetter(txt);
 			} else {
 				let canBe = Utils.figureOutWhatItCanBe(txt);
 				if (canBe.integer) {
-					toInsert = manipulator.newIntegerWithValue(txt);
+					newNode = manipulator.newIntegerWithValue(txt);
 				} else if (canBe.command) {
-					toInsert = manipulator.newCommandWithText(txt);					
+					newNode = manipulator.newCommandWithText(txt);					
 				} else {
-					toInsert = manipulator.newNexForKey(txt);
+					newNode = manipulator.newNexForKey(txt);
 				}
 			}
-			manipulator.defaultInsertFor(manipulator.selected(), toInsert);			
+			manipulator.defaultInsertFor(manipulator.selected(), newNode);			
 		} else {
 			if (isSeparator) {
-				manipulator.selectLastChild()
-					|| manipulator.appendAndSelect(manipulator.possiblyMakeImmutable(manipulator.newLine(), fakeContext));
-				manipulator.appendAndSelect(manipulator.newSeparator(txt));
+				let newLine = manipulator.newLine();
+				let newSeparator = manipulator.newSeparator(txt);
+				newNode = newSeparator;
+				if (!manipulator.selectLastChild()) {
+					manipulator.appendAndSelect(manipulator.possiblyMakeImmutable(newLine, fakeContext));
+					newNode = newLine;
+				}
+				manipulator.appendAndSelect(newSeparator);
 			} else {
-				manipulator.selectLastChild()
-					|| manipulator.appendAndSelect(manipulator.possiblyMakeImmutable(manipulator.newLine(), fakeContext));
-				manipulator.selectLastChild()
-					|| manipulator.appendAndSelect(manipulator.possiblyMakeImmutable(manipulator.newWord(), fakeContext));
+				let newLine = manipulator.newLine();
+				let newWord = manipulator.newWord();
+				let newLetter = manipulator.newLetter(txt);
+				newNode = null;
+				if (!manipulator.selectLastChild()) {
+					manipulator.appendAndSelect(manipulator.possiblyMakeImmutable(newLine, fakeContext));
+					newNode = newLine;
+				}
+				if (!manipulator.selectLastChild()) {
+					manipulator.appendAndSelect(manipulator.possiblyMakeImmutable(newWord, fakeContext));
+					if (!newNode) newNode = newWord;
+				}
+				if (!newNode) newNode = newLetter;
 				if (manipulator.selectLastChild()) {
-					manipulator.insertAfterSelectedAndSelect(manipulator.newLetter(txt));
+					manipulator.insertAfterSelectedAndSelect(newLetter);
 				} else {
-					manipulator.appendAndSelect(manipulator.newLetter(txt))
+					manipulator.appendAndSelect(newLetter)
 				}
 			}
 
 		}
-		return true;
+		return {
+			inserted: newNode 
+		};
 	}
 }
 

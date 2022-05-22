@@ -271,8 +271,8 @@ class KeyDispatcher {
 			return 'Alt*';
 		} else if (whichKey == 'Digit9' && hasAlt && hasShift) {
 			return 'Alt(';
-		} else if (whichKey == 'Digit0' && hasAlt && hasShift) {
-			return 'Alt)';
+		} else if (whichKey == 'Comma' && hasAlt && hasShift) {
+			return 'Alt<';
 		} else if (whichKey == 'BracketLeft' && hasAlt && !hasShift) {
 			return 'Alt[';
 		} else if (whichKey == 'BracketLeft' && hasAlt && hasShift) {
@@ -404,8 +404,8 @@ class KeyDispatcher {
 			'Alt~': 'wrap-in-command',
 			'Alt&': 'wrap-in-lambda',
 			'Alt*': 'wrap-in-deferredcommand',
-			'Alt(': 'wrap-in-word',
-			'Alt)': 'wrap-in-org',
+			'Alt<': 'wrap-in-word',
+			'Alt(': 'wrap-in-org',
 			'Alt[': 'wrap-in-line',
 			'Alt{': 'wrap-in-doc',
 			'Alt^': 'wrap-in-instantiator'
@@ -467,8 +467,8 @@ class KeyDispatcher {
 			'Alt~': 'wrap-in-command',
 			'Alt&': 'wrap-in-lambda',
 			'Alt*': 'wrap-in-deferredcommand',
-			'Alt(': 'wrap-in-word',
-			'Alt)': 'wrap-in-org',
+			'Alt<': 'wrap-in-word',
+			'Alt(': 'wrap-in-org',
 			'Alt[': 'wrap-in-line',
 			'Alt{': 'wrap-in-doc',
 			'Alt^': 'wrap-in-instantiator'

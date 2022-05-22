@@ -122,9 +122,10 @@ class Environment {
 		if (this.currentPackageForBinding) {
 			name = this.currentPackageForBinding + ':' + name;
 		}
-		if (val.getTypeName() == '-closure-' && !this.packageBeingUsed(this.currentPackageForBinding)) {
-			val.getLexicalEnvironment().usePackage(this.currentPackageForBinding);
-		}
+		// what was this for?
+//		if (val.getTypeName() == '-closure-' && !this.packageBeingUsed(this.currentPackageForBinding)) {
+//			val.getLexicalEnvironment().usePackage(this.currentPackageForBinding);
+//		}
 		this.bind(name, val, this.currentPackageForBinding);
 	}
 

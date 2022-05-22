@@ -94,7 +94,7 @@ class ArgContainer {
 }
 
 class RunInfo {
-	constructor(closure, cmdname, expectedReturnType, argContainer, argEvaluator, commandDebugString, skipAlert, tags) {
+	constructor(closure, cmdname, expectedReturnType, argContainer, argEvaluator, commandDebugString, skipAlert, tags, packageName) {
 		this.closure = closure;
 		this.cmdname = cmdname;
 		this.expectedReturnType = expectedReturnType;
@@ -103,6 +103,7 @@ class RunInfo {
 		this.commandDebugString = commandDebugString;
 		this.skipAlert = skipAlert;
 		this.tags = tags;
+		this.packageName = packageName;
 	}
 
 	isRunInfo() {
@@ -144,7 +145,7 @@ function runCommand(runInfo, executionEnv) {
 	}
 
 	// actually run the code.
-	let r = runInfo.closure.closureExecutor(executionEnv, runInfo.argEvaluator, runInfo.cmdname, runInfo.tags);
+	let r = runInfo.closure.closureExecutor(executionEnv, runInfo.argEvaluator, runInfo.cmdname, runInfo.tags, runInfo.packageName);
 
 	if (PERFORMANCE_MONITOR) {
 		perfmon.logMethodCallEnd(runInfo.closure.getCmdName());

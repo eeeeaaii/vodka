@@ -206,22 +206,28 @@ class Closure extends ValueNex {
 		domNode.innerHTML = this.getInnerHTMLForDisplay();
 	}
 
-	closureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags) {
+	closureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags, packageName) {
 		if (this.lambda.getTypeName() == '-builtin-') {
-			return this.builtinClosureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags);
+			return this.builtinClosureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags, packageName);
 		} else {
-			return this.lambdaClosureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags);
+			return this.lambdaClosureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags, packageName);
 		}
 	}
 
-	builtinClosureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags) {
+	builtinClosureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags, packageName) {
 		let scope = this.lexicalEnvironment.pushEnv();
+		if (packageName) {
+			scope.usePackage(packageName);
+		}
 		argEvaluator.bindArgs(scope);
 		return this.lambda.f(scope, executionEnvironment, commandTags);
 	}
 
-	lambdaClosureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags) {
+	lambdaClosureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags, packageName) {
 		let scope = this.lexicalEnvironment.pushEnv();
+		if (packageName) {
+			scope.usePackage(packageName);
+		}
 		argEvaluator.bindArgs(scope);
 		let r = new Org();
 		let i = 0;

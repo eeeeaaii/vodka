@@ -80,7 +80,7 @@ class Doc extends NexContainer {
 	}
 
 	getTypeName() {
-		return '-page-';
+		return '-doc-';
 	}
 
 	makeCopy(shallow) {

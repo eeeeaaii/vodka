@@ -218,7 +218,7 @@ function createFileBuiltins() {
 
 	Builtin.createBuiltin(
 		'save-raw',
-		[ 'val$', '_name'],
+		[ '_name', 'val$'],
 		function $saveFile(env, executionEnvironment) {
 			let name = env.lb('name');
 			let nametype = name.getTypeName();

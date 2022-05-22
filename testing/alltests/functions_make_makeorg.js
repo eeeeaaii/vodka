@@ -19,10 +19,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testname// functions_make_makeorg
 //startdescription//
 /*
-makes org
+make org
 */
 //enddescription//
-//testspec// |Shift|~|m|a|k|e|-|o|r|g|Tab|a|b|c|d|Shift|Tab|Enter
+//testspec// |Shift|~|m|a|k|e|-|o|r|g|Enter|Enter|ArrowRight|Shift|(
 //starttest//
 var harness = require('../testharness');
 
@@ -33,8 +33,8 @@ testactions.push({type:'keydown',code:'Backquote'});
 testactions.push({type:'keyup',code:'Backquote'});
 testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'KeyM'});
-testactions.push({type:'keyup',code:'KeyM'});
 testactions.push({type:'keydown',code:'KeyA'});
+testactions.push({type:'keyup',code:'KeyM'});
 testactions.push({type:'keyup',code:'KeyA'});
 testactions.push({type:'keydown',code:'KeyK'});
 testactions.push({type:'keydown',code:'KeyE'});
@@ -43,23 +43,33 @@ testactions.push({type:'keyup',code:'KeyE'});
 testactions.push({type:'keydown',code:'Minus'});
 testactions.push({type:'keyup',code:'Minus'});
 testactions.push({type:'keydown',code:'KeyO'});
-testactions.push({type:'keydown',code:'KeyR'});
 testactions.push({type:'keyup',code:'KeyO'});
+testactions.push({type:'keydown',code:'KeyR'});
 testactions.push({type:'keyup',code:'KeyR'});
 testactions.push({type:'keydown',code:'KeyG'});
 testactions.push({type:'keyup',code:'KeyG'});
-testactions.push({type:'keydown',code:'Tab'});
-testactions.push({type:'keyup',code:'Tab'});
-testactions.push({type:'keydown',code:'ShiftLeft'});
-testactions.push({type:'keydown',code:'Digit3'});
-testactions.push({type:'keyup',code:'Digit3'});
-testactions.push({type:'keyup',code:'ShiftLeft'});
-testactions.push({type:'keydown',code:'ShiftRight'});
-testactions.push({type:'keydown',code:'Tab'});
-testactions.push({type:'keyup',code:'Tab'});
-testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keydown',code:'ArrowRight'});
+testactions.push({type:'keyup',code:'ArrowRight'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Digit9'});
+testactions.push({type:'keyup',code:'Digit9'});
+testactions.push({type:'keyup',code:'ShiftRight'});
 
-harness.runTestNew(testactions, 'direct');
+const experiment_flags = {
+"DISABLE_ALERT_ANIMATIONS":true,
+"MAX_RENDER_DEPTH":100,
+"NO_SPLASH":true,
+"V2_INSERTION_LENIENT_DOC_FORMAT":false,
+"ASM_RUNTIME":false,
+"OLD_ARROW_KEY_TRAVERSAL":false,
+"ERRORS_REPLACE":true,
+"STATIC_PIPS":true
+};
+	
+
+harness.runTestWithFlags(testactions, 'direct', experiment_flags);
 //endtest//

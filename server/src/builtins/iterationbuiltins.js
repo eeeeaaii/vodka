@@ -49,6 +49,9 @@ function createIterationBuiltins() {
 					if (Utils.isFatalError(result)) {
 						throw wrapError('&szlig;', `filter-with: error returned from item ${i+1}`, result);
 					}
+					if (!Utils.isBool(result)) {
+						throw new EError('filter-with: filter function must return boolean.');
+					}
 					if (result.getTypedValue()) {
 						appendIterator = resultList.fastAppendChildAfter(list.getChildAt(i), appendIterator);
 					}

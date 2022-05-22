@@ -18,6 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 const ERROR_TYPE_FATAL = 0;
 const ERROR_TYPE_WARN = 1;
 const ERROR_TYPE_INFO = 2
+const ERROR_TYPE_PREVIOUSLY_FATAL = 3
 
 // deprecated
 const ESTRING_LIMIT = 20;
@@ -161,16 +162,16 @@ class EError extends NexContainer {
 	}	
 
 	insertChildAt(c, i) {
-		if (c.getTypeName() != '-error-') {
-			throw new EError('errors can only hold other errors.');
-		}
+		// if (c.getTypeName() != '-error-') {
+		// 	throw new EError('errors can only hold other errors.');
+		// }
 		super.insertChildAt(c, i);
 	}
 
 	fastAppendChildAfter(c, after) {
-		if (c.getTypeName() != '-error-') {
-			throw new EError('errors can only hold other errors.');
-		}
+		// if (c.getTypeName() != '-error-') {
+		// 	throw new EError('errors can only hold other errors.');
+		// }
 		super.fastAppendChildAfter(c, after);
 	}
 
@@ -224,6 +225,9 @@ class EError extends NexContainer {
 			case ERROR_TYPE_INFO:
 				domNode.classList.add('info');
 				break;
+			case ERROR_TYPE_PREVIOUSLY_FATAL:
+				domNode.classList.add('previouslyfatal');
+				break;
 		}
 		this.drawNormal(renderNode);
 	}
@@ -238,5 +242,5 @@ class EError extends NexContainer {
 }
 
 
-export { EError, ERROR_TYPE_FATAL, ERROR_TYPE_INFO, ERROR_TYPE_WARN }
+export { EError, ERROR_TYPE_FATAL, ERROR_TYPE_INFO, ERROR_TYPE_WARN, ERROR_TYPE_PREVIOUSLY_FATAL }
 

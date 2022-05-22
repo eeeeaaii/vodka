@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from '../utils.js'
+
 
 import { Nex } from '../nex/nex.js' 
 import { NexContainer } from '../nex/nexcontainer.js' 
@@ -40,7 +42,7 @@ import { Word } from '../nex/word.js'
 import { evaluateNexSafely } from '../evaluator.js'
 
 
-import { ERROR_TYPE_WARN, ERROR_TYPE_FATAL, ERROR_TYPE_INFO } from '../nex/eerror.js'
+import { ERROR_TYPE_WARN, ERROR_TYPE_FATAL, ERROR_TYPE_INFO, ERROR_TYPE_PREVIOUSLY_FATAL } from '../nex/eerror.js'
 
 function createTypeConversionBuiltins() {
 
@@ -54,42 +56,18 @@ function createTypeConversionBuiltins() {
 		'Returns a lambda expression identical to the one used to create the passed-in closure (does not modify the closure)'
 		)
 
-	// TODO: actually what I should do is tag it with something like "not fatal"
 	Builtin.createBuiltin(
-		'convert-type-if-error',
-		[ 'errtype$', '_nex' ],
-		function $convertTypeIfError(env, executionEnvironment) {
+		'nofail',
+		[ '_nex' ],
+		function nofail(env, executionEnvironment) {
 			let expr = env.lb('nex');
 			let newresult = evaluateNexSafely(expr, executionEnvironment);
-			if (newresult.getTypeName() != '-error-') {
-				// you might think this function would throw an
-				// error if you tried to pass it something that's
-				// not an error, but the problem with doing that
-				// is that you can't test for whether something is
-				// an error WITHOUT using this function. So non-errors
-				// are passed unchanged.
-				return newresult;
+			if (Utils.isFatalError(newresult)) {
+				newresult.setErrorType(ERROR_TYPE_PREVIOUSLY_FATAL);
 			}
-
-			let etstring = env.lb('errtype').getFullTypedValue();
-			let errtype = ERROR_TYPE_FATAL;
-			switch(etstring) {
-				case "warn":
-					errtype = ERROR_TYPE_WARN;
-					break;
-				case "info":
-					errtype = ERROR_TYPE_INFO;
-					break;
-				case "fatal":
-					break;
-				default:
-					return new EError(`convert-type-if-error: cannot continue because unrecognized type ${etstring} (valid types are 'info', 'warn', and 'fatal'). Sorry!`);
-			}
-
-			newresult.setErrorType(errtype);
 			return newresult;
 		},
-		'If |nex is an error, converts the error type to |errtype (allowed values are "warn", "info", and "fatal"), otherwise just returns |nex.'
+		'If evaluating |nex results in a fatal error, this converts the fatal error into the "previously fatal" error type, which doesn\'t trigger error cascading.'
 	);
 
 	Builtin.createBuiltin(
@@ -97,13 +75,13 @@ function createTypeConversionBuiltins() {
 		[ 'nex' ],
 		function $toFloat(env, executionEnvironment) {
 			let v = env.lb('nex');
-			if (v instanceof Float) {
+			if (Utils.isFloat(v)) {
 				return v;
-			} else if (v instanceof Integer) {
+			} else if (Utils.isInteger(v)) {
 				return new Float(v.getTypedValue());
-			} else if (v instanceof Bool) {
+			} else if (Utils.isBool(v)) {
 				return v.getTypedValue() ? new Float(1): new Float(0);
-			} else if (v instanceof EString) {
+			} else if (Utils.isEString(v)) {
 				let s = v.getFullTypedValue();
 				let mayben = parseFloat(s);
 				if (Number.isNaN(mayben)) {
@@ -111,7 +89,7 @@ function createTypeConversionBuiltins() {
 				} else {
 					return new Float(mayben);
 				}
-			} else if (v instanceof Letter) {
+			} else if (Utils.isLetter(v)) {
 				// could be a number.
 				let s = v.getText();
 				let mayben = parseFloat(s);
@@ -120,7 +98,7 @@ function createTypeConversionBuiltins() {
 				} else {
 					return new Float(mayben);
 				}
-			} else if (v instanceof Word || v instanceof Line || v instanceof Doc) {
+			} else if (Utils.isWord(v) || Utils.isLine(v) || Utils.isDoc(v)) {
 				// could be a number.
 				let s = v.getValueAsString();
 				let mayben = parseFloat(s);
@@ -142,13 +120,13 @@ function createTypeConversionBuiltins() {
 		[ 'nex' ],
 		function $toInteger(env, executionEnvironment) {
 			let v = env.lb('nex');
-			if (v instanceof Integer) {
+			if (Utils.isInteger(v)) {
 				return v;
-			} else if (v instanceof Float) {
+			} else if (Utils.isFloat(v)) {
 				return new Integer(Math.floor(v.getTypedValue()));
-			} else if (v instanceof Bool) {
+			} else if (Utils.isBool(v)) {
 				return v.getTypedValue() ? new Integer(1): new Integer(0);
-			} else if (v instanceof EString) {
+			} else if (Utils.isEString(v)) {
 				let s = v.getFullTypedValue();
 				let mayben = parseInt(s);
 				if (Number.isNaN(mayben)) {
@@ -156,7 +134,7 @@ function createTypeConversionBuiltins() {
 				} else {
 					return new Integer(mayben);
 				}
-			} else if (v instanceof Letter) {
+			} else if (Utils.isLetter(v)) {
 				// could be a number.
 				let s = v.getText();
 				let mayben = parseInt(s);
@@ -165,7 +143,7 @@ function createTypeConversionBuiltins() {
 				} else {
 					return new Integer(mayben);
 				}
-			} else if (v instanceof Word || v instanceof Line || v instanceof Doc) {
+			} else if (Utils.isWord(v) || Utils.isLine(v) || Utils.isDoc(v)) {
 				// could be a number.
 				let s = v.getValueAsString();
 				let mayben = parseInt(s);
@@ -188,26 +166,26 @@ function createTypeConversionBuiltins() {
 		[ 'nex' ],
 		function $toString(env, executionEnvironment) {
 			let v = env.lb('nex');
-			if (v instanceof EString) {
+			if (Utils.isEString(v)) {
 				return new EString(v.getFullTypedValue());
-			} else if (v instanceof Bool) {
+			} else if (Utils.isBool(v)) {
 				return new EString(v.getTypedValue() ? 'yes' : 'no');
-			} else if (v instanceof Float) {
+			} else if (Utils.isFloat(v)) {
 				return new EString('' + v.getTypedValue());
-			} else if (v instanceof Integer) {
+			} else if (Utils.isInteger(v)) {
 				return new EString('' + v.getTypedValue());
-			} else if (v instanceof Letter) {
+			} else if (Utils.isLetter(v)) {
 				return new EString('' + v.getText());
-			} else if (v instanceof Separator) {
+			} else if (Utils.isSeparator(v)) {
 				return new EString('' + v.getText());
-			} else if (v instanceof Word || v instanceof Line || v instanceof Doc) {
+			} else if (Utils.isWord(v) || Utils.isLine(v) || Utils.isDoc(v)) {
 				let ss = v.getValueAsString();
 				if (typeof(ss) == 'string') {
 					return new EString(ss);
 				} else {
 					return new EError(`to-string: could not convert "${ss}" (object of type ${v.getTypeName()}). Sorry!`);
 				}
-			} else if (v instanceof Org) {
+			} else if (Utils.isOrg(v)) {
 				return new EString('' + v.getValueAsString());
 			} else {
 				return new EError(`to-string: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
@@ -224,6 +202,9 @@ function createTypeConversionBuiltins() {
 		function $toWord(env, executionEnvironment) {
 			let v = env.lb('nex');
 
+			if (Utils.isWord(v)) {
+				return v;
+			}
 			let jsStringToDoc = (function(str) {
 				var w = new Word();
 				for (let i = 0; i < str.length; i++) {
@@ -232,14 +213,14 @@ function createTypeConversionBuiltins() {
 				}
 				return w;
 			});
-			if (v instanceof Integer
-				|| v instanceof Float
-				|| v instanceof Bool
+			if (Utils.isInteger(v)
+				|| Utils.isFloat(v)
+				|| Utils.isBool(v)
 				) {
 				return jsStringToDoc('' + v.getTypedValue())
-			} else if (v instanceof EString) {
+			} else if (Utils.isEString(v)) {
 				return jsStringToDoc('' + v.getFullTypedValue())
-			} else if (v instanceof Letter) {
+			} else if (Utils.isLetter(v)) {
 				let w = new Word();
 				w.appendChild(v.makeCopy());
 				return w;

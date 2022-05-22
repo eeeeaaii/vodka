@@ -98,13 +98,19 @@ function isRecordingTest() {
 }
 
 function logMouseEvent(e) {
+	// for some reason I'm getting spurious mouse events at 0, 0
+	if (!e.x && !e.y) {
+		return;
+	}
 	recorded_session += `testactions.push({type:'click',x:'${e.x}',y:'${e.y}'});
 `;	
 }
+
 function logKeyDownEvent(e) {
-//	if (e.code == 'AltLeft' || e.code == 'AltRight') {
-//		alert("Do not use the option key when recording tests! Puppeteer does not support this and your test will not work correctly.");
-//	}
+	if (e.code == 'Backquote' && e.shiftKey && e.altKey) {
+		alert("alt-tilde doesn't work when recording tests! This will play back by inserting the command after, not around. Use insert-around and then just tilde.");
+		return;
+	}
 	shorthand += '|' + e.key;
 	recorded_session += `testactions.push({type:'keydown',code:'${e.code}'});
 `;	

@@ -41,6 +41,16 @@ function createTestBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'is-instantiator',
+		[ 'nex' ],
+		function $isInstantiator(env, executionEnvironment) {
+			return new Bool(Utils.isInstantiator(env.lb('nex')));
+		},
+		`Returns true if |nex is a command.`
+	);
+
+
+	Builtin.createBuiltin(
 		'is-doc',
 		[ 'nex' ],
 		function $isDoc(env, executionEnvironment) {

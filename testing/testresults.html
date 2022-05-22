@@ -105,7 +105,7 @@
 			<textarea id="goldenoutput"></textarea>
 		</div>
 		<div class="summarylist">
-			<div class="summaryname failed">Has Failing Test: 0</div>
+			<div class="summaryname failed">Has Failing Test: 2</div>
         <div class="summarylistitem">
           <span class="cbhint">-n</span>
           <span class="cbhint">-e</span>
@@ -118,6 +118,28 @@
           <input type="checkbox" onclick="checkAll(this, 'rerunfailing')">
 					<input type="checkbox" onclick="checkAll(this, 'ignorefailing')">
 					(select all)
+				</div>
+				<div class="summarylistitem"> 
+          <input type="checkbox" class="regennormalgoldenfailing" data-testname="saveload_separator">
+          <input type="checkbox" class="regenexplodedgoldenfailing" data-testname="saveload_separator">
+          <input type="checkbox" class="rerunfailing" data-testname="saveload_separator">
+					<input type="checkbox" class="ignorefailing" data-testname="saveload_separator">
+					<a class="listtestname" href="./alltests/saveload_separator/saveload_separator_testresults.html">saveload_separator</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 failing)
+          (<a href="#" onclick="return show(this, 'saveload_separator')">show</a>)
+          <div class="detail" id="DETAILFRAME-saveload_separator"></div>
+				</div>
+				<div class="summarylistitem"> 
+          <input type="checkbox" class="regennormalgoldenfailing" data-testname="saveload_string_basicwithescapes">
+          <input type="checkbox" class="regenexplodedgoldenfailing" data-testname="saveload_string_basicwithescapes">
+          <input type="checkbox" class="rerunfailing" data-testname="saveload_string_basicwithescapes">
+					<input type="checkbox" class="ignorefailing" data-testname="saveload_string_basicwithescapes">
+					<a class="listtestname" href="./alltests/saveload_string_basicwithescapes/saveload_string_basicwithescapes_testresults.html">saveload_string_basicwithescapes</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 failing)
+          (<a href="#" onclick="return show(this, 'saveload_string_basicwithescapes')">show</a>)
+          <div class="detail" id="DETAILFRAME-saveload_string_basicwithescapes"></div>
 				</div>
 		</div>
     <div class="summarylist">
@@ -137,7 +159,7 @@
         </div>
     </div>
 		<div class="summarylist">
-			<div class="summaryname passed">Has Passing Test: 239</div>
+			<div class="summaryname passed">Has Passing Test: 334</div>
         <div class="summarylistitem">
           <span class="cbhint">-n</span>
           <span class="cbhint">-e</span>
@@ -405,6 +427,17 @@
           <div class="detail" id="DETAILFRAME-actions_editor_wavetable"></div>
 				</div>
 				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_funnel_backspaceeditor">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="actions_funnel_backspaceeditor">
+          <input type="checkbox" class="rerunpassing" data-testname="actions_funnel_backspaceeditor">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/actions_funnel_backspaceeditor/actions_funnel_backspaceeditor_testresults.html">actions_funnel_backspaceeditor</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'actions_funnel_backspaceeditor')">show</a>)
+          <div class="detail" id="DETAILFRAME-actions_funnel_backspaceeditor"></div>
+				</div>
+				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_funnel_bool_deletions">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="actions_funnel_bool_deletions">
           <input type="checkbox" class="rerunpassing" data-testname="actions_funnel_bool_deletions">
@@ -425,6 +458,17 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'actions_funnel_changedirexitseditor')">show</a>)
           <div class="detail" id="DETAILFRAME-actions_funnel_changedirexitseditor"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_funnel_closeoff">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="actions_funnel_closeoff">
+          <input type="checkbox" class="rerunpassing" data-testname="actions_funnel_closeoff">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/actions_funnel_closeoff/actions_funnel_closeoff_testresults.html">actions_funnel_closeoff</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'actions_funnel_closeoff')">show</a>)
+          <div class="detail" id="DETAILFRAME-actions_funnel_closeoff"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_funnel_command_allowedchars">
@@ -636,15 +680,15 @@
           <div class="detail" id="DETAILFRAME-actions_funnel_emptylines"></div>
 				</div>
 				<div class="summarylistitem">
-          <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_funnel_instantiator">
-          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="actions_funnel_instantiator">
-          <input type="checkbox" class="rerunpassing" data-testname="actions_funnel_instantiator">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_funnel_insertionpip">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="actions_funnel_insertionpip">
+          <input type="checkbox" class="rerunpassing" data-testname="actions_funnel_insertionpip">
           <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
-          <a class="listtestname" href="./alltests/actions_funnel_instantiator/actions_funnel_instantiator_testresults.html">actions_funnel_instantiator</a>
+          <a class="listtestname" href="./alltests/actions_funnel_insertionpip/actions_funnel_insertionpip_testresults.html">actions_funnel_insertionpip</a>
           <span class="smalltesttypebadge jstype">js</span>
           (2 passing)
-          (<a href="#" onclick="return show(this, 'actions_funnel_instantiator')">show</a>)
-          <div class="detail" id="DETAILFRAME-actions_funnel_instantiator"></div>
+          (<a href="#" onclick="return show(this, 'actions_funnel_insertionpip')">show</a>)
+          <div class="detail" id="DETAILFRAME-actions_funnel_insertionpip"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_funnel_joinwords">
@@ -999,6 +1043,17 @@
           <div class="detail" id="DETAILFRAME-actions_funnel_word_newlineatend"></div>
 				</div>
 				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_funnel_wrapinsert">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="actions_funnel_wrapinsert">
+          <input type="checkbox" class="rerunpassing" data-testname="actions_funnel_wrapinsert">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/actions_funnel_wrapinsert/actions_funnel_wrapinsert_testresults.html">actions_funnel_wrapinsert</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'actions_funnel_wrapinsert')">show</a>)
+          <div class="detail" id="DETAILFRAME-actions_funnel_wrapinsert"></div>
+				</div>
+				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_insertionpip_command">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="actions_insertionpip_command">
           <input type="checkbox" class="rerunpassing" data-testname="actions_insertionpip_command">
@@ -1019,6 +1074,116 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'actions_mouse_clickafterinsert')">show</a>)
           <div class="detail" id="DETAILFRAME-actions_mouse_clickafterinsert"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_undo_delete">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="actions_undo_delete">
+          <input type="checkbox" class="rerunpassing" data-testname="actions_undo_delete">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/actions_undo_delete/actions_undo_delete_testresults.html">actions_undo_delete</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'actions_undo_delete')">show</a>)
+          <div class="detail" id="DETAILFRAME-actions_undo_delete"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_undo_doc_typing">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="actions_undo_doc_typing">
+          <input type="checkbox" class="rerunpassing" data-testname="actions_undo_doc_typing">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/actions_undo_doc_typing/actions_undo_doc_typing_testresults.html">actions_undo_doc_typing</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'actions_undo_doc_typing')">show</a>)
+          <div class="detail" id="DETAILFRAME-actions_undo_doc_typing"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_undo_docmovement_down">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="actions_undo_docmovement_down">
+          <input type="checkbox" class="rerunpassing" data-testname="actions_undo_docmovement_down">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/actions_undo_docmovement_down/actions_undo_docmovement_down_testresults.html">actions_undo_docmovement_down</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'actions_undo_docmovement_down')">show</a>)
+          <div class="detail" id="DETAILFRAME-actions_undo_docmovement_down"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_undo_docmovement_up">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="actions_undo_docmovement_up">
+          <input type="checkbox" class="rerunpassing" data-testname="actions_undo_docmovement_up">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/actions_undo_docmovement_up/actions_undo_docmovement_up_testresults.html">actions_undo_docmovement_up</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'actions_undo_docmovement_up')">show</a>)
+          <div class="detail" id="DETAILFRAME-actions_undo_docmovement_up"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_undo_evaluate">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="actions_undo_evaluate">
+          <input type="checkbox" class="rerunpassing" data-testname="actions_undo_evaluate">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/actions_undo_evaluate/actions_undo_evaluate_testresults.html">actions_undo_evaluate</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'actions_undo_evaluate')">show</a>)
+          <div class="detail" id="DETAILFRAME-actions_undo_evaluate"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_undo_insert_nexes">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="actions_undo_insert_nexes">
+          <input type="checkbox" class="rerunpassing" data-testname="actions_undo_insert_nexes">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/actions_undo_insert_nexes/actions_undo_insert_nexes_testresults.html">actions_undo_insert_nexes</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'actions_undo_insert_nexes')">show</a>)
+          <div class="detail" id="DETAILFRAME-actions_undo_insert_nexes"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_undo_movement_arrows">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="actions_undo_movement_arrows">
+          <input type="checkbox" class="rerunpassing" data-testname="actions_undo_movement_arrows">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/actions_undo_movement_arrows/actions_undo_movement_arrows_testresults.html">actions_undo_movement_arrows</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'actions_undo_movement_arrows')">show</a>)
+          <div class="detail" id="DETAILFRAME-actions_undo_movement_arrows"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_undo_movement_closeoff">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="actions_undo_movement_closeoff">
+          <input type="checkbox" class="rerunpassing" data-testname="actions_undo_movement_closeoff">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/actions_undo_movement_closeoff/actions_undo_movement_closeoff_testresults.html">actions_undo_movement_closeoff</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'actions_undo_movement_closeoff')">show</a>)
+          <div class="detail" id="DETAILFRAME-actions_undo_movement_closeoff"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_undo_movement_tabs">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="actions_undo_movement_tabs">
+          <input type="checkbox" class="rerunpassing" data-testname="actions_undo_movement_tabs">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/actions_undo_movement_tabs/actions_undo_movement_tabs_testresults.html">actions_undo_movement_tabs</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'actions_undo_movement_tabs')">show</a>)
+          <div class="detail" id="DETAILFRAME-actions_undo_movement_tabs"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="actions_undo_wrap">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="actions_undo_wrap">
+          <input type="checkbox" class="rerunpassing" data-testname="actions_undo_wrap">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/actions_undo_wrap/actions_undo_wrap_testresults.html">actions_undo_wrap</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'actions_undo_wrap')">show</a>)
+          <div class="detail" id="DETAILFRAME-actions_undo_wrap"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="copy_bool">
@@ -1063,6 +1228,127 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'copy_doc')">show</a>)
           <div class="detail" id="DETAILFRAME-copy_doc"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="copy_estring">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="copy_estring">
+          <input type="checkbox" class="rerunpassing" data-testname="copy_estring">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/copy_estring/copy_estring_testresults.html">copy_estring</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'copy_estring')">show</a>)
+          <div class="detail" id="DETAILFRAME-copy_estring"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="copy_esymbol">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="copy_esymbol">
+          <input type="checkbox" class="rerunpassing" data-testname="copy_esymbol">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/copy_esymbol/copy_esymbol_testresults.html">copy_esymbol</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'copy_esymbol')">show</a>)
+          <div class="detail" id="DETAILFRAME-copy_esymbol"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="copy_float">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="copy_float">
+          <input type="checkbox" class="rerunpassing" data-testname="copy_float">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/copy_float/copy_float_testresults.html">copy_float</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'copy_float')">show</a>)
+          <div class="detail" id="DETAILFRAME-copy_float"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="copy_integer">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="copy_integer">
+          <input type="checkbox" class="rerunpassing" data-testname="copy_integer">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/copy_integer/copy_integer_testresults.html">copy_integer</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'copy_integer')">show</a>)
+          <div class="detail" id="DETAILFRAME-copy_integer"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="copy_lambda">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="copy_lambda">
+          <input type="checkbox" class="rerunpassing" data-testname="copy_lambda">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/copy_lambda/copy_lambda_testresults.html">copy_lambda</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'copy_lambda')">show</a>)
+          <div class="detail" id="DETAILFRAME-copy_lambda"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="copy_letter">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="copy_letter">
+          <input type="checkbox" class="rerunpassing" data-testname="copy_letter">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/copy_letter/copy_letter_testresults.html">copy_letter</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'copy_letter')">show</a>)
+          <div class="detail" id="DETAILFRAME-copy_letter"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="copy_line">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="copy_line">
+          <input type="checkbox" class="rerunpassing" data-testname="copy_line">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/copy_line/copy_line_testresults.html">copy_line</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'copy_line')">show</a>)
+          <div class="detail" id="DETAILFRAME-copy_line"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="copy_nil">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="copy_nil">
+          <input type="checkbox" class="rerunpassing" data-testname="copy_nil">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/copy_nil/copy_nil_testresults.html">copy_nil</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'copy_nil')">show</a>)
+          <div class="detail" id="DETAILFRAME-copy_nil"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="copy_org">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="copy_org">
+          <input type="checkbox" class="rerunpassing" data-testname="copy_org">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/copy_org/copy_org_testresults.html">copy_org</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'copy_org')">show</a>)
+          <div class="detail" id="DETAILFRAME-copy_org"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="copy_separator">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="copy_separator">
+          <input type="checkbox" class="rerunpassing" data-testname="copy_separator">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/copy_separator/copy_separator_testresults.html">copy_separator</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'copy_separator')">show</a>)
+          <div class="detail" id="DETAILFRAME-copy_separator"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="copy_word">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="copy_word">
+          <input type="checkbox" class="rerunpassing" data-testname="copy_word">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/copy_word/copy_word_testresults.html">copy_word</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'copy_word')">show</a>)
+          <div class="detail" id="DETAILFRAME-copy_word"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="eventqueue_deduping">
@@ -1118,6 +1404,28 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'eventqueue_events_gc')">show</a>)
           <div class="detail" id="DETAILFRAME-eventqueue_events_gc"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="eventqueue_events_importanttoplevelrender">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="eventqueue_events_importanttoplevelrender">
+          <input type="checkbox" class="rerunpassing" data-testname="eventqueue_events_importanttoplevelrender">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/eventqueue_events_importanttoplevelrender/eventqueue_events_importanttoplevelrender_testresults.html">eventqueue_events_importanttoplevelrender</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'eventqueue_events_importanttoplevelrender')">show</a>)
+          <div class="detail" id="DETAILFRAME-eventqueue_events_importanttoplevelrender"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="eventqueue_events_renderonlydirty">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="eventqueue_events_renderonlydirty">
+          <input type="checkbox" class="rerunpassing" data-testname="eventqueue_events_renderonlydirty">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/eventqueue_events_renderonlydirty/eventqueue_events_renderonlydirty_testresults.html">eventqueue_events_renderonlydirty</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'eventqueue_events_renderonlydirty')">show</a>)
+          <div class="detail" id="DETAILFRAME-eventqueue_events_renderonlydirty"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="eventqueue_events_toplevelrender">
@@ -1195,6 +1503,28 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'execution_eval_boolean')">show</a>)
           <div class="detail" id="DETAILFRAME-execution_eval_boolean"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="execution_eval_deferencing_symbol">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="execution_eval_deferencing_symbol">
+          <input type="checkbox" class="rerunpassing" data-testname="execution_eval_deferencing_symbol">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/execution_eval_deferencing_symbol/execution_eval_deferencing_symbol_testresults.html">execution_eval_deferencing_symbol</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'execution_eval_deferencing_symbol')">show</a>)
+          <div class="detail" id="DETAILFRAME-execution_eval_deferencing_symbol"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="execution_eval_dereferencing_command">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="execution_eval_dereferencing_command">
+          <input type="checkbox" class="rerunpassing" data-testname="execution_eval_dereferencing_command">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/execution_eval_dereferencing_command/execution_eval_dereferencing_command_testresults.html">execution_eval_dereferencing_command</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'execution_eval_dereferencing_command')">show</a>)
+          <div class="detail" id="DETAILFRAME-execution_eval_dereferencing_command"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="execution_eval_integer">
@@ -1417,6 +1747,39 @@
           <div class="detail" id="DETAILFRAME-execution_wrongarg"></div>
 				</div>
 				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="function_typeconversion_tofloat">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="function_typeconversion_tofloat">
+          <input type="checkbox" class="rerunpassing" data-testname="function_typeconversion_tofloat">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/function_typeconversion_tofloat/function_typeconversion_tofloat_testresults.html">function_typeconversion_tofloat</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'function_typeconversion_tofloat')">show</a>)
+          <div class="detail" id="DETAILFRAME-function_typeconversion_tofloat"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="function_typeconversion_tostring">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="function_typeconversion_tostring">
+          <input type="checkbox" class="rerunpassing" data-testname="function_typeconversion_tostring">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/function_typeconversion_tostring/function_typeconversion_tostring_testresults.html">function_typeconversion_tostring</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'function_typeconversion_tostring')">show</a>)
+          <div class="detail" id="DETAILFRAME-function_typeconversion_tostring"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="function_typeconversion_toword">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="function_typeconversion_toword">
+          <input type="checkbox" class="rerunpassing" data-testname="function_typeconversion_toword">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/function_typeconversion_toword/function_typeconversion_toword_testresults.html">function_typeconversion_toword</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'function_typeconversion_toword')">show</a>)
+          <div class="detail" id="DETAILFRAME-function_typeconversion_toword"></div>
+				</div>
+				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_async_canceldeferred">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_async_canceldeferred">
           <input type="checkbox" class="rerunpassing" data-testname="functions_async_canceldeferred">
@@ -1439,6 +1802,17 @@
           <div class="detail" id="DETAILFRAME-functions_async_waitforclick"></div>
 				</div>
 				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_async_waitfordelay">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_async_waitfordelay">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_async_waitfordelay">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_async_waitfordelay/functions_async_waitfordelay_testresults.html">functions_async_waitfordelay</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_async_waitfordelay')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_async_waitfordelay"></div>
+				</div>
+				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_async_waitfornothing">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_async_waitfornothing">
           <input type="checkbox" class="rerunpassing" data-testname="functions_async_waitfornothing">
@@ -1448,6 +1822,17 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'functions_async_waitfornothing')">show</a>)
           <div class="detail" id="DETAILFRAME-functions_async_waitfornothing"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_begin">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_basic_begin">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_basic_begin">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_basic_begin/functions_basic_begin_testresults.html">functions_basic_begin</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_basic_begin')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_basic_begin"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_car">
@@ -1483,6 +1868,17 @@
           <div class="detail" id="DETAILFRAME-functions_basic_cons"></div>
 				</div>
 				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_copy">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_basic_copy">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_basic_copy">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_basic_copy/functions_basic_copy_testresults.html">functions_basic_copy</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_basic_copy')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_basic_copy"></div>
+				</div>
+				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_cram">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_basic_cram">
           <input type="checkbox" class="rerunpassing" data-testname="functions_basic_cram">
@@ -1494,26 +1890,114 @@
           <div class="detail" id="DETAILFRAME-functions_basic_cram"></div>
 				</div>
 				<div class="summarylistitem">
-          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_first">
-          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_basic_first">
-          <input type="checkbox" class="rerunpassing" data-testname="functions_basic_first">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_eq">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_basic_eq">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_basic_eq">
           <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
-          <a class="listtestname" href="./alltests/functions_basic_first/functions_basic_first_testresults.html">functions_basic_first</a>
+          <a class="listtestname" href="./alltests/functions_basic_eq/functions_basic_eq_testresults.html">functions_basic_eq</a>
           <span class="smalltesttypebadge jstype">js</span>
           (2 passing)
-          (<a href="#" onclick="return show(this, 'functions_basic_first')">show</a>)
-          <div class="detail" id="DETAILFRAME-functions_basic_first"></div>
+          (<a href="#" onclick="return show(this, 'functions_basic_eq')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_basic_eq"></div>
 				</div>
 				<div class="summarylistitem">
-          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_rest">
-          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_basic_rest">
-          <input type="checkbox" class="rerunpassing" data-testname="functions_basic_rest">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_equal">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_basic_equal">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_basic_equal">
           <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
-          <a class="listtestname" href="./alltests/functions_basic_rest/functions_basic_rest_testresults.html">functions_basic_rest</a>
+          <a class="listtestname" href="./alltests/functions_basic_equal/functions_basic_equal_testresults.html">functions_basic_equal</a>
           <span class="smalltesttypebadge jstype">js</span>
           (2 passing)
-          (<a href="#" onclick="return show(this, 'functions_basic_rest')">show</a>)
-          <div class="detail" id="DETAILFRAME-functions_basic_rest"></div>
+          (<a href="#" onclick="return show(this, 'functions_basic_equal')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_basic_equal"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_eval">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_basic_eval">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_basic_eval">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_basic_eval/functions_basic_eval_testresults.html">functions_basic_eval</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_basic_eval')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_basic_eval"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_hardhead">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_basic_hardhead">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_basic_hardhead">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_basic_hardhead/functions_basic_hardhead_testresults.html">functions_basic_hardhead</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_basic_hardhead')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_basic_hardhead"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_hardpush">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_basic_hardpush">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_basic_hardpush">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_basic_hardpush/functions_basic_hardpush_testresults.html">functions_basic_hardpush</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_basic_hardpush')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_basic_hardpush"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_hardtail">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_basic_hardtail">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_basic_hardtail">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_basic_hardtail/functions_basic_hardtail_testresults.html">functions_basic_hardtail</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_basic_hardtail')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_basic_hardtail"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_head">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_basic_head">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_basic_head">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_basic_head/functions_basic_head_testresults.html">functions_basic_head</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_basic_head')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_basic_head"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_listget">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_basic_listget">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_basic_listget">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_basic_listget/functions_basic_listget_testresults.html">functions_basic_listget</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_basic_listget')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_basic_listget"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_listlength">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_basic_listlength">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_basic_listlength">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_basic_listlength/functions_basic_listlength_testresults.html">functions_basic_listlength</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_basic_listlength')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_basic_listlength"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_quote">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_basic_quote">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_basic_quote">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_basic_quote/functions_basic_quote_testresults.html">functions_basic_quote</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_basic_quote')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_basic_quote"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_seeid">
@@ -1525,6 +2009,61 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'functions_basic_seeid')">show</a>)
           <div class="detail" id="DETAILFRAME-functions_basic_seeid"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_basic_tail">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_basic_tail">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_basic_tail">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_basic_tail/functions_basic_tail_testresults.html">functions_basic_tail</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_basic_tail')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_basic_tail"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_contract_allof">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_contract_allof">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_contract_allof">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_contract_allof/functions_contract_allof_testresults.html">functions_contract_allof</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_contract_allof')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_contract_allof"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_contract_hastag">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_contract_hastag">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_contract_hastag">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_contract_hastag/functions_contract_hastag_testresults.html">functions_contract_hastag</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_contract_hastag')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_contract_hastag"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_contract_identity">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_contract_identity">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_contract_identity">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_contract_identity/functions_contract_identity_testresults.html">functions_contract_identity</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_contract_identity')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_contract_identity"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_contract_type">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_contract_type">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_contract_type">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_contract_type/functions_contract_type_testresults.html">functions_contract_type</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_contract_type')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_contract_type"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_environment_bind_returnssymbol">
@@ -1549,6 +2088,28 @@
           <div class="detail" id="DETAILFRAME-functions_environment_bind_tointeger"></div>
 				</div>
 				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_environment_bindings">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_environment_bindings">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_environment_bindings">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_environment_bindings/functions_environment_bindings_testresults.html">functions_environment_bindings</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_environment_bindings')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_environment_bindings"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_environment_builtins">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_environment_builtins">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_environment_builtins">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_environment_builtins/functions_environment_builtins_testresults.html">functions_environment_builtins</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_environment_builtins')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_environment_builtins"></div>
+				</div>
+				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_environment_isbound">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_environment_isbound">
           <input type="checkbox" class="rerunpassing" data-testname="functions_environment_isbound">
@@ -1560,6 +2121,28 @@
           <div class="detail" id="DETAILFRAME-functions_environment_isbound"></div>
 				</div>
 				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_environment_let">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_environment_let">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_environment_let">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_environment_let/functions_environment_let_testresults.html">functions_environment_let</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_environment_let')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_environment_let"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_environment_set_dereference">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_environment_set_dereference">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_environment_set_dereference">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_environment_set_dereference/functions_environment_set_dereference_testresults.html">functions_environment_set_dereference</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_environment_set_dereference')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_environment_set_dereference"></div>
+				</div>
+				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_environment_set">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_environment_set">
           <input type="checkbox" class="rerunpassing" data-testname="functions_environment_set">
@@ -1569,6 +2152,28 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'functions_environment_set')">show</a>)
           <div class="detail" id="DETAILFRAME-functions_environment_set"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_environment_unclose">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_environment_unclose">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_environment_unclose">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_environment_unclose/functions_environment_unclose_testresults.html">functions_environment_unclose</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_environment_unclose')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_environment_unclose"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_file_evalandsave">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_file_evalandsave">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_file_evalandsave">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_file_evalandsave/functions_file_evalandsave_testresults.html">functions_file_evalandsave</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_file_evalandsave')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_file_evalandsave"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_file_import_insidepackage">
@@ -1604,6 +2209,17 @@
           <div class="detail" id="DETAILFRAME-functions_file_import"></div>
 				</div>
 				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_file_load_withstring">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_file_load_withstring">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_file_load_withstring">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_file_load_withstring/functions_file_load_withstring_testresults.html">functions_file_load_withstring</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_file_load_withstring')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_file_load_withstring"></div>
+				</div>
+				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_file_load">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_file_load">
           <input type="checkbox" class="rerunpassing" data-testname="functions_file_load">
@@ -1613,6 +2229,28 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'functions_file_load')">show</a>)
           <div class="detail" id="DETAILFRAME-functions_file_load"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_file_loadfile_raw">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_file_loadfile_raw">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_file_loadfile_raw">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_file_loadfile_raw/functions_file_loadfile_raw_testresults.html">functions_file_loadfile_raw</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_file_loadfile_raw')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_file_loadfile_raw"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_file_package_usewithin">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_file_package_usewithin">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_file_package_usewithin">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_file_package_usewithin/functions_file_package_usewithin_testresults.html">functions_file_package_usewithin</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_file_package_usewithin')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_file_package_usewithin"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_file_package">
@@ -1626,6 +2264,17 @@
           <div class="detail" id="DETAILFRAME-functions_file_package"></div>
 				</div>
 				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_file_save_withstring">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_file_save_withstring">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_file_save_withstring">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_file_save_withstring/functions_file_save_withstring_testresults.html">functions_file_save_withstring</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_file_save_withstring')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_file_save_withstring"></div>
+				</div>
+				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_file_save">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_file_save">
           <input type="checkbox" class="rerunpassing" data-testname="functions_file_save">
@@ -1635,6 +2284,17 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'functions_file_save')">show</a>)
           <div class="detail" id="DETAILFRAME-functions_file_save"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_file_saveraw">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_file_saveraw">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_file_saveraw">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_file_saveraw/functions_file_saveraw_testresults.html">functions_file_saveraw</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_file_saveraw')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_file_saveraw"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_file_use">
@@ -1659,6 +2319,72 @@
           <div class="detail" id="DETAILFRAME-functions_file_using"></div>
 				</div>
 				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_iteration_filterwith">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_iteration_filterwith">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_iteration_filterwith">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_iteration_filterwith/functions_iteration_filterwith_testresults.html">functions_iteration_filterwith</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_iteration_filterwith')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_iteration_filterwith"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_iteration_forloop">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_iteration_forloop">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_iteration_forloop">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_iteration_forloop/functions_iteration_forloop_testresults.html">functions_iteration_forloop</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_iteration_forloop')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_iteration_forloop"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_iteration_loopover">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_iteration_loopover">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_iteration_loopover">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_iteration_loopover/functions_iteration_loopover_testresults.html">functions_iteration_loopover</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_iteration_loopover')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_iteration_loopover"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_iteration_mapwith">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_iteration_mapwith">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_iteration_mapwith">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_iteration_mapwith/functions_iteration_mapwith_testresults.html">functions_iteration_mapwith</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_iteration_mapwith')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_iteration_mapwith"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_iteration_range">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_iteration_range">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_iteration_range">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_iteration_range/functions_iteration_range_testresults.html">functions_iteration_range</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_iteration_range')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_iteration_range"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_iteration_reducewith">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_iteration_reducewith">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_iteration_reducewith">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_iteration_reducewith/functions_iteration_reducewith_testresults.html">functions_iteration_reducewith</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_iteration_reducewith')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_iteration_reducewith"></div>
+				</div>
+				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_log_if_twoarg">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_log_if_twoarg">
           <input type="checkbox" class="rerunpassing" data-testname="functions_log_if_twoarg">
@@ -1679,6 +2405,17 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'functions_logic_and')">show</a>)
           <div class="detail" id="DETAILFRAME-functions_logic_and"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_logic_firstnonnil">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_logic_firstnonnil">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_logic_firstnonnil">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_logic_firstnonnil/functions_logic_firstnonnil_testresults.html">functions_logic_firstnonnil</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_logic_firstnonnil')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_logic_firstnonnil"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_logic_if_skipeval">
@@ -1736,6 +2473,17 @@
           <div class="detail" id="DETAILFRAME-functions_make_makecommand"></div>
 				</div>
 				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_make_makedoc">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_make_makedoc">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_make_makedoc">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_make_makedoc/functions_make_makedoc_testresults.html">functions_make_makedoc</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_make_makedoc')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_make_makedoc"></div>
+				</div>
+				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_make_makeerror">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_make_makeerror">
           <input type="checkbox" class="rerunpassing" data-testname="functions_make_makeerror">
@@ -1769,6 +2517,28 @@
           <div class="detail" id="DETAILFRAME-functions_make_makelambda"></div>
 				</div>
 				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_make_makeline">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_make_makeline">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_make_makeline">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_make_makeline/functions_make_makeline_testresults.html">functions_make_makeline</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_make_makeline')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_make_makeline"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_make_makenil">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_make_makenil">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_make_makenil">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_make_makenil/functions_make_makenil_testresults.html">functions_make_makenil</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_make_makenil')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_make_makenil"></div>
+				</div>
+				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_make_makeorg">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_make_makeorg">
           <input type="checkbox" class="rerunpassing" data-testname="functions_make_makeorg">
@@ -1789,6 +2559,17 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'functions_make_makewarning')">show</a>)
           <div class="detail" id="DETAILFRAME-functions_make_makewarning"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_make_makeword">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_make_makeword">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_make_makeword">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_make_makeword/functions_make_makeword_testresults.html">functions_make_makeword</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_make_makeword')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_make_makeword"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_math_acos">
@@ -2143,15 +2924,59 @@
           <div class="detail" id="DETAILFRAME-functions_misc_alias"></div>
 				</div>
 				<div class="summarylistitem">
-          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_string_cat">
-          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_string_cat">
-          <input type="checkbox" class="rerunpassing" data-testname="functions_string_cat">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_string_charat">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_string_charat">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_string_charat">
           <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
-          <a class="listtestname" href="./alltests/functions_string_cat/functions_string_cat_testresults.html">functions_string_cat</a>
+          <a class="listtestname" href="./alltests/functions_string_charat/functions_string_charat_testresults.html">functions_string_charat</a>
           <span class="smalltesttypebadge jstype">js</span>
           (2 passing)
-          (<a href="#" onclick="return show(this, 'functions_string_cat')">show</a>)
-          <div class="detail" id="DETAILFRAME-functions_string_cat"></div>
+          (<a href="#" onclick="return show(this, 'functions_string_charat')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_string_charat"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_string_concatenate">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_string_concatenate">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_string_concatenate">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_string_concatenate/functions_string_concatenate_testresults.html">functions_string_concatenate</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_string_concatenate')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_string_concatenate"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_string_indexof">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_string_indexof">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_string_indexof">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_string_indexof/functions_string_indexof_testresults.html">functions_string_indexof</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_string_indexof')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_string_indexof"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_string_isempty">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_string_isempty">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_string_isempty">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_string_isempty/functions_string_isempty_testresults.html">functions_string_isempty</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_string_isempty')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_string_isempty"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_string_joinon">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_string_joinon">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_string_joinon">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_string_joinon/functions_string_joinon_testresults.html">functions_string_joinon</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_string_joinon')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_string_joinon"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_string_length">
@@ -2176,6 +3001,28 @@
           <div class="detail" id="DETAILFRAME-functions_string_listify"></div>
 				</div>
 				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_string_split">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_string_split">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_string_split">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_string_split/functions_string_split_testresults.html">functions_string_split</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_string_split')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_string_split"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_string_substring">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_string_substring">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_string_substring">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_string_substring/functions_string_substring_testresults.html">functions_string_substring</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_string_substring')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_string_substring"></div>
+				</div>
+				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_syscalls_applycssstyleto">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_syscalls_applycssstyleto">
           <input type="checkbox" class="rerunpassing" data-testname="functions_syscalls_applycssstyleto">
@@ -2185,6 +3032,83 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'functions_syscalls_applycssstyleto')">show</a>)
           <div class="detail" id="DETAILFRAME-functions_syscalls_applycssstyleto"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_syscalls_getcssstylefrom">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_syscalls_getcssstylefrom">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_syscalls_getcssstylefrom">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_syscalls_getcssstylefrom/functions_syscalls_getcssstylefrom_testresults.html">functions_syscalls_getcssstylefrom</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_syscalls_getcssstylefrom')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_syscalls_getcssstylefrom"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_syscalls_getpixelheight">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_syscalls_getpixelheight">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_syscalls_getpixelheight">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_syscalls_getpixelheight/functions_syscalls_getpixelheight_testresults.html">functions_syscalls_getpixelheight</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_syscalls_getpixelheight')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_syscalls_getpixelheight"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_syscalls_getpixelwidth">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_syscalls_getpixelwidth">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_syscalls_getpixelwidth">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_syscalls_getpixelwidth/functions_syscalls_getpixelwidth_testresults.html">functions_syscalls_getpixelwidth</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_syscalls_getpixelwidth')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_syscalls_getpixelwidth"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_syscalls_runjs">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_syscalls_runjs">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_syscalls_runjs">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_syscalls_runjs/functions_syscalls_runjs_testresults.html">functions_syscalls_runjs</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_syscalls_runjs')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_syscalls_runjs"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_tag_addtag_enforcecontract">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_tag_addtag_enforcecontract">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_tag_addtag_enforcecontract">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_tag_addtag_enforcecontract/functions_tag_addtag_enforcecontract_testresults.html">functions_tag_addtag_enforcecontract</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_tag_addtag_enforcecontract')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_tag_addtag_enforcecontract"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_tag_addtag">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_tag_addtag">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_tag_addtag">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_tag_addtag/functions_tag_addtag_testresults.html">functions_tag_addtag</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_tag_addtag')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_tag_addtag"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_tag_hastags">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_tag_hastags">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_tag_hastags">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_tag_hastags/functions_tag_hastags_testresults.html">functions_tag_hastags</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_tag_hastags')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_tag_hastags"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_test_isboolean">
@@ -2251,6 +3175,17 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'functions_test_isfloat')">show</a>)
           <div class="detail" id="DETAILFRAME-functions_test_isfloat"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_test_isinstantiator">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_test_isinstantiator">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_test_isinstantiator">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_test_isinstantiator/functions_test_isinstantiator_testresults.html">functions_test_isinstantiator</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_test_isinstantiator')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_test_isinstantiator"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_test_isinteger">
@@ -2363,6 +3298,28 @@
           <div class="detail" id="DETAILFRAME-functions_test_isword"></div>
 				</div>
 				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_typeconversion_getlambda">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_typeconversion_getlambda">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_typeconversion_getlambda">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_typeconversion_getlambda/functions_typeconversion_getlambda_testresults.html">functions_typeconversion_getlambda</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_typeconversion_getlambda')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_typeconversion_getlambda"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_typeconversion_nofail">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_typeconversion_nofail">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_typeconversion_nofail">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_typeconversion_nofail/functions_typeconversion_nofail_testresults.html">functions_typeconversion_nofail</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_typeconversion_nofail')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_typeconversion_nofail"></div>
+				</div>
+				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_typeconversion_tointeger">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_typeconversion_tointeger">
           <input type="checkbox" class="rerunpassing" data-testname="functions_typeconversion_tointeger">
@@ -2418,6 +3375,17 @@
           <div class="detail" id="DETAILFRAME-graphics_command_infix"></div>
 				</div>
 				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="graphics_command_tooltip">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="graphics_command_tooltip">
+          <input type="checkbox" class="rerunpassing" data-testname="graphics_command_tooltip">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/graphics_command_tooltip/graphics_command_tooltip_testresults.html">graphics_command_tooltip</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'graphics_command_tooltip')">show</a>)
+          <div class="detail" id="DETAILFRAME-graphics_command_tooltip"></div>
+				</div>
+				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="graphics_command_vertical">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="graphics_command_vertical">
           <input type="checkbox" class="rerunpassing" data-testname="graphics_command_vertical">
@@ -2449,6 +3417,72 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'graphics_general_renderdepthexceeded')">show</a>)
           <div class="detail" id="DETAILFRAME-graphics_general_renderdepthexceeded"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="graphics_instantiator_tooltip">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="graphics_instantiator_tooltip">
+          <input type="checkbox" class="rerunpassing" data-testname="graphics_instantiator_tooltip">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/graphics_instantiator_tooltip/graphics_instantiator_tooltip_testresults.html">graphics_instantiator_tooltip</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'graphics_instantiator_tooltip')">show</a>)
+          <div class="detail" id="DETAILFRAME-graphics_instantiator_tooltip"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="graphics_instantiator">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="graphics_instantiator">
+          <input type="checkbox" class="rerunpassing" data-testname="graphics_instantiator">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/graphics_instantiator/graphics_instantiator_testresults.html">graphics_instantiator</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'graphics_instantiator')">show</a>)
+          <div class="detail" id="DETAILFRAME-graphics_instantiator"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="graphics_org_orientation">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="graphics_org_orientation">
+          <input type="checkbox" class="rerunpassing" data-testname="graphics_org_orientation">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/graphics_org_orientation/graphics_org_orientation_testresults.html">graphics_org_orientation</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'graphics_org_orientation')">show</a>)
+          <div class="detail" id="DETAILFRAME-graphics_org_orientation"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="graphics_string">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="graphics_string">
+          <input type="checkbox" class="rerunpassing" data-testname="graphics_string">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/graphics_string/graphics_string_testresults.html">graphics_string</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'graphics_string')">show</a>)
+          <div class="detail" id="DETAILFRAME-graphics_string"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="graphics_tag">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="graphics_tag">
+          <input type="checkbox" class="rerunpassing" data-testname="graphics_tag">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/graphics_tag/graphics_tag_testresults.html">graphics_tag</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'graphics_tag')">show</a>)
+          <div class="detail" id="DETAILFRAME-graphics_tag"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="graphics_tags_docs">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="graphics_tags_docs">
+          <input type="checkbox" class="rerunpassing" data-testname="graphics_tags_docs">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/graphics_tags_docs/graphics_tags_docs_testresults.html">graphics_tags_docs</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'graphics_tags_docs')">show</a>)
+          <div class="detail" id="DETAILFRAME-graphics_tags_docs"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="integration_bindanduse">
@@ -2605,6 +3639,17 @@
           <div class="detail" id="DETAILFRAME-saveload_lambda_basic"></div>
 				</div>
 				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="saveload_letter">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="saveload_letter">
+          <input type="checkbox" class="rerunpassing" data-testname="saveload_letter">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/saveload_letter/saveload_letter_testresults.html">saveload_letter</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'saveload_letter')">show</a>)
+          <div class="detail" id="DETAILFRAME-saveload_letter"></div>
+				</div>
+				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="saveload_line">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="saveload_line">
           <input type="checkbox" class="rerunpassing" data-testname="saveload_line">
@@ -2614,6 +3659,17 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'saveload_line')">show</a>)
           <div class="detail" id="DETAILFRAME-saveload_line"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="saveload_nil">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="saveload_nil">
+          <input type="checkbox" class="rerunpassing" data-testname="saveload_nil">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/saveload_nil/saveload_nil_testresults.html">saveload_nil</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'saveload_nil')">show</a>)
+          <div class="detail" id="DETAILFRAME-saveload_nil"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="saveload_org">
@@ -2638,15 +3694,15 @@
           <div class="detail" id="DETAILFRAME-saveload_preservevertical"></div>
 				</div>
 				<div class="summarylistitem">
-          <input type="checkbox" class="regennormalgoldenpassing" data-testname="saveload_string_basicwithescapes">
-          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="saveload_string_basicwithescapes">
-          <input type="checkbox" class="rerunpassing" data-testname="saveload_string_basicwithescapes">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="saveload_style">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="saveload_style">
+          <input type="checkbox" class="rerunpassing" data-testname="saveload_style">
           <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
-          <a class="listtestname" href="./alltests/saveload_string_basicwithescapes/saveload_string_basicwithescapes_testresults.html">saveload_string_basicwithescapes</a>
+          <a class="listtestname" href="./alltests/saveload_style/saveload_style_testresults.html">saveload_style</a>
           <span class="smalltesttypebadge jstype">js</span>
           (2 passing)
-          (<a href="#" onclick="return show(this, 'saveload_string_basicwithescapes')">show</a>)
-          <div class="detail" id="DETAILFRAME-saveload_string_basicwithescapes"></div>
+          (<a href="#" onclick="return show(this, 'saveload_style')">show</a>)
+          <div class="detail" id="DETAILFRAME-saveload_style"></div>
 				</div>
 				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="saveload_symbol_basic">
@@ -2779,6 +3835,17 @@
           (2 passing)
           (<a href="#" onclick="return show(this, 'tags_editing_shiftbackspace')">show</a>)
           <div class="detail" id="DETAILFRAME-tags_editing_shiftbackspace"></div>
+				</div>
+				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="template_basic">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="template_basic">
+          <input type="checkbox" class="rerunpassing" data-testname="template_basic">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/template_basic/template_basic_testresults.html">template_basic</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'template_basic')">show</a>)
+          <div class="detail" id="DETAILFRAME-template_basic"></div>
 				</div>
 		</div>
 		<div class="summarylist">

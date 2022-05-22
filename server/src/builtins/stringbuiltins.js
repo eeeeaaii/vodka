@@ -25,7 +25,7 @@ import { Integer } from '../nex/integer.js'
 function createStringBuiltins() {
 
 	Builtin.createBuiltin(
-		'concatenate-strings',
+		'string-concatenate',
 		[ 'str$...' ],
 		function $stringCat(env, executionEnvironment) {
 			let r = '';
@@ -39,11 +39,11 @@ function createStringBuiltins() {
 		'Concatenates the passed-in strings and returns the result.'
 	);
 	// this alias makes tests pass
-	Builtin.aliasBuiltin('string-cat', 'concatenate-strings');
+	Builtin.aliasBuiltin('string-cat', 'string-concatenate');
 
 	Builtin.createBuiltin(
-		'char-at in-string',
-		[ 'pos#', 'str$',  ],
+		'string-char-at',
+		[ 'str$', 'pos#' ],
 		function $stringCharAt(env, executionEnvironment) {
 			let s = env.lb('str').getFullTypedValue();
 			let n = env.lb('pos').getTypedValue();
@@ -55,12 +55,10 @@ function createStringBuiltins() {
 		},
 		'Returns the character in |str at index position |pos.'
 	);
-	// this alias makes tests pass
-	Builtin.aliasBuiltin('string-char-at', 'char-at in-string');
 
 	Builtin.createBuiltin(
-		'index-of-string in-string',
-		[ 'tofind$', 'str$' ],
+		'string-index-of',
+		[ 'str$', 'tofind$' ],
 		function $stringIndexOf(env, executionEnvironment) {
 			let s = env.lb('str').getFullTypedValue();
 			let tofind = env.lb('tofind').getFullTypedValue();
@@ -69,12 +67,10 @@ function createStringBuiltins() {
 		},
 		'Returns the index position of |tofind in |str.'
 	);
-	// this alias makes tests pass
-	Builtin.aliasBuiltin('string-index-of', 'index-of-string in-string');
 
 
 	Builtin.createBuiltin(
-		'join-strings on',
+		'string-join-on',
 		[ 'strs()', 'on$' ],
 		function $stringJoinOn(env, executionEnvironment) {
 			let lst = env.lb('strs');
@@ -90,7 +86,7 @@ function createStringBuiltins() {
 
 
 	Builtin.createBuiltin(
-		'length-of-string',
+		'string-length',
 		[ 'str$' ],
 		function $stringLength(env, executionEnvironment) {
 			let s = env.lb('str').getFullTypedValue();
@@ -99,12 +95,10 @@ function createStringBuiltins() {
 		},
 		'Returns the length of (number of characters in) |str'
 	);
-	// this alias makes tests pass
-	Builtin.aliasBuiltin('string-length', 'length-of-string');
 
 
 	Builtin.createBuiltin(
-		'listify-string',
+		'string-listify',
 		[ 'str$' ],
 		function $stringListify(env, executionEnvironment) {
 			let r = new Word();
@@ -118,13 +112,11 @@ function createStringBuiltins() {
 		},
 		'Turns a string into a list of strings of one-letter each, one for each letter in |str.'
 	);
-	// this alias makes tests pass
-	Builtin.aliasBuiltin('string-listify', 'listify-string');
 
 
 	Builtin.createBuiltin(
-		'split-on in-string',
-		[ 'on$', 'str$' ],
+		'string-split',
+		[ 'str$', 'on$' ],
 		function $stringSplitOn(env, executionEnvironment) {
 			let str = env.lb('str').getFullTypedValue();
 			let on = env.lb('on').getFullTypedValue();
@@ -141,21 +133,21 @@ function createStringBuiltins() {
 
 
 	Builtin.createBuiltin(
-		'from to in-string',
-		[ 'start#', 'len#', 'str$' ],
+		'string-substring',
+		[ 'str$', 'start#', 'len#' ],
 		function $stringSubstring(env, executionEnvironment) {
 			let str = env.lb('str').getFullTypedValue();
 			let start = env.lb('start').getTypedValue();
 			let len = env.lb('len').getTypedValue();
-			let s = str.substring(start, len);
+			let s = str.substr(start, len);
 			return new EString(s);
 		},
-		'Retrieves a substring of |str from |start to |len'
+		'Retrieves a substring of |str starting at |start that is |len characters long'
 	);
 
 
 	Builtin.createBuiltin(
-		'is-empty-string',
+		'string-is-empty',
 		[ 'str$' ],
 		function $isEmptyString(env, executionEnvironment) {
 			let str = env.lb('str').getFullTypedValue();

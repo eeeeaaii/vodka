@@ -23,8 +23,9 @@ import { contractEnforcer } from '../contractfunctions.js';
 
 function createTagBuiltins() {
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
+	// IT IS AN INTENTIONAL CHOICE THAT THERE ARE NO FUNCTIONS TO REMOVE TAGS
+	// Tags enforce types via contracts. If you can remove tags, you can
+	// subvert any type protections that someone wants to add to something.
 
 	Builtin.createBuiltin(
 		'add-tag to',
@@ -44,17 +45,6 @@ function createTagBuiltins() {
 		'Adds the tag |tag to |nex.'
 	);
 
-	Builtin.createBuiltin(
-		'clear-tags-from',
-		[ 'nex' ],
-		function $clearTags(env, executionEnvironment) {
-			let n = env.lb('_nex');
-			n.clearTags();
-			return n;
-		},
-		'Clears all tags from |nex.'
-	);
-
 
 	Builtin.createBuiltin(
 		' has-tag',
@@ -72,21 +62,6 @@ function createTagBuiltins() {
 		'Returns true if |nex has a tag equal to |tag.'
 	);
 
-	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
-
-
-	Builtin.createBuiltin(
-		'remove-tag from',
-		[ 'tag$', 'nex' ],
-		function $removeTag(env, executionEnvironment) {
-			let n = env.lb('nex');
-			let tagname = env.lb('tag').getFullTypedValue();
-			let tag = new Tag(tagname);
-			n.removeTag(tag);
-			return n;
-		},
-		'Removes tag |tag from |nex.'
-	);
 }
 
 export { createTagBuiltins }

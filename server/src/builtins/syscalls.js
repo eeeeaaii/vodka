@@ -135,67 +135,37 @@ function createSyscalls() {
 
 	Builtin.createBuiltin(
 		'get-pixel-height',
-		[ 'nex', 'normal?' ],
+		[ 'nex'],
 		function $getPixelHeight(env, executionEnvironment) {
 			let n = env.lb('nex');
-			let normal = env.lb('normal');
-			let useNormal = (normal == UNBOUND ? true : normal.getTypedValue());
-			let renderModeToUse = useNormal ? RENDER_MODE_NORM : RENDER_MODE_EXPLO;
 
-			let rn = null;
 			let rna = n.getRenderNodes();
-			if (rna.length > 0) {
-				rn = rna[0];
+			if (rna.length == 0) {
+				return new Float(0);
 			}
-			if (rn != null) {
-				let lastRenderModeForCachedNode = rn.getRenderMode();
-				if (lastRenderModeForCachedNode != renderModeToUse) {
-					rn = null;
-				}
-			}
-			if (rn == null) {
-				rn = hiddenRootController.renderInHiddenRoot(n, renderModeToUse);
-			}
-			if (!rn) {
-				return new EError('cannot get height');
-			}
+			let rn = rna[0];
 			let h = rn.getDomNode().getBoundingClientRect().height;
 			return new Float(h);
 		},
-		'Returns the pixel height for the nex, in normal or exploded mode (default normal).'
+		'Returns the pixel height for the nex. If the nex is not visible on the screen this returns zero. If the nex appears in multiple places on the screen, and the sizes are different for some reason (e.g. one is in normal mode, the other is exploded) it will return the size of the first one.'
 	);
 
 
 	Builtin.createBuiltin(
 		'get-pixel-width',
-		[ 'nex', 'normal?' ],
+		[ 'nex' ],
 		function $getPixelWidth(env, executionEnvironment) {
 			let n = env.lb('nex');
-			let normal = env.lb('normal');
-			let useNormal = (normal == UNBOUND ? true : normal.getTypedValue());
-			let renderModeToUse = useNormal ? RENDER_MODE_NORM : RENDER_MODE_EXPLO;
 
-			let rn = null;
 			let rna = n.getRenderNodes();
-			if (rna.length > 0) {
-				rn = rna[0];
+			if (rna.length == 0) {
+				return new Float(0);
 			}
-			if (rn != null) {
-				let lastRenderModeForCachedNode = rn.getRenderMode();
-				if (lastRenderModeForCachedNode != renderModeToUse) {
-					rn = null;
-				}
-			}
-			if (rn == null) {
-				rn = hiddenRootController.renderInHiddenRoot(n, renderModeToUse);
-			}
-			if (!rn) {
-				return new EError('cannot get width');
-			}
-			let w = rn.getDomNode().getBoundingClientRect().width;
-			return new Float(w);
+			let rn = rna[0];
+			let h = rn.getDomNode().getBoundingClientRect().width;
+			return new Float(h);
 		},
-		'Returns the pixel width for the nex, in normal or exploded mode (default normal).'
+		'Returns the pixel width for the nex. If the nex is not visible on the screen this returns zero. If the nex appears in multiple places on the screen, and the sizes are different for some reason (e.g. one is in normal mode, the other is exploded) it will return the size of the first one.'
 	);
 
 	Builtin.createBuiltin(
@@ -245,7 +215,7 @@ function createSyscalls() {
 					return new Float(result);
 				}
 			} else {
-				return new EString(result);
+				return new EString('' + result);
 			}
 		},
 		'Runs arbitrary Javascript code |expr.'

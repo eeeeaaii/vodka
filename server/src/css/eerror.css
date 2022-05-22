@@ -42,6 +42,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	color: #00aa00;
 }
 
+.eerror.previouslyfatal {
+	color: #aa6e00;
+}
+
 .eerror > .innerspan {
 	margin-bottom: 4px;
 }

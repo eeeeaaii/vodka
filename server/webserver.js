@@ -360,13 +360,13 @@ function serviceApiRequest(sessionId, resp, data) {
 	if (opcode == 'save') {
 		serviceApiSaveRequest(arg, sessionId, cb);
 	} else if (opcode == 'load') {
-		serviceApiLoadRequestUserSession(arg, sessionId, cb, true /*fallback*/);
+		serviceApiLoadRequestUserSession(arg, sessionId, cb, true /*fallback to user session*/);
 	// these are currently identical to save/load but may not be
 	// in the future due to tab escaping or -- idk, security shit
 	} else if (opcode == 'saveraw') {
 		serviceApiSaveRequest(arg, sessionId, cb);
 	} else if (opcode == 'loadraw') {
-		serviceApiLoadRequestUserSession(arg, sessionId, cb);
+		serviceApiLoadRequestUserSession(arg, sessionId, cb, false /*fallback to user session*/);
 	} else if (opcode == 'listfiles') {
 		serviceApiListFilesRequest(sessionId, cb, false /*standard*/);
 	} else if (opcode == 'liststandardfunctionfiles') {

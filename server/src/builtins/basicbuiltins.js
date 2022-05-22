@@ -180,6 +180,30 @@ function createBasicBuiltins() {
 		'returns true if |lhs and |rhs refer to the same in-memory object (pointer equality).'
 	);
 
+	Builtin.createBuiltin(
+		'list-length',
+		[ 'lst()' ],
+		function $eq(env, executionEnvironment) {
+			let lst = env.lb('lst');
+			return new Integer(lst.numChildren())
+		},
+		'returns the length of |lst.'
+	);
+
+	Builtin.createBuiltin(
+		'list-get',
+		[ 'lst()', 'i#' ],
+		function $eq(env, executionEnvironment) {
+			let lst = env.lb('lst');
+			let ind = env.lb('i');
+			let i = ind.getTypedValue();
+			if (i < 0 || i >= lst.numChildren()) {
+				return new EError(`invalid list index, must be between 0 and ${lst.numChildren()}`);
+			}
+			return lst.getChildAt(i);
+		},
+		'returns the length of |lst.'
+	);
 
 	Builtin.createBuiltin(
 		'equal',

@@ -48,7 +48,7 @@ class TemplateStore  {
 		return template;
 	}
 
-	copyMembersInto(src, dst) {
+	_copyMembersInto(src, dst) {
 		for (let i = 0; i < src.numChildren() ; i++) {
 			let c = src.getChildAt(i);
 			// SHOULD I EVALUATE and append THAT?
@@ -60,81 +60,44 @@ class TemplateStore  {
 		}
 	}
 
-	getSingleTagName(nex) {
+
+	_getSingleTagName(nex) {
 		if (nex.numTags() != 1) {
 			return null;
 		}
 		return nex.getTag(0).getName();
 	}
 
-	// kind of temporary because I have to figure out subclassing I guess
-	instantiateWithNameString(str, args) {
-		let dst = new Org();
-		let template = this.templates[str];
-		if (!template) {
-		  throw new EError(`cannot instantiate unknown template ${str}. Sorry!`);
+	instantiateWithPotentialTemplate(namestr, binding, args, env) {
+		if (!binding) {
+			return new EError(`no binding for template ${namestr}.`);
 		}
-		this.copyMembersInto(template.getOrg(), dst);
-		if (template.getDrawCheat()) {
-			dst.setDrawCheat(template.getDrawCheat());
+		if (!Utils.isOrg(binding)) {
+			// instantiating non-orgs just gives you back the thing.
+			return binding;
 		}
-		return this.instantiate(dst, args);
-	}
-
-	// merge: takes a bunch of nonces and initializers and makes an initializer
-	merge(args) {
 		let dst = new Org();
-		for (let i = 0; i < args.length; i++) {
-			let arg = args[i];
-			if (arg.getTypeName() == '-nil-') {
-				// it's a nonce
-				let name = arg.getTag(0).getName();
-				let template = this.templates[name];
-				this.copyMembersInto(template.getOrg(), dst);
-				if (template.getDrawCheat()) {
-					dst.setDrawCheat(template.getDrawCheat());
-				}
-			} else if (arg.getTypeName() == '-org-') {
-				this.copyMembersInto(arg, dst);
-			} else {
-				throw new Error('ack');
-			}
-		}		
-		return dst;
+		this._copyMembersInto(binding, dst);
+		return this._instantiate(dst, args, env);
 	}
 
 	// args is an array, will always be passed, but it might be empty, contains nexes
-	instantiate(initOrg, args) {
+	_instantiate(initOrg, args, env) {
 		let org = new Org();
 		let initializer = null;
 		let fcscope = {};
-		if (initOrg.getDrawCheat()) {
-			let dc = initOrg.getDrawCheat();
-			dc = dc.bind(fcscope);
-			org.setDrawFunction(dc);
-		}
-		let env = BUILTINS.pushEnv();
+		env = env.pushEnv();
 		env.bind('self', org);
 		for (let i = 0; i < initOrg.numChildren(); i++) {
 			let c = initOrg.getChildAt(i);
-			let membername = this.getSingleTagName(c);
-			if (c.getTypeName() == '-lambda-') {
-				let closure = evaluateNexSafely(c, env);
-				closure.addTag(new Tag(membername));
+			let membername = this._getSingleTagName(c);
+			if (c.getTypeName() == '-closure-') {
+				let lambda = c.getLambda();
+				let closure = evaluateNexSafely(lambda, env);
 				org.appendChild(closure);
 				if (membername == ':init') {
 					initializer = closure;
-				} else if (membername == ':draw') {
-					let df = function(prevHTML) {
-						let str = new EString(prevHTML);
-						let cmd = Command.makeCommandWithClosure(closure, str);
-						let rstr = evaluateNexSafely(cmd, env);
-						return rstr.getFullTypedValue();
-					}
-					org.setDrawFunction(df);
 				}
-			} else if (c instanceof Closure) {
-				org.appendChild(c);
 			} else {
 				org.appendChild(c.makeCopy());
 			}
@@ -148,73 +111,54 @@ class TemplateStore  {
 		}
 		return org;
 	}
-}
-
-class Template {
-	// we don't do anything with the env yet but I think we will need it
-	// should write a test for it WHEN we do something with it
-	constructor(name, org, env, drawCheat, docs) {
-		this.name = name;
-		this.org = org;
-		this.env = env;
-		this.drawCheat = drawCheat;
-		this.docs = docs;
+	
+	_makeLine(n, s) {
+		return `<div class="templateline${n}">${s.trim()}</div>`;
 	}
 
-	getName() {
-		return this.name;
-	}
-
-	getOrg() {
-		return this.org;
-	}
-
-	getEnv() {
-		return this.env;
-	}
-
-	getDrawCheat() {
-		return this.drawCheat;
-	}
-
-	line(n, s) {
-		return `<div class="templateline${n}">${s.trim()}</div>`
-	}
-
-	getDocs() {
-		let firstline = '';
-		if (!this.docs) {
-			let docs = this.org.getChildTagged(':info');
-			if (docs && docs.getTypeName() == '-page-') {
-				firstline = docs.getValueAsString();
-			} else {
-				firstline = '-no description-';
-			}
-		} else {
-			firstline = this.docs;
+	getTemplateDocs(binding) {
+		if (!binding) {
+			return '';
 		}
-		let initializer = this.org.getChildTagged(':init');
+		if (!Utils.isOrg(binding)) {
+			return '-not a template-';
+		}
+
+		let docs = binding.getChildTagged(new Tag(':docs'));
+		if (!docs) {
+			return '-no description-';
+		}
+
+		if (!Utils.isDoc(docs)) {
+			return '-invalid description-';
+		}
+
+		let firstline = docs.getValueAsString();
+
+		// okay great, let's try other things.
+
+		let secondline = '';
+		let initializer = binding.getChildTagged(new Tag(':init'));
 		if (initializer) {
-			let secondline = ''
 			if (initializer.getTypeName() == '-closure-') {
 				secondline = ''
 						+ initializer.getSummaryLine()
 						+ ' '
 						+ initializer.getLambdaArgString();
-			} else {
-				secondline = initializer.getArgString(':init');
 			}
-
-			return this.line(0, '&#x25F0') + this.line(1, firstline) + this.line(2, secondline);
-		} else {
-			return this.line(0, '&#x25F0') + this.line(1, firstline);
+		}
+		if (secondline) {
+			return this._makeLine(0, '&#x25F0') + this._makeLine(1, firstline) + this._makeLine(2, secondline);			
+		} else {			
+			return this._makeLine(0, '&#x25F0') + this._makeLine(1, firstline);
 		}
 	}
+
 }
 
 
 const templateStore = new TemplateStore();
 
 
-export { templateStore, convertJSMapToOrg  }
+export { templateStore  }
 

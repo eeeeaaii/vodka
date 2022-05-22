@@ -749,6 +749,16 @@ class Manipulator {
 		}
 	}
 
+	// used by undo
+	deleteAnyLineBreak() {
+		let sel = this.selected();
+		if (Utils.isLetter(sel) || Utils.isSeparator(sel)) {
+			this._deleteLineBreak(sel);
+		} else {
+			this.maybeDeleteEmptyLine(sel);
+		}
+	}
+
 	removeAndSelectPreviousSibling(s) {
 		doTutorial('delete');
 		let b = this._getSiblingBefore(s);
@@ -1658,6 +1668,8 @@ class Manipulator {
 				|| (Utils.isWord(s) && Utils.isWord(c))
 				|| (Utils.isDoc(s) && Utils.isDoc(c))) {
 			return this.join(p, s, c);
+		} else {
+			return false;
 		}
 	}
 
@@ -1776,6 +1788,10 @@ class Manipulator {
 
 	// CREATING STUFF DOWN HERE
 
+	getMostRecentInsertedRenderNode() {
+		return this.mostRecentInsertedRenderNode;
+	}
+
 	possiblyMakeImmutable(nex, context) {
 		if (Utils.isImmutableContext(context)) {
 			let n = nex;
@@ -1783,10 +1799,6 @@ class Manipulator {
 			n.setMutable(false);
 		}
 		return nex;
-	}
-
-	getMostRecentInsertedRenderNode() {
-		return this.mostRecentInsertedRenderNode;
 	}
 
 	newDoc() {
@@ -1818,9 +1830,9 @@ class Manipulator {
 	newLambda() {
 		let l = new Lambda();
 		l.setMutable(true);
-		let r = new RenderNode(l);		
+		let r = new RenderNode(l);
+		this.mostRecentInsertedRenderNode = r;		
 		r.possiblyStartMainEditor();
-		this.mostRecentInsertedRenderNode = r;
 		doTutorial('make-lambda');
 		return r;
 	}
@@ -1829,8 +1841,8 @@ class Manipulator {
 		let e = new ESymbol(txt);
 		e.setMutable(true);
 		let r = new RenderNode(e);
-		r.possiblyStartMainEditor();
 		this.mostRecentInsertedRenderNode = r;
+		r.possiblyStartMainEditor();
 		doTutorial('make-symbol');
 		return r;
 	}
@@ -1839,8 +1851,8 @@ class Manipulator {
 		let e = new ESymbol();
 		e.setMutable(true);
 		let r = new RenderNode(e);
-		r.possiblyStartMainEditor();
 		this.mostRecentInsertedRenderNode = r;
+		r.possiblyStartMainEditor();
 		doTutorial('make-symbol');
 		return r;
 	}
@@ -1848,11 +1860,11 @@ class Manipulator {
 	newCommandWithText(txt, skipEditor) {
 		let c = new Command(txt);
 		c.setMutable(true);
-		let r = new RenderNode(c);		
+		let r = new RenderNode(c);
+		this.mostRecentInsertedRenderNode = r;		
 		if (!skipEditor) {
 			r.possiblyStartMainEditor();
 		}
-		this.mostRecentInsertedRenderNode = r;
 		doTutorial('make-command');
 		return r;
 	}
@@ -1861,9 +1873,9 @@ class Manipulator {
 	newCommand() {
 		let c = new Command();
 		c.setMutable(true);
-		let r = new RenderNode(c);		
+		let r = new RenderNode(c);
+		this.mostRecentInsertedRenderNode = r;		
 		r.possiblyStartMainEditor();
-		this.mostRecentInsertedRenderNode = r;
 		doTutorial('make-command');
 		return r;
 	}
@@ -1871,9 +1883,9 @@ class Manipulator {
 	newBool() {
 		let b = new Bool();
 		b.setMutable(true);
-		let r = new RenderNode(b);		
+		let r = new RenderNode(b);
+		this.mostRecentInsertedRenderNode = r;		
 		r.possiblyStartMainEditor();
-		this.mostRecentInsertedRenderNode = r;
 		doTutorial('make-boolean');
 		return r;
 	}
@@ -1881,9 +1893,9 @@ class Manipulator {
 	newIntegerWithValue(v) {
 		let i = new Integer(Number(v));
 		i.setMutable(true);
-		let r = new RenderNode(i);		
+		let r = new RenderNode(i);
+		this.mostRecentInsertedRenderNode = r;		
 		r.possiblyStartMainEditor();
-		this.mostRecentInsertedRenderNode = r;
 		doTutorial('make-integer');
 		return r;
 	}
@@ -1891,9 +1903,9 @@ class Manipulator {
 	newInteger() {
 		let i = new Integer();
 		i.setMutable(true);
-		let r = new RenderNode(i);		
+		let r = new RenderNode(i);
+		this.mostRecentInsertedRenderNode = r;		
 		r.possiblyStartMainEditor();
-		this.mostRecentInsertedRenderNode = r;
 		doTutorial('make-integer');
 		return r;
 	}
@@ -1902,8 +1914,8 @@ class Manipulator {
 		let e = new EString();
 		e.setMutable(true);
 		let r = new RenderNode(e);
-		r.possiblyStartMainEditor();
 		this.mostRecentInsertedRenderNode = r;
+		r.possiblyStartMainEditor();
 		doTutorial('make-string');
 		return r;
 	}
@@ -1912,8 +1924,8 @@ class Manipulator {
 		let f = new Float();
 		f.setMutable(true);
 		let r = new RenderNode(f);
-		r.possiblyStartMainEditor();
 		this.mostRecentInsertedRenderNode = r;
+		r.possiblyStartMainEditor();
 		doTutorial('make-float');
 		return r;
 	}
@@ -1922,8 +1934,8 @@ class Manipulator {
 		let i = new Instantiator();
 		i.setMutable(true);
 		let r = new RenderNode(i);
-		r.possiblyStartMainEditor();
 		this.mostRecentInsertedRenderNode = r;
+		r.possiblyStartMainEditor();
 		doTutorial('make-instantiator');
 		return r;
 	}
@@ -1940,8 +1952,8 @@ class Manipulator {
 		let e = new DeferredCommand();
 		e.setMutable(true);
 		let r = new RenderNode(e);
-		r.possiblyStartMainEditor();
 		this.mostRecentInsertedRenderNode = r;
+		r.possiblyStartMainEditor();
 		doTutorial('make-deferred-command');
 		return r;
 	}

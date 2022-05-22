@@ -254,6 +254,7 @@ class Command extends NexContainer {
 		let closure = null;
 		let cmdname = this.getCommandText();
 		let skipFirstArg = false;
+		let packageName = '';
 		if (this.cachedClosure) {
 			// it's cached, great. This is a builtin, so not skipping first arg.
 			closure = this.cachedClosure;
@@ -278,7 +279,9 @@ class Command extends NexContainer {
 			skipFirstArg = true;
 		} else if (!!cmdname) {
 			// environment will throw an exception if unbound
-			closure = executionEnv.lookupBinding(cmdname);
+			let binding = executionEnv.lookupFullBinding(cmdname);
+			closure = binding.val;
+			packageName = binding.packageName;
 			// but we also have to make sure it's bound to a closure
 			if (!(closure.getTypeName() == '-closure-')) {
 				throw new EError(`command: stopping because "${cmdname}" not bound to closure, so cannot execute. Sorry! Debug string for object bound to ${cmdname} of type ${closure.getTypeName()} follows: ${closure.debugString()}`)
@@ -327,7 +330,8 @@ class Command extends NexContainer {
 			argEvaluator,
 			this.debugString(),
 			this.skipAlert,
-			this.getAllTags());
+			this.getAllTags(),
+			packageName);
 	}
 
 	getExpectedReturnType() {

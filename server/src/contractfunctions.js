@@ -114,7 +114,7 @@ class AllOfContract extends AbstractContract {
 	}
 
 	isSatisfiedBy(nex) {
-		for (let i = 0; i < this.contractList.length(); i++) {
+		for (let i = 0; i < this.contractList.length; i++) {
 			if (!this.contractList[i].isSatisfiedBy(nex)) {
 				return false;
 			}

@@ -23,6 +23,8 @@ import { evaluateNexSafely } from '../evaluator.js'
 import { Editor } from '../editors.js'
 import { templateStore } from '../templates.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED, CONSOLE_DEBUG } from '../globalconstants.js'
+import { systemState } from '../systemstate.js';
+import { BINDINGS } from '../environment.js'
 
 /**
  * An expression that instantiates an org.
@@ -73,12 +75,21 @@ class Instantiator extends NexContainer {
 	}
 
 	evaluate(env) {
-			let a = [];
-			this.doForEachChild(function(c) {
-				a.push(c);
-			});
-			let r = templateStore.instantiateWithNameString(this.orgname, a);
-			return r;
+		systemState.pushStackLevel();
+		let b = env.lookupBinding(this.orgname);
+		if (this.hasTags()) {
+			b = b.makeCopy();
+			for (let i = 0; i < this.numTags(); i++) {
+				b.addTag(this.getTag(0));
+			}
+		}
+		let a = [];
+		this.doForEachChild(function(c) {
+			a.push(c);
+		});
+		let r = templateStore.instantiateWithPotentialTemplate(this.orgname, b, a, env);
+		systemState.popStackLevel();
+		return r;
 	}
 
 	setOrgName(n) {
@@ -108,15 +119,18 @@ class Instantiator extends NexContainer {
 		domNode.classList.add('instantiator');
 	}
 
-	maybeGetTemplate(name) {
-		return templateStore.getTemplate(name);
-	}
-
-	getGhostForTemplate(template) {
+	getGhost(name) {
+		if (!BINDINGS.hasBinding(this.orgname)) {
+			return '';
+		}
+		let b = BINDINGS.lookupBinding(this.orgname);
+		let docs = templateStore.getTemplateDocs(b);
+		if (!docs) {
+			return '';
+		}
 		let ghost = document.createElement('div');
 		ghost.classList.add('ghost');
-		let val = template.getDocs();
-		ghost.innerHTML = val;
+		ghost.innerHTML = docs;
 		let ghostline = document.createElement('div');
 		ghostline.classList.add('ghostline')
 		ghost.appendChild(ghostline);
@@ -152,9 +166,9 @@ class Instantiator extends NexContainer {
 			}
 			codespan.innerHTML = html;
 			if (this.isEditing && renderNode.isSelected()) {
-				let template = this.maybeGetTemplate(this.orgname);
-				if (template) {
-					codespan.appendChild(this.getGhostForTemplate(template));
+				let ghost = this.getGhost(this.orgname);
+				if (ghost) {
+					codespan.appendChild(ghost);
 				}
 			}
 		}
