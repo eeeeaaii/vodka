@@ -57,7 +57,7 @@ function createTypeConversionBuiltins() {
 		)
 
 	Builtin.createBuiltin(
-		'nofail',
+		'no-fail',
 		[ '_nex' ],
 		function nofail(env, executionEnvironment) {
 			let expr = env.lb('nex');

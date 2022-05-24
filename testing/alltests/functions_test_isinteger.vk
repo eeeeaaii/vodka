@@ -29,6 +29,6 @@
 ~(_is-integer (||)_)
 ~(_is-integer [doc](||)_)
 ~(_is-integer [line](__)_)
-~(_is-integer ~(_convert-type-if-error $"warn" ~(_car _)_)_)
+~(_is-integer ~(_no-fail ~(_car _)_)_)
 
 

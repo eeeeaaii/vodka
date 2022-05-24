@@ -31,6 +31,6 @@
 ~(_is-nil (||)_)
 ~(_is-nil [doc](||)_)
 ~(_is-nil [line](__)_)
-~(_is-nil ~(_convert-type-if-error $"warn" ~(_car _)_)_)
+~(_is-nil ~(_no-fail ~(_car _)_)_)
 
 

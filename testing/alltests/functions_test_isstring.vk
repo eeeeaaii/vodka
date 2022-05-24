@@ -31,6 +31,6 @@
 ~(_is-string (||)_)
 ~(_is-string [doc](||)_)
 ~(_is-string [line](__)_)
-~(_is-string ~(_convert-type-if-error $"warn" ~(_car _)_)_)
+~(_is-string ~(_no-fail ~(_car _)_)_)
 
 

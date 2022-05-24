@@ -31,6 +31,6 @@
 ~(_is-letter (||)_)
 ~(_is-letter [doc](||)_)
 ~(_is-letter [line](__)_)
-~(_is-letter ~(_convert-type-if-error $"warn" ~(_car _)_)_)
+~(_is-letter ~(_no-fail ~(_car _)_)_)
 
 
