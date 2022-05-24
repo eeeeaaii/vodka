@@ -34,7 +34,6 @@ import { createIterationBuiltins } from './builtins/iterationbuiltins.js'
 import { createLogicBuiltins } from './builtins/logicbuiltins.js'
 import { createMakeBuiltins } from './builtins/makebuiltins.js'
 import { createMathBuiltins } from './builtins/mathbuiltins.js'
-import { createOrgBuiltins } from './builtins/orgbuiltins.js'
 import { createStringBuiltins } from './builtins/stringbuiltins.js'
 import { createSyscalls } from './builtins/syscalls.js'
 import { createTagBuiltins } from './builtins/tagbuiltins.js'
@@ -139,7 +138,6 @@ function createBuiltins() {
 	setAPIDocCategory('Contract Builtins'); createContractBuiltins();
 	setAPIDocCategory('Async Builtins'); createAsyncBuiltins();
 	setAPIDocCategory('File Builtins'); createFileBuiltins();
-	setAPIDocCategory('Org Builtins'); createOrgBuiltins();
 	setAPIDocCategory('String Builtins'); createStringBuiltins();
 	setAPIDocCategory('Wavetable Builtins'); createWavetableBuiltins();
 	setAPIDocCategory('Midi Builtins'); createMidiBuiltins();

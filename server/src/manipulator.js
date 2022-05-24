@@ -1726,7 +1726,10 @@ class Manipulator {
 			while(p.hasChildren()) {
 				let c = p.getChildAt(0);
 				org.appendChild(c);
-				p.removeChildAt(0);
+				// these are render nodes not nexes.
+				// This means that each one can only have one parent...
+				// so we just have to append, we don't have to remove
+				// it from the previous parent.
 			}
 			cmd.appendChild(org);
 			p.appendChild(cmd);
