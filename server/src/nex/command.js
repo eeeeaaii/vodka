@@ -39,6 +39,12 @@ import { executeRunInfo, ArgContainer, Arg, RunInfo } from '../commandfunctions.
 class Command extends NexContainer {
 	constructor(val) {
 		super();
+
+		// temporary hack to help convert old files
+		if (val) {
+			val = val.replace(/--/g, ' ');
+		}
+
 		this.commandtext = (val ? val : "");
 		this.cachedClosure = null;
 		// a lot of the builtins and other code generate commands with null command strings
@@ -801,7 +807,9 @@ class CommandEditor extends Editor {
 	finish() {
 		super.finish();
 		this.nex.commitMatch();
-		this.nex.revertToCanonicalName();
+		if (experiments.SHOULD_REVERT_TO_CANONICAL_NAME) {
+			this.nex.revertToCanonicalName();
+		}
 	}
 
 	startEditing() {

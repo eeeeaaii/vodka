@@ -60,41 +60,41 @@ function createBasicBuiltins() {
 
 
 	Builtin.createBuiltin(
-		'head',
+		'car',
 		[ 'list()' ],
 		function $head(env, executionEnvironment) {
 			let lst = env.lb('list');
 			if (lst.numChildren() == 0) {
-				return new EError('head: cannot get first element of empty list. Sorry!');
+				return new EError('car: cannot get first element of empty list. Sorry!');
 			}
 			return lst.getFirstChild();
 		},
-		'Returns the first element of |list without altering |list. Aliases: car, first.'
+		'Returns the first element of |list without altering |list. Aliases: head, first.'
 	);
-	Builtin.aliasBuiltin('car', 'head');
-	Builtin.aliasBuiltin('first', 'head');
+	Builtin.aliasBuiltin('head', 'car');
+	Builtin.aliasBuiltin('first', 'car');
 
 
 	Builtin.createBuiltin(
-		'tail',
+		'cdr',
 		[ 'list()' ],
 		function $tail(env, executionEnvironment) {
 			let c = env.lb('list');
 			if (c.numChildren() == 0) {
-				return new EError("tail: given an empty list, cannot make a new list with first element removed. Sorry!");
+				return new EError("cdr: given an empty list, cannot make a new list with first element removed. Sorry!");
 			}
 			let newOne = c.makeCopy(true);
 			c.getChildrenForCdr(newOne);
 			return newOne;
 		},
-		'Returns a copy of |list containing all elements of |list except the first one. Aliases: cdr, rest.'
+		'Returns a copy of |list containing all elements of |list except the first one. Aliases: tail, rest.'
 	);
-	Builtin.aliasBuiltin('cdr', 'tail');
-	Builtin.aliasBuiltin('rest', 'tail');
+	Builtin.aliasBuiltin('tail', 'cdr');
+	Builtin.aliasBuiltin('rest', 'cdr');
 
 
 	Builtin.createBuiltin(
-		'push into',
+		'cons',
 		[ 'nex', 'list()' ],
 		function $pushInto(env, executionEnvironment) {
 			let nex = env.lb('nex');
@@ -103,59 +103,62 @@ function createBasicBuiltins() {
 			lst.setChildrenForCons(nex, newOne);
 			return newOne;
 		},
-		'Returns a new list created by prepending |nex to a copy of |list. Aliases: cons.'
+		'Returns a new list created by prepending |nex to a copy of |list. Aliases: push, push-into.'
 	);
-	Builtin.aliasBuiltin('cons', 'push into');
+	Builtin.aliasBuiltin('push', 'cons');
+	Builtin.aliasBuiltin('push into', 'cons');
 
 
 	Builtin.createBuiltin(
-		'hard-head',
+		'chop',
 		[ 'list()' ],
 		function $hardHead(env, executionEnvironment) {
 			let c = env.lb('list');
 			if (c.numChildren() == 0) {
-				return new EError("hard-head: cannot get first element of empty list. Sorry!");
+				return new EError("chop: cannot get first element of empty list. Sorry!");
 			}
 			let r = c.getChildAt(0);
 			c.removeChild(c.getChildAt(0));
 			return r;
 		},
-		'Removes the first element of |list, destructively altering list, and returns the removed element. Aliases: hard-car, hard-first, decap.'
+		'Removes the first element of |list, destructively altering list, and returns the removed element. Aliases: hard-car, hard-first, hard-head.'
 	);
-	Builtin.aliasBuiltin('hard-car', 'hard-head');
-	Builtin.aliasBuiltin('hard-first', 'hard-head');
-	Builtin.aliasBuiltin('decap', 'hard-head');
+	Builtin.aliasBuiltin('hard-car', 'chop');
+	Builtin.aliasBuiltin('hard-first', 'chop');
+	Builtin.aliasBuiltin('hard-head', 'chop');
 
 
 	Builtin.createBuiltin(
-		'hard-tail',
+		'chomp',
 		[ 'list()' ],
 		function $hardTail(env, executionEnvironment) {
 			let c = env.lb('list');
 			if (c.numChildren() == 0) {
-				return new EError("hard-tail: cannot remove first element of empty list. Sorry!");
+				return new EError("chomp: cannot remove first element of empty list. Sorry!");
 			}
 			c.removeChild(c.getChildAt(0));
 			return c;
 		},
-		'Destructively removes the first element of |list, and returns the altered |list. Aliases: hard-cdr, hard-rest, chomp.'
+		'Destructively removes the first element of |list, and returns the altered |list. Aliases: hard-cdr, hard-tail, hard-rest.'
 	);
-	Builtin.aliasBuiltin('hard-cdr', 'hard-tail');
-	Builtin.aliasBuiltin('hard-rest', 'hard-tail');
-	Builtin.aliasBuiltin('chomp', 'hard-tail');
+	Builtin.aliasBuiltin('hard-cdr', 'chomp');
+	Builtin.aliasBuiltin('hard-rest', 'chomp');
+	Builtin.aliasBuiltin('hard-tail', 'chomp');
 
 
 	Builtin.createBuiltin(
-		'hard-push into',
+		'cram',
 		[ 'nex', 'list()' ],
 		function $hardPushInto(env, executionEnvironment) {
 			let lst = env.lb('list');
 			lst.prependChild(env.lb('nex'));
 			return lst;
 		},
-		'Destructively alters |list by prepending |nex to it. Aliases: cram.'
+		'Destructively alters |list by prepending |nex to it. Aliases: hard-cons, hard-push, hard-push into.'
 	);
-	Builtin.aliasBuiltin('cram', 'hard-push into');
+	Builtin.aliasBuiltin('hard-cons', 'cram');
+	Builtin.aliasBuiltin('hard-push', 'cram');
+	Builtin.aliasBuiltin('hard-push into', 'cram');
 
 
 
@@ -202,7 +205,7 @@ function createBasicBuiltins() {
 			}
 			return lst.getChildAt(i);
 		},
-		'returns the length of |lst.'
+		'returns the element of the list at position |i.'
 	);
 
 	Builtin.createBuiltin(

@@ -80,7 +80,7 @@ class Instantiator extends NexContainer {
 		if (this.hasTags()) {
 			b = b.makeCopy();
 			for (let i = 0; i < this.numTags(); i++) {
-				b.addTag(this.getTag(0));
+				b.addTag(this.getTag(i));
 			}
 		}
 		let a = [];

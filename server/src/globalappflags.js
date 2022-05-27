@@ -78,6 +78,9 @@ const experiments = {
 
 	// if true, the pips don't flash - useful for tests
 	'STATIC_PIPS': false,
+
+	// make this an option in settings or w/e
+	'SHOULD_REVERT_TO_CANONICAL_NAME': false,
 };
 
 // These flags aren't saved as part of the test. You should probably

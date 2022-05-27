@@ -246,6 +246,8 @@ testactions.push({type:'keydown',code:'KeyN'});
 testactions.push({type:'keydown',code:'KeyO'});
 testactions.push({type:'keyup',code:'KeyN'});
 testactions.push({type:'keyup',code:'KeyO'});
+testactions.push({type:'keydown',code:'Minus'});
+testactions.push({type:'keyup',code:'Minus'});
 testactions.push({type:'keydown',code:'KeyF'});
 testactions.push({type:'keydown',code:'KeyA'});
 testactions.push({type:'keydown',code:'KeyI'});

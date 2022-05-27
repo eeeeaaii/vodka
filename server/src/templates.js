@@ -86,14 +86,14 @@ class TemplateStore  {
 		let org = new Org();
 		let initializer = null;
 		let fcscope = {};
-		env = env.pushEnv();
-		env.bind('self', org);
+		let innerenv = env.pushEnv();
+		innerenv.bind('self', org);
 		for (let i = 0; i < initOrg.numChildren(); i++) {
 			let c = initOrg.getChildAt(i);
 			let membername = this._getSingleTagName(c);
 			if (c.getTypeName() == '-closure-') {
 				let lambda = c.getLambda();
-				let closure = evaluateNexSafely(lambda, env);
+				let closure = evaluateNexSafely(lambda, innerenv);
 				org.appendChild(closure);
 				if (membername == ':init') {
 					initializer = closure;

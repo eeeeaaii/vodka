@@ -33,7 +33,7 @@ function createIterationBuiltins() {
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
 	Builtin.createBuiltin(
-		'filter with',
+		'filter',
 		[ 'list()', 'func&' ],
 		function $filterWith(env, executionEnvironment) {
 			let list = env.lb('list');
@@ -66,14 +66,16 @@ function createIterationBuiltins() {
 			}
 			return resultList;
 		},
-		'Returns a new list containing only the elements of |list for which |func calls true when it is called on that element.'
+		'Returns a new list containing only the elements of |list for which |func calls true when it is called on that element. Aliases: filter with'
 	);
+
+	Builtin.aliasBuiltin('filter with', 'filter');
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
 
 	Builtin.createBuiltin(
-		'map with',
+		'map',
 		[ 'list()', 'func&' ],
 		function $mapWith(env, executionEnvironment) {
 			let closure = env.lb('func');
@@ -103,13 +105,16 @@ function createIterationBuiltins() {
 			}
 			return resultList;
 		},
-		'Goes through all the elements in |list and replaces each one with the result of calling |func on that element.'
+		'Goes through all the elements in |list and replaces each one with the result of calling |func on that element. Aliases: map with'
 	);
+
+	Builtin.aliasBuiltin('map with', 'map');
+
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
 	Builtin.createBuiltin(
-		'reduce with',
+		'reduce',
 		[ 'list()', 'func&', 'startvalue' ],
 		function $reduceWithGiven(env, executionEnvironment) {
 			let list = env.lb('list');
@@ -137,8 +142,12 @@ function createIterationBuiltins() {
 			}
 			return p;
 		},
-		'Progressively updates a value, starting with |startvalue, by calling |func on each element in |list, passing in 1. the list element and 2. the progressively updated value, returning the final updated value.'
+		'Progressively updates a value, starting with |startvalue, by calling |func on each element in |list, passing in 1. the list element and 2. the progressively updated value, returning the final updated value. Aliases: reduce with, reduce with starting'
 	);
+
+	Builtin.aliasBuiltin('reduce with', 'reduce');
+	Builtin.aliasBuiltin('reduce with starting', 'reduce');
+
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 

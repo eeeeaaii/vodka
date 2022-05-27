@@ -27,7 +27,7 @@ import { autocomplete } from '../autocomplete.js'
  */
 class ESymbol extends ValueNex {
 	constructor(val) {
-		super((val) ? val : '', '@', 'esymbol')
+		super((val) ? val.replace(/--/g, ' ') : '', '@', 'esymbol')
 		this.searchingOn = null;
 		this.previousMatch = null;
 	}
@@ -54,7 +54,8 @@ class ESymbol extends ValueNex {
 
 	/** @override */
 	toStringV2() {
-		return `@${this.toStringV2Literal()}${this.toStringV2TagList()}${this.value}`;
+		let val = this.value.replace(/ /g, '--')
+		return `@${this.toStringV2Literal()}${this.toStringV2TagList()}${val}`;
 	}
 
 	/** @override */

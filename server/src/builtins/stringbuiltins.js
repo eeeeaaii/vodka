@@ -42,7 +42,7 @@ function createStringBuiltins() {
 	Builtin.aliasBuiltin('string-cat', 'string-concatenate');
 
 	Builtin.createBuiltin(
-		'string-char-at',
+		'string-char at',
 		[ 'str$', 'pos#' ],
 		function $stringCharAt(env, executionEnvironment) {
 			let s = env.lb('str').getFullTypedValue();
@@ -57,7 +57,7 @@ function createStringBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'string-index-of',
+		'string-index of',
 		[ 'str$', 'tofind$' ],
 		function $stringIndexOf(env, executionEnvironment) {
 			let s = env.lb('str').getFullTypedValue();
@@ -70,7 +70,7 @@ function createStringBuiltins() {
 
 
 	Builtin.createBuiltin(
-		'string-join-on',
+		'string-join on',
 		[ 'strs()', 'on$' ],
 		function $stringJoinOn(env, executionEnvironment) {
 			let lst = env.lb('strs');
@@ -115,7 +115,7 @@ function createStringBuiltins() {
 
 
 	Builtin.createBuiltin(
-		'string-split',
+		'string-split on',
 		[ 'str$', 'on$' ],
 		function $stringSplitOn(env, executionEnvironment) {
 			let str = env.lb('str').getFullTypedValue();
