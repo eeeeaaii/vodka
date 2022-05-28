@@ -33,7 +33,8 @@ import { incFFGen } from '../gc.js'
 import {
 	ImmediateActivationFunctionGenerator,
 	DelayActivationFunctionGenerator,
-	ClickActivationFunctionGenerator
+	ClickActivationFunctionGenerator,
+	OnContentsChangedActivationFunctionGenerator
 } from '../asyncfunctions.js'
 
 
@@ -100,6 +101,20 @@ function createAsyncBuiltins() {
 		'Returns a deferred value that waits for |time milliseconds, then finishes.'
 	);
 
+	Builtin.createBuiltin(
+		'wait-for-contents-changed',
+		[ 'nex()' ],
+		function $waitForContentsChanged(env, executionEnvironment) {
+			let nex = env.lb('nex');
+			let dv = new DeferredValue();
+			dv.appendChild(nex);
+			let afg = new OnContentsChangedActivationFunctionGenerator(nex);
+			dv.set(afg);
+			dv.activate();
+			return dv;
+		},
+		'Returns a deferred value that settles when contents of |nex are changed.'
+	);
 
 }
 

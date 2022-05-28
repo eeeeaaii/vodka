@@ -278,6 +278,10 @@ class KeyDispatcher {
 		} else if (whichKey == 'BracketLeft' && hasAlt && hasShift) {
 			return 'Alt{';
 
+
+		} else if (whichKey == 'Backslash' && hasAlt && !hasShift) {
+			return 'Alt\\';
+
 		} else if (keycode == '`' && hasCtrl && hasShift) {
 			return 'Ctrl~';
 		} else if (keycode == 'Dead' && whichKey == 'Backquote' && hasCtrl && !hasShift) {
@@ -408,7 +412,8 @@ class KeyDispatcher {
 			'Alt(': 'wrap-in-org',
 			'Alt[': 'wrap-in-line',
 			'Alt{': 'wrap-in-doc',
-			'Alt^': 'wrap-in-instantiator'
+			'Alt^': 'wrap-in-instantiator',
+			'Alt\\': 'unroll'
 		};			
 	}
 

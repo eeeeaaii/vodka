@@ -214,51 +214,68 @@ function createBasicBuiltins() {
 		function $equal(env, executionEnvironment) {
 			let lhs = env.lb('lhs');
 			let rhs = env.lb('rhs');
-			if (lhs instanceof Bool && rhs instanceof Bool) {
-				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
-			} else if (lhs instanceof Builtin && rhs instanceof Builtin) {
-				return new Bool(lhs.getID() == rhs.getID());
-			} else if (lhs instanceof EString && rhs instanceof EString) {
-				return new Bool(lhs.getFullTypedValue() == rhs.getFullTypedValue());
-			} else if (lhs instanceof ESymbol && rhs instanceof ESymbol) {
-				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
-			} else if (lhs instanceof Float && rhs instanceof Float) {
-				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
-			} else if (lhs instanceof Integer && rhs instanceof Integer) {
-				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
-
-			// mixing numeric types should work though
-			} else if (lhs instanceof Float && rhs instanceof Integer) {
-				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
-			} else if (lhs instanceof Integer && rhs instanceof Float) {
-				return new Bool(lhs.getTypedValue() == rhs.getTypedValue());
-
-
-			} else if (lhs instanceof Letter && rhs instanceof Letter) {
-				return new Bool(lhs.getText() == rhs.getText());
-			} else if (lhs instanceof Separator && rhs instanceof Separator) {
-				return new Bool(lhs.getText() == rhs.getText());
-			} else if (lhs instanceof Nil && rhs instanceof Nil) {
-				return new Bool(true);
-
-
-			} else if (lhs instanceof Command && rhs instanceof Command) {
-				return new EError('equal: equal for lists is not implemented yet. Sorry!')
-			} else if (lhs instanceof Lambda && rhs instanceof Lambda) {
-				return new EError('equal: equal for lists is not implemented yet. Sorry!')
-			} else if (lhs instanceof Doc && rhs instanceof Doc) {
-				return new EError('equal: equal for lists is not implemented yet. Sorry!')
-			} else if (lhs instanceof Line && rhs instanceof Line) {
-				return new EError('equal: equal for lists is not implemented yet. Sorry!')
-			} else if (lhs instanceof Word && rhs instanceof Word) {
-				return new EError('equal: equal for lists is not implemented yet. Sorry!')
-			} else if (lhs instanceof DeferredCommand && rhs instanceof DeferredCommand) {
-				return new EError('equal: equal for lists is not implemented yet. Sorry!')
-			} else {
-				return new Bool(false);
+			let compareLists = function(list1, list2) {
+				if (list1.numChildren() != list2.numChildren()) return false;
+				for (let i = 0; i < list1.numChildren(); i++) {
+					let c1 = list1.getChildAt(i);
+					let c2 = list2.getChildAt(i);
+					if (!compareNexes(c1, c2)) {
+						return false;
+					}
+				}
+				return true;
 			}
+			let compareNexes = function(a, b) {
+				if (Utils.isBool(a) && Utils.isBool(b)) {
+					return a.getTypedValue() == b.getTypedValue();
+				} else if (Utils.isBuiltin(a) && Utils.isBuiltin(b)) {
+					return a.getID() == b.getID();
+				} else if (Utils.isEString(a) && Utils.isEString(b)) {
+					return a.getFullTypedValue() == b.getFullTypedValue();
+				} else if (Utils.isESymbol(a) && Utils.isESymbol(b)) {
+					return a.getTypedValue() == b.getTypedValue();
+				} else if (Utils.isFloat(a) && Utils.isFloat(b)) {
+					return a.getTypedValue() == b.getTypedValue();
+				} else if (Utils.isInteger(a) && Utils.isInteger(b)) {
+					return a.getTypedValue() == b.getTypedValue();
+
+				// mixing numeric types should work though
+				} else if (Utils.isFloat(a) && Utils.isInteger(b)) {
+					return a.getTypedValue() == b.getTypedValue();
+				} else if (Utils.isInteger(a) && Utils.isFloat(b)) {
+					return a.getTypedValue() == b.getTypedValue();
+
+
+				} else if (Utils.isLetter(a) && Utils.isLetter(b)) {
+					return a.getText() == b.getText();
+				} else if (Utils.isSeparator(a) && Utils.isSeparator(b)) {
+					return a.getText() == b.getText();
+				} else if (Utils.isNil(a) && Utils.isNil(b)) {
+					return true;
+
+
+				} else if (Utils.isOrg(a) && Utils.isOrg(b)) {
+					return compareLists(a, b);
+				} else if (Utils.isCommand(a) && Utils.isCommand(b)) {
+					return compareLists(a, b);
+				} else if (Utils.isLambda(a) && Utils.isLambda(b)) {
+					return compareLists(a, b);
+				} else if (Utils.isDoc(a) && Utils.isDoc(b)) {
+					return compareLists(a, b);
+				} else if (Utils.isLine(a) && Utils.isLine(b)) {
+					return compareLists(a, b);
+				} else if (Utils.isWord(a) && Utils.isWord(b)) {
+					return compareLists(a, b);
+				} else if (Utils.isDeferredCommand(a) && Utils.isDeferredCommand(b)) {
+					return compareLists(a, b);
+				} else {
+					return false;
+				}
+			}
+			let result = compareNexes(lhs, rhs);
+			return new Bool(result);
 		},
-		'Attempts to test |rhs and |lhs for semantic equality (for example, different integers will test as equal if they represent the same numeric value). Works for most atomic types (lists not yet implemented).'
+		'Attempts to test |rhs and |lhs for semantic equality (for example, different integers will test as equal if they represent the same numeric value). Will deep compare lists.'
 	);
 
 	// Note the args to the eval function are evaluated.

@@ -133,44 +133,38 @@ class ArgEvaluator {
 	}
 
 
-	processSinglePotentiallyDeferredArg(i) {
-		let param = this.effectiveParams[i];
-		if (param.skipEval) {
-			return;
-		}
+	// return true if we should continue processing args
+	processSinglePotentiallyDeferredArg(i, listener) {
 		let arg = this.argContainer.getArgAt(i);
-		if (arg.isChecked()) {
-			return;
+		if (arg.isProcessed()) {
+			return true; // keep going
 		}
+		let param = this.effectiveParams[i];
 		let argnex = arg.getNex();
-		if (!arg.isEvaluated()) {
+
+		if (!param.skipeval) {
 			argnex = evaluateNexSafely(argnex, this.executionEnvironment, param.skipactivate);
+			arg.setNex(argnex);
 			if (Utils.isFatalError(argnex)) {
 				throw wrapError('&szlig;', `when calling ${this.name}: fatal error in argument ${i + 1} (expected type ${param.type}), cannot continue. Sorry!`, argnex);
 			}
-			arg.setEvaluated(true);
-		}
-		while (Utils.isDeferred(argnex) && argnex.isFinished()) {
-			argnex = evaluateNexSafely(argnex, this.executionEnvironment, param.skipactivate);
-			if (Utils.isFatalError(argnex)) {
-				throw wrapError('&szlig;', `when calling ${this.name}: fatal error in argument ${i + 1} (expected type ${param.type}), cannot continue. Sorry!`, argnex);
+			if (Utils.isDeferredValue(argnex)) {
+				argnex.addListener(listener);
+				return false; // stop and wait
 			}
 		}
 
-		// if we finally don't have a deferred, we check type
-		if (!Utils.isDeferred(argnex)) {
-			let expectedType = param.type;
-			let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[expectedType](argnex);
-			if (!typeChecksOut) {
-				if (argnex.getTypeName() == '-error-') {
-					throw wrapError('&szlig;', `when calling ${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, argnex);
-				} else {
-					throw new EError(`when calling ${this.name}: stopping because expected ${expectedType} for argnex ${i + 1} but got ${argnex.getTypeName()}. Sorry!`);
-				}
+		let expectedType = param.type;
+		let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[expectedType](argnex);
+		if (!typeChecksOut) {
+			if (argnex.getTypeName() == '-error-') {
+				throw wrapError('&szlig;', `when calling ${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, argnex);
+			} else {
+				throw new EError(`when calling ${this.name}: stopping because expected ${expectedType} for argnex ${i + 1} but got ${argnex.getTypeName()}. Sorry!`);
 			}
-			arg.setChecked(true);
 		}
-		arg.setNex(argnex);
+		arg.setProcessed(true);
+		return true;
 	}
 
 	processArgs() {
@@ -179,10 +173,16 @@ class ArgEvaluator {
 		}
 	}
 
-	processPotentiallyDeferredArgs() {
-		for (let i = 0; i < this.argContainer.numArgs(); i++) {
-			this.processSinglePotentiallyDeferredArg(i);
+	processPotentiallyDeferredArgs(listener) {
+		let lastIndex = this.argContainer.numArgs();
+		let i = 0;
+		for (; i < lastIndex; i++) {
+			let shouldContinue = this.processSinglePotentiallyDeferredArg(i, listener);
+			if (!shouldContinue) {
+				break;
+			}
 		}
+		return (i == lastIndex);
 	}
 
 	putArgsInJSArray() {
@@ -232,11 +232,11 @@ class ArgEvaluator {
 		this.prepared = true;	
 	}
 
-	evaluatePotentiallyDeferredArgs() {
+	evaluatePotentiallyDeferredArgs(listener) {
 		if (!this.prepared) {
 			this.prepareToEvaluate();
 		}
-		this.processPotentiallyDeferredArgs();
+		return this.processPotentiallyDeferredArgs(listener);
 	}
 
 	evaluateArgs() {

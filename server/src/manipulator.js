@@ -1410,6 +1410,23 @@ class Manipulator {
 		n.setSelected();
 	}
 
+	unroll(s) {
+		let p = s.getParent();
+		let c = null;
+		let toselect = null;
+		while(s.hasChildren()) {
+			c = s.getFirstChild();
+			if (!toselect) {
+				toselect = c;
+			}
+			p.insertChildBefore(c, s);
+		}
+		if (c) {
+			p.removeChild(s);
+			toselect.setSelected();
+		}
+	}
+
 	wrapSelectedInAndSelect(wrapperNode) {
 		let s = this.selected();
 		let p = s.getParent();

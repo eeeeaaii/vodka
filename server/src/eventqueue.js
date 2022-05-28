@@ -66,6 +66,7 @@ class EventQueue {
 		eventQueueDispatcher.createDelegate('enqueueImportantTopLevelRender', this);
 		eventQueueDispatcher.createDelegate('enqueueDeferredFulfill', this);
 		eventQueueDispatcher.createDelegate('enqueueDeferredFulfillWithRepeat', this);
+		eventQueueDispatcher.createDelegate('enqueueRenotifyDeferredListeners', this);
 		eventQueueDispatcher.createDelegate('enqueueTopLevelRender', this);
 		eventQueueDispatcher.createDelegate('enqueueGC', this);
 	}
@@ -206,6 +207,21 @@ class EventQueue {
 			equals: null, // not needed when shouldDedupe = false
 			do: function doDeferredFulfillWithRepeat() {
 				this.deferred.finishWithRepeat(this.result);
+			}
+		};
+		this.queueSet[DEFERRED_PRIORITY].push(item);
+		this.setTimeoutForProcessingNextItem(item);
+	}
+
+	enqueueRenotifyDeferredListeners(deferred) {
+		EVENT_DEBUG ? console.log('enqueueing: RenotifyDeferredListeners'):null;
+		let item = {
+			action: "renotifyDeferredListeners",
+			deferred: deferred,
+			shouldDedupe: false,
+			equals: null, // not needed when shouldDedupe = false
+			do: function doRenotifyDeferredListeners() {
+				this.deferred.notifyAllListeners();
 			}
 		};
 		this.queueSet[DEFERRED_PRIORITY].push(item);

@@ -442,10 +442,11 @@ class RenderNode {
 					break;
 				}
 				let childRenderNode = this.childnodes[i];
-				if (childRenderNode.getNex().getID() != this.getNex().getRenderableChildAt(i).getID()) {
+
+				if (childRenderNode.getNex().getID() != this.getNex().getChildAt(i).getID()) {
 					// the child changed since the last time we rendered!!!
 					// need to fix.
-					this.childnodes[i] = childRenderNode = new RenderNode(this.getNex().getRenderableChildAt(i));
+					this.childnodes[i] = childRenderNode = new RenderNode(this.getNex().getChildAt(i));
 					this.childnodes[i].setParent(this, i);
 				}
 				childRenderNode.setRenderDepth(this.renderDepth + 1);
@@ -499,7 +500,7 @@ class RenderNode {
 	}
 
 	renderNewChildAt(i, childFlags, useFlags, doChildNode) {
-		let newNode = new RenderNode(this.getNex().getRenderableChildAt(i));
+		let newNode = new RenderNode(this.getNex().getChildAt(i));
 		newNode.setParent(this, i);
 		newNode.setRenderDepth(this.renderDepth + 1);
 		if (doChildNode) {

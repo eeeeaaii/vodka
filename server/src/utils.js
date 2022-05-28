@@ -207,6 +207,12 @@ function isLambda(n) {
 	return n.getTypeName() == '-lambda-';
 }
 
+function isBuiltin(n) {
+	if (n instanceof RenderNode) n = n.getNex();
+	if (!n) return false;
+	return n.getTypeName() == '-builtin-';
+}
+
 function isClosure(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n) return false;
@@ -309,6 +315,7 @@ export {
 	isClosure,
 	beep,
 	isMac,
+	isBuiltin,
 	isOrg,
 	isInstantiator,
 	convertV2StringToMath,

@@ -154,33 +154,31 @@ expected: ${e.expected[0].type}
 }
 
 function evaluatePackage(nex) {
-	if (!(nex.getTypeName() == '-command-'
-				&& (nex.getCommandName() == 'package'
-				|| nex.getCommandName() == 'template'))) {
-		let r = new EError('Can only import packages or templates, see file contents')
-//		r.appendChild(nex);
-		return r;
-	}
+	// if (!(nex.getTypeName() == '-command-'
+	// 			&& (nex.getCommandName() == 'package'
+	// 			|| nex.getCommandName() == 'template'))) {
+	// 	let r = new EError('Can only import packages or templates, see file contents')
+	// 	return r;
+	// }
 	let result = evaluateNexSafely(nex, BINDINGS);
-	let r = null;
-	if (result.getTypeName() == '-error-'
-			&& result.getErrorType() == ERROR_TYPE_FATAL) {
-		r = new EError("Import failed.");
-		r.setErrorType(ERROR_TYPE_FATAL);
-		return r;
-	} else if (result.getTypeName() == '-error-'
-			&& result.getErrorType() == ERROR_TYPE_WARN) {
-		r = new EError("Import succeeded with warnings.");
-		r.setErrorType(ERROR_TYPE_WARN);
-		return r;
-	} else {
-		r = new EError("Import successful.");
-		r.setErrorType(ERROR_TYPE_INFO);		
-		return r;
-	}
-	r.appendChild(result);
-	r.appendChild(nex);
-	return r;
+	return result;
+
+	// let r = null;
+	// if (result.getTypeName() == '-error-'
+	// 		&& result.getErrorType() == ERROR_TYPE_FATAL) {
+	// 	r = new EError("Import failed.");
+	// 	r.setErrorType(ERROR_TYPE_FATAL);
+	// 	return r;
+	// } else if (result.getTypeName() == '-error-'
+	// 		&& result.getErrorType() == ERROR_TYPE_WARN) {
+	// 	r = new EError("Import succeeded with warnings.");
+	// 	r.setErrorType(ERROR_TYPE_WARN);
+	// 	return r;
+	// } else {
+	// 	r = new EError("Import successful.");
+	// 	r.setErrorType(ERROR_TYPE_INFO);		
+	// 	return r;
+	// }
 }
 
 // This util is meant to be used from functions like

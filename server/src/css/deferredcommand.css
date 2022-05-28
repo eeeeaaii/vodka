@@ -42,6 +42,23 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border-width: 3px;	
 }
 
+.deferredcommand.exploded > .nex.exploded {
+	margin: 0px 0px 0px 2px;
+}
+
+.deferredcommand.exploded.vdir > .nex.exploded {
+	margin: 2px 21px 2px 21px;
+}
+
+.deferredcommand.exploded.vdir {
+	flex-direction: column;
+/*
+	padding: 0px 5px 2px 5px;
+	border-width: 4px 1px 4px 1px;
+*/
+}
+
+
 
 .deferredcommand.exploded.selected {
 	border-color: var(--selected-border);

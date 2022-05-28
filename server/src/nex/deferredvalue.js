@@ -44,6 +44,9 @@ class DeferredValue extends NexContainer {
 
 	addListener(obj) {
 		this.listeners.push(obj);
+		if (this._finished) {
+			eventQueueDispatcher.enqueueRenotifyDeferredListeners(this);
+		}
 	}
 
 	hasListener(obj) {

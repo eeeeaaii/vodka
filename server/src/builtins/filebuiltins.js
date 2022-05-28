@@ -268,10 +268,6 @@ function createFileBuiltins() {
 			let importMessage = new EError(`import package ${nm}`);
 			importMessage.setErrorType(ERROR_TYPE_INFO);
 			def.appendChild(importMessage)
-			// we activate because import is frequently used in the package
-			// construct in an imperative style, and if I didn't do this
-			// I'd have to put special logic in package() to do it and this
-			// is easier.
 			def.activate();
 			return def;
 		},
@@ -296,7 +292,9 @@ function createFileBuiltins() {
 				// not sure what to do about errors yet?
 			}
 			BINDINGS.setPackageForBinding(null);
-			return new Nil();
+			let r = new EError(`Package ${packageName} created.`);
+			r.setErrorType(ERROR_TYPE_INFO);
+			return r;
 		},
 		'Defines a package. All args in |block are evaluated, and any bindings are bound with |name as their package scope identifier.'
 	);

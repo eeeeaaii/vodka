@@ -161,6 +161,37 @@ class EditorContentChangeAction extends Action {
 	}
 }
 
+class UnrollAction extends Action {
+	constructor(actionName) {
+		super(actionName);
+	}
+
+	canUndo() {
+		return true;
+	}
+
+	doAction() {
+		this.savedContainer = systemState.getGlobalSelectedNode();
+		this.allSavedChildren = [];
+		for (let i = 0; i < this.savedContainer.numChildren(); i++) {
+			this.allSavedChildren.push(this.savedContainer.getChildAt(i));
+		}
+		this.parentOfContainer = this.savedContainer.getParent();
+		this.index = this.parentOfContainer.getIndexOfChild(this.savedContainer);
+
+		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
+	}
+
+	undoAction() {
+		this.parentOfContainer.removeChildAt(this.index);
+		for (let i = 0; i < this.allSavedChildren.length; i++) {
+			this.savedContainer.appendChild(this.allSavedChildren[i]);
+		}
+		this.parentOfContainer.insertChildAt(this.savedContainer, this.index);
+		this.savedContainer.setSelected();
+	}
+}
+
 class WrapInNewParentNodeAction extends Action {
 	constructor(actionName) {
 		super(actionName);
@@ -608,24 +639,21 @@ function actionFactory(actionName, eventName) {
 		case 'docDefault':
  			return new DefaultHandlerAction(actionName, eventName);
 
-
  		case 'toggle-exploded':
  			return new ChangeRenderModeAction(actionName);
-
-		// Legacy ones below, these can't be undone
-
-			// basically autocomplete should be handled by the editor when editing,
-			// otherwise autocomplete on a non-editing thing is a straight change of its contents,
-			// so easy to undo
-
-		// Document related stuff (to do later)
 
 		case 'do-line-break-for-letter':
 		case 'do-line-break-for-separator':
 		case 'do-line-break-or-eval':
 			return new LineBreakAction(actionName);
 
+		// Legacy ones below, these can't be undone
+
+		case 'unroll':
+			return new UnrollAction(actionName);
+
 		// in case I missed any?
+
 		default:
 			return new LegacyKeyResponseFunctionAction(actionName);
 	}

@@ -525,6 +525,8 @@ const KeyResponseFunctions = {
 
 	'add-tag': function(s) { s.startTagEditor(); },
 
+	'unroll': function(s) { manipulator.unroll(s); },
+
 	'wrap-in-command': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newCommand()); },
 	'wrap-in-lambda': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newLambda()); },
 	'wrap-in-deferredcommand': function(s) { manipulator.wrapSelectedInAndSelect(manipulator.newDeferredCommand()); },

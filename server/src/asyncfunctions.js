@@ -146,12 +146,32 @@ class MidiActivationFunctionGenerator extends ActivationFunctionGenerator {
 	}
 }
 
+class OnContentsChangedActivationFunctionGenerator extends ActivationFunctionGenerator {
+	constructor(nex) {
+		super();
+		this.nex = nex;
+	}
+
+	getFunction(callback, repeatCallback, exp) {
+		return function() {
+			this.nex.onContentsChangedCallback = function() {
+				repeatCallback();
+			}
+		}.bind(this);
+	}
+
+	getName() {
+		return 'on-contents-changed';
+	}
+}
+
 export {
 	ImmediateActivationFunctionGenerator,
 	DelayActivationFunctionGenerator,
 	ClickActivationFunctionGenerator,
 	GenericActivationFunctionGenerator,
 	MidiActivationFunctionGenerator,
-	DeferredCommandActivationFunctionGenerator
+	DeferredCommandActivationFunctionGenerator,
+	OnContentsChangedActivationFunctionGenerator
 }
 

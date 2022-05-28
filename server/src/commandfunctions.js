@@ -28,24 +28,22 @@ import { EError } from './nex/eerror.js'
 class Arg {
 	constructor(nex) {
 		this.nex = nex;
-		this.evaluated = false;
-		this.checked = false;
+		this.processed = false;
+		this.ref = null;
+		this.refindex = null;
 	}
 
-	isEvaluated() {
-		return this.evaluated;
+	makeUpdating(ref, refindex) {
+		this.ref = ref;
+		this.refindex = refindex;
 	}
 
-	setEvaluated(v) {
-		this.evaluated = v;
+	isProcessed() {
+		return this.processed;
 	}
 
-	isChecked() {
-		return this.checked;
-	}
-
-	setChecked(f) {
-		this.checked = f;
+	setProcessed(v) {
+		this.processed = v;
 	}
 
 	getNex() {
@@ -54,6 +52,9 @@ class Arg {
 
 	setNex(n) {
 		this.nex = n;
+		if (this.ref) {
+			this.ref.replaceChildAt(n, this.refindex);
+		}
 	}
 
 	debugString() {
@@ -70,6 +71,12 @@ class Arg {
 class ArgContainer {
 	constructor(nex) {
 		this.args = [];
+	}
+
+	makeUpdating(ref) {
+		for (let i = 0; i < this.args.length; i++) {
+			this.args[i].makeUpdating(ref, i);
+		}
 	}
 
 	addArg(arg) {

@@ -29,6 +29,8 @@ import {
 	DeferredCommandActivationFunctionGenerator,
 } from '../asyncfunctions.js'
 import { executeRunInfo } from '../commandfunctions.js'
+import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
+
 
 
 class DeferredCommand extends Command {
@@ -102,11 +104,26 @@ class DeferredCommand extends Command {
 	}
 
 	evaluate(executionEnv) {
+		// we have to make a copy, we can't store state with code in a lambda etc.
 
+		// to copy, we follow the same algorithm as argContainer --
+		// we do a shallow copy but then children are not copied.
 		let copyOfSelf = this.makeCopy(true);
+		for (let i = 0; i < this.numChildren(); i++) {
+			copyOfSelf.appendChild(this.getChildAt(i));
+		}
+
 
 		let dv = new DeferredValue();
-		copyOfSelf._runInfo = this.createRunInfo(executionEnv);
+		copyOfSelf._runInfo = copyOfSelf.createRunInfo(executionEnv);
+
+		// make it so the arg container in the runinfo updates the actual
+		// children of the command copy so they can be rendered to the screen.
+		// this would change if I created a separate/different object whose
+		// purpose is to display to the user the in-process computation of the
+		// deferred command
+		copyOfSelf._runInfo.argContainer.makeUpdating(copyOfSelf);
+
 		copyOfSelf._returnedValue = dv;
 
 		dv.appendChild(copyOfSelf);
@@ -126,65 +143,86 @@ class DeferredCommand extends Command {
 
 	// these will break horribly if deferred commands/values don't form a DAG...
 
-	isSettled() {
-		let allSettled = true;
-		for (let i = 0; i < this._runInfo.argContainer.numArgs(); i++) {
-			let nex = this._runInfo.argContainer.getArgAt(i).getNex();
-			if (Utils.isDeferred(nex)) {
-				if (!nex.isSettled()) {
-					allSettled = false;
-				}
-			}
-		}	
-		return allSettled;	
-	}
+	// deprecated?
+	// isSettled() {
+	// 	let allSettled = true;
+	// 	for (let i = 0; i < this._runInfo.argContainer.numArgs(); i++) {
+	// 		let nex = this._runInfo.argContainer.getArgAt(i).getNex();
+	// 		if (Utils.isDeferred(nex)) {
+	// 			if (!nex.isSettled()) {
+	// 				allSettled = false;
+	// 			}
+	// 		}
+	// 	}	
+	// 	return allSettled;	
+	// }
 
-	isFinished() {
-		let allFinished = true;
-		for (let i = 0; i < this._runInfo.argContainer.numArgs(); i++) {
-			let nex = this._runInfo.argContainer.getArgAt(i).getNex();
-			if (Utils.isDeferred(nex)) {
-				if (!nex.isFinished()) {
-					allFinished = false;
-				}
-			}
-		}	
-		return allFinished;	
-	}
+	// I don't really think I need isFinished and isSettled
+	// because deferred commands and deferred values don't have to
+	// implement a common interface, because deferred commands just return
+	// a deferred value anyway.
+	// isFinished() {
+	// 	let allFinished = true;
+	// 	for (let i = 0; i < this._runInfo.argContainer.numArgs(); i++) {
+	// 		let nex = this._runInfo.argContainer.getArgAt(i).getNex();
+	// 		if (Utils.isDeferred(nex)) {
+	// 			if (!nex.isFinished()) {
+	// 				allFinished = false;
+	// 			}
+	// 		}
+	// 	}	
+	// 	return allFinished;	
+	// }
 
-	addSelfAsListenerIfNotAlready() {
-		for (let i = 0; i < this._runInfo.argContainer.numArgs(); i++) {
-			let arg = this._runInfo.argContainer.getArgAt(i).getNex();
-			if (Utils.isDeferred(arg) && !arg.hasListener(this)) {
-				arg.addListener(this);
-			}
-		}
-	}
+	// addSelfAsListenerIfNotAlready() {
+	// 	for (let i = 0; i < this._runInfo.argContainer.numArgs(); i++) {
+	// 		let arg = this._runInfo.argContainer.getArgAt(i).getNex();
+	// 		if (Utils.isDeferred(arg) && !arg.hasListener(this)) {
+	// 			arg.addListener(this);
+	// 		}
+	// 	}
+	// }
 
 
 	tryToFinish() {
-		this._runInfo.argEvaluator.evaluatePotentiallyDeferredArgs();
-		this.addSelfAsListenerIfNotAlready();
-		let executionResult = null;
-		if (this.isSettled()) {
-			executionResult = executeRunInfo(this._runInfo, this._activationEnv)
+		let didFinish = false;
+		try {
+			didFinish = this._runInfo.argEvaluator.evaluatePotentiallyDeferredArgs(this);
+		} catch (e) {
+			if (Utils.isFatalError(e)) {
+				this._returnedValue.finish(e);
+			} else {
+				throw e;
+			}
 		}
-		if (Utils.isError(executionResult) || this.isFinished() || (executionResult && executionResult.hasTagWithString('finish'))) {
+		if (didFinish) {
+			let executionResult = executeRunInfo(this._runInfo, this._activationEnv)
 			this._returnedValue.finish(executionResult)			
 		}
+		this.setDirtyForRendering(true);
+		eventQueueDispatcher.enqueueRenderOnlyDirty();
+
+//		this.addSelfAsListenerIfNotAlready();
+		// let executionResult = null;
+		// if (this.isSettled()) {
+		// 	executionResult = executeRunInfo(this._runInfo, this._activationEnv)
+		// }
+		// if (Utils.isError(executionResult) || this.isFinished() || (executionResult && executionResult.hasTagWithString('finish'))) {
+		// 	this._returnedValue.finish(executionResult)			
+		// }
 	}
 
 	notify() {
 		this.tryToFinish();
 	}
 
-	getRenderableChildAt(i, useDefault) {
-		if (this._activated && !this._fulfilled) {
-			return this._runInfo.argContainer.getArgAt(i).getNex();
-		} else {
-			return this.getChildAt(i, useDefault);
-		}
-	}
+	// getRenderableChildAt(i, useDefault) {
+	// 	if (this._activated && !this._fulfilled) {
+	// 		return this._runInfo.argContainer.getArgAt(i).getNex();
+	// 	} else {
+	// 		return this.getChildAt(i, useDefault);
+	// 	}
+	// }
 
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();

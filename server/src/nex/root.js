@@ -72,6 +72,7 @@ class Root extends NexContainer {
 			'ShiftBackspace': 'do-nothing',
 			'AltBackspace': 'do-nothing',
 			'AltEnter': 'do-nothing',
+			'Alt\\': 'do-nothing'
 
 
 		}
