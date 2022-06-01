@@ -33,6 +33,9 @@ The `src` folder contains the parser.
 
 The `testing` folder contains the test framework.
 
+> **_NOTE:_**  to navigate into the packages session with the query string, you need to create a file called webenv.txt inside the server folder, and put the string "local" in it.
+
+
 ## How to Contribute
 
 The process for contributing would be something like this:
