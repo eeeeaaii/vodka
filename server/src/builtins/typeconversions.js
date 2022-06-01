@@ -51,9 +51,9 @@ function createTypeConversionBuiltins() {
 		[ 'nex&' ],
 		function $getLambda(env, executionEnvironment) {
 			let n = env.lb('nex');
-			return n.getLambda().makeCopy();
+			return n.getLambda();
 		},
-		'Returns a lambda expression identical to the one used to create the passed-in closure (does not modify the closure)'
+		'Returns the lambda expression that is used by the passed-in closure to execute code. Warning: modifying this lambda will change the code of the closure.'
 		)
 
 	Builtin.createBuiltin(

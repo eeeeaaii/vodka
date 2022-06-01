@@ -23,11 +23,11 @@ import { Lambda } from '../nex/lambda.js'
 import { EError } from '../nex/eerror.js'
 import { EString } from '../nex/estring.js'
 import { Nil } from '../nex/nil.js'
+import { wrapError } from '../evaluator.js'
 import { DeferredValue } from '../nex/deferredvalue.js'
 import { Org } from '../nex/org.js'
 import { ESymbol } from '../nex/esymbol.js'
 import { ERROR_TYPE_INFO } from '../nex/eerror.js'
-import { wrapError } from '../evaluator.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { BINDINGS } from '../environment.js'
 import { experiments } from '../globalappflags.js'
@@ -274,7 +274,8 @@ function createFileBuiltins() {
 		'Imports the package in file |name, loading the file and binding the package contents into memory.'
 	);
 
-	
+
+
 	// Before you go renaming the "package" builtin to something else!
 	// the name of this builtin is hardcoded into servercommunication.js
 	// idk if there is a better way, but be aware.
@@ -282,22 +283,142 @@ function createFileBuiltins() {
 		'package',
 		[ '_name@', '_block...' ],
 		function $package(env, executionEnvironment) {
+
+			/*
+			okay so the package thing is a special form basically.
+			this means that the rules here are different. We always
+			treat this as if it was a deferred command, so we look at
+			the return value for each expression. If it's deferred,
+			we wait for it to resolve before moving on to the next one.
+
+			Additionally: we should create a new scope,
+			not for the purposes of using "let" but so that we could
+			associate with that scope a package name.
+			that way imported packages don't interfere with the package here,
+			we get a stack of package names by default.
+
+			Finally, what do we return? Let's just always return a deferred
+			value. It resolves when all the different imports happen and
+			the package is finished being created. Since a package
+			statement will frequently import things, it is more or less
+			by definition the same type of builtin as a file loading builtin.
+
+			this means that if you do crazy shit like trying to use package
+			or import statements inside lambdas, you get what you get.
+			The system is designed to be used in this sensible way,
+			results are undefined if you go outside of that.
+
+			*/
+
 			let packageName = env.lb('name').getTypedValue();
+			let lst = env.lb('block');
+
+			let packageScope = executionEnvironment.pushEnv();
+			packageScope.setPackageForBinding(packageName);
+			packageScope.usePackage(packageName);
+
+			let nextArgToEval = 0;
+
+			let deferredCallback = null;
+
+			let packageStatements = [];
+			for (let i = 0; i < lst.numChildren(); i++) {
+				packageStatements.push(lst.getChildAt(i));
+			}
+
+			let notifyCallback = function() {
+				evalNextArg();
+			};
+
+			let evalNextArg = function() {
+				for( ; nextArgToEval < packageStatements.length ; nextArgToEval++) {
+					let c = packageStatements[nextArgToEval];
+					let result = evaluateNexSafely(c, packageScope);
+					if (Utils.isDeferredValue(result)) {
+						packageStatements[nextArgToEval] = result;
+						result.addListener({
+							notify: notifyCallback
+						});
+						return;
+					}
+					if (Utils.isFatalError(result)) {
+						let err = wrapError('&szlig;', `package: error returned from expression ${nextArgToEval+2}`, result);
+						deferredCallback(err);
+						return;
+					}
+				}
+				if (nextArgToEval == packageStatements.length) {
+					let message = new EError(`successfully created package.`);
+					message.setErrorType(ERROR_TYPE_INFO);
+					deferredCallback(message);
+				}
+			}
+
+			let r = new DeferredValue();
+			r.set(new GenericActivationFunctionGenerator(
+				'package', 
+				function(callback, def) {
+					deferredCallback = callback;
+					evalNextArg();
+//					if (evalNextArg()) {
+						// oh great, we are finished.
+//						callback(new Nil());
+//					}
+					// listStandardFunctionFiles(function(files) {
+					// 	// turn files into an org or whatever
+					// 	callback(files);
+					// })
+				}
+			));
+			let message = new EError(`creating package`);
+			message.setErrorType(ERROR_TYPE_INFO);
+			r.appendChild(message)
+			r.activate();
+			return r;
+
+
+			// let lastresult = new Nil();
+			// for (let i = 0; i < lst.numChildren(); i++) {
+			// 	let c = lst.getChildAt(i);
+			// 	lastresult = evaluateNexSafely(c, executionEnvironment);
+			// 	//not sure what to do about errors yet?
+			// }
+
+			// let r = new EError(`Package ${packageName} created.`);
+			// r.setErrorType(ERROR_TYPE_INFO);
+			// return r;
+		},
+		'Defines a package. All args in |block are evaluated, and any bindings are bound with |name as their package scope identifier.'
+	);
+
+	
+	// Before you go renaming the "package" builtin to something else!
+	// the name of this builtin is hardcoded into servercommunication.js
+	// idk if there is a better way, but be aware.
+	/*
+	Builtin.createBuiltin(
+		'package',
+		[ '_name@', '_block...' ],
+		function $package(env, executionEnvironment) {
+			let packageName = env.lb('name').getTypedValue();
+
 			let lst = env.lb('block');
 			BINDINGS.setPackageForBinding(packageName);
 			let lastresult = new Nil();
 			for (let i = 0; i < lst.numChildren(); i++) {
 				let c = lst.getChildAt(i);
 				lastresult = evaluateNexSafely(c, executionEnvironment);
-				// not sure what to do about errors yet?
+				//not sure what to do about errors yet?
 			}
 			BINDINGS.setPackageForBinding(null);
+
 			let r = new EError(`Package ${packageName} created.`);
 			r.setErrorType(ERROR_TYPE_INFO);
 			return r;
 		},
 		'Defines a package. All args in |block are evaluated, and any bindings are bound with |name as their package scope identifier.'
 	);
+	*/
 
 }
 

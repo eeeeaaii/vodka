@@ -43,7 +43,19 @@ function createEnvironmentBuiltins() {
 			let val = env.lb('nex');
 			let name = env.lb('name');
 			let namestr = name.getTypedValue();
-			BINDINGS.bindInPackage(namestr, val);
+			if (namestr.indexOf(':') >= 0) {
+				return new EError('bind: cannot bind a symbol with a colon (:) except via the package mechanism. Sorry!');
+			}
+//			if (executionEnvironment.hasPackageKludge()) {
+//				let packageSym = executionEnvironment.getPackageKludge();
+//				namestr = packageSym.getTypedValue() + ':' + namestr;
+//			}
+			let packageName = executionEnvironment.getPackageForBinding();
+			if (packageName) {
+				BINDINGS.bindInPackage(namestr, val, packageName);
+			} else {
+				BINDINGS.normalBind(namestr, val);
+			}
 			return name;
 		},
 		'Binds a new global variable named |name to |nex. Aliases: bind to'

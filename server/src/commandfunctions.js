@@ -50,6 +50,18 @@ class Arg {
 		return this.nex;
 	}
 
+	// setPossiblePackageNameSymbol(symbol) {
+	// 	this.packageSymbol = symbol;
+	// }
+
+	// hasPackageSymbol() {
+	// 	return !!this.packageSymbol;
+	// }
+
+	// getPackageSymbol() {
+	// 	return this.packageSymbol;
+	// }
+
 	setNex(n) {
 		this.nex = n;
 		if (this.ref) {

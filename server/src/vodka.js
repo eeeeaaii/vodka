@@ -26,6 +26,7 @@ import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import { keyDispatcher } from './keydispatcher.js'
 import { systemState } from './systemstate.js'
 import { createAsyncBuiltins } from './builtins/asyncbuiltins.js'
+import { createSurfaceBuiltins } from './builtins/surfacebuiltins.js'
 import { createBasicBuiltins } from './builtins/basicbuiltins.js'
 import { createContractBuiltins } from './builtins/contractbuiltins.js'
 import { createEnvironmentBuiltins } from './builtins/environmentbuiltins.js'
@@ -141,6 +142,7 @@ function createBuiltins() {
 	setAPIDocCategory('String Builtins'); createStringBuiltins();
 	setAPIDocCategory('Wavetable Builtins'); createWavetableBuiltins();
 	setAPIDocCategory('Midi Builtins'); createMidiBuiltins();
+	setAPIDocCategory('Surface Builtins'); createSurfaceBuiltins();
 	setAPIDocCategory('Make Builtins'); createMakeBuiltins();
 	setAPIDocCategory('Type Conversion Builtins'); createTypeConversionBuiltins();
 	setAPIDocCategory('Test Builtins'); createTestBuiltins();

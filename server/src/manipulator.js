@@ -1720,7 +1720,7 @@ class Manipulator {
 		let p = this.selected();
 
 		while(!Utils.isRoot(p)) {
-			if (Utils.isCommand(p) && p.nex.getCommandText() == 'save-in--unevaluated') {
+			if (Utils.isCommand(p) && p.nex.getCommandText() == 'save') {
 				return p;
 			}
 			p = p.getParent();

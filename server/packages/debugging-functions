@@ -1,1 +1,1 @@
-v2:~(|package-named--is @util ~(_bind--to @LOG [doc](||)_) ~(_bind--to @log &"() nex"(|~(_hard-push--into ~(_copy @nex_) @LOG_)|)_)|)
+v2:~(|package @debugging ~"bind to"(_@LOG [doc](||)_) ~"bind to"(_@log &"() nex"(|~"hard-push into"(_@nex @LOG_)|)_)|)

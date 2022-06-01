@@ -20,6 +20,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { NexContainer } from './nexcontainer.js'
+import { Nil } from './nil.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 import { gc, getFFGen } from '../gc.js'
 import { experiments } from '../globalappflags.js'
@@ -134,11 +135,19 @@ class DeferredValue extends NexContainer {
 		this.finish(value, true /* do repeat */)
 	}
 
+	startSettle(value) {
+		eventQueueDispatcher.enqueueDeferredFulfillWithRepeat(this, value);
+	}
+
+	startFulfill(value) {
+		eventQueueDispatcher.enqueueDeferredFulfill(this, value);
+	}
+
 	activate() {
 		this.activationFunctionGenerator.getFunction(function(value) {
-			eventQueueDispatcher.enqueueDeferredFulfill(this, value);
+			this.startFulfill(value);
 		}.bind(this), function(value) {
-			eventQueueDispatcher.enqueueDeferredFulfillWithRepeat(this, value);
+			this.startSettle(value);
 		}.bind(this), this)();
 		this._activated = true;
 	}
@@ -184,7 +193,11 @@ class DeferredValue extends NexContainer {
 			return this;
 		}
 		if (this._settled) {
-			return this.getChildAt(0);
+			if (this.numChildren() > 0) {
+				return this.getChildAt(0);
+			} else {
+				return new Nil();
+			}
 		}
 		return this;
 	}

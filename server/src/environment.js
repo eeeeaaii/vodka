@@ -27,6 +27,15 @@ import { Tag } from './tag.js'
 /** @module environment */
 
 
+class Package {
+	constructor(name, parent) {
+		this.name = name;
+		this.parent = parent;
+	}
+}
+
+
+
 /**
  * This class represents a memory space or scope. The entire memory space of the
  * running program is a tree of Environment objects.
@@ -42,7 +51,21 @@ class Environment {
 		this.currentPackageForBinding = null;
 		this.packages = null;
 		this.listOfPackagesUsed = null;
+
+		// this.packageKludge = null;
 	}
+
+	// setPackageKludge(val) {
+	// 	this.packageKludge = val;
+	// }
+
+	// getPackageKludge() {
+	// 	return this.packageKludge;
+	// }
+
+	// hasPackageKludge() {
+	// 	return !!this.packageKludge;
+	// }
 
 	toString() {
 		let r = '';
@@ -91,42 +114,35 @@ class Environment {
 		this.listOfPackagesUsed.push(name);
 	}
 
-	packageBeingUsed(name) {
-		if (!this.listOfPackagesUsed) {
-			return false;
-		}
-		for (let i = 0; i < this.listOfPackagesUsed.length ; i++) {
-			if (name == this.listOfPackagesUsed[i]) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	setPackageForBinding(name) {
+	addPackageNameToKnownPackages(name) {
 		if (this.packages == null) {
 			this.packages = [];
 		}
-		this.currentPackageForBinding = name;
 		this.packages.push(name);
+	}
+
+	setPackageForBinding(name) {
+		BINDINGS.addPackageNameToKnownPackages(name);
+		this.currentPackageForBinding = name;
+	}
+
+	getPackageForBinding() {
+		return this.currentPackageForBinding;
 	}
 
 	isKnownPackageName(name) {
 		return this.packages && this.packages.includes(name);
 	}
 
-	bindInPackage(name, val) {
-		if (name.indexOf(':') >= 0) {
-			throw new EError('bind: cannot bind a symbol with a colon (:) except via the package mechanism. Sorry!');
-		}
-		if (this.currentPackageForBinding) {
-			name = this.currentPackageForBinding + ':' + name;
-		}
-		// what was this for?
-//		if (val.getTypeName() == '-closure-' && !this.packageBeingUsed(this.currentPackageForBinding)) {
-//			val.getLexicalEnvironment().usePackage(this.currentPackageForBinding);
-//		}
-		this.bind(name, val, this.currentPackageForBinding);
+	// should only call on BINDINGS?
+
+	bindInPackage(name, val, packageName) {
+		name = packageName + ':' + name;
+		this.bind(name, val, packageName);
+	}
+
+	normalBind(name, val) {
+		this.bind(name, val);
 	}
 
 	makeBindingRecord(name, value, packageName) {
@@ -330,11 +346,13 @@ class Environment {
  */
 const BUILTINS = new Environment(null);
 
+const BASEPACKAGE = new Package(':', null);
+
 /**
  * This is the global environment for user-bound variables. All symbols
  * bound with the bind primitive are in this scope.
  */
 const BINDINGS = BUILTINS.pushEnv();
 
-export { Environment, BUILTINS, BINDINGS, BUILTIN_ARG_PREFIX, UNBOUND }
+export { Environment, BUILTINS, BINDINGS, BUILTIN_ARG_PREFIX, UNBOUND, BASEPACKAGE }
 

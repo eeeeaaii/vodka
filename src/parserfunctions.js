@@ -31,6 +31,7 @@ import { Lambda } from '../server/src/nex/lambda.js';
 import { Command } from '../server/src/nex/command.js';
 import { Word } from '../server/src/nex/word.js';
 import { Wavetable } from '../server/src/nex/wavetable.js';
+import { Surface } from '../server/src/nex/surface.js';
 import { Line } from '../server/src/nex/line.js';
 import { Doc } from '../server/src/nex/doc.js';
 import { EError } from '../server/src/nex/eerror.js';
@@ -180,6 +181,9 @@ function makeInstanceAtom(instname, privatedata, taglist, nonmutable) {
 			break;
 		case 'wavetable':
 			t = new Wavetable(concatParserString(privatedata));
+			break;
+		case 'surface':
+			t = new Surface(concatParserString(privatedata));
 			break;
 		case 'letter':
 			t = new Letter(concatParserString(privatedata));

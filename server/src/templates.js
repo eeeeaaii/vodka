@@ -86,14 +86,28 @@ class TemplateStore  {
 		let org = new Org();
 		let initializer = null;
 		let fcscope = {};
-		let innerenv = env.pushEnv();
-		innerenv.bind('self', org);
+		let instantiationLexicalSelfScope = env.pushEnv();
+		instantiationLexicalSelfScope.bind('self', org);
 		for (let i = 0; i < initOrg.numChildren(); i++) {
 			let c = initOrg.getChildAt(i);
 			let membername = this._getSingleTagName(c);
-			if (c.getTypeName() == '-closure-') {
+			// members can be either lambdas or closures.
+			// if it's a closure, it contains a lexical scope that has to be preserved,
+			// so the self scope is parented to the lexical scope.
+			// if it's a lambda, all bets are off so we give it the execution scope.
+			// unlikely that a lambda would happen without quoting or something.
+			if (c.getTypeName() == '-lambda-') {
+				let closure = evaluateNexSafely(c, instantiationLexicalSelfScope);
+				org.appendChild(closure);
+				if (membername == ':init') {
+					initializer = closure;
+				}
+			} else if (c.getTypeName() == '-closure-') {
+				let lexenv = c.getLexicalEnvironment();
+				let selfScope = lexenv.pushEnv();
+				selfScope.bind('self', org);
 				let lambda = c.getLambda();
-				let closure = evaluateNexSafely(lambda, innerenv);
+				let closure = evaluateNexSafely(lambda, selfScope);
 				org.appendChild(closure);
 				if (membername == ':init') {
 					initializer = closure;

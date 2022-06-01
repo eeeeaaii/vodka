@@ -31,6 +31,7 @@ import { Lambda } from './nex/lambda.js';
 import { Command } from './nex/command.js';
 import { Word } from './nex/word.js';
 import { Wavetable } from './nex/wavetable.js';
+import { Surface } from './nex/surface.js';
 import { Line } from './nex/line.js';
 import { Doc } from './nex/doc.js';
 import { EError } from './nex/eerror.js';
@@ -181,6 +182,9 @@ function makeInstanceAtom(instname, privatedata, taglist, nonmutable) {
 		case 'wavetable':
 			t = new Wavetable(concatParserString(privatedata));
 			break;
+		case 'surface':
+			t = new Surface(concatParserString(privatedata));
+			break;
 		case 'letter':
 			t = new Letter(concatParserString(privatedata));
 			break;
@@ -212,14 +216,6 @@ function makeInstanceList(instname, children, privatedata, taglist, verthoriz, n
 			t = new Doc();
 			isList = true;
 			break;
-
-		// zlists were deprecated but in order to get tests to pass,
-		// files to load, etc., we'll instantiate an org instead.
-		case 'zlist':
-			t = new Org();
-			isList = true;
-			break;
-
 		default:
 			throw new Error('unrecognized list instance type: ' + instname);
 	}

@@ -109,13 +109,36 @@ class ArgEvaluator {
 		}
 	}
 
+	// doPackageKludge() {
+	// 	// I have to write this carefully to be both type agnostic and not call any methods
+	// 	// because types have not actually been checked yet, and the user could have passed
+	// 	// in totally wrong arguments to the package command.
+	// 	let symbol = 0;
+	// 	for (let i = 0 ; i < this.argContainer.numArgs(); i++) {
+	// 		if (i == 0) {
+	// 			symbol = this.argContainer.getArgAt(i).getNex();
+	// 		} else {
+	// 			this.argContainer.getArgAt(i).setPossiblePackageNameSymbol(symbol);
+	// 		}
+	// 	}
+	// }
+
 	processSingleArg(i) {
 		let param = this.effectiveParams[i];
 		let expectedType = param.type;
 		let arg = this.argContainer.getArgAt(i);
 		let argnex = arg.getNex();
 		if (!param.skipeval) {
+			// let previousKludge = null;
+			// let hasSymbol = arg.hasPackageSymbol();
+			// if (hasSymbol) {
+			// 	previousKludge = this.executionEnvironment.getPackageKludge();
+			// 	this.executionEnvironment.setPackageKludge(arg.getPackageSymbol());
+			// }
 			argnex = evaluateNexSafely(argnex, this.executionEnvironment, param.skipactivate);
+			// if (hasSymbol) {
+			// 	this.executionEnvironment.setPackageKludge(previousKludge);
+			// }
 			if (Utils.isFatalError(argnex)) {
 				throw wrapError('&szlig;', `when calling ${this.name}: fatal error in argument ${i + 1} (expected type ${param.type}), cannot continue. Sorry!`, argnex);
 			}
@@ -229,6 +252,9 @@ class ArgEvaluator {
 		this.checkMinNumArgs();
 		this.padEffectiveParams();
 		this.checkMaxNumArgs();
+		// if (cmdname == 'package') {
+		// 	this.doPackageKludge();
+		// }
 		this.prepared = true;	
 	}
 

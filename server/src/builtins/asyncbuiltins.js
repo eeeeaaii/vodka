@@ -24,7 +24,6 @@ import { EError } from '../nex/eerror.js'
 import { Org } from '../nex/org.js'
 import { UNBOUND } from '../environment.js'
 import { Lambda } from '../nex/lambda.js'
-import { evaluateNexSafely } from '../evaluator.js'
 import { experiments } from '../globalappflags.js'
 import { Tag } from '../tag.js'
 import { DeferredValue } from '../nex/deferredvalue.js'
@@ -34,7 +33,8 @@ import {
 	ImmediateActivationFunctionGenerator,
 	DelayActivationFunctionGenerator,
 	ClickActivationFunctionGenerator,
-	OnContentsChangedActivationFunctionGenerator
+	OnContentsChangedActivationFunctionGenerator,
+	CallbackActivationFunctionGenerator
 } from '../asyncfunctions.js'
 
 
@@ -58,6 +58,36 @@ function createAsyncBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'settle',
+		[ 'dv*', 'result?'],
+		function settle(env, executionEnvironment) {
+			let dv = env.lb('dv');
+			let result = env.lb('result')
+			if (result == UNBOUND) {
+				result = new Nil();
+			}
+			dv.startSettle(result);
+			return dv;
+		},
+		'Settles the deferred value.'
+	);
+
+	Builtin.createBuiltin(
+		'fulfill',
+		[ 'dv*', 'result?'],
+		function settle(env, executionEnvironment) {
+			let dv = env.lb('dv');
+			let result = env.lb('result')
+			if (result == UNBOUND) {
+				result = new Nil();
+			}
+			dv.startFulfill(result);
+			return dv;
+		},
+		'Fulfills the deferred value.'
+	);
+
+	Builtin.createBuiltin(
 		'wait-for-nothing',
 		[ ],
 		function $waitForNothing(env, executionEnvironment) {
@@ -68,6 +98,20 @@ function createAsyncBuiltins() {
 			return dv;
 		},
 		'Returns a deferred value that finishes immediately.'
+	);
+
+	Builtin.createBuiltin(
+		'wait-forever',
+		[ ],
+		function $setCallback(env, executionEnvironment) {
+			let nex = env.lb('nex');
+			let dv = new DeferredValue();
+			let afg = new CallbackActivationFunctionGenerator(nex);
+			dv.set(afg);
+			dv.activate();
+			return dv;
+		},
+		'Returns a deferred value that waits forever until manually settled or fulfilled.'
 	);
 
 

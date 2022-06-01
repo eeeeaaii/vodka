@@ -277,11 +277,6 @@ class KeyDispatcher {
 			return 'Alt[';
 		} else if (whichKey == 'BracketLeft' && hasAlt && hasShift) {
 			return 'Alt{';
-
-
-		} else if (whichKey == 'Backslash' && hasAlt && !hasShift) {
-			return 'Alt\\';
-
 		} else if (keycode == '`' && hasCtrl && hasShift) {
 			return 'Ctrl~';
 		} else if (keycode == 'Dead' && whichKey == 'Backquote' && hasCtrl && !hasShift) {
@@ -372,6 +367,9 @@ class KeyDispatcher {
 			'ShiftSpace': 'toggle-dir',
 
 			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
+			'AltShiftBackspace': 'unroll',
+
+
 			'LastBackspace': 'remove-selected-and-select-previous-sibling-if-empty',
 
 			'Backspace': 'start-main-editor',
@@ -381,8 +379,6 @@ class KeyDispatcher {
 			'ShiftEscape': 'toggle-exploded',
 
 			'AltEnter': 'start-main-editor',
-
-
 
 			'~': 'insert-command-at-insertion-point',
 			'!': 'insert-bool-at-insertion-point',
@@ -413,7 +409,6 @@ class KeyDispatcher {
 			'Alt[': 'wrap-in-line',
 			'Alt{': 'wrap-in-doc',
 			'Alt^': 'wrap-in-instantiator',
-			'Alt\\': 'unroll'
 		};			
 	}
 

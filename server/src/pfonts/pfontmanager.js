@@ -67,7 +67,7 @@ class ParametricFontManager {
 		return params;
 	}
 
-	getFontForFontString(fontstring) {
+	getFontForString(fontstring) {
 		let params = this.parseFontString(fontstring);
 		return this.getFont(params.fontname, params.pxparams, params.relparams);
 	}

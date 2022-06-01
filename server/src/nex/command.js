@@ -355,7 +355,7 @@ class Command extends NexContainer {
 	evaluate(executionEnv) {
 		let runInfo = this.createRunInfo(executionEnv);
 		// the job of the evaluator is to evaluate the args AND bind them to variables in the new scope.
-		runInfo.argEvaluator.evaluateArgs();
+		runInfo.argEvaluator.evaluateArgs(runInfo.cmdname);
 		return executeRunInfo(runInfo, executionEnv);
 	}
 

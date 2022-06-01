@@ -99,6 +99,24 @@ class DelayActivationFunctionGenerator extends ActivationFunctionGenerator {
 	}
 }
 
+class CallbackActivationFunctionGenerator extends ActivationFunctionGenerator {
+	constructor(closure) {
+		super();
+		this.closure = closure;
+	}
+
+	getFunction(callback, repeatCallback, exp) {
+		return function() {
+			// no op, the dv has to be manually resolved.
+		}.bind(this);
+	}
+
+	getName() {
+		return 'callback';
+	}
+}
+
+
 class ClickActivationFunctionGenerator extends ActivationFunctionGenerator {
 	constructor(nex) {
 		super();
@@ -172,6 +190,7 @@ export {
 	GenericActivationFunctionGenerator,
 	MidiActivationFunctionGenerator,
 	DeferredCommandActivationFunctionGenerator,
-	OnContentsChangedActivationFunctionGenerator
+	OnContentsChangedActivationFunctionGenerator,
+	CallbackActivationFunctionGenerator
 }
 

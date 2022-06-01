@@ -220,7 +220,8 @@ class Closure extends ValueNex {
 			scope.usePackage(packageName);
 		}
 		argEvaluator.bindArgs(scope);
-		return this.lambda.f(scope, executionEnvironment, commandTags);
+		let r = this.lambda.f(scope, executionEnvironment, commandTags);
+		return r;
 	}
 
 	lambdaClosureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags, packageName) {
