@@ -18,6 +18,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from '../utils.js'
 
 import { Builtin } from '../nex/builtin.js'
+import { Org } from '../nex/org.js'
+import { Integer } from '../nex/integer.js'
 import { Surface } from '../nex/surface.js'
 import { UNBOUND } from '../environment.js'
 import { EError } from '../nex/eerror.js'
@@ -138,6 +140,41 @@ function createSurfaceBuiltins() {
 			return surf;
 		},
 		'Draws a dot on the surface.'
+	);
+
+	Builtin.createBuiltin(
+		'color-at',
+		[ 'surf', 'x#%', 'y#%'],
+		function $drawRectangle(env, executionEnvironment) {
+			let surf = env.lb('surf');
+
+			let x = env.lb('x').getTypedValue();
+			let y = env.lb('y').getTypedValue();
+
+			let colorarray = surf.colorAt(x, y);
+
+			let r = new Org();
+			r.appendChild(new Integer(colorarray[0]))
+			r.appendChild(new Integer(colorarray[1]))
+			r.appendChild(new Integer(colorarray[2]))
+			r.appendChild(new Integer(colorarray[3]))
+
+			return r;
+		},
+		'Draws a dot on the surface.'
+	);
+
+
+	Builtin.createBuiltin(
+		'copy-from-clipboard',
+		[ 'surf'],
+		function $drawRectangle(env, executionEnvironment) {
+			let surf = env.lb('surf');
+
+			surf.copyFromClipboard();
+			return surf;
+		},
+		'Copys the contents of the image clipboard into the surface.'
 	);
 }
 
