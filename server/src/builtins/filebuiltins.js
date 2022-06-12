@@ -360,14 +360,6 @@ function createFileBuiltins() {
 				function(callback, def) {
 					deferredCallback = callback;
 					evalNextArg();
-//					if (evalNextArg()) {
-						// oh great, we are finished.
-//						callback(new Nil());
-//					}
-					// listStandardFunctionFiles(function(files) {
-					// 	// turn files into an org or whatever
-					// 	callback(files);
-					// })
 				}
 			));
 			let message = new EError(`creating package`);
@@ -375,50 +367,9 @@ function createFileBuiltins() {
 			r.appendChild(message)
 			r.activate();
 			return r;
-
-
-			// let lastresult = new Nil();
-			// for (let i = 0; i < lst.numChildren(); i++) {
-			// 	let c = lst.getChildAt(i);
-			// 	lastresult = evaluateNexSafely(c, executionEnvironment);
-			// 	//not sure what to do about errors yet?
-			// }
-
-			// let r = new EError(`Package ${packageName} created.`);
-			// r.setErrorType(ERROR_TYPE_INFO);
-			// return r;
 		},
 		'Defines a package. All args in |block are evaluated, and any bindings are bound with |name as their package scope identifier.'
 	);
-
-	
-	// Before you go renaming the "package" builtin to something else!
-	// the name of this builtin is hardcoded into servercommunication.js
-	// idk if there is a better way, but be aware.
-	/*
-	Builtin.createBuiltin(
-		'package',
-		[ '_name@', '_block...' ],
-		function $package(env, executionEnvironment) {
-			let packageName = env.lb('name').getTypedValue();
-
-			let lst = env.lb('block');
-			BINDINGS.setPackageForBinding(packageName);
-			let lastresult = new Nil();
-			for (let i = 0; i < lst.numChildren(); i++) {
-				let c = lst.getChildAt(i);
-				lastresult = evaluateNexSafely(c, executionEnvironment);
-				//not sure what to do about errors yet?
-			}
-			BINDINGS.setPackageForBinding(null);
-
-			let r = new EError(`Package ${packageName} created.`);
-			r.setErrorType(ERROR_TYPE_INFO);
-			return r;
-		},
-		'Defines a package. All args in |block are evaluated, and any bindings are bound with |name as their package scope identifier.'
-	);
-	*/
 
 }
 

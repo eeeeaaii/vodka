@@ -30,6 +30,7 @@ import {
 } from '../asyncfunctions.js'
 import { executeRunInfo } from '../commandfunctions.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
+import { ARGRESULT_LISTENING, ARGRESULT_SETTLED, ARGRESULT_FINISHED } from '../argevaluator.js'
 
 
 
@@ -39,7 +40,7 @@ class DeferredCommand extends Command {
 
 		this._activated = false;
 		this._activationEnv = null;
-		this._fulfilled = false;
+		this._finished = false;
 		this._returnedValue = null;
 		this._runInfo = null;
 
@@ -52,8 +53,8 @@ class DeferredCommand extends Command {
 		return this._activated;
 	}
 
-	isFulfilled() {
-		return this._fulfilled;
+	isFinished() {
+		return this._finished;
 	}
 
 	isSet() {
@@ -141,53 +142,24 @@ class DeferredCommand extends Command {
 		this.tryToFinish();
 	}
 
-	// these will break horribly if deferred commands/values don't form a DAG...
-
-	// deprecated?
-	// isSettled() {
-	// 	let allSettled = true;
-	// 	for (let i = 0; i < this._runInfo.argContainer.numArgs(); i++) {
-	// 		let nex = this._runInfo.argContainer.getArgAt(i).getNex();
-	// 		if (Utils.isDeferred(nex)) {
-	// 			if (!nex.isSettled()) {
-	// 				allSettled = false;
-	// 			}
-	// 		}
-	// 	}	
-	// 	return allSettled;	
-	// }
-
-	// I don't really think I need isFinished and isSettled
-	// because deferred commands and deferred values don't have to
-	// implement a common interface, because deferred commands just return
-	// a deferred value anyway.
-	// isFinished() {
-	// 	let allFinished = true;
-	// 	for (let i = 0; i < this._runInfo.argContainer.numArgs(); i++) {
-	// 		let nex = this._runInfo.argContainer.getArgAt(i).getNex();
-	// 		if (Utils.isDeferred(nex)) {
-	// 			if (!nex.isFinished()) {
-	// 				allFinished = false;
-	// 			}
-	// 		}
-	// 	}	
-	// 	return allFinished;	
-	// }
-
-	// addSelfAsListenerIfNotAlready() {
-	// 	for (let i = 0; i < this._runInfo.argContainer.numArgs(); i++) {
-	// 		let arg = this._runInfo.argContainer.getArgAt(i).getNex();
-	// 		if (Utils.isDeferred(arg) && !arg.hasListener(this)) {
-	// 			arg.addListener(this);
-	// 		}
-	// 	}
-	// }
-
-
 	tryToFinish() {
-		let didFinish = false;
+		let evaluationResult = null;
 		try {
-			didFinish = this._runInfo.argEvaluator.evaluatePotentiallyDeferredArgs(this);
+			evaluationResult = this._runInfo.argEvaluator.evaluatePotentiallyDeferredArgs(this);
+			/*
+			What should happen is the arg evaluator will try to evaluate the args, and return an enum instead of a boolean
+			possible values:
+			1. finished -- evaluate the function and finish the returned dv with whatever it returns
+			2. settling -- one of the args settled but didn't finish, evaluate the function and settle the returned dv with whatever it returns
+			3. waiting -- don't do anything
+
+			note also that evaluating a settled (but not finished) dv returns the same dv,
+			but when evaluating the function, we do want to pass in the contents of the settled dv.
+
+			also: open question, if an arg settles, do we evaluate the args after it? The current logic stops evaluating args
+			when it gets the first dv -- this is so that things like "begin" work intuitively if you put deferred functions
+			in them. But if one of the deferred functions settles, do we progress?
+			*/
 		} catch (e) {
 			if (Utils.isFatalError(e)) {
 				this._returnedValue.finish(e);
@@ -195,34 +167,22 @@ class DeferredCommand extends Command {
 				throw e;
 			}
 		}
-		if (didFinish) {
+		if (evaluationResult == ARGRESULT_SETTLED || evaluationResult == ARGRESULT_FINISHED) {
 			let executionResult = executeRunInfo(this._runInfo, this._activationEnv)
-			this._returnedValue.finish(executionResult)			
+			if (evaluationResult == ARGRESULT_SETTLED) {
+				this._returnedValue.settle(executionResult)
+			} else {
+				this._returnedValue.finish(executionResult)				
+			}
 		}
 		this.setDirtyForRendering(true);
 		eventQueueDispatcher.enqueueRenderOnlyDirty();
 
-//		this.addSelfAsListenerIfNotAlready();
-		// let executionResult = null;
-		// if (this.isSettled()) {
-		// 	executionResult = executeRunInfo(this._runInfo, this._activationEnv)
-		// }
-		// if (Utils.isError(executionResult) || this.isFinished() || (executionResult && executionResult.hasTagWithString('finish'))) {
-		// 	this._returnedValue.finish(executionResult)			
-		// }
 	}
 
 	notify() {
 		this.tryToFinish();
 	}
-
-	// getRenderableChildAt(i, useDefault) {
-	// 	if (this._activated && !this._fulfilled) {
-	// 		return this._runInfo.argContainer.getArgAt(i).getNex();
-	// 	} else {
-	// 		return this.getChildAt(i, useDefault);
-	// 	}
-	// }
 
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();

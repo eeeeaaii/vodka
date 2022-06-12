@@ -378,7 +378,7 @@ const KeyResponseFunctions = {
 		let exp = s.getNex();
 		if (!exp.isActivated()) {
 			evaluateAndReplace(s); // this will activate plus do all the other junk I want
-		} else if (exp.isFulfilled()) {
+		} else if (exp.isFinished()) {
 			manipulator.replaceSelectedWithFirstChildOfSelected();
 		}
 		// else no-op, it's still thinking.

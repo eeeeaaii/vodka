@@ -198,8 +198,8 @@ class RenderNode {
 			case '-string-':
 				return new EStringEditor(nex);
 			case '-deferredcommand-':
-				// special case: we cannot edit fulfilled or active deferreds.
-				if (nex.isActivated() || nex.isFulfilled()) {
+				// special case: we cannot edit finished or active deferreds.
+				if (nex.isActivated() || nex.isFinished()) {
 					return false;
 				} else {
 					// use the same editor as command.

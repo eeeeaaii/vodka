@@ -25,7 +25,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 // we have:
 // - user events, which preempt everything because responsiveness
-// - deferred fulfill, which should preempt rendering because they affect how things get rendered
+// - deferred finish, which should preempt rendering because they affect how things get rendered
 // - rendering
 // - true low priority things, like alert animation
 // additionally, in certain contexts we need to enqueue render events at an equal priority
@@ -64,8 +64,8 @@ class EventQueue {
 		eventQueueDispatcher.createDelegate('enqueueDoKeyInput', this);
 		eventQueueDispatcher.createDelegate('enqueueDoClickHandlerAction', this);
 		eventQueueDispatcher.createDelegate('enqueueImportantTopLevelRender', this);
-		eventQueueDispatcher.createDelegate('enqueueDeferredFulfill', this);
-		eventQueueDispatcher.createDelegate('enqueueDeferredFulfillWithRepeat', this);
+		eventQueueDispatcher.createDelegate('enqueueDeferredFinish', this);
+		eventQueueDispatcher.createDelegate('enqueueDeferredSettle', this);
 		eventQueueDispatcher.createDelegate('enqueueRenotifyDeferredListeners', this);
 		eventQueueDispatcher.createDelegate('enqueueTopLevelRender', this);
 		eventQueueDispatcher.createDelegate('enqueueGC', this);
@@ -181,15 +181,15 @@ class EventQueue {
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
-	enqueueDeferredFulfill(deferred, result) {
-		EVENT_DEBUG ? console.log('enqueueing: DeferredFulfill'):null;
+	enqueueDeferredFinish(deferred, result) {
+		EVENT_DEBUG ? console.log('enqueueing: DeferredFinish'):null;
 		let item = {
-			action: "deferredFulfill",
+			action: "deferredFinish",
 			deferred: deferred,
 			result: result,
 			shouldDedupe: false,
 			equals: null, // not needed when shouldDedupe = false
-			do: function doDeferredFulfill() {
+			do: function doDeferredFinish() {
 				this.deferred.finish(this.result);
 			}
 		};
@@ -197,16 +197,16 @@ class EventQueue {
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
-	enqueueDeferredFulfillWithRepeat(deferred, result) {
-		EVENT_DEBUG ? console.log('enqueueing: DeferredFulfillWithRepeat'):null;
+	enqueueDeferredSettle(deferred, result) {
+		EVENT_DEBUG ? console.log('enqueueing: DeferredSettle'):null;
 		let item = {
-			action: "deferredFulfillWithRepeat",
+			action: "deferredSettle",
 			deferred: deferred,
 			result: result,
 			shouldDedupe: false,
 			equals: null, // not needed when shouldDedupe = false
-			do: function doDeferredFulfillWithRepeat() {
-				this.deferred.finishWithRepeat(this.result);
+			do: function doDeferredSettle() {
+				this.deferred.settle(this.result);
 			}
 		};
 		this.queueSet[DEFERRED_PRIORITY].push(item);

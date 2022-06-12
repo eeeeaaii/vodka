@@ -34,7 +34,8 @@ import {
 	DelayActivationFunctionGenerator,
 	ClickActivationFunctionGenerator,
 	OnContentsChangedActivationFunctionGenerator,
-	CallbackActivationFunctionGenerator
+	CallbackActivationFunctionGenerator,
+	OnNextRenderActivationFunctionGenerator
 } from '../asyncfunctions.js'
 
 
@@ -64,7 +65,9 @@ function createAsyncBuiltins() {
 			let dv = env.lb('dv');
 			let result = env.lb('result')
 			if (result == UNBOUND) {
-				result = new Nil();
+				// if we finish with a Nil, Nil replaces the contents
+				// but if we pass null, then the dv will keep the contents.
+				result = null;
 			}
 			dv.startSettle(result);
 			return dv;
@@ -73,18 +76,20 @@ function createAsyncBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'fulfill',
+		'finish',
 		[ 'dv*', 'result?'],
 		function settle(env, executionEnvironment) {
 			let dv = env.lb('dv');
 			let result = env.lb('result')
 			if (result == UNBOUND) {
-				result = new Nil();
+				// if we finish with a Nil, Nil replaces the contents
+				// but if we pass null, then the dv will keep the contents.
+				result = null;
 			}
-			dv.startFulfill(result);
+			dv.startFinish(result);
 			return dv;
 		},
-		'Fulfills the deferred value.'
+		'Finishes the deferred value.'
 	);
 
 	Builtin.createBuiltin(
@@ -101,18 +106,23 @@ function createAsyncBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'wait-forever',
-		[ ],
-		function $setCallback(env, executionEnvironment) {
+		'wait',
+		[ 'nex?' ],
+		function $wait(env, executionEnvironment) {
 			let nex = env.lb('nex');
 			let dv = new DeferredValue();
 			let afg = new CallbackActivationFunctionGenerator(nex);
 			dv.set(afg);
 			dv.activate();
+			if (nex != UNBOUND) {
+				dv.appendChild(nex);
+			}
 			return dv;
 		},
-		'Returns a deferred value that waits forever until manually settled or fulfilled.'
+		'Returns a deferred value that waits forever until manually settled or finished. If passed in, |nex will be the initial contents of the deferred value.'
 	);
+	Builtin.aliasBuiltin('wait-forever', 'wait');
+
 
 
 	Builtin.createBuiltin(
@@ -122,6 +132,7 @@ function createAsyncBuiltins() {
 			let nex = env.lb('nex');
 			let dv = new DeferredValue();
 			let afg = new ClickActivationFunctionGenerator(nex);
+			dv.appendChild(nex);
 			dv.set(afg);
 			dv.activate();
 			return dv;
@@ -160,6 +171,20 @@ function createAsyncBuiltins() {
 		'Returns a deferred value that settles when contents of |nex are changed.'
 	);
 
+	Builtin.createBuiltin(
+		'wait-for-next-render',
+		[ 'nex' ],
+		function $waitForNextRender(env, executionEnvironment) {
+			let nex = env.lb('nex');
+			let dv = new DeferredValue();
+			dv.appendChild(nex);
+			let afg = new OnNextRenderActivationFunctionGenerator(nex);
+			dv.set(afg);
+			dv.activate();
+			return dv;
+		},
+		'Returns a deferred value that finishes the next time |nex is rendered to the screen.'
+	);
 }
 
 export { createAsyncBuiltins }

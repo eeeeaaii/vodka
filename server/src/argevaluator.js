@@ -22,6 +22,10 @@ import { Org } from './nex/org.js'
 import { EError } from './nex/eerror.js'
 import { ERROR_TYPE_FATAL} from './nex/eerror.js'
 
+const ARGRESULT_ALREADY_PROCESSED = 0;
+const ARGRESULT_FINISHED = 1;
+const ARGRESULT_SETTLED = 2;
+const ARGRESULT_LISTENING = 3;
 
 function getParameterInfo(params) {
 	let info = {};
@@ -109,50 +113,32 @@ class ArgEvaluator {
 		}
 	}
 
-	// doPackageKludge() {
-	// 	// I have to write this carefully to be both type agnostic and not call any methods
-	// 	// because types have not actually been checked yet, and the user could have passed
-	// 	// in totally wrong arguments to the package command.
-	// 	let symbol = 0;
-	// 	for (let i = 0 ; i < this.argContainer.numArgs(); i++) {
-	// 		if (i == 0) {
-	// 			symbol = this.argContainer.getArgAt(i).getNex();
-	// 		} else {
-	// 			this.argContainer.getArgAt(i).setPossiblePackageNameSymbol(symbol);
-	// 		}
-	// 	}
-	// }
-
 	processSingleArg(i) {
 		let param = this.effectiveParams[i];
-		let expectedType = param.type;
 		let arg = this.argContainer.getArgAt(i);
 		let argnex = arg.getNex();
 		if (!param.skipeval) {
-			// let previousKludge = null;
-			// let hasSymbol = arg.hasPackageSymbol();
-			// if (hasSymbol) {
-			// 	previousKludge = this.executionEnvironment.getPackageKludge();
-			// 	this.executionEnvironment.setPackageKludge(arg.getPackageSymbol());
-			// }
 			argnex = evaluateNexSafely(argnex, this.executionEnvironment, param.skipactivate);
-			// if (hasSymbol) {
-			// 	this.executionEnvironment.setPackageKludge(previousKludge);
-			// }
 			if (Utils.isFatalError(argnex)) {
 				throw wrapError('&szlig;', `when calling ${this.name}: fatal error in argument ${i + 1} (expected type ${param.type}), cannot continue. Sorry!`, argnex);
 			}
 		}
-		let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[expectedType](argnex);
 
+		this.checkType(argnex, param, i);
+
+		arg.setNex(argnex);
+	}
+
+	checkType(argnex, param, i) {
+		let expectedType = param.type;
+		let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[expectedType](argnex);
 		if (!typeChecksOut) {
 			if (argnex.getTypeName() == '-error-') {
 				throw wrapError('&szlig;', `when calling ${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, argnex);
 			} else {
 				throw new EError(`when calling ${this.name}: stopping because expected ${expectedType} for argnex ${i + 1} but got ${argnex.getTypeName()}. Sorry!`);
 			}
-		}
-		arg.setNex(argnex);
+		}		
 	}
 
 
@@ -160,10 +146,17 @@ class ArgEvaluator {
 	processSinglePotentiallyDeferredArg(i, listener) {
 		let arg = this.argContainer.getArgAt(i);
 		if (arg.isProcessed()) {
-			return true; // keep going
+			return ARGRESULT_ALREADY_PROCESSED; // keep going
 		}
 		let param = this.effectiveParams[i];
 		let argnex = arg.getNex();
+
+		if (Utils.isDeferredValue(argnex) && argnex.isSettled() && !argnex.isFinished()) {
+			let subargnex = argnex.getSettledValue();
+			this.checkType(subargnex, param, i);
+			arg.setSubstituteValue(subargnex);
+			return ARGRESULT_SETTLED;
+		}
 
 		if (!param.skipeval) {
 			argnex = evaluateNexSafely(argnex, this.executionEnvironment, param.skipactivate);
@@ -173,21 +166,14 @@ class ArgEvaluator {
 			}
 			if (Utils.isDeferredValue(argnex)) {
 				argnex.addListener(listener);
-				return false; // stop and wait
+				return ARGRESULT_LISTENING;
 			}
 		}
 
-		let expectedType = param.type;
-		let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[expectedType](argnex);
-		if (!typeChecksOut) {
-			if (argnex.getTypeName() == '-error-') {
-				throw wrapError('&szlig;', `when calling ${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, argnex);
-			} else {
-				throw new EError(`when calling ${this.name}: stopping because expected ${expectedType} for argnex ${i + 1} but got ${argnex.getTypeName()}. Sorry!`);
-			}
-		}
+		this.checkType(argnex, param, i);
+
 		arg.setProcessed(true);
-		return true;
+		return ARGRESULT_FINISHED;
 	}
 
 	processArgs() {
@@ -199,13 +185,28 @@ class ArgEvaluator {
 	processPotentiallyDeferredArgs(listener) {
 		let lastIndex = this.argContainer.numArgs();
 		let i = 0;
+		let foundSettled = false;
+		let result = null;
 		for (; i < lastIndex; i++) {
-			let shouldContinue = this.processSinglePotentiallyDeferredArg(i, listener);
-			if (!shouldContinue) {
+			result = this.processSinglePotentiallyDeferredArg(i, listener);
+			if (result == ARGRESULT_LISTENING) {
 				break;
 			}
+			if (result == ARGRESULT_SETTLED) {
+				foundSettled = true;
+			}
 		}
-		return (i == lastIndex);
+		if (i == lastIndex) {
+			// we got to the end, but the last argument might not be settled or finished.
+			if (result == ARGRESULT_LISTENING) {
+				return result;
+			} else {
+				return foundSettled ? ARGRESULT_SETTLED : ARGRESULT_FINISHED;
+			}
+		} else {
+			return ARGRESULT_LISTENING;
+		}
+		return r;
 	}
 
 	putArgsInJSArray() {
@@ -235,15 +236,15 @@ class ArgEvaluator {
 			if (param.variadic) {
 				let org = new Org();
 				for (let j = i; j < this.argContainer.numArgs(); j++) {
-					org.appendChild(this.argContainer.getArgAt(j).getNex());
+					org.appendChild(this.argContainer.getArgAt(j).getNexOrSubstitute());
 				}
 				scope.bind(param.name, org);
 			} else if (param.optional) {
 				if (i < this.argContainer.numArgs()) {
-					scope.bind(param.name, this.argContainer.getArgAt(i).getNex());
+					scope.bind(param.name, this.argContainer.getArgAt(i).getNexOrSubstitute());
 				}
 			} else {
-				scope.bind(param.name, this.argContainer.getArgAt(i).getNex());
+				scope.bind(param.name, this.argContainer.getArgAt(i).getNexOrSubstitute());
 			}
 		}
 	}
@@ -252,9 +253,6 @@ class ArgEvaluator {
 		this.checkMinNumArgs();
 		this.padEffectiveParams();
 		this.checkMaxNumArgs();
-		// if (cmdname == 'package') {
-		// 	this.doPackageKludge();
-		// }
 		this.prepared = true;	
 	}
 
@@ -297,5 +295,5 @@ ArgEvaluator.ARG_VALIDATORS = {
 	'Closure': arg => (arg.getTypeName() == '-closure-'),
 };
 
-export { ArgEvaluator, getParameterInfo }
+export { ArgEvaluator, getParameterInfo, ARGRESULT_LISTENING, ARGRESULT_SETTLED, ARGRESULT_FINISHED }
 

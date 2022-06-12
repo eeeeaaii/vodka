@@ -18,6 +18,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 // DeferredValue acts like an atomic value but it's actually a container.
 
+import * as Utils from '../utils.js'
+
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { NexContainer } from './nexcontainer.js'
 import { Nil } from './nil.js'
@@ -25,25 +27,30 @@ import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js
 import { gc, getFFGen } from '../gc.js'
 import { experiments } from '../globalappflags.js'
 
+const DVSTATE_CANCELLED = 0;
+const DVSTATE_NEW = 1;
+const DVSTATE_ACTIVATED = 2;
+const DVSTATE_SETTLED = 3;
+const DVSTATE_FINISHED = 4;
+
+
 class DeferredValue extends NexContainer {
 	constructor() {
 		super();
 		this.privateData = '';
 		this.mutable = false;
 		this.activationFunctionGenerator = null;
-		this._set = false;
-		this._activated = false;
-		this._settled = false;
-		this._finished = false;
-
 		this.listeners = [];
 
-		this._cancelled = false;
+		this.state = DVSTATE_NEW;
 
 		gc.register(this);
 	}
 
 	addListener(obj) {
+		if (this.hasListener(obj)) {
+			return;
+		}
 		this.listeners.push(obj);
 		if (this._finished) {
 			eventQueueDispatcher.enqueueRenotifyDeferredListeners(this);
@@ -67,23 +74,19 @@ class DeferredValue extends NexContainer {
 
 	cancel() {
 		this.ffgen--;
-		this._cancelled = true;
+		this.state = DVSTATE_CANCELLED;
 	}
 
 	isActivated() {
-		return this._activated;
+		return this.state >= DVSTATE_ACTIVATED;
 	}
 
 	isSettled() {
-		return this._settled;
+		return this.state >= DVSTATE_SETTLED;
 	}
 
 	isFinished() {
-		return this._finished;
-	}
-
-	isSet() {
-		return this._set;
+		return this.state >= DVSTATE_FINISHED;
 	}
 
 	toString(version) {
@@ -106,11 +109,22 @@ class DeferredValue extends NexContainer {
 	// rename this
 	set(activationFunctionGenerator) {
 		this.activationFunctionGenerator = activationFunctionGenerator;
-		this._set = true;
 		this.ffgen = getFFGen();
 	}
 
-	finish(value, doRepeat) {
+	finish(value) {
+		this.finishOrSettle(value, false);
+	}
+
+	settle(value) {
+		this.finishOrSettle(value, true);
+	}
+
+	finishOrSettle(value, justSettling) {
+		if (this.isFinished()) {
+			// can't finish twice, can't settle after finishing.
+			return;
+		}
 		if (this.ffgen < getFFGen()) {
 			// either this was cancelled or all pending deferreds were cancelled.
 			this._cancelled = true;
@@ -125,8 +139,7 @@ class DeferredValue extends NexContainer {
 				this.replaceChildAt(value, 0);
 			}
 		}
-		this._settled = true;
-		this._finished = !doRepeat;
+		this.state = justSettling ? DVSTATE_SETTLED : DVSTATE_FINISHED;
 		this.doAlertAnimation();
 		this.notifyAllListeners();
 	}
@@ -136,20 +149,18 @@ class DeferredValue extends NexContainer {
 	}
 
 	startSettle(value) {
-		eventQueueDispatcher.enqueueDeferredFulfillWithRepeat(this, value);
+		eventQueueDispatcher.enqueueDeferredSettle(this, value);
 	}
 
-	startFulfill(value) {
-		eventQueueDispatcher.enqueueDeferredFulfill(this, value);
+	startFinish(value) {
+		eventQueueDispatcher.enqueueDeferredFinish(this, value);
 	}
 
 	activate() {
-		this.activationFunctionGenerator.getFunction(function(value) {
-			this.startFulfill(value);
-		}.bind(this), function(value) {
-			this.startSettle(value);
-		}.bind(this), this)();
-		this._activated = true;
+		let finishCallback = ((value) => this.startFinish(value));
+		let settleCallback = ((value) => this.startSettle(value));
+		this.activationFunctionGenerator.getFunction(finishCallback, settleCallback, this)();
+		this.state = DVSTATE_ACTIVATED;
 	}
 
 	prettyPrintInternal(lvl, hdir) {
@@ -187,18 +198,32 @@ class DeferredValue extends NexContainer {
 		super.copyFieldsTo(nex);
 	}
 
+	getSettledValue() {
+		if (this.numChildren() > 0) {
+			return this.getChildAt(0);
+		} else {
+			return new Nil();
+		}
+	}
+
 	evaluate(env) {
-		if (!this._activated) {
+		if (!this.isActivated()) {
 			this.activate();
 			return this;
 		}
-		if (this._settled) {
+		if (this.isFinished()) {
 			if (this.numChildren() > 0) {
-				return this.getChildAt(0);
+				let c = this.getChildAt(0);
+				if (Utils.isDeferredValue(c) && c.isFinished()) {
+					return c.evaluate(env);
+				} else {
+					return c;
+				}
 			} else {
 				return new Nil();
 			}
 		}
+		// if just settled, but not finished, return this.
 		return this;
 	}
 
@@ -232,16 +257,29 @@ class DeferredValue extends NexContainer {
 				dotspan.classList.remove('editing');
 			}
 
-			if (this._cancelled) {
-				dotspan.innerHTML = '<span class="settledglyph">⤬</span>'
-			} else if (this._activated && !this._finished) {
-				if (experiments.STATIC_PIPS) {
-					dotspan.innerHTML = '<span class="waitingglyph">↻</span>'
-				} else {
-					dotspan.innerHTML = '<span class="waitingglyph dvspin">↻</span>'
-				}
-			} else {
-				dotspan.innerHTML = '<span class="settledglyph">⤓</span>'
+
+			switch(this.state) {
+				case DVSTATE_CANCELLED:
+					dotspan.innerHTML = '<span class="dvglyph cancelledglyph">⤬</span>'
+					break;
+				case DVSTATE_ACTIVATED:
+					if (experiments.STATIC_PIPS) {
+						dotspan.innerHTML = '<span class="dvglyph waitingglyph">↻</span>'
+					} else {
+						dotspan.innerHTML = '<span class="dvglyph waitingglyph dvspin">↻</span>'
+					}
+					break;
+				case DVSTATE_SETTLED:
+					dotspan.innerHTML = '<span class="dvglyph settledglyph">⬿</span>'
+					break;
+				case DVSTATE_FINISHED:
+					dotspan.innerHTML = '<span class="dvglyph finishedglyph">⤓</span>'
+					break;
+				case DVSTATE_NEW:
+				default:
+					// shouldn't happen
+					dotspan.innerHTML = '<span class="dvglyph newglyph">?</span>'
+					break;
 			}
 		}
 	}

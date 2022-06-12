@@ -37,7 +37,7 @@ class DeferredCommandActivationFunctionGenerator extends ActivationFunctionGener
 		this.env = env;
 	}
 
-	getFunction(callback, repeatCallback, exp) {
+	getFunction(finishCallback, settleCallback, exp) {
 		return function() {
 			this.deferredCommand.activate(this.env);
 		}.bind(this);
@@ -56,9 +56,9 @@ class GenericActivationFunctionGenerator extends ActivationFunctionGenerator {
 		this.asyncFunction = asyncFunction;
 	}
 
-	getFunction(callback, repeatCallback, exp) {
+	getFunction(finishCallback, settleCallback, exp) {
 		return function() {
-			this.asyncFunction(callback, exp);
+			this.asyncFunction(finishCallback, exp);
 		}.bind(this);
 	}
 
@@ -69,9 +69,9 @@ class GenericActivationFunctionGenerator extends ActivationFunctionGenerator {
 
 
 class ImmediateActivationFunctionGenerator extends ActivationFunctionGenerator {
-	getFunction(callback, repeatCallback, exp) {
+	getFunction(finishCallback, settleCallback, exp) {
 		return function() {
-			callback(null);
+			finishCallback(null);
 		}
 	}
 
@@ -86,11 +86,30 @@ class DelayActivationFunctionGenerator extends ActivationFunctionGenerator {
 		this.timeout = timeout;
 	}
 
-	getFunction(callback, repeatCallback, exp) {
+	getFunction(finishCallback, settleCallback, exp) {
 		return function() {
 			setTimeout(function() {
-				callback(null /* do not set a value, the default is whatever the child is of the exp */);
+				finishCallback(null /* do not set a value, the default is whatever the child is of the exp */);
 			}, this.timeout)
+		}.bind(this);
+	}
+
+	getName() {
+		return 'delay';
+	}
+}
+
+class OnNextRenderActivationFunctionGenerator extends ActivationFunctionGenerator {
+	constructor(nex) {
+		super();
+		this.nex = nex;
+	}
+
+	getFunction(finishCallback, settleCallback, exp) {
+		return function() {
+			this.nex.setOnNextRenderCallback(function() {
+				finishCallback(this.nex);
+			}.bind(this));
 		}.bind(this);
 	}
 
@@ -105,7 +124,7 @@ class CallbackActivationFunctionGenerator extends ActivationFunctionGenerator {
 		this.closure = closure;
 	}
 
-	getFunction(callback, repeatCallback, exp) {
+	getFunction(finishCallback, settleCallback, exp) {
 		return function() {
 			// no op, the dv has to be manually resolved.
 		}.bind(this);
@@ -123,11 +142,11 @@ class ClickActivationFunctionGenerator extends ActivationFunctionGenerator {
 		this.nex = nex;
 	}
 
-	getFunction(callback, repeatCallback, exp) {
+	getFunction(finishCallback, settleCallback, exp) {
 		return function() {
 			this.nex.extraClickHandler = function(x, y) {
 				let org = convertJSMapToOrg({'x':x, 'y':y});
-				repeatCallback(org);
+				settleCallback(org);
 			}
 		}.bind(this);
 	}
@@ -145,8 +164,8 @@ class MidiActivationFunctionGenerator extends ActivationFunctionGenerator {
 		this.expListeners = [];
 	}
 
-	getFunction(callback, repeatCallback, exp) {
-		this.expListeners.push(repeatCallback);
+	getFunction(finishCallback, settleCallback, exp) {
+		this.expListeners.push(settleCallback);
 		return function() {
 			if (!this.listening) {
 				this.listening = true;
@@ -170,10 +189,10 @@ class OnContentsChangedActivationFunctionGenerator extends ActivationFunctionGen
 		this.nex = nex;
 	}
 
-	getFunction(callback, repeatCallback, exp) {
+	getFunction(finishCallback, settleCallback, exp) {
 		return function() {
 			this.nex.onContentsChangedCallback = function() {
-				repeatCallback();
+				settleCallback();
 			}
 		}.bind(this);
 	}
@@ -191,6 +210,7 @@ export {
 	MidiActivationFunctionGenerator,
 	DeferredCommandActivationFunctionGenerator,
 	OnContentsChangedActivationFunctionGenerator,
-	CallbackActivationFunctionGenerator
+	CallbackActivationFunctionGenerator,
+	OnNextRenderActivationFunctionGenerator
 }
 

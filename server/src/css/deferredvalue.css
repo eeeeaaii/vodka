@@ -87,10 +87,13 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 }
 
-.waitingglyph {
+.dvglyph {
   display: block;
-  height: 25px;
   align-self: center;
+  height: 25px;	
+}
+
+.waitingglyph {
   transform-origin: 50% 55%;
 }
 
@@ -98,11 +101,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
   animation: deferredspin 2s linear infinite;
 }
 
-.settledglyph {
+.finishedglyph {
 	font-size: 1.3em;
-  display: block;
-  align-self: center;
-  height: 25px;
 }
 
 

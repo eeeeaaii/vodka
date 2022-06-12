@@ -113,6 +113,18 @@ class Nex {
 
 	rootLevelPostEvaluationStep() {}
 
+	setOnNextRenderCallback(callback) {
+		this.onNextRenderCallback = callback;
+	}
+
+	doOnNextRenderCallback() {
+		if (this.onNextRenderCallback) {
+			let t = this.onNextRenderCallback;
+			this.onNextRenderCallback = null;
+			t();
+		}
+	}
+
 	setMutable(val) {
 		this.mutable = val;
 	}
@@ -249,6 +261,9 @@ class Nex {
 			this.lastRenderPassNumber = systemState.getGlobalRenderPassNumber();
 			// for now we assume there will be only one render,
 			// do not prepend.
+
+			// also do this callback, if it exists
+			this.doOnNextRenderCallback();
 		}
 	}
 

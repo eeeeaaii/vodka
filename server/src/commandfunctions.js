@@ -31,6 +31,7 @@ class Arg {
 		this.processed = false;
 		this.ref = null;
 		this.refindex = null;
+		this.substituteValue = null;
 	}
 
 	makeUpdating(ref, refindex) {
@@ -46,21 +47,26 @@ class Arg {
 		this.processed = v;
 	}
 
+	getNexOrSubstitute() {
+		if (this.substituteValue) {
+			return this.substituteValue;
+		} else {
+			return this.nex;
+		}
+	}
+
 	getNex() {
 		return this.nex;
 	}
 
-	// setPossiblePackageNameSymbol(symbol) {
-	// 	this.packageSymbol = symbol;
-	// }
+	// sometimes we use a different value (settled dv's)
+	setSubstituteValue(n) {
+		this.substituteValue = n;
+	}
 
-	// hasPackageSymbol() {
-	// 	return !!this.packageSymbol;
-	// }
-
-	// getPackageSymbol() {
-	// 	return this.packageSymbol;
-	// }
+	hasSubstituteValue() {
+		return this.substituteValue != null;
+	}
 
 	setNex(n) {
 		this.nex = n;
