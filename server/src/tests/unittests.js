@@ -169,10 +169,10 @@ function TEST_eventqueue_priority_inverseordering() {
 	eventQueueDispatcher.enqueueGC();
 	eventQueueDispatcher.enqueueAlertAnimation(obj);
 	eventQueueDispatcher.enqueueRenderOnlyDirty();
-	eventQueueDispatcher.enqueueDeferredFulfill(obj, obj)
+	eventQueueDispatcher.enqueueDeferredFinish(obj, obj)
 	eventQueueDispatcher.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
 	assertEqual(eventQueue.retrieveNextItem().action, 'doKeyInput');
-	assertEqual(eventQueue.retrieveNextItem().action, 'deferredFulfill');
+	assertEqual(eventQueue.retrieveNextItem().action, 'deferredFinish');
 	assertEqual(eventQueue.retrieveNextItem().action, 'renderOnlyDirty');
 	assertEqual(eventQueue.retrieveNextItem().action, 'doAlertAnimation');
 	assertEqual(eventQueue.retrieveNextItem().action, 'gc');
@@ -184,10 +184,10 @@ function TEST_eventqueue_priority_addedwhiledequeueing() {
 	eventQueueDispatcher.enqueueGC();
 	eventQueueDispatcher.enqueueAlertAnimation(obj);
 	eventQueueDispatcher.enqueueRenderOnlyDirty();
-	eventQueueDispatcher.enqueueDeferredFulfill(obj, obj)
+	eventQueueDispatcher.enqueueDeferredFinish(obj, obj)
 	eventQueueDispatcher.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
 	assertEqual(eventQueue.retrieveNextItem().action, 'doKeyInput');
-	assertEqual(eventQueue.retrieveNextItem().action, 'deferredFulfill');
+	assertEqual(eventQueue.retrieveNextItem().action, 'deferredFinish');
 	eventQueueDispatcher.enqueueDoKeyInput(obj, obj, obj, obj, obj, obj);
 	assertEqual(eventQueue.retrieveNextItem().action, 'doKeyInput');
 	assertEqual(eventQueue.retrieveNextItem().action, 'renderOnlyDirty');
@@ -200,10 +200,10 @@ function TEST_eventqueue_priority_inverseordering2() {
 	eventQueueDispatcher.enqueueGC();
 	eventQueueDispatcher.enqueueAlertAnimation(obj);
 	eventQueueDispatcher.enqueueTopLevelRender();
-	eventQueueDispatcher.enqueueDeferredFulfill(obj, obj)
+	eventQueueDispatcher.enqueueDeferredFinish(obj, obj)
 	eventQueueDispatcher.enqueueDoClickHandlerAction(obj, obj, obj);
 	assertEqual(eventQueue.retrieveNextItem().action, 'doClickHandlerAction');
-	assertEqual(eventQueue.retrieveNextItem().action, 'deferredFulfill');
+	assertEqual(eventQueue.retrieveNextItem().action, 'deferredFinish');
 	assertEqual(eventQueue.retrieveNextItem().action, 'topLevelRender');
 	assertEqual(eventQueue.retrieveNextItem().action, 'doAlertAnimation');
 	assertEqual(eventQueue.retrieveNextItem().action, 'gc');

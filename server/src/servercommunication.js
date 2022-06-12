@@ -154,28 +154,34 @@ expected: ${e.expected[0].type}
 }
 
 function evaluatePackage(nex) {
-	// if (!(nex.getTypeName() == '-command-'
-	// 			&& (nex.getCommandName() == 'package'
-	// 			|| nex.getCommandName() == 'template'))) {
-	// 	let r = new EError('Can only import packages or templates, see file contents')
-	// 	return r;
-	// }
+	if (!(nex.getTypeName() == '-command-'
+				&& (nex.getCommandName() == 'package'
+				|| nex.getCommandName() == 'template'))) {
+		let r = new EError('Can only import packages or templates, see file contents')
+		return r;
+	}
 	let result = evaluateNexSafely(nex, BINDINGS);
 	return result;
+
+	// this doesn't work because it returns a deferred value not an error.
+	// the dv gets fulfilled with an error if the package fails.
 
 	// let r = null;
 	// if (result.getTypeName() == '-error-'
 	// 		&& result.getErrorType() == ERROR_TYPE_FATAL) {
 	// 	r = new EError("Import failed.");
+	// 	r.appendChild(result);
 	// 	r.setErrorType(ERROR_TYPE_FATAL);
 	// 	return r;
 	// } else if (result.getTypeName() == '-error-'
 	// 		&& result.getErrorType() == ERROR_TYPE_WARN) {
 	// 	r = new EError("Import succeeded with warnings.");
+	// 	r.appendChild(result);
 	// 	r.setErrorType(ERROR_TYPE_WARN);
 	// 	return r;
 	// } else {
 	// 	r = new EError("Import successful.");
+	// 	r.appendChild(result);
 	// 	r.setErrorType(ERROR_TYPE_INFO);		
 	// 	return r;
 	// }

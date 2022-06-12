@@ -19,7 +19,104 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testname// saveload_separator
 //startdescription//
 /*
-save load separator
+save load sep
 */
 //enddescription//
- [separator]";"
+//testspec// |Shift|~|s|a|v|e|Shift|@|t|Shift|{|;|Meta|x|ArrowLeft|Shift|Tab|Meta|v|ArrowLeft|Shift|Tab|Shift|Backspace|Shift|Tab|Enter|Enter|l|o|a|d|Shift|@|t|Shift|Tab|Enter|Enter
+//starttest//
+var harness = require('../testharness');
+
+var testactions = [];
+
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Backquote'});
+testactions.push({type:'keyup',code:'Backquote'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'KeyS'});
+testactions.push({type:'keyup',code:'KeyS'});
+testactions.push({type:'keydown',code:'KeyA'});
+testactions.push({type:'keyup',code:'KeyA'});
+testactions.push({type:'keydown',code:'KeyV'});
+testactions.push({type:'keyup',code:'KeyV'});
+testactions.push({type:'keydown',code:'KeyE'});
+testactions.push({type:'keyup',code:'KeyE'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Digit2'});
+testactions.push({type:'keyup',code:'Digit2'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'KeyT'});
+testactions.push({type:'keyup',code:'KeyT'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'BracketLeft'});
+testactions.push({type:'keyup',code:'BracketLeft'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Semicolon'});
+testactions.push({type:'keyup',code:'Semicolon'});
+testactions.push({type:'keydown',code:'MetaRight'});
+testactions.push({type:'keydown',code:'KeyX'});
+testactions.push({type:'keyup',code:'MetaRight'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+testactions.push({type:'keyup',code:'ArrowLeft'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Tab'});
+testactions.push({type:'keyup',code:'Tab'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'MetaRight'});
+testactions.push({type:'keydown',code:'KeyV'});
+testactions.push({type:'keyup',code:'MetaRight'});
+testactions.push({type:'keydown',code:'ArrowLeft'});
+testactions.push({type:'keyup',code:'ArrowLeft'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Tab'});
+testactions.push({type:'keyup',code:'Tab'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'Backspace'});
+testactions.push({type:'keyup',code:'Backspace'});
+testactions.push({type:'keyup',code:'ShiftLeft'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Tab'});
+testactions.push({type:'keyup',code:'Tab'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keydown',code:'KeyL'});
+testactions.push({type:'keyup',code:'KeyL'});
+testactions.push({type:'keydown',code:'KeyO'});
+testactions.push({type:'keydown',code:'KeyA'});
+testactions.push({type:'keydown',code:'KeyD'});
+testactions.push({type:'keyup',code:'KeyO'});
+testactions.push({type:'keyup',code:'KeyA'});
+testactions.push({type:'keyup',code:'KeyD'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Digit2'});
+testactions.push({type:'keyup',code:'Digit2'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'KeyT'});
+testactions.push({type:'keyup',code:'KeyT'});
+testactions.push({type:'keydown',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Tab'});
+testactions.push({type:'keyup',code:'Tab'});
+testactions.push({type:'keyup',code:'ShiftRight'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
+
+const experiment_flags = {
+"DISABLE_ALERT_ANIMATIONS":true,
+"MAX_RENDER_DEPTH":100,
+"NO_SPLASH":true,
+"V2_INSERTION_LENIENT_DOC_FORMAT":false,
+"ASM_RUNTIME":false,
+"OLD_ARROW_KEY_TRAVERSAL":false,
+"ERRORS_REPLACE":true,
+"STATIC_PIPS":true,
+"SHOULD_REVERT_TO_CANONICAL_NAME":false
+};
+	
+
+harness.runTestWithFlags(testactions, 'direct', experiment_flags);
+//endtest//

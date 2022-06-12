@@ -120,7 +120,6 @@ testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
 testactions.push({type:'click',x:'48',y:'12'});
 testactions.push({type:'click',x:'48',y:'12'});
-testactions.push({type:'pause',length:1000});
 
 const experiment_flags = {
 "DISABLE_ALERT_ANIMATIONS":true,

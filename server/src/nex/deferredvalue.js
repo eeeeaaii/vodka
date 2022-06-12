@@ -140,7 +140,9 @@ class DeferredValue extends NexContainer {
 			}
 		}
 		this.state = justSettling ? DVSTATE_SETTLED : DVSTATE_FINISHED;
-		this.doAlertAnimation();
+		if (!experiments.DISABLE_ALERT_ANIMATIONS) {
+			this.doAlertAnimation();
+		}
 		this.notifyAllListeners();
 	}
 
