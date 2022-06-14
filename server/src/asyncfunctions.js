@@ -202,6 +202,7 @@ class OnContentsChangedActivationFunctionGenerator extends ActivationFunctionGen
 	}
 }
 
+
 export {
 	ImmediateActivationFunctionGenerator,
 	DelayActivationFunctionGenerator,

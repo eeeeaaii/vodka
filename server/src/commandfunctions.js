@@ -143,7 +143,6 @@ function executeRunInfo(runInfo, executionEnv) {
 		let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[runInfo.expectedReturnType.type](result);
 		if (!typeChecksOut) {
 			result = new EError(`${runInfo.cmdname}: should return ${runInfo.expectedReturnType.type} but returned ${result.getTypeName()}`);
-
 		}
 	}
 

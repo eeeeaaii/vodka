@@ -22,11 +22,16 @@ function setNextNexId(val) {
 }
 import { systemState } from '../systemstate.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
-import { RENDER_FLAG_SELECTED, RENDER_FLAG_SHALLOW, RENDER_FLAG_NORMAL, RENDER_FLAG_RERENDER, RENDER_FLAG_EXPLODED, RENDER_FLAG_DEPTH_EXCEEDED } from '../globalconstants.js'
+import { RENDER_FLAG_SELECTED,
+		 RENDER_FLAG_SHALLOW,
+		 RENDER_FLAG_NORMAL,
+		 RENDER_FLAG_RERENDER,
+		 RENDER_FLAG_EXPLODED,
+		 RENDER_FLAG_DEPTH_EXCEEDED,
+		 RENDER_MODE_INHERIT } from '../globalconstants.js'
 import { possiblyRecordAction } from '../testrecorder.js'
 import { doTutorial } from '../help.js'
 import { Tag } from '../tag.js'
-
 /**
  * This is the parent class for all nexes, aka pieces of vodka code, aka s-expressions.
  */
@@ -52,6 +57,7 @@ class Nex {
 		this.dirtyForRendering = true;
 		this.mutable = true;
 		this.clickActive = true;
+		this.modeHint = RENDER_MODE_INHERIT;
 	}
 
     /**
@@ -95,6 +101,14 @@ class Nex {
 	prettyPrintInternal(lvl, hdir) {
 		let str = this.debugString();
 		return this.doTabs(lvl, hdir) + str;// exp // + '\n';
+	}
+
+	setModeHint(m) {
+		this.modeHint = m;
+	}
+
+	getModeHint() {
+		return this.modeHint;
 	}
 
 	escape(str, skipNbsp) {

@@ -34,6 +34,13 @@ import { experiments } from '../globalappflags.js'
 import {
 	GenericActivationFunctionGenerator
 } from '../asyncfunctions.js'
+import {
+	RENDER_MODE_NORM,
+	RENDER_MODE_EXPLO,
+	RENDER_MODE_INHERIT,
+} from '../globalconstants.js'
+
+
 
 import {
 	saveShortcut,
@@ -370,6 +377,32 @@ function createFileBuiltins() {
 		},
 		'Defines a package. All args in |block are evaluated, and any bindings are bound with |name as their package scope identifier.'
 	);
+
+	Builtin.createBuiltin(
+		'normal-mode',
+		[ 'nex' ],
+		function $normalMode(env, executionEnvironment) {
+			let nex = env.lb('nex');
+			nex.setModeHint(RENDER_MODE_NORM);
+			let nodes = nex.getRenderNodes();
+			nodes.forEach(node => setRenderMode(RENDER_MODE_NORM));
+			return nex;
+		},
+		'Sets the mode hint for nex so that it will render as normal by default.'
+	);	
+
+	Builtin.createBuiltin(
+		'exploded-mode',
+		[ 'nex' ],
+		function $explodedMode(env, executionEnvironment) {
+			let nex = env.lb('nex');
+			nex.setModeHint(RENDER_MODE_EXPLO);
+			let nodes = nex.getRenderNodes();
+			nodes.forEach(node => setRenderMode(RENDER_MODE_EXPLO));
+			return nex;
+		},
+		'Sets the mode hint for nex so that it will render as exploded by default.'
+	);	
 
 }
 

@@ -93,7 +93,7 @@ const experiments = {
 const otherflags = {
 	'DEFAULT_TO_PARAMETRIC_FONTS': false,
 	'DEBUG_EXPECTATIONS': false,
-	'FILE': '',
+	'FILE': '', // load and run this file at startup
 	'NO_UNDO': true,
 }
 

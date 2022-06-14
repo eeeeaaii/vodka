@@ -168,8 +168,10 @@ class DeferredCommand extends Command {
 			}
 		}
 		if (evaluationResult == ARGRESULT_SETTLED || evaluationResult == ARGRESULT_FINISHED) {
-			let executionResult = executeRunInfo(this._runInfo, this._activationEnv)
-			if (evaluationResult == ARGRESULT_SETTLED) {
+			let executionResult = executeRunInfo(this._runInfo, this._activationEnv);
+			if (Utils.isFatalError(executionResult)) {
+				this._returnedValue.finish(executionResult);
+			} else if (evaluationResult == ARGRESULT_SETTLED) {
 				this._returnedValue.settle(executionResult)
 			} else {
 				this._returnedValue.finish(executionResult)				
@@ -221,6 +223,24 @@ class DeferredCommand extends Command {
 			'ShiftBackspace': 'call-delete-handler-then-remove-selected-and-select-previous-sibling',
 		}
 	}
+
+	static makeDeferredCommandWithArgs(cmdname, maybeargs) {
+		let cmd = new DeferredCommand(cmdname);
+
+		// this little snippet lets you do varargs or array
+		let args = [];
+		if (Array.isArray(maybeargs)) {
+			args = maybeargs;
+		} else {
+			args = Array.prototype.slice.call(arguments).splice(1);
+		}
+		let appendIterator = null;
+		for (let i = 0; i < args.length; i++) {
+			appendIterator = cmd.fastAppendChildAfter(args[i], appendIterator);
+		}
+		return cmd;
+	}
+
 
 }
 

@@ -144,10 +144,6 @@ class Builtin extends Lambda {
 		BUILTINS.bind(name, nex);
 	}
 
-	// executor(lexicalEnvironment, executionEnv, commandTags) {
-	// 	return this.f(lexicalEnvironment, executionEnv, commandTags);
-	// }
-
 	getEventTable(context) {
 		return null;
 	}

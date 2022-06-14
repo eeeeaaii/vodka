@@ -46,6 +46,7 @@ import { loadAndRun } from './servercommunication.js'
 import { RenderNode } from './rendernode.js'
 import { Root } from './nex/root.js'
 import { Command } from './nex/command.js'
+import { DeferredCommand } from './nex/deferredcommand.js'
 import { EString } from './nex/estring.js'
 import { Doc } from './nex/doc.js'
 import { NEXT_NEX_ID, setNextNexId } from './nex/nex.js'
@@ -170,15 +171,14 @@ function renderOnlyDirty() {
 }
 
 function setDocRootFromFile(filename) {
-	let cmd = Command.makeCommandWithArgs(
-		"ff",
+	let cmd = DeferredCommand.makeDeferredCommandWithArgs(
+		"eval",
 		Command.makeCommandWithArgs(
 			"load",
 			new EString(filename)));
 	let exp = evaluateNexSafely(cmd, BINDINGS);
 	let expNode = root.appendChild(exp);
-	expNode.setSelected(false);
-	root.setRenderMode(RENDER_MODE_EXPLO);
+	expNode.setSelected(true);
 	systemState.setGlobalCurrentDefaultRenderFlags(0);	
 }
 
@@ -197,7 +197,7 @@ function setEmptyDocRoot() {
 }
 
 
-function setSessionId() {
+function setOrCreateSessionId() {
 	let params = new URLSearchParams(window.location.search);
 	let sessionId = null;
 	if (params.has('sessionId')) {
@@ -207,6 +207,14 @@ function setSessionId() {
 		sessionId = Utils.getCookie('sessionId');
 	}
 	systemState.setSessionId(sessionId);
+}
+
+function getFilenameFromQueryString() {
+	let params = new URLSearchParams(window.location.search);
+	if (params.has('runfile')) {
+		return params.get('runfile');
+	}
+	return null;
 }
 
 function replSetup() {
@@ -248,7 +256,7 @@ function doKeydownEvent(e) {
 function setup() {
 	setAppFlags();
 	// do session id before doing help
-	setSessionId();
+	setOrCreateSessionId();
 	macSubst();
 
 	setupHelp();
@@ -299,9 +307,15 @@ function setup() {
 		doMobileKeyDown(e);
 		return doKeydownEvent(e);
 	}
+	let filenameFromQS = getFilenameFromQueryString();
 	if (!!otherflags.FILE) {
 		setDocRootFromFile(otherflags.FILE);
+	} else if (filenameFromQS) {
+		setDocRootFromFile(filenameFromQS);
 	} else if (FEATURE_VECTOR.hasstart) {
+		// feature vector is initialized by the webserver.
+		// if hasstart is true, it means the user has added a ":start"
+		// file, meaning that it should be loaded.
 		setDocRootFromStart();
 	} else {
 		setEmptyDocRoot();

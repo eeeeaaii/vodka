@@ -28,6 +28,10 @@ import { experiments } from '../globalappflags.js'
 import { Tag } from '../tag.js'
 import { DeferredValue } from '../nex/deferredvalue.js'
 import { incFFGen } from '../gc.js'
+import { Bool } from '../nex/bool.js'; 
+import { systemState } from '../systemstate.js'
+import { evaluateNexSafely, wrapError } from '../evaluator.js'
+
 
 import {
 	ImmediateActivationFunctionGenerator,
@@ -78,7 +82,7 @@ function createAsyncBuiltins() {
 	Builtin.createBuiltin(
 		'finish',
 		[ 'dv*', 'result?'],
-		function settle(env, executionEnvironment) {
+		function $settle(env, executionEnvironment) {
 			let dv = env.lb('dv');
 			let result = env.lb('result')
 			if (result == UNBOUND) {
@@ -90,6 +94,40 @@ function createAsyncBuiltins() {
 			return dv;
 		},
 		'Finishes the deferred value.'
+	);
+
+	Builtin.createBuiltin(
+		'is-finished',
+		[ 'dv*'],
+		function $isFinished(env, executionEnvironment) {
+			let dv = env.lb('dv');
+			let isF = dv.isFinished();
+			let r = new Bool(isF);
+			return r;
+		},
+		'Returns true if the deferred value is finished.'
+	);
+
+	Builtin.createBuiltin(
+		'report-async-error',
+		[ '_dv'],
+		function $reportError(env, executionEnvironment) {
+			let dv = env.lb('dv');
+			let thing = evaluateNexSafely(dv, executionEnvironment);
+			if (Utils.isDeferredValue(thing)) {
+				thing.addListener({
+					notify: () => {
+						let z = thing.getChildAt(0);
+						if (Utils.isFatalError(z)) {
+							let r = systemState.getRoot();
+							r.prependChild(wrapError('&szlig;', 'report-async-error: error found', z));
+						}
+					}
+				})
+			}
+			return thing;
+		},
+		'If the argument evaluates to a fatal error, this function reports that error in an obvious place at the root level so the user can see it. Useful for situations where a process is computing asynchronously and may or may not return an error.'
 	);
 
 	Builtin.createBuiltin(

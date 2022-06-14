@@ -75,7 +75,7 @@ class RenderNode {
 		this.wrapperDomNodes = [];
 		this.domNode = document.createElement("div");
 
-		this.renderMode = RENDER_MODE_INHERIT;
+		this.renderMode = forNex.getModeHint();
 
 		this.isCurrentlyExploded = false;
 		this.currentEd = null;
