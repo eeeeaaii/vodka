@@ -401,13 +401,20 @@ function getSessionDirectory(sessionId, localAccessOnly) {
 function serviceApiSaveRequest(data, sessionId, cb) {
 	let i = data.indexOf('\t');
 	let nm = data.substr(0, i);
+	let isLibraryFile = nm.endsWith('-functions');
 	if (containsIllegalFilenameCharacters(nm)) {
 		cb(`v2:?"save failed (illegal filename). Sorry!"`);
 		return;
 	}
+	let sessionDirectory = getSessionDirectory(sessionId, true /*local only*/);
+	if (isLibraryFile && sessionDirectory != 'packages') {
+		cb(`v2:?"save failed: the filename suffix '-functions' is reserved for library files, but you are trying to save this in a non-library session.  Sorry!"`);
+		return;		
+	}
+	let path = `${sessionDirectory}/${nm}`;
+
 	let savedata = data.substr(i+1);
 
-	let path = `${getSessionDirectory(sessionId, true /*local only*/)}/${nm}`;
 
 	fs.writeFile(path, savedata, function(err) {
 		if (err) {
