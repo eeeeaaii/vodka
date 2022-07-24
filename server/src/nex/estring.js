@@ -27,6 +27,8 @@ import { systemState } from '../systemstate.js'
 import { RENDER_FLAG_RERENDER, RENDER_FLAG_SHALLOW } from '../globalconstants.js'
 import { Editor } from '../editors.js'
 import { experiments } from '../globalappflags.js'
+import { heap } from '../heap.js'
+import { constructFatalError } from './eerror.js'
 
 /**
  * Represents a string.
@@ -83,7 +85,7 @@ class EString extends ValueNex {
 	}
 
 	makeCopy() {
-		let r = new EString(this.getFullTypedValue(), '$', 'string');
+		let r = constructEString(this.getFullTypedValue(), '$', 'string');
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -287,6 +289,10 @@ class EString extends ValueNex {
 	getEventTable(context) {
 		return {};
 	}
+
+	memUsed() {
+		return super.memUsed() + heap.sizeEString();
+	}
 }
 
 class EStringEditor extends Editor {
@@ -322,6 +328,13 @@ class EStringEditor extends Editor {
 	}
 }
 
+function constructEString(val, ch, t) {
+	if (!heap.requestMem(heap.sizeEString())) {
+		throw constructFatalError(`OUT OF MEMORY: cannot allocate EString.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new EString(val, ch, t));
+}
 
-export { EString, EStringEditor }
+export { EString, constructEString, EStringEditor }
 

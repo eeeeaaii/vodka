@@ -36,6 +36,16 @@ function incFFGen() {
 	FF_GEN++;
 }
 
+// UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE 
+// UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE 
+// UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE UPDATE 
+
+// This "garbage collector" is deprecated and unused. It's also misnamed, what it really is
+// is something that looks for orphan deferreds. However I don't think even this is needed
+// anymore because I can do deferred cancelling in the call to cleanupOnMemoryFree that
+// heap makes when freeing memory. Need to look at the mark and sweep algo below and see
+// if applies to now
+
 /**
  * Cancels any deferreds that are not visible on the screen. This is of questionable usefulness.
  */

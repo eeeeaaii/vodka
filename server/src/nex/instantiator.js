@@ -16,15 +16,15 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { NexContainer } from './nexcontainer.js'
-import { EError } from './eerror.js'
+import { constructFatalError } from './eerror.js'
 import { ContextType } from '../contexttype.js'
 import { experiments } from '../globalappflags.js'
-import { evaluateNexSafely } from '../evaluator.js'
 import { Editor } from '../editors.js'
 import { templateStore } from '../templates.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED, CONSOLE_DEBUG } from '../globalconstants.js'
 import { systemState } from '../systemstate.js';
 import { BINDINGS } from '../environment.js'
+import { heap, HeapString } from '../heap.js'
 
 /**
  * An expression that instantiates an org.
@@ -32,7 +32,10 @@ import { BINDINGS } from '../environment.js'
 class Instantiator extends NexContainer {
 	constructor(orgname) {
 		super();
-		this.orgname = (orgname ? orgname : '');
+		this.orgname = new HeapString();
+		if (orgname) {
+			this.orgname.set(orgname);
+		}
 	}
 
 	toString(version) {
@@ -51,7 +54,7 @@ class Instantiator extends NexContainer {
 	}
 
 	serializePrivateData() {
-		return this.orgname;
+		return this.orgname.get();
 	}
 
 	prettyPrintInternal(lvl, hdir) {
@@ -63,7 +66,7 @@ class Instantiator extends NexContainer {
 	}
 
 	makeCopy(shallow) {
-		let r = new Instantiator();
+		let r = constructInstantiator();
 		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
 		return r;
@@ -71,12 +74,12 @@ class Instantiator extends NexContainer {
 
 	copyFieldsTo(nex) {
 		super.copyFieldsTo(nex);
-		nex.orgname = this.orgname;
+		nex.orgname.set(this.orgname.get());
 	}
 
 	evaluate(env) {
 		systemState.pushStackLevel();
-		let b = env.lookupBinding(this.orgname);
+		let b = env.lookupBinding(this.orgname.get());
 		if (this.hasTags()) {
 			b = b.makeCopy();
 			for (let i = 0; i < this.numTags(); i++) {
@@ -87,26 +90,26 @@ class Instantiator extends NexContainer {
 		this.doForEachChild(function(c) {
 			a.push(c);
 		});
-		let r = templateStore.instantiateWithPotentialTemplate(this.orgname, b, a, env);
+		let r = templateStore.instantiateWithPotentialTemplate(this.orgname.get(), b, a, env);
 		systemState.popStackLevel();
 		return r;
 	}
 
 	setOrgName(n) {
-		this.orgname = n;
+		this.orgname.set(n);
 		this.setDirtyForRendering(true);
 	}
 
 	getOrgName() {
-		return this.orgname;
+		return this.orgname.get();
 	}
 
 	deleteLastOrgNameLetter() {
-		this.orgname = this.orgname.substr(0, this.orgname.length - 1);
+		this.orgname.removeFromEnd(1);
 	}
 
 	appendOrgNameText(txt) {
-		this.orgname = this.orgname + txt;
+		this.orgname.append(txt);
 	}
 
 	getContextType() {
@@ -120,10 +123,10 @@ class Instantiator extends NexContainer {
 	}
 
 	getGhost(name) {
-		if (!BINDINGS.hasBinding(this.orgname)) {
+		if (!BINDINGS.hasBinding(this.orgname.get())) {
 			return '';
 		}
-		let b = BINDINGS.lookupBinding(this.orgname);
+		let b = BINDINGS.lookupBinding(this.orgname.get());
 		let docs = templateStore.getTemplateDocs(b);
 		if (!docs) {
 			return '';
@@ -160,13 +163,13 @@ class Instantiator extends NexContainer {
 				codespan.classList.remove('editing');
 			}
 			let html = this.isEditing ? '<span class="caret glyphleft">^</span>' : '';
-			html += this.orgname;
+			html += this.orgname.get();
 			if (!this.isEditing) {
 				html += '<span class="caret glyphright">^</span>'
 			}
 			codespan.innerHTML = html;
 			if (this.isEditing && renderNode.isSelected()) {
-				let ghost = this.getGhost(this.orgname);
+				let ghost = this.getGhost(this.orgname.get());
 				if (ghost) {
 					codespan.appendChild(ghost);
 				}
@@ -180,6 +183,10 @@ class Instantiator extends NexContainer {
 
 	getDefaultHandler() {
 		return 'standardDefault';
+	}
+
+	memUsed() {
+		return super.memUsed() + heap.sizeInstantiator() + this.orgname.memUsed();
 	}
 }
 
@@ -234,5 +241,13 @@ class InstantiatorEditor extends Editor {
 	}
 }
 
-export { Instantiator, InstantiatorEditor }
+function constructInstantiator(orgname) {
+	if (!heap.requestMem(heap.sizeInstantiator())) {
+		throw constructFatalError(`OUT OF MEMORY: cannot allocate Instantiator.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new Instantiator(orgname));
+}
+
+export { Instantiator, InstantiatorEditor, constructInstantiator }
 

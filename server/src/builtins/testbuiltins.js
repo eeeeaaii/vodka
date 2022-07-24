@@ -18,7 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from '../utils.js'
 
 import { Builtin } from '../nex/builtin.js' 
-import { Bool } from '../nex/bool.js' 
+import { constructBool } from '../nex/bool.js' 
 
 function createTestBuiltins() {
 
@@ -26,7 +26,7 @@ function createTestBuiltins() {
 		'is-boolean',
 		[ 'nex' ],
 		function $isBoolean(env, executionEnvironment) {
-			return new Bool(Utils.isBool(env.lb('nex')));
+			return constructBool(Utils.isBool(env.lb('nex')));
 		},
 		`Returns true if |nex is a boolean.`
 	);
@@ -35,7 +35,7 @@ function createTestBuiltins() {
 		'is-command',
 		[ 'nex' ],
 		function $isCommand(env, executionEnvironment) {
-			return new Bool(Utils.isCommand(env.lb('nex')));
+			return constructBool(Utils.isCommand(env.lb('nex')));
 		},
 		`Returns true if |nex is a command.`
 	);
@@ -44,7 +44,7 @@ function createTestBuiltins() {
 		'is-instantiator',
 		[ 'nex' ],
 		function $isInstantiator(env, executionEnvironment) {
-			return new Bool(Utils.isInstantiator(env.lb('nex')));
+			return constructBool(Utils.isInstantiator(env.lb('nex')));
 		},
 		`Returns true if |nex is a command.`
 	);
@@ -54,7 +54,7 @@ function createTestBuiltins() {
 		'is-doc',
 		[ 'nex' ],
 		function $isDoc(env, executionEnvironment) {
-			return new Bool(Utils.isDoc(env.lb('nex')));
+			return constructBool(Utils.isDoc(env.lb('nex')));
 		},
 		`Returns true if |nex is a doc.`
 	);
@@ -65,7 +65,7 @@ function createTestBuiltins() {
 		function $isEmpty(env, executionEnvironment) {
 			let lst = env.lb('list');
 			let rb = !lst.hasChildren();
-			return new Bool(rb);
+			return constructBool(rb);
 		},
 		`Returns true if |list is empty.`
 	);
@@ -74,7 +74,7 @@ function createTestBuiltins() {
 		'is-deferred-command',
 		[ 'nex' ],
 		function $isDeferredCommand(env, executionEnvironment) {
-			return new Bool(Utils.isDeferredCommand(env.lb('nex')));
+			return constructBool(Utils.isDeferredCommand(env.lb('nex')));
 		},
 		`Returns true if |nex is a deferred command.`
 	);
@@ -83,7 +83,7 @@ function createTestBuiltins() {
 		'is-deferred-value',
 		[ 'nex' ],
 		function $isDeferredValue(env, executionEnvironment) {
-			return new Bool(Utils.isDeferredValue(env.lb('nex')));
+			return constructBool(Utils.isDeferredValue(env.lb('nex')));
 		},
 		`Returns true if |nex is a deferred value.`
 	);
@@ -92,7 +92,7 @@ function createTestBuiltins() {
 		'is-error',
 		[ 'nex' ],
 		function $isError(env, executionEnvironment) {
-			return new Bool(Utils.isError(env.lb('nex')));
+			return constructBool(Utils.isError(env.lb('nex')));
 		},
 		`Returns true if |nex is an error.`
 	);
@@ -101,7 +101,7 @@ function createTestBuiltins() {
 		'is-float',
 		[ 'nex' ],
 		function $isFloat(env, executionEnvironment) {
-			return new Bool(Utils.isFloat(env.lb('nex')));
+			return constructBool(Utils.isFloat(env.lb('nex')));
 		},
 		`Returns true if |nex is a float.`
 	);
@@ -110,7 +110,7 @@ function createTestBuiltins() {
 		'is-integer',
 		[ 'nex' ],
 		function $isInteger(env, executionEnvironment) {
-			return new Bool(Utils.isInteger(env.lb('nex')));
+			return constructBool(Utils.isInteger(env.lb('nex')));
 		},
 		`Returns true if |nex is an integer.`
 	);
@@ -119,7 +119,7 @@ function createTestBuiltins() {
 		'is-lambda',
 		[ 'nex' ],
 		function $isLambda(env, executionEnvironment) {
-			return new Bool(Utils.isLambda(env.lb('nex')));
+			return constructBool(Utils.isLambda(env.lb('nex')));
 		},
 		`Returns true if |nex is a lambda.`
 	);
@@ -128,7 +128,7 @@ function createTestBuiltins() {
 		'is-letter',
 		[ 'nex' ],
 		function $isLetter(env, executionEnvironment) {
-			return new Bool(Utils.isLetter(env.lb('nex')));
+			return constructBool(Utils.isLetter(env.lb('nex')));
 		},
 		`Returns true if |nex is a letter.`
 	);
@@ -137,7 +137,7 @@ function createTestBuiltins() {
 		'is-line',
 		[ 'nex' ],
 		function $isLine(env, executionEnvironment) {
-			return new Bool(Utils.isLine(env.lb('nex')));
+			return constructBool(Utils.isLine(env.lb('nex')));
 		},
 		`Returns true if |nex is a line.`
 	);
@@ -146,7 +146,7 @@ function createTestBuiltins() {
 		'is-list',
 		[ 'nex' ],
 		function $isList(env, executionEnvironment) {
-			return new Bool(Utils.isNexContainer(env.lb('nex')));
+			return constructBool(Utils.isNexContainer(env.lb('nex')));
 		},
 		`Returns true if |nex is a list.`
 	);
@@ -155,7 +155,7 @@ function createTestBuiltins() {
 		'is-nil',
 		[ 'nex' ],
 		function $isNil(env, executionEnvironment) {
-			return new Bool(Utils.isNil(env.lb('nex')));
+			return constructBool(Utils.isNil(env.lb('nex')));
 		},
 		`Returns true if |nex is nil.`
 	);
@@ -164,7 +164,7 @@ function createTestBuiltins() {
 		'is-separator',
 		[ 'nex' ],
 		function $isSeparator(env, executionEnvironment) {
-			return new Bool(Utils.isSeparator(env.lb('nex')));
+			return constructBool(Utils.isSeparator(env.lb('nex')));
 		},
 		`Returns true if |nex is a separator.`
 	);
@@ -173,7 +173,7 @@ function createTestBuiltins() {
 		'is-string',
 		[ 'nex' ],
 		function $isString(env, executionEnvironment) {
-			return new Bool(Utils.isEString(env.lb('nex')));
+			return constructBool(Utils.isEString(env.lb('nex')));
 		},
 		`Returns true if |nex is a string.`
 	);
@@ -182,7 +182,7 @@ function createTestBuiltins() {
 		'is-symbol',
 		[ 'nex' ],
 		function $isSymbol(env, executionEnvironment) {
-			return new Bool(Utils.isESymbol(env.lb('nex')));
+			return constructBool(Utils.isESymbol(env.lb('nex')));
 		},
 		`Returns true if |nex is a symbol.`
 	);
@@ -191,7 +191,7 @@ function createTestBuiltins() {
 		'is-word',
 		[ 'nex' ],
 		function $isWord(env, executionEnvironment) {
-			return new Bool(Utils.isWord(env.lb('nex')));
+			return constructBool(Utils.isWord(env.lb('nex')));
 		},
 		`Returns true if |nex is a word.`
 	);

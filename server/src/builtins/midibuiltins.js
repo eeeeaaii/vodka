@@ -17,8 +17,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Builtin } from '../nex/builtin.js'; 
 import { getMidiDevices } from '../midifunctions.js'
-import { Org } from '../nex/org.js'; 
-import { EError, ERROR_TYPE_INFO } from '../nex/eerror.js'
+import { constructOrg } from '../nex/org.js'; 
+import { constructDeferredValue } from '../nex/deferredvalue.js'; 
+import { constructFatalError, constructInfo, newTagOrThrowOOM } from '../nex/eerror.js'
 import { convertJSMapToOrg } from '../nex/org.js'
 import { Tag } from '../tag.js'
 import {
@@ -32,26 +33,25 @@ function createMidiBuiltins() {
 		'list-midi-inputs',
 		[ ],
 		function $listMidiInputs(env, executionEnvironment) {
-			let dv = new DeferredValue();
+			let dv = constructDeferredValue();
 			dv.set(new GenericActivationFunctionGenerator(
 				'list-midi-inputs', 
 				function(callback, exp) {
 					getMidiDevices(function(devs) {
 						// devices will just be a string
 						// convert to nice estrings
-						let r = new Org();
+						let r = constructOrg();
 						for (let i = 0; i < devs.length ; i++) {
 							let org = convertJSMapToOrg(devs[i]);
 							org.setHorizontal();
-							org.addTag(new Tag('midiport'));
+							org.addTag(newTagOrThrowOOM('midiport', 'list midi imputs builtin'));
 							r.appendChild(org);
 						}
 						callback(r);
 					})
 				}
 			));
-			let waitmessage = new EError(`listing midi inputs`);
-			waitmessage.setErrorType(ERROR_TYPE_INFO);
+			let waitmessage = constructInfo(`listing midi inputs`);
 			dv.appendChild(waitmessage)
 			return dv;
 		},
@@ -64,12 +64,12 @@ function createMidiBuiltins() {
 		[ 'midiport()' ],
 		function $setMidi(env, executionEnvironment) {
 			let midiport = env.lb('midiport');
-			let ismidiport = midiport.hasTag(new Tag('midiport'))
-			let id = midiport.getChildTagged(new Tag('id'));
+			let ismidiport = midiport.hasTag(newTagOrThrowOOM('midiport', 'wait for midi builtin, is midi port'))
+			let id = midiport.getChildTagged(newTagOrThrowOOM('id', 'wait for midi builtin, id'));
 			if (!ismidiport || !id) {
-				return new EError('wait-for-midi: must pass in a midiport object with a valid ID');
+				return constructFatalError('wait-for-midi: must pass in a midiport object with a valid ID');
 			}
-			let dv = new DeferredValue();
+			let dv = constructDeferredValue();
 			dv.setAutoreset(true);
 			let afg = new MidiActivationFunctionGenerator(id.getTypedValue());
 			dv.set(afg);

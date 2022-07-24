@@ -19,11 +19,15 @@ import * as Utils from '../utils.js'
 
 import { ValueNex } from './valuenex.js'
 import { ArgEvaluator } from '../argevaluator.js'
-import { Nil } from './nil.js'
-import { Org } from './org.js'
+import { constructOrg } from './org.js'
 import { wrapError, evaluateNexSafely } from '../evaluator.js'
 import { BINDINGS, BUILTINS } from '../environment.js'
 import { experiments } from '../globalappflags.js'
+import { constructFatalError } from './eerror.js'
+import { heap, HeapString } from '../heap.js'
+import { throwOOM } from './eerror.js'
+import { sAttach } from '../syntheticroot.js'
+
 
 /**
  * Nex that represents a "compiled" or evaluated function. Both
@@ -31,11 +35,16 @@ import { experiments } from '../globalappflags.js'
  */
 class Closure extends ValueNex {
 	constructor(lambda, lexicalEnvironment, name) {
+		// memory ok
+
 		super('', '&', name ? name : 'closure')
 		this.lambda = lambda;
-		this.cmdname = '|';
+
+		this.symbolBinding = new HeapString();
+		this.symbolBinding.set('|') || throwOOM('closure default symbol binding');
+
 		this.lexicalEnvironment = lexicalEnvironment;
-		this.boundName = null;
+		heap.addEnvReference(this.lexicalEnvironment);
 	}
 
 	toString(version) {
@@ -52,25 +61,13 @@ class Closure extends ValueNex {
 	// which means that i can do things later that are more display-oriented
 
 	makeCopy() {
-		let r = new Closure();
+		// don't copy lexical env in copyFieldsTo because of ref counting
+		// on purpose not copying symbol binding I guess?
+		let r = constructClosure(this.lambda, this.lexicalEnvironment);
 		this.copyFieldsTo(r);
 		return r;
 	}
 
-	copyFieldsTo(nex) {
-		super.copyFieldsTo(nex);
-		nex.lambda = this.lambda;
-		nex.lexicalEnvironment = this.lexicalEnvironment;
-		nex.boundName = this.boundName;
-	}
-
-	setBoundName(name) {
-		this.boundName = name;
-	}
-
-	getBoundName() {
-		return this.boundName;
-	}
 
 	getLexicalEnvironment() {
 		return this.lexicalEnvironment;
@@ -79,7 +76,9 @@ class Closure extends ValueNex {
 	setLexicalEnvironment(env) {
 		// used by bind primitive because otherwise order matters and you have to
 		// define things before using them
+		heap.removeEnvReference(this.lexicalEnvironment);
 		this.lexicalEnvironment = env;
+		heap.addEnvReference(env);
 	}
 
 	getReturnValueParam() {
@@ -101,22 +100,23 @@ class Closure extends ValueNex {
 	getLambdaArgString() {
 		let name = this.getLambda().getCanonicalName();
 		if (!name) {
-			name = this.cmdname;
+			name = this.symbolBinding.get();
 		}
 		return this.escape(this.lambda.getArgString(name));
 	}
 
-	setCmdName(nm) {
-		this.cmdname = nm;
+	setSymbolBinding(nm) {
+		this.symbolBinding.set(nm) || throwOOM('closure symbol binding');
+	}
+
+	getSymbolBinding() {
+		return this.symbolBinding.get();
 	}
 
 	getLambda() {
 		return this.lambda;
 	}
 
-	getCmdName() {
-		return this.cmdname;
-	}
 
 	getDocString() {
 		return this.escape(this.getLambda().getDocString(), true);
@@ -134,11 +134,11 @@ class Closure extends ValueNex {
 		// the cmdname and tags
 		let name = this.getLambda().getCanonicalName();
 		if (!name) {
-			name = this.cmdname;
+			name = this.symbolBinding.get();
 		}
 		let r = name;
 		for (let i = 0; i < this.numTags(); i++) {
-			r += '[' + this.getTag(i).getName(i) + ']';
+			r += '[' + this.getTag(i).getTagString(i) + ']';
 		}
 		return this.escape(r);		
 	}
@@ -172,28 +172,6 @@ class Closure extends ValueNex {
 		return '';
 	}
 
-	oldRenderValue() {
-		let r = this.cmdname;
-		for (let i = 0; i < this.numTags(); i++) {
-			r += '[' + this.getTag(i).getName(i) + ']';
-		}
-		r += '\n';
-		r += '  ' + this.getDocString() + '\n';
-		r += ' ' + this.getLambdaDebugString() + '\n';
-		if (this.lexicalEnvironment == BUILTINS) {
-			r += '  BUILTINS\n';
-		} else if (this.lexicalEnvironment == BINDINGS) {
-			r += '  BINDINGS\n';
-		} else {
-			r += '  {\n';
-			this.lexicalEnvironment.doForEachBinding(function(binding) {
-				r += '    ' + binding.name + ': ' + binding.val.debugString() + '\n';
-			})
-			r += '  }';
-		}
-		return r;
-	}
-
 	getInnerHTMLForDisplay() {
 		return this.getRenderedHTML();
 	}
@@ -221,32 +199,48 @@ class Closure extends ValueNex {
 		}
 		argEvaluator.bindArgs(scope);
 		let r = this.lambda.f(scope, executionEnvironment, commandTags);
+		scope.finalize();
 		return r;
 	}
 
 	lambdaClosureExecutor(executionEnvironment, argEvaluator, cmdname, commandTags, packageName) {
-		let scope = this.lexicalEnvironment.pushEnv();
+		let scope = this.lexicalEnvironment.pushEnv(); // popped
 		if (packageName) {
 			scope.usePackage(packageName);
 		}
 		argEvaluator.bindArgs(scope);
-		let r = new Org();
+		let r = constructOrg();
 		let i = 0;
 		let numc = this.lambda.numChildren();
 		for (let i = 0; i < numc; i++) {
 			let c = this.lambda.getChildAt(i);
 			r = evaluateNexSafely(c, scope, true /* skipactivate */);
+			sAttach(r);
 			if (Utils.isFatalError(r)) {
 				r = wrapError('&amp;', `${cmdname}: error in expr ${i+1} of lambda`, r);
 				return r;
 			}
 		}
+		scope.finalize();
 		return r;
 	}
 
 	getTypeName() {
 		return '-closure-';
 	}
+
+	memUsed() {
+		return super.memUsed() + heap.sizeClosure() + this.symbolBinding.memUsed();
+	}
+
+	cleanupOnMemoryFree() {
+		heap.removeEnvReference(this.lexicalEnvironment);
+	}
 }
 
-export { Closure }
+function constructClosure(lambda, lexicalEnvironment, name) {
+	heap.requestMem(heap.sizeClosure()) || throwOOM('Closure');
+	return heap.register(new Closure(lambda, lexicalEnvironment, name));
+}
+
+export { Closure, constructClosure }

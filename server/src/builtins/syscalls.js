@@ -16,12 +16,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Builtin } from '../nex/builtin.js'
-import { EError } from '../nex/eerror.js'
-import { EString } from '../nex/estring.js'
-import { Float } from '../nex/float.js'
-import { Integer } from '../nex/integer.js'
-import { Nil } from '../nex/nil.js'
-import { Org } from '../nex/org.js'
+import { constructEString } from '../nex/estring.js'
+import { constructFloat } from '../nex/float.js'
+import { constructInteger } from '../nex/integer.js'
+import { constructNil } from '../nex/nil.js'
 import { RenderNode } from '../rendernode.js'
 import { systemState } from '../systemstate.js'
 import { rootManager } from '../rootmanager.js'
@@ -43,7 +41,7 @@ function createSyscalls() {
 		[ ],
 		function $getActiveExperimentFlags(env, executionEnvironment) {
 			let s = getExperimentsAsString();
-			return new EString(s);
+			return constructEString(s);
 		},
 		"Gets a snippet of code that represents the active experiment flags that should be saved with new tests (for internal use)."
 	);
@@ -55,7 +53,7 @@ function createSyscalls() {
 			let n = env.lb('fontname');
 			let name = n.getFullTypedValue();
 			webFontManager.loadFont(name);
-			return new Nil();
+			return constructNil();
 		},
 		'Loads a Google web font with the passed-in name (see fonts.google.com for options)'
 	);
@@ -67,7 +65,7 @@ function createSyscalls() {
 		function $disconnectFunnel(env, executionEnvironment) {
 			systemState.setKeyFunnelActive(false);
 			systemState.setMouseFunnelActive(false);
-			return new Nil();
+			return constructNil();
 		},
 		'Disconnects the event funnel (used to disable IDE features).'
 	);
@@ -77,7 +75,7 @@ function createSyscalls() {
 		[ ],
 		function $getTime(env, executionEnvironment) {
 			let t = window.performance.now();
-			return new Float(t);
+			return constructFloat(t);
 		},
 		'Get the date and time.'
 	);
@@ -126,7 +124,7 @@ function createSyscalls() {
 		function $getStyleFrom(env, executionEnvironment) {
 			let n = env.lb('nex');
 			let s = n.getCurrentStyle();
-			return new EString(s);
+			return constructEString(s);
 		},
 		'Return whatever css style overrides |nex currently has.'
 	);
@@ -141,11 +139,11 @@ function createSyscalls() {
 
 			let rna = n.getRenderNodes();
 			if (rna.length == 0) {
-				return new Float(0);
+				return constructFloat(0);
 			}
 			let rn = rna[0];
 			let h = rn.getDomNode().getBoundingClientRect().height;
-			return new Float(h);
+			return constructFloat(h);
 		},
 		'Returns the pixel height for the nex. If the nex is not visible on the screen this returns zero. If the nex appears in multiple places on the screen, and the sizes are different for some reason (e.g. one is in normal mode, the other is exploded) it will return the size of the first one.'
 	);
@@ -159,11 +157,11 @@ function createSyscalls() {
 
 			let rna = n.getRenderNodes();
 			if (rna.length == 0) {
-				return new Float(0);
+				return constructFloat(0);
 			}
 			let rn = rna[0];
 			let h = rn.getDomNode().getBoundingClientRect().width;
-			return new Float(h);
+			return constructFloat(h);
 		},
 		'Returns the pixel width for the nex. If the nex is not visible on the screen this returns zero. If the nex appears in multiple places on the screen, and the sizes are different for some reason (e.g. one is in normal mode, the other is exploded) it will return the size of the first one.'
 	);
@@ -210,12 +208,12 @@ function createSyscalls() {
 			let result = eval(str);
 			if (typeof result == 'number') {
 				if (Math.round(result) == result) {
-					return new Integer(result);
+					return constructInteger(result);
 				} else {
-					return new Float(result);
+					return constructFloat(result);
 				}
 			} else {
-				return new EString('' + result);
+				return constructEString('' + result);
 			}
 		},
 		'Runs arbitrary Javascript code |expr.'

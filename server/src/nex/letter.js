@@ -21,14 +21,16 @@ import { otherflags } from '../globalappflags.js'
 import { RENDER_FLAG_INSERT_AFTER } from '../globalconstants.js'
 import { parametricFontManager } from '../pfonts/pfontmanager.js'
 import { experiments } from '../globalappflags.js'
+import { heap } from '../heap.js'
+import { constructFatalError } from './eerror.js'
 
 class Letter extends Nex {
 	constructor(letter) {
 		super();
-		this.value = letter;
+		this.letterValue = letter;
 		if (otherflags.DEFAULT_TO_PARAMETRIC_FONTS) {
 			this.pfont = parametricFontManager.getFont('Basic', {}, {});	
-			this.pfont.setLetter(this.value);		
+			this.pfont.setLetter(this.letterValue);		
 		} else {
 			this.pfont = null;
 		}
@@ -42,7 +44,7 @@ class Letter extends Nex {
 	}
 
 	makeCopy() {
-		let r = new Letter(this.value);
+		let r = constructLetter(this.letterValue);
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -59,7 +61,7 @@ class Letter extends Nex {
 			parametricFontManager.redrawFontStringInFont(this.pfont, pfstring);
 		} else {
 			this.pfont = parametricFontManager.getFontForString(pfstring);
-			this.pfont.setLetter(this.value);		
+			this.pfont.setLetter(this.letterValue);		
 		}
 		this.setDirtyForRendering(true);
 	}
@@ -68,7 +70,7 @@ class Letter extends Nex {
 		if (version == 'v2') {
 			return this.toStringV2();
 		}
-		return '|(' + this.value + ')|';
+		return '|(' + this.letterValue + ')|';
 	}
 
 	toStringV2() {
@@ -78,15 +80,15 @@ class Letter extends Nex {
 	serializePrivateData(data) {
 		let style = this.getCurrentStyle();
 		if (style) {
-			return `${this.value}|${this.getCurrentStyle()}`;
+			return `${this.letterValue}|${this.getCurrentStyle()}`;
 		} else {
-			return `${this.value}`;
+			return `${this.letterValue}`;
 		}
 	}
 
 	deserializePrivateData(data) {
 		let a = data.split('|');
-		this.value = a[0];
+		this.letterValue = a[0];
 		if (a.length > 1) {
 			this.setCurrentStyle(a[1]);
 		}
@@ -103,15 +105,15 @@ class Letter extends Nex {
 			domNode.classList.add('leftinsert');			
 		}
 		if (this.pfont) {
-			domNode.appendChild(this.pfont.drawIntoDomNode(this.value));
+			domNode.appendChild(this.pfont.drawIntoDomNode(this.letterValue));
 		} else {
-			let contents = (this.value == " " || this.value == "&nbsp;") ? "\xa0" : this.value;
+			let contents = (this.letterValue == " " || this.letterValue == "&nbsp;") ? "\xa0" : this.letterValue;
 			domNode.appendChild(document.createTextNode(contents));
 		}
 	}
 
 	getText() {
-		return this.value;
+		return this.letterValue;
 	}
 
 	getDefaultHandler() {
@@ -144,7 +146,21 @@ class Letter extends Nex {
 			'<': 'insert-actual-<-at-insertion-point-from-letter',
 		}
 	}
+
+
+	memUsed() {
+		return super.memUsed() + heap.sizeLetter();
+	}
 }
 
-export { Letter }
+function constructLetter(letter) {
+	if (!heap.requestMem(heap.sizeLetter())) {
+		throw constructFatalError(`OUT OF MEMORY: cannot allocate Letter.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new Letter(letter));
+}
+
+
+export { Letter, constructLetter }
 

@@ -18,6 +18,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from '../utils.js'
 
 import { Nex } from './nex.js'
+import { heap } from '../heap.js'
+import { constructFatalError } from './eerror.js'
 
 
 /**
@@ -41,7 +43,7 @@ class Surface extends Nex {
 	}
 
 	makeCopy() {
-		let r = new Surface(this.width, this.height);
+		let r = constructSurface(this.width, this.height);
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -214,8 +216,21 @@ class Surface extends Nex {
 		return {
 		}
 	}
+
+	memUsed() {
+		return super.memUsed() + heap.sizeSurface();
+	}
+}
+
+function constructSurface(w, h) {
+	let sizeRequired = heap.sizeSurface() + w * h * heap.incrementalSizeSurface();
+	if (!heap.requestMem(sizeRequired)) {
+		throw constructFatalError(`OUT OF MEMORY: cannot allocate Surface.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new Surface(w, h));
 }
 
 
-export { Surface }
+export { Surface, constructSurface}
 

@@ -18,14 +18,14 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from '../utils.js'
 
 import { Builtin } from '../nex/builtin.js'
-import { EError } from '../nex/eerror.js'
+import { constructFatalError } from '../nex/eerror.js'
 import { Command } from '../nex/command.js'; 
-import { Nil } from '../nex/nil.js'; 
-import { Org } from '../nex/org.js';
-import { Integer } from '../nex/integer.js';
-import { evaluateNexSafely, wrapError } from '../evaluator.js'
+import { constructNil } from '../nex/nil.js'; 
+import { constructOrg } from '../nex/org.js';
+import { constructInteger } from '../nex/integer.js';
 import { UNBOUND } from '../environment.js'
 import { experiments } from '../globalappflags.js'
+import { sEval, makeCommandWithClosureOneArg, makeCommandWithClosureTwoArgs, makeCommandWithClosureZeroArgs, makeQuote } from '../syntheticroot.js'
 
 
 function createIterationBuiltins() {
@@ -43,14 +43,12 @@ function createIterationBuiltins() {
 			let i = 0;
 			try {
 				list.doForEachChild(function(item) {
-					let cmd = Command.makeCommandWithClosureOneArg(closure, Command.quote(item));
-					cmd.setSkipAlertAnimation(true);
-					let result = evaluateNexSafely(cmd, executionEnvironment);
-					if (Utils.isFatalError(result)) {
-						throw wrapError('&szlig;', `filter-with: error returned from item ${i+1}`, result);
-					}
+					let result = sEval(makeCommandWithClosureOneArg(closure, makeQuote(item)),
+									   executionEnvironment,
+									   `filter: error returned from item ${i+1}`,
+									   true /* throw errors */);
 					if (!Utils.isBool(result)) {
-						throw new EError('filter-with: filter function must return boolean.');
+						throw constructFatalError('filter-with: filter function must return boolean.');
 					}
 					if (result.getTypedValue()) {
 						appendIterator = resultList.fastAppendChildAfter(list.getChildAt(i), appendIterator);
@@ -61,7 +59,7 @@ function createIterationBuiltins() {
 				if (Utils.isFatalError(e)) {
 					return e;
 				} else {
-					throw e; // shouldn't be possible for this to be a non-fatal EError.
+					throw e;
 				}
 			}
 			return resultList;
@@ -87,12 +85,10 @@ function createIterationBuiltins() {
 			let i = 0;
 			try {
 				list.doForEachChild(function(item) {
-					let cmd = Command.makeCommandWithClosureOneArg(closure, Command.quote(item))
-					cmd.setSkipAlertAnimation(true);
-					let result = evaluateNexSafely(cmd, executionEnvironment);
-					if (Utils.isFatalError(result)) {
-						throw wrapError('&szlig;', `map-with: error returned from item ${i+1}`, result);
-					}
+					let result = sEval(makeCommandWithClosureOneArg(closure, makeQuote(item)),
+									   executionEnvironment,
+									   `map: error returned from item ${i+1}`,
+									   true /* throw errors */);
 					appendIterator = resultList.fastAppendChildAfter(result, appendIterator);
 					i++;
 				});
@@ -124,13 +120,10 @@ function createIterationBuiltins() {
 			let i = 0;
 			try {
 				list.doForEachChild(function(item) {
-					let cmd = Command.makeCommandWithClosureTwoArgs(closure, Command.quote(item), Command.quote(p));
-					cmd.setSkipAlertAnimation(true);
-					let result = evaluateNexSafely(cmd, executionEnvironment);
-					if (Utils.isFatalError(result)) {
-						throw wrapError('&szlig;', `reduce-with-given: error returned from item ${i+1}`, result);
-					}
-					p = result;
+					p = sEval(makeCommandWithClosureTwoArgs(closure, makeQuote(item), makeQuote(p)),
+									   executionEnvironment,
+									   `reduce: error returned from item ${i+1}`,
+									   true /* throw errors */);
 					i++;
 				});
 			} catch(e) {
@@ -158,16 +151,14 @@ function createIterationBuiltins() {
 		function $loopOver(env, executionEnvironment) {
 			let closure = env.lb('func');
 			let list = env.lb('list');
-			let result = new Nil();
+			let result = null;
 			let i = 0;
 			try {
 				list.doForEachChild(function(item) {
-					let cmd = Command.makeCommandWithClosureOneArg(closure, Command.quote(item))
-					cmd.setSkipAlertAnimation(true);
-					result = evaluateNexSafely(cmd, executionEnvironment);
-					if (Utils.isFatalError(result)) {
-						throw wrapError('&szlig;', `loop-over: error returned when processing input ${item.debugString()}`, result);
-					}
+					result = sEval(makeCommandWithClosureOneArg(closure, makeQuote(item)),
+									   executionEnvironment,
+									   `loop-over: error returned when processing input ${i+1}`,
+									   true /* throw errors */);
 					i++;
 				});
 			} catch (e) {
@@ -177,7 +168,7 @@ function createIterationBuiltins() {
 					throw e;
 				}
 			}
-			return result;
+			return result ? result : constructNil();
 		},
 		'Loops over a list, evaluating a function on each member, and returning the last result.'
 	);
@@ -202,12 +193,12 @@ function createIterationBuiltins() {
 				}
 			}
 			if (inc == 0 || start < stop && inc < 0 || stop < start && inc > 0) {
-				return new EError('range statement will not terminate.');
+				return constructFatalError('range statement will not terminate.');
 			}
-			let result = new Org();
+			let result = constructOrg();
 			let appendIterator = null;
 			for (let i = start ; i != stop; i += inc) {
-				let thisnum = new Integer(i);
+				let thisnum = constructInteger(i);
 				appendIterator = result.fastAppendChildAfter(thisnum, appendIterator);
 			}
 			return result;
@@ -227,44 +218,43 @@ function createIterationBuiltins() {
 			let body = env.lb('body');
 
 			// starting condition
-			let startcmd = Command.makeCommandWithClosureZeroArgs(start);
-			startcmd.setSkipAlertAnimation(true);
-			let iterationvalue = evaluateNexSafely(startcmd, executionEnvironment);
-			if (Utils.isFatalError(iterationvalue)) {
-				return wrapError('&szlig;', `for: error returned from initializer`, iterationvalue);
-			}
+			let iterationvalue = sEval(makeCommandWithClosureZeroArgs(start),
+							  		   executionEnvironment,
+							          `for: error returned from initializer`);
+			if (Utils.isFatalError(iterationvalue)) return iterationvalue;
 
-			let bodyresult = new Nil();
+			let bodyresult = null;
 			while(true) {
 				// check for continuation condition
-				let testcmd = Command.makeCommandWithClosureOneArg(test, Command.quote(iterationvalue));
-				testcmd.setSkipAlertAnimation(true);
-				let testval = evaluateNexSafely(testcmd, executionEnvironment);
-				if (Utils.isFatalError(testval)) {
-					return wrapError('&szlig;', `for: error returned from test`, testval);
-				}
-				if (testval.getTypeName() != '-bool-') {
-					return new EError('for: test lambda must return a boolean');
+				let testval = sEval(makeCommandWithClosureOneArg(test, makeQuote(iterationvalue)),
+								    executionEnvironment,
+								    `for: error returned from test`);
+				if (Utils.isFatalError(testval)) return testval;
+
+				if (!Utils.isBool(testval)) {
+					return constructFatalError('for: test lambda must return a boolean');
 				}
 				if (!testval.getTypedValue()) {
 					break;
 				}
+
 				// execute body
-				let bodycmd = Command.makeCommandWithClosureOneArg(body, Command.quote(iterationvalue));
-				bodycmd.setSkipAlertAnimation(true);
-				bodyresult = evaluateNexSafely(bodycmd, executionEnvironment);
-				if (Utils.isFatalError(bodyresult)) {
-					return wrapError('&szlig;', `for: error returned from body, iterator=${iterationvalue.toString()}`, bodyresult);
-				}
+				let bodycmd = sEval(makeCommandWithClosureOneArg(body, makeQuote(iterationvalue)),
+								    executionEnvironment,
+								    `for: error returned from body`);
+				if (Utils.isFatalError(bodycmd)) return bodycmd;
+
+
 				// increment
-				let inccmd = Command.makeCommandWithClosureOneArg(inc, Command.quote(iterationvalue));
-				inccmd.setSkipAlertAnimation(true);
-				iterationvalue = evaluateNexSafely(inccmd, executionEnvironment);
-				if (Utils.isFatalError(iterationvalue)) {
-					return wrapError('&szlig;', `for: error returned from then-with`, iterationvalue);
-				}
+				let inccmd = sEval(makeCommandWithClosureOneArg(inc, makeQuote(iterationvalue)),
+								   executionEnvironment,
+								   `for: error returned from incrementer`);
+				if (Utils.isFatalError(inccmd)) return inccmd;
+
+				iterationvalue = inccmd;
+
 			}
-			return bodyresult;
+			return bodyresult ? bodyresult : constructNil();
 		},
 		`Classic "for loop". First |start is evaluated, then |test. If |test returns true, |body and |inc are evaluated, and then we go back to |test. Alias: starting-with while do then-with.`
 	)

@@ -15,7 +15,8 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { EError } from './nex/eerror.js'
+// These contract implementations don't have children.
+// the corresponding nexes do.
 
 class ContractEnforcer {
 	constructor() {
@@ -23,7 +24,7 @@ class ContractEnforcer {
 	}
 
 	createContract(fortag, contract) {
-		let name = fortag.getName();
+		let name = fortag.getTagString();
 		if (!this.contracts[name]) {
 			this.contracts[name] = [];
 		}
@@ -31,7 +32,7 @@ class ContractEnforcer {
 	}
 
 	enforce(tag, nex) {
-		let name = tag.getName();
+		let name = tag.getTagString();
 		if (!this.contracts[name]) {
 			return null;
 		}
@@ -48,15 +49,6 @@ class ContractEnforcer {
 
 class AbstractContract {
 	constructor() {
-		this.children = [];
-	}
-
-	addChildAt(c, i) {
-		this.children[i] = c;
-	}
-
-	removeChildAt(i) {
-		this.children[i] = null;
 	}
 }
 
@@ -74,7 +66,7 @@ class IdentityContract extends AbstractContract {
 		return `contract not satisfied, nex must have oid=${this.id}, was ${nex.getID()}`;
 	}
 
-	getName() {
+	getContractName() {
 		return 'IDENTITY CONTRACT';
 	}
 
@@ -98,7 +90,7 @@ class TypeContract extends AbstractContract {
 		return `contract not satisfied, nex must have type ${this.typename}`;
 	}
 
-	getName() {
+	getContractName() {
 		return 'TYPE CONTRACT';
 	}
 
@@ -107,43 +99,6 @@ class TypeContract extends AbstractContract {
 	}
 }
 
-class AllOfContract extends AbstractContract {
-	constructor(contractList) {
-		super();
-		this.contractList = contractList;
-	}
-
-	isSatisfiedBy(nex) {
-		for (let i = 0; i < this.contractList.length; i++) {
-			if (!this.contractList[i].isSatisfiedBy(nex)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	getConstituentContractList() {
-		let s = '';
-		for (let i = 0; i < this.contractList.length; i++) {
-			if (s != '') {
-				s += ', ';
-			}
-			s += this.contractList[i].getName();
-		}
-	}
-
-	getError(nex) {
-		return `contract not satisfied, nex must satisfy all constituent contracts: ${this.getConstituentContractList()}.`;
-	}
-
-	getName() {
-		return 'ALL OF CONTRACT';
-	}
-
-	getDescription() {
-		return `satisfied when object satisfies all constituent contracts: ${this.getConstituentContractList()}`;
-	}
-}
 
 class HasTagContract extends AbstractContract {
 	constructor(tag) {
@@ -162,67 +117,15 @@ class HasTagContract extends AbstractContract {
 	}
 
 	getError(nex) {
-		return `contract not satisfied, must have tag ${this.tag.getName()}`;
+		return `contract not satisfied, must have tag ${this.tag.getTagString()}`;
 	}
 
-	getName() {
+	getContractName() {
 		return 'ALL OF CONTRACT';
 	}
 
 	getDescription() {
-		return `satisfied when object has tag ${this.tag.getName()}`;
-	}
-}
-
-
-class ContainsExactlyContract extends AbstractContract {
-	constructor() {
-		super();
-	}
-
-	isSatisfiedBy(nex) {
-		if (!nex.isNexContainer()) {
-			return false;
-		}
-
-		// copy
-		let contracts = [];
-		for (let i = 0; i < this.children.length; i++) {
-			contracts[i] = this.children[i];
-		}
-
-		
-		for (let i = 0; i < nex.numChildren(); i++) {
-			// each child needs to satisfy one contract
-			let child = nex.getChildAt(i);
-			for (let j = 0; j < contracts.length; j++) {
-				let contract = contracts[j];
-				if (contract && contract.isSatisfiedBy(child)) {
-					contracts.splice(j, 1);
-					break;
-				}
-				// can't find anything that satisfies it
-				return false;
-			}
-		}
-
-		// there was one left over not satisfied by anything
-		if (contracts.length > 0) {
-			return false;
-		}
-		return true;
-	}
-
-	getError(nex) {
-		return `contract not satisfied, nex must have children that exactly satisfy child contracts.`;
-	}
-
-	getName() {
-		return 'CONTAINS EXACTLY CONTRACT';
-	}
-
-	getDescription() {
-		return `satisfied when object has children that exactly satisfy the child contracts.`;
+		return `satisfied when object has tag ${this.tag.getTagString()}`;
 	}
 }
 
@@ -230,5 +133,5 @@ class ContainsExactlyContract extends AbstractContract {
 
 const contractEnforcer = new ContractEnforcer(); // someday this will likely be scoped in the environment
 
-export { contractEnforcer, IdentityContract, TypeContract, AllOfContract, ContainsExactlyContract, HasTagContract }
+export { contractEnforcer, IdentityContract, TypeContract, HasTagContract }
 

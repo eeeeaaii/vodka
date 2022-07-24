@@ -16,15 +16,15 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Builtin } from '../nex/builtin.js'
-import { Word } from '../nex/word.js'
-import { Nil } from '../nex/nil.js'
-import { EError } from '../nex/eerror.js'
-import { Doc } from '../nex/doc.js' 
-import { Line } from '../nex/line.js' 
-import { Command } from '../nex/command.js' 
-import { DeferredCommand } from '../nex/deferredcommand.js' 
-import { Lambda } from '../nex/lambda.js' 
-import { Org } from '../nex/org.js' 
+import { constructWord } from '../nex/word.js'
+import { constructNil } from '../nex/nil.js'
+import { constructEError } from '../nex/eerror.js'
+import { constructDoc } from '../nex/doc.js' 
+import { constructLine } from '../nex/line.js' 
+import { constructCommand } from '../nex/command.js' 
+import { constructDeferredCommand } from '../nex/deferredcommand.js' 
+import { constructLambda } from '../nex/lambda.js' 
+import { constructOrg } from '../nex/org.js' 
 import { ERROR_TYPE_INFO, ERROR_TYPE_FATAL, ERROR_TYPE_WARN } from '../nex/eerror.js'
 
 function createMakeBuiltins() {
@@ -34,7 +34,7 @@ function createMakeBuiltins() {
 		[],
 		function $makeWavetable(env, executionEnvironment) {
 			let args = env.lb('nex');
-			let r = new Wavetable();
+			let r = constructWavetable();
 			return r;
 		},
 		'Creates a new wavetable.'
@@ -45,7 +45,7 @@ function createMakeBuiltins() {
 		'make-nil',
 		[],
 		function $makeNil(env, executionEnvironment) {
-			return new Nil();
+			return constructNil();
 		},
 		'Creates a nil object.'
 	);
@@ -55,15 +55,21 @@ function createMakeBuiltins() {
 		['nex...'],
 		function $makeCommand(env, executionEnvironment) {
 			let args = env.lb('nex');
-			let cmd = new Command();
+			let cmd = null;
 			for (let i = 0 ; i < args.numChildren(); i++) {
 				let arg = args.getChildAt(i);
 				// first one could be name of command
 				if (i == 0 && arg.getTypeName() == '-symbol-') {
-					cmd = new Command(arg.getTypedValue())
+					cmd = constructCommand(arg.getTypedValue())
 				} else {
+					if (!cmd) {
+						cmd = constructCommand();
+					}
 					cmd.appendChild(arg);
 				}
+			}
+			if (!cmd) {
+				cmd = constructCommand();
 			}
 			return cmd;
 		},
@@ -75,7 +81,7 @@ function createMakeBuiltins() {
 		['nex...'],
 		function $makeDoc(env, executionEnvironment) {
 			let args = env.lb('nex');
-			let r = new Doc();
+			let r = constructDoc();
 			for (let i = 0 ; i < args.numChildren(); i++) {
 				r.appendChild(args.getChildAt(i));
 			}
@@ -89,7 +95,7 @@ function createMakeBuiltins() {
 		[ 'args...' ],
 		function $makeDeferredCommand(env, executionEnvironment) {
 			let args = env.lb('args');
-			let r = new DeferredCommand();
+			let r = constructDeferredCommand();
 			for (let i = 0 ; i < args.numChildren(); i++) {
 				let c = children.getChildAt(i);
 				r.appendChild(c);
@@ -104,7 +110,7 @@ function createMakeBuiltins() {
 		['nex...'],
 		function $makeLambda(env, executionEnvironment) {
 			let exps = env.lb('nex');
-			let r = new Lambda();
+			let r = constructLambda();
 			for (let i = 0 ; i < exps.numChildren(); i++) {
 				let c = exps.getChildAt(i);
 				r.appendChild(c);
@@ -119,7 +125,7 @@ function createMakeBuiltins() {
 		['nex...'],
 		function $makeLine(env, executionEnvironment) {
 			let args = env.lb('nex');
-			let r = new Line();
+			let r = constructLine();
 			for (let i = 0 ; i < args.numChildren(); i++) {
 				r.appendChild(args.getChildAt(i));
 			}
@@ -133,7 +139,7 @@ function createMakeBuiltins() {
 		['nex...'],
 		function $makeWord(env, executionEnvironment) {
 			let args = env.lb('nex');
-			let r = new Word();
+			let r = constructWord();
 			for (let i = 0 ; i < args.numChildren(); i++) {
 				r.appendChild(args.getChildAt(i));
 			}
@@ -147,7 +153,7 @@ function createMakeBuiltins() {
 		['nex...'],
 		function $makeOrg(env, executionEnvironment) {
 			let args = env.lb('nex');
-			let r = new Org();
+			let r = constructOrg();
 			for (let i = 0 ; i < args.numChildren(); i++) {
 				r.appendChild(args.getChildAt(i));
 			}
@@ -161,7 +167,7 @@ function createMakeBuiltins() {
 		['str$'],
 		function $makeError(env, executionEnvironment) {
 			let str = env.lb('str');
-			let r = new EError(str.getFullTypedValue());
+			let r = constructEError(str.getFullTypedValue());
 			r.setErrorType(ERROR_TYPE_FATAL);
 			r.suppressNextCatch();
 			return r;
@@ -174,7 +180,7 @@ function createMakeBuiltins() {
 		['str$'],
 		function $makeWarning(env, executionEnvironment) {
 			let str = env.lb('str');
-			let r = new EError(str.getFullTypedValue());
+			let r = constructEError(str.getFullTypedValue());
 			r.setErrorType(ERROR_TYPE_WARN);
 			return r;
 		},
@@ -186,7 +192,7 @@ function createMakeBuiltins() {
 		['str$'],
 		function $makeInfo(env, executionEnvironment) {
 			let str = env.lb('str');
-			let r = new EError(str.getFullTypedValue());
+			let r = constructEError(str.getFullTypedValue());
 			r.setErrorType(ERROR_TYPE_INFO);
 			return r;
 		},

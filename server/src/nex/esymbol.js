@@ -20,6 +20,8 @@ import { CONSOLE_DEBUG } from '../globalconstants.js'
 import { INDENT, systemState } from '../systemstate.js'
 import { Editor } from '../editors.js'
 import { autocomplete } from '../autocomplete.js'
+import { heap } from '../heap.js'
+import { constructFatalError } from './eerror.js'
 
 
 /**
@@ -39,7 +41,7 @@ class ESymbol extends ValueNex {
 
 	/** @override */
 	makeCopy() {
-		let r = new ESymbol(this.getTypedValue());
+		let r = constructESymbol(this.getTypedValue());
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -54,7 +56,7 @@ class ESymbol extends ValueNex {
 
 	/** @override */
 	toStringV2() {
-		let val = this.value.replace(/ /g, '--')
+		let val = this.getValue().replace(/ /g, '--')
 		return `@${this.toStringV2Literal()}${this.toStringV2TagList()}${val}`;
 	}
 
@@ -64,7 +66,7 @@ class ESymbol extends ValueNex {
 	}
 
 	renderValue() {
-		return this.value;
+		return this.getValue();
 	}
 
 	pushNexPhase(phaseExecutor, env) {
@@ -72,7 +74,7 @@ class ESymbol extends ValueNex {
 	}
 
 	getAsString() {
-		return '' + this.value;
+		return '' + this.getValue();
 	}
 
 	getKeyFunnel() {
@@ -118,7 +120,7 @@ class ESymbol extends ValueNex {
 			}
 		}
 		if (CONSOLE_DEBUG) {
-			console.log(`${INDENT()}symbol ${this.value} bound to ${b.debugString()}`);
+			console.log(`${INDENT()}symbol ${this.getValue()} bound to ${b.debugString()}`);
 		}
 		systemState.popStackLevel();
 		return b;
@@ -143,6 +145,10 @@ class ESymbol extends ValueNex {
 		return {
 			'AltSpace': 'autocomplete'
 		};
+	}
+
+	memUsed() {
+		return heap.sizeESymbol();
 	}
 }
 
@@ -199,6 +205,14 @@ class ESymbolEditor extends Editor {
 	}
 }
 
+function constructESymbol(val) {
+	if (!heap.requestMem(heap.sizeESymbol())) {
+		throw constructFatalError(`OUT OF MEMORY: cannot allocate ESymbol.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new ESymbol(val));
+}
 
-export { ESymbol, ESymbolEditor }
+
+export { ESymbol, ESymbolEditor, constructESymbol }
 

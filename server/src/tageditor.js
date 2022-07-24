@@ -16,7 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { contractEnforcer } from './contractfunctions.js';
-import { EError } from './nex/eerror.js'
+import { throwOOM, newTagOrThrowOOM, constructFatalError } from './nex/eerror.js'
 import { Editor } from './editors.js'
 import { Tag } from './tag.js'
 import * as Utils from './utils.js'
@@ -39,7 +39,7 @@ class TagEditor extends Editor {
 
 	createManagedTagIfNone() {
 		if (!this.managedTag) {
-			this.managedTag = new Tag('');
+			this.managedTag = newTagOrThrowOOM('', 'should not happen, creating empty tag in tag editor');
 			this.managedTag.setIsEditing(true);
 			this.nex.addTag(this.managedTag);
 		}
@@ -47,23 +47,23 @@ class TagEditor extends Editor {
 
 	doBackspaceEdit() {
 		this.createManagedTagIfNone();
-		if (this.managedTag.getName() == '') {
+		if (this.managedTag.getTagString() == '') {
 			// this should never be null because of the check in shouldBackspace
 			let newManagedTag = this.nex.getTagBefore(this.managedTag);
 			this.nex.removeTag(this.managedTag);
 			this.manageNewTag(newManagedTag);
 		} else {
-			let oldval = this.managedTag.getName();
+			let oldval = this.managedTag.getTagString();
 			let newval = oldval.substr(0, oldval.length - 1);
-			this.managedTag.setName(newval);
+			this.managedTag.setTagString(newval) || throwOOM('Editing tag');
 		}
 	}
 
 	doAppendEdit(text) {
 		this.createManagedTagIfNone();
-		let oldval = this.managedTag.getName();
+		let oldval = this.managedTag.getTagString();
 		let newval = oldval + '' + text;
-		this.managedTag.setName(newval);
+		this.managedTag.setTagString(newval) || throwOOM('Editing tag');
 	}
 
 	shouldTerminate(text) {
@@ -88,7 +88,7 @@ class TagEditor extends Editor {
 
 	hasContent() {
 		this.createManagedTagIfNone();
-		return this.managedTag.getName() != '';
+		return this.managedTag.getTagString() != '';
 	}
 
 	shouldAppend(text) {
@@ -99,7 +99,7 @@ class TagEditor extends Editor {
 	manageNewTag(newManagedTag) {
 		this.managedTag = newManagedTag;
 		newManagedTag.setIsEditing(true);
-		this.previousValue = newManagedTag.getName();
+		this.previousValue = newManagedTag.getTagString();
 	}
 
 	performSpecialProcessing(text) {
@@ -120,7 +120,7 @@ class TagEditor extends Editor {
 				newManagedTag = this.nex.getTagAfter(this.managedTag);
 				if (!newManagedTag) {
 					if (this.hasContent()) {
-						newManagedTag = new Tag('');
+						newManagedTag = newTagOrThrowOOM('', 'should not happen, creating empty tag in tag editor');
 						this.nex.addTag(newManagedTag);						
 					}
 				}
@@ -128,7 +128,7 @@ class TagEditor extends Editor {
 				newManagedTag = this.nex.getTagBefore(this.managedTag);
 				if (!newManagedTag) {
 					if (this.hasContent()) {
-						newManagedTag = new Tag('');
+						newManagedTag = newTagOrThrowOOM('', 'should not happen, creating empty tag in tag editor');
 						this.nex.addTagAtStart(newManagedTag);
 					}
 				}
@@ -137,7 +137,7 @@ class TagEditor extends Editor {
 				// throws error if contract fail, just returns false if dupe tag
 				this.validateNewTagValue();
 				this.managedTag.setIsEditing(false);
-				if (this.managedTag.getName() == '') {
+				if (this.managedTag.getTagString() == '') {
 					this.nex.removeTag(this.managedTag);
 				}
 				this.manageNewTag(newManagedTag);
@@ -149,7 +149,7 @@ class TagEditor extends Editor {
 	revertInvalidTagEntry() {
 		this.createManagedTagIfNone();
 		if (this.previousValue) {
-			this.managedTag.setName(this.previousValue);
+			this.managedTag.setTagString(this.previousValue) || throwOOM('Editing tag');
 			this.managedTag.setIsEditing(false);
 		} else {
 			this.nex.removeTagByReference(this.managedTag);
@@ -160,7 +160,7 @@ class TagEditor extends Editor {
 	checkForContractError(tag, nex) {
 		let errorMessage = contractEnforcer.enforce(tag, nex);
 		if (errorMessage) {
-			let e = new EError(errorMessage);
+			let e = constructFatalError(errorMessage);
 			e.appendChild(nex);
 			throw e;
 		}		
@@ -186,7 +186,7 @@ class TagEditor extends Editor {
 	finish() {
 		super.finish();
 		if (!this.managedTag) return;
-		if (this.managedTag.getName() == '') {
+		if (this.managedTag.getTagString() == '') {
 			this.nex.removeTag(this.managedTag);
 		} else {
 			// throws error if fail

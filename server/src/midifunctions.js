@@ -16,8 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Tag } from './tag.js'
-import { Org, convertJSMapToOrg } from './nex/org.js'
-import { Integer } from './nex/integer.js'
+import { constructOrg, convertJSMapToOrg } from './nex/org.js'
 
 
 var midi = null;
@@ -102,7 +101,7 @@ function parseMidiMessage(msg) {
 		case 0x90:
 			return doNote(msg, 'note on');
 	}
-	return new Org();
+	return constructOrg();
 
 }
 

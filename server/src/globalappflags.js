@@ -81,6 +81,11 @@ const experiments = {
 
 	// make this an option in settings or w/e
 	'SHOULD_REVERT_TO_CANONICAL_NAME': false,
+
+	'MAX_HEAP_SIZE': 2000000000, // 2 gigs
+//	'MAX_HEAP_SIZE': 655000, // should give a quick failure when debugging
+//	'MAX_HEAP_SIZE': 643565, // should give a quick failure when debugging
+
 };
 
 // These flags aren't saved as part of the test. You should probably

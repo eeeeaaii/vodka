@@ -20,27 +20,31 @@ var CLIPBOARD_INSERTION_MODE = null;
 
 import * as Utils from './utils.js'
 import { systemState } from './systemstate.js'
+import { RenderNode } from './rendernode.js' 
 import { Nex } from './nex/nex.js' 
 import { Root } from './nex/root.js' 
-import { Lambda } from './nex/lambda.js'
-import { ESymbol } from './nex/esymbol.js' 
-import { EString } from './nex/estring.js' 
-import { RenderNode } from './rendernode.js' 
-import { Word } from './nex/word.js' 
-import { Wavetable } from './nex/wavetable.js' 
-import { Command } from './nex/command.js' 
-import { Bool } from './nex/bool.js' 
-import { Line } from './nex/line.js' 
 import { ContextType } from './contexttype.js'
-import { Org } from './nex/org.js' 
-import { Float } from './nex/float.js' 
-import { Integer } from './nex/integer.js' 
-import { DeferredCommand } from './nex/deferredcommand.js' 
-import { Letter } from './nex/letter.js' 
-import { Doc } from './nex/doc.js' 
-import { Separator } from './nex/separator.js' 
-import { Nil } from './nex/nil.js' 
-import { Instantiator } from './nex/instantiator.js' 
+
+import { constructFatalError } from './nex/eerror.js'
+
+import { constructLambda } from './nex/lambda.js'
+import { constructESymbol } from './nex/esymbol.js' 
+import { constructCommand } from './nex/command.js' 
+import { constructBool } from './nex/bool.js' 
+import { constructDoc } from './nex/doc.js' 
+import { constructEString } from './nex/estring.js' 
+import { constructWord } from './nex/word.js' 
+import { constructWavetable } from './nex/wavetable.js' 
+import { constructLine } from './nex/line.js' 
+import { constructOrg } from './nex/org.js' 
+import { constructFloat } from './nex/float.js' 
+import { constructInteger } from './nex/integer.js' 
+import { constructDeferredCommand } from './nex/deferredcommand.js' 
+import { constructLetter } from './nex/letter.js' 
+import { constructSeparator } from './nex/separator.js' 
+import { constructNil } from './nex/nil.js' 
+import { constructInstantiator } from './nex/instantiator.js' 
+
 import { experiments } from './globalappflags.js'
 import { isRecordingTest } from './testrecorder.js'
 import { doTutorial } from './help.js'
@@ -1398,18 +1402,6 @@ class Manipulator {
 		}
 	}	
 
-	appendNewEString() {
-		let s = (systemState.getGlobalSelectedNode());
-		let i = 0;
-		for(i = 0;
-			s.getChildAt(i) && Utils.isEString(s.getChildAt(i));
-			i++);
-		// i is the insertion point
-		let n = new EString();
-		s.insertChildAt(n, i);
-		n.setSelected();
-	}
-
 	unroll(s) {
 		let p = s.getParent();
 		let c = null;
@@ -1540,16 +1532,6 @@ class Manipulator {
 		return true;
 	}
 
-	replaceSelectedWithNewCommand() {
-		let s = (systemState.getGlobalSelectedNode());
-		let p = s.getParent(true);
-		if (!p) return false;
-		let nex = new Command();
-		p.replaceChildWith(s, nex);
-		nex.setSelected();
-		return true;
-	}
-
 	// split/join
 
 	selectTopmostEnclosingLine() {
@@ -1614,10 +1596,6 @@ class Manipulator {
 		return true;		
 	}
 
-
-	splitCurrentWordIntoTwo() {
-		return this.split(new Word())
-	}
 
 	joinSelectedWithNextSibling() {
 		// note that after joining, the thing
@@ -1766,29 +1744,52 @@ class Manipulator {
 			if (Utils.isFatalError(e)) {
 				Utils.beep();
 				this.insertBeforeSelectedAndSelect(e);				
-			} else throw e;
+			} else {
+				if (e.message && e.message.indexOf('CONVERT TO EERROR:') == 0) {
+					let ee = constructFatalError(e.message.substr(18));
+					Utils.beep();
+					this.insertBeforeSelectedAndSelect(ee);				
+				} else {
+					throw e;
+				}
+			}
 		}
 	}
 
 	// used in keydispatcher.js
 	doPaste() {
 		let s = systemState.getGlobalSelectedNode();
-		let newNex = CLIPBOARD.makeCopy();
-		newNex.setMutableRecursive(true);
-		switch(s.getInsertionMode()) {
-			case INSERT_AFTER:
-				this.insertAfterSelectedAndSelect(newNex);
-				this.selected().setInsertionMode(CLIPBOARD_INSERTION_MODE);
-				break;
-			case INSERT_BEFORE:
-			case INSERT_AROUND:
-				this.insertBeforeSelectedAndSelect(newNex);
-				this.selected().setInsertionMode(CLIPBOARD_INSERTION_MODE);
-				break;
-			case INSERT_INSIDE:
-				this.insertAsFirstChild(newNex);
-				this.selected().setInsertionMode(CLIPBOARD_INSERTION_MODE);
-				break;
+		try {
+			let newNex = CLIPBOARD.makeCopy();
+			newNex.setMutableRecursive(true);
+			switch(s.getInsertionMode()) {
+				case INSERT_AFTER:
+					this.insertAfterSelectedAndSelect(newNex);
+					this.selected().setInsertionMode(CLIPBOARD_INSERTION_MODE);
+					break;
+				case INSERT_BEFORE:
+				case INSERT_AROUND:
+					this.insertBeforeSelectedAndSelect(newNex);
+					this.selected().setInsertionMode(CLIPBOARD_INSERTION_MODE);
+					break;
+				case INSERT_INSIDE:
+					this.insertAsFirstChild(newNex);
+					this.selected().setInsertionMode(CLIPBOARD_INSERTION_MODE);
+					break;
+			}			
+		} catch (e) {
+			if (Utils.isFatalError(e)) {
+				Utils.beep();
+				this.insertBeforeSelectedAndSelect(e);				
+			} else {
+				if (e.message && e.message.indexOf('CONVERT TO EERROR:') == 0) {
+					let ee = constructFatalError(e.message.substr(18));
+					Utils.beep();
+					this.insertBeforeSelectedAndSelect(ee);				
+				} else {
+					throw e;
+				}
+			}
 		}
 	}
 
@@ -1822,7 +1823,16 @@ class Manipulator {
 	}
 
 	newDoc() {
-		let d = new Doc();
+		let d = null;
+		try {
+			d = constructDoc();
+		} catch (e) {
+			if (Utils.isFatalError(e)) {
+				return new RenderNode(e);
+			} else {
+				throw e;
+			}			
+		}
 		d.setMutable(true);
 		let r = new RenderNode(d);
 		this.mostRecentInsertedRenderNode = r;
@@ -1831,7 +1841,16 @@ class Manipulator {
 	}
 
 	newWord() {
-		let w = new Word();
+		let w = null;
+		try {
+			w = constructWord();
+		} catch (e) {
+			if (Utils.isFatalError(e)) {
+				return new RenderNode(e);
+			} else {
+				throw e;
+			}			
+		}
 		w.setMutable(true);
 		let r = new RenderNode(w);
 		this.mostRecentInsertedRenderNode = r;
@@ -1839,7 +1858,16 @@ class Manipulator {
 	}
 
 	newLine() {
-		let line = new Line();
+		let line = null;
+		try {
+			line = constructLine();
+		} catch (e) {
+			if (Utils.isFatalError(e)) {
+				return new RenderNode(e);
+			} else {
+				throw e;
+			}			
+		}
 		line.setMutable(true);
 		let r = new RenderNode(line);
 		this.mostRecentInsertedRenderNode = r;
@@ -1848,7 +1876,16 @@ class Manipulator {
 
 	// public
 	newLambda() {
-		let l = new Lambda();
+		let l = null;
+		try {
+			l = constructLambda();
+		} catch (e) {
+			if (Utils.isFatalError(e)) {
+				return new RenderNode(e);
+			} else {
+				throw e;
+			}			
+		}
 		l.setMutable(true);
 		let r = new RenderNode(l);
 		this.mostRecentInsertedRenderNode = r;		
@@ -1858,7 +1895,16 @@ class Manipulator {
 	}
 
 	newESymbolWithText(txt) {
-		let e = new ESymbol(txt);
+		let e = null;
+		try {
+			e = constructESymbol(txt);
+		} catch (err) {
+			if (Utils.isFatalError(err)) {
+				return new RenderNode(err);
+			} else {
+				throw err;
+			}			
+		}
 		e.setMutable(true);
 		let r = new RenderNode(e);
 		this.mostRecentInsertedRenderNode = r;
@@ -1868,7 +1914,16 @@ class Manipulator {
 	}
 
 	newESymbol() {
-		let e = new ESymbol();
+		let e = null;
+		try {
+			e = constructESymbol();
+		} catch (err) {
+			if (Utils.isFatalError(err)) {
+				return new RenderNode(err);
+			} else {
+				throw err;
+			}			
+		}
 		e.setMutable(true);
 		let r = new RenderNode(e);
 		this.mostRecentInsertedRenderNode = r;
@@ -1878,7 +1933,16 @@ class Manipulator {
 	}
 
 	newCommandWithText(txt, skipEditor) {
-		let c = new Command(txt);
+		let c = null;
+		try {
+			c = constructCommand(txt);
+		} catch (e) {
+			if (Utils.isFatalError(e)) {
+				return new RenderNode(e);
+			} else {
+				throw e;
+			}			
+		}
 		c.setMutable(true);
 		let r = new RenderNode(c);
 		this.mostRecentInsertedRenderNode = r;		
@@ -1891,7 +1955,16 @@ class Manipulator {
 
 	// public
 	newCommand() {
-		let c = new Command();
+		let c = null;
+		try {
+			c = constructCommand();
+		} catch (e) {
+			if (Utils.isFatalError(e)) {
+				return new RenderNode(e);
+			} else {
+				throw e;
+			}			
+		}
 		c.setMutable(true);
 		let r = new RenderNode(c);
 		this.mostRecentInsertedRenderNode = r;		
@@ -1901,7 +1974,16 @@ class Manipulator {
 	}
 
 	newBool() {
-		let b = new Bool();
+		let b = null;
+		try {
+			b = constructBool();
+		} catch (e) {
+			if (Utils.isFatalError(e)) {
+				return e;
+			} else {
+				throw e;
+			}			
+		}
 		b.setMutable(true);
 		let r = new RenderNode(b);
 		this.mostRecentInsertedRenderNode = r;		
@@ -1911,7 +1993,16 @@ class Manipulator {
 	}
 
 	newIntegerWithValue(v) {
-		let i = new Integer(Number(v));
+		let i = null;
+		try {
+			i = constructInteger(Number(v));
+		} catch (err) {
+			if (Utils.isFatalError(err)) {
+				return new RenderNode(err);
+			} else {
+				throw err;
+			}			
+		}
 		i.setMutable(true);
 		let r = new RenderNode(i);
 		this.mostRecentInsertedRenderNode = r;		
@@ -1921,7 +2012,16 @@ class Manipulator {
 	}
 
 	newInteger() {
-		let i = new Integer();
+		let i = null;
+		try {
+			i = constructInteger();
+		} catch (err) {
+			if (Utils.isFatalError(err)) {
+				return new RenderNode(err);
+			} else {
+				throw err;
+			}			
+		}
 		i.setMutable(true);
 		let r = new RenderNode(i);
 		this.mostRecentInsertedRenderNode = r;		
@@ -1931,7 +2031,16 @@ class Manipulator {
 	}
 
 	newEString() {
-		let e = new EString();
+		let e = null;
+		try {
+			e = constructEString();
+		} catch (err) {
+			if (Utils.isFatalError(err)) {
+				return new RenderNode(err);
+			} else {
+				throw err;
+			}			
+		}
 		e.setMutable(true);
 		let r = new RenderNode(e);
 		this.mostRecentInsertedRenderNode = r;
@@ -1941,7 +2050,16 @@ class Manipulator {
 	}
 
 	newFloat() {
-		let f = new Float();
+		let f = null;
+		try {
+			f = constructFloat();
+		} catch (err) {
+			if (Utils.isFatalError(err)) {
+				return new RenderNode(err);
+			} else {
+				throw err;
+			}			
+		}
 		f.setMutable(true);
 		let r = new RenderNode(f);
 		this.mostRecentInsertedRenderNode = r;
@@ -1951,7 +2069,16 @@ class Manipulator {
 	}
 
 	newInstantiator() {
-		let i = new Instantiator();
+		let i = null;
+		try {
+			i = constructInstantiator();
+		} catch (err) {
+			if (Utils.isFatalError(err)) {
+				return new RenderNode(err);
+			} else {
+				throw err;
+			}			
+		}
 		i.setMutable(true);
 		let r = new RenderNode(i);
 		this.mostRecentInsertedRenderNode = r;
@@ -1961,7 +2088,16 @@ class Manipulator {
 	}
 
 	newNil() {
-		let n = new Nil();
+		let n = null;
+		try {
+			n = constructNil();
+		} catch (err) {
+			if (Utils.isFatalError(err)) {
+				return new RenderNode(err);
+			} else {
+				throw err;
+			}			
+		}
 		n.setMutable(true);
 		let r = new RenderNode(n);
 		this.mostRecentInsertedRenderNode = r;
@@ -1969,7 +2105,16 @@ class Manipulator {
 	}
 
 	newDeferredCommand() {
-		let e = new DeferredCommand();
+		let e = null;
+		try {
+			e = constructDeferredCommand();
+		} catch (err) {
+			if (Utils.isFatalError(err)) {
+				return new RenderNode(err);
+			} else {
+				throw err;
+			}			
+		}
 		e.setMutable(true);
 		let r = new RenderNode(e);
 		this.mostRecentInsertedRenderNode = r;
@@ -1979,7 +2124,16 @@ class Manipulator {
 	}
 
 	newOrg() {
-		let o = new Org();
+		let o = null;
+		try {
+			o = constructOrg();
+		} catch (err) {
+			if (Utils.isFatalError(err)) {
+				return new RenderNode(err);
+			} else {
+				throw err;
+			}			
+		}
 		o.setMutable(true);
 		let r = new RenderNode(o);
 		this.mostRecentInsertedRenderNode = r;
@@ -1988,7 +2142,16 @@ class Manipulator {
 	}
 
 	newSeparator(txt) {
-		let s = new Separator(txt);
+		let s = null;
+		try {
+			s = constructSeparator(txt);
+		} catch (err) {
+			if (Utils.isFatalError(err)) {
+				return new RenderNode(err);
+			} else {
+				throw err;
+			}			
+		}
 		s.setMutable(true);
 		let r = new RenderNode(s);
 		this.mostRecentInsertedRenderNode = r;
@@ -1996,7 +2159,16 @@ class Manipulator {
 	}
 
 	newLetter(txt) {
-		let l = new Letter(txt);
+		let l = null;
+		try {
+			l = constructLetter(txt);
+		} catch (err) {
+			if (Utils.isFatalError(err)) {
+				return new RenderNode(err);
+			} else {
+				throw err;
+			}			
+		}
 		l.setMutable(true);
 		let r = new RenderNode(l);
 		this.mostRecentInsertedRenderNode = r;
@@ -2004,7 +2176,16 @@ class Manipulator {
 	}
 
 	newWavetable() {
-		let l = new Wavetable();
+		let l = null;
+		try {
+			l = constructWavetable();
+		} catch (err) {
+			if (Utils.isFatalError(err)) {
+				return new RenderNode(err);
+			} else {
+				throw err;
+			}			
+		}
 		l.setMutable(true);
 		let r = new RenderNode(l);
 		this.mostRecentInsertedRenderNode = r;

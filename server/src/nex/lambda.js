@@ -20,11 +20,13 @@ import * as Utils from '../utils.js'
 import { ContextType } from '../contexttype.js';
 import { NexContainer, V_DIR } from './nexcontainer.js';
 import { ParamParser } from '../paramparser.js';
-import { Closure } from './closure.js';
+import { constructClosure } from './closure.js';
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 import { Editor } from '../editors.js'
 import { experiments } from '../globalappflags.js'
+import { heap, HeapString } from '../heap.js'
+import { constructFatalError } from './eerror.js'
 
 /**
  * Nex that represents a written (uncompiled) function.
@@ -35,8 +37,8 @@ class Lambda extends NexContainer {
 		this.cachedParamNames = [];
 		this.paramsArray = [];
 		this.returnValueParam = null;
-		this.cmdname = null;
 		this.isEditing = false;
+		this.amptext = new HeapString();
 		this.setAmpText(val ? val : '');
 	}
 
@@ -45,7 +47,7 @@ class Lambda extends NexContainer {
 	}
 
 	makeCopy(shallow) {
-		let r = new Lambda();
+		let r = constructLambda();
 		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
 		return r;
@@ -88,7 +90,7 @@ class Lambda extends NexContainer {
 
 	copyFieldsTo(r) {
 		super.copyFieldsTo(r);
-		r.setAmpText(this.amptext);
+		r.setAmpText(this.amptext.get());
 		// The params array is supposed to be immutable.
 		// Can't really enforce that because it's javscript but
 		// we will treat it as such for efficiency. Therefore
@@ -96,7 +98,6 @@ class Lambda extends NexContainer {
 		// changes every time the params are re-parsed.
 		r.paramsArray = this.paramsArray
 		r.returnValueParam = this.returnValueParam;
-		r.cmdname = this.cmdname;
 		r.needsEval = this.needsEval;
 		r.isEditing = this.isEditing;
 		r.cachedParamNames = this.cachedParamNames;
@@ -148,11 +149,11 @@ class Lambda extends NexContainer {
 	}
 
 	serializePrivateData() {
-		return this.amptext;
+		return this.amptext.get();
 	}
 
 	debugString() {
-		return `(&${this.amptext} ${super.childrenDebugString()})`;
+		return `(&${this.amptext.get()} ${super.childrenDebugString()})`;
 	}
 
 	getKeyFunnel() {
@@ -211,9 +212,9 @@ class Lambda extends NexContainer {
 			let lambdasignright = '<span class="lambdasign glyphright">' + this.getSymbolForCodespan() + '</span>';
 			let faintleftdot = '<span class="tilde glyphleft faint">·</span>';
 			if (this.isEditing) {
-				innerhtml = lambdasignleft + this.amptext.replace(/ /g, '&nbsp;');
+				innerhtml = lambdasignleft + this.amptext.get().replace(/ /g, '&nbsp;');
 			} else {
-				innerhtml = faintleftdot + this.amptext.replace(/ /g, '&nbsp;') + lambdasignright;
+				innerhtml = faintleftdot + this.amptext.get().replace(/ /g, '&nbsp;') + lambdasignright;
 			}
 			codespan.innerHTML = innerhtml;
 		}
@@ -228,13 +229,13 @@ class Lambda extends NexContainer {
 	}
 
 	evaluate(env) {
-		let r = new Closure(this, env);
+		let r = constructClosure(this, env);
 		this.copyTagsTo(r);
 		return r;
 	}
 
 	cacheParamNames() {
-		let trimmed = this.amptext.trim();
+		let trimmed = this.amptext.get().trim();
 		let s = trimmed.split(' ');
 		let p = [];
 		for (let i = 0; i < s.length; i++) {
@@ -270,7 +271,7 @@ class Lambda extends NexContainer {
 		// omfg please fix this fix binding
 		if (args.length != paramNames.length) {
 			// also thrown in lambdargevaluator but this is called directly by step eval :(
-			throw new EError("lambda: not enough args passed to function.");
+			throw constructFatalError("lambda: not enough args passed to function.");
 		}
 		for (let i = 0; i < args.length; i++) {
 			closure.bind(paramNames[i], args[i]);
@@ -278,24 +279,28 @@ class Lambda extends NexContainer {
 	}
 
 	getAmpText() {
-		return this.amptext;
+		return this.amptext.get();
 	}
 
 	isEmpty() {
-		return this.amptext == null || this.amptext == '';
+		return !this.amptext.get();
 	}
 
 	deleteLastAmpLetter() {
-		this.setAmpText(this.amptext.substr(0, this.amptext.length - 1));
+		this.amptext.removeFromEnd(1);
+		this.cacheParamNames();
+		this.setDirtyForRendering(true);
 	}
 
 	appendAmpText(txt) {
-		this.setAmpText(this.amptext + txt);
+		this.amptext.append(txt);
+		this.cacheParamNames();
+		this.setDirtyForRendering(true);
 	}
 
 	setAmpText(newval) {
-		if (newval == this.amptext) return;
-		this.amptext = newval;
+		if (newval == this.amptext.get()) return;
+		this.amptext.set(newval);
 		this.cacheParamNames();
 		this.setDirtyForRendering(true);
 	}
@@ -316,7 +321,7 @@ class Lambda extends NexContainer {
 	}
 
 	static makeLambda(argstring, maybeargs) {
-		let lambda = new Lambda(argstring);
+		let lambda = constructLambda(argstring);
 		// this little snippet lets you do varargs or array
 		let args = [];
 		if (Array.isArray(maybeargs)) {
@@ -328,6 +333,10 @@ class Lambda extends NexContainer {
 			lambda.appendChild(args[i]);
 		}
 		return lambda;
+	}
+
+	memUsed() {
+		return super.memUsed() + heap.sizeLambda() + this.amptext.memUsed();
 	}
 }
 
@@ -385,8 +394,15 @@ class LambdaEditor extends Editor {
 	}
 }
 
+function constructLambda(val) {
+	if (!heap.requestMem(heap.sizeLambda())) {
+		throw new EError(`OUT OF MEMORY: cannot allocate Lambda.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new Lambda(val));
+}
 
 
 
-export { Lambda, LambdaEditor }
+export { Lambda, LambdaEditor, constructLambda }
 

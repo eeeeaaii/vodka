@@ -252,6 +252,14 @@ function maybeKillSound() {
 	}
 }
 
+function loadSample(fname, callback) {
+		getFileAsBuffer(fname).then(function(result) {
+			// getChannelData returns a float32 array but it still works
+			// TODO: this class stores an audio buffer
+			callback(result.getChannelData(0));
+		})
+}
+
 async function getFileAsBuffer(filepath) {
   maybeCreateAudioContext();
   const response = await fetch("sounds/" + filepath);
@@ -261,5 +269,5 @@ async function getFileAsBuffer(filepath) {
 }
 
 
-export { maybeKillSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { loadSample, maybeKillSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 

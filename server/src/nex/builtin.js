@@ -21,6 +21,8 @@ import { BUILTINS } from '../environment.js'
 import { PERFORMANCE_MONITOR, perfmon } from '../perfmon.js'
 import { experiments } from '../globalappflags.js'
 import { documentBuiltin } from '../documentation.js'
+import { heap, HeapString } from '../heap.js'
+import { throwOOM } from './eerror.js'
 
 /**
  * Nex that represents an *uncompiled* builtin function. Compiled builtins
@@ -28,12 +30,18 @@ import { documentBuiltin } from '../documentation.js'
  */
 class Builtin extends Lambda {
 	constructor(name, params, retval, docstring) {
+		// memory ok
+
 		super();
-		this.name = name;
+		// TODO: accurate memory tracking for builtins
+		// since users can't create builtins this is lower priority
+		this.name = new HeapString();
+		this.name.set(name);
 		this.paramsArray = params;
 		this.returnValueParam = retval;
 		this.internaljs = null;
-		this.docstring = docstring ? docstring : ' - no docs - ';
+		this.docstring = new HeapString();
+		this.docstring.set(docstring ? docstring : ' - no docs - ');
 		this.infix = false;
 		let amp = '';
 		for (let i = 0; i < params.length; i++) {
@@ -42,24 +50,21 @@ class Builtin extends Lambda {
 			}
 			amp += params[i].name;
 		}
-		this.amptext = amp;
+		this.amptext = new HeapString();
+		this.amptext.set(amp);
 		this.f = null;
 		this.closure = BUILTINS;
 	}
 
 	toString(version) {
 		if (version == 'v2') {
-			return `[BUILTIN:${this.name}]`;
+			return `[BUILTIN:${this.name.get()}]`;
 		}
-		return `[BUILTIN:${this.name}]`;
-	}
-
-	getCmdName() {
-		return this.name;
+		return `[BUILTIN:${this.name.get()}]`;
 	}
 
 	getCanonicalName() {
-		return this.name;
+		return this.name.get();
 	}
 
 	getTypeName() {
@@ -71,7 +76,7 @@ class Builtin extends Lambda {
 	}
 
 	makeCopy(shallow) {
-		let r = new Builtin(this.name, this.paramsArray);
+		let r = constructBuiltin(this.name.get(), this.paramsArray);
 		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
 		return r;
@@ -82,7 +87,7 @@ class Builtin extends Lambda {
 	}
 
 	getDocString() {
-		return this.docstring;
+		return this.docstring.get();
 	}
 
 	renderInto(renderNode, renderFlags, withEditor) {
@@ -109,7 +114,7 @@ class Builtin extends Lambda {
 
 	evaluate(executionEnvironment) {
 		let r = super.evaluate(executionEnvironment);
-		r.setCmdName(this.name);
+		r.setSymbolBinding(this.name.get());
 		return r;
 	}
 
@@ -118,7 +123,9 @@ class Builtin extends Lambda {
 		parser.parse(paramsArray);
 		let params = parser.getParams();
 		let retval = parser.getReturnValue();
-		let builtin = new Builtin(name, params, retval, docstring);
+		// technically this could throw an exception but if you getting OOM
+		// before you've even created the builtins you're not using Vodka today
+		let builtin = constructBuiltin(name, params, retval, docstring);
 		if (PERFORMANCE_MONITOR) {
 			perfmon.registerMethod(name);
 		}
@@ -147,6 +154,16 @@ class Builtin extends Lambda {
 	getEventTable(context) {
 		return null;
 	}
+
+	memUsed() {
+		return super.memUsed() + heap.sizeBuiltin();
+	}
 }
 
-export { Builtin }
+function constructBuiltin(name, params, retval, docstring) {
+	heap.requestMem(heap.sizeBuiltin()) || throwOOM('Builtin');
+	return heap.register(new Builtin(name, params, retval, docstring));
+}
+
+
+export { Builtin, constructBuiltin }

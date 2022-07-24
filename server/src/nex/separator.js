@@ -18,6 +18,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { Letter } from './letter.js'
 import { experiments } from '../globalappflags.js'
 import { RENDER_FLAG_INSERT_AFTER } from '../globalconstants.js'
+import { heap } from '../heap.js'
+import { constructFatalError } from './eerror.js'
 
 class Separator extends Letter {
 	constructor(letter) {
@@ -25,7 +27,7 @@ class Separator extends Letter {
 	}
 
 	makeCopy() {
-		let r = new Separator(this.value);
+		let r = constructSeparator(this.getText());
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -40,11 +42,11 @@ class Separator extends Letter {
 		if (version == 'v2') {
 			return this.toStringV2();
 		}
-		return '|[' + this.value + ']|';
+		return '|[' + this.getText() + ']|';
 	}
 
 	toStringV2() {
-		return `[${this.toStringV2Literal()}separator]${this.toStringV2PrivateDataSection(this.value)}${this.toStringV2TagList()}`
+		return `[${this.toStringV2Literal()}separator]${this.toStringV2PrivateDataSection(this.getText())}${this.toStringV2TagList()}`
 	}
 
 	getKeyFunnel() {
@@ -97,7 +99,19 @@ class Separator extends Letter {
 			'<': 'insert-actual-<-at-insertion-point-from-separator',
 		}
 	}
+
+	memUsed() {
+		return super.memUsed() + heap.sizeSeparator();
+	}
 }
 
-export { Separator }
+function constructSeparator(letter) {
+	if (!heap.requestMem(heap.sizeSeparator())) {
+		throw constructFatalError(`OUT OF MEMORY: cannot allocate Separator.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new Separator(letter));
+}
+
+export { Separator, constructSeparator }
 

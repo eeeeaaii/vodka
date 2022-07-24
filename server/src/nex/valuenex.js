@@ -17,6 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { experiments } from '../globalappflags.js'
 import { Nex } from './nex.js'
+import { heap, HeapString } from '../heap.js'
 
 class ValueNex extends Nex {
 	constructor(val, prefix, className) {
@@ -24,6 +25,7 @@ class ValueNex extends Nex {
 		if (experiments.ASM_RUNTIME) {
 			this.wasmSetup();
 		}
+		this.value = new HeapString();
 		this.setValue(String(val));
 		this.prefix = prefix;
 		this.className = className;
@@ -70,10 +72,6 @@ class ValueNex extends Nex {
 		} else {
 			inner = '' + faintleftdot + this.escapedRenderValue() + rightspan;
 		}
-//		inner = '' + leftspan + this.escapedRenderValue();
-//		if (!this.isEditing) {
-//			inner += rightspan;
-//		}
 		domNode.innerHTML = inner;
 	}
 
@@ -84,12 +82,12 @@ class ValueNex extends Nex {
 	wasmSetup() {}
 
 	setValue(v) {
-		this.value = v;
+		this.value.set(v);
 		this.setDirtyForRendering(true);
 	}
 
 	getValue() {
-		return this.value;
+		return this.value.get();
 	}
 
 	appendText(txt) {
@@ -105,6 +103,10 @@ class ValueNex extends Nex {
 		v = v.substr(0, v.length - 1);
 		this.setValue(v);
 		this.setDirtyForRendering(true);
+	}
+
+	memUsed() {
+		return super.memUsed() + this.value.memUsed();
 	}
 }
 

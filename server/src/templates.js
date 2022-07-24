@@ -18,17 +18,13 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from './utils.js'
 
 import { Command } from './nex/command.js'
-import { Nex } from './nex/nex.js'
-import { EError } from './nex/eerror.js'
-import { Closure } from './nex/closure.js'
-import { EString } from './nex/estring.js'
+import { constructFatalError, newTagOrThrowOOM } from './nex/eerror.js'
 import { Tag } from './tag.js'
-import { Org, convertJSMapToOrg } from './nex/org.js'
-import { Integer } from './nex/integer.js'
-import { Float } from './nex/float.js'
+import { constructOrg, convertJSMapToOrg } from './nex/org.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { BUILTINS, BINDINGS } from './environment.js'
 import { experiments } from './globalappflags.js'
+import { sEval, makeCommandWithClosure } from './syntheticroot.js'
 
 class TemplateStore  {
 	constructor() {
@@ -65,29 +61,30 @@ class TemplateStore  {
 		if (nex.numTags() != 1) {
 			return null;
 		}
-		return nex.getTag(0).getName();
+		return nex.getTag(0).getTagString();
 	}
 
 	instantiateWithPotentialTemplate(namestr, binding, args, env) {
 		if (!binding) {
-			return new EError(`no binding for template ${namestr}.`);
+			return constructFatalError(`no binding for template ${namestr}.`);
 		}
 		if (!Utils.isOrg(binding)) {
 			// instantiating non-orgs just gives you back the thing.
 			return binding;
 		}
-		let dst = new Org();
+		let dst = constructOrg();
 		this._copyMembersInto(binding, dst);
 		return this._instantiate(dst, args, env);
 	}
 
 	// args is an array, will always be passed, but it might be empty, contains nexes
 	_instantiate(initOrg, args, env) {
-		let org = new Org();
+		let org = constructOrg();
 		let initializer = null;
 		let fcscope = {};
-		let instantiationLexicalSelfScope = env.pushEnv();
+		let instantiationLexicalSelfScope = env.pushEnv(); // popped
 		instantiationLexicalSelfScope.bind('self', org);
+		org.templateInstantiationLexicalSelfScope = instantiationLexicalSelfScope;
 		for (let i = 0; i < initOrg.numChildren(); i++) {
 			let c = initOrg.getChildAt(i);
 			let membername = this._getSingleTagName(c);
@@ -104,10 +101,11 @@ class TemplateStore  {
 				}
 			} else if (c.getTypeName() == '-closure-') {
 				let lexenv = c.getLexicalEnvironment();
-				let selfScope = lexenv.pushEnv();
+				let selfScope = lexenv.pushEnv(); // popped
 				selfScope.bind('self', org);
 				let lambda = c.getLambda();
 				let closure = evaluateNexSafely(lambda, selfScope);
+				selfScope.finalize();
 				org.appendChild(closure);
 				if (membername == ':init') {
 					initializer = closure;
@@ -117,11 +115,12 @@ class TemplateStore  {
 			}
 		}
 		if (initializer) {
-			let cmd = Command.makeCommandWithClosure(initializer, args);
-			let rstr = evaluateNexSafely(cmd, env);
-			if (Utils.isFatalError(rstr)) {
-				throw rstr;
-			}
+			// don't need the return value of the initializer...
+			// but I do tell sEval to throw the error if it returns a fatal one.
+			sEval(makeCommandWithClosure(initializer, args),
+							 env,
+							 'Error in template initializer',
+							 true /* throw error */);
 		}
 		return org;
 	}
@@ -138,7 +137,7 @@ class TemplateStore  {
 			return '-not a template-';
 		}
 
-		let docs = binding.getChildTagged(new Tag(':docs'));
+		let docs = binding.getChildTagged(newTagOrThrowOOM(':docs', 'creating template - doc tag'));
 		if (!docs) {
 			return '-no description-';
 		}
@@ -152,7 +151,7 @@ class TemplateStore  {
 		// okay great, let's try other things.
 
 		let secondline = '';
-		let initializer = binding.getChildTagged(new Tag(':init'));
+		let initializer = binding.getChildTagged(newTagOrThrowOOM(':init', 'creating template - init tag'));
 		if (initializer) {
 			if (initializer.getTypeName() == '-closure-') {
 				secondline = ''

@@ -23,6 +23,7 @@ import { EError } from './eerror.js'
 import { experiments } from '../globalappflags.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 import { evaluateNexSafely } from '../evaluator.js'
+import { heap, HeapString } from '../heap.js'
 import {
 	RENDER_FLAG_INSERT_AFTER,
 	RENDER_FLAG_INSERT_BEFORE,
@@ -42,7 +43,7 @@ class Line extends NexContainer {
 	 */
 	constructor() {
 		super();
-		this.pfstring = null;
+		this.pfstring = new HeapString();
 		this.setHorizontal();
 	}
 
@@ -57,7 +58,7 @@ class Line extends NexContainer {
 	}
 
 	makeCopy(shallow) {
-		let r = new Line();
+		let r = constructLine();
 		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
 		return r;
@@ -125,15 +126,15 @@ class Line extends NexContainer {
 	}
 
 	setPfont(pfstring) {
-		this.pfstring = pfstring;
+		this.pfstring.set(pfstring);
 		this.doForEachChild(function(c) {
 			c.setPfont(pfstring);
 		})
 	}
 
 	insertChildAt(c, i) {
-		if (this.pfstring) {
-			c.setPfont(this.pfstring);
+		if (this.pfstring.get()) {
+			c.setPfont(this.pfstring.get());
 		}
 		super.insertChildAt(c, i);
 	}
@@ -241,7 +242,20 @@ class Line extends NexContainer {
 
 		}
 	}
+
+
+	memUsed() {
+		return heap.sizeLine();
+	}
 }
 
-export { Line }
+function constructLine() {
+	if (!heap.requestMem(heap.sizeLine())) {
+		throw new EError(`OUT OF MEMORY: cannot allocate Line.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new Line());
+}
+
+export { Line, constructLine }
 

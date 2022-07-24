@@ -48,7 +48,7 @@ class ParamParser {
 	}
 
 	parseString(str) {
-		let hasReturnVal = /^[~!@#$%^&*?(),.]+/.test(str);
+		let hasReturnVal = /^[~!@#$%^𝒞&*?(),.]+/.test(str);
 		let a = str.split(' ');
 		if (hasReturnVal) {
 			a[0] = '\\' + a[0];
@@ -120,6 +120,7 @@ class ParamParser {
 		if (this.isBuiltin) {
 			s = BUILTIN_ARG_PREFIX + s;
 		}
+		// TODO: make this a more solid data type with a memUsed function etc.
 		return {
 			name: s,
 			debugName: originals,
@@ -157,6 +158,7 @@ class ParamParser {
 			case '#': return 'Integer';
 			case '^': 'Instantiator';
 			case '&': return 'Closure';
+			case 'к': return 'Contract';
 		}
 		return '*';
 	}

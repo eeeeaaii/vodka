@@ -18,9 +18,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from './utils.js'
 
 import { evaluateNexSafely, wrapError } from './evaluator.js'
-import { Org } from './nex/org.js'
-import { EError } from './nex/eerror.js'
-import { ERROR_TYPE_FATAL} from './nex/eerror.js'
+import { constructOrg } from './nex/org.js'
+import { constructFatalError } from './nex/eerror.js'
 
 const ARGRESULT_ALREADY_PROCESSED = 0;
 const ARGRESULT_FINISHED = 1;
@@ -66,9 +65,12 @@ function getParameterInfo(params) {
  */
 class ArgEvaluator {
 	constructor(name, params, argContainer, executionEnvironment) {
-		this.name = name;
+		// name is only used for debugging so to get out of the business of heap
+		// counting it I truncate it.
+		this.name = name.substr(0, 256);
 		this.params = params;
 		this.argContainer = argContainer;
+		// reference counted elsewhere
 		this.executionEnvironment = executionEnvironment;
 		this.paramInfo = getParameterInfo(this.params);
 	}
@@ -90,13 +92,13 @@ class ArgEvaluator {
 
 	checkMinNumArgs() {
 		if (this.argContainer.numArgs() < this.paramInfo.minArgCount) {
-			throw new EError(`when calling ${this.name}: not enough args. You needed ${this.paramInfo.minArgCount} but there were only ${this.argContainer.numArgs()}. Sorry!`);
+			throw constructFatalError(`when calling ${this.name}: not enough args. You needed ${this.paramInfo.minArgCount} but there were only ${this.argContainer.numArgs()}. Sorry!`);
 		}
 	}
 
 	checkMaxNumArgs() {
 		if (this.argContainer.numArgs() > this.effectiveParams.length) {
-			throw new EError(`when calling ${this.name}: too many args. The max is ${this.effectiveParams.length} but you passed ${this.argContainer.numArgs()}. Sorry!`);
+			throw constructFatalError(`when calling ${this.name}: too many args. The max is ${this.effectiveParams.length} but you passed ${this.argContainer.numArgs()}. Sorry!`);
 		}
 	}
 
@@ -136,7 +138,7 @@ class ArgEvaluator {
 			if (argnex.getTypeName() == '-error-') {
 				throw wrapError('&szlig;', `when calling ${this.name}: non-fatal error in argument ${i + 1}, but stopping because expected type for this argument was ${expectedType}. Sorry!`, argnex);
 			} else {
-				throw new EError(`when calling ${this.name}: stopping because expected ${expectedType} for argnex ${i + 1} but got ${argnex.getTypeName()}. Sorry!`);
+				throw constructFatalError(`when calling ${this.name}: stopping because expected ${expectedType} for argnex ${i + 1} but got ${argnex.getTypeName()}. Sorry!`);
 			}
 		}		
 	}
@@ -234,7 +236,7 @@ class ArgEvaluator {
 		for (let i = 0; i < this.params.length; i++) {
 			let param = this.params[i];
 			if (param.variadic) {
-				let org = new Org();
+				let org = constructOrg();
 				for (let j = i; j < this.argContainer.numArgs(); j++) {
 					org.appendChild(this.argContainer.getArgAt(j).getNexOrSubstitute());
 				}
@@ -279,10 +281,7 @@ ArgEvaluator.ARG_VALIDATORS = {
 	'Doc': arg => (arg.getTypeName() == '-doc-'),
 	'EString': arg => (arg.getTypeName() == '-string-'),
 	'ESymbol': arg => (arg.getTypeName() == '-symbol-'),
-	'EError': arg => {
-		// errors can only be passed as arguments if they are not fatal
-		return (arg.getTypeName() == '-error-' && arg.getErrorType() != ERROR_TYPE_FATAL);
-	},
+	'EError': arg => Utils.isNonFatalError(arg),
 	'Float': arg => (arg.getTypeName() == '-float-'),
 	'Number': arg => (arg.getTypeName() == '-integer-' || arg.getTypeName() == '-float-'),
 	'Integer': arg => (arg.getTypeName() == '-integer-'),
@@ -293,6 +292,7 @@ ArgEvaluator.ARG_VALIDATORS = {
 	'Word': arg => (arg.getTypeName() == '-word-'),
 	'Lambda': arg => (arg.getTypeName() == '-lambda-'),
 	'Closure': arg => (arg.getTypeName() == '-closure-'),
+	'Contract': arg => (arg.getTypeName() == '-contract-'),
 };
 
 export { ArgEvaluator, getParameterInfo, ARGRESULT_LISTENING, ARGRESULT_SETTLED, ARGRESULT_FINISHED }

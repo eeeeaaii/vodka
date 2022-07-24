@@ -18,11 +18,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from '../utils.js'
 
 import { Builtin } from '../nex/builtin.js'
-import { Nil } from '../nex/nil.js'
+import { constructNil } from '../nex/nil.js'
 import { EError } from '../nex/eerror.js'
-import { Bool } from '../nex/bool.js'
+import { constructBool } from '../nex/bool.js'
 import { evaluateNexSafely, wrapError } from '../evaluator.js'
 import { UNBOUND } from '../environment.js'
+import { sAttach } from '../syntheticroot.js'
 
 
 function createLogicBuiltins() {
@@ -34,7 +35,7 @@ function createLogicBuiltins() {
 		'and',
 		[ 'val1!', 'val2!' ],
 		function $and(env, executionEnvironment) {
-			return new Bool(env.lb('val1').getTypedValue() && env.lb('val2').getTypedValue());		
+			return constructBool(env.lb('val1').getTypedValue() && env.lb('val2').getTypedValue());		
 		},
 		'Returns true if both |val1 and |val2 evaluate to boolean true.',
 		true /* infix */
@@ -50,12 +51,12 @@ function createLogicBuiltins() {
 			let nex = env.lb('nex');
 			for (let i = 0; i < nex.numChildren(); i++) {
 				let c = nex.getChildAt(i);
-				let result = evaluateNexSafely(c, executionEnvironment);
+				let result = sAttach(evaluateNexSafely(c, executionEnvironment));
 				if (result.getTypeName() != '-nil-') {
 					return result;
 				}
 			}
-			return new Nil();
+			return constructNil();
 		},
 		'Returns the first argument that does not evaluate to nil, ignoring the rest. Alias: case.'
 	)
@@ -72,7 +73,7 @@ function createLogicBuiltins() {
 			let iftrue = env.lb('iftrue');
 			let iffalse = env.lb('iffalse');
 			if (iffalse == UNBOUND) {
-				iffalse = new Nil();
+				iffalse = constructNil();
 			}
 			if (b) {
 				let iftrueresult = evaluateNexSafely(iftrue, executionEnvironment);
@@ -97,7 +98,7 @@ function createLogicBuiltins() {
 		'not',
 		[ 'val!' ],
 		function $not(env, executionEnvironment) {
-			return new Bool(!env.lb('val').getTypedValue());
+			return constructBool(!env.lb('val').getTypedValue());
 		},
 		'Evalutes to true if |val evaluates to false, or false if |val evaluates to true.'
 	)
@@ -107,7 +108,7 @@ function createLogicBuiltins() {
 		'or',
 		[ 'val1!', 'val2!' ],
 		function $or(env, executionEnvironment) {
-			return new Bool(env.lb('val1').getTypedValue() || env.lb('val2').getTypedValue());
+			return constructBool(env.lb('val1').getTypedValue() || env.lb('val2').getTypedValue());
 		},
 		'Evaluates to true if either or both of |val1 or |val2 evaluate to true.',
 		true /* infix */

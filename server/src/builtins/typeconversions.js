@@ -21,24 +21,15 @@ import * as Utils from '../utils.js'
 import { Nex } from '../nex/nex.js' 
 import { NexContainer } from '../nex/nexcontainer.js' 
 import { ValueNex } from '../nex/valuenex.js' 
-import { Bool } from '../nex/bool.js' 
 import { Builtin } from '../nex/builtin.js' 
-import { Closure } from '../nex/closure.js' 
-import { Command } from '../nex/command.js' 
-import { Doc } from '../nex/doc.js' 
-import { EError } from '../nex/eerror.js' 
-import { EString } from '../nex/estring.js' 
-import { ESymbol } from '../nex/esymbol.js' 
-import { Float } from '../nex/float.js' 
-import { Integer } from '../nex/integer.js' 
-import { Lambda } from '../nex/lambda.js' 
-import { Letter } from '../nex/letter.js' 
-import { Line } from '../nex/line.js' 
-import { Nil } from '../nex/nil.js' 
-import { Org } from '../nex/org.js' 
-import { Root } from '../nex/root.js' 
-import { Separator } from '../nex/separator.js' 
-import { Word } from '../nex/word.js' 
+import { constructFatalError } from '../nex/eerror.js' 
+
+import { constructEString } from '../nex/estring.js' 
+import { constructFloat } from '../nex/float.js' 
+import { constructInteger } from '../nex/integer.js' 
+import { constructLetter } from '../nex/letter.js' 
+import { constructWord } from '../nex/word.js' 
+
 import { evaluateNexSafely } from '../evaluator.js'
 
 
@@ -78,25 +69,25 @@ function createTypeConversionBuiltins() {
 			if (Utils.isFloat(v)) {
 				return v;
 			} else if (Utils.isInteger(v)) {
-				return new Float(v.getTypedValue());
+				return constructFloat(v.getTypedValue());
 			} else if (Utils.isBool(v)) {
-				return v.getTypedValue() ? new Float(1): new Float(0);
+				return v.getTypedValue() ? constructFloat(1): constructFloat(0);
 			} else if (Utils.isEString(v)) {
 				let s = v.getFullTypedValue();
 				let mayben = parseFloat(s);
 				if (Number.isNaN(mayben)) {
-					return new EError(`to-float: could not convert "${s}". Sorry!`);
+					return constructFatalError(`to-float: could not convert "${s}". Sorry!`);
 				} else {
-					return new Float(mayben);
+					return constructFloat(mayben);
 				}
 			} else if (Utils.isLetter(v)) {
 				// could be a number.
 				let s = v.getText();
 				let mayben = parseFloat(s);
 				if (Number.isNaN(mayben)) {
-					return new EError(`to-float: could not convert "${s}". Sorry!`);
+					return constructFatalError(`to-float: could not convert "${s}". Sorry!`);
 				} else {
-					return new Float(mayben);
+					return constructFloat(mayben);
 				}
 			} else if (Utils.isWord(v) || Utils.isLine(v) || Utils.isDoc(v)) {
 				// could be a number.
@@ -104,12 +95,12 @@ function createTypeConversionBuiltins() {
 				let mayben = parseFloat(s);
 				if (Number.isNaN(mayben)) {
 					// rofl
-					return new EError(`to-float: could not convert "${s}" (object of type ${v.getTypeName()}). Sorry!`);
+					return constructFatalError(`to-float: could not convert "${s}" (object of type ${v.getTypeName()}). Sorry!`);
 				} else {
-					return new Float(mayben);
+					return constructFloat(mayben);
 				}
 			} else {
-				return new EError(`to-float: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
+				return constructFatalError(`to-float: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
 			}
 		},
 		'Converts |nex to a float, or returns an error if this is impossible.'
@@ -123,25 +114,25 @@ function createTypeConversionBuiltins() {
 			if (Utils.isInteger(v)) {
 				return v;
 			} else if (Utils.isFloat(v)) {
-				return new Integer(Math.floor(v.getTypedValue()));
+				return constructInteger(Math.floor(v.getTypedValue()));
 			} else if (Utils.isBool(v)) {
-				return v.getTypedValue() ? new Integer(1): new Integer(0);
+				return v.getTypedValue() ? constructInteger(1): constructInteger(0);
 			} else if (Utils.isEString(v)) {
 				let s = v.getFullTypedValue();
 				let mayben = parseInt(s);
 				if (Number.isNaN(mayben)) {
-					return new EError(`to-integer: could not convert "${s}". Sorry!`);
+					return constructFatalError(`to-integer: could not convert "${s}". Sorry!`);
 				} else {
-					return new Integer(mayben);
+					return constructInteger(mayben);
 				}
 			} else if (Utils.isLetter(v)) {
 				// could be a number.
 				let s = v.getText();
 				let mayben = parseInt(s);
 				if (Number.isNaN(mayben)) {
-					return new EError(`to-integer: could not convert "${s}". Sorry!`);
+					return constructFatalError(`to-integer: could not convert "${s}". Sorry!`);
 				} else {
-					return new Integer(mayben);
+					return constructInteger(mayben);
 				}
 			} else if (Utils.isWord(v) || Utils.isLine(v) || Utils.isDoc(v)) {
 				// could be a number.
@@ -149,12 +140,12 @@ function createTypeConversionBuiltins() {
 				let mayben = parseInt(s);
 				if (Number.isNaN(mayben)) {
 					// rofl
-					return new EError(`to-integer: could not convert "${s}" (object of type ${v.getTypeName()}). Sorry!`);
+					return constructFatalError(`to-integer: could not convert "${s}" (object of type ${v.getTypeName()}). Sorry!`);
 				} else {
-					return new Integer(mayben);
+					return constructInteger(mayben);
 				}
 			} else {
-				return new EError(`to-integer: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
+				return constructFatalError(`to-integer: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
 			}
 		},
 		'Converts |nex to an integer, or returns an error if this is impossible.'
@@ -167,28 +158,28 @@ function createTypeConversionBuiltins() {
 		function $toString(env, executionEnvironment) {
 			let v = env.lb('nex');
 			if (Utils.isEString(v)) {
-				return new EString(v.getFullTypedValue());
+				return constructEString(v.getFullTypedValue());
 			} else if (Utils.isBool(v)) {
-				return new EString(v.getTypedValue() ? 'yes' : 'no');
+				return constructEString(v.getTypedValue() ? 'yes' : 'no');
 			} else if (Utils.isFloat(v)) {
-				return new EString('' + v.getTypedValue());
+				return constructEString('' + v.getTypedValue());
 			} else if (Utils.isInteger(v)) {
-				return new EString('' + v.getTypedValue());
+				return constructEString('' + v.getTypedValue());
 			} else if (Utils.isLetter(v)) {
-				return new EString('' + v.getText());
+				return constructEString('' + v.getText());
 			} else if (Utils.isSeparator(v)) {
-				return new EString('' + v.getText());
+				return constructEString('' + v.getText());
 			} else if (Utils.isWord(v) || Utils.isLine(v) || Utils.isDoc(v)) {
 				let ss = v.getValueAsString();
 				if (typeof(ss) == 'string') {
-					return new EString(ss);
+					return constructEString(ss);
 				} else {
-					return new EError(`to-string: could not convert "${ss}" (object of type ${v.getTypeName()}). Sorry!`);
+					return constructFatalError(`to-string: could not convert "${ss}" (object of type ${v.getTypeName()}). Sorry!`);
 				}
 			} else if (Utils.isOrg(v)) {
-				return new EString('' + v.getValueAsString());
+				return constructEString('' + v.getValueAsString());
 			} else {
-				return new EError(`to-string: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
+				return constructFatalError(`to-string: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
 
 			}
 		},
@@ -206,9 +197,9 @@ function createTypeConversionBuiltins() {
 				return v;
 			}
 			let jsStringToDoc = (function(str) {
-				var w = new Word();
+				var w = constructWord();
 				for (let i = 0; i < str.length; i++) {
-					let lt = new Letter(str.charAt(i));
+					let lt = constructLetter(str.charAt(i));
 					w.appendChild(lt);
 				}
 				return w;
@@ -221,13 +212,13 @@ function createTypeConversionBuiltins() {
 			} else if (Utils.isEString(v)) {
 				return jsStringToDoc('' + v.getFullTypedValue())
 			} else if (Utils.isLetter(v)) {
-				let w = new Word();
+				let w = constructWord();
 				w.appendChild(v.makeCopy());
 				return w;
 			} else {
 				// should at least be able to do lines and docs.
 				// I feel like maybe to-word should just be in util-functions tho.
-				return new EError(`to-word: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
+				return constructFatalError(`to-word: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
 			}
 		},
 		'Converts |nex to a word, or returns an error if this is impossible.'

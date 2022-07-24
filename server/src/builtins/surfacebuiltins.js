@@ -18,11 +18,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from '../utils.js'
 
 import { Builtin } from '../nex/builtin.js'
-import { Org } from '../nex/org.js'
-import { Integer } from '../nex/integer.js'
+import { constructOrg } from '../nex/org.js'
+import { constructInteger } from '../nex/integer.js'
 import { Surface } from '../nex/surface.js'
 import { UNBOUND } from '../environment.js'
-import { EError } from '../nex/eerror.js'
+import { constructFatalError } from '../nex/eerror.js'
 
 /**
  * Creates all surface builtins.
@@ -38,7 +38,7 @@ function createSurfaceBuiltins() {
 			let w = (wnex == UNBOUND) ? 100 : wnex.getTypedValue();
 			let h = (hnex == UNBOUND) ? 100 : hnex.getTypedValue();
 
-			let r = new Surface(w, h);
+			let r = constructSurface(w, h);
 			return r;
 		},
 		'Creates a 2d drawing surface with the given width and height.'
@@ -52,12 +52,12 @@ function createSurfaceBuiltins() {
 			let color = env.lb('color');
 
 			if (!surf.isValidColorList(color)) {
-				return new EError(`fill-background: color list must have exactly three integer members.`);				
+				return constructFatalError(`fill-background: color list must have exactly three integer members.`);				
 			}
 
 			// most of them can have an alpha component, but background fill can't.
 			if (color.numChildren() != 3) {
-				return new EError(`fill-background: color list must have exactly three integer members.`);				
+				return constructFatalError(`fill-background: color list must have exactly three integer members.`);				
 			}
 
 			let colorarray = surf.convertColorList(color);
@@ -77,7 +77,7 @@ function createSurfaceBuiltins() {
 			let color = env.lb('color');
 
 			if (!surf.isValidColorList(color)) {
-				return new EError(`draw-line: color list must have exactly three or four integer members.`);				
+				return constructFatalError(`draw-line: color list must have exactly three or four integer members.`);				
 			}
 
 			let colorarray = surf.convertColorList(color);
@@ -102,7 +102,7 @@ function createSurfaceBuiltins() {
 			let color = env.lb('color');
 
 			if (!surf.isValidColorList(color)) {
-				return new EError(`draw-rectangle: color list must have exactly three or four integer members.`);				
+				return constructFatalError(`draw-rectangle: color list must have exactly three or four integer members.`);				
 			}
 
 			let colorarray = surf.convertColorList(color);
@@ -127,7 +127,7 @@ function createSurfaceBuiltins() {
 			let color = env.lb('color');
 
 			if (!surf.isValidColorList(color)) {
-				return new EError(`draw-dot: color list must have exactly three or four integer members.`);				
+				return constructFatalError(`draw-dot: color list must have exactly three or four integer members.`);				
 			}
 
 			let colorarray = surf.convertColorList(color);
@@ -153,11 +153,11 @@ function createSurfaceBuiltins() {
 
 			let colorarray = surf.colorAt(x, y);
 
-			let r = new Org();
-			r.appendChild(new Integer(colorarray[0]))
-			r.appendChild(new Integer(colorarray[1]))
-			r.appendChild(new Integer(colorarray[2]))
-			r.appendChild(new Integer(colorarray[3]))
+			let r = constructOrg();
+			r.appendChild(constructInteger(colorarray[0]))
+			r.appendChild(constructInteger(colorarray[1]))
+			r.appendChild(constructInteger(colorarray[2]))
+			r.appendChild(constructInteger(colorarray[3]))
 
 			return r;
 		},

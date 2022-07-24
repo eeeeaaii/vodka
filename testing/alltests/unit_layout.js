@@ -84,18 +84,17 @@ testactions.push({type:'keydown',code:'KeyT'});
 testactions.push({type:'keydown',code:'KeyS'});
 testactions.push({type:'keyup',code:'KeyT'});
 testactions.push({type:'keyup',code:'KeyS'});
+
 testactions.push({type:'keydown',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keydown',code:'Tab'});
 testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keyup',code:'ShiftRight'});
+
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
-testactions.push({type:'keydown',code:'Enter'});
-testactions.push({type:'keyup',code:'Enter'});
-testactions.push({type:'keydown',code:'Enter'});
-testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'pause',length:500});
 
 const experiment_flags = {
 "DISABLE_ALERT_ANIMATIONS":true,

@@ -18,6 +18,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { ValueNex } from './valuenex.js'
 import { experiments } from '../globalappflags.js'
 import { Editor } from '../editors.js'
+import { constructFatalError, throwOOM } from './eerror.js'
+import { heap } from '../heap.js'
 
 
 /**
@@ -25,6 +27,8 @@ import { Editor } from '../editors.js'
  */
 class Bool extends ValueNex {
 	constructor(val) {
+		// memory ok
+
 		if (val === 'true') {
 			val = 'yes';
 		} else if (val === 'false') {
@@ -47,7 +51,7 @@ class Bool extends ValueNex {
 	}
 
 	makeCopy() {
-		let r = new Bool(this.getTypedValue());
+		let r = constructBool(this.getTypedValue());
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -64,7 +68,7 @@ class Bool extends ValueNex {
 	}
 
 	getTypedValue() {
-		return this.value === 'yes';
+		return this.getValue() === 'yes';
 	}
 
 	isEmpty() {
@@ -108,6 +112,10 @@ class Bool extends ValueNex {
 	getEventTable(context) {
 		return {};
 	}
+
+	memUsed() {
+		return super.memUsed() + heap.sizeBool();
+	}
 }
 
 class BoolEditor extends Editor {
@@ -150,4 +158,9 @@ class BoolEditor extends Editor {
 	}
 }
 
-export { Bool, BoolEditor }
+function constructBool(val) {
+	heap.requestMem(heap.sizeBool()) || throwOOM('Bool');
+	return heap.register(new Bool(val));
+}
+
+export { Bool, BoolEditor, constructBool }

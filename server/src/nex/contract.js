@@ -18,15 +18,13 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from '../utils.js'
 
 import { NexContainer } from './nexcontainer.js'
-// import { ArgEvaluator } from '../argevaluator.js'
-// import { Nil } from './nil.js'
-// import { Org } from './org.js'
-// import { wrapError, evaluateNexSafely } from '../evaluator.js'
-// import { BINDINGS, BUILTINS } from '../environment.js'
-// import { experiments } from '../globalappflags.js'
+import { constructFatalError, newTagOrThrowOOM } from './eerror.js'
+import { heap } from '../heap.js'
 
 class Contract extends NexContainer {
 	constructor(contractImpl) {
+		// memory ok
+
 		super()
 		this.impl = contractImpl;
 		this.privateData = null; // unused
@@ -34,7 +32,7 @@ class Contract extends NexContainer {
 	}
 
 	addContractTag(t) {
-		this.contractTags.push(t);
+		this.contractTags.push(newTagOrThrowOOM(t.getTagString(), 'adding contract tag member to contract'));
 	}
 
 	getImpl() {
@@ -69,7 +67,7 @@ class Contract extends NexContainer {
 	}
 
 	makeCopy(shallow) {
-		let r = new Contract();
+		let r = constructContract();
 		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
 		return r;
@@ -82,7 +80,7 @@ class Contract extends NexContainer {
 
 	insertChildAt(c, i) {
 		if (c.getTypeName() != '-contract-') {
-			throw new EError('contracts can only hold other contracts.');
+			throw constructFatalError('contracts can only hold other contracts.');
 		}
 		this.impl.addChildAt(c.getImpl(), i);
 		super.insertChildAt(c, i);
@@ -95,7 +93,7 @@ class Contract extends NexContainer {
 
 	fastAppendChildAfter(c, after) {
 		if (c.getTypeName() != '-contract-') {
-			throw new EError('contracts can only hold other contracts.');
+			throw constructFatalError('contracts can only hold other contracts.');
 		}
 		let n = this.numChildren() - 1;
 		for (let i = 0; i < this.numChildren(); i++) {
@@ -129,7 +127,7 @@ class Contract extends NexContainer {
 
 		let innerspan = document.createElement("div");
 		innerspan.classList.add('innerspan');
-		innerspan.innerHTML = '' + this.impl.getName();
+		innerspan.innerHTML = '' + this.impl.getContractName();
 		innerspans.appendChild(innerspan);
 
 		let innerspan2 = document.createElement("div");
@@ -157,6 +155,22 @@ class Contract extends NexContainer {
 	getTypeName() {
 		return '-contract-';
 	}
+
+	memUsed() {
+		let tagMem = 0;
+		this.contractTags.forEach(tag => {
+			tagMem += tag.memUsed();
+		})
+		return tagMem + super.memUsed() + heap.sizeContract();
+	}
 }
 
-export { Contract }
+function constructContract(contractImpl) {
+	if (!heap.requestMem(heap.sizeContract())) {
+		throw constuctFatalError(`OUT OF MEMORY: cannot allocate Contract.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new Contract(contractImpl));
+}
+
+export { Contract, constructContract }

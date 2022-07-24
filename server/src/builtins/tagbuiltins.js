@@ -16,8 +16,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Builtin } from '../nex/builtin.js'
-import { EError } from '../nex/eerror.js'
-import { Bool } from '../nex/bool.js'
+import { constructFatalError, newTagOrThrowOOM } from '../nex/eerror.js'
+import { constructBool } from '../nex/bool.js'
 import { Tag } from '../tag.js'
 import { contractEnforcer } from '../contractfunctions.js';
 
@@ -26,6 +26,7 @@ function createTagBuiltins() {
 	// IT IS AN INTENTIONAL CHOICE THAT THERE ARE NO FUNCTIONS TO REMOVE TAGS
 	// Tags enforce types via contracts. If you can remove tags, you can
 	// subvert any type protections that someone wants to add to something.
+	// you can remove them using the editor of course, but not with code.
 
 	Builtin.createBuiltin(
 		'add-tag to',
@@ -33,13 +34,13 @@ function createTagBuiltins() {
 		function $addTag(env, executionEnvironment) {
 			let nex = env.lb('nex');
 			let tagname = env.lb('tag').getFullTypedValue();
-			let tag = new Tag(tagname);
+			let tag = newTagOrThrowOOM(tagname, 'add-tag builtin');
 			let errorMessage = contractEnforcer.enforce(tag, nex);
 			if (errorMessage) {
-				let e = new EError(errorMessage);
+				let e = constructFatalError(errorMessage);
 				return e;
 			}
-			nex.addTag(new Tag(tagname));
+			nex.addTag(newTagOrThrowOOM(tagname, 'add-tag builtin'));
 			return nex;
 		},
 		'Adds the tag |tag to |nex.'
@@ -52,11 +53,11 @@ function createTagBuiltins() {
 		function $hasTag(env, executionEnvironment) {
 			let n = env.lb('nex');
 			let tagname = env.lb('tag').getFullTypedValue();
-			let tag = new Tag(tagname);
+			let tag = newTagOrThrowOOM(tagname, 'has-tag builtin');
 			if (n.hasTag(tag)) {
-				return new Bool(true);
+				return constructBool(true);
 			} else {
-				return new Bool(false);
+				return constructBool(false);
 			}
 		},
 		'Returns true if |nex has a tag equal to |tag.'

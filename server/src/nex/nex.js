@@ -32,6 +32,9 @@ import { RENDER_FLAG_SELECTED,
 import { possiblyRecordAction } from '../testrecorder.js'
 import { doTutorial } from '../help.js'
 import { Tag } from '../tag.js'
+import { heap } from '../heap.js'
+
+
 /**
  * This is the parent class for all nexes, aka pieces of vodka code, aka s-expressions.
  */
@@ -44,6 +47,8 @@ class Nex {
 		this.firstRenderNode = null;
 		this.rendernodes = [];
 		this.references = 0;
+		this.memAllocated = false;
+		this.wasFreed = false;
 
 		this.selected = false;
 		this.keyfunnel = null;
@@ -109,6 +114,18 @@ class Nex {
 
 	getModeHint() {
 		return this.modeHint;
+	}
+
+	memUsed() {
+		let tagMem = 0;
+		this.tags.forEach(tag => {
+			tagMem += tag.memUsed();
+		})
+		return tagMem;
+	}
+
+	cleanupOnMemoryFree() {
+		// might be used in some objs
 	}
 
 	escape(str, skipNbsp) {
@@ -240,18 +257,6 @@ class Nex {
 		return this.dirtyForRendering;
 	}
 
-	addReference() {
-		this.references++;
-	}
-
-	removeReference() {
-		this.references--;
-	}
-
-	numReferences() {
-		return this.references;
-	}
-
 	shouldActivateReturnedExpectations() {
 		return false;
 	}
@@ -353,7 +358,11 @@ class Nex {
 	}
 
 	hasTagWithString(s) {
-		return this.hasTag(new Tag(s));
+		// can't construct tags safely here, so we just look at the tags
+		for (let i = 0; i < this.tags.length; i++) {
+			if (this.tags[i].getTagString() == s) return true;
+		}
+		return false;
 	}
 
 	hasTags() {
@@ -415,14 +424,13 @@ class Nex {
 	 * @returns {Tag} the tag
 	 */
 	getTag(n) {
-		// TODO: error checking
-		return this.tags[n].copy();
+		return this.tags[n];
 	}
 
 	getAllTags() {
 		let r = [];
 		this.tags.forEach(function(tag) {
-			r.push(tag.copy());
+			r.push(tag);
 		});
 		return r;
 	}
@@ -473,14 +481,6 @@ class Nex {
 		return true;
 	}
 
-	getExpectedReturnType() {
-		return null;
-	}
-
-	maybeGetCommandName() {
-		return null;
-	}
-
 	evaluate(env) {
 		if (this.mutable) {
 			return this.makeCopy();
@@ -489,9 +489,6 @@ class Nex {
 		}
 	}
 
-
-	evalCleanup() {
-	}
 
 	// end evaluation flow
 
@@ -613,8 +610,7 @@ class Nex {
 	}
 }
 
-
-
+// I wish I had put in a comment explaining why this was needed
 if (typeof module !== 'undefined' && module.exports) module.exports = { Nex: Nex }
 
 

@@ -19,10 +19,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 const BUILTIN_ARG_PREFIX = '|';
 const UNBOUND = "****UNBOUND****"
 
-import { EError } from './nex/eerror.js'
-import { NexContainer } from './nex/nexcontainer.js'
+import * as Utils from './utils.js';
+
+import { constructFatalError, newTagOrThrowOOM } from './nex/eerror.js'
 import { systemState } from './systemstate.js'
 import { Tag } from './tag.js'
+import { heap } from './heap.js'
 
 /** @module environment */
 
@@ -51,6 +53,7 @@ class Environment {
 		this.currentPackageForBinding = null;
 		this.packages = null;
 		this.listOfPackagesUsed = null;
+		this.references = 0;
 
 		// this.packageKludge = null;
 	}
@@ -96,7 +99,21 @@ class Environment {
 
 	pushEnv() {
 		let env = new Environment(this);
+		heap.addEnvReference(this);
+		heap.addEnvReference(env);
 		return env;
+	}
+
+	finalize() {
+		heap.removeEnvReference(this);
+		heap.removeEnvReference(this.parentEnv);
+	}
+
+	cleanUp() {
+		for (let name in this.symbols) {
+			let val = this.symbols[name];
+			heap.removeReference(val);
+		}
 	}
 
 	// packages:
@@ -163,13 +180,16 @@ class Environment {
 
 	bind(name, val, packageName) {
 		if (this.symbols[name]) {
+			heap.removeReference(this.symbols[name].val);
 			this.symbols[name].val = val;
+			heap.addReference(val);
 			this.symbols[name].packageName = packageName; // I guess it's totally unnecessary because you could parse the name.
 		} else {
+			heap.addReference(val);
 			this.symbols[name] = this.makeBindingRecord(name, val, packageName);
 		}
 		if (val.getTypeName() == '-closure-') {
-			val.setCmdName(name);
+			val.setSymbolBinding(name);
 		}
 	}
 
@@ -239,13 +259,13 @@ class Environment {
 			return val;
 		} else {
 			let refName = dereferencingPart[0];
-			let thisReferenceTag = new Tag(refName);
+			let thisReferenceTag = newTagOrThrowOOM(refName, 'dereferencing');
 			if (!this.isDereferenceable(val)) {
-				throw new EError(`cannot dereference this thing: [${val.debugString()}]. Sorry!`);
+				throw constructFatalError(`cannot dereference this thing: [${val.debugString()}]. Sorry!`);
 			}
 			let newval = val.getChildWithTag(thisReferenceTag);
 			if (!newval) {
-				throw new EError(`unknown reference ${refName}. Sorry!`);
+				throw constructFatalError(`unknown reference ${refName}. Sorry!`);
 			}
 			dereferencingPart.shift();
 			return this.dereference(newval, dereferencingPart)
@@ -256,17 +276,17 @@ class Environment {
 		if (dereferencingPart.length == 1) {
 			return {
 				'val': val,
-				'tag': new Tag(dereferencingPart[0])
+				'tag': newTagOrThrowOOM(dereferencingPart[0], 'dereferencing to parent, length 1')
 			}
 		} else {
 			let refName = dereferencingPart[0];
-			let thisReferenceTag = new Tag(refName);
+			let thisReferenceTag = newTagOrThrowOOM(refName, 'dereferencing to parent');
 			if (!this.isDereferenceable(val)) {
-				throw new EError(`cannot dereference this thing: [${val.debugString()}]. Sorry!`);
+				throw constructFatalError(`cannot dereference this thing: [${val.debugString()}]. Sorry!`);
 			}
 			let newval = val.getChildWithTag(thisReferenceTag);
 			if (!newval) {
-				throw new EError(`unknown reference ${refName}. Sorry!`);
+				throw constructFatalError(`unknown reference ${refName}. Sorry!`);
 			}
 			dereferencingPart.shift();
 			return this.derefToParent(newval, dereferencingPart)
@@ -282,7 +302,7 @@ class Environment {
 		}
 		let binding = this._recursiveLookup(name, [this.listOfPackagesUsed]);
 		if (!binding) {
-			throw new EError(`undefined symbol: ${name}. Sorry!`);
+			throw constructFatalError(`undefined symbol: ${name}. Sorry!`);
 		}
 		binding.val.packageName = binding.packageName;
 		if (dereferencingPart) {
@@ -311,13 +331,13 @@ class Environment {
 		}
 		let binding = this._recursiveLookup(name, [this.listOfPackagesUsed]);
 		if (!binding) {
-			throw new EError(`undefined symbol: ${name}, cannot set. Sorry!`);
+			throw constructFatalError(`undefined symbol: ${name}, cannot set. Sorry!`);
 		}
 		if (dereferencingPart) {
 			let derefSetRecord = this.derefToParent(binding.val, dereferencingPart);
 			let v = derefSetRecord.val;
-			if (!(v instanceof NexContainer)) {
-				throw new EError('cannot dereference a non-org');
+			if (!Utils.isNexContainer(v)) {
+				throw constructFatalError('cannot dereference a non-org');
 			}
 			for (let i = 0; i < v.numChildren(); i++) {
 				if (v.getChildAt(i).hasTag(derefSetRecord.tag)) {
@@ -327,7 +347,7 @@ class Environment {
 				}
 			}
 			// if we got here, we tried to reference a nonexistant property.
-			throw new EError(`unknown reference ${derefSetRecord.tag.getName()}. Sorry!`);
+			throw constructFatalError(`unknown reference ${derefSetRecord.tag.getTagString()}. Sorry!`);
 		} else {
 			binding.val = val;
 		}

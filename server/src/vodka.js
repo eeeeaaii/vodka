@@ -47,8 +47,7 @@ import { RenderNode } from './rendernode.js'
 import { Root } from './nex/root.js'
 import { Command } from './nex/command.js'
 import { DeferredCommand } from './nex/deferredcommand.js'
-import { EString } from './nex/estring.js'
-import { Doc } from './nex/doc.js'
+import { constructEString } from './nex/estring.js'
 import { NEXT_NEX_ID, setNextNexId } from './nex/nex.js'
 import { runTest } from './tests/unittests.js';
 import { possiblyRecordAction, startRecordingTest } from './testrecorder.js'
@@ -175,7 +174,7 @@ function setDocRootFromFile(filename) {
 		"eval",
 		Command.makeCommandWithArgs(
 			"load",
-			new EString(filename)));
+			constructEString(filename)));
 	let exp = evaluateNexSafely(cmd, BINDINGS);
 	let expNode = root.appendChild(exp);
 	expNode.setSelected(true);

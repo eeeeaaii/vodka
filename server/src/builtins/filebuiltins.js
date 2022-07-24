@@ -20,11 +20,11 @@ import * as Utils from '../utils.js'
 import { Builtin } from '../nex/builtin.js'
 import { Command } from '../nex/command.js'
 import { Lambda } from '../nex/lambda.js'
-import { EError } from '../nex/eerror.js'
-import { EString } from '../nex/estring.js'
+import { constructEError } from '../nex/eerror.js'
+import { constructEString } from '../nex/estring.js'
 import { Nil } from '../nex/nil.js'
 import { wrapError } from '../evaluator.js'
-import { DeferredValue } from '../nex/deferredvalue.js'
+import { DeferredValue, constructDeferredValue } from '../nex/deferredvalue.js'
 import { Org } from '../nex/org.js'
 import { ESymbol } from '../nex/esymbol.js'
 import { ERROR_TYPE_INFO } from '../nex/eerror.js'
@@ -39,6 +39,7 @@ import {
 	RENDER_MODE_EXPLO,
 	RENDER_MODE_INHERIT,
 } from '../globalconstants.js'
+import { sAttach } from '../syntheticroot.js'
 
 
 
@@ -60,7 +61,7 @@ function createFileBuiltins() {
 		'list-files',
 		[ ],
 		function $load(env, executionEnvironment) {
-			let deferredValue = new DeferredValue();
+			let deferredValue = constructDeferredValue();
 			deferredValue.set(new GenericActivationFunctionGenerator(
 				'list-files', 
 				function(callback, deferredValue) {
@@ -70,7 +71,7 @@ function createFileBuiltins() {
 					})
 				}
 			));
-			let loadingMessage = new EError(`listing files`);
+			let loadingMessage = constructEError(`listing files`);
 			loadingMessage.setErrorType(ERROR_TYPE_INFO);
 			deferredValue.appendChild(loadingMessage)
 			deferredValue.activate();
@@ -83,7 +84,7 @@ function createFileBuiltins() {
 		'list-standard-function-files',
 		[ ],
 		function $load(env, executionEnvironment) {
-			let def = new DeferredValue();
+			let def = constructDeferredValue();
 			def.set(new GenericActivationFunctionGenerator(
 				'list-standard-function-files', 
 				function(callback, def) {
@@ -93,7 +94,7 @@ function createFileBuiltins() {
 					})
 				}
 			));
-			let loadingMessage = new EError(`listing standard function files`);
+			let loadingMessage = constructEError(`listing standard function files`);
 			loadingMessage.setErrorType(ERROR_TYPE_INFO);
 			def.appendChild(loadingMessage)
 			def.activate();
@@ -113,7 +114,7 @@ function createFileBuiltins() {
 			// need to look for illegal filename characters if it's a string?
 			let nm = nametype == '-symbol-' ? name.getTypedValue() : name.getFullTypedValue();
 
-			let def = new DeferredValue();
+			let def = constructDeferredValue();
 			def.set(new GenericActivationFunctionGenerator(
 				'load', 
 				function(callback, def) {
@@ -122,7 +123,7 @@ function createFileBuiltins() {
 					})
 				}
 			));
-			let loadingMessage = new EError(`load file ${nm}`);
+			let loadingMessage = constructEError(`load file ${nm}`);
 			loadingMessage.setErrorType(ERROR_TYPE_INFO);
 			def.appendChild(loadingMessage);
 			def.activate();
@@ -140,16 +141,16 @@ function createFileBuiltins() {
 			// need to look for illegal filename characters if it's a string?
 			let nm = nametype == '-symbol-' ? name.getTypedValue() : name.getFullTypedValue();
 
-			let def = new DeferredValue();
+			let def = constructDeferredValue();
 			def.set(new GenericActivationFunctionGenerator(
 				'load-raw', 
 				function(callback, def) {
 					loadRaw(nm, function(loadResult) {
-						callback(new EString(loadResult));
+						callback(constructEString(loadResult));
 					})
 				}
 			));
-			let loadingMessage = new EError(`load file ${nm}`);
+			let loadingMessage = constructEError(`load file ${nm}`);
 			loadingMessage.setErrorType(ERROR_TYPE_INFO);
 			def.appendChild(loadingMessage)
 			def.activate();
@@ -171,7 +172,7 @@ function createFileBuiltins() {
 			let nm = nametype == '-symbol-' ? name.getTypedValue() : name.getFullTypedValue();
 
 
-			let def = new DeferredValue();
+			let def = constructDeferredValue();
 			def.set(new GenericActivationFunctionGenerator(
 				'save', 
 				function(callback, def) {
@@ -181,7 +182,7 @@ function createFileBuiltins() {
 					})
 				}
 			));
-			let savingMessage = new EError(`save in file ${nm} this data: ${val.prettyPrint()}`);
+			let savingMessage = constructEError(`save in file ${nm} this data: ${val.prettyPrint()}`);
 			savingMessage.setErrorType(ERROR_TYPE_INFO);
 			def.appendChild(savingMessage)
 			def.activate();
@@ -203,7 +204,7 @@ function createFileBuiltins() {
 			// need to look for illegal filename characters if it's a string?
 			let nm = nametype == '-symbol-' ? name.getTypedValue() : name.getFullTypedValue();
 
-			let def = new DeferredValue();
+			let def = constructDeferredValue();
 			def.set(new GenericActivationFunctionGenerator(
 				'save', 
 				function(callback, def) {
@@ -213,7 +214,7 @@ function createFileBuiltins() {
 					})
 				}
 			));
-			let savingMessage = new EError(`save in file ${nm} this data: ${val.prettyPrint()}`);
+			let savingMessage = constructEError(`save in file ${nm} this data: ${val.prettyPrint()}`);
 			savingMessage.setErrorType(ERROR_TYPE_INFO);
 			def.appendChild(savingMessage);
 			def.activate();
@@ -235,7 +236,7 @@ function createFileBuiltins() {
 			let val = env.lb('val');
 			let saveval = val.getFullTypedValue();
 
-			let def = new DeferredValue();
+			let def = constructDeferredValue();
 			def.set(new GenericActivationFunctionGenerator(
 				'save-string-as', 
 				function(callback, def) {
@@ -244,7 +245,7 @@ function createFileBuiltins() {
 					})
 				}
 			));
-			let savingMessage = new EError(`save in file ${nm} this data: ${val}`);
+			let savingMessage = constructEError(`save in file ${nm} this data: ${val}`);
 			savingMessage.setErrorType(ERROR_TYPE_INFO);
 			def.appendChild(savingMessage);
 			def.activate();
@@ -263,7 +264,7 @@ function createFileBuiltins() {
 			// need to look for illegal filename characters if it's a string?
 			let nm = nametype == '-symbol-' ? name.getTypedValue() : name.getFullTypedValue();
 
-			let def = new DeferredValue();
+			let def = constructDeferredValue();
 			def.set(new GenericActivationFunctionGenerator(
 				'import', 
 				function(callback, def) {
@@ -272,7 +273,7 @@ function createFileBuiltins() {
 					})
 				}
 			));
-			let importMessage = new EError(`import package ${nm}`);
+			let importMessage = constructEError(`import package ${nm}`);
 			importMessage.setErrorType(ERROR_TYPE_INFO);
 			def.appendChild(importMessage)
 			def.activate();
@@ -320,7 +321,7 @@ function createFileBuiltins() {
 			let packageName = env.lb('name').getTypedValue();
 			let lst = env.lb('block');
 
-			let packageScope = executionEnvironment.pushEnv();
+			let packageScope = executionEnvironment.pushEnv(); // popped
 			packageScope.setPackageForBinding(packageName);
 			packageScope.usePackage(packageName);
 
@@ -340,7 +341,7 @@ function createFileBuiltins() {
 			let evalNextArg = function() {
 				for( ; nextArgToEval < packageStatements.length ; nextArgToEval++) {
 					let c = packageStatements[nextArgToEval];
-					let result = evaluateNexSafely(c, packageScope);
+					let result = sAttach(evaluateNexSafely(c, packageScope));
 					if (Utils.isDeferredValue(result)) {
 						packageStatements[nextArgToEval] = result;
 						result.addListener({
@@ -350,18 +351,20 @@ function createFileBuiltins() {
 					}
 					if (Utils.isFatalError(result)) {
 						let err = wrapError('&szlig;', `package: error returned from expression ${nextArgToEval+2}`, result);
+						packageScope.finalize();
 						deferredCallback(err);
 						return;
 					}
 				}
 				if (nextArgToEval == packageStatements.length) {
-					let message = new EError(`successfully created package.`);
+					let message = constructEError(`successfully created package.`);
 					message.setErrorType(ERROR_TYPE_INFO);
+					packageScope.finalize();
 					deferredCallback(message);
 				}
 			}
 
-			let r = new DeferredValue();
+			let r = constructDeferredValue();
 			r.set(new GenericActivationFunctionGenerator(
 				'package', 
 				function(callback, def) {
@@ -369,7 +372,7 @@ function createFileBuiltins() {
 					evalNextArg();
 				}
 			));
-			let message = new EError(`creating package`);
+			let message = constructEError(`creating package`);
 			message.setErrorType(ERROR_TYPE_INFO);
 			r.appendChild(message)
 			r.activate();

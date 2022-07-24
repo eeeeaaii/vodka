@@ -22,6 +22,8 @@ import { NexContainer } from './nexcontainer.js'
 import { ContextType } from '../contexttype.js'
 import { experiments } from '../globalappflags.js'
 import { evaluateNexSafely } from '../evaluator.js'
+import { heap, HeapString } from '../heap.js'
+
 import {
 	RENDER_FLAG_INSERT_AFTER,
 	RENDER_FLAG_INSERT_BEFORE,
@@ -29,13 +31,14 @@ import {
 	RENDER_FLAG_INSERT_AROUND,
  } from '../globalconstants.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
+import { constructFatalError } from './eerror.js'
 
 
 
 class Word extends NexContainer {
 	constructor() {
 		super();
-		this.pfstring = null;
+		this.pfstring = new HeapString();
 		this.setHorizontal();
 	}
 
@@ -49,7 +52,7 @@ class Word extends NexContainer {
 
 
 	makeCopy(shallow) {
-		let r = new Word();
+		let r = constructWord();
 		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
 		return r;
@@ -95,7 +98,7 @@ class Word extends NexContainer {
 		let s = '';
 		this.doForEachChild(function(c) {
 			if (!(c.getTypeName() == '-letter-')) {
-				throw new EError('cannot convert word to string, invalid format');
+				throw constructFatalError('cannot convert word to string, invalid format');
 			}
 			s += c.getText();
 		})
@@ -137,15 +140,15 @@ class Word extends NexContainer {
 	}
 
 	setPfont(pfstring) {
-		this.pfstring = pfstring;
+		this.pfstring.set(pfstring);
 		this.doForEachChild(function(c) {
 			c.setPfont(pfstring);
 		})
 	}
 
 	insertChildAt(c, i) {
-		if (this.pfstring) {
-			c.setPfont(this.pfstring);
+		if (this.pfstring.get()) {
+			c.setPfont(this.pfstring.get());
 		}
 		super.insertChildAt(c, i);
 	}
@@ -194,7 +197,19 @@ class Word extends NexContainer {
 			
 		}
 	}
+
+	memUsed() {
+		return super.memUsed() + heap.sizeWord();
+	}
 }
 
-export { Word }
+function constructWord() {
+	if (!heap.requestMem(heap.sizeWord())) {
+		throw new constructFatalError(`OUT OF MEMORY: cannot allocate Word.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new Word());
+}
+
+export { Word, constructWord }
 

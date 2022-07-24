@@ -18,7 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { systemState } from './systemstate.js';
 import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
 import { manipulator } from './manipulator.js';
-import { EError, ERROR_TYPE_WARN } from './nex/eerror.js';
+import { constructWarning } from './nex/eerror.js';
 
 const levelsOfUndo = 100;
 
@@ -406,8 +406,7 @@ class EvaluateAndReplaceAction extends Action {
 		this.nodeBeingEvaluated.setSelected();
 		this.nodeBeingEvaluated.setInsertionMode(this.savedInsertionMode);
 
-		let ee = new EError("Warning: undoing code evaluation does not undo side effects.");
-		ee.setErrorType(ERROR_TYPE_WARN);
+		let ee = constructWarning("Warning: undoing code evaluation does not undo side effects.");
 		this.parentOfNodeBeingEvaluated.insertChildBefore(ee, this.nodeBeingEvaluated);
 	}
 }
@@ -429,8 +428,7 @@ class EvaluateInPlaceAction extends Action {
 	}
 
 	undoAction() {
-		let ee = new EError("Warning: undoing code evaluation does not undo side effects.")
-		ee.setErrorType(ERROR_TYPE_WARN);
+		let ee = constructWarning("Warning: undoing code evaluation does not undo side effects.")
 		this.parentOfNodeBeingEvaluated.insertChildBefore(ee, this.nodeBeingEvaluated);
 	}
 }

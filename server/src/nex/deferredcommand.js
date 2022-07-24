@@ -17,7 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as Utils from '../utils.js'
 
-import { DeferredValue } from './deferredvalue.js'
+import { constructDeferredValue } from './deferredvalue.js'
 import { Command, CommandEditor } from './command.js'
 import { gc } from '../gc.js'
 import { Editor } from '../editors.js'
@@ -31,19 +31,23 @@ import {
 import { executeRunInfo } from '../commandfunctions.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { ARGRESULT_LISTENING, ARGRESULT_SETTLED, ARGRESULT_FINISHED } from '../argevaluator.js'
-
+import { heap } from '../heap.js'
+import { constructFatalError } from './eerror.js'
 
 
 class DeferredCommand extends Command {
 	constructor(val) {
 		super(val);
 
+		// note, you could have code that infinitely queues up unfinished
+		// deferred commands, meaning that you could run out of memory
+		// with things like the runInfo -- so this needs to be looked at.
 		this._activated = false;
-		this._activationEnv = null;
 		this._finished = false;
-		this._returnedValue = null;
-		this._runInfo = null;
+		this._cancelled = false;
 
+		this._activationEnv = null;
+		this._returnedValue = null;
 		this._runInfo = null;
 
 		gc.register(this);
@@ -94,7 +98,7 @@ class DeferredCommand extends Command {
 	}
 
 	makeCopy(shallow) {
-		let r = new DeferredCommand();
+		let r = constructDeferredCommand();
 		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
 		return r;
@@ -114,8 +118,10 @@ class DeferredCommand extends Command {
 			copyOfSelf.appendChild(this.getChildAt(i));
 		}
 
+		// it's a bit messy that runinfo is initialized when we evaluate.
+		// should this happen when activated?
 
-		let dv = new DeferredValue();
+		let dv = constructDeferredValue();
 		copyOfSelf._runInfo = copyOfSelf.createRunInfo(executionEnv);
 
 		// make it so the arg container in the runinfo updates the actual
@@ -132,17 +138,25 @@ class DeferredCommand extends Command {
 		dv.set(afg);
 		dv.activate();
 
+		// I'm returning dv/_returnedValue so I don't need to (and shouldn't) ref count it
 
 		return dv;
 	}
 
 	activate(executionEnv) {
+		heap.addEnvReference(executionEnv);
 		this._activationEnv = executionEnv;
 		this._activated = true;
 		this.tryToFinish();
 	}
 
 	tryToFinish() {
+		if (this._cancelled) {
+			return;
+		}
+		if (this._returnedValue.wasFreed) {
+			return;
+		}
 		let evaluationResult = null;
 		try {
 			evaluationResult = this._runInfo.argEvaluator.evaluatePotentiallyDeferredArgs(this);
@@ -162,7 +176,7 @@ class DeferredCommand extends Command {
 			*/
 		} catch (e) {
 			if (Utils.isFatalError(e)) {
-				this._returnedValue.finish(e);
+				this.finish(e);
 			} else {
 				throw e;
 			}
@@ -170,16 +184,45 @@ class DeferredCommand extends Command {
 		if (evaluationResult == ARGRESULT_SETTLED || evaluationResult == ARGRESULT_FINISHED) {
 			let executionResult = executeRunInfo(this._runInfo, this._activationEnv);
 			if (Utils.isFatalError(executionResult)) {
-				this._returnedValue.finish(executionResult);
+				this.finish(executionResult);
 			} else if (evaluationResult == ARGRESULT_SETTLED) {
-				this._returnedValue.settle(executionResult)
+				this.settle(executionResult);
 			} else {
-				this._returnedValue.finish(executionResult)				
+				this.finish(executionResult);
 			}
 		}
 		this.setDirtyForRendering(true);
 		eventQueueDispatcher.enqueueRenderOnlyDirty();
 
+	}
+
+	finish(result) {
+		heap.removeEnvReference(this._activationEnv);
+		this._runInfo.finalize();
+		this._runInfo = null;
+
+		this._finished = true;
+		// this._finished needs to be set to true before calling finish on
+		// the returned value. When we call finish on the returned value,
+		// this deferred command will be removed as the child of that deferred value
+		// and replaced with the result of the computation. When that happens,
+		// memory cleanup happens. When memory cleanup happens on a deferred command,
+		// it will check this._finished and try to cancel the deferred value if it's
+		// not finished. So we have to make sure this is marked as finished first
+		// so we don't try to cancel something that was already finished.
+		this._returnedValue.finish(result);
+	}
+
+	settle(result) {
+		// don't remove ref
+		this._returnedValue.settle(result)
+	}
+
+	cancel() {
+		heap.removeEnvReference(this._activationEnv);
+		this._runInfo.finalize();
+		this._runInfo = null;
+		this._cancelled = true;
 	}
 
 	notify() {
@@ -207,7 +250,7 @@ class DeferredCommand extends Command {
 			} else {
 				dotspan.classList.remove('editing');
 			}
-			dotspan.innerText = this.commandtext;
+			dotspan.innerText = this.getCommandText(); // superclass method
 		}
 	}
 
@@ -225,7 +268,7 @@ class DeferredCommand extends Command {
 	}
 
 	static makeDeferredCommandWithArgs(cmdname, maybeargs) {
-		let cmd = new DeferredCommand(cmdname);
+		let cmd = constructDeferredCommand(cmdname);
 
 		// this little snippet lets you do varargs or array
 		let args = [];
@@ -241,7 +284,32 @@ class DeferredCommand extends Command {
 		return cmd;
 	}
 
+	memUsed() {
+		let r = heap.sizeDeferredCommand();
+		if (this._runInfo) {
+			r += this._runInfo.memUsed();
+		}
+		return r + super.memUsed();
+	}
 
+	cleanupOnMemoryFree() {
+		if (this._activated && !this._finished) {
+			this.cancel();
+		}
+		// because we initialize runinfo at evaluation time not activation time,
+		// there is the possibility that even after canceling there will still be runinfo
+		if (this._runInfo) {
+			this._runInfo.finalize();
+		}
+	}
 }
 
-export { DeferredCommand }
+function constructDeferredCommand(val) {
+	if (!heap.requestMem(heap.sizeDeferredCommand())) {
+		throw constructFatalError(`OUT OF MEMORY: cannot allocate DeferredCommand.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new DeferredCommand(val));
+}
+
+export { DeferredCommand, constructDeferredCommand}

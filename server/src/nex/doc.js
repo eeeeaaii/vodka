@@ -18,11 +18,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from '../utils.js'
 
 import { NexContainer } from './nexcontainer.js'
-import { EError } from './eerror.js'
+import { constructFatalError } from './eerror.js'
 import { ContextType } from '../contexttype.js'
 import { experiments } from '../globalappflags.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED, CONSOLE_DEBUG } from '../globalconstants.js'
+import { heap, HeapString } from '../heap.js'
 
 /**
  * Represents a document with text in it.
@@ -30,7 +31,7 @@ import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED, CONSOLE_DEBUG } from '../glo
 class Doc extends NexContainer {
 	constructor() {
 		super();
-		this.pfstring = null;
+		this.pfstring = new HeapString();
 		this.setVertical();
 	}
 
@@ -58,7 +59,7 @@ class Doc extends NexContainer {
 	}
 
 	setPfont(pfstring) {
-		this.pfstring = pfstring;
+		this.pfstring.set(pfstring);
 		this.doForEachChild(function(c) {
 			c.setPfont(pfstring);
 		})
@@ -73,8 +74,8 @@ class Doc extends NexContainer {
 	}
 
 	insertChildAt(c, i) {
-		if (this.pfstring) {
-			c.setPfont(this.pfstring);
+		if (this.pfstring.get()) {
+			c.setPfont(this.pfstring.get());
 		}
 		super.insertChildAt(c, i);
 	}
@@ -84,7 +85,7 @@ class Doc extends NexContainer {
 	}
 
 	makeCopy(shallow) {
-		let r = new Doc();
+		let r = constructDoc();
 		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
 		return r;
@@ -100,7 +101,7 @@ class Doc extends NexContainer {
 				}
 				s += c.getValueAsString();
 			} else {
-				throw new EError(`Cannot convert doc to string, incorrect doc format (at line ${index}, has ${c.debugString()}). Sorry!`);
+				throw constructFatalError(`Cannot convert doc to string, incorrect doc format (at line ${index}, has ${c.debugString()}). Sorry!`);
 			}
 			index++;
 		});
@@ -178,7 +179,19 @@ class Doc extends NexContainer {
 			'_': 'JUST_USE_DEFAULT',
 		};
 	}
+
+	memUsed() {
+		return super.memUsed() + heap.sizeDoc() + this.pfstring.memUsed();
+	}
 }
 
-export { Doc }
+function constructDoc() {
+	if (!heap.requestMem(heap.sizeDoc())) {
+		throw constructFatalError(`OUT OF MEMORY: cannot allocate Doc.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new Doc());
+}
+
+export { Doc, constructDoc }
 

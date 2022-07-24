@@ -15,8 +15,10 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from './utils.js';
+
 import { BINDINGS } from './environment.js'
-import { EError, ERROR_TYPE_FATAL, ERROR_TYPE_WARN, ERROR_TYPE_INFO } from './nex/eerror.js'
+import { constructFatalError } from './nex/eerror.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { parse } from './nexparser2.js';
 import { systemState } from './systemstate.js'
@@ -127,7 +129,7 @@ function loadAndRun(name, callback) {
 }
 
 function serverError() {
-	let r = new EError("Server error.");
+	let r = constructFatalError("Server error.");
 	return r;
 }
 
@@ -137,8 +139,8 @@ function parseReturnPayload(data, callback) {
 	try {
 		result = parse(data);
 	} catch (e) {
-		if (!(e instanceof EError)) {
-			result = new EError(
+		if (!Utils.isError(e)) {
+			result = constructFatalError(
 `PEG PARSER PERROR
 full error message follows:
 ${e.name}
@@ -157,34 +159,11 @@ function evaluatePackage(nex) {
 	if (!(nex.getTypeName() == '-command-'
 				&& (nex.getCommandName() == 'package'
 				|| nex.getCommandName() == 'template'))) {
-		let r = new EError('Can only import packages or templates, see file contents')
+		let r = constructFatalError('Can only import packages or templates, see file contents')
 		return r;
 	}
 	let result = evaluateNexSafely(nex, BINDINGS);
 	return result;
-
-	// this doesn't work because it returns a deferred value not an error.
-	// the dv gets fulfilled with an error if the package fails.
-
-	// let r = null;
-	// if (result.getTypeName() == '-error-'
-	// 		&& result.getErrorType() == ERROR_TYPE_FATAL) {
-	// 	r = new EError("Import failed.");
-	// 	r.appendChild(result);
-	// 	r.setErrorType(ERROR_TYPE_FATAL);
-	// 	return r;
-	// } else if (result.getTypeName() == '-error-'
-	// 		&& result.getErrorType() == ERROR_TYPE_WARN) {
-	// 	r = new EError("Import succeeded with warnings.");
-	// 	r.appendChild(result);
-	// 	r.setErrorType(ERROR_TYPE_WARN);
-	// 	return r;
-	// } else {
-	// 	r = new EError("Import successful.");
-	// 	r.appendChild(result);
-	// 	r.setErrorType(ERROR_TYPE_INFO);		
-	// 	return r;
-	// }
 }
 
 // This util is meant to be used from functions like
@@ -196,8 +175,7 @@ function saveShortcut(namesym, val, callback) {
 	let nametype = namesym.getTypeName();
 	let nm = '';
 	saveNex(nm, val, function(result) {
-		if (result.getTypeName() == '-error-'
-			&& result.getErrorType() == ERROR_TYPE_INFO) {
+		if (Utils.isInfo(result)) {
 			callback(null);
 		} else {
 			callback(result);

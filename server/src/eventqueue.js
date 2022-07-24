@@ -45,6 +45,7 @@ import { gc } from './gc.js'
 import { respondToClickEvent } from './browsereventresponsefunctions.js'
 import { systemState } from './systemstate.js'
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
+import { experiments } from './globalappflags.js'
 
 const EVENT_DEBUG = false;
 
@@ -87,7 +88,9 @@ class EventQueue {
 					&& other.renderNode == this.renderNode);
 			},
 			do: function doAlertAnimation() {
-				this.renderNode.doAlertAnimation();
+				if (!experiments.DISABLE_ALERT_ANIMATIONS) {
+					this.renderNode.doAlertAnimation();
+				}
 			}
 		};
 		this.queueSet[ALERT_ANIMATION_PRORITY].push(item);

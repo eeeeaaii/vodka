@@ -17,7 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as Utils from './utils.js';
 
-import { EError } from './nex/eerror.js'
+import { constructFatalError } from './nex/eerror.js'
 import { experiments } from './globalappflags.js'
 import { doTutorial } from './help.js'
 
@@ -44,10 +44,14 @@ function evaluateNexSafely(nex, executionEnvironment, skipActivation /* TODO: re
 			if (result.isMutable) doTutorial('mutability');
 		}
 	} catch (e) {
-		if (e instanceof EError) {
+		if (Utils.isError(e)) {
 			result = e;
 		} else {
-			throw e;
+			if (e.message && e.message.indexOf('CONVERT TO EERROR:') == 0) {
+				return constructFatalError(e.message.substr(18));
+			} else {
+				throw e;
+			}
 		}
 	}
 	return result;
@@ -67,7 +71,7 @@ function evaluateNexSafely(nex, executionEnvironment, skipActivation /* TODO: re
  * @returns {EError} the wrapper error
  */
 function wrapError(prefix, message, inner) {
-	let e = new EError(message, prefix);
+	let e = constructFatalError(message, prefix);
 	e.appendChild(inner);
 	return e;
 }

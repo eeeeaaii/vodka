@@ -21,9 +21,8 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { autocomplete } from '../autocomplete.js'
 import { NexContainer } from './nexcontainer.js'
 import { BUILTINS, BINDINGS } from '../environment.js'
-import { EError } from './eerror.js'
+import { constructFatalError, throwOOM } from './eerror.js'
 import { Closure } from './closure.js'
-import { Org } from './org.js'
 import { ContextType } from '../contexttype.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
@@ -31,6 +30,8 @@ import { Editor } from '../editors.js'
 import { experiments } from '../globalappflags.js'
 import { doTutorial } from '../help.js'
 import { executeRunInfo, ArgContainer, Arg, RunInfo } from '../commandfunctions.js'
+import { heap, HeapString } from '../heap.js'
+import { sAttach } from '../syntheticroot.js'
 
 
 /**
@@ -38,6 +39,8 @@ import { executeRunInfo, ArgContainer, Arg, RunInfo } from '../commandfunctions.
  */
 class Command extends NexContainer {
 	constructor(val) {
+		// memory ok
+
 		super();
 
 		// temporary hack to help convert old files
@@ -45,20 +48,19 @@ class Command extends NexContainer {
 			val = val.replace(/--/g, ' ');
 		}
 
-		this.commandtext = (val ? val : "");
+		this.commandtext = new HeapString();
+
+		this.commandtext.set(val ? val : "") || throwOOM('Command text')
 		this.cachedClosure = null;
 		// a lot of the builtins and other code generate commands with null command strings
 		// and append a lambda as the first argument - there's no need to attempt
 		// caching in those cases and it's a real performance hit.
-		if (this.commandtext) {
+		if (this.commandtext.get()) {
 			this.cacheClosureIfCommandTextIsBound();
 		}
 
-		this.evalState = null;
 
 		this.unparsableCommandName = '';
-
-
 		this.searchingOn = null;
 		this.previousMatch = null;
 		this.skipAlert = false;
@@ -85,7 +87,7 @@ class Command extends NexContainer {
 		if (experiments.ASM_RUNTIME) {
 			return this.getWasmValue(this.runtimeId);
 		} else {
-			return this.commandtext;
+			return this.commandtext.get();
 		}
 	}
 
@@ -94,7 +96,7 @@ class Command extends NexContainer {
 			this.setWasmValue(this.runtimeId, t);
 		} else {
 	 		this.ghostMatch = null;
-			this.commandtext = t;
+			this.commandtext.set(t) || throwOOM('Setting command text');
 			this.cacheClosureIfCommandTextIsBound();
 			this.searchingOn = null;
 			this.previousMatch = null;
@@ -118,17 +120,21 @@ class Command extends NexContainer {
 		// and caught the exception (and ignored it) if it failed. However
 		// throwing exceptions is expensive and hurts performance so instead
 		// we test directly for whether binding is here
-		if (BUILTINS.hasBinding(this.commandtext)) {
-			let closure = BUILTINS.lookupBinding(this.commandtext);
+		if (BUILTINS.hasBinding(this.commandtext.get())) {
+			let closure = BUILTINS.lookupBinding(this.commandtext.get());
 			if (closure) {
 				// what if the name of the function gets rebound to a non-closure?
 				this.cachedClosure = closure;
 			}
 		}
+		// Note, this doesn't need to count as a reference vis-a-vis the heap.
+		// Things in BINDINGS/BUILTINS can't be freed anyway because there's no
+		// way to unbind them, and we don't cache closure names that are further
+		// down the stack than that.
 	}
 
 	makeCopy(shallow) {
-		let r = new Command();
+		let r = constructCommand();
 		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
 		return r;
@@ -142,7 +148,7 @@ class Command extends NexContainer {
 	}
 
 	toStringV2() {
-		let cmdPrefix = Utils.convertMathToV2String(this.commandtext);
+		let cmdPrefix = Utils.convertMathToV2String(this.commandtext.get());
 		// If the command contains characters that aren't parsable we put the command name
 		// in the private data section instead.
 		let re = /^[a-zA-Z0-9:.-]*$/;
@@ -162,7 +168,7 @@ class Command extends NexContainer {
 
 	prettyPrintInternal(lvl, hdir) {
 		// because of cmdPrefix we don't use standardListPrettyPrint
-		let cmdPrefix = Utils.convertMathToV2String(this.commandtext);
+		let cmdPrefix = Utils.convertMathToV2String(this.commandtext.get());
 		let fline = `${this.doTabs(lvl, hdir)}~${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}`; // exp // \n`;
 		let contents = this.prettyPrintChildren(lvl + 1);
 		let lline = `${this.listEndV2()}` // exp
@@ -173,7 +179,7 @@ class Command extends NexContainer {
 		// if private data was stored with the command, it means that the command name
 		// contained unparsable characters.
 		if (data) {
-			this.commandtext = data;
+			this.commandtext.set(data) || throwOOM('Parsing saved command text');
 		}
 	}
 
@@ -186,12 +192,12 @@ class Command extends NexContainer {
 
 	copyFieldsTo(nex) {
 		super.copyFieldsTo(nex);
-		nex.commandtext = this.commandtext;
+		nex.commandtext.set(this.commandtext.get()) || throwOOM('Copying command');
 		nex.cacheClosureIfCommandTextIsBound();
 	}
 
 	debugString() {
-		return `(~${this.commandtext} ${super.childrenDebugString()})`;
+		return `(~${this.commandtext.get()} ${super.childrenDebugString()})`;
 	}
 
 	isLambdaCommand(env) {
@@ -267,19 +273,20 @@ class Command extends NexContainer {
 		} else if (!!cmdname && cmdname.charAt(0) == '.') {
 			// we are dereferencing the first child!
 			if (this.numChildren() == 0) {
-				throw new EError(`command: cannot dereference with expression "${cmdname}" without a first child to dereference into. Sorry!`)
+				throw constructFatalError(`command: cannot dereference with expression "${cmdname}" without a first child to dereference into. Sorry!`)
 			}
 			let c = this.getChildAt(0);
 			// evaluate the first arg, must eval to an org to deref
 			let org = evaluateNexSafely(c, executionEnv);
-			if (!(org instanceof Org)) {
+			sAttach(org);
+			if (!Utils.isOrg(org)) {
 				// oops it's not an org, can't dereference.
-				throw new EError(`command: stopping because first child "${c.debugString()}" of is not an org so cannot be dereferenced by expression ${cmdname}. Sorry! Debug string for evaluted value of type ${org.getTypeName()} follows: ${org.debugString()}`)
+				throw constructFatalError(`command: stopping because first child "${c.debugString()}" of is not an org so cannot be dereferenced by expression ${cmdname}. Sorry! Debug string for evaluted value of type ${org.getTypeName()} follows: ${org.debugString()}`)
 			}				
 			let derefArray = cmdname.substr(1).split('.');
 			closure = executionEnv.dereference(org, derefArray);
 			if (!(closure.getTypeName() == '-closure-')) {
-				throw new EError(`command: stopping because org member dereferenced by "${cmdname}" is not a closure, so cannot execute. Sorry! Debug string for org follows: ${org.debugString()}`)
+				throw constructFatalError(`command: stopping because org member dereferenced by "${cmdname}" is not a closure, so cannot execute. Sorry! Debug string for org follows: ${org.debugString()}`)
 			}
 			// we already evaluated the first arg, we don't pass it to the arg evaluator
 			skipFirstArg = true;
@@ -290,7 +297,7 @@ class Command extends NexContainer {
 			packageName = binding.packageName;
 			// but we also have to make sure it's bound to a closure
 			if (!(closure.getTypeName() == '-closure-')) {
-				throw new EError(`command: stopping because "${cmdname}" not bound to closure, so cannot execute. Sorry! Debug string for object bound to ${cmdname} of type ${closure.getTypeName()} follows: ${closure.debugString()}`)
+				throw constructFatalError(`command: stopping because "${cmdname}" not bound to closure, so cannot execute. Sorry! Debug string for object bound to ${cmdname} of type ${closure.getTypeName()} follows: ${closure.debugString()}`)
 			}
 		} else if (this.numChildren() > 0) {
 			// okay alternate plan, we look at the first child of the command
@@ -301,19 +308,16 @@ class Command extends NexContainer {
 			}
 			// evaluate the first arg, could be a symbol bound to a closure, a lamba, a command that returns a closure, etc.
 			closure = evaluateNexSafely(c, executionEnv);
+			sAttach(closure);
 			if (!(closure instanceof Closure)) {
 				// oops it's not a closure.
-				throw new EError(`command: stopping because first child "${c.debugString()}" of unnamed command does not evaluate to a closure. Sorry! Debug string for evaluted value of type ${closure.getTypeName()} follows: ${closure.debugString()}`)
+				throw constructFatalError(`command: stopping because first child "${c.debugString()}" of unnamed command does not evaluate to a closure. Sorry! Debug string for evaluted value of type ${closure.getTypeName()} follows: ${closure.debugString()}`)
 			}				
 			// we already evaluated the first arg, we don't pass it to the arg evaluator
 			skipFirstArg = true;
 		} else {
 			// someone tried to evaluate (~ )
-			throw new EError(`command: command with no name and no children has nothing to execute. Sorry!`)			
-		}
-		if (!cmdname) {
-			// last ditch attempt to figure out command name, using boundName hack
-			cmdname = closure.getBoundName();
+			throw constructFatalError(`command: command with no name and no children has nothing to execute. Sorry!`)			
 		}
 		if (!cmdname) {
 			// we have to give them something
@@ -340,18 +344,6 @@ class Command extends NexContainer {
 			packageName);
 	}
 
-	getExpectedReturnType() {
-		return this.evalState.closure.getReturnValueParam();
-	}
-
-	maybeGetCommandName() {
-		return this.evalState.cmdname;
-	}
-
-	evalCleanup() {
-		this.evalState = null;
-	}
-
 	evaluate(executionEnv) {
 		let runInfo = this.createRunInfo(executionEnv);
 		// the job of the evaluator is to evaluate the args AND bind them to variables in the new scope.
@@ -368,7 +360,7 @@ class Command extends NexContainer {
 			// environment, etc.
 			// for ghost display of command info, we do want to consult bindings,
 			// but lexical env is not gonna happen (yet?)
-			let txt = this.commandtext;
+			let txt = this.commandtext.get();
 			if (this.ghostMatch) {
 				txt = this.ghostMatch.name;
 			}
@@ -393,11 +385,6 @@ class Command extends NexContainer {
 		ghost.appendChild(ghostline);
 		return ghost;
 	}
-
-	// isInfix(cmdname) {
-	// 	return !!cmdname &&
-	// 		(cmdname == '-' || Utils.convertMathToV2String(cmdname).indexOf('::') == 0);
-	// }
 
 	// Since we are supporting infix operators we want to support things like
 	// IF something THEN something ELSE something
@@ -432,15 +419,13 @@ class Command extends NexContainer {
 		//   getInfixPart(3) returns ''
 
 		let rightglyph = '<span class="tilde glyphright">&#8766;</span>';
-//		let rightglyph = '<span class="tilde glyphleft faint">·</span>';
 		let spacechar = ' '; // it was going to be bullet.
 
 		let isGhost = !!this.ghostMatch;
-		let cmdtext = this.commandtext;
+		let cmdtext = this.commandtext.get();
 		if (this.ghostMatch) {
 			cmdtext = this.ghostMatch.name;
 		}
-//		cmdtext = cmdtext.replace(/--/g, spacechar).replace(/__/g, spacechar).replace(/ /g, spacechar);
 		cmdtext = cmdtext.replace(/ /g, spacechar);
 
 		// words is an array of arrays of letters.
@@ -509,7 +494,6 @@ class Command extends NexContainer {
 		for (let i = 0; i < theword.length; i++) {
 			let w = theword[i];
 			let letter = w.letter;
-//			let letter = (w.letter == spacechar) ? '&nbsp;' : w.letter
 			if (letter == ' ') {
 				letter = '&nbsp;';
 			}
@@ -540,7 +524,6 @@ class Command extends NexContainer {
 		let lefttilde = '<span class="tilde glyphleft">&#8766;</span>';
 		let faintlefttilde = '<span class="tilde glyphleft faint">&#8766;</span>';
 		let faintleftdot = '<span class="tilde glyphleft faint">·</span>';
-//		let righttilde = '<span class="tilde glyphright">&#8766;</span>';
 		let codespanHtml = (this.isEditing ? lefttilde : faintleftdot);
 		let gclosure = this.getClosureForGhost();
 		let operatorInfix = (gclosure &&
@@ -618,7 +601,7 @@ class Command extends NexContainer {
 				innercodespan.classList.remove('exploded');
 			}
 			if (infixOperator) {
-				innercodespan.innerHTML = this.commandtext;
+				innercodespan.innerHTML = this.commandtext.get();
 			} else { // infixName
 				innercodespan.innerHTML = this.getInfixPart(childNum + 1);
 			}
@@ -636,12 +619,12 @@ class Command extends NexContainer {
 	}
 
 	isEmpty() {
-		return this.commandtext == null || this.commandtext == '';
+		return this.commandtext.get() == null || this.commandtext.get() == '';
 	}
 
 	deleteLastCommandLetter() {
 		this.ghostMatch = null;
-		this.commandtext = this.commandtext.substr(0, this.commandtext.length - 1);
+		this.commandtext.removeFromEnd(1);
 		this.cacheClosureIfCommandTextIsBound();
 		this.searchingOn = null;
 		this.previousMatch = null;
@@ -649,7 +632,7 @@ class Command extends NexContainer {
 
 	appendCommandText(txt) {
 		this.ghostMatch = null;
-		this.commandtext = this.commandtext + txt;
+		this.commandtext.append(txt) || throwOOM('Appending to command text');
 		this.cacheClosureIfCommandTextIsBound();
 		this.searchingOn = null;
 		this.previousMatch = null;
@@ -678,102 +661,8 @@ class Command extends NexContainer {
 		this.searchingOn = searchText;
 		this.previousMatch = this.ghostMatch;
 		this.setDirtyForRendering(true);
-
-		// if (match.length > searchText.length) {
-		// 	let ghostMatch = match.substr(searchText.length, match.length);
-		// 	this.ghostMatch = ghostMatch;
-		// } else {
-		// 	this.ghostMatch = null;
-		// }
-		// this.searchingOn = searchText;
-		// this.previousMatch = match;
-		// this.setDirtyForRendering(true);
 	}
 
-	static quote(item) {
-		let q = new Command('quote');
-		q.fastAppendChildAfter(item, null);
-		return q;
-	}
-
-	// for performance reasons I have these hard coded functions where
-	// you just pass N args
-
-	static makeCommandWithClosureZeroArgs(closure) {
-		let cmd = new Command();
-		let appendIterator = null;
-		appendIterator = cmd.fastAppendChildAfter(Command.quote(closure), appendIterator);
-		return cmd;
-	}
-
-	static makeCommandWithClosureOneArg(closure, arg0) {
-		let cmd = new Command();
-		let appendIterator = null;
-		appendIterator = cmd.fastAppendChildAfter(Command.quote(closure), appendIterator);
-		appendIterator = cmd.fastAppendChildAfter(arg0, appendIterator);
-		return cmd;
-	}
-
-	static makeCommandWithClosureTwoArgs(closure, arg0, arg1) {
-		let cmd = new Command();
-		let appendIterator = null;
-		appendIterator = cmd.fastAppendChildAfter(Command.quote(closure), appendIterator);
-		appendIterator = cmd.fastAppendChildAfter(arg0, appendIterator);
-		appendIterator = cmd.fastAppendChildAfter(arg1, appendIterator);
-		return cmd;
-	}
-
-	static makeCommandWithClosureThreeArgs(closure, arg0, arg1, arg2) {
-		let cmd = new Command();
-		let appendIterator = null;
-		appendIterator = cmd.fastAppendChildAfter(Command.quote(closure), appendIterator);
-		appendIterator = cmd.fastAppendChildAfter(arg0, appendIterator);
-		appendIterator = cmd.fastAppendChildAfter(arg1, appendIterator);
-		appendIterator = cmd.fastAppendChildAfter(arg2, appendIterator);
-		return cmd;
-	}
-
-	static makeCommandWithClosure(closure, maybeargs) {
-		let cmd = new Command();
-		let appendIterator = null;
-		appendIterator = cmd.fastAppendChildAfter(Command.quote(closure), appendIterator);
-
-		// this little snippet lets you do varargs or array
-		let args = [];
-		if (Array.isArray(maybeargs)) {
-			args = maybeargs;
-		} else {
-			args = Array.prototype.slice.call(arguments).splice(1);
-		}
-		for (let i = 0; i < args.length; i++) {
-			appendIterator = cmd.fastAppendChildAfter(args[i], appendIterator);
-		}
-		return cmd;
-	}
-
-	static makeCommandWithArgs(cmdname, maybeargs) {
-		let cmd = new Command(cmdname);
-
-		// this little snippet lets you do varargs or array
-		let args = [];
-		if (Array.isArray(maybeargs)) {
-			args = maybeargs;
-		} else {
-			args = Array.prototype.slice.call(arguments).splice(1);
-		}
-		let appendIterator = null;
-		for (let i = 0; i < args.length; i++) {
-			appendIterator = cmd.fastAppendChildAfter(args[i], appendIterator);
-		}
-		return cmd;
-	}
-
-	// used by above static helper functions
-	static pushListContentsIntoArray(array, list) {
-		for (let i = 0; i < list.numChildren(); i++) {
-			array.push(list.getChildAt(i));
-		}
-	}
 
 	getDefaultHandler() {
 		return 'standardDefault';
@@ -781,8 +670,12 @@ class Command extends NexContainer {
 
 	getEventTable(context) {
 		return {
-			'AltSpace': 'autocomplete'
+//			'AltSpace': 'autocomplete'
 		};
+	}
+
+	memUsed() {
+		return super.memUsed() + heap.sizeCommand() + this.commandtext.memUsed();
 	}
 }
 
@@ -858,4 +751,12 @@ class CommandEditor extends Editor {
 	}
 }
 
-export { Command, CommandEditor }
+function constructCommand(val) {
+	if (!heap.requestMem(heap.sizeCommand())) {
+		throw constructFatalError(`OUT OF MEMORY: cannot allocate Command.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new Command(val));
+}
+
+export { Command, CommandEditor, constructCommand }

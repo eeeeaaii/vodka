@@ -17,7 +17,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { ValueNex } from './valuenex.js'
 import { experiments } from '../globalappflags.js'
-
+import { heap } from '../heap.js'
+import { constructFatalError } from './eerror.js'
 
 class Nil extends ValueNex {
 	constructor() {
@@ -29,7 +30,7 @@ class Nil extends ValueNex {
 	}
 
 	makeCopy() {
-		let r = new Nil();
+		let r = constructNil();
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -71,9 +72,20 @@ class Nil extends ValueNex {
 		return {
 		}
 	}
+
+	memUsed() {
+		return super.memUsed() + heap.sizeNil();
+	}
+}
+
+function constructNil() {
+	if (!heap.requestMem(heap.sizeNil())) {
+		throw constructFatalError(`OUT OF MEMORY: cannot allocate Nil.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new Nil());
 }
 
 
-
-export { Nil }
+export { Nil, constructNil }
 

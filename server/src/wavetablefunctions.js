@@ -16,7 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Tag } from './tag.js'
-import { Wavetable } from './nex/wavetable.js'; 
+import { constructWavetable } from './nex/wavetable.js'; 
 
 
 // sc sample rate is 48k samples/sec
@@ -39,13 +39,15 @@ import { Wavetable } from './nex/wavetable.js';
 // a is 1.059463094359 (the 12th root of 2)
 
 let PIXELS_PER_SAMPLE = 1;
+let HEIGHT_PIXELS_FULL_SCALE = 50;
+
 let SAMPLE_RATE = 48000.0;
 let BPM = 120;
 let DEFAULT_TIMEBASE = 'BEATS';
 
-// our reference note will be A-220 (A3)
+// our reference note will be A-440 (A4)
 let REFERENCE_NOTE = 57;
-let REFERENCE_NOTE_FREQ = 220;
+let REFERENCE_NOTE_FREQ = 440;
 
 function getSampleRate() {
 	return SAMPLE_RATE;
@@ -63,6 +65,13 @@ function getGlobalPixelsPerSample() {
 	return PIXELS_PER_SAMPLE;
 }
 
+function setGlobalHeightPixelsFullScale(n) {
+	HEIGHT_PIXELS_FULL_SCALE = n;
+}
+
+function getGlobalHeightPixelsFullScale() {
+	return HEIGHT_PIXELS_FULL_SCALE;
+}
 
 function getReferenceFrequency() {
 	return REFERENCE_NOTE_FREQ;
@@ -72,7 +81,7 @@ function getReferenceFrequency() {
 function nexToTimebase(input) {
 	let type = DEFAULT_TIMEBASE;
 	if (input.numTags() > 0) {
-		let t = input.getTag(0).getName();
+		let t = input.getTag(0).getTagString();
 		if (t == 'note' || t == 'nn') {
 			type = 'NOTE';
 		} else if (t == 'seconds' || t == 'second' || t == 'secs' || t == 'sec') {
@@ -159,10 +168,10 @@ function convertSamplesToTimebase(timebase, samples) {
 function getTimebaseSuffix(tb) {
 	switch(tb) {
 		case 'HZ': return 'hz';
-		case 'NOTE': return 'n';
-		case 'SECONDS': return 's';
-		case 'SAMPLES': return 'smp';
-		case 'BEATS': return 'b';
+		case 'NOTE': return 'notenum';
+		case 'SECONDS': return 'secs';
+		case 'SAMPLES': return 'samps';
+		case 'BEATS': return 'beats';
 	}	
 }
 
@@ -176,8 +185,8 @@ function numSamplesForNoteNum(n) {
 }
 
 function nexToValuebase(input) {
-	let onebase = input.hasTag(new Tag('onebase')) || input.hasTag(new Tag('1'))
-	let note = input.hasTag(new Tag('n')) || input.hasTag(new Tag('note'));
+	let onebase = input.hasTag(newTagOrThrowOOM('onebase', 'changing wavetable timebase')) || input.hasTag(newTagOrThrowOOM('1', 'changing wavetable timebase'))
+	let note = input.hasTag(newTagOrThrowOOM('n', 'changing wavetable timebase')) || input.hasTag(newTagOrThrowOOM('note', 'changing wavetable timebase'));
 
 	return {
 		onebase: onebase,
@@ -212,13 +221,13 @@ function getConstantSignalFromValue(val, dur) {
 	if (!dur) {
 		dur = 1;
 	}
-	let data = [];
+	let r = constructWavetable(dur);
+	let data = r.getData();
 	for (let i = 0; i < dur; i++) {
 		data[i] = val;
 	}
-	let r = new Wavetable();
-	r.initWith(data);
-	return r;	
+	r.init();
+	return r;
 }
 
 
@@ -228,6 +237,8 @@ export { getSampleRate,
 		 getTimebaseSuffix,
 		 setGlobalPixelsPerSample,
 		 getGlobalPixelsPerSample,
+		 setGlobalHeightPixelsFullScale,
+		 getGlobalHeightPixelsFullScale,
 		 setBpm,
 		 nexToTimebase,
 		 setDefaultTimebase,

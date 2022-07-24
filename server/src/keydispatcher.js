@@ -22,7 +22,6 @@ import { systemState } from './systemstate.js';
 import { BINDINGS } from './environment.js';
 import { manipulator } from './manipulator.js';
 import { actionFactory, enqueueAndPerformAction, undo, redo } from './actions.js'
-import { evaluateNexSafely } from './evaluator.js';
 import { evaluateAndKeep } from './evaluatorinterface.js';
 import { experiments } from './globalappflags.js'
 

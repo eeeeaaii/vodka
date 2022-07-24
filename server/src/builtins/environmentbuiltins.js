@@ -19,20 +19,21 @@ import * as Utils from '../utils.js'
 
 import { autocomplete } from '../autocomplete.js'
 import { Builtin } from '../nex/builtin.js'
-import { EError } from '../nex/eerror.js'
-import { EString } from '../nex/estring.js'
-import { Bool } from '../nex/bool.js'
-import { ESymbol } from '../nex/esymbol.js'
-import { Doc } from '../nex/doc.js'
-import { Nil } from '../nex/nil.js'
-import { Org } from '../nex/org.js'
+import { constructFatalError } from '../nex/eerror.js'
+
+import { constructEString } from '../nex/estring.js'
+import { constructBool } from '../nex/bool.js'
+import { constructESymbol } from '../nex/esymbol.js'
+import { constructNil } from '../nex/nil.js'
+import { constructOrg } from '../nex/org.js'
+
 import { BINDINGS } from '../environment.js'
 import { PERFORMANCE_MONITOR } from '../perfmon.js'
 import { UNBOUND } from '../environment.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { wrapError } from '../evaluator.js'
 import { experiments } from '../globalappflags.js'
-
+import { sAttach } from '../syntheticroot.js'
 
 function createEnvironmentBuiltins() {
 
@@ -44,12 +45,8 @@ function createEnvironmentBuiltins() {
 			let name = env.lb('name');
 			let namestr = name.getTypedValue();
 			if (namestr.indexOf(':') >= 0) {
-				return new EError('bind: cannot bind a symbol with a colon (:) except via the package mechanism. Sorry!');
+				return constructFatalError('bind: cannot bind a symbol with a colon (:) except via the package mechanism. Sorry!');
 			}
-//			if (executionEnvironment.hasPackageKludge()) {
-//				let packageSym = executionEnvironment.getPackageKludge();
-//				namestr = packageSym.getTypedValue() + ':' + namestr;
-//			}
 			let packageName = executionEnvironment.getPackageForBinding();
 			if (packageName) {
 				BINDINGS.bindInPackage(namestr, val, packageName);
@@ -73,9 +70,9 @@ function createEnvironmentBuiltins() {
 				ss = ssnex.getTypedValue();
 			}
 			let matches = autocomplete.findAllBindingsMatching(ss);
-			let r = new Doc();
+			let r = constructOrg();
 			for (let j = 0; j < matches.length; j++) {
-				r.appendChild(new ESymbol(matches[j].name))
+				r.appendChild(constructESymbol(matches[j].name))
 			}
 			return r;
 		},
@@ -93,9 +90,9 @@ function createEnvironmentBuiltins() {
 				ss = ssnex.getTypedValue();
 			}
 			let matches = autocomplete.findAllBuiltinsMatching(ss);
-			let r = new Doc();
+			let r = constructOrg();
 			for (let j = 0; j < matches.length; j++) {
-				r.appendChild(new ESymbol(matches[j].name))
+				r.appendChild(constructESymbol(matches[j].name))
 			}
 			return r;
 		},
@@ -110,13 +107,13 @@ function createEnvironmentBuiltins() {
 			let name = env.lb('name');
 			try {
 				let binding = executionEnvironment.lookupBinding(name.getTypedValue());
-				return new Bool(true);
+				return constructBool(true);
 			} catch (e) {
 				// don't swallow real errors
 				if (e.getTypeName
 						&& e.getTypeName() == '-error-'
 						&& e.getFullTypedValue().substr(0, 16) == 'undefined symbol') {
-					return new Bool(false);
+					return constructBool(false);
 				} else {
 					throw e;
 				}
@@ -181,10 +178,10 @@ function createEnvironmentBuiltins() {
 		function $use(env, executionEnvironment) {
 			let packageName = env.lb('name').getTypedValue();
 			if (!BINDINGS.isKnownPackageName(packageName)) {
-				return new EError(`use: invalid package name ${packageName}. Sorry!`);
+				return constructFatalError(`use: invalid package name ${packageName}. Sorry!`);
 			}
 			executionEnvironment.usePackage(packageName);
-			return new Nil();
+			return constructNil();
 		},
 		'Makes it so bindings in the package |name can be dereferenced without the package identifier. Stays in effect for the remainder of the current scope.'
 	);	
@@ -198,19 +195,19 @@ function createEnvironmentBuiltins() {
 			for (let i = 0; i < packageList.numChildren(); i++) {
 				let c = packageList.getChildAt(i);
 				if (!(c.getTypeName() == '-symbol-')) {
-					return new EError(`using: first arg must be a list of symbols that denote package names, but ${c.prettyPrint()} is not a symbol. Sorry!`);
+					return constructFatalError(`using: first arg must be a list of symbols that denote package names, but ${c.prettyPrint()} is not a symbol. Sorry!`);
 				}
 				let packageName = c.getTypedValue();
 				if (!BINDINGS.isKnownPackageName(packageName)) {
-					return new EError(`using: invalid package name ${packageName}. Sorry!`);
+					return constructFatalError(`using: invalid package name ${packageName}. Sorry!`);
 				}
 				executionEnvironment.usePackage(packageName);
 			}
 			let lst = env.lb('nex');
-			let result = new Nil();
+			let result = constructNil();
 			for (let j = 0; j < lst.numChildren(); j++) {
 				let c = lst.getChildAt(j);
-				result = evaluateNexSafely(c, executionEnvironment);
+				result = sAttach(evaluateNexSafely(c, executionEnvironment));
 				if (Utils.isFatalError(result)) {
 					result = wrapError('&szlig;', `using: error in expression ${j+1}, cannot continue. Sorry!`, result);
 					return result;
@@ -229,10 +226,10 @@ function createEnvironmentBuiltins() {
 			let closure = env.lb('closure');
 			let lexenv = closure.getLexicalEnvironment();
 			let doLevel = function(envAtLevel) {
-				let r = new Org();
+				let r = constructOrg();
 				envAtLevel.doForEachBinding(function(binding) {
-					let rec = new Org();
-					rec.appendChild(new ESymbol(binding.name));
+					let rec = constructOrg();
+					rec.appendChild(constructESymbol(binding.name));
 					rec.appendChild(binding.val);
 					r.appendChild(rec);
 				})
@@ -252,7 +249,7 @@ function createEnvironmentBuiltins() {
 		[ 'nex' ],
 		function $seeId(env, executionEnvironment) {
 			let nex = env.lb('nex');
-			return new EString('' + nex.getID());
+			return constructEString('' + nex.getID());
 		},
 		'Returns the in-memory ID of |nex as a string.'
 	);

@@ -19,9 +19,14 @@ import { Nex } from './nex.js'
 import { experiments } from '../globalappflags.js'
 import { startAuditioningBuffer, getFileAsBuffer } from '../webaudio.js'
 import { possiblyRecordAction } from '../testrecorder.js'
+import { heap } from '../heap.js'
+import { constructFatalError, throwOOM } from './eerror.js'
+
 
 import { setGlobalPixelsPerSample,
 		 getGlobalPixelsPerSample,
+		 setGlobalHeightPixelsFullScale,
+		 getGlobalHeightPixelsFullScale,
 		 getSampleRate,
 		 convertSamplesToTimebase,
 		 getTimebaseSuffix,
@@ -31,11 +36,10 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { showManipulator } from '../wtmanip.js'
 import { Editor } from '../editors.js'
 import { doTutorial } from '../help.js'
+import {  startRecordingAudio, stopRecordingAudio } from '../webaudio.js'
 
 
 // zoom essentially means a number of pixels equals a number of samples
-var SAMPLES_PER_PIXEL = 1;
-var HEIGHT_PIXELS_FULL_SCALE = 50;
 
 // sc sample rate is 48k samples/sec
 // let's say I want 440 hz
@@ -64,13 +68,44 @@ class Wavetable extends Nex {
 		this.auditioning = false;
 		this.windowOriginSample = 0;
 
+		this.sections = [];
 
 		this.localPixelsPerSample = -1;
+		this.localHeightPixelsFullScale = -1;
 		this.centerSample = -1;
 		this.markers = [];
 		this.sectionBeingAuditioned = null;
 		this.recording = false;
 		this.blobs = [];
+		this.currentTimebase = null;
+		this.rightIsClipping = false;
+	}
+
+	getCurrentTimebase() {
+		if (!this.currentTimebase) {
+			this.currentTimebase = getDefaultTimebase();
+		}
+		return this.currentTimebase;
+	}
+
+	advanceToNextTimebase() {
+		switch(this.currentTimebase) {
+			case 'NOTE':
+				this.currentTimebase ='SECONDS';
+				return;
+			case 'SECONDS':
+				this.currentTimebase ='HZ';
+				return;
+			case 'HZ':
+				this.currentTimebase ='BEATS';
+				return;
+			case 'BEATS':
+				this.currentTimebase ='SAMPLES';
+				return;
+			case 'SAMPLES':
+				this.currentTimebase ='NOTE';
+				return;
+		}
 	}
 
 	addBlob(blob) {
@@ -114,24 +149,26 @@ class Wavetable extends Nex {
 	startEditing() {
 		this.centerSample = 0;
 		this.localPixelsPerSample = getGlobalPixelsPerSample();
+		this.localHeightPixelsFullScale = getGlobalHeightPixelsFullScale();
+
 	}
 
 	stopEditing() {
 		this.centerSample = -1;
 		this.localPixelsPerSample = -1;
+		this.localHeightPixelsFullScale = -1;
 		this.windowOriginSample = 0;
 	}
 
 	addMarker() {
 		this.markers.push(this.centerSample);
 		this.markers = this.markers.sort((a, b) => { return a - b; })
-//		this.setDirtyForRendering(true);
+		this.cacheSections();
 		eventQueueDispatcher.enqueueTopLevelRender();			
 	}
 
 	deleteMarker(i) {
 		this.markers.splice(i, 1);
-//		this.setDirtyForRendering(true);
 		eventQueueDispatcher.enqueueTopLevelRender();			
 	}
 
@@ -155,10 +192,29 @@ class Wavetable extends Nex {
 		}
 	}
 
+	getHeightPixelsFullScale() {
+		if (this.localHeightPixelsFullScale > -1) {
+			return this.localHeightPixelsFullScale;
+		} else {
+			return getGlobalHeightPixelsFullScale();
+		}
+	}
+
+	setHeightPixelsFullScale(val) {
+		if (this.localHeightPixelsFullScale > -1) {
+			this.localHeightPixelsFullScale = val;
+		} else {
+			setGlobalHeightPixelsFullScale(val);
+		}
+	}
+
 	windowWidth() {
 		let width = this.data.length * this.getPixelsPerSample();
-		if (width > screen.width / 2) {
-			width = screen.width / 2;
+		if (width > screen.width * 0.65) {
+			width = screen.width * 0.65;
+			this.rightIsClipping = true;
+		} else {
+			this.rightIsClipping = false;
 		}
 		return width;
 	}
@@ -170,7 +226,7 @@ class Wavetable extends Nex {
 	windowHeight() {
 		let maxamp = Math.max(this.amp, 1);
 		// we just don't want a window larger than 1000 pixels, it'll crash things
-		return Math.min(2 * maxamp * HEIGHT_PIXELS_FULL_SCALE, 1000);
+		return Math.min(2 * maxamp * this.getHeightPixelsFullScale(), 1000);
 	}
 
 	setDataAt(d, i) {
@@ -191,8 +247,9 @@ class Wavetable extends Nex {
 		this.windowOriginSample = Math.max(minOrigin, Math.min(n, maxOrigin))
 	}
 
+	// still needed for cases like for example loading data from a file
 	initWith(newdata) {
-		// basically if newdata is too huge we could crush
+		// basically if newdata is too huge we could crash
 		this.data = [];
 		for (let i = 0; i < newdata.length; i++) {
 			this.data[i] = newdata[i];
@@ -200,16 +257,20 @@ class Wavetable extends Nex {
 		this.calculateAmplitude();
 	}
 
-	loadFromFile(fname) {
-		let t = this;
-		getFileAsBuffer(fname).then(function(result) {
-			// getChannelData returns a float32 array but it still works
-			// TODO: this class stores an audio buffer
-			t.initWith(result.getChannelData(0));
-			eventQueueDispatcher.enqueueTopLevelRender();
-		})
-
+	init() {
+		this.calculateAmplitude();		
 	}
+
+	// loadFromFile(fname) {
+	// 	let t = this;
+	// 	getFileAsBuffer(fname).then(function(result) {
+	// 		// getChannelData returns a float32 array but it still works
+	// 		// TODO: this class stores an audio buffer
+	// 		t.initWith(result.getChannelData(0));
+	// 		eventQueueDispatcher.enqueueTopLevelRender();
+	// 	})
+
+	// }
 
 	calculateAmplitude() {
 		let mm = this.getMinMaxInDataRange(0, this.data.length);
@@ -271,7 +332,7 @@ class Wavetable extends Nex {
 	}
 
 	yPositionOfWaveValue(v) {
-		let scaled = v * HEIGHT_PIXELS_FULL_SCALE;
+		let scaled = v * this.getHeightPixelsFullScale();
 		// window height is >= 2*HEIGHT_PIXELS_FULL_SCALE
 		// zero is always in the middle
 		let wh = this.windowHeight();
@@ -297,7 +358,7 @@ class Wavetable extends Nex {
 	}
 
 	makeCopy() {
-		let r = new Wavetable();
+		let r = constructWavetable(this.data.length);
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -306,16 +367,18 @@ class Wavetable extends Nex {
 		super.copyFieldsTo(nex);
 		nex.initWith(this.data);
 		nex.setAmp(this.amp);
+		nex.currentTimebase = this.currentTimebase;
 		for (let i = 0; i < this.markers.length; i++) {
 			nex.markers[i] = this.markers[i];
 		}
+		nex.cacheSections();
 	}
 
 	toString(version) {
 		if (version == 'v2') {
 			return this.toStringV2();
 		}
-		return '!' + this.renderValue();
+		return '_[wavetable]';
 	}
 
 	toStringV2() {
@@ -348,6 +411,10 @@ class Wavetable extends Nex {
 	}
 
 	auditionSection(n) {
+		if ('' + n === '0') {
+			this.auditionWave();
+			return;
+		}
 		if (this.markers.length == 0) {
 			return;
 		}
@@ -372,30 +439,57 @@ class Wavetable extends Nex {
 	getSectionData(n) {
 		// this is off by one city
 
-		if (n > this.markers.length) {
-			return null;
-		}
+		// if (n > this.markers.length) {
+		// 	return null;
+		// }
 
-		let start = 0;
-		let end = this.data.length;
+		// let start = 0;
+		// let end = this.data.length;
 
-		if (n > 0) {
-			start = this.markers[n - 1];
-		}
-		if (n < this.markers.length) {
-			end = this.markers[n];
-		}
+		// if (n > 0) {
+		// 	start = this.markers[n - 1];
+		// }
+		// if (n < this.markers.length) {
+		// 	end = this.markers[n];
+		// }
 
-		let sectiondata = [];
-		for (let i = start ; i < end ; i++) {
-			sectiondata[i - start] = this.data[i];
+		// let sectiondata = [];
+		// for (let i = start ; i < end ; i++) {
+		// 	sectiondata[i - start] = this.data[i];
+		// }
+		return this.sections[n];
+		// return {
+		// 	start: start,
+		// 	end: end,
+		// 	data: this.sectiondata[n]
+		// }
+	}
+
+	cacheSections() {
+		for (let i = 0; i < this.sections.length; i++) {
+			heap.freeMem(this.sections[i].data.length * heap.incrementalSizeWavetable());
 		}
-		return {
-			start: start,
-			end: end,
-			data: sectiondata
+		this.sections = [];
+		for (let i = 0; i <= this.markers.length; i++) {
+			let start = (i == 0) ? 0 : this.markers[i - 1];
+			let end = (i == this.markers.length) ? this.data.length : this.markers[i];
+			let k = 0;
+			this.sections[i] = {
+				start: start,
+				end: end,
+				data: []
+			};
+			let sizeReq = (end - start) * heap.incrementalSizeWavetable();
+			if (!heap.requestMem(sizeReq)) {
+				throwOOM(sizeReq);
+			}
+			for (let j = start; j < end ; j++) {
+				this.sections[i].data[k] = this.data[j];
+				k++;
+			}
 		}
 	}
+
 
 	auditionWave() {
 		if (!this.auditioning) {
@@ -417,16 +511,23 @@ class Wavetable extends Nex {
 		let starty = 0;
 		let startx = 0;
 		let initialZoom = 0;
+		let initialAmpZoom = 0;
 		let y = 0;
 		let x = 0;
 		let t = this;
 		let startfunction = (event) => {
+			if (event.shiftKey) {
+				this.doingAmplitudeZoom = true;
+			} else {
+				this.doingAmplitudeZoom = false;
+			}
 			starty = event.clientY;
 			startx = event.clientX;
 			if (this.isEditing) {
 				this.changeCenterSample(event.offsetX);
 			}
 			initialZoom = this.getPixelsPerSample();
+			initialAmpZoom = this.getHeightPixelsFullScale();
 			// enqueue a redraw for the center line
 			eventQueueDispatcher.enqueueTopLevelRender();			
 		}
@@ -437,8 +538,12 @@ class Wavetable extends Nex {
 			let deltaX = -(x - startx);
 			let delta = (Math.abs(deltaX) > Math.abs(deltaY)) ? deltaX : deltaY;
 			let factor = Math.pow(2, -(delta * 0.01));
-			let startPixelChange = delta;
-			this.setPixelsPerSample(initialZoom * factor);
+			let ampfactor = Math.pow(2, (deltaY * 0.01));
+			if (this.doingAmplitudeZoom) {
+				this.setHeightPixelsFullScale(initialAmpZoom * ampfactor);
+			} else {
+				this.setPixelsPerSample(initialZoom * factor);
+			}
 
 			if (this.isEditing) {
 				let positionOfClickInWindow = startx / t.windowWidth()
@@ -508,7 +613,9 @@ class Wavetable extends Nex {
 		domNode.appendChild(topcontrols);
 		topcontrols.appendChild(this.createTimelabel())
 		if (this.recording) {
-			topcontrols.appendChild(this.createRecordinglabel())
+			topcontrols.appendChild(this.createStopRecordingLabel())
+		} else {
+			topcontrols.appendChild(this.createStartRecordingLabel())
 		}
 		topcontrols.appendChild(this.createSpacer())
 		if (this.isEditing) {
@@ -536,19 +643,53 @@ class Wavetable extends Nex {
 	createTimelabel() {
 		let timelabel = document.createElement('div');
 		timelabel.classList.add('wavecontrol');
-		let n = convertSamplesToTimebase(getDefaultTimebase(), this.data.length);
+		let n = convertSamplesToTimebase(this.getCurrentTimebase(), this.data.length);
 		n = Math.round(n * 1000) / 1000;
-		let suffix = getTimebaseSuffix(getDefaultTimebase());
+		let suffix = getTimebaseSuffix(this.getCurrentTimebase());
 		timelabel.innerText = '' + n + ' ' + suffix;
-		return timelabel;		
+		timelabel.onmousedown = (event) => {
+			this.advanceToNextTimebase();
+			this.setDirtyForRendering(true);
+			eventQueueDispatcher.enqueueTopLevelRender();			
+			event.stopPropagation();
+			event.preventDefault();
+			return false;
+		}
+		return timelabel;
 	}
 
-	createRecordinglabel() {
-		let recordinglabel = document.createElement('div');
-		recordinglabel.classList.add('wavecontrol');
-		recordinglabel.innerText = 'RECORDING'
-		return recordinglabel;		
+	createStartRecordingLabel() {
+		let recordButtonLabel = document.createElement('div');
+		recordButtonLabel.classList.add('wavecontrol');
+		recordButtonLabel.innerText = '* rec';
+		recordButtonLabel.onmousedown = (event) => {
+			startRecordingAudio(this);
+			event.stopPropagation();
+			event.preventDefault();
+			return false;
+		}
+		return recordButtonLabel;
 	}
+
+	createStopRecordingLabel() {
+		let recordButtonLabel = document.createElement('div');
+		recordButtonLabel.classList.add('wavecontrol');
+		recordButtonLabel.innerText = '[] stop';
+		recordButtonLabel.onmousedown = (event) => {
+			stopRecordingAudio(this);
+			event.stopPropagation();
+			event.preventDefault();
+			return false;
+		}
+		return recordButtonLabel;
+	}
+
+	// createRecordinglabel() {
+	// 	let recordinglabel = document.createElement('div');
+	// 	recordinglabel.classList.add('wavecontrol');
+	// 	recordinglabel.innerText = 'RECORDING'
+	// 	return recordinglabel;		
+	// }
 
 
 	createAddMarker() {
@@ -787,7 +928,12 @@ class Wavetable extends Nex {
 		if (drawBottomClippingLine) {
 			this.drawHorizLine(ctx, -1, true, clippingColor);
 		}
-		this.drawHorizLine(ctx, 0, false, zeroColor)
+		if (this.rightIsClipping) {
+			this.drawEndCap(ctx);
+			// this.drawVertLine(ctx, this.windowWidth() - 10, false, zeroColor)
+			// this.drawVertLine(ctx, this.windowWidth() - 20, false, zeroColor)
+			// this.drawVertLine(ctx, this.windowWidth() - 30, false, zeroColor)
+		}
 
 		return canvas;
 	}
@@ -796,6 +942,30 @@ class Wavetable extends Nex {
 		return (range.start == range.end && lineSample == range.start)
 				||
 				(lineSample >= range.start && lineSample < range.end);
+	}
+
+	debugString() {
+		return "<not impl>"
+	}
+
+	drawEndCap(ctx) {
+		let color1 = '#ffffff';
+		let color2 = '#dddddd';
+		let color3 = '#bbbbbb';
+		let color4 = '#999999';
+		let stripwidth = 10;
+		ctx.beginPath();
+		ctx.fillStyle = color1;
+		ctx.fillRect(this.windowWidth() - 4 * stripwidth, 0, stripwidth, this.windowHeight());
+		ctx.beginPath();
+		ctx.fillStyle = color2;
+		ctx.fillRect(this.windowWidth() - 3 * stripwidth, 0, stripwidth, this.windowHeight());
+		ctx.beginPath();
+		ctx.fillStyle = color3;
+		ctx.fillRect(this.windowWidth() - 2 * stripwidth, 0, stripwidth, this.windowHeight());
+		ctx.beginPath();
+		ctx.fillStyle = color4;
+		ctx.fillRect(this.windowWidth() - 1 * stripwidth, 0, stripwidth, this.windowHeight());
 	}
 
 
@@ -830,6 +1000,13 @@ class Wavetable extends Nex {
 			'Enter': 'audition-wave',
 		}
 	}
+
+	cleanupOnMemoryFree() {
+		if (this.recording) {
+			stopRecordingAudio(this);
+		}
+	}
+
 }
 
 
@@ -849,7 +1026,7 @@ class WavetableEditor extends Editor {
 
 
 	shouldIgnore(text) {
-		if (/^[1-9v]$/.test(text)) return false;
+		if (/^[0-9v]$/.test(text)) return false;
 		return text != 'Enter'
 	}
 
@@ -862,10 +1039,27 @@ class WavetableEditor extends Editor {
 	}
 
 	shouldAppend(text) {
-		if (/^[1-9v]$/.test(text)) return true;
+		if (/^[0-9v]$/.test(text)) return true;
 		return false;
+	}
+
+
+	memUsed() {
+		return super.memUsed() + heap.sizeWavetable();
 	}
 }
 
+function constructWavetable(initSize) {
+	if (!initSize) {
+		initSize = 256;
+	}
+	let sizeRequired = heap.sizeWavetable() + initSize * heap.incrementalSizeWavetable();
+	if (!heap.requestMem(sizeRequired)) {
+		throw constructFatalError(`OUT OF MEMORY: cannot allocate Wavetable.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new Wavetable(initSize));
+}
 
-export { Wavetable, WavetableEditor }
+
+export { Wavetable, WavetableEditor, constructWavetable }

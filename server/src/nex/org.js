@@ -20,10 +20,13 @@ import * as Utils from '../utils.js'
 import { NexContainer, V_DIR, H_DIR, Z_DIR } from './nexcontainer.js'
 import { experiments } from '../globalappflags.js'
 import { wrapError, evaluateNexSafely } from '../evaluator.js'
-import { EString } from './estring.js'
-import { Integer } from './integer.js'
-import { Float } from './float.js'
+import { constructEString } from './estring.js'
+import { constructInteger } from './integer.js'
+import { constructFloat } from './float.js'
 import { Tag } from '../tag.js'
+import { heap } from '../heap.js'
+import { constructFatalError, newTagOrThrowOOM } from './eerror.js'
+
 
 class Org extends NexContainer {
 	constructor() {
@@ -36,6 +39,13 @@ class Org extends NexContainer {
 		this.drawcheat = null;
 
 		this.drawfunction = null;
+
+		// if this org is instantiated as a template,
+		// then it will have this set to the self-scope.
+		// this is important because when this obj is freed,
+		// we need to pop that scope so references can be decremented.
+		this.templateInstantiationLexicalSelfScope = null;
+
 		this.setVertical();
 	}
 
@@ -44,6 +54,12 @@ class Org extends NexContainer {
 			return this.toStringV2();
 		}
 		return `[org]`;
+	}
+
+	cleanupOnMemoryFree() {
+		if (this.templateInstantiationLexicalSelfScope) {
+			this.templateInstantiationLexicalSelfScope.finalize();
+		}
 	}
 
 	rootLevelPostEvaluationStep() {
@@ -99,7 +115,7 @@ class Org extends NexContainer {
 	}
 
 	makeCopy(shallow) {
-		let r = new Org();
+		let r = constructOrg();
 		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
 		return r;
@@ -160,24 +176,6 @@ class Org extends NexContainer {
 		}
 	}
 
-	doJobWithTag(jobname, args) {
-		let job = this.getChildTagged(tag);
-		if (!job) {
-			throw new EError(`do: unknown job ${tag.getName()}`);
-		}
-		let cmd = new Command('');
-		cmd.appendChild(job);
-		for (let i = 0; i < args.numChildren(); i++) {
-			cmd.appendChild(args.getChildAt(i));
-		}
-
-		let result = evaluateNexSafely(cmd, argEnv);
-		if (Utils.isFatalError(result)) {
-			return wrapError('&szlig;', `org: error doing job ${jobname}`, result);
-		}
-		return result;		
-	}
-
 	/*
 	should be in the superclass (nexcontainer) but it creates a circular dependency graph somehow
 	*/
@@ -210,29 +208,39 @@ class Org extends NexContainer {
 		};
 	}
 
-	// convenience method?
-	
-
+	memUsed() {
+		return heap.sizeOrg();
+	}
 }
 
+// TODO: this is bad bcz anything that needs an org needs to pull in these other deps.
+// put this in its own separate util
 function convertJSMapToOrg(m) {
-	let r = new Org();
+	let r = constructOrg();
 	for (let key in m) {
 		let value = m[key];
-		let v = new EString('' + value);
+		let v = constructEString('' + value);
 		if (!isNaN(value)) {
 			if (Math.floor(value) == value) {
-				v = new Integer(Math.floor(value));
+				v = constructInteger(Math.floor(value));
 			} else {
-				v = new Float(value);
+				v = constructFloat(value);
 			}
 		}
-		v.addTag(new Tag(key));
+		v.addTag(newTagOrThrowOOM(key, 'converting js map to org'));
 		r.appendChild(v);
 	}
 	return r;
 }
 
 
-export { Org, convertJSMapToOrg }
+function constructOrg() {
+	if (!heap.requestMem(heap.sizeOrg())) {
+		throw constructFatalError(`OUT OF MEMORY: cannot allocate Org.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new Org());
+}
+
+export { Org, constructOrg, convertJSMapToOrg }
 

@@ -27,7 +27,7 @@ class ActivationFunctionGenerator {
 
 	getFunction(cb, exp) {}
 
-	getName() {}
+	getAFGName() {}
 }
 
 class DeferredCommandActivationFunctionGenerator extends ActivationFunctionGenerator {
@@ -43,7 +43,7 @@ class DeferredCommandActivationFunctionGenerator extends ActivationFunctionGener
 		}.bind(this);
 	}
 
-	getName() {
+	getAFGName() {
 		return 'deferredcommand';
 	}
 }
@@ -62,7 +62,7 @@ class GenericActivationFunctionGenerator extends ActivationFunctionGenerator {
 		}.bind(this);
 	}
 
-	getName() {
+	getAFGName() {
 		return this.name;
 	}
 }
@@ -75,7 +75,7 @@ class ImmediateActivationFunctionGenerator extends ActivationFunctionGenerator {
 		}
 	}
 
-	getName() {
+	getAFGName() {
 		return 'nothing';
 	}
 }
@@ -94,7 +94,7 @@ class DelayActivationFunctionGenerator extends ActivationFunctionGenerator {
 		}.bind(this);
 	}
 
-	getName() {
+	getAFGName() {
 		return 'delay';
 	}
 }
@@ -113,7 +113,7 @@ class OnNextRenderActivationFunctionGenerator extends ActivationFunctionGenerato
 		}.bind(this);
 	}
 
-	getName() {
+	getAFGName() {
 		return 'delay';
 	}
 }
@@ -130,7 +130,7 @@ class CallbackActivationFunctionGenerator extends ActivationFunctionGenerator {
 		}.bind(this);
 	}
 
-	getName() {
+	getAFGName() {
 		return 'callback';
 	}
 }
@@ -151,7 +151,7 @@ class ClickActivationFunctionGenerator extends ActivationFunctionGenerator {
 		}.bind(this);
 	}
 
-	getName() {
+	getAFGName() {
 		return 'click';
 	}
 }
@@ -178,7 +178,7 @@ class MidiActivationFunctionGenerator extends ActivationFunctionGenerator {
 		}.bind(this);
 	}
 
-	getName() {
+	getAFGName() {
 		return 'midi';
 	}
 }
@@ -197,7 +197,7 @@ class OnContentsChangedActivationFunctionGenerator extends ActivationFunctionGen
 		}.bind(this);
 	}
 
-	getName() {
+	getAFGName() {
 		return 'on-contents-changed';
 	}
 }

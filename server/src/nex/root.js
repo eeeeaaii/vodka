@@ -17,6 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { NexContainer, V_DIR } from './nexcontainer.js'
 import { ContextType } from '../contexttype.js'
+import { heap } from '../heap.js'
 
 class Root extends NexContainer {
 	constructor(attached) {
@@ -76,8 +77,8 @@ class Root extends NexContainer {
 
 
 		}
-	}
 
+	}
 
 	// dead code?
 	debug() {
@@ -95,7 +96,6 @@ class Root extends NexContainer {
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('root');
 	}
-
 }
 
 export { Root }

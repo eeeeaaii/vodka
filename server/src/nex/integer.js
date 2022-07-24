@@ -18,6 +18,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { ValueNex } from './valuenex.js'
 import { Editor } from '../editors.js'
 import { experiments } from '../globalappflags.js'
+import { heap } from '../heap.js'
+import { constructFatalError } from './eerror.js'
 
 /**
  * Represents an integer.
@@ -46,21 +48,21 @@ class Integer extends ValueNex {
 			['number']);
 	}
 
-	setValue(v) {
-		if (experiments.ASM_RUNTIME) {
-			this.setWasmValue(this.runtimeId, Number(v));
-		} else {
-			super.setValue(v);
-		}
-	}
+	// setValue(v) {
+	// 	if (experiments.ASM_RUNTIME) {
+	// 		this.setWasmValue(this.runtimeId, Number(v));
+	// 	} else {
+	// 		super.setValue(v);
+	// 	}
+	// }
 
-	getValue() {
-		if (experiments.ASM_RUNTIME) {
-			return '' + this.getWasmValue(this.runtimeId);
-		} else {
-			return this.value;
-		}		
-	}
+	// getValue() {
+	// 	if (experiments.ASM_RUNTIME) {
+	// 		return '' + this.getWasmValue(this.runtimeId);
+	// 	} else {
+	// 		return this.getValue();
+	// 	}		
+	// }
 
 	rootLevelPostEvaluationStep() {
 		this.setMutable(false);
@@ -71,7 +73,7 @@ class Integer extends ValueNex {
 	}
 
 	makeCopy() {
-		let r = new Integer(this.getValue());
+		let r = constructInteger(this.getValue());
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -174,6 +176,10 @@ class Integer extends ValueNex {
 		return 'standardDefault';
 	}
 
+
+	memUsed() {
+		return super.memUsed() + heap.sizeInteger();
+	}
 }
 
 class IntegerEditor extends Editor {
@@ -226,6 +232,14 @@ class IntegerEditor extends Editor {
 	}
 }
 
+function constructInteger(val) {
+	if (!heap.requestMem(heap.sizeInteger())) {
+		throw constructFatalError(`OUT OF MEMORY: cannot allocate Integer.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new Integer(val));
+}
 
-export { Integer, IntegerEditor }
+
+export { Integer, IntegerEditor, constructInteger }
 

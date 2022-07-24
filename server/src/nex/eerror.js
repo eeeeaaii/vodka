@@ -35,6 +35,8 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { NexContainer } from './nexcontainer.js'
 import { systemState } from '../systemstate.js'
 import { experiments } from '../globalappflags.js'
+import { Tag } from '../tag.js'
+import { heap } from '../heap.js'
 
 
 /**
@@ -104,7 +106,7 @@ class EError extends NexContainer {
 	}
 
 	makeCopy(shallow) {
-		let r = new EError(this.getFullTypedValue());
+		let r = constructEError(this.getFullTypedValue());
 		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
 		return r;
@@ -162,16 +164,10 @@ class EError extends NexContainer {
 	}	
 
 	insertChildAt(c, i) {
-		// if (c.getTypeName() != '-error-') {
-		// 	throw new EError('errors can only hold other errors.');
-		// }
 		super.insertChildAt(c, i);
 	}
 
 	fastAppendChildAfter(c, after) {
-		// if (c.getTypeName() != '-error-') {
-		// 	throw new EError('errors can only hold other errors.');
-		// }
 		super.fastAppendChildAfter(c, after);
 	}
 
@@ -239,8 +235,48 @@ class EError extends NexContainer {
 	getEventTable(context) {
 		return {};
 	}
+
+	memUsed() {
+		return super.memUsed() + heap.sizeEError();
+	}
 }
 
+function constructEError(val, prefix) {
+	if (!heap.requestMem(heap.sizeEError())) {
+		throw new EError(`OUT OF MEMORY: cannot allocate EError.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new EError(val, prefix));
+}
 
-export { EError, ERROR_TYPE_FATAL, ERROR_TYPE_INFO, ERROR_TYPE_WARN, ERROR_TYPE_PREVIOUSLY_FATAL }
+function constructFatalError(val, pref) {
+	// fatal errors are not heap checked because the last shit you need
+	// is to not know what happened because your error didn't get constructed
+	return new EError(val, pref);
+}
+
+function constructWarning(val, pref) {
+	let r = new EError(val, pref);
+	r.setErrorType(ERROR_TYPE_WARN);
+	return r;
+}
+
+function constructInfo(val, pref) {
+	let r = new EError(val, pref);
+	r.setErrorType(ERROR_TYPE_INFO);
+	return r;
+}
+
+function throwOOM(allocatingFor) {
+	throw constructFatalError(`OUT OF MEMORY: trying to allocate memory for [${allocatingFor}].
+stats: ${heap.stats()}`);
+}
+
+function newTagOrThrowOOM(tagString, context) {
+	let t = new Tag('');
+	t.setTagString(tagString) || throwOOM(`creating tag in context [${context}]`)
+	return t;
+}
+
+export { EError, constructEError, constructFatalError, constructWarning, constructInfo, ERROR_TYPE_FATAL, ERROR_TYPE_INFO, ERROR_TYPE_WARN, ERROR_TYPE_PREVIOUSLY_FATAL, throwOOM, newTagOrThrowOOM }
 

@@ -18,25 +18,27 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from '../server/src/utils.js'
 
 import { Nex } from '../server/src/nex/nex.js';
-import { Bool } from '../server/src/nex/bool.js';
-import { Integer } from '../server/src/nex/integer.js';
-import { ESymbol } from '../server/src/nex/esymbol.js';
-import { EString } from '../server/src/nex/estring.js';
-import { Float } from '../server/src/nex/float.js';
-import { Nil } from '../server/src/nex/nil.js';
-import { Org } from '../server/src/nex/org.js';
-import { Instantiator } from '../server/src/nex/instantiator.js';
-import { DeferredCommand } from '../server/src/nex/deferredcommand.js';
-import { Lambda } from '../server/src/nex/lambda.js';
-import { Command } from '../server/src/nex/command.js';
-import { Word } from '../server/src/nex/word.js';
-import { Wavetable } from '../server/src/nex/wavetable.js';
-import { Surface } from '../server/src/nex/surface.js';
-import { Line } from '../server/src/nex/line.js';
-import { Doc } from '../server/src/nex/doc.js';
-import { EError } from '../server/src/nex/eerror.js';
-import { Letter } from '../server/src/nex/letter.js';
-import { Separator } from '../server/src/nex/separator.js';
+
+import { constructBool } from '../server/src/nex/bool.js';
+import { constructInteger } from '../server/src/nex/integer.js';
+import { constructESymbol } from '../server/src/nex/esymbol.js';
+import { constructEString } from '../server/src/nex/estring.js';
+import { constructFloat } from '../server/src/nex/float.js';
+import { constructNil } from '../server/src/nex/nil.js';
+import { constructOrg } from '../server/src/nex/org.js';
+import { constructInstantiator } from '../server/src/nex/instantiator.js';
+import { constructDeferredCommand } from '../server/src/nex/deferredcommand.js';
+import { constructLambda } from '../server/src/nex/lambda.js';
+import { constructCommand } from '../server/src/nex/command.js';
+import { constructWord } from '../server/src/nex/word.js';
+import { constructWavetable } from '../server/src/nex/wavetable.js';
+import { constructSurface } from '../server/src/nex/surface.js';
+import { constructLine } from '../server/src/nex/line.js';
+import { constructDoc } from '../server/src/nex/doc.js';
+import { constructEError, newTagOrThrowOOM } from '../server/src/nex/eerror.js';
+import { constructLetter } from '../server/src/nex/letter.js';
+import { constructSeparator } from '../server/src/nex/separator.js';
+
 import { Tag } from '../server/src/tag.js'
 
 function concatParserString(arr) {
@@ -55,7 +57,7 @@ function decorateNex(nex, tags, nonmutable) {
 	}
 	for (let i = 0; i < tags.length; i++) {
 		let fixedTag = concatParserString(tags[i]);
-		nex.addTag(new Tag(fixedTag));
+		nex.addTag(newTagOrThrowOOM(fixedTag, 'parsing saved data'));
 	}
 	return nex;
 }
@@ -90,39 +92,39 @@ function makeInteger(negation, digits, taglist, nonmutable) {
 	if (negation) {
 		n = -n;
 	}
-	return decorateNex(new Integer(n), taglist, nonmutable);
+	return decorateNex(constructInteger(n), taglist, nonmutable);
 }
 
 function makeSymbol(letters, taglist, nonmutable) {
-	return decorateNex(new ESymbol(concatParserString(letters)), taglist, nonmutable);
+	return decorateNex(constructESymbol(concatParserString(letters)), taglist, nonmutable);
 }
 
 function makeString(privateData, taglist, nonmutable) {
-	let str = new EString();
+	let str = constructEString();
 	setPrivateData(str, privateData);
 	return decorateNex(str, taglist, nonmutable);
 }
 
 function makeError(privateData, taglist, nonmutable) {
-	let err = new EError();
+	let err = constructEError();
 	setPrivateData(err, privateData);
 	return decorateNex(err, taglist, nonmutable);
 }
 
 function makeFloat(contents, taglist, nonmutable) {
-	return decorateNex(new Float(contents), taglist, nonmutable);
+	return decorateNex(constructFloat(contents), taglist, nonmutable);
 }
 
 function makeBool(val, taglist, nonmutable) {
-	return decorateNex(new Bool(val), taglist, nonmutable);
+	return decorateNex(constructBool(val), taglist, nonmutable);
 }
 
 function makeNil(taglist, nonmutable) {
-	return decorateNex(new Nil(), taglist, nonmutable);
+	return decorateNex(constructNil(), taglist, nonmutable);
 }
 
 function makeOrgList(children, privateData, taglist, verthoriz, nonmutable) {
-	let t = new Org();
+	let t = constructOrg();
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
 	decorateNex(t, taglist, nonmutable);
@@ -131,7 +133,7 @@ function makeOrgList(children, privateData, taglist, verthoriz, nonmutable) {
 }
 
 function makeDeferredCommandList(children, privateData, taglist, verthoriz, nonmutable) {
-	let t = new DeferredCommand();
+	let t = constructDeferredCommand();
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
 	decorateNex(t, taglist, nonmutable);
@@ -140,7 +142,7 @@ function makeDeferredCommandList(children, privateData, taglist, verthoriz, nonm
 }
 
 function makeLambdaList(children, privateData, taglist, verthoriz, nonmutable) {
-	let t = new Lambda();
+	let t = constructLambda();
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
 	decorateNex(t, taglist, nonmutable);
@@ -150,7 +152,7 @@ function makeLambdaList(children, privateData, taglist, verthoriz, nonmutable) {
 
 function makeCommandList(name, children, privateData, taglist, verthoriz, nonmutable) {
 	let cmdname = Utils.convertV2StringToMath(concatParserString(name));
-	let t = new Command(cmdname);
+	let t = constructCommand(cmdname);
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
 	decorateNex(t, taglist, nonmutable);
@@ -159,7 +161,7 @@ function makeCommandList(name, children, privateData, taglist, verthoriz, nonmut
 }
 
 function makeInstantiatorList(children, privateData, taglist, verthoriz, nonmutable) {
-	let t = new Instantiator('');
+	let t = constructInstantiator('');
 	appendChildrenToListType(t, children);
 	setPrivateData(t, privateData);
 	decorateNex(t, taglist, nonmutable);
@@ -174,22 +176,22 @@ function makeInstanceAtom(instname, privatedata, taglist, nonmutable) {
 	let isList = false;
 	switch(name) {
 		case 'newline': // so I can parse old files
-			t = new Nil();
+			t = constructNil();
 			break;
 		case 'nil':
-			t = new Nil();
+			t = constructNil();
 			break;
 		case 'wavetable':
-			t = new Wavetable(concatParserString(privatedata));
+			t = constructWavetable(concatParserString(privatedata));
 			break;
 		case 'surface':
-			t = new Surface(concatParserString(privatedata));
+			t = constructSurface(concatParserString(privatedata));
 			break;
 		case 'letter':
-			t = new Letter(concatParserString(privatedata));
+			t = constructLetter(concatParserString(privatedata));
 			break;
 		case 'separator':
-			t = new Separator(concatParserString(privatedata));
+			t = constructSeparator(concatParserString(privatedata));
 			break;
 		default:
 			throw new Error('unrecognized instance type: ' + instname);
@@ -205,15 +207,15 @@ function makeInstanceList(instname, children, privatedata, taglist, verthoriz, n
 	let isList = false;
 	switch(name) {
 		case 'word':
-			t = new Word();
+			t = constructWord();
 			isList = true;
 			break;
 		case 'line':
-			t = new Line();
+			t = constructLine();
 			isList = true;
 			break;
 		case 'doc':
-			t = new Doc();
+			t = constructDoc();
 			isList = true;
 			break;
 		default:

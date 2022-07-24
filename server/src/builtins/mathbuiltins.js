@@ -15,11 +15,13 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from '../utils.js'
+
 import { Builtin } from '../nex/builtin.js'
-import { EError } from '../nex/eerror.js'
-import { Float } from '../nex/float.js'
-import { Integer } from '../nex/integer.js'
-import { Bool } from '../nex/bool.js'
+import { constructFatalError } from '../nex/eerror.js'
+import { constructFloat } from '../nex/float.js'
+import { constructInteger } from '../nex/integer.js'
+import { constructBool } from '../nex/bool.js'
 import { UNBOUND } from '../environment.js'
 
 
@@ -35,18 +37,18 @@ function createMathBuiltins() {
 			let b = env.lb('sub');
 			if (b == UNBOUND) {
 				let n = (-a.getTypedValue());
-				if (a instanceof Float) {
-					return new Float(n);
+				if (Utils.isFloat(a)) {
+					return constructFloat(n);
 				} else {
-					return new Integer(n);
+					return constructInteger(n);
 				}
 			} else {
 				let result = a.getTypedValue() - b.getTypedValue();
-				if (a instanceof Float
-						|| b instanceof Float) {
-					return new Float(result);
+				if (Utils.isFloat(a)
+						|| Utils.isFloat(b)) {
+					return constructFloat(result);
 				} else {
-					return new Integer(result);
+					return constructInteger(result);
 				}
 			}
 		},
@@ -62,7 +64,7 @@ function createMathBuiltins() {
 			let a = env.lb('lhs').getTypedValue();
 			let b = env.lb('rhs').getTypedValue();
 			let r = (a != b);
-			return new Bool(r);
+			return constructBool(r);
 		},
 		'Returns true if |lhs evaluates to a number that is not equal to |rhs.',
 		true /* is infix */
@@ -76,12 +78,12 @@ function createMathBuiltins() {
 		let ar = env.lb('add');
 		for (let i = 0; i < ar.numChildren(); i++) {
 			let arg = ar.getChildAt(i);
-			if (arg instanceof Float) {
+			if (Utils.isFloat(arg)) {
 				foundFloat = true;
 			}
 			total += arg.getTypedValue();
 		}
-		let r = foundFloat ? new Float(total) : new Integer(total);
+		let r = foundFloat ? constructFloat(total) : constructInteger(total);
 		return r;
 	}
 
@@ -99,7 +101,7 @@ function createMathBuiltins() {
 		let a = env.lb('lhs').getTypedValue();
 		let b = env.lb('rhs').getTypedValue();
 		let r = (a > b);
-		return new Bool(r);
+		return constructBool(r);
 	}
 
 	Builtin.createBuiltin(
@@ -116,7 +118,7 @@ function createMathBuiltins() {
 		let a = env.lb('lhs').getTypedValue();
 		let b = env.lb('rhs').getTypedValue();
 		let r = (a >= b);
-		return new Bool(r);
+		return constructBool(r);
 	}
 
 	Builtin.createBuiltin(
@@ -133,7 +135,7 @@ function createMathBuiltins() {
 		let a = env.lb('lhs').getTypedValue();
 		let b = env.lb('rhs').getTypedValue();
 		let r = (a < b);
-		return new Bool(r);
+		return constructBool(r);
 	}
 
 	Builtin.createBuiltin(
@@ -150,7 +152,7 @@ function createMathBuiltins() {
 		let a = env.lb('lhs').getTypedValue();
 		let b = env.lb('rhs').getTypedValue();
 		let r = (a <= b);
-		return new Bool(r);
+		return constructBool(r);
 	}
 
 	Builtin.createBuiltin(
@@ -167,14 +169,14 @@ function createMathBuiltins() {
 		let a = env.lb('divid');
 		let b = env.lb('divis');
 		if (b.getTypedValue() == 0) {
-			return new EError('divide: cannot divide by zero, Sorry!');
+			return constructFatalError('divide: cannot divide by zero, Sorry!');
 		}
 		let result = a.getTypedValue() / b.getTypedValue();
-		if (a instanceof Float
-				|| b instanceof Float) {
-			return new Float(result);
+		if (Utils.isFloat(a)
+				|| Utils.isFloat(b)) {
+			return constructFloat(result);
 		} else {
-			return new Integer(result);
+			return constructInteger(result);
 		}
 	}
 
@@ -192,7 +194,7 @@ function createMathBuiltins() {
 		let a = env.lb('lhs').getTypedValue();
 		let b = env.lb('rhs').getTypedValue();
 		let r = (a == b);
-		return new Bool(r);
+		return constructBool(r);
 	}
 
 	Builtin.createBuiltin(
@@ -211,12 +213,12 @@ function createMathBuiltins() {
 		let ar = env.lb('fact');
 		for (let i = 0; i < ar.numChildren(); i++) {
 			let arg = ar.getChildAt(i);
-			if (arg instanceof Float) {
+			if (Utils.isFloat(arg)) {
 				foundFloat = true;
 			}
 			result *= arg.getTypedValue();
 		}
-		let r = foundFloat ? new Float(result) : new Integer(result);
+		let r = foundFloat ? constructFloat(result) : constructInteger(result);
 		return r;
 	}
 
@@ -231,7 +233,7 @@ function createMathBuiltins() {
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
 	function $getPi(env, executionEnvironment) {
-		return new Float(Math.PI);
+		return constructFloat(Math.PI);
 	}
 
 	Builtin.createBuiltin(
@@ -244,7 +246,7 @@ function createMathBuiltins() {
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
 	function $getE(env, executionEnvironment) {
-		return new Float(Math.E);
+		return constructFloat(Math.E);
 	}
 
 	Builtin.createBuiltin(
@@ -259,7 +261,7 @@ function createMathBuiltins() {
 	function $acos(env, executionEnvironment) {
 		let a = env.lb('arg').getTypedValue();
 		let b = Math.acos(a);
-		return new Float(b);
+		return constructFloat(b);
 	}
 
 	Builtin.createBuiltin(
@@ -274,7 +276,7 @@ function createMathBuiltins() {
 	function $asin(env, executionEnvironment) {
 		let a = env.lb('arg').getTypedValue();
 		let b = Math.asin(a);
-		return new Float(b);
+		return constructFloat(b);
 	}
 
 	Builtin.createBuiltin(
@@ -289,7 +291,7 @@ function createMathBuiltins() {
 	function $atan(env, executionEnvironment) {
 		let a = env.lb('arg').getTypedValue();
 		let b = Math.atan(a);
-		return new Float(b);
+		return constructFloat(b);
 	}
 
 	Builtin.createBuiltin(
@@ -304,7 +306,7 @@ function createMathBuiltins() {
 	function $atan2(env, executionEnvironment) {
 		let y = env.lb('y').getTypedValue();
 		let x = env.lb('x').getTypedValue();
-		return new Float(Math.atan2(y, x));
+		return constructFloat(Math.atan2(y, x));
 	}
 
 	Builtin.createBuiltin(
@@ -319,7 +321,7 @@ function createMathBuiltins() {
 	function $ceiling(env, executionEnvironment) {
 		let a = env.lb('arg').getTypedValue();
 		a = Math.ceil(a);
-		return new Float(a);
+		return constructFloat(a);
 	}
 
 	Builtin.createBuiltin(
@@ -334,7 +336,7 @@ function createMathBuiltins() {
 	function $cos(env, executionEnvironment) {
 		let a = env.lb('arg').getTypedValue();
 		let b = Math.cos(a);
-		return new Float(b);
+		return constructFloat(b);
 	}
 
 	Builtin.createBuiltin(
@@ -348,7 +350,7 @@ function createMathBuiltins() {
 
 	function $exp(env, executionEnvironment) {
 		let a = env.lb('a').getTypedValue();
-		return new Float(Math.exp(a));
+		return constructFloat(Math.exp(a));
 	}
 
 	Builtin.createBuiltin(
@@ -365,7 +367,7 @@ function createMathBuiltins() {
 		function $floor(env, executionEnvironment) {
 			let a = env.lb('arg').getTypedValue();
 			a = Math.floor(a);
-			return new Float(a);
+			return constructFloat(a);
 		},
 		'Computes the integer floor of |arg.'
 	);
@@ -378,7 +380,7 @@ function createMathBuiltins() {
 		[ 'a%' ],
 		function $logE(env, executionEnvironment) {
 			let a = env.lb('a').getTypedValue();
-			return new Float(Math.log(a));
+			return constructFloat(Math.log(a));
 		},
 		'Computes the log base e of |a.'
 	);
@@ -389,7 +391,7 @@ function createMathBuiltins() {
 		[ 'a%' ],
 		function $logTen(env, executionEnvironment) {
 			let a = env.lb('a').getTypedValue();
-			return new Float(Math.log10(a));
+			return constructFloat(Math.log10(a));
 		},
 		'Computes the log base 10 of |a.'
 	);
@@ -400,7 +402,7 @@ function createMathBuiltins() {
 		[ 'a%' ],
 		function $logTwo(env, executionEnvironment) {
 			let a = env.lb('a').getTypedValue();
-			return new Float(Math.log2(a));
+			return constructFloat(Math.log2(a));
 		},
 		'Computes the log base 2 of |a.'
 	);
@@ -413,7 +415,7 @@ function createMathBuiltins() {
 			let a = env.lb('divid');
 			let b = env.lb('modulus');
 			let result = a.getTypedValue() % b.getTypedValue();
-			return new Integer(result);
+			return constructInteger(result);
 		},
 		'Computes |divid modulo |modulus and returns the result.',
 		true /* is infix */
@@ -426,7 +428,7 @@ function createMathBuiltins() {
 		function $nthRoot(env, executionEnvironment) {
 			let a = env.lb('a').getTypedValue();
 			let b = env.lb('b').getTypedValue();
-			return new Float(Math.pow(a, (1.0/b)));
+			return constructFloat(Math.pow(a, (1.0/b)));
 		},
 		'Computes the |bth root of |a.'
 	);
@@ -438,7 +440,7 @@ function createMathBuiltins() {
 		function $power(env, executionEnvironment) {
 			let a = env.lb('a').getTypedValue();
 			let b = env.lb('b').getTypedValue();
-			return new Float(Math.pow(a, b));
+			return constructFloat(Math.pow(a, b));
 		},
 		'Computes |a to the |b power and returns the result.',
 		true /* is infix */
@@ -450,7 +452,7 @@ function createMathBuiltins() {
 		[],
 		function $random(env, executionEnvironment) {
 			let n = Math.random();
-			return new Float(n);
+			return constructFloat(n);
 		},
 		'Returns a random number between 0 and 1.'
 	);
@@ -462,7 +464,7 @@ function createMathBuiltins() {
 		function $round(env, executionEnvironment) {
 			let a = env.lb('arg').getTypedValue();
 			a = Math.round(a);
-			return new Float(a);
+			return constructFloat(a);
 		},
 		'Return |arg rounded to the nearest integer.'
 	);
@@ -474,7 +476,7 @@ function createMathBuiltins() {
 		function $sin(env, executionEnvironment) {
 			let a = env.lb('arg').getTypedValue();
 			let b = Math.sin(a);
-			return new Float(b);
+			return constructFloat(b);
 		},
 		'Computes the sin (opposite/hypotenuse) of |arg.'
 	);
@@ -485,7 +487,7 @@ function createMathBuiltins() {
 		[ 'a%' ],
 		function $squareRoot(env, executionEnvironment) {
 			let a = env.lb('a').getTypedValue();
-			return new Float(Math.sqrt(a));
+			return constructFloat(Math.sqrt(a));
 		},
 		'Computes the square root of |a.'
 	);
@@ -497,7 +499,7 @@ function createMathBuiltins() {
 		function $tan(env, executionEnvironment) {
 			let a = env.lb('arg').getTypedValue();
 			let b = Math.tan(a);
-			return new Float(b);
+			return constructFloat(b);
 		},
 		'Computes the tangent (opposite/adjacent) of |arg.'
 	);

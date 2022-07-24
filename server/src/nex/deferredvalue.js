@@ -24,8 +24,10 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { NexContainer } from './nexcontainer.js'
 import { Nil } from './nil.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
-import { gc, getFFGen } from '../gc.js'
+import { getFFGen } from '../gc.js'
 import { experiments } from '../globalappflags.js'
+import { heap } from '../heap.js'
+import { constructFatalError } from './eerror.js'
 
 const DVSTATE_CANCELLED = 0;
 const DVSTATE_NEW = 1;
@@ -43,8 +45,6 @@ class DeferredValue extends NexContainer {
 		this.listeners = [];
 
 		this.state = DVSTATE_NEW;
-
-		gc.register(this);
 	}
 
 	addListener(obj) {
@@ -87,6 +87,10 @@ class DeferredValue extends NexContainer {
 
 	isFinished() {
 		return this.state >= DVSTATE_FINISHED;
+	}
+
+	isCancelled() {
+		return this.state == DVSTATE_CANCELLED;
 	}
 
 	toString(version) {
@@ -231,7 +235,7 @@ class DeferredValue extends NexContainer {
 
 	setMutable(v) {
 		if (v) {
-			throw new EError('cannot make deferred values mutable.');
+			throw constructFatalError('cannot make deferred values mutable.');
 		}
 	}
 
@@ -285,6 +289,18 @@ class DeferredValue extends NexContainer {
 			}
 		}
 	}
+
+	memUsed() {
+		return super.memUsed() + heap.sizeDeferredValue();
+	}
 }
 
-export { DeferredValue }
+function constructDeferredValue() {
+	if (!heap.requestMem(heap.sizeDeferredValue())) {
+		throw constructFatalError(`OUT OF MEMORY: cannot allocate DeferredValue.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new DeferredValue());
+}
+
+export { DeferredValue, constructDeferredValue }

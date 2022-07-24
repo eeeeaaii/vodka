@@ -19,16 +19,16 @@ import * as Utils from '../utils.js'
 
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { Builtin } from '../nex/builtin.js'
-import { Nil } from '../nex/nil.js'
+import { constructNil } from '../nex/nil.js'
 import { EError } from '../nex/eerror.js'
 import { Org } from '../nex/org.js'
 import { UNBOUND } from '../environment.js'
 import { Lambda } from '../nex/lambda.js'
 import { experiments } from '../globalappflags.js'
 import { Tag } from '../tag.js'
-import { DeferredValue } from '../nex/deferredvalue.js'
+import { constructDeferredValue } from '../nex/deferredvalue.js'
 import { incFFGen } from '../gc.js'
-import { Bool } from '../nex/bool.js'; 
+import { constructBool } from '../nex/bool.js'; 
 import { systemState } from '../systemstate.js'
 import { evaluateNexSafely, wrapError } from '../evaluator.js'
 
@@ -53,7 +53,7 @@ function createAsyncBuiltins() {
 			let def = env.lb('def');
 			if (def == UNBOUND) {
 				incFFGen();
-				return new Nil();
+				return constructNil();
 			} else {
 				def.cancel();
 				return def;
@@ -102,7 +102,7 @@ function createAsyncBuiltins() {
 		function $isFinished(env, executionEnvironment) {
 			let dv = env.lb('dv');
 			let isF = dv.isFinished();
-			let r = new Bool(isF);
+			let r = constructBool(isF);
 			return r;
 		},
 		'Returns true if the deferred value is finished.'
@@ -134,7 +134,7 @@ function createAsyncBuiltins() {
 		'wait-for-nothing',
 		[ ],
 		function $waitForNothing(env, executionEnvironment) {
-			let dv = new DeferredValue();
+			let dv = constructDeferredValue();
 			let afg = new ImmediateActivationFunctionGenerator();
 			dv.set(afg);
 			dv.activate();
@@ -148,7 +148,7 @@ function createAsyncBuiltins() {
 		[ 'nex?' ],
 		function $wait(env, executionEnvironment) {
 			let nex = env.lb('nex');
-			let dv = new DeferredValue();
+			let dv = constructDeferredValue();
 			let afg = new CallbackActivationFunctionGenerator(nex);
 			dv.set(afg);
 			dv.activate();
@@ -168,7 +168,7 @@ function createAsyncBuiltins() {
 		[ 'nex'],
 		function $setClick(env, executionEnvironment) {
 			let nex = env.lb('nex');
-			let dv = new DeferredValue();
+			let dv = constructDeferredValue();
 			let afg = new ClickActivationFunctionGenerator(nex);
 			dv.appendChild(nex);
 			dv.set(afg);
@@ -184,7 +184,7 @@ function createAsyncBuiltins() {
 		function $waitForDelay(env, executionEnvironment) {
 			let timenex = env.lb('time');
 			let time = timenex.getTypedValue();
-			let dv = new DeferredValue();
+			let dv = constructDeferredValue();
 			dv.appendChild(timenex);
 			let afg = new DelayActivationFunctionGenerator(time);
 			dv.set(afg);
@@ -199,7 +199,7 @@ function createAsyncBuiltins() {
 		[ 'nex()' ],
 		function $waitForContentsChanged(env, executionEnvironment) {
 			let nex = env.lb('nex');
-			let dv = new DeferredValue();
+			let dv = constructDeferredValue();
 			dv.appendChild(nex);
 			let afg = new OnContentsChangedActivationFunctionGenerator(nex);
 			dv.set(afg);
@@ -214,7 +214,7 @@ function createAsyncBuiltins() {
 		[ 'nex' ],
 		function $waitForNextRender(env, executionEnvironment) {
 			let nex = env.lb('nex');
-			let dv = new DeferredValue();
+			let dv = constructDeferredValue();
 			dv.appendChild(nex);
 			let afg = new OnNextRenderActivationFunctionGenerator(nex);
 			dv.set(afg);

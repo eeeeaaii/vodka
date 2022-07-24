@@ -23,7 +23,8 @@ import { perfmon, PERFORMANCE_MONITOR } from './perfmon.js'
 import { CONSOLE_DEBUG } from './globalconstants.js'
 import { experiments } from './globalappflags.js'
 import { wrapError } from './evaluator.js'
-import { EError } from './nex/eerror.js'
+import { constructFatalError } from './nex/eerror.js'
+import { heap, HeapString } from './heap.js'
 
 class Arg {
 	constructor(nex) {
@@ -72,6 +73,15 @@ class Arg {
 		this.nex = n;
 		if (this.ref) {
 			this.ref.replaceChildAt(n, this.refindex);
+		} else {
+			// being in here counts as a reference...
+			heap.addReference(this.nex);
+		}
+	}
+
+	cleanup() {
+		if (!this.ref) {
+			heap.removeReference(this.nex);
 		}
 	}
 
@@ -94,6 +104,12 @@ class ArgContainer {
 	makeUpdating(ref) {
 		for (let i = 0; i < this.args.length; i++) {
 			this.args[i].makeUpdating(ref, i);
+		}
+	}
+
+	cleanup() {
+		for (let i = 0; i < this.args.length; i++) {
+			this.args[i].cleanup();
 		}
 	}
 
@@ -121,11 +137,26 @@ class ArgContainer {
 class RunInfo {
 	constructor(closure, cmdname, expectedReturnType, argContainer, argEvaluator, commandDebugString, skipAlert, tags, packageName) {
 		this.closure = closure;
-		this.cmdname = cmdname;
+		heap.addReference(closure);
+
+		this.cmdname = new HeapString(cmdname);
+
+		// expectedReturnType is a struct defined in paramparser
+		// it doesn't CURRENTLY contain anything variable-length
+		// but might in the future?
 		this.expectedReturnType = expectedReturnType;
+
+		// even though a deferred command can hold onto an argcontainer for a long time, I don't need
+		// to worry about reference counting because of makeUpdating - basically the arg object
+		// will update the children of the deferred command, so as long as the deferred command
+		// is in scope, the args will be in scope.
 		this.argContainer = argContainer;
+
+		// doesn't contain any memory aside from the arg container.
 		this.argEvaluator = argEvaluator;
-		this.commandDebugString = commandDebugString;
+
+
+		this.commandDebugString = commandDebugString.substr(0, 256);
 		this.skipAlert = skipAlert;
 		this.tags = tags;
 		this.packageName = packageName;
@@ -133,6 +164,14 @@ class RunInfo {
 
 	isRunInfo() {
 		return true;
+	}
+
+	memUsed() {
+		return 1500 + this.cmdname.memUsed();
+	}
+
+	finalize() {
+		heap.removeReference(this.closure);
 	}
 }
 
@@ -142,7 +181,7 @@ function executeRunInfo(runInfo, executionEnv) {
 	if (runInfo.expectedReturnType != null && !Utils.isFatalError(result)) {
 		let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[runInfo.expectedReturnType.type](result);
 		if (!typeChecksOut) {
-			result = new EError(`${runInfo.cmdname}: should return ${runInfo.expectedReturnType.type} but returned ${result.getTypeName()}`);
+			result = constructFatalError(`${runInfo.cmdname.get()}: should return ${runInfo.expectedReturnType.type} but returned ${result.getTypeName()}`);
 		}
 	}
 
@@ -161,7 +200,7 @@ function runCommand(runInfo, executionEnv) {
 	// I think this is useful for step eval but I can't remember
 
 	if (PERFORMANCE_MONITOR) {
-		perfmon.logMethodCallStart(runInfo.closure.getCmdName());
+		perfmon.logMethodCallStart(runInfo.closure.getSymbolBinding());
 	}
 
 	if (!experiments.DISABLE_ALERT_ANIMATIONS && !runInfo.skipAlert) {
@@ -169,10 +208,11 @@ function runCommand(runInfo, executionEnv) {
 	}
 
 	// actually run the code.
-	let r = runInfo.closure.closureExecutor(executionEnv, runInfo.argEvaluator, runInfo.cmdname, runInfo.tags, runInfo.packageName);
-
+	let r = runInfo.closure.closureExecutor(executionEnv, runInfo.argEvaluator, runInfo.cmdname.get(), runInfo.tags, runInfo.packageName);
+	runInfo.argContainer.cleanup();
+	
 	if (PERFORMANCE_MONITOR) {
-		perfmon.logMethodCallEnd(runInfo.closure.getCmdName());
+		perfmon.logMethodCallEnd(runInfo.closure.getSymbolBinding());
 	}
 
 	if (CONSOLE_DEBUG) {

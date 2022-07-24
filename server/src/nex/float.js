@@ -19,6 +19,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { ValueNex } from './valuenex.js'
 import { Editor } from '../editors.js'
+import { heap } from '../heap.js'
+import { constructFatalError } from './eerror.js'
 
 
 /**
@@ -27,8 +29,8 @@ import { Editor } from '../editors.js'
 class Float extends ValueNex {
 	constructor(val) {
 		super((val) ? val : '0', '%', 'float');
-		if (!this._isValid(this.value)) {
-			this.value = '0';
+		if (!this._isValid(this.getValue())) {
+			this.setValue('0');
 		}
 	}
 
@@ -37,7 +39,7 @@ class Float extends ValueNex {
 	}
 
 	makeCopy() {
-		let r = new Float(this.value);
+		let r = constructFloat(this.getValue());
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -64,7 +66,7 @@ class Float extends ValueNex {
 	}
 
 	toStringV2() {
-		return `%${this.toStringV2Literal()}${this.toStringV2TagList()}${this.value}`;
+		return `%${this.toStringV2Literal()}${this.toStringV2TagList()}${this.getValue()}`;
 	}
 
 	_isValid(value) {
@@ -72,52 +74,52 @@ class Float extends ValueNex {
 	}
 
 	renderValue() {
-		return this.value;
+		return this.getValue();
 	}
 
 	finalizeValue() {
-		if (isNaN(this.value)) {
-			this.value = '0.0';
+		if (isNaN(this.getValue())) {
+			this.setValue('0.0');
 		}
-		let n = Number(this.value);
+		let n = Number(this.getValue());
 		if (Math.round(n) == n) {
-			this.value = '' + n + '.0';
+			this.setValue('' + n + '.0');
 		} else {
-			this.value = '' + n;
+			this.setValue('' + n);
 		}	
 	}
 
 	getTypedValue() {
-		let v = this.value;
+		let v = this.getValue();
 		return Number(v);
 	}
 
 	appendMinus() {
-		if (this.value == '0') return;
-		if (this.value == '0.') return;
-		if (/0\.0+$/.test(this.value)) return;
-		if (this.value.charAt(0) == '-') {
-			this.value = this.value.substring(1);
+		if (this.getValue() == '0') return;
+		if (this.getValue() == '0.') return;
+		if (/0\.0+$/.test(this.getValue())) return;
+		if (this.getValue().charAt(0) == '-') {
+			this.setValue(this.getValue().substring(1));
 		} else {
-			this.value = '-' + this.value;
+			this.setValue('-' + this.getValue());
 		}
 	}
 
 	appendZero() {
-		if (this.value == '0') return;
-		this.value = this.value + '0';
+		if (this.getValue() == '0') return;
+		this.setValue(this.getValue() + '0');
 	}
 
 	appendDot() {
-		if (this.value.indexOf('.') >= 0) return;
-		this.value = this.value + '.';
+		if (this.getValue().indexOf('.') >= 0) return;
+		this.setValue(this.getValue() + '.');
 	}
 
 	appendDigit(d) {
-		if (this.value == '0') {
-			this.value = d;
+		if (this.getValue() == '0') {
+			this.setValue(d);
 		} else {
-			this.value = this.value + d;
+			this.setValue(this.getValue() + d);
 		}
 	}
 
@@ -135,21 +137,21 @@ class Float extends ValueNex {
 	}
 
 	deleteLastLetter() {
-		let v = this.value;
+		let v = this.getValue();
 		if (v == '0') return;
 		if (v.length == 1) {
-			this.value = '0';
+			this.setValue('0');
 			return;
 		}
 		if (v.length == 2 && v.charAt(0) == '-') {
-			this.value = '0';
+			this.setValue('0');
 			return;
 		}
-		this.value = v.substr(0, v.length - 1);
-		let isNegative = this.value.charAt(0) == '-';
-		let isZero = /-?0(\.0*)$/.test(this.value);
+		this.setValue(v.substr(0, v.length - 1));
+		let isNegative = this.getValue().charAt(0) == '-';
+		let isZero = /-?0(\.0*)$/.test(this.getValue());
 		if (isNegative && isZero) {
-			this.value = this.value.substring(1);
+			this.setValue(this.getValue().substring(1));
 		}
 		this.setDirtyForRendering(true);
 	}
@@ -161,6 +163,10 @@ class Float extends ValueNex {
 	getEventTable(context) {
 		return {
 		}
+	}
+
+	memUsed() {
+		return super.memUsed() + heap.sizeFloat();
 	}
 }
 
@@ -214,5 +220,13 @@ class FloatEditor extends Editor {
 	}
 }
 
-export { Float, FloatEditor }
+function constructFloat(val) {
+	if (!heap.requestMem(heap.sizeFloat())) {
+		throw constructFatalError(`OUT OF MEMORY: cannot allocate Float.
+stats: ${heap.stats()}`)
+	}
+	return heap.register(new Float(val));
+}
+
+export { Float, FloatEditor, constructFloat }
 

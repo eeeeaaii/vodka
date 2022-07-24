@@ -18,6 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { Nex } from './nex.js';
 import { ContextType } from '../contexttype.js'
 import { experiments } from '../globalappflags.js'
+import { heap } from '../heap.js'
 
 const V_DIR = 0;
 const H_DIR = 1;
@@ -111,10 +112,9 @@ class NexContainer extends Nex {
 		// and tell them that we've added a new reference to them.
 		// 'nex' and all the children of this object are now going to
 		// be referenced by 'newContainer' in addition to being referenced
-		// by this object.
-		nex.addReference();
+		// by this object;
 		for (let p = this.firstChildNex; p; p = p.next) {
-			p.n.addReference();
+			heap.addReference(p.n);
 		}
 		this.changed();
 	}
@@ -358,7 +358,7 @@ class NexContainer extends Nex {
 			}
 		}
 		this.numChildNexes--;
-		r.removeReference();
+		heap.removeReference(r);
 		this.changed();
 		return r;
 	}
@@ -372,7 +372,7 @@ class NexContainer extends Nex {
 			this.firstChildNex = newP;
 			this.lastChildNex = newP;
 		}
-		c.addReference();
+		heap.addReference(c);
 		this.numChildNexes++;
 		this.changed();
 		return newP;
@@ -399,7 +399,7 @@ class NexContainer extends Nex {
 			newP.next = pred.next;
 			pred.next = newP;
 		}
-		c.addReference();
+		heap.addReference(c);
 		this.numChildNexes++;
 		this.changed();
 	}

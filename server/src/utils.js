@@ -63,14 +63,30 @@ function setCookie(key, val) {
 }
 
 function isError(n) {
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-error-';
 }
 
 function isFatalError(n) {
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName && n.getTypeName() == '-error-' && n.getErrorType() == ERROR_TYPE_FATAL && !n.shouldSuppress();
 }
+
+function isWarning(n) {
+	if (!n || !n.getTypeName) return false;
+	return n.getTypeName && n.getTypeName() == '-error-' && n.getErrorType() == ERROR_TYPE_WARN && !n.shouldSuppress();
+}
+
+function isInfo(n) {
+	if (!n || !n.getTypeName) return false;
+	return n.getTypeName && n.getTypeName() == '-error-' && n.getErrorType() == ERROR_TYPE_INFO && !n.shouldSuppress();
+}
+
+function isNonFatalError(n) {
+	if (!n || !n.getTypeName) return false;
+	return n.getTypeName && n.getTypeName() == '-error-' && n.getErrorType() != ERROR_TYPE_FATAL && !n.shouldSuppress();
+}
+
 
 function isInDocContext(n) {
 	let p = n.getParent();
@@ -97,49 +113,49 @@ function isDeferred(n) {
 
 function isDeferredValue(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-deferredvalue-';
 }
 
 function isDeferredCommand(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-deferredcommand-';
 }
 
 function isDoc(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-doc-';
 }
 
 function isLine(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-line-';
 }
 
 function isWord(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-word-';
 }
 
 function isOrg(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-org-';
 }
 
 function isSeparator(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-separator-';
 }
 
 function isLetter(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-letter-';
 }
 
@@ -149,85 +165,85 @@ function isCodeContainer(n) {
 
 function isNexContainer(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return (n.isNexContainer());
 }
 
 function isBool(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-bool-';
 }
 
 function isContract(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-contract-';
 }
 
 function isFloat(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-float-';
 }
 
 function isInteger(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-integer-';
 }
 
 function isESymbol(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-symbol-';
 }
 
 function isEString(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-string-';
 }
 
 function isCommand(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-command-';
 }
 
 function isInstantiator(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-instantiator-';
 }
 
 function isLambda(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-lambda-';
 }
 
 function isBuiltin(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-builtin-';
 }
 
 function isClosure(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-closure-';
 }
 
 function isNil(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-nil-';
 }
 
 function isRoot(n) {
 	if (n instanceof RenderNode) n = n.getNex();
-	if (!n) return false;
+	if (!n || !n.getTypeName) return false;
 	return n.getTypeName() == '-root-';
 }
 
@@ -288,6 +304,7 @@ function convertV2StringToMath(val) {
 export {
 	isError,
 	isFatalError,
+	isNonFatalError,
 	isInDocContext,
 	isDocElement,
 	isDocContainerType,
