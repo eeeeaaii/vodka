@@ -302,6 +302,7 @@ class Wavetable extends Nex {
 
 	interpolatedValueAtSample(t) {
 		if (Math.round(t) == t) {
+			while(t < 0) t += this.data.length;
 			return this.data[t % this.data.length];
 		} else {
 			let t1 = Math.floor(t);
@@ -515,6 +516,8 @@ class Wavetable extends Nex {
 		let y = 0;
 		let x = 0;
 		let t = this;
+		let startedBelow = false;
+		let ampnegative = 1;
 		let startfunction = (event) => {
 			if (event.shiftKey) {
 				this.doingAmplitudeZoom = true;
@@ -523,6 +526,15 @@ class Wavetable extends Nex {
 			}
 			starty = event.clientY;
 			startx = event.clientX;
+			// the wavecontrols section at the top of the rendered wavetable
+			// is about 18px at normal scale but what about zoom? idk.
+			let yPositionInWaveDisplay = starty + 18;
+			if (starty > this.windowHeight() / 2) {
+				startedBelow = true;
+			}
+			if (this.windowHeight() == 1000) {
+				ampnegative = startedBelow ? 1 : -1;
+			}
 			if (this.isEditing) {
 				this.changeCenterSample(event.offsetX);
 			}
@@ -538,7 +550,7 @@ class Wavetable extends Nex {
 			let deltaX = -(x - startx);
 			let delta = (Math.abs(deltaX) > Math.abs(deltaY)) ? deltaX : deltaY;
 			let factor = Math.pow(2, -(delta * 0.01));
-			let ampfactor = Math.pow(2, (deltaY * 0.01));
+			let ampfactor = Math.pow(2, ampnegative * (deltaY * 0.01));
 			if (this.doingAmplitudeZoom) {
 				this.setHeightPixelsFullScale(initialAmpZoom * ampfactor);
 			} else {

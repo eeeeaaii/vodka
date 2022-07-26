@@ -16,6 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Tag } from './tag.js'
+import { newTagOrThrowOOM } from './nex/eerror.js'
 import { constructWavetable } from './nex/wavetable.js'; 
 
 

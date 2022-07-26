@@ -209,6 +209,10 @@ function runCommand(runInfo, executionEnv) {
 
 	// actually run the code.
 	let r = runInfo.closure.closureExecutor(executionEnv, runInfo.argEvaluator, runInfo.cmdname.get(), runInfo.tags, runInfo.packageName);
+	for (let i = 0; i < runInfo.tags.length; i++) {
+		// we do the copy here not when the thing does the thing
+		r.addTag(runInfo.tags[i].copy())
+	}
 	runInfo.argContainer.cleanup();
 	
 	if (PERFORMANCE_MONITOR) {

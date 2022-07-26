@@ -205,7 +205,7 @@ function createWavetableBuiltins() {
 			if (len != UNBOUND) {
 				dur = convertTimeToSamples(len);
 			}
-			valfloat = 1.0;
+			let valfloat = 1.0;
 			if (val != UNBOUND) {
 				valfloat = convertValueFromTag(val);
 			}
@@ -247,7 +247,7 @@ function createWavetableBuiltins() {
 			r.init();
 			return r;
 		},
-		'Runs |wt1 through a single pole filter with a cutoff determined by |wt2. If an integer or float is passed in for wt2, it is converted to a constant signal.'
+		'Runs |wt1 through a single pole filter with a cutoff determined by |wt2. If an integer or float is passed in for wt2, it is converted to a constant signal. A value of 1 corresponds to a filter cutoff frequency of 20kHz.'
 	);	
 
 	Builtin.createBuiltin(
@@ -576,11 +576,11 @@ function createWavetableBuiltins() {
 
 			if (!(amt.getTypeName() == '-wavetable-')) {
 				let scaleFactor = amt.getTypedValue();
-				if (scaleFactor <= 0) {
-					return constructFatalError('resample-by: cannot scale to a constant value that is zero or less.')
+				if (scaleFactor == 0) {
+					return constructFatalError('resample-by: cannot scale to a constant value that is zero.')
 				}
 				amt = getConstantSignalFromValue(scaleFactor);
-				resultDuration = oldDuration * (1 / scaleFactor);
+				resultDuration = oldDuration * (1 / (Math.abs(scaleFactor)));
 			} else {
 				// match the duration of the second arg.
 				resultDuration = amt.getDuration();
@@ -679,7 +679,7 @@ function createWavetableBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'resize',
+		'clipad',
 		[ 'wt', 'len#%'],
 		function $sizeto(env, executionEnvironment) {
 			let len = env.lb('len');
@@ -702,7 +702,7 @@ function createWavetableBuiltins() {
 			r.init();
 			return r;
 		},
-		'Resizes (changes the length of) the wavetable to |len length, either removing data from the end or padding the end with silence, as needed.'
+		'Clips the length of the wavetable, or pads the end of it with silence, depending on whether the passed-in length is greater or less than the length of the wavetable.'
 	);
 
 	Builtin.createBuiltin(
