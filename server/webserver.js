@@ -44,8 +44,9 @@ const server = http.createServer((req, resp) => {
 	let isApi = (path == '/api');
 
 	let sessionIdFromCookie = getSessionIdFromCookie(req);
+
 	if (isApi && !sessionIdFromCookie) {
-		sendResponse(resp, 401, 'text/html', "session cookie needed for API request.", 'ERROR');			
+		sendResponse(resp, 401, 'text/html', "session cookie needed for API request.", 'ERROR');		
 	} else if (isApi) {
 		loadRequestBody(req, function(data) {
 			serviceApiRequest(sessionIdFromCookie, resp, data);
@@ -66,12 +67,17 @@ const server = http.createServer((req, resp) => {
 				sendResponse(resp, 401, 'text/html', 'invalid session name');				
 			}
 		});
-	} else if (query.sessionId && query.copy) {
-		checkIfSessionExists(query.sessionId, function(exists) {
+	} else if (query.copy) {
+		let sessionId = query.sessionId || sessionIdFromCookie;
+		if (!sessionId) {
+			sendResponse(resp, 401, 'text/html', 'Cannot copy a session without a session ID.');
+			return;
+		}
+		checkIfSessionExists(sessionId, function(exists) {
 			if (exists) {
 				createNewUUIDSession(resp, function(success, newSessionId) {
 					if (success) {
-						copySessionContents(query.sessionId, newSessionId, function(success) {
+						copySessionContents(sessionId, newSessionId, function(success) {
 							if (success) {
 								sendRedirect(resp, `http://${webenv_vars.redirectHostname}/?sessionId=${newSessionId}`);
 							} else {
@@ -83,7 +89,7 @@ const server = http.createServer((req, resp) => {
 					}
 				});
 			} else {
-				sendResponse(resp, 401, 'text/html', "unknown session id specified in query string", 'ERROR');			
+				sendResponse(resp, 401, 'text/html', "unknown session id", 'ERROR');			
 			}
 		});
 	} else if (query.sessionId) {
@@ -102,27 +108,6 @@ const server = http.createServer((req, resp) => {
 				sendResponse(resp, 401, 'text/html', 'could not create session');				
 			}
 		})
-	} else if (sessionIdFromCookie && query.copy) {
-		checkIfSessionExists(sessionIdFromCookie, function(exists) {
-			if (exists) {
-				createNewUUIDSession(resp, function(success, newSessionId) {
-					if (success) {
-						copySessionContents(sessionIdFromCookie, newSessionId, function(success) {
-							if (success) {
-								sendRedirect(resp, `http://${webenv_vars.redirectHostname}/?sessionId=${newSessionId}`);
-							} else {
-								sendResponse(resp, 500, 'text/html', 'could not copy session files');
-							}
-						});
-					} else {
-						sendResponse(resp, 401, 'text/html', 'could not create session');
-					}
-				});
-			} else {
-				// if someone deleted their cookies AND tried to do a copy, we can't help them
-				sendResponse(resp, 401, 'text/html', 'cannot copy session without a session id');				
-			}
-		});
 	} else if (sessionIdFromCookie) {
 		checkIfSessionExists(sessionIdFromCookie, function(exists) {
 			if (exists) {
@@ -411,6 +396,9 @@ function serviceApiSaveRequest(data, sessionId, cb) {
 		cb(`v2:?"save failed: the filename suffix '-functions' is reserved for library files, but you are trying to save this in a non-library session.  Sorry!"`);
 		return;		
 	}
+	if (sessionIsWriteProtected(sessionId)) {
+		cb(`v2:?"save failed: this session is read-only. To save files, create a copy of this session."`);
+	}
 	let path = `${sessionDirectory}/${nm}`;
 
 	let savedata = data.substr(i+1);
@@ -437,6 +425,11 @@ function serviceApiSaveRequest(data, sessionId, cb) {
 			cb(`v2:?{2||success}`);
 		}
 	})
+}
+
+function sessionIsWriteProtected(sessionId) {
+	let filepath = `${getSessionDirectory(sessionId)}/WRITE_PROTECTED_SESSION.9999999999`;
+	return fs.existSync(filepath);
 }
 
 function serviceApiLoadRequestUserSession(nm, sessionId, cb, fallback) {

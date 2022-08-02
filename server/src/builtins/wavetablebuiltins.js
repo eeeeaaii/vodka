@@ -86,7 +86,7 @@ function createWavetableBuiltins() {
 				channelnumber = channel.getTypedValue();
 			}
 
-			oneshotPlay(wt.getData(), channelnumber);
+			oneshotPlay(wt.getCachedBuffer(), channelnumber);
 			return wt;
 		},
 		'Plays the sound immediately on the given channel'
@@ -120,7 +120,7 @@ function createWavetableBuiltins() {
 				channelnumber = channel.getTypedValue();
 			}
 
-			loopPlay(wt.getData(), channelnumber);
+			loopPlay(wt.getCachedBuffer(), channelnumber);
 			return wt;
 		},
 		'Starts playing the sound at the next measure start'
@@ -766,7 +766,7 @@ function createWavetableBuiltins() {
 			r.init();
 			return r;
 		},
-		'Removes |len amount of sound from the start of |wt.'
+		'Removes |len amount of sound from the end of |wt.'
 	);
 
 

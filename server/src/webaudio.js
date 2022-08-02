@@ -26,10 +26,10 @@ let channelPlayers = [];
 let mediaRecorder = null;
 
 class AuditionPlayer {
-	constructor(data, channel, nex) {
-		this.source = getSourceFromBuffer(data, true /* loop */);
+	constructor(buffer, channel, nex) {
+		this.source = getSourceFromBuffer(buffer, true /* loop */);
 		this.source.connect(channelMergerNode, 0, channel);
-		this.source.start();
+		this.source.start(ctx.currentTime);
 
 		this.channel = channel;
 	}
@@ -48,10 +48,10 @@ class AuditionPlayer {
 }
 
 class OneshotPlayer {
-	constructor(data, channel) {
+	constructor(buffer, channel) {
 		this.channel = channel;
 
-		this.source = getSourceFromBuffer(data, false);
+		this.source = getSourceFromBuffer(buffer, false);
 		this.source.connect(channelMergerNode, 0, channel);
 		this.source.start();
 
@@ -79,9 +79,9 @@ class OneshotPlayer {
 }
 
 class LoopingPlayer {
-	constructor(data, channel) {
+	constructor(buffer, channel) {
 		this.channel = channel;
-		this.source = getSourceFromBuffer(data, true);
+		this.source = getSourceFromBuffer(buffer, true);
 		this.source.connect(channelMergerNode, 0, channel);
 		this.source.start();
 		this.currentlyPlayingSampleStartTime = ctx.currentTime;
@@ -101,8 +101,8 @@ class LoopingPlayer {
 		return (this.outputSourceWaitingForDeletion == null);
 	}
 
-	changeLoopData(data) {
-		let newsource = getSourceFromBuffer(data, true);
+	changeLoopData(buffer) {
+		let newsource = getSourceFromBuffer(buffer, true);
 
 		let startTime = 0;
 		let currentTime = ctx.currentTime;
@@ -180,23 +180,29 @@ function maybeCreateAudioContext() {
 	}
 }
 
-function getSourceFromBuffer(data, loop) {
+function getAudioBufferFromData(data) {
+  maybeCreateAudioContext();
 	let buffer = ctx.createBuffer(1, data.length, SAMPLE_RATE);
 	let chan = buffer.getChannelData(0);
-	for (let i = 0; i < data.length; i++) {
-		chan[i] = data[i];
-	}
+	chan.set(data);	
+	return buffer;
+}
+
+function getSourceFromBuffer(buffer, loop) {
+	// let buffer = ctx.createBuffer(1, data.length, SAMPLE_RATE);
+	// let chan = buffer.getChannelData(0);
+	// chan.set(data);
 
 	let source = ctx.createBufferSource();
 	source.buffer = buffer;
 	source.loop = loop;
-	source.loopEnd = data.length * (1 / SAMPLE_RATE);
+	source.loopEnd = buffer.length * (1 / SAMPLE_RATE);
 
 	return source;
 }
 
 // this plays immediately
-function oneshotPlay(data, channel) {
+function oneshotPlay(buffer, channel) {
 	maybeCreateAudioContext();	
 	if (!channel) {
 		channel = 0;
@@ -206,7 +212,7 @@ function oneshotPlay(data, channel) {
 		channelPlayers[channel].abortPlay();
 	}
 
-	channelPlayers[channel] = new OneshotPlayer(data, channel);
+	channelPlayers[channel] = new OneshotPlayer(buffer, channel);
 
 }
 
@@ -219,7 +225,7 @@ function abortPlayback(channel) {
 	}
 }
 
-function loopPlay(data, channel) {
+function loopPlay(buffer, channel) {
 	maybeCreateAudioContext();
 	if (!channel) {
 		channel = 0;
@@ -227,20 +233,20 @@ function loopPlay(data, channel) {
 
 	if (channelPlayers[channel]) {
 		if (channelPlayers[channel].canChangeLoopData()) {
-			channelPlayers[channel].changeLoopData(data);
+			channelPlayers[channel].changeLoopData(buffer);
 		}
 	} else {
-		channelPlayers[channel] = new LoopingPlayer(data, channel);
+		channelPlayers[channel] = new LoopingPlayer(buffer, channel);
 	}
 }
 
-function startAuditioningBuffer(data, nex) {
+function startAuditioningBuffer(buffer, nex) {
 	maybeCreateAudioContext();
 	// channel is always 1
 	if (channelPlayers[1]) {
 		channelPlayers[1].abortPlay();
 	}
-	channelPlayers[1] = new AuditionPlayer(data, 1);
+	channelPlayers[1] = new AuditionPlayer(buffer, 1);
 	thingAuditioning = nex;
 }
 
@@ -269,5 +275,5 @@ async function getFileAsBuffer(filepath) {
 }
 
 
-export { loadSample, maybeKillSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { getAudioBufferFromData, loadSample, maybeKillSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 

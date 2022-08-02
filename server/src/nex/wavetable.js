@@ -36,7 +36,7 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { showManipulator } from '../wtmanip.js'
 import { Editor } from '../editors.js'
 import { doTutorial } from '../help.js'
-import {  startRecordingAudio, stopRecordingAudio } from '../webaudio.js'
+import { getAudioBufferFromData, startRecordingAudio, stopRecordingAudio } from '../webaudio.js'
 
 
 // zoom essentially means a number of pixels equals a number of samples
@@ -55,12 +55,6 @@ class Wavetable extends Nex {
 	constructor(initSize) {
 		super();
 		doTutorial('wavetable');
-		let d = [];
-		if (!initSize) initSize = 256;
-		for (let i = 0; i < initSize; i++) {
-			d[i] = 0;
-		};
-		this.initWith(d);
 
 		// sometimes you get an EnterUp event
 		// when you first create a wavetable nex so
@@ -69,7 +63,7 @@ class Wavetable extends Nex {
 		this.windowOriginSample = 0;
 
 		this.sections = [];
-
+		this.cachedBuffer = null;
 		this.localPixelsPerSample = -1;
 		this.localHeightPixelsFullScale = -1;
 		this.centerSample = -1;
@@ -79,6 +73,11 @@ class Wavetable extends Nex {
 		this.blobs = [];
 		this.currentTimebase = null;
 		this.rightIsClipping = false;
+
+		if (!initSize) initSize = 256;
+		let d = new Float32Array(initSize);
+		d.fill(0);
+		this.initWith(d);
 	}
 
 	getCurrentTimebase() {
@@ -125,7 +124,7 @@ class Wavetable extends Nex {
 	}
 
 	startRecording() {
-		this.data = [];
+		this.data = new Float32Array();
 		this.resetBlobs();
 		this.recording = true;
 	}
@@ -137,11 +136,8 @@ class Wavetable extends Nex {
 	}
 
 	setRecordedData(buf) {
-		this.data = [];
-		for (let i = 0; i < buf.length; i++) {
-			this.data.push(buf[i]);
-		}
-		this.calculateAmplitude();
+		this.data = Float32Array.from(buf);
+		this.cacheValues();
 		this.setDirtyForRendering(true);
 		eventQueueDispatcher.enqueueTopLevelRender();			
 	}
@@ -174,6 +170,10 @@ class Wavetable extends Nex {
 
 	getData() {
 		return this.data;
+	}
+
+	getCachedBuffer() {
+		return this.cachedBuffer;
 	}
 
 	getPixelsPerSample() {
@@ -250,15 +250,15 @@ class Wavetable extends Nex {
 	// still needed for cases like for example loading data from a file
 	initWith(newdata) {
 		// basically if newdata is too huge we could crash
-		this.data = [];
+		this.data = new Float32Array(newdata.length);
 		for (let i = 0; i < newdata.length; i++) {
 			this.data[i] = newdata[i];
 		}
-		this.calculateAmplitude();
+		this.cacheValues();
 	}
 
 	init() {
-		this.calculateAmplitude();		
+		this.cacheValues();		
 	}
 
 	// loadFromFile(fname) {
@@ -272,10 +272,11 @@ class Wavetable extends Nex {
 
 	// }
 
-	calculateAmplitude() {
+	cacheValues() {
 		let mm = this.getMinMaxInDataRange(0, this.data.length);
 		let absMin = Math.abs(mm.min);
 		this.setAmp(Math.max(absMin, mm.max));
+		this.cachedBuffer = getAudioBufferFromData(this.data);
 	}
 
 	getMinMaxInDataRange(start, end) {
@@ -367,7 +368,6 @@ class Wavetable extends Nex {
 	copyFieldsTo(nex) {
 		super.copyFieldsTo(nex);
 		nex.initWith(this.data);
-		nex.setAmp(this.amp);
 		nex.currentTimebase = this.currentTimebase;
 		for (let i = 0; i < this.markers.length; i++) {
 			nex.markers[i] = this.markers[i];
@@ -388,23 +388,40 @@ class Wavetable extends Nex {
 	}
 
 	deserializePrivateData(data) {
-		let sa = data.split(',');
-		let d = [];
-		for (let i = 0; i < sa.length; i++) {
-			d[i] = Number(sa[i]);
+		// I don't know when this gets called?
+		let s = window.atob(data);
+		let len = s.length;
+		let bytes = new Uint8Array(len);
+		for (let i = 0; i < len; i++) {
+			bytes[i] = s.charCodeAt(i);
 		}
-		this.initWith(d);
+		this.data = new Float32Array(bytes.buffer);
+		heap.requestMem(this.data.length * heap.incrementalSizeWavetable());
+		this.init();
+		// let sa = data.split(',');
+		// let d = [];
+		// for (let i = 0; i < sa.length; i++) {
+		// 	d[i] = Number(sa[i]);
+		// }
+		// this.initWith(d);
 	}
 
 	serializePrivateData() {
 		let s = '';
-		for (let i = 0; i < this.data.length; i++) {
-			if (s != '') {
-				s += ',';
-			}
-			s += this.data[i];
+		let bytes = new Uint8Array(this.data.buffer);
+		let len = bytes.byteLength;
+		for (let i = 0; i < len; i++) {
+			s += String.fromCharCode(bytes[i]);
 		}
-		return s;
+		return window.btoa(s);
+		// let s = '';
+		// for (let i = 0; i < this.data.length; i++) {
+		// 	if (s != '') {
+		// 		s += ',';
+		// 	}
+		// 	s += this.data[i];
+		// }
+		// return s;
 	}
 
 	getDefaultHandler() {
@@ -428,7 +445,7 @@ class Wavetable extends Nex {
 			if (!this.auditioning) {
 				this.auditioning = true;
 				this.sectionBeingAuditioned = sd;
-				startAuditioningBuffer(sd.data, this);
+				startAuditioningBuffer(sd.cachedBuffer, this);
 			}
 		}
 	}
@@ -488,6 +505,7 @@ class Wavetable extends Nex {
 				this.sections[i].data[k] = this.data[j];
 				k++;
 			}
+			this.sections[i].cachedBuffer = getAudioBufferFromData(this.sections[i].data);
 		}
 	}
 
@@ -495,7 +513,7 @@ class Wavetable extends Nex {
 	auditionWave() {
 		if (!this.auditioning) {
 			this.auditioning = true;
-			startAuditioningBuffer(this.data, this);
+			startAuditioningBuffer(this.cachedBuffer, this);
 		}
 	}
 
@@ -1059,6 +1077,10 @@ class WavetableEditor extends Editor {
 	memUsed() {
 		return super.memUsed() + heap.sizeWavetable();
 	}
+}
+
+function constructWavetableWithFileData(data) {
+
 }
 
 function constructWavetable(initSize) {
