@@ -182,10 +182,10 @@ function setDocRootFromFile(filename) {
 }
 
 function setDocRootFromStart() {
-	loadAndRun(':start', function(result) {
+	loadAndRun('start-doc', function(result) {
 		let expNode = root.appendChild(result);
 		expNode.setSelected(false);
-		root.setRenderMode(RENDER_MODE_EXPLO);
+		root.setRenderMode(RENDER_MODE_NORM);
 		systemState.setGlobalCurrentDefaultRenderFlags(0);	
 	});
 }

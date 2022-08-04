@@ -669,6 +669,8 @@ function setupHelp() {
 	document.getElementById('sessionid').innerText = sessionId;
 	document.getElementById('sessionlink').href = `http://${FEATURE_VECTOR.hostname}?sessionId=${sessionId}`;
 	document.getElementById('newsessionlink').href = `http://${FEATURE_VECTOR.hostname}?new=1`;
+	document.getElementById('copysessionlink').href = `http://${FEATURE_VECTOR.hostname}?copy=1`;
+	document.getElementById('sharesessionlink').href = `http://${FEATURE_VECTOR.hostname}?copy=1&type=readonly`;
 
 	maybeShowHelp();
 

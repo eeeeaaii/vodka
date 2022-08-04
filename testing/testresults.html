@@ -105,7 +105,7 @@
 			<textarea id="goldenoutput"></textarea>
 		</div>
 		<div class="summarylist">
-			<div class="summaryname failed">Has Failing Test: 0</div>
+			<div class="summaryname failed">Has Failing Test: 1</div>
         <div class="summarylistitem">
           <span class="cbhint">-n</span>
           <span class="cbhint">-e</span>
@@ -118,6 +118,17 @@
           <input type="checkbox" onclick="checkAll(this, 'rerunfailing')">
 					<input type="checkbox" onclick="checkAll(this, 'ignorefailing')">
 					(select all)
+				</div>
+				<div class="summarylistitem"> 
+          <input type="checkbox" class="regennormalgoldenfailing" data-testname="unit_math">
+          <input type="checkbox" class="regenexplodedgoldenfailing" data-testname="unit_math">
+          <input type="checkbox" class="rerunfailing" data-testname="unit_math">
+					<input type="checkbox" class="ignorefailing" data-testname="unit_math">
+					<a class="listtestname" href="./alltests/unit_math/unit_math_testresults.html">unit_math</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (1 failing)
+          (<a href="#" onclick="return show(this, 'unit_math')">show</a>)
+          <div class="detail" id="DETAILFRAME-unit_math"></div>
 				</div>
 		</div>
     <div class="summarylist">
@@ -137,7 +148,7 @@
         </div>
     </div>
 		<div class="summarylist">
-			<div class="summaryname passed">Has Passing Test: 379</div>
+			<div class="summaryname passed">Has Passing Test: 380</div>
         <div class="summarylistitem">
           <span class="cbhint">-n</span>
           <span class="cbhint">-e</span>
@@ -2319,6 +2330,17 @@
           <div class="detail" id="DETAILFRAME-functions_file_package"></div>
 				</div>
 				<div class="summarylistitem">
+          <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_file_save_wavetable">
+          <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_file_save_wavetable">
+          <input type="checkbox" class="rerunpassing" data-testname="functions_file_save_wavetable">
+          <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
+          <a class="listtestname" href="./alltests/functions_file_save_wavetable/functions_file_save_wavetable_testresults.html">functions_file_save_wavetable</a>
+          <span class="smalltesttypebadge jstype">js</span>
+          (2 passing)
+          (<a href="#" onclick="return show(this, 'functions_file_save_wavetable')">show</a>)
+          <div class="detail" id="DETAILFRAME-functions_file_save_wavetable"></div>
+				</div>
+				<div class="summarylistitem">
           <input type="checkbox" class="regennormalgoldenpassing" data-testname="functions_file_save_withstring">
           <input type="checkbox" class="regenexplodedgoldenpassing" data-testname="functions_file_save_withstring">
           <input type="checkbox" class="rerunpassing" data-testname="functions_file_save_withstring">
@@ -4272,7 +4294,7 @@
           <input type="checkbox" onclick="checkAll(this, 'ignorepassing')">
           <a class="listtestname" href="./alltests/unit_math/unit_math_testresults.html">unit_math</a>
           <span class="smalltesttypebadge jstype">js</span>
-          (2 passing)
+          (1 passing)
           (<a href="#" onclick="return show(this, 'unit_math')">show</a>)
           <div class="detail" id="DETAILFRAME-unit_math"></div>
 				</div>
