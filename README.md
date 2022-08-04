@@ -6,7 +6,7 @@ Vodka is a programming language and environment for [creative coding](https://en
 
 ## Features
 
-Vodka is currently at [version 0.4.1](CHANGES.md). 
+Vodka is currently at [version 0.4.2](CHANGES.md). 
 
 Programming language features:
 
