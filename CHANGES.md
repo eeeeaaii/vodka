@@ -1,5 +1,13 @@
 # Vodka: Release Notes
 
+## Version 0.4.2 - 8/4/22
+
+- Fixed internal and saved representation of wavetables
+- Created publish and read-only mechanism
+- Implemented memory management layer on top of JS native
+- Cleaned up and fixed wavetable builtins and added a few new ones
+- Fixed issues with deferred commands and values
+
 ## Version 0.4.1 - 5/16/22
 
 - Added deferred value and deferred command types, removed expectations
