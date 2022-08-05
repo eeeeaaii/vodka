@@ -81,9 +81,9 @@ function createWavetableBuiltins() {
 		function $oneshotPlay(env, executionEnvironment) {
 			let wt = env.lb('wt');
 			let channel = env.lb('channel');
-			let channelnumber = 0;
+			let channelnumber = [0, 1];
 			if (channel != UNBOUND) {
-				channelnumber = channel.getTypedValue();
+				channelnumber = [ channel.getTypedValue() ];
 			}
 
 			oneshotPlay(wt.getCachedBuffer(), channelnumber);
@@ -93,12 +93,31 @@ function createWavetableBuiltins() {
 	);
 
 	Builtin.createBuiltin(
+		'loop-play',
+		[ 'wt', 'channel#?' ],
+		function $loopPlay(env, executionEnvironment) {
+			let wt = env.lb('wt');
+			let channel = env.lb('channel');
+			let channelnumber = [0, 1];
+			if (channel != UNBOUND) {
+				channelnumber = [ channel.getTypedValue() ];
+			}
+
+			loopPlay(wt.getCachedBuffer(), channelnumber);
+			return wt;
+		},
+		'Starts playing the sound at the next measure start'
+	);
+
+
+
+	Builtin.createBuiltin(
 		'abort-playback',
 		[ 'channel#?' ],
 		function $abortPlayback(env, executionEnvironment) {
 			let channel = env.lb('channel');
-			let channelnumber = 0;
-			if (channel == UNBOUND) {
+			let channelnumber = -1;
+			if (channel != UNBOUND) {
 				channelnumber = channel.getTypedValue();
 			}
 
@@ -108,23 +127,6 @@ function createWavetableBuiltins() {
 		'Starts playing the sound at the next measure start'
 	);
 
-
-	Builtin.createBuiltin(
-		'loop-play',
-		[ 'wt', 'channel#?' ],
-		function $loopPlay(env, executionEnvironment) {
-			let wt = env.lb('wt');
-			let channel = env.lb('channel');
-			let channelnumber = 0;
-			if (channel == UNBOUND) {
-				channelnumber = channel.getTypedValue();
-			}
-
-			loopPlay(wt.getCachedBuffer(), channelnumber);
-			return wt;
-		},
-		'Starts playing the sound at the next measure start'
-	);
 
 	Builtin.createBuiltin(
 		'split',
