@@ -234,7 +234,7 @@ function loopPlay(buffer, channelList) {
 function abortPlayback(channel) {
 	if (channel == -1) {
 		for (let i = 0; i < channelPlayers.length; i++) {
-			channelPlayers[channel].abortPlay();
+			channelPlayers[i].abortPlay();
 		}
 	} else if (channelPlayers[channel]) {
 		channelPlayers[channel].abortPlay();
