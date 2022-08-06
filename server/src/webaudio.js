@@ -22,16 +22,15 @@ let SAMPLE_RATE = 48000;
 let thingAuditioning = null;
 
 let channelPlayers = [];
+let auditioningPlayer = null;
 
 let mediaRecorder = null;
 
 class AuditionPlayer {
-	constructor(buffer, channel, nex) {
+	constructor(buffer) {
 		this.source = getSourceFromBuffer(buffer, true /* loop */);
-		this.source.connect(channelMergerNode, 0, channel);
+		this.source.connect(channelMergerNode, 0, 0);
 		this.source.start(ctx.currentTime);
-
-		this.channel = channel;
 	}
 
 	canChangeLoopData() {
@@ -41,9 +40,7 @@ class AuditionPlayer {
 	abortPlay() {
 		this.source.stop();
 		this.source.disconnect(channelMergerNode);
-		if (channelPlayers[this.channel] == this) {
-			channelPlayers[this.channel] = null;
-		}
+		auditioningPlayer = null;
 	}
 }
 
@@ -189,10 +186,6 @@ function getAudioBufferFromData(data) {
 }
 
 function getSourceFromBuffer(buffer, loop) {
-	// let buffer = ctx.createBuffer(1, data.length, SAMPLE_RATE);
-	// let chan = buffer.getChannelData(0);
-	// chan.set(data);
-
 	let source = ctx.createBufferSource();
 	source.buffer = buffer;
 	source.loop = loop;
@@ -251,18 +244,14 @@ function abortPlayback(channel) {
 
 function startAuditioningBuffer(buffer, nex) {
 	maybeCreateAudioContext();
-	// channel is always 1
-	if (channelPlayers[1]) {
-		channelPlayers[1].abortPlay();
-	}
-	channelPlayers[1] = new AuditionPlayer(buffer, 1);
+	auditioningPlayer = new AuditionPlayer(buffer);
 	thingAuditioning = nex;
 }
 
 function maybeKillSound() {
 	if (thingAuditioning) {
 		thingAuditioning.stopAuditioningWave();
-		channelPlayers[1].abortPlay();
+		auditioningPlayer.abortPlay();
 		thingAuditioning = null;
 	}
 }
