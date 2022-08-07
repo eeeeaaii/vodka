@@ -117,7 +117,7 @@ class LoopingPlayer {
 		this.outputSourceWaitingForDeletion = this.source;
 		this.source = newsource;
 		this.currentlyPlayingSampleStartTime = startTime;
- 		this.currentlyPlayingSampleLength = data.length / SAMPLE_RATE;
+ 		this.currentlyPlayingSampleLength = buffer.length / SAMPLE_RATE;
 
 		window.setTimeout(function() {
 			this.outputSourceWaitingForDeletion.disconnect(channelMergerNode);
@@ -217,13 +217,13 @@ function loopPlay(buffer, channelList) {
 	}
 
 	for (let i = 0; i < channelList.length; i++) {
-		let channel = channelList[i];
-		if (channelPlayers[channel]) {
-			if (channelPlayers[channel].canChangeLoopData()) {
-				channelPlayers[channel].changeLoopData(buffer);
+		let channelNum = channelList[i];
+		if (channelPlayers[channelNum]) {
+			if (channelPlayers[channelNum].canChangeLoopData()) {
+				channelPlayers[channelNum].changeLoopData(buffer);
 			}
 		} else {
-			channelPlayers[channel] = new LoopingPlayer(buffer, i);
+			channelPlayers[channelNum] = new LoopingPlayer(buffer, channelNum);
 		}
 	}
 }
