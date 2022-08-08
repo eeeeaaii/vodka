@@ -771,6 +771,68 @@ function createWavetableBuiltins() {
 		'Removes |len amount of sound from the end of |wt.'
 	);
 
+	Builtin.createBuiltin(
+		'delay',
+		[ 'wt', 'time#%'],
+		function $delay(env, executionEnvironment) {
+			let time = env.lb('time');
+			let wt = env.lb('wt');
+
+			time = convertTimeToSamples(time);
+			let originalDuration = wt.getDuration();
+			let outputDuration = originalDuration + time;
+
+			let r = constructWavetable(outputDuration);
+			let data = r.getData();
+
+			for (let i = time; i < outputDuration; i++) {
+				data[i] = wt.valueAtSample(i - time);
+			}
+			r.init();
+			return r;
+		},
+		'Outputs a delayed copy of |wt (the beginning is padded with silence). Combine with the feedback builtin to get a classic delay sound.'
+	);
+
+	Builtin.createBuiltin(
+		'feedback',
+		[ 'wt', 'f&', 'attenuation%', 'n#'],
+		function $delay(env, executionEnvironment) {
+			let wt = env.lb('wt');
+			let f = env.lb('f');
+			let attenuation = env.lb('attenuation').getTypedValue();
+			let n = env.lb('n').getTypedValue();
+
+			let dur = wt.getDuration();
+			let wtData = wt.getData();
+			let output = constructWavetable(dur);
+			let outData = output.getData();
+
+			for (let i = 0; i < dur; i++) {
+				outData[i] = wtData[i];
+			}
+
+			let fedBackSignal = wt;
+			for (let i = 0; i < n; i++) {
+				fedBackSignal = sEval(makeCommandWithClosureOneArg(f, fedBackSignal));
+				let fedBackData = fedBackSignal.getData();
+				for (let j = 0; j < fedBackSignal.getDuration(); j++) {
+					fedBackData[j] = fedBackData[j] * attenuation;
+				}
+				for (let j = 0; j < dur; j++) {
+					if (j < fedBackSignal.getDuration()) {
+						outData[j] += fedBackData[j]
+					}
+				}
+			}
+
+			output.init();
+			return output;
+		},
+		'Calls the function |f on |wt to produce an output, then calls |f on that output, then calls |f on the output of that, and so on, |n times, attenuating the output by |attenuation each time before passing it back into |f. The output of this function is the sum of all the outputs. This mimics analog feedback, but note that the |n parameter is a hard limit on the number of times the function is fed back into itself.'
+	);
+
+
 
 	Builtin.createBuiltin(
 		'amplitude',
