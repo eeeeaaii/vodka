@@ -253,6 +253,42 @@ function createWavetableBuiltins() {
 	);	
 
 	Builtin.createBuiltin(
+		'convolve',
+		[ 'wt', 'ir' ],
+		function $convolve(env, executionEnvironment) {
+			let wt = env.lb('wt');
+			let ir = env.lb('ir');
+
+			let wtLen = wt.getDuration();
+			let irLen = ir.getDuration();
+			let outLen = wtLen + irLen;
+			let r = constructWavetable(outLen); // -1
+			let rdata = r.getData();
+			for (let outIndex = 0; outIndex < outLen; outIndex++) {
+				let sum = 0;
+				for (let offset = 0; offset < irLen; offset++) {
+					let irIndex = offset;
+					let wtIndex = outIndex - offset;
+					if (irIndex < irLen && wtIndex >= 0) {
+						let irValue = ir.valueAtSample(irIndex);
+						// Note: wt will loop to the beginning of the sample if we ask for an index beyond the end of it.
+						// However for a realistic reverb what we really want is zeros once we get to the end of the sound.
+						// We will be indexing past the end of the sound when outIndex gets greater than wtLen and
+						// offset is 0 or a small value.
+						let wtValue = (wtIndex >= wtLen ? 0.0 : wt.valueAtSample(wtIndex));
+						sum += irValue * wtValue;
+					}
+				}
+				rdata[outIndex] = sum;
+			}
+			r.init();
+			return r;
+		},
+		'Convolves |wt with |ir. If |ir is an impulse response, this should give a reverb effect. Otherwise this will create a hybrid sound that shares some characteristics of both sounds. Warning: this function is very slow, you may have to wait a while.'
+	);	
+
+
+	Builtin.createBuiltin(
 		'slew',
 		[ 'wt1', 'wt2' ],
 		function $slew(env, executionEnvironment) {
@@ -291,6 +327,11 @@ function createWavetableBuiltins() {
 		'Slows down rate of change of |wt1 to a maximum value per sample given by |wt2. If wt1 is a signal residing between -1 and 1, values of wt2 that are between 0 and 1 will yield best results.'
 	);	
 
+// fix this, example situation where it breaks:
+// take a normal ramp (2 beats) and pass it through a function that takes the value to the 5th power
+// the function will return, but some async bullshit will continue and some numbers will keep incrementing in the js console, not sure what is happening
+
+/*
 	Builtin.createBuiltin(
 		'wavecalc',
 		[ 'wt', 'f&' ],
@@ -316,6 +357,7 @@ function createWavetableBuiltins() {
 		},
 		'Calls function |f on every sample in |wt (this may take a while for long samples)'
 	);	
+*/
 
 	Builtin.createBuiltin(
 		'noise',
@@ -482,7 +524,7 @@ function createWavetableBuiltins() {
 
 	Builtin.createBuiltin(
 		'resample-to',
-		[ 'wt', 'freq'],
+		[ 'wt', 'freq?'],
 		function $resampleTo(env, executionEnvironment) {
 			let wt = env.lb('wt');
 			let freq = env.lb('freq');
@@ -620,8 +662,6 @@ function createWavetableBuiltins() {
 		function $normalize(env, executionEnvironment) {
 			let wt = env.lb('wt');
 			let amp = wt.getAmp();
-			// this really doesn't need to be a builtin
-			// this is just the same as gain
 			let gain = 1/amp;
 
 			let dur = wt.getDuration();
@@ -636,6 +676,131 @@ function createWavetableBuiltins() {
 
 		},
 		'Normalizes a wavetable (attenuates it such that the highest peak is exactly at full scale, or 1)'
+	);
+
+	Builtin.createBuiltin(
+		'half-rectify',
+		[ 'wt' ],
+		function $halfrectify(env, executionEnvironment) {
+			let wt = env.lb('wt');
+
+			let dur = wt.getDuration();
+			let r = constructWavetable(dur);
+			let data = r.getData();
+			for (let i = 0; i < wt.getDuration(); i++) {
+				let val = wt.valueAtSample(i);
+				if (val >= 0) {
+					data[i] = val;
+				} else {
+					data[i] = 0;
+				}
+			}
+			r.init();
+			return r;
+
+		},
+		'Changes all negative signal values in |wt to zero, but leaves positive values alone.'
+	);
+
+	Builtin.createBuiltin(
+		'full-rectify',
+		[ 'wt' ],
+		function $fullrectify(env, executionEnvironment) {
+			let wt = env.lb('wt');
+
+			let dur = wt.getDuration();
+			let r = constructWavetable(dur);
+			let data = r.getData();
+			for (let i = 0; i < wt.getDuration(); i++) {
+				let val = wt.valueAtSample(i);
+				if (val >= 0) {
+					data[i] = val;
+				} else {
+					data[i] = -val;
+				}
+			}
+			r.init();
+			return r;
+
+		},
+		'Inverts just the negative signal values in |wt, leaving positive values alone.'
+	);
+
+	Builtin.createBuiltin(
+		'invert',
+		[ 'wt' ],
+		function $invert(env, executionEnvironment) {
+			let wt = env.lb('wt');
+
+			let dur = wt.getDuration();
+			let r = constructWavetable(dur);
+			let data = r.getData();
+			for (let i = 0; i < wt.getDuration(); i++) {
+				let val = wt.valueAtSample(i);
+				data[i] = -val;
+			}
+			r.init();
+			return r;
+
+		},
+		'Inverts the sign of all values in |wt, making positive negative and negative positive.'
+	);
+
+	Builtin.createBuiltin(
+		'offset',
+		[ 'wt', 'amt'],
+		function $offset(env, executionEnvironment) {
+			let wt = env.lb('wt');
+			let amt = env.lb('amt');
+
+
+			if (!(amt.getTypeName() == '-wavetable-')) {
+				amt = getConstantSignalFromValue(amt.getTypedValue(), wt.getDuration())
+				sAttach(amt);
+			}
+
+			let dur = Math.max(wt.getDuration(), amt.getDuration());
+			let r = constructWavetable(dur);
+			let data = r.getData();
+
+			for (let i = 1 ; i < dur; i++) {
+				let val = wt.valueAtSample(i);
+				let offset = amt.valueAtSample(i);
+				data[i] = val + offset;
+			}
+			r.init();
+			return r;
+		},
+		'Offsets the signal value of |wt by |amt (note that |amt can be another wavetable).'
+	);
+
+	Builtin.createBuiltin(
+		'phase-shift',
+		[ 'wt', 'amt'],
+		function $offset(env, executionEnvironment) {
+			let wt = env.lb('wt');
+			let amt = env.lb('amt');
+
+			if (!(amt.getTypeName() == '-wavetable-')) {
+				amt = getConstantSignalFromValue(amt.getTypedValue(), wt.getDuration())
+				sAttach(amt);
+			}
+
+			let originalDur = wt.getDuration();
+			let dur = Math.max(originalDur, amt.getDuration());
+			let r = constructWavetable(dur);
+			let data = r.getData();
+
+			for (let i = 1 ; i < dur; i++) {
+				let shift = amt.valueAtSample(i);
+				let samplesToShift = shift * originalDur;
+				let val = wt.interpolatedValueAtSample(i + samplesToShift);
+				data[i] = val;
+			}
+			r.init();
+			return r;
+		},
+		'phase shifts the signal by |amt. The length of |wt is considered to be one "cycle" (even if it is a complex waveform). The values for |amt should range from 1.0 (full cycle shift forward) to -1.0 (full cycle shift backward). A wavetable can be passed in for |amt.'
 	);
 
 
