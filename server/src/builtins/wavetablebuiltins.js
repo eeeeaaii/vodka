@@ -32,7 +32,7 @@ import {
 } from '../asyncfunctions.js'
 
 import { UNBOUND } from '../environment.js'
-import { loadSample } from '../webaudio.js'
+import { loadSample, startRecordingAudio, stopRecordingAudio } from '../webaudio.js'
 import {
 	convertValueFromTag,
 	convertTimeToSamples,
@@ -77,38 +77,94 @@ function createWavetableBuiltins() {
 
 	Builtin.createBuiltin(
 		'oneshot-play',
-		[ 'wt', 'channel#?' ],
+		[ 'wt', 'channels?' ],
 		function $oneshotPlay(env, executionEnvironment) {
 			let wt = env.lb('wt');
-			let channel = env.lb('channel');
-			let channelnumber = [0, 1];
-			if (channel != UNBOUND) {
-				channelnumber = [ channel.getTypedValue() ];
+			let channels = env.lb('channels');
+
+			let buffers = [];
+			if (Utils.isNexContainer(wt)) {
+				for (let i = 0; i < wt.numChildren(); i++) {
+					buffers.push(wt.getChildAt(i).getCachedBuffer());
+				}
+			} else {
+				buffers.push(wt.getCachedBuffer());
 			}
 
-			oneshotPlay(wt.getCachedBuffer(), channelnumber);
+			let channelnumbers = [0, 1];
+			if (channels != UNBOUND) {
+				channelnumbers = [];
+				if (Utils.isNexContainer(channels)) {
+					for (let i = 0; i < channels.numChildren(); i++) {
+						channelnumbers.push(channels.getChildAt(i).getTypedValue());
+					}
+				} else {
+					channelnumbers.push(channels.getTypedValue());
+				}
+			}
+
+			oneshotPlay(buffers, channelnumbers);
 			return wt;
 		},
-		'Plays the sound immediately on the given channel'
+		'Plays |wt immediately on the given channel. If |channel is not provided, the sound is played on the first 2 channels. If |channel and/or |wt are lists, Vodka will do its best to match up sounds with channels.'
 	);
 
 	Builtin.createBuiltin(
 		'loop-play',
-		[ 'wt', 'channel#?' ],
+		[ 'wt', 'channels?' ],
 		function $loopPlay(env, executionEnvironment) {
 			let wt = env.lb('wt');
-			let channel = env.lb('channel');
-			let channelnumber = [0, 1];
-			if (channel != UNBOUND) {
-				channelnumber = [ channel.getTypedValue() ];
+			let channels = env.lb('channels');
+
+			let buffers = [];
+			if (Utils.isNexContainer(wt)) {
+				for (let i = 0; i < wt.numChildren(); i++) {
+					buffers.push(wt.getChildAt(i).getCachedBuffer());
+				}
+			} else {
+				buffers.push(wt.getCachedBuffer());
 			}
 
-			loopPlay(wt.getCachedBuffer(), channelnumber);
+			let channelnumbers = [0, 1];
+			if (channels != UNBOUND) {
+				channelnumbers = [];
+				if (Utils.isNexContainer(channels)) {
+					for (let i = 0; i < channels.numChildren(); i++) {
+						channelnumbers.push(channels.getChildAt(i).getTypedValue());
+					}
+				} else {
+					channelnumbers.push(channels.getTypedValue());
+				}
+			}
+
+			loopPlay(buffers, channelnumbers);
 			return wt;
 		},
-		'Starts playing the sound at the next measure start'
+		'Starts playing wt| at the next measure start on |channel.  If |channel is not provided, the sound is played on the first 2 channels. If |channel and/or |wt are lists, Vodka will do its best to match up sounds with channels.'
 	);
 
+
+	Builtin.createBuiltin(
+		'start-recording',
+		[ '_wt' ],
+		function $startRecording(env, executionEnvironment) {
+			let wt = env.lb('wt');
+			startRecordingAudio(wt);
+			return wt;
+		},
+		'Tells |wt to start recording.'
+	);
+
+	Builtin.createBuiltin(
+		'stopRecording',
+		[ '_wt' ],
+		function $startRecording(env, executionEnvironment) {
+			let wt = env.lb('wt');
+			stopRecordingAudio(wt);
+			return wt;
+		},
+		'Tells |wt to stop recording.'
+	);
 
 
 	Builtin.createBuiltin(

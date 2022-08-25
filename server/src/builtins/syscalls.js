@@ -15,15 +15,19 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from '../utils.js'
+
 import { Builtin } from '../nex/builtin.js'
 import { constructEString } from '../nex/estring.js'
+import { constructFatalError } from '../nex/eerror.js'
 import { constructFloat } from '../nex/float.js'
 import { constructInteger } from '../nex/integer.js'
 import { constructNil } from '../nex/nil.js'
+import { convertJSMapToOrg } from '../nex/org.js'
 import { RenderNode } from '../rendernode.js'
 import { systemState } from '../systemstate.js'
 import { rootManager } from '../rootmanager.js'
-import { experiments, getExperimentsAsString } from '../globalappflags.js'
+import { experiments, getExperimentsAsString, getSettings, setSettingValue, hasSettingName } from '../globalappflags.js'
 import { UNBOUND } from '../environment.js'
 import { webFontManager } from '../webfonts.js'
 import {
@@ -35,6 +39,42 @@ import {
  * Creates all syscall builtins.
  */
 function createSyscalls() {
+
+	Builtin.createBuiltin(
+		'get-settings',
+		[ ],
+		function $getSettings(env, executionEnvironment) {
+			let settings = getSettings();
+			let org = convertJSMapToOrg(settings);
+			return org;
+		},
+		"Gets an org containing all Vodka global settings."
+	);
+
+	Builtin.createBuiltin(
+		'set-settings-value',
+		[ 'val' ],
+		function $setSettingsValue(env, executionEnvironment) {
+			let val = env.lb('val');
+			if (val.numTags() != 1) {
+				return constructFatalError('set-settings-value: setting value must have a single tag indicating the setting to change.');
+			}
+			let tagval = val.getTag(0).getTagString();
+			if (!hasSettingName(tagval)) {
+				return constructFatalError(`set-settings-value: unknown setting ${tagval}.`);
+			}
+			if (Utils.isFloat(val) || Utils.isInteger(val)) {
+				let n = Number(val.getTypedValue());
+				setSettingValue(tagval, n);
+			} else {
+				setSettingValue(tagval, '' + val.getTypedValue());
+			}
+			let settings = getSettings();
+			let org = convertJSMapToOrg(settings);
+			return org;
+		},
+		"Changes the value of a setting."
+	);
 
 	Builtin.createBuiltin(
 		'get-active-experiment-flags',

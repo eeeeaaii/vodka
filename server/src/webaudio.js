@@ -15,6 +15,18 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { settings } from './globalappflags.js'
+
+
+/*
+The reason for the channel merger node is that even if there are 16 inputs on your
+audio card, the ctx.destination will still just have one input with that number of
+channels. So to make it so that there are N inputs, where each of the
+N inputs maps to the Nth channel of a single input, you need a channel merger
+node.
+*/
+
+
 let ctx = null;
 let channelMergerNode = null;
 let SAMPLE_RATE = 48000;
@@ -29,7 +41,7 @@ let mediaRecorder = null;
 class AuditionPlayer {
 	constructor(buffer) {
 		this.source = getSourceFromBuffer(buffer, true /* loop */);
-		this.source.connect(channelMergerNode, 0, 0);
+		this.source.connect(channelMergerNode, 0, settings.AUDIO_AUDITION_CHANNEL);
 		this.source.start(ctx.currentTime);
 	}
 
@@ -68,7 +80,11 @@ class OneshotPlayer {
 
 	abortPlay() {
 		this.source.stop();
-		this.source.disconnect(channelMergerNode);
+		try {
+			this.source.disconnect(channelMergerNode);
+		} catch (e) {
+			console.log('why is this failing? ' + e);
+		}
 		if (channelPlayers[this.channel] == this) {
 			channelPlayers[this.channel] = null;
 		}
@@ -195,29 +211,36 @@ function getSourceFromBuffer(buffer, loop) {
 }
 
 // this plays immediately
-function oneshotPlay(buffer, channelList) {
+function oneshotPlay(bufferList, channelList) {
 	maybeCreateAudioContext();
-	if (!channelList) {
-		channelList = [0 ,1];
-	}
+
+	let bufferIndex = 0;
 
 	for (let i = 0; i < channelList.length; i++) {
 		let channel = channelList[i];
+		let buffer = bufferList[bufferIndex];
+
 		if (channelPlayers[channel]) {
 			channelPlayers[channel].abortPlay();
 		}
-		channelPlayers[channel] = new OneshotPlayer(buffer, i);
+		channelPlayers[channel] = new OneshotPlayer(buffer, channel);
+
+		bufferIndex = (bufferIndex + 1) % bufferList.length;
 	}
 }
 
-function loopPlay(buffer, channelList) {
+function loopPlay(bufferList, channelList) {
 	maybeCreateAudioContext();
-	if (!channelList) {
-		channelList = [0 ,1];
-	}
+	// if there is just one wave, fan it out to all the channels.
+	// if there are two, alternate...
+	// if there are three, you know.
+
+	let bufferIndex = 0;
 
 	for (let i = 0; i < channelList.length; i++) {
 		let channelNum = channelList[i];
+		let buffer = bufferList[bufferIndex];
+
 		if (channelPlayers[channelNum]) {
 			if (channelPlayers[channelNum].canChangeLoopData()) {
 				channelPlayers[channelNum].changeLoopData(buffer);
@@ -225,6 +248,8 @@ function loopPlay(buffer, channelList) {
 		} else {
 			channelPlayers[channelNum] = new LoopingPlayer(buffer, channelNum);
 		}
+
+		bufferIndex = (bufferIndex + 1) % bufferList.length;
 	}
 }
 
@@ -234,7 +259,9 @@ function loopPlay(buffer, channelList) {
 function abortPlayback(channel) {
 	if (channel == -1) {
 		for (let i = 0; i < channelPlayers.length; i++) {
-			channelPlayers[i].abortPlay();
+			if (channelPlayers[i]) {
+				channelPlayers[i].abortPlay();
+			}
 		}
 	} else if (channelPlayers[channel]) {
 		channelPlayers[channel].abortPlay();

@@ -157,6 +157,11 @@ class Wavetable extends Nex {
 	}
 
 	addMarker() {
+		// we don't want markers at the extreme ends, because then when you slice
+		// you get empty wavetables.
+		if (this.centerSample < 1 || this.centerSample > this.data.length - 1) {
+			return;
+		}
 		this.markers.push(this.centerSample);
 		this.markers = this.markers.sort((a, b) => { return a - b; })
 		this.cacheSections();
@@ -723,16 +728,16 @@ class Wavetable extends Nex {
 
 
 	createAddMarker() {
-		let addMarker = document.createElement('div');
-		addMarker.classList.add('wavecontrol');
-		addMarker.innerText = 'v';
-		addMarker.onmousedown = (event) => {
+		let addMarkerButton = document.createElement('div');
+		addMarkerButton.classList.add('wavecontrol');
+		addMarkerButton.innerText = 'v';
+		addMarkerButton.onmousedown = (event) => {
 			this.addMarker();
 			event.stopPropagation();
 			event.preventDefault();
 			return false;
 		}
-		return addMarker;
+		return addMarkerButton;
 	}
 
 	getMarkerName(n) {

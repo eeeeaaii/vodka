@@ -46,7 +46,14 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //    means it's probably a bad idea to reuse flag key names. To prevent
 //    that, keep it here with a comment saying // UNUSED BUT DO NOT REUSE
 
-const experiments = {
+let settings = {
+	'AUDIO_AUDITION_CHANNEL': 0
+
+}
+
+let experiments = {
+	...settings,
+
 	'DISABLE_ALERT_ANIMATIONS': false,
 
 	// This is the max render depth. We want some tests to be saved with a small
@@ -170,8 +177,26 @@ const experiment_flags = ${s};
 	`;
 }
 
+function getSettings() {
+	return settings;
+}
+
+function hasSettingName(name) {
+	return name in settings;
+}
+
+function setSettingValue(name, val) {
+	if (name in settings) {
+		settings[name] = val;
+	}
+}
+
 
 export { experiments,
 	     otherflags,
+	     settings,
+	     setSettingValue,
+	     hasSettingName,
+	     getSettings,
 		 setAppFlags,
 		 getExperimentsAsString }
