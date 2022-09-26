@@ -24,7 +24,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	let params = new URLSearchParams(window.location.search);
 	params.forEach(function(value, key) {
 		if (key == 'theme' && value == 'dark') {
-			CSS_THEME = 'dark'
+			CSS_THEME = 'dark';
 		}
 	})
 	</script>
@@ -130,6 +130,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 				<p class="infoline">You can create an exact copy of this session (with all the same saved files) with <a id="copysessionlink" href="">this link</a>.</p>
 				<p class="infoline">You can create a read-only copy of this session (e.g. for sharing on social media) with <a id="sharesessionlink" href="">this link</a>.</p>
 				<p class="infoline">To have a file load and be evaluated in normal mode at startup when a session link is visited, name the file "start-doc".</p>
+				<p class="infoline">To switch to <script>
+					document.write(CSS_THEME == 'dark' ? 'light' : 'dark');
+				</script> theme, click <a id="switchthemelink" href="">here</a></p>
+
+
 				<p class="infospacer"></p>
 				<p class="infoline">Vodka is in alpha and is under active development. I will <b>do my best</b> to preserve your data as much as I can. However:</p>
 				<p class="infoline">- Sessions and sandbox contents may need to be deleted at any time without notice.</p>

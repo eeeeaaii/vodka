@@ -43,14 +43,30 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 /* dark theme has a different default font for letters. */
 
-.letter {
-  font-family: Arial, sans-serif;  
-}
 
 body {
 	background-color: black;
+  font-family: Arial, sans-serif;  
+  color: white;
 }
 
-.letter {
-	color: white;
+.infopanel {
+  background-color: #3a392b;
 }
+
+.infopanel a {
+  color: #a5a4dd;
+}
+
+.infopanel .infohotkey {
+  background-color: #41413c;
+}
+
+.helpbutton {
+  background-color: #3a3607;
+}
+
+#infothingstotry {
+  background-color:  #252623;
+}
+

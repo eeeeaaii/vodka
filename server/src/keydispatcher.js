@@ -17,7 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as Utils from './utils.js'
 
-import { UNHANDLED_KEY, RENDER_MODE_EXPLO, RENDER_MODE_NORM } from './globalconstants.js';
+import { UNHANDLED_KEY } from './globalconstants.js';
 import { systemState } from './systemstate.js';
 import { BINDINGS } from './environment.js';
 import { manipulator } from './manipulator.js';

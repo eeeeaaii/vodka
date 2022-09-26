@@ -413,21 +413,25 @@ function containsIllegalFilenameCharacters(fn) {
 }
 
 function getSessionDirectory(sessionId, localAccessOnly) {
+	let r = '';
 	if (sessionId == 'packages' && (!localAccessOnly || webenv_vars.isLocal)) {
-		return './packages/'
-	}
-
-	let hasDash = /-/.test(sessionId);
-
-	// we don't let users create sessions with dashes in them.
-	// only UUID sessions have dashes.
-	// that way we can keep them in separate directories.
-
-	if (!hasDash) {
-		return `./namedsessions/${sessionId}/`;
+		r = './packages/'
 	} else {
-		return `./sessions/${sessionId}/`;
+
+		let hasDash = /-/.test(sessionId);
+
+		// we don't let users create sessions with dashes in them.
+		// only UUID sessions have dashes.
+		// that way we can keep them in separate directories.
+
+		r = `./sessions/${sessionId}/`;
+		if (!hasDash) {
+			r = `./namedsessions/${sessionId}/`;
+		}
+
 	}
+	console.log('session ID (log this differently): ' + r);
+	return r;
 
 }
 
@@ -439,7 +443,7 @@ async function serviceApiSaveRequest(data, sessionId) {
 		return `v2:?"save failed (illegal filename). Sorry!"`;
 	}
 	let sessionDirectory = getSessionDirectory(sessionId, true /*local only*/);
-	if (isLibraryFile && sessionDirectory != 'packages') {
+	if (isLibraryFile && sessionDirectory != './packages/') {
 		return `v2:?"save failed: the filename suffix '-functions' is reserved for library files, but you are trying to save this in a non-library session.  Sorry!"`;
 	}
 	if (sessionIsWriteProtected(sessionId)) {

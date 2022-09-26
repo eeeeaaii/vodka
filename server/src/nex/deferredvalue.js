@@ -239,6 +239,10 @@ class DeferredValue extends NexContainer {
 		}
 	}
 
+	getDefaultHandler() {
+		return 'standardDefault';
+	}
+
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		let dotspan = null;

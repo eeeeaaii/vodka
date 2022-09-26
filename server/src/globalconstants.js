@@ -40,8 +40,7 @@ const RENDER_FLAG_INSERT_AROUND = 512;
 
 const RENDER_MODE_EXPLO = 1;
 const RENDER_MODE_NORM = 2;
-const RENDER_MODE_INHERIT = 3; // ? do I need this
-
+const RENDER_MODE_INHERIT = 3;
 
 export {
 	UNHANDLED_KEY,

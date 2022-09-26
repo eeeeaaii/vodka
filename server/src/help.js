@@ -601,6 +601,28 @@ function userAskedToHideHelpButton() {
 	return (Utils.getCookie('hidehelpbutton') == 'true');
 }
 
+function buildURL(obj) {
+	if (!obj.theme) {
+		obj.theme = CSS_THEME;
+	}
+	if (!obj.sessionId) {
+		obj.sessionId = systemState.getSessionId();
+	}
+
+	let r = `http://${FEATURE_VECTOR.hostname}`;
+	let first = true;
+	for (let k in obj) {
+		if (obj[k] == null) {
+			continue;
+		}
+		r += (first ? '?' : '&');
+		r += k;
+		r += '=';
+		r += obj[k];
+		first = false;
+	}
+	return r;
+}
 
 function setupHelp() {
 
@@ -666,11 +688,13 @@ function setupHelp() {
 		bringBackHelp();
 	}
 	let sessionId = systemState.getSessionId();
+	let oppositeTheme = (CSS_THEME == 'dark' ? 'light' : 'dark');
 	document.getElementById('sessionid').innerText = sessionId;
-	document.getElementById('sessionlink').href = `http://${FEATURE_VECTOR.hostname}?sessionId=${sessionId}`;
-	document.getElementById('newsessionlink').href = `http://${FEATURE_VECTOR.hostname}?new=1`;
-	document.getElementById('copysessionlink').href = `http://${FEATURE_VECTOR.hostname}?copy=1`;
-	document.getElementById('sharesessionlink').href = `http://${FEATURE_VECTOR.hostname}?copy=1&type=readonly`;
+	document.getElementById('sessionlink').href = buildURL({ "sessionId":sessionId });
+	document.getElementById('newsessionlink').href = buildURL({ "sessionId":null, "new":1 });
+	document.getElementById('copysessionlink').href = buildURL({ "sessionId":null,"copy":1 });
+	document.getElementById('sharesessionlink').href = buildURL({ "sessionId":null, "copy":1, "type":"readonly" });
+	document.getElementById('switchthemelink').href = buildURL({ "theme":oppositeTheme });
 
 	maybeShowHelp();
 

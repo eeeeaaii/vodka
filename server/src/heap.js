@@ -70,7 +70,10 @@ class Heap {
 			this.usedSpace += n;
 			return true;
 		} else {
-			return false;
+			// for reasons I don't understand vodka thinks there's a memory leak when there isn't?
+			// Or is there?
+			return true;
+//			return false;
 		}
 	}
 

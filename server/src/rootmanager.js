@@ -36,6 +36,10 @@ class RootManager  {
 	constructor() {
 	}
 
+	// This is currently unused, instead get-pixel-height and get-pixel-width just return
+	// zero if something's never been rendered -- fine for now but we might bring
+	// back this class at some point?
+
 	createNewRoot(args) {
 		if (!args) {
 			args = {};
