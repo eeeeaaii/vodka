@@ -550,6 +550,10 @@ const KeyResponseFunctions = {
 		s.getNex().auditionWave();
 	},
 
+	'toggle-collapsed': function(s) {
+		s.toggleCollapsed();
+	},
+
 	// I hate commas
 	'':''
 }

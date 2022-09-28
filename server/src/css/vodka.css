@@ -78,6 +78,15 @@ body, html {
 	position:relative;
 }
 
+.collapsed-icon {
+	padding: 2px 5px 2px 5px;
+	font-family: Courier;
+	font-size: 10px;
+	background-color: orange;
+	color: white;
+	margin: 2px;
+}
+
 .root {
 	display: flex;
 	flex-direction: column;

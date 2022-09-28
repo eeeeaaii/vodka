@@ -400,6 +400,9 @@ class KeyDispatcher {
 			'>': 'close-off-word',
 			'`': 'add-tag',
 
+			'\\': 'toggle-collapsed',
+
+
 			'Alt~': 'wrap-in-command',
 			'Alt&': 'wrap-in-lambda',
 			'Alt*': 'wrap-in-deferredcommand',

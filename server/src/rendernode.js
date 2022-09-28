@@ -34,6 +34,7 @@ import {
 	RENDER_FLAG_SELECTED,
 	RENDER_FLAG_SHALLOW,
 	RENDER_FLAG_NORMAL,
+	RENDER_FLAG_COLLAPSED,
 	RENDER_FLAG_RERENDER,
 	RENDER_FLAG_EXPLODED,
 	RENDER_FLAG_INSERT_INSIDE,
@@ -83,6 +84,19 @@ class RenderNode {
 		this.setInsertionMode(INSERT_UNSPECIFIED);
 
 		this.renderNodeIsDirty = true;
+
+		let startCollapsed = false;
+		if (forNex.isNexContainer()) {
+			let tags = forNex.getAllTags();
+			for (let i = 0; i < tags.length; i++) {
+				let s = tags[i].getTagString();
+				if (s.startsWith(':')) {
+					startCollapsed = true;
+				}
+			}
+		}
+
+		this.isCollapsed = startCollapsed;
 
 		this.nodesThatIfDroppedInvalidateTheSelection = [];
 
@@ -259,6 +273,23 @@ class RenderNode {
 		this.renderDepth = depth;
 	}
 
+
+	setCollapsed(v) {
+		this.isCollapsed = v;
+	}
+
+	toggleCollapsed(v) {
+		this.isCollapsed = !this.isCollapsed;
+		this.setRenderNodeDirtyForRendering(true);
+
+	}
+
+	getCollapsed() {
+		return this.isCollapsed;
+
+	}
+
+
 	isExploded() {
 		return this.isCurrentlyExploded;
 	}
@@ -412,17 +443,23 @@ class RenderNode {
 			case INSERT_AFTER: useFlags |= RENDER_FLAG_INSERT_AFTER; break;
 			case INSERT_AROUND: useFlags |= RENDER_FLAG_INSERT_AROUND; break;
 		}
+		if (this.getCollapsed()) {
+			useFlags |= RENDER_FLAG_COLLAPSED;
+		}
 
 		this.nex.renderInto(this, useFlags, this.getCurrentEditor());
 		this.nex.doRenderSequencing(this);
 		this.isCurrentlyExploded = !!(useFlags & RENDER_FLAG_EXPLODED);
+
 
 		if (!(useFlags & RENDER_FLAG_EXPLODED)
 				&& this.nex.isNexContainer()
 				&& !this.nex.renderChildrenIfNormal()) {
 			return;
 		}
-		if (this.getNex().isNexContainer() && !(useFlags & RENDER_FLAG_SHALLOW)) {
+		if (this.getCollapsed()) {
+			this.drawCollapsedIcon();
+		} else if (this.getNex().isNexContainer() && !(useFlags & RENDER_FLAG_SHALLOW)) {
 			if ((useFlags & RENDER_FLAG_EXPLODED) && this.insertionMode == INSERT_INSIDE) {
 				this.doInsertionPip(this);
 			}
@@ -511,6 +548,13 @@ class RenderNode {
 		this.nex.renderAfterChild(i, this, useFlags, this.getCurrentEditor());
 	}
 
+	drawCollapsedIcon() {
+		let icon = document.createElement('div');
+		icon.classList.add('collapsed-icon');
+		icon.innerText = '\\';
+		this.domNode.appendChild(icon);
+	}
+
 	// this method is called on the parent of the selected node for insertion modes of
 	// INSERT_AFTER, INSERT_BEFORE, and INSERT_AROUND
 	// it's called on the actual selected node for
@@ -566,7 +610,7 @@ class RenderNode {
 		}
 
 		pip.innerHTML = "&bull;";
-		this.domNode.appendChild(pip);			
+		this.domNode.appendChild(pip);
 	}
 
 	doInsertionSquare(i, childRenderNode) {
