@@ -618,21 +618,8 @@ function getIncludesForSounds(dirname) {
 }
 
 function getHeadInjectData() {
-	let includeString = '';
-	try {
-		// Right now both sounds and localsounds are under gitignore,
-		// however hopefully/presumably/someday I will make some royalty-free
-		// sounds to keep in the sound library (./sounds)
-		// and users downloading and running locally can put whatever
-		// they want in localsounds.
-		includeString += getIncludesForSounds("./sounds");
-		includeString += getIncludesForSounds("./localsounds");
-		return includeString;
-	} catch (e) {
-		if (isFileNotFound(e)) {
-			return includeString;
-		}
-	}
+	// Currently there's no inject data. This used to be a list of audio files.
+	return '';
 }
 
 loadWebEnv(function() {

@@ -1219,22 +1219,6 @@ function createWavetableBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'audio',
-		[ ],
-		function $audio(env, executionEnvironment) {
-			let r = constructOrg();
-
-			for (let i = 0; i < AVAILABLE_AUDIO_FILES.length; i++) {
-				let s = constructEString(AVAILABLE_AUDIO_FILES[i]);
-				r.appendChild(s);
-			}
-
-			return r;
-		},
-		'Returns a list of all the available audio files.'
-	);
-
-	Builtin.createBuiltin(
 		'load-sample',
 		[ 'fname$' ],
 		function $loadSample(env, executionEnvironment) {
