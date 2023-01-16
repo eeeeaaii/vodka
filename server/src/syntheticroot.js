@@ -17,6 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as Utils from './utils.js'
 
+import { systemState } from './systemstate.js'
 import { Root } from './nex/root.js'
 import { Org } from './nex/org.js'
 import { evaluateNexSafely, wrapError } from './evaluator.js'
@@ -65,96 +66,99 @@ function sEval(cmd, env, errmsg, shouldThrow) {
 	return result;
 }
 
-function makeQuote(item) {
-	let q = constructCommand('quote');
-	q.fastAppendChildAfter(item, null);
-	return q;
-}
-
-
-function makeCommandWithClosureZeroArgs(closure) {
-	let cmd = constructCommand();
-	let appendIterator = null;
-	appendIterator = cmd.fastAppendChildAfter(makeQuote(closure), appendIterator);
-	sAttach(cmd);
-	return cmd;
-}
-
-function makeCommandWithClosureOneArg(closure, arg0) {
-	let cmd = constructCommand();
-	let appendIterator = null;
-	appendIterator = cmd.fastAppendChildAfter(makeQuote(closure), appendIterator);
-	appendIterator = cmd.fastAppendChildAfter(arg0, appendIterator);
-	sAttach(cmd);
-	return cmd;
-}
-
-function makeCommandWithClosureTwoArgs(closure, arg0, arg1) {
-	let cmd = constructCommand();
-	let appendIterator = null;
-	appendIterator = cmd.fastAppendChildAfter(makeQuote(closure), appendIterator);
-	appendIterator = cmd.fastAppendChildAfter(arg0, appendIterator);
-	appendIterator = cmd.fastAppendChildAfter(arg1, appendIterator);
-	sAttach(cmd);
-	return cmd;
-}
-
-function makeCommandWithClosureThreeArgs(closure, arg0, arg1, arg2) {
-	let cmd = constructCommand();
-	let appendIterator = null;
-	appendIterator = cmd.fastAppendChildAfter(makeQuote(closure), appendIterator);
-	appendIterator = cmd.fastAppendChildAfter(arg0, appendIterator);
-	appendIterator = cmd.fastAppendChildAfter(arg1, appendIterator);
-	appendIterator = cmd.fastAppendChildAfter(arg2, appendIterator);
-	sAttach(cmd);
-	return cmd;
-}
-
-function makeCommandWithClosure(closure, maybeargs) {
-	let cmd = constructCommand();
-	let appendIterator = null;
-	appendIterator = cmd.fastAppendChildAfter(makeQuote(closure), appendIterator);
-
-	// this little snippet lets you do varargs or array
-	let args = [];
-	if (Array.isArray(maybeargs)) {
-		args = maybeargs;
-	} else {
-		args = Array.prototype.slice.call(arguments).splice(1);
+class SyntheticCodeFactory {
+	makeQuote(item) {
+		let q = constructCommand('quote');
+		q.fastAppendChildAfter(item, null);
+		return q;
 	}
-	for (let i = 0; i < args.length; i++) {
-		appendIterator = cmd.fastAppendChildAfter(args[i], appendIterator);
+
+	sEval2(cmd, env, errmsg, shouldThrow) {
+		return sEval(cmd, env, errmsg, shouldThrow);
 	}
-	sAttach(cmd);
-	return cmd;
+
+	makeCommandWithClosureZeroArgs(closure) {
+		let cmd = constructCommand();
+		let appendIterator = null;
+		appendIterator = cmd.fastAppendChildAfter(this.makeQuote(closure), appendIterator);
+		sAttach(cmd);
+		return cmd;
+	}
+
+	makeCommandWithClosureOneArg(closure, arg0) {
+		let cmd = constructCommand();
+		let appendIterator = null;
+		appendIterator = cmd.fastAppendChildAfter(this.makeQuote(closure), appendIterator);
+		appendIterator = cmd.fastAppendChildAfter(arg0, appendIterator);
+		sAttach(cmd);
+		return cmd;
+	}
+
+	makeCommandWithClosureTwoArgs(closure, arg0, arg1) {
+		let cmd = constructCommand();
+		let appendIterator = null;
+		appendIterator = cmd.fastAppendChildAfter(this.makeQuote(closure), appendIterator);
+		appendIterator = cmd.fastAppendChildAfter(arg0, appendIterator);
+		appendIterator = cmd.fastAppendChildAfter(arg1, appendIterator);
+		sAttach(cmd);
+		return cmd;
+	}
+
+	makeCommandWithClosureThreeArgs(closure, arg0, arg1, arg2) {
+		let cmd = constructCommand();
+		let appendIterator = null;
+		appendIterator = cmd.fastAppendChildAfter(this.makeQuote(closure), appendIterator);
+		appendIterator = cmd.fastAppendChildAfter(arg0, appendIterator);
+		appendIterator = cmd.fastAppendChildAfter(arg1, appendIterator);
+		appendIterator = cmd.fastAppendChildAfter(arg2, appendIterator);
+		sAttach(cmd);
+		return cmd;
+	}
+
+	makeCommandWithClosure(closure, maybeargs) {
+		let cmd = constructCommand();
+		let appendIterator = null;
+		appendIterator = cmd.fastAppendChildAfter(this.makeQuote(closure), appendIterator);
+
+		// this little snippet lets you do varargs or array
+		let args = [];
+		if (Array.isArray(maybeargs)) {
+			args = maybeargs;
+		} else {
+			args = Array.prototype.slice.call(arguments).splice(1);
+		}
+		for (let i = 0; i < args.length; i++) {
+			appendIterator = cmd.fastAppendChildAfter(args[i], appendIterator);
+		}
+		sAttach(cmd);
+		return cmd;
+	}
+
+	makeCommandWithArgs(cmdname, maybeargs) {
+		let cmd = constructCommand(cmdname);
+
+		// this little snippet lets you do varargs or array
+		let args = [];
+		if (Array.isArray(maybeargs)) {
+			args = maybeargs;
+		} else {
+			args = Array.prototype.slice.call(arguments).splice(1);
+		}
+		let appendIterator = null;
+		for (let i = 0; i < args.length; i++) {
+			appendIterator = cmd.fastAppendChildAfter(args[i], appendIterator);
+		}
+		sAttach(cmd);
+		return cmd;
+	}
 }
 
-function makeCommandWithArgs(cmdname, maybeargs) {
-	let cmd = constructCommand(cmdname);
+let syntheticCodeFactory = new SyntheticCodeFactory();
+systemState.setSCF(syntheticCodeFactory);
 
-	// this little snippet lets you do varargs or array
-	let args = [];
-	if (Array.isArray(maybeargs)) {
-		args = maybeargs;
-	} else {
-		args = Array.prototype.slice.call(arguments).splice(1);
-	}
-	let appendIterator = null;
-	for (let i = 0; i < args.length; i++) {
-		appendIterator = cmd.fastAppendChildAfter(args[i], appendIterator);
-	}
-	sAttach(cmd);
-	return cmd;
-}
 
 
 export {
 		sEval,
-		sAttach,
-		makeQuote,
-		makeCommandWithArgs,
-		makeCommandWithClosure,
-		makeCommandWithClosureThreeArgs,
-		makeCommandWithClosureTwoArgs,
-		makeCommandWithClosureOneArg,
-		makeCommandWithClosureZeroArgs }
+		sAttach
+	}

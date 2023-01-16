@@ -34,6 +34,16 @@ class SystemState {
 		this.isMobile = false;
 		this.defaultFileName = 'untitled-functions';
 		this.sessionId = '';
+
+		this.syntheticCodeFactory = null;
+	}
+
+	setSCF(scf) {
+		this.syntheticCodeFactory = scf;
+	}
+
+	getSCF() {
+		return this.syntheticCodeFactory;
 	}
 
 	getSessionId() {

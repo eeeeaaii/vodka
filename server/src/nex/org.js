@@ -26,6 +26,8 @@ import { constructFloat } from './float.js'
 import { Tag } from '../tag.js'
 import { heap } from '../heap.js'
 import { constructFatalError, newTagOrThrowOOM } from './eerror.js'
+import { systemState } from '../systemstate.js'
+import { BINDINGS } from '../environment.js'
 
 
 class Org extends NexContainer {
@@ -34,11 +36,6 @@ class Org extends NexContainer {
 		// private data is currently unused but I want the logic for
 		// handling it here so I can implement parsing and tests for it
 		this.privateData = '';
-
-		// temporary storage slot for drawfunction used during instantiation
-		this.drawcheat = null;
-
-		this.drawfunction = null;
 
 		// if this org is instantiated as a template,
 		// then it will have this set to the self-scope.
@@ -68,18 +65,6 @@ class Org extends NexContainer {
 
 	prettyPrintInternal(lvl, hdir) {
 		return this.standardListPrettyPrint(lvl, '[org]', hdir);
-	}
-
-	setDrawCheat(dc) {
-		this.drawcheat = dc;
-	}
-
-	getDrawCheat(dc) {
-		return this.drawcheat;
-	}
-
-	setDrawFunction(f) {
-		this.drawfunction = f;
 	}
 
 	toStringV2() {
@@ -151,28 +136,41 @@ class Org extends NexContainer {
 
 
 	getDirtyForRendering() {
-		if (this.drawfunction) {
-			// we are doing custom drawing, which means figuring out whether this is dirty or not
-			// is more or less intractable.
-			return true;
-		} else {
-			return super.getDirtyForRendering();
+		let customShouldDraw = this.getChildWithTag(new Tag(':shouldDraw'));
+		if (customShouldDraw) {
+			// ahem
+			return;
 		}
+		let drawFunction = this.getChildWithTag(new Tag('::draw'));
+		if (drawFunction) {
+			// if you provide a draw function but not a shouldDraw, then we don't know
+			// how to keep track of whether state is dirty so we assume it's
+			// always dirty and redraw every time.
+			return true;
+		}
+		return super.getDirtyForRendering();
 	}
 
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
-		super.renderInto(renderNode, renderFlags, withEditor);
-		domNode.classList.add('org');
-		domNode.classList.add('data');
-		domNode.classList.add('redorgs');
-		if (this.drawfunction) {
-			let r = this.drawfunction(domNode.innerHTML);
-			if (typeof(r) == 'string') {
-				domNode.innerHTML = r;
-			} else {
-				domNode.appendChild(r);
+
+		let drawFunction = this.getChildWithTag(newTagOrThrowOOM('::drawfunction', 'draw function logic'));
+		if (drawFunction) {
+			let cmd = systemState.getSCF().makeCommandWithClosureOneArg(drawFunction, this);
+
+			let drawReturn = systemState.getSCF().sEval2(cmd, BINDINGS, 'org: custom drawing function');
+			let drawHTML = '<div class="draw-error">ERROR: invalid result from custom draw function.<div>';
+			if (Utils.isEString(drawReturn)) {
+				drawHTML = drawReturn.getFullTypedValue();
+			} else if (Utils.isFatalError(drawReturn)) {
+				drawHTML = '<div class="draw-error">' + drawReturn.getFullTypedValue() + '</div>'
 			}
+			domNode.innerHTML = drawHTML;
+		} else {
+			super.renderInto(renderNode, renderFlags, withEditor);
+			domNode.classList.add('org');
+			domNode.classList.add('data');
+			domNode.classList.add('redorgs');			
 		}
 	}
 

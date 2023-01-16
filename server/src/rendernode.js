@@ -457,7 +457,8 @@ class RenderNode {
 				&& !this.nex.renderChildrenIfNormal()) {
 			return;
 		}
-		if (this.getCollapsed()) {
+		// if we are in normal mode we ignore collapse bit and render normally.
+		if (this.getCollapsed() && (useFlags & RENDER_FLAG_EXPLODED)) {
 			this.drawCollapsedIcon();
 		} else if (this.getNex().isNexContainer() && !(useFlags & RENDER_FLAG_SHALLOW)) {
 			if ((useFlags & RENDER_FLAG_EXPLODED) && this.insertionMode == INSERT_INSIDE) {
@@ -529,6 +530,7 @@ class RenderNode {
 				}
 			}
 		}
+		// always render tags, even for collapsed containers.
 		if (this.nex.hasTags()) {
 			let tagHolder = this.nex.getTagHolder(this.domNode);
 			this.nex.renderTags(tagHolder, useFlags, this.getCurrentEditor());

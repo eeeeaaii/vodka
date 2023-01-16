@@ -577,18 +577,30 @@ async function getPreBootstrapInjectData(sessionId) {
 	return makeScriptTag(`const FEATURE_VECTOR = { hostname:"${webenv_vars.redirectHostname}", hasstart:${exists} }`);
 }
 
+function getIncludesForSounds(dirname) {
+	let includeString = '';
+	let files = fs.readdirSync(dirname);
+	for (let i = 0; i < files.length; i++) {
+		let fileName = files[i];
+		if (fileName.charAt(0) == '.') {
+			continue;
+		}
+		includeString += `"${fileName}",
+		`;
+	}
+	return includeString;
+}
+
 function getHeadInjectData() {
 	let includeString = '';
 	try {
-		let files = fs.readdirSync("./sounds");
-		for (let i = 0; i < files.length; i++) {
-			let fileName = files[i];
-			if (fileName.charAt(0) == '.') {
-				continue;
-			}
-			includeString += `"${fileName}",
-			`;
-		}
+		// Right now both sounds and localsounds are under gitignore,
+		// however hopefully/presumably/someday I will make some royalty-free
+		// sounds to keep in the sound library (./sounds)
+		// and users downloading and running locally can put whatever
+		// they want in localsounds.
+		includeString += getIncludesForSounds("./sounds");
+		includeString += getIncludesForSounds("./localsounds");
 		return includeString;
 	} catch (e) {
 		if (isFileNotFound(e)) {

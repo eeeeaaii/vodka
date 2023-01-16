@@ -172,7 +172,7 @@ function renderOnlyDirty() {
 function setDocRootFromFile(filename) {
 	let cmd = DeferredCommand.makeDeferredCommandWithArgs(
 		"eval",
-		Command.makeCommandWithArgs(
+		systemState.getSCF().makeCommandWithArgs(
 			"load",
 			constructEString(filename)));
 	let exp = evaluateNexSafely(cmd, BINDINGS);

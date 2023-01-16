@@ -24,7 +24,8 @@ import { constructOrg, convertJSMapToOrg } from './nex/org.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { BUILTINS, BINDINGS } from './environment.js'
 import { experiments } from './globalappflags.js'
-import { sEval, makeCommandWithClosure } from './syntheticroot.js'
+import { sEval } from './syntheticroot.js'
+import { systemState } from './systemstate.js'
 
 class TemplateStore  {
 	constructor() {
@@ -99,6 +100,9 @@ class TemplateStore  {
 				if (membername == ':init') {
 					initializer = closure;
 				}
+				if (membername == ':draw') {
+					closure.addTag(newTagOrThrowOOM('::drawfunction', 'instantiate drawfunction'));
+				}
 			} else if (c.getTypeName() == '-closure-') {
 				let lexenv = c.getLexicalEnvironment();
 				let selfScope = lexenv.pushEnv(); // popped
@@ -110,6 +114,9 @@ class TemplateStore  {
 				if (membername == ':init') {
 					initializer = closure;
 				}
+				if (membername == ':draw') {
+					closure.addTag(newTagOrThrowOOM('::drawfunction', 'instantiate drawfunction'));
+				}
 			} else {
 				org.appendChild(c.makeCopy());
 			}
@@ -117,7 +124,7 @@ class TemplateStore  {
 		if (initializer) {
 			// don't need the return value of the initializer...
 			// but I do tell sEval to throw the error if it returns a fatal one.
-			sEval(makeCommandWithClosure(initializer, args),
+			sEval(systemState.getSCF().makeCommandWithClosure(initializer, args),
 							 env,
 							 'Error in template initializer',
 							 true /* throw error */);

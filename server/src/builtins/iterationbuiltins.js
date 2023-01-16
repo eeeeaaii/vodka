@@ -25,7 +25,8 @@ import { constructOrg } from '../nex/org.js';
 import { constructInteger } from '../nex/integer.js';
 import { UNBOUND } from '../environment.js'
 import { experiments } from '../globalappflags.js'
-import { sEval, makeCommandWithClosureOneArg, makeCommandWithClosureTwoArgs, makeCommandWithClosureZeroArgs, makeQuote } from '../syntheticroot.js'
+import { sEval } from '../syntheticroot.js'
+import { systemState } from '../systemstate.js'
 
 
 function createIterationBuiltins() {
@@ -43,7 +44,7 @@ function createIterationBuiltins() {
 			let i = 0;
 			try {
 				list.doForEachChild(function(item) {
-					let result = sEval(makeCommandWithClosureOneArg(closure, makeQuote(item)),
+					let result = sEval(systemState.getSCF().makeCommandWithClosureOneArg(closure, systemState.getSCF(). makeQuote(item)),
 									   executionEnvironment,
 									   `filter: error returned from item ${i+1}`,
 									   true /* throw errors */);
@@ -85,7 +86,7 @@ function createIterationBuiltins() {
 			let i = 0;
 			try {
 				list.doForEachChild(function(item) {
-					let result = sEval(makeCommandWithClosureOneArg(closure, makeQuote(item)),
+					let result = sEval(systemState.getSCF().makeCommandWithClosureOneArg(closure, systemState.getSCF(). makeQuote(item)),
 									   executionEnvironment,
 									   `map: error returned from item ${i+1}`,
 									   true /* throw errors */);
@@ -120,7 +121,7 @@ function createIterationBuiltins() {
 			let i = 0;
 			try {
 				list.doForEachChild(function(item) {
-					p = sEval(makeCommandWithClosureTwoArgs(closure, makeQuote(item), makeQuote(p)),
+					p = sEval(systemState.getSCF().makeCommandWithClosureTwoArgs(closure, systemState.getSCF(). makeQuote(item), systemState.getSCF(). makeQuote(p)),
 									   executionEnvironment,
 									   `reduce: error returned from item ${i+1}`,
 									   true /* throw errors */);
@@ -155,7 +156,7 @@ function createIterationBuiltins() {
 			let i = 0;
 			try {
 				list.doForEachChild(function(item) {
-					result = sEval(makeCommandWithClosureOneArg(closure, makeQuote(item)),
+					result = sEval(systemState.getSCF().makeCommandWithClosureOneArg(closure, systemState.getSCF(). makeQuote(item)),
 									   executionEnvironment,
 									   `loop-over: error returned when processing input ${i+1}`,
 									   true /* throw errors */);
@@ -218,7 +219,7 @@ function createIterationBuiltins() {
 			let body = env.lb('body');
 
 			// starting condition
-			let iterationvalue = sEval(makeCommandWithClosureZeroArgs(start),
+			let iterationvalue = sEval(systemState.getSCF().makeCommandWithClosureZeroArgs(start),
 							  		   executionEnvironment,
 							          `for: error returned from initializer`);
 			if (Utils.isFatalError(iterationvalue)) return iterationvalue;
@@ -226,7 +227,7 @@ function createIterationBuiltins() {
 			let bodyresult = null;
 			while(true) {
 				// check for continuation condition
-				let testval = sEval(makeCommandWithClosureOneArg(test, makeQuote(iterationvalue)),
+				let testval = sEval(systemState.getSCF().makeCommandWithClosureOneArg(test, systemState.getSCF(). makeQuote(iterationvalue)),
 								    executionEnvironment,
 								    `for: error returned from test`);
 				if (Utils.isFatalError(testval)) return testval;
@@ -239,14 +240,14 @@ function createIterationBuiltins() {
 				}
 
 				// execute body
-				let bodycmd = sEval(makeCommandWithClosureOneArg(body, makeQuote(iterationvalue)),
+				let bodycmd = sEval(systemState.getSCF().makeCommandWithClosureOneArg(body, systemState.getSCF(). makeQuote(iterationvalue)),
 								    executionEnvironment,
 								    `for: error returned from body`);
 				if (Utils.isFatalError(bodycmd)) return bodycmd;
 
 
 				// increment
-				let inccmd = sEval(makeCommandWithClosureOneArg(inc, makeQuote(iterationvalue)),
+				let inccmd = sEval(systemState.getSCF().makeCommandWithClosureOneArg(inc, systemState.getSCF(). makeQuote(iterationvalue)),
 								   executionEnvironment,
 								   `for: error returned from incrementer`);
 				if (Utils.isFatalError(inccmd)) return inccmd;

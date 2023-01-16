@@ -47,8 +47,9 @@ import { loopPlay, oneshotPlay, abortPlayback } from '../webaudio.js'
 import { Tag } from '../tag.js'
 import { ERROR_TYPE_INFO } from '../nex/eerror.js'
 import { Command } from '../nex/command.js'; 
-import { sAttach, sEval, makeCommandWithClosureOneArg, makeQuote } from '../syntheticroot.js'
+import { sAttach, sEval } from '../syntheticroot.js'
 import { heap } from '../heap.js'
+import { systemState } from '../systemstate.js'
 
 
 
@@ -387,7 +388,7 @@ function createWavetableBuiltins() {
 // take a normal ramp (2 beats) and pass it through a function that takes the value to the 5th power
 // the function will return, but some async bullshit will continue and some numbers will keep incrementing in the js console, not sure what is happening
 
-/*
+
 	Builtin.createBuiltin(
 		'wavecalc',
 		[ 'wt', 'f&' ],
@@ -400,7 +401,7 @@ function createWavetableBuiltins() {
 			let data = r.getData();
 			for (let i = 0 ; i < dur; i++) {
 				let v = constructFloat(wt.valueAtSample(i));
-				let result = sEval(makeCommandWithClosureOneArg(f, makeQuote(v)),
+				let result = sEval(systemState.getSCF().makeCommandWithClosureOneArg(f, systemState.getSCF().makeQuote(v)),
 								   executionEnvironment,
 								   'wavecalc: error returned from function');
 				if (result.getTypeName() != '-float-') {
@@ -413,7 +414,7 @@ function createWavetableBuiltins() {
 		},
 		'Calls function |f on every sample in |wt (this may take a while for long samples)'
 	);	
-*/
+
 
 	Builtin.createBuiltin(
 		'noise',
@@ -1035,7 +1036,7 @@ function createWavetableBuiltins() {
 
 			let fedBackSignal = wt;
 			for (let i = 0; i < n; i++) {
-				fedBackSignal = sEval(makeCommandWithClosureOneArg(f, fedBackSignal));
+				fedBackSignal = sEval(systemState.getSCF().makeCommandWithClosureOneArg(f, fedBackSignal));
 				let fedBackData = fedBackSignal.getData();
 				for (let j = 0; j < fedBackSignal.getDuration(); j++) {
 					fedBackData[j] = fedBackData[j] * attenuation;

@@ -1,12 +1,14 @@
 .DS_STORE
 ACTUAL_LIVECODING_IDEAS.txt
 testing/____tmpfile.txt
+server/attic/*
 server/packages/cc*
 server/packages/poem*
 server/packages/perf*
 server/packages/ig*
 server/src/favicon.ico
 server/sounds/*
+server/localsounds/*
 server/sessions/*
 server/namedsessions/music
 server/namedsessions/poetry
