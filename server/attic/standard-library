@@ -1,1 +1,0 @@
-v2:~(|begin ~(_bind @flatten &" nex"(|~(|if ~(_and ~(_is-list @nex_) ~(_is-empty @nex_)_) @nex ~(|begin ~(_bind @first ~(_car @nex_)_) ~(_bind @rest ~(_cdr @nex_)_) ~(|if ~(_is-list @first_) ~(|if ~(_is-empty @first_) ~(_flatten @rest_) ~(_flatten ~(|cons ~(_car @first_) ~(|cons ~(_cdr @first_) @rest|)|)_)|) ~(|cons @first ~(_flatten ~(_cdr @nex_)_)|)|)|)|)|)_)|)

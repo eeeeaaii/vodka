@@ -1,1 +1,0 @@
-v2:~(_bind @add-all &" list"(|~(|if-then-else ~(_is-empty @list_) ~(_::pl:: ~(_first @list_) ~(_rest @list_)_) %0|)|)_)

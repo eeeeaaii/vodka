@@ -1,1 +1,0 @@
-v2:(|~(_import @animation-functions_) ~(_import @math-functions_) ~(_import @color-functions_) ~(_import @style-functions_) ~(_bind @poem ~(_style:with-padding-of ~(_style:with-font [doc](||) $"Helvetica"_) #30_)_) (_@poem (|@poem|)_)|)
