@@ -400,6 +400,8 @@ async function serviceApiRequest(sessionId, resp, data) {
 		respData = await serviceApiLoadRequestUserSession(arg, sessionId, false /*fallback to user session*/);
 	} else if (opcode == 'listfiles') {
 		respData = await serviceApiListFilesRequest(sessionId, false /*standard*/);
+	} else if (opcode == 'listaudio') {
+		respData = await serviceApiListAudioRequest(sessionId, false /*standard*/);
 	} else if (opcode == 'liststandardfunctionfiles') {
 		respData = await serviceApiListFilesRequest(sessionId, true /*standard*/);
 	}
@@ -430,7 +432,6 @@ function getSessionDirectory(sessionId, localAccessOnly) {
 		}
 
 	}
-	console.log('session ID (log this differently): ' + r);
 	return r;
 
 }
@@ -499,6 +500,31 @@ async function serviceApiLoadRequestPackages(nm) {
 		return await fsPromises.readFile(path);
 	} catch (err) {
 		return `v2:?"file not found in packages: '${nm}'. Sorry!"`;
+	}
+}
+
+
+async function serviceApiListAudioRequest(sessionId, standard) {
+	let path = "./sounds/";
+	try {
+		let files = await fsPromises.readdir(path);
+		let s = 'v2:(|';
+		let first = true;
+		for (let i = 0; i < files.length; i++) {
+			let filename = files[i];
+			if (filename.charAt(0) == '.') {
+				continue;
+			}
+			if (!first) {
+				s += ' ';
+			}
+			s += '$"' + filename + '"';
+			first = false;
+		}
+		s += '|)';
+		return s;
+	} catch (err) {
+		return `v2:?"could not get audio file listing. Sorry!"`;
 	}
 }
 

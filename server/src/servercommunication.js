@@ -50,6 +50,17 @@ function listFiles(callback) {
 	});
 }
 
+function listAudio(callback) {
+	let payload = `listaudio`;
+
+	sendToServer(payload, function(data) {
+		parseReturnPayload(data, callback);
+	}, function() {
+		callback(serverError());
+	});
+}
+
+
 function listStandardFunctionFiles(callback) {
 	let payload = `liststandardfunctionfiles`;
 
@@ -192,5 +203,6 @@ export {
 	loadRaw,
 	saveRaw,
 	loadAndRun,
-	saveShortcut
+	saveShortcut,
+	listAudio
 }

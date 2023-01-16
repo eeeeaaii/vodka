@@ -51,6 +51,7 @@ import {
 	loadRaw,
 	saveRaw,
 	listFiles,
+	listAudio,
 	listStandardFunctionFiles
 } from '../servercommunication.js'
 
@@ -60,7 +61,7 @@ function createFileBuiltins() {
 	Builtin.createBuiltin(
 		'list-files',
 		[ ],
-		function $load(env, executionEnvironment) {
+		function $listFiles(env, executionEnvironment) {
 			let deferredValue = constructDeferredValue();
 			deferredValue.set(new GenericActivationFunctionGenerator(
 				'list-files', 
@@ -81,9 +82,33 @@ function createFileBuiltins() {
 	);	
 
 	Builtin.createBuiltin(
+		'list-audio',
+		[ ],
+		function $listAudio(env, executionEnvironment) {
+			let deferredValue = constructDeferredValue();
+			deferredValue.set(new GenericActivationFunctionGenerator(
+				'list-audio', 
+				function(callback, deferredValue) {
+					listAudio(function(files) {
+						// turn files into an org or whatever
+						callback(files);
+					})
+				}
+			));
+			let loadingMessage = constructEError(`listing audio`);
+			loadingMessage.setErrorType(ERROR_TYPE_INFO);
+			deferredValue.appendChild(loadingMessage)
+			deferredValue.activate();
+			return deferredValue;
+		},
+		'Lists available audio (wav) files.'
+	);	
+
+
+	Builtin.createBuiltin(
 		'list-standard-function-files',
 		[ ],
-		function $load(env, executionEnvironment) {
+		function $listStandardFunctionFiles(env, executionEnvironment) {
 			let def = constructDeferredValue();
 			def.set(new GenericActivationFunctionGenerator(
 				'list-standard-function-files', 
@@ -135,7 +160,7 @@ function createFileBuiltins() {
 	Builtin.createBuiltin(
 		'load-raw',
 		[ '_name' ],
-		function $loadFile(env, executionEnvironment) {
+		function $loadRaw(env, executionEnvironment) {
 			let name = env.lb('name');
 			let nametype = name.getTypeName();
 			// need to look for illegal filename characters if it's a string?
