@@ -503,15 +503,18 @@ async function serviceApiLoadRequestPackages(nm) {
 	}
 }
 
+/*
 
-async function serviceApiListAudioRequest(sessionId, standard) {
-	let path = "./sounds/";
+async function getDirectoryForListFilesRequest(path) {
 	try {
 		let files = await fsPromises.readdir(path);
-		let s = 'v2:(|';
+		let s = '(|';
 		let first = true;
 		for (let i = 0; i < files.length; i++) {
 			let filename = files[i];
+ 			if (filename == writeprotectionfile) {
+				continue;
+			}
 			if (filename.charAt(0) == '.') {
 				continue;
 			}
@@ -524,6 +527,53 @@ async function serviceApiListAudioRequest(sessionId, standard) {
 		s += '|)';
 		return s;
 	} catch (err) {
+		return null;
+	}
+}
+*/
+
+async function getDirectoryForListFilesRequest(path, tag) {
+	try {
+		const dir = await fsPromises.opendir(path);
+		let s = '(|';
+		let prefix = '';
+		if (tag) {
+			s += '<`' + tag + '`>';
+			prefix = tag + '/';
+		}
+		let first = true;
+		for await (const dirent of dir) {
+			if (!first) {
+				s += ' ';
+			}
+			let filename = dirent.name;
+			if (dirent.isDirectory()) {
+				let subdir = await getDirectoryForListFilesRequest(path + filename + '/', filename);
+				s += subdir;
+			} else {
+	 			if (filename == writeprotectionfile) {
+					continue;
+				}
+				if (filename.charAt(0) == '.') {
+					continue;
+				}
+				s += '$"' + prefix + filename + '"';
+			}
+			first = false;
+		}
+		s += '|)';
+		return s;
+	} catch (err) {
+		return null;
+	}
+}
+
+async function serviceApiListAudioRequest(sessionId, standard) {
+	let path = "./sounds/";
+	let s = await getDirectoryForListFilesRequest(path);
+	if (s) {
+		return 'v2:' + s;
+	} else {
 		return `v2:?"could not get audio file listing. Sorry!"`;
 	}
 }
@@ -532,27 +582,10 @@ async function serviceApiListFilesRequest(sessionId, standard) {
 	let path = (standard
 		? `${getSessionDirectory('packages')}`
 		: `${getSessionDirectory(sessionId)}`)
-	try {
-		let files = await fsPromises.readdir(path);
-		let s = 'v2:(|';
-		let first = true;
-		for (let i = 0; i < files.length; i++) {
-			let filename = files[i];
-			if (filename == writeprotectionfile) {
-				continue;
-			}
-			if (filename.charAt(0) == '.') {
-				continue;
-			}
-			if (!first) {
-				s += ' ';
-			}
-			s += '$"' + filename + '"';
-			first = false;
-		}
-		s += '|)';
-		return s;
-	} catch (err) {
+	let s = await getDirectoryForListFilesRequest(path);
+	if (s) {
+		return 'v2:' + s;
+	} else {
 		return `v2:?"could not get directory listing. Sorry!"`;
 	}
 }
