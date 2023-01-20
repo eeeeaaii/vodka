@@ -222,7 +222,6 @@ async function serviceRequestForRegularFile(sessionId, path, resp) {
 	}
 	// You have to decode the path because it might have %20 in it
 	path = decodeURI(path);
-	console.log('requesting native path: ' + path);
 	let mimetype = getMimeTypeFromExt(path);
 	try {
 		let data = await fsPromises.readFile(path);
