@@ -59,6 +59,16 @@ import {
 function createFileBuiltins() {
 
 	Builtin.createBuiltin(
+		'download',
+		[ ],
+		function $download(env, executionEnvironment) {
+
+		},
+		'downloads a file.'
+	);	
+
+
+	Builtin.createBuiltin(
 		'list-files',
 		[ ],
 		function $listFiles(env, executionEnvironment) {

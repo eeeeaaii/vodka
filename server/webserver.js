@@ -138,8 +138,6 @@ async function processRequest(req, resp) {
 		sendRedirect(resp, `http://${webenv_vars.redirectHostname}/?sessionId=${newSessionId}`);
 		return;
 
-
-
 	} else if (query.sessionId) {
 		let exists = await checkIfSessionExists(query.sessionId);
 		if (!exists) {
@@ -148,10 +146,6 @@ async function processRequest(req, resp) {
 		}
 		await serviceRequestForRegularFile(query.sessionId, path, resp);
 		return;
-
-
-
-
 
 	} else if (sessionIdFromCookie) {
 		let sessionId = sessionIdFromCookie;
@@ -169,8 +163,6 @@ async function processRequest(req, resp) {
 		}
 		serviceRequestForRegularFile(sessionId, path, resp);
 		return;
-
-
 
 	} else {
 		let newSessionId = await createNewUUIDSession(resp);
@@ -214,8 +206,13 @@ async function serviceRequestForRegularFile(sessionId, path, resp) {
 		path = "/host.html" + qs;
 	}
 	// uh
+	let isSessionDownload = false;
 	if (path.indexOf('/sounds') == 0) {
 		path = "." + path;
+	} else if (path.indexOf('/session/') == 0) {
+		path = path.substr(8);
+		path = './sessions/' + sessionId + path;
+		isSessionDownload = true;
 	} else {
 		path = "./src" + path;
 	}
@@ -225,13 +222,14 @@ async function serviceRequestForRegularFile(sessionId, path, resp) {
 	}
 	// You have to decode the path because it might have %20 in it
 	path = decodeURI(path);
+	console.log('requesting native path: ' + path);
 	let mimetype = getMimeTypeFromExt(path);
 	try {
 		let data = await fsPromises.readFile(path);
 		if (path == './src/host.html') {
 			data = await transformHost(sessionId, data);
 		}
-		sendResponse(resp, 200, mimetype, data, path);
+		sendResponse(resp, 200, mimetype, data, path, isSessionDownload);
 	} catch (err) {
 		sendResponse(resp, 404, 'text/html', ERROR, 'ERROR');
 	}
@@ -269,9 +267,13 @@ function sendRedirect(resp, toUrl) {
 	resp.end();
 }
 
-function sendResponse(resp, status, mimetype, data, path) {
+function sendResponse(resp, status, mimetype, data, path, forDownload) {
 	console.log(`tr:${total_reqs} ar:${api_reqs} ${status} "${path}" (${mimetype})`);
-	resp.writeHead(status, {'Content-Type': mimetype});
+	if (forDownload) {
+		resp.writeHead(status, {'Content-Type': mimetype, 'content-disposition': 'attachment'});
+	} else {
+		resp.writeHead(status, {'Content-Type': mimetype});
+	}
 	resp.write(data);
 	resp.end();
 }
