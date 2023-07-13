@@ -635,7 +635,7 @@ function createWavetableBuiltins() {
         );
         if (dur > maxdur) {
           return constructFatalError(
-            `resample: result wavetable too long! Must be less than ${maxdur} samples.`
+            `resample-to: result wavetable too long! Must be less than ${maxdur} samples.`
           );
         }
         // for example, if the old duration is 1 second, and the new duration is 0.5 seconds,
@@ -649,7 +649,7 @@ function createWavetableBuiltins() {
       }
       if (dur == 0) {
         return constructFatalError(
-          `resample: result wavetable too short (would be zero-length).`
+          `resample-to: result wavetable too short (would be zero-length).`
         );
       }
       let r = constructWavetable(dur);
@@ -716,13 +716,13 @@ function createWavetableBuiltins() {
       let maxdur = 1000000;
       if (resultDuration > maxdur) {
         return constructFatalError(
-          `resample: result wavetable too long! Must be less than ${maxdur} samples.`
+          `resample-by: result wavetable too long! Must be less than ${maxdur} samples.`
         );
       }
       if (resultDuration <= 0) {
         // is it possible to get here?
         return constructFatalError(
-          `resample: result wavetable too short (would be zero-length).`
+          `resample-by: result wavetable too short (would be zero-length).`
         );
       }
 
@@ -741,6 +741,57 @@ function createWavetableBuiltins() {
       return r;
     },
     'Resamples the audio by a percentage given by the second arg. Positive 1 means no change. Negative values cause the "play head" to reverse direction. If the second argument is a constant, the duration of the result is determined by the first argument, otherwise the duration of the second argument determines the result duration.'
+  );
+
+  Builtin.createBuiltin(
+    "resample-scale",
+    ["wt_", "degree#"],
+    function $resampleScale(env, executionEnvironment) {
+      let wt = env.lb("wt");
+      let deg = env.lb("degree");
+      let scaleDegree = deg.getTypedValue();
+
+      // 24 -> 4
+      // 12 -> 2
+      // 0 -> 1
+      // -12 -> 0.5
+
+      // scale factor is 2 ** (degree / 12)
+
+      let scaleFactor = 2 ** (scaleDegree / 12);
+
+      let oldDuration = wt.getDuration();
+
+      let resultDuration = oldDuration * (1 / Math.abs(scaleFactor));
+
+      let maxdur = 1000000;
+      if (resultDuration > maxdur) {
+        return constructFatalError(
+          `resample-scale: result wavetable too long! Must be less than ${maxdur} samples.`
+        );
+      }
+      if (resultDuration <= 0) {
+        // is it possible to get here?
+        return constructFatalError(
+          `resample-scale: result wavetable too short (would be zero-length).`
+        );
+      }
+
+      let r = constructWavetable(resultDuration);
+      let data = r.getData();
+
+      let oldPosition = 0;
+      for (let i = 0; i < resultDuration; i++) {
+        let v = wt.interpolatedValueAtSample(oldPosition);
+        let amountToAdvance = scaleFactor;
+        oldPosition += amountToAdvance;
+        data[i] = v;
+      }
+
+      r.init();
+      return r;
+    },
+    "Assumes the given sample is the fundamental in a diatonic scale and resamples to a scale degree determined by the second integer argument (e.e. 3 is a minor third up, -1 is a half step down). Note that this uses equal temperament."
   );
 
   Builtin.createBuiltin(
@@ -1213,18 +1264,36 @@ function createWavetableBuiltins() {
 
   Builtin.createBuiltin(
     "seq",
-    ["wtlst_..."],
+    ["wtlst()#%_..."],
     function $chain(env, executionEnvironment) {
       let wtlst = env.lb("wtlst");
 
-      // if the first arg to wtlst is a list instead of a wt, use it
-      if (wtlst.numChildren() == 1 && wtlst.getChildAt(0).isNexContainer()) {
-        wtlst = wtlst.getChildAt(0);
+      let waves = [];
+      for (let i = 0; i < wtlst.numChildren(); i++) {
+        let c = wtlst.getChildAt(i);
+        if (c.getTypeName() == "-wavetable-") {
+          waves.push(c);
+        } else if (c.isNexContainer()) {
+          for (let j = 0; j < c.numChildren(); j++) {
+            let c2 = c.getChildAt(j);
+            if (c2.getTypeName() == "-wavetable-") {
+              waves.push(c2);
+            } else {
+              waves.push(getConstantSignalFromValue(c2.getTypedValue()));
+            }
+          }
+        } else if (Utils.isInteger(c) || Utils.isFloat(c)) {
+          waves.push(getConstantSignalFromValue(c.getTypedValue()));
+        } else {
+          return constructFatalError(
+            `seq: invalid type - must be wavetable, integer, or float. Got ${c.getTypeName()}`
+          );
+        }
       }
 
       let dur = 0;
-      for (let i = 0; i < wtlst.numChildren(); i++) {
-        let c = wtlst.getChildAt(i);
+      for (let i = 0; i < waves.length; i++) {
+        let c = waves[i];
         dur += c.getDuration();
       }
 
@@ -1232,8 +1301,8 @@ function createWavetableBuiltins() {
       let data = r.getData();
 
       let k = 0;
-      for (let i = 0; i < wtlst.numChildren(); i++) {
-        let c = wtlst.getChildAt(i);
+      for (let i = 0; i < waves.length; i++) {
+        let c = waves[i];
         for (let j = 0; j < c.getDuration(); j++, k++) {
           data[k] = c.valueAtSample(j);
         }
@@ -1241,7 +1310,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Sequences a list of wavetables into a single wavetable by concatenating them."
+    "Sequences a list of wavetables into a single wavetable by concatenating them. If a list is passed in, the list must contain integers, floats, or wavetables only."
   );
 
   Builtin.createBuiltin(
