@@ -241,7 +241,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 				<p class="infosubheader">In lambda editor:</p>
 				<p class="infoline"><span class="infohotkey">enter</span>leave edit mode</p>
 				<p class="infoline"><span class="infohotkey">escape</span>abort editing and restore previous value</p>
-				<p class="infoline">Any of <span class="infohotkey">a-zA-Z0-9_-</span>can be used in names of function parameters. Spaces separate parameters.</p>
+				<p class="infoline">Any of <span class="infohotkey">a-zA-Z0-9_-</span>can be used in names of function parameters. Spaces separate parameters. Parameter name proper cannot start or end with  <span class="infohotkey">_</span> (see syntax below)</p>
 				<p class="infoline"><span class="infohotkey">delete</span>deletes previous character</p>
 				<p class="infospacer"></p>
 				<p class="infosubheader">lambda function parameter syntax:</p>
@@ -254,11 +254,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 				<p class="infoline"><span class="infohotkey">n&</span>n must evaluate to a closure</p>
 				<p class="infoline"><span class="infohotkey">n*</span>n must evaluate to a deferred value or command</p>
 				<p class="infoline"><span class="infohotkey">n()</span>n must evaluate to some kind of container<//p>
+				<p class="infoline"><span class="infohotkey">n_</span>n must evaluate to a wavetable</p>
 				<p class="infoline"><span class="infohotkey">_n</span>n will not be evaluated before passing to function (call by reference)</p>
 				<p class="infoline"><span class="infohotkey">n...</span>variable number of arguments (only valid as last parameter)</p>
-				<p class="infoline"><span class="infohotkey">#%</span>or <span class="infohotkey">%#</span>either float or integer types allowed</p>
 				<p class="infoline"><span class="infohotkey">?</span>optional parameter (non-optional parameters cannot follow optional ones)</p>
 				<p class="infoline">Multiple parameter specifiers can be combined, for example <span class="infohotkey">_n#%...</span>,<span class="infohotkey">n()?</span></p>
+				<p class="infoline"><span class="infohotkey">%#</span>either float or integer types allowed, others are not allowed (any type codes can be combined)</p>
 				<p class="infoline">If no type is specified, any type is allowed.</p>
 				<p class="infospacer"></p>
 				<p class="infosubheader">In tag editor:</p>
