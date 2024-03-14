@@ -1,6 +1,7 @@
 .DS_STORE
 ACTUAL_LIVECODING_IDEAS.txt
 testing/____tmpfile.txt
+node_modules
 server/attic/*
 server/packages/cc*
 server/packages/poem*
