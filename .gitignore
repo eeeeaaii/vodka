@@ -2,6 +2,7 @@
 ACTUAL_LIVECODING_IDEAS.txt
 testing/____tmpfile.txt
 node_modules
+package-lock.json
 server/attic/*
 server/packages/cc*
 server/packages/poem*
