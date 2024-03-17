@@ -1,0 +1,88 @@
+.word {
+  flex-direction: row;
+  align-items: flex-start;
+  height: auto;
+  padding: 0;
+  display: flex;
+}
+
+.word.exploded {
+  border: 1px solid var(--word-selected);
+  border-radius: 6px;
+  padding: 5px;
+}
+
+.word.exploded.selected {
+  border-width: 3px;
+  padding: 3px;
+}
+
+.newword.exploded {
+  border-color: var(--word-unselected);
+}
+
+.newword.exploded.newselected {
+  border-color: var(--word-selected);
+}
+
+.newword.exploded.mutable {
+  border-width: 3px;
+  padding: 3px;
+}
+
+.word.selected.leftinsert {
+  animation-name: letterblinkleft;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+}
+
+.word.selected.rightinsert {
+  animation-name: letterblinkright;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+}
+
+.word.selected.topinsert {
+  animation-name: letterblinktop;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+}
+
+.word.selected.bottominsert {
+  animation-name: letterblinkbottom;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+}
+
+.word.selected.exploded {
+  animation-name: none;
+}
+
+.word.newselected.leftinsert {
+  animation-name: letterblinkleft;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+}
+
+.word.newselected.rightinsert {
+  animation-name: letterblinkright;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+}
+
+.word.newselected.topinsert {
+  animation-name: letterblinktop;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+}
+
+.word.newselected.bottominsert {
+  animation-name: letterblinkbottom;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+}
+
+.word.newselected.exploded {
+  animation-name: none;
+}
+/*# sourceMappingURL=host.b7b5205e.css.map */

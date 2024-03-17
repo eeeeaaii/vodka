@@ -1,0 +1,67 @@
+.line {
+  flex-flow: wrap;
+  align-items: center;
+  display: flex;
+}
+
+.line.exploded {
+  border: 1px solid var(--line-selected);
+  border-radius: 6px;
+  padding: 5px;
+}
+
+.line.exploded.selected {
+  border-width: 3px;
+  padding: 3px;
+}
+
+.newversionofline.exploded {
+  border-color: var(--line-unselected);
+}
+
+.newversionofline.exploded.newselected {
+  border-color: var(--line-selected);
+}
+
+.newversionofline.exploded.mutable {
+  border-width: 3px;
+  padding: 3px;
+}
+
+.emptyline {
+  height: 1.12em;
+}
+
+.emptyline.selected {
+  background-color: #000;
+  width: 1px;
+}
+
+.line.selected.leftinsert {
+  animation-name: letterblinkleft;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+}
+
+.line.selected.rightinsert {
+  animation-name: letterblinkright;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+}
+
+.line.selected.topinsert {
+  animation-name: letterblinktop;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+}
+
+.line.selected.bottominsert {
+  animation-name: letterblinkbottom;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+}
+
+.line.selected.exploded {
+  animation-name: none;
+}
+/*# sourceMappingURL=host.e69ee9ea.css.map */

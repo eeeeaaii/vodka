@@ -1,0 +1,61 @@
+.wavetable {
+  display: none;
+}
+
+.wavetable.exploded {
+  border: 3px solid var(--unselected-border);
+  background-color: var(--unselected-border);
+  flex-direction: column;
+  align-items: stretch;
+  padding: 2px;
+  display: flex;
+}
+
+.wavetable.editing {
+  background-color: var(--editing-background);
+}
+
+.wavetable canvas {
+  align-self: flex-start;
+}
+
+.wavetable.newselected {
+  border: 3px solid var(--selected-border);
+}
+
+.wavetable canvas {
+  background-color: #fff;
+}
+
+.wavecontrols {
+  flex-direction: row;
+  margin-bottom: 2px;
+  padding: 2px;
+  display: flex;
+}
+
+.wavecontrol {
+  background-color: #fff;
+  border-radius: 2px;
+  flex-grow: 1;
+  margin-left: 1px;
+  margin-right: 1px;
+  padding: 2px;
+  font-family: Courier;
+  font-size: 9px;
+}
+
+.markerlist {
+  flex-direction: row;
+  margin-right: 30px;
+  display: flex;
+}
+
+.addmarker {
+  margin-left: 8px;
+}
+
+.wavecontrolspacer {
+  flex-grow: 10000;
+}
+/*# sourceMappingURL=host.4572bd29.css.map */

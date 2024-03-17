@@ -15,6 +15,15 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+.draggablepanel {
+	pointer-events: auto;
+	position: absolute;
+	left: 200px;
+	top: 50px;
+	width: 450px;
+	cursor: grab;
+}
+
 
 #tutorialpanel {
 	pointer-events: auto;
@@ -26,7 +35,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 #uberhelpcontainer {
+/*
 	display: none;
+*/
+    display: flex;
 	flex-direction: column;
 	position:absolute;
 	z-index: 1000;
@@ -175,8 +187,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 .upperrightbutton {
-	display: none;
-	position: fixed;
+/*	display: none;*/
+position: fixed;
 	cursor: pointer;
 	top: 0px;
 	right: 0px;

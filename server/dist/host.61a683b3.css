@@ -1,0 +1,36 @@
+.valuenex {
+  display: none;
+}
+
+.valuenex.exploded {
+  color: var(--info-text);
+  background-color: var(--value-background);
+  border: 1px solid var(--unselected-border);
+  flex-direction: row;
+  align-items: center;
+  padding: 5px;
+  font-family: Courier;
+  font-size: 11px;
+  font-style: italic;
+  display: flex;
+}
+
+.valuenex.mutable {
+  border-width: 3px;
+  padding: 3px;
+}
+
+.valuenex.exploded.selected {
+  border: 3px solid var(--selected-border);
+  padding: 3px;
+}
+
+.valuenex.exploded.newselected {
+  border-color: var(--selected-border);
+}
+
+.valuenex.exploded.editing {
+  background-color: var(--editing-background);
+  font-weight: bold;
+}
+/*# sourceMappingURL=host.61a683b3.css.map */

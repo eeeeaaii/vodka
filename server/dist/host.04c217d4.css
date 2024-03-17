@@ -1,0 +1,222 @@
+.org {
+  flex-direction: row;
+  align-items: flex-start;
+  height: auto;
+  padding: 0;
+  display: flex;
+}
+
+.org.vdir {
+  flex-direction: column;
+}
+
+.org.exploded {
+  border: 1px solid var(--org-border);
+  border-radius: 6px;
+  padding: 5px;
+}
+
+.org.exploded > .nex.exploded {
+  margin: 2px;
+}
+
+.org.mutable {
+  border-width: 3px;
+  padding: 3px;
+}
+
+.org.exploded.selected {
+  border: 3px solid #a7a7a7;
+  padding: 3px;
+}
+
+.org.exploded.newselected {
+  border-color: var(--selected-border);
+}
+
+.org.exploded.selected.redorgs {
+  border: 3px solid var(--selected-border);
+}
+
+.zdir {
+  align-self: flex-start;
+  padding: 0;
+  display: grid;
+}
+
+.zdir.exploded {
+  border-bottom: 0;
+  padding-top: 5px;
+  padding-left: 5px;
+}
+
+.zdir.exploded.mutable {
+  border-bottom-style: dotted;
+  border-bottom-width: 3px;
+  border-bottom-color: var(--org-border);
+}
+
+.zdir.exploded.mutable.newselected {
+  border-bottom-color: var(--selected-border);
+}
+
+.zdir.exploded.selected {
+  border: 0;
+  border-top: 5px solid #a7a7a7;
+  border-left: 5px solid #a7a7a7;
+}
+
+.zdir.exploded:empty {
+  border: 1px solid #c7c7c7;
+  width: 0;
+  height: 0;
+  padding: 5px;
+}
+
+.zdir.exploded.selected:empty {
+  border: 3px solid #a7a7a7;
+  width: 0;
+  height: 0;
+  padding: 3px;
+}
+
+.zdir > .nex {
+  grid-area: 1 / 1;
+}
+
+.zdir > .nex:first-child {
+  z-index: 0;
+}
+
+.zdir > .nex:nth-child(2) {
+  z-index: 1;
+}
+
+.zdir > .nex:nth-child(3) {
+  z-index: 2;
+}
+
+.zdir > .nex:nth-child(4) {
+  z-index: 3;
+}
+
+.zdir > .nex:nth-child(5) {
+  z-index: 4;
+}
+
+.zdir > .nex:nth-child(6) {
+  z-index: 5;
+}
+
+.zdir > .nex:nth-child(7) {
+  z-index: 6;
+}
+
+.zdir > .nex:nth-child(8) {
+  z-index: 7;
+}
+
+.zdir > .nex:nth-child(9) {
+  z-index: 8;
+}
+
+.zdir > .nex:nth-child(10) {
+  z-index: 9;
+}
+
+.zdir > .nex:nth-child(11) {
+  z-index: 10;
+}
+
+.zdir > .nex:nth-child(12) {
+  z-index: 11;
+}
+
+.zdir > .nex:nth-child(13) {
+  z-index: 12;
+}
+
+.zdir > .nex:nth-child(14) {
+  z-index: 13;
+}
+
+.zdir > .nex:nth-child(15) {
+  z-index: 14;
+}
+
+.zdir > .nex:nth-child(16) {
+  z-index: 15;
+}
+
+.zdir > .nex:nth-child(17) {
+  z-index: 16;
+}
+
+.zdir.exploded > .nex:first-child {
+  margin-top: 0;
+}
+
+.zdir.exploded > .nex:nth-child(2) {
+  margin-top: 10px;
+}
+
+.zdir.exploded > .nex:nth-child(3) {
+  margin-top: 20px;
+}
+
+.zdir.exploded > .nex:nth-child(4) {
+  margin-top: 30px;
+}
+
+.zdir.exploded > .nex:nth-child(5) {
+  margin-top: 40px;
+}
+
+.zdir.exploded > .nex:nth-child(6) {
+  margin-top: 50px;
+}
+
+.zdir.exploded > .nex:nth-child(7) {
+  margin-top: 60px;
+}
+
+.zdir.exploded > .nex:nth-child(8) {
+  margin-top: 70px;
+}
+
+.zdir.exploded > .nex:nth-child(9) {
+  margin-top: 80px;
+}
+
+.zdir.exploded > .nex:nth-child(10) {
+  margin-top: 90px;
+}
+
+.zdir.exploded > .nex:nth-child(11) {
+  margin-top: 100px;
+}
+
+.zdir.exploded > .nex:nth-child(12) {
+  margin-top: 110px;
+}
+
+.zdir.exploded > .nex:nth-child(13) {
+  margin-top: 120px;
+}
+
+.zdir.exploded > .nex:nth-child(14) {
+  margin-top: 130px;
+}
+
+.zdir.exploded > .nex:nth-child(15) {
+  margin-top: 140px;
+}
+
+.zdir.exploded > .nex:nth-child(16) {
+  margin-top: 150px;
+}
+
+.zdir.exploded > .nex:nth-child(17) {
+  margin-top: 160px;
+}
+/*# sourceMappingURL=host.04c217d4.css.map */

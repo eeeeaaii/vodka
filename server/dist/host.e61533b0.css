@@ -1,0 +1,32 @@
+.stringinput {
+  font-family: Courier, monospace;
+  font-size: 12px;
+}
+
+.stringta {
+  color: var(--string-ta-text);
+  background-color: var(--string-background);
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  width: 250px;
+  height: 100px;
+  margin-left: 5px;
+  padding: 3px;
+}
+
+.stringinputsubmit:focus {
+  background-color: #ddd;
+}
+
+.innerspan {
+  background-color: var(--string-background);
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  margin-left: 5px;
+  margin-right: 5px;
+  padding: 3px;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  display: inline-block;
+}
+/*# sourceMappingURL=host.e61533b0.css.map */

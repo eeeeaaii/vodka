@@ -1,0 +1,170 @@
+.draggablepanel, #tutorialpanel {
+  pointer-events: auto;
+  cursor: grab;
+  width: 450px;
+  position: absolute;
+  top: 50px;
+  left: 200px;
+}
+
+#uberhelpcontainer {
+  z-index: 1000;
+  flex-direction: column;
+  margin: 20px;
+  display: flex;
+  position: absolute;
+}
+
+.helpmenupanel {
+  flex-direction: row;
+  margin-top: 6px;
+  margin-bottom: 6px;
+  padding: 0;
+  font-family: Courier;
+  font-size: 11px;
+  display: flex;
+}
+
+.helpmenuitem {
+  cursor: pointer;
+  text-align: center;
+  background-color: #fcf7bb;
+  border: 2px solid #736b0d;
+  flex-grow: 1;
+  margin: 0;
+  padding: 6px;
+  display: flex;
+}
+
+.infopanel {
+  background-color: #fcf7bb;
+  border: 1px solid #736b0d;
+  padding: 20px;
+  font-family: Courier;
+  font-size: 11px;
+  display: block;
+}
+
+.infopanel .infotitle {
+  margin: 0 0 18px;
+  padding: 0;
+  font-size: 24px;
+}
+
+.infopanel .infosubheader {
+  margin: 0 0 12px;
+  padding: 0;
+  font-size: 12px;
+}
+
+.infopanel .infoheading {
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.infopanel .infoline {
+  margin: 0;
+  padding: 0;
+  font-size: 10px;
+}
+
+.infolineitalic {
+  font-style: italic;
+}
+
+.infopanel .infospacer {
+  height: 12px;
+  margin: 0;
+  padding: 0;
+  font-size: 10px;
+}
+
+.infopanel .infolinemargin {
+  margin: 4px 0;
+  padding: 0;
+  font-size: 10px;
+}
+
+.infopanel .infoindent {
+  padding-left: 16px;
+}
+
+.alwaysvisible {
+  visibility: visible !important;
+}
+
+.trygroup {
+  display: none;
+}
+
+.trygroup ul {
+  margin-block: 0;
+  padding-inline-start: 15px;
+  list-style-type: square;
+}
+
+.trymore {
+  margin-top: 6px;
+  margin-bottom: 6px;
+  margin-left: 15px;
+  display: inline-block;
+}
+
+.infopanel .qmark {
+  background-color: #eef1dc;
+  border: 1px solid #736b0d;
+  margin: 0;
+  padding: 6px;
+  font-family: Georgia;
+  font-size: 29px;
+  display: inline-block;
+}
+
+.infopanel .infohotkey {
+  background-color: #eef1dc;
+  border: 1px solid #736b0d;
+  margin-top: 1px;
+  margin-bottom: 1px;
+  margin-right: 5px;
+  padding-bottom: 2px;
+  padding-left: 3px;
+  padding-right: 3px;
+  font-size: 1.2em;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.infopanel .infohotkeylarge {
+  font-size: 1.6em;
+}
+
+#infothingstotry {
+  background-color: #eef1dc;
+  border: 1px solid #736b0d;
+  padding: 6px;
+}
+
+.upperrightbutton {
+  cursor: pointer;
+  z-index: 1001;
+  background-color: #fcf7bb;
+  border: 2px solid #736b0d;
+  margin-top: 3px;
+  margin-right: 3px;
+  padding: 3px 5px 5px 3px;
+  font-family: Courier;
+  font-size: 9px;
+  position: fixed;
+  top: 0;
+  right: 0;
+}
+
+.helpbutton {
+  color: #fff;
+  cursor: pointer;
+  background-color: #736b0d;
+  padding: 2px 6px;
+}
+/*# sourceMappingURL=host.25473ece.css.map */

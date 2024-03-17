@@ -1,0 +1,82 @@
+.separator {
+  display: inline-block;
+}
+
+.separator.selected.leftinsert {
+  animation-name: letterblinkleft;
+  animation-duration: 1s;
+  animation-iteration-count: 1;
+}
+
+.separator.selected.rightinsert {
+  animation-name: letterblinkright;
+  animation-duration: 1s;
+  animation-iteration-count: 1;
+}
+
+.separator.newselected.leftinsert {
+  animation-name: letterblinkleft;
+  animation-duration: 1s;
+  animation-iteration-count: 1;
+}
+
+.separator.newselected.rightinsert {
+  animation-name: letterblinkright;
+  animation-duration: 1s;
+  animation-iteration-count: 1;
+}
+
+.line > .separator.exploded {
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.separator.exploded.selected {
+  border-top: 1px solid var(--cursor-blink-color);
+  border-right: 1px solid var(--cursor-blink-color);
+  border-bottom: 1px solid var(--cursor-blink-color);
+  margin-right: -1px;
+  animation-name: none;
+}
+
+.separator.exploded.newselected {
+  animation-name: none;
+}
+
+.separator.newselected.exploded.leftinsert {
+  border-top: 1px solid var(--cursor-blink-color);
+  border-left: 1px solid var(--cursor-blink-color);
+  border-bottom: 1px solid var(--cursor-blink-color);
+  margin-top: -1px;
+  margin-bottom: -1px;
+  margin-left: -1px;
+}
+
+.separator.newselected.exploded.rightinsert {
+  border-top: 1px solid var(--cursor-blink-color);
+  border-right: 1px solid var(--cursor-blink-color);
+  border-bottom: 1px solid var(--cursor-blink-color);
+  margin-top: -1px;
+  margin-bottom: -1px;
+  margin-right: -1px;
+}
+
+.line > .separator.exploded.selected, .line > .separator.exploded.newselected {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+@keyframes newlineblink {
+  from {
+    width: 1px;
+  }
+
+  99% {
+    width: 1px;
+  }
+
+  to {
+    width: 0;
+  }
+}
+/*# sourceMappingURL=host.29993f1a.css.map */

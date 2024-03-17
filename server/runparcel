@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rm -rf src/.parcel-cache
+npx parcel src/host.html

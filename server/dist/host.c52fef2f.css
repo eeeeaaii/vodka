@@ -1,0 +1,29 @@
+.tag {
+  display: none;
+}
+
+.tagholder {
+  flex-direction: row;
+  align-items: flex-start;
+  display: flex;
+}
+
+.tag.exploded {
+  color: #ddd;
+  background-color: #6e6e6e;
+  flex-direction: row;
+  align-items: flex-start;
+  margin: 3px;
+  padding: 4px 8px;
+  font-family: Courier;
+  font-size: 9px;
+  display: flex;
+}
+
+.tag-editing.exploded, .tag-ghost.exploded {
+  color: #414141;
+  background-color: #ddd;
+  border: 1px solid #6e6e6e;
+  padding: 3px 7px;
+}
+/*# sourceMappingURL=host.c52fef2f.css.map */

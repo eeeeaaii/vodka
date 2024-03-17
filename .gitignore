@@ -19,6 +19,7 @@ server/docs/*
 server/webenv.txt
 soundcreation
 server/src/package-lock.json
+server/src/.parcel-cache
 server/src/node_modules
 server/node_modules
 asm/emsdk

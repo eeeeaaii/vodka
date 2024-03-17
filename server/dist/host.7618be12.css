@@ -1,0 +1,45 @@
+.command {
+  display: contents;
+}
+
+.tilde {
+  font-size: 1.3em;
+  font-weight: bold;
+  line-height: .88em;
+  position: relative;
+  top: -2px;
+}
+
+.ghost {
+  color: var(--info-text);
+  background-color: var(--value-background);
+  border: 1px solid var(--unselected-border);
+  z-index: 100;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 400px;
+  padding: 5px;
+  font-family: Courier;
+  font-size: 11px;
+  font-style: italic;
+  font-weight: normal;
+  display: flex;
+  position: absolute;
+  top: 48px;
+  left: 22px;
+}
+
+.ghost-match {
+  opacity: .4;
+}
+
+.ghostline {
+  background-color: var(--unselected-border);
+  width: 35px;
+  height: 1px;
+  position: absolute;
+  top: -16px;
+  left: -20px;
+  transform: rotate(60deg);
+}
+/*# sourceMappingURL=host.7618be12.css.map */

@@ -1,0 +1,39 @@
+.closure.exploded {
+  flex-direction: column;
+  align-items: flex-start;
+  width: 400px;
+}
+
+.closureline0 {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.closureline1 {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.closureline2 {
+  margin-top: 2px;
+  margin-left: 15px;
+  font-weight: bold;
+}
+
+.closureline3 {
+  margin-top: 2px;
+  margin-left: 15px;
+}
+
+.closureline4 {
+  margin-top: 9px;
+  margin-left: 15px;
+  font-size: .8em;
+}
+
+.closureline5 {
+  margin-top: 2px;
+  margin-left: 15px;
+  font-size: .8em;
+}
+/*# sourceMappingURL=host.a32c3379.css.map */

@@ -1,0 +1,36 @@
+.eerror.exploded {
+  color: #a00;
+  border-radius: 6px;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-left: 22px;
+  font-family: monospace;
+  font-style: italic;
+  display: flex;
+}
+
+.eerror.fatal {
+  color: #a00;
+}
+
+.eerror.warning {
+  color: #00a;
+}
+
+.eerror.info {
+  color: #0a0;
+}
+
+.eerror.previouslyfatal {
+  color: #aa6e00;
+}
+
+.eerror > .innerspan {
+  margin-bottom: 4px;
+}
+
+.eerror.exploded.selected {
+  border: 3px solid var(--selected-border);
+  padding-left: 22px;
+}
+/*# sourceMappingURL=host.4a0588ef.css.map */

@@ -1,0 +1,29 @@
+.instantiator {
+  display: contents;
+}
+
+.caret {
+  padding-right: .1em;
+  font-size: 1.3em;
+  line-height: .88em;
+  position: relative;
+  top: .2em;
+  left: -.1em;
+}
+
+.templateline0 {
+  font-size: 1.9em;
+  font-weight: bold;
+}
+
+.templateline1 {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.templateline2 {
+  margin-top: 2px;
+  margin-left: 15px;
+  font-weight: bold;
+}
+/*# sourceMappingURL=host.4f87a9fc.css.map */

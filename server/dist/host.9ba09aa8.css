@@ -1,0 +1,183 @@
+.letter {
+  flex-direction: row;
+  align-items: flex-start;
+  display: flex;
+}
+
+.letter.exploded {
+  border: 0;
+  padding: 0;
+}
+
+@keyframes letterblinkright {
+  from {
+    border-top: 1px solid var(--cursor-blink-color);
+    border-right: 1px solid var(--cursor-blink-color);
+    border-bottom: 1px solid var(--cursor-blink-color);
+    margin-top: -1px;
+    margin-bottom: -1px;
+    margin-right: -1px;
+  }
+
+  99% {
+    border-top: 1px solid var(--cursor-blink-color);
+    border-right: 1px solid var(--cursor-blink-color);
+    border-bottom: 1px solid var(--cursor-blink-color);
+    margin-top: -1px;
+    margin-bottom: -1px;
+    margin-right: -1px;
+  }
+
+  to {
+    border-top: 0;
+    border-bottom: 0;
+    border-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-right: 0;
+  }
+}
+
+@keyframes letterblinkleft {
+  from {
+    border-top: 1px solid var(--cursor-blink-color);
+    border-left: 1px solid var(--cursor-blink-color);
+    border-bottom: 1px solid var(--cursor-blink-color);
+    margin-top: -1px;
+    margin-bottom: -1px;
+    margin-left: -1px;
+  }
+
+  99% {
+    border-top: 1px solid var(--cursor-blink-color);
+    border-left: 1px solid var(--cursor-blink-color);
+    border-bottom: 1px solid var(--cursor-blink-color);
+    margin-top: -1px;
+    margin-bottom: -1px;
+    margin-left: -1px;
+  }
+
+  to {
+    border-top: 0;
+    border-bottom: 0;
+    border-left: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 0;
+  }
+}
+
+@keyframes letterblinktop {
+  from {
+    border-top: 1px solid var(--cursor-blink-color);
+    border-left: 1px solid var(--cursor-blink-color);
+    border-right: 1px solid var(--cursor-blink-color);
+    margin-top: -1px;
+    margin-left: -1px;
+    margin-right: -1px;
+  }
+
+  99% {
+    border-top: 1px solid var(--cursor-blink-color);
+    border-left: 1px solid var(--cursor-blink-color);
+    border-right: 1px solid var(--cursor-blink-color);
+    margin-top: -1px;
+    margin-left: -1px;
+    margin-right: -1px;
+  }
+
+  to {
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    margin-top: 0;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+@keyframes letterblinkbottom {
+  from {
+    border-right: 1px solid var(--cursor-blink-color);
+    border-left: 1px solid var(--cursor-blink-color);
+    border-bottom: 1px solid var(--cursor-blink-color);
+    margin-bottom: -1px;
+    margin-left: -1px;
+    margin-right: -1px;
+  }
+
+  99% {
+    border-right: 1px solid var(--cursor-blink-color);
+    border-left: 1px solid var(--cursor-blink-color);
+    border-bottom: 1px solid var(--cursor-blink-color);
+    margin-bottom: -1px;
+    margin-left: -1px;
+    margin-right: -1px;
+  }
+
+  to {
+    border-bottom: 0;
+    border-left: 0;
+    border-right: 0;
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+.letter.selected.leftinsert {
+  animation-name: letterblinkleft;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+}
+
+.letter.selected.rightinsert {
+  animation-name: letterblinkright;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+}
+
+.letter.selected.exploded {
+  border-top: 1px solid var(--cursor-blink-color);
+  border-right: 1px solid var(--cursor-blink-color);
+  border-bottom: 1px solid var(--cursor-blink-color);
+  margin-top: -1px;
+  margin-bottom: -1px;
+  margin-right: -1px;
+  animation-name: none;
+}
+
+.letter.newselected.leftinsert {
+  animation-name: letterblinkleft;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+}
+
+.letter.newselected.rightinsert {
+  animation-name: letterblinkright;
+  animation-duration: 2s;
+  animation-iteration-count: 1;
+}
+
+.letter.newselected.exploded {
+  animation-name: none;
+}
+
+.letter.newselected.exploded.leftinsert {
+  border-top: 1px solid var(--cursor-blink-color);
+  border-left: 1px solid var(--cursor-blink-color);
+  border-bottom: 1px solid var(--cursor-blink-color);
+  margin-top: -1px;
+  margin-bottom: -1px;
+  margin-left: -1px;
+}
+
+.letter.newselected.exploded.rightinsert {
+  border-top: 1px solid var(--cursor-blink-color);
+  border-right: 1px solid var(--cursor-blink-color);
+  border-bottom: 1px solid var(--cursor-blink-color);
+  margin-top: -1px;
+  margin-bottom: -1px;
+  margin-right: -1px;
+}
+/*# sourceMappingURL=host.9ba09aa8.css.map */

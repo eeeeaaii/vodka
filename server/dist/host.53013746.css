@@ -1,0 +1,8 @@
+.surface.exploded {
+  border: 3px solid var(--unselected-border);
+}
+
+.surface.exploded.newselected {
+  border: 3px solid var(--selected-border);
+}
+/*# sourceMappingURL=host.53013746.css.map */

@@ -20,6 +20,7 @@ let NEXT_NEX_ID = 0;
 function setNextNexId(val) {
 	NEXT_NEX_ID = val;
 }
+
 import { systemState } from '../systemstate.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { RENDER_FLAG_SELECTED,
@@ -611,7 +612,10 @@ class Nex {
 }
 
 // I wish I had put in a comment explaining why this was needed
-if (typeof module !== 'undefined' && module.exports) module.exports = { Nex: Nex }
+// Update: march 15 2024
+// I still don't know why I put this in, but it broke parcel,
+// so it's out for now.
+//if (typeof module !== 'undefined' && module.exports) module.exports = { Nex: Nex }
 
 
 export { Nex, setNextNexId, NEXT_NEX_ID }

@@ -65,6 +65,8 @@ import { maybeKillSound } from './webaudio.js'
 import { setupMobile, doMobileKeyDown } from './mobile.js'
 import { setupHelp } from './help.js'
 
+import { getFeatureVector } from './featurevector.js'
+
 
 // EXPERIMENTS
 
@@ -258,7 +260,11 @@ function setup() {
 	setOrCreateSessionId();
 	macSubst();
 
-	setupHelp();
+ 
+// this replaced by react
+//	setupHelp();
+
+
 	eventQueue.initialize();
 
 	if (Utils.getQSVal('mobile')) {
@@ -275,7 +281,13 @@ function setup() {
 	window.doKeyInput = doKeyInput;
 	window.runTest = runTest;
 	createBuiltins();
-	writeDocs();
+
+
+// this also replaced by react
+//	writeDocs();
+
+
+
 	// because of https://github.com/eeeeaaii/vodka/issues/29
 	if (NEXT_NEX_ID > 1000) {
 		throw new Error('too many builtins, increase starting nex ID');
@@ -311,7 +323,7 @@ function setup() {
 		setDocRootFromFile(otherflags.FILE);
 	} else if (filenameFromQS) {
 		setDocRootFromFile(filenameFromQS);
-	} else if (FEATURE_VECTOR.hasstart) {
+	} else if (getFeatureVector().hasstart) {
 		// feature vector is initialized by the webserver.
 		// if hasstart is true, it means the user has added a ":start"
 		// file, meaning that it should be loaded.

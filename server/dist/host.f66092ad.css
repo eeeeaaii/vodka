@@ -1,0 +1,63 @@
+.deferredcommand {
+  flex-direction: row;
+  align-items: flex-start;
+  display: flex;
+}
+
+.deferredcommand > .dotspan {
+  display: none;
+}
+
+.deferredcommand.exploded > .dotspan {
+  display: inline;
+}
+
+.deferredcommand.exploded {
+  border: 1px solid var(--unselected-border);
+  border-radius: 6px;
+  padding: 5px;
+}
+
+.deferredcommand.exploded.mutable {
+  border-width: 3px;
+  padding: 3px;
+}
+
+.deferredcommand.exploded > .nex.exploded {
+  margin: 0 0 0 2px;
+}
+
+.deferredcommand.exploded.vdir > .nex.exploded {
+  margin: 2px 21px;
+}
+
+.deferredcommand.exploded.vdir {
+  flex-direction: column;
+}
+
+.deferredcommand.exploded.selected, .deferredcommand.exploded.newselected {
+  border-color: var(--selected-border);
+}
+
+.deferredcommand > .dotspan.exploded {
+  border: 1px solid var(--unselected-border);
+  color: var(--info-text);
+  background-color: var(--value-background);
+  border-radius: 6px;
+  margin: 0 6px 0 0;
+  padding: 2px 4px;
+  font-family: Courier;
+  font-size: 12px;
+  font-style: italic;
+  display: inline-block;
+}
+
+.deferredcommand > .dotspan.exploded.editing {
+  background-color: var(--editing-background);
+  font-weight: bold;
+}
+
+.deferredcommand.exploded.selected > .dotspan, .deferredcommand.exploded.newselected > .dotspan {
+  border-color: var(--selected-border);
+}
+/*# sourceMappingURL=host.f66092ad.css.map */

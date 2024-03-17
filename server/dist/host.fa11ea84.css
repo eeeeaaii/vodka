@@ -1,0 +1,31 @@
+.doc {
+  flex-direction: column;
+  align-items: flex-start;
+  height: auto;
+  display: flex;
+}
+
+.doc.exploded {
+  border: 1px solid var(--doc-selected);
+  border-radius: 6px;
+  padding: 5px;
+}
+
+.doc.exploded.selected {
+  border-width: 3px;
+  padding: 3px;
+}
+
+.newdoc.exploded {
+  border-color: var(--doc-unselected);
+}
+
+.newdoc.exploded.newselected {
+  border-color: var(--doc-selected);
+}
+
+.newdoc.exploded.mutable {
+  border-width: 3px;
+  padding: 3px;
+}
+/*# sourceMappingURL=host.fa11ea84.css.map */

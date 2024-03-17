@@ -1,0 +1,85 @@
+.deferredvalue {
+  flex-direction: row;
+  align-items: flex-start;
+  display: flex;
+}
+
+.deferredvalue > .dotspan {
+  display: none;
+}
+
+.deferredvalue.exploded > .dotspan {
+  align-self: stretch;
+  display: flex;
+}
+
+.deferredvalue.exploded {
+  background-color: var(--value-background);
+  border: 1px solid var(--unselected-border);
+}
+
+.deferredvalue.exploded.mutable {
+  border-width: 3px;
+}
+
+.deferredvalue.exploded > .nex {
+  margin: 3px;
+}
+
+.deferredvalue.exploded.selected, .deferredvalue.exploded.newselected {
+  border-color: var(--selected-border);
+}
+
+.deferredvalue > .dotspan.exploded {
+  color: var(--info-text);
+  background-color: var(--unselected-border);
+  margin: 3px;
+  padding: 0 4px;
+  font-family: Courier;
+  font-size: 1.15em;
+}
+
+.deferredvalue.exploded.newselected > .dotspan {
+  background-color: var(--selected-border);
+}
+
+@keyframes deferredspin {
+  0% {
+    transform: rotate(0);
+  }
+
+  25% {
+    transform: rotate(90deg);
+  }
+
+  50% {
+    transform: rotate(180deg);
+  }
+
+  75% {
+    transform: rotate(270deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.dvglyph {
+  align-self: center;
+  height: 25px;
+  display: block;
+}
+
+.waitingglyph {
+  transform-origin: 50% 55%;
+}
+
+.dvspin {
+  animation: 2s linear infinite deferredspin;
+}
+
+.finishedglyph {
+  font-size: 1.3em;
+}
+/*# sourceMappingURL=host.4f27327a.css.map */

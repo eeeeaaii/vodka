@@ -1,0 +1,101 @@
+.codelist.exploded {
+  border-style: solid;
+  border-width: 1px 4px;
+  border-color: var(--unselected-border);
+  border-radius: 6px;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 5px 2px 5px 0;
+  display: flex;
+}
+
+.codelist.exploded.selected, .codelist.exploded.newselected {
+  border-color: var(--selected-border);
+}
+
+.codelist.exploded > .nex.exploded {
+  margin: 0 0 0 2px;
+}
+
+.codelist.exploded.vdir {
+  border-width: 4px 1px;
+  flex-direction: column;
+  padding: 0 5px 2px;
+}
+
+.codelist.exploded.vdir > .nex.exploded {
+  margin: 2px 21px;
+}
+
+.codespan {
+  display: none;
+}
+
+.codespan.exploded {
+  color: var(--info-text);
+  background-color: var(--unselected-border);
+  border: 0;
+  border-radius: 0 6px 6px 0;
+  flex-direction: row;
+  align-items: center;
+  margin: 0;
+  padding: 3px 7px 4px 5px;
+  font-family: Courier;
+  font-size: .95em;
+  font-style: italic;
+  display: flex;
+  position: relative;
+}
+
+.codespan.exploded.editing {
+  background-color: var(--editing-background);
+  font-weight: bold;
+}
+
+.codelist.exploded.vdir > .codespan {
+  border-radius: 0 0 6px 6px;
+  margin: 0 0 2px;
+}
+
+.codespan.exploded + .data.exploded {
+  margin-left: 5px;
+}
+
+.selected > .codespan, .newselected > .codespan {
+  background-color: var(--selected-border);
+}
+
+.innercodespan {
+  display: none;
+}
+
+.innercodespan.exploded {
+  color: var(--info-text);
+  background-color: var(--unselected-border);
+  border: 0;
+  border-radius: 0 0 6px 6px;
+  flex-direction: row;
+  align-items: center;
+  margin: -5px 3px 2px;
+  padding: 3px 7px 4px 5px;
+  font-family: Courier;
+  font-size: 15px;
+  font-style: italic;
+  display: flex;
+  position: relative;
+}
+
+.codelist.exploded.vdir > .innercodespan {
+  border-radius: 0 6px 6px 0;
+  margin: 0 2px 0 -5px;
+}
+
+.innercodespan.exploded.editing {
+  background-color: var(--editing-background);
+  font-weight: bold;
+}
+
+.selected > .innercodespan, .newselected > .innercodespan {
+  background-color: var(--selected-border);
+}
+/*# sourceMappingURL=host.4b41647e.css.map */

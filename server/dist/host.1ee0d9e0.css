@@ -1,0 +1,109 @@
+.cursorblink {
+  animation: 1.25s linear infinite blink;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  51% {
+    opacity: 0;
+  }
+
+  99% {
+    opacity: 0;
+  }
+}
+
+.faintcursorblink {
+  animation: 2s linear infinite faintblink;
+}
+
+@keyframes faintblink {
+  0% {
+    opacity: .33;
+  }
+
+  50% {
+    opacity: .33;
+  }
+
+  51% {
+    opacity: 0;
+  }
+
+  99% {
+    opacity: 0;
+  }
+}
+
+.squareblink {
+  animation: 2s linear infinite sblink;
+}
+
+@keyframes sblink {
+  0% {
+    border: 2px dotted #f77;
+  }
+
+  50% {
+    border: 2px dashed #f77;
+  }
+}
+
+.faintsquareblink {
+  animation: 2s linear infinite fsblink;
+}
+
+@keyframes fsblink {
+  0% {
+    border: 2px dotted #f77;
+  }
+
+  50% {
+    border: 2px dashed #f77;
+  }
+}
+
+.insertionpip {
+  color: #f77;
+  align-self: flex-start;
+  width: 5px;
+  height: 6px;
+  padding: 0;
+  font-size: 1.2em;
+  line-height: .4;
+}
+
+.pipvparentindent {
+  margin-top: 3px;
+  margin-bottom: 3px;
+  margin-left: 25px;
+}
+
+.pipvparent {
+  margin-top: 3px;
+  margin-bottom: 3px;
+  margin-left: 4px;
+}
+
+.piphparent, .pipinhcontainer {
+  margin-left: 3px;
+  margin-right: 3px;
+}
+
+.pipparentusingeditor {
+  opacity: .33;
+}
+
+.insertionsquare {
+  border: 2px dotted #f77;
+  margin: 3px;
+  padding: 4px;
+}
+/*# sourceMappingURL=host.1ee0d9e0.css.map */
