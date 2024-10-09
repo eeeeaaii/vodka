@@ -50,6 +50,7 @@ const server = http.createServer((req, resp) => {
 		});
 });
 
+// The main request processing switch
 async function processRequest(req, resp) {
 	let parsedUrl = url.parse(req.url, true);
 	let query = parsedUrl.query;
@@ -172,8 +173,6 @@ async function processRequest(req, resp) {
 		}
 		serviceRequestForRegularFile(newSessionId, path, resp);
 		return;
-
-
 	}
 };
 
@@ -313,23 +312,22 @@ function setRemoteWebEnv() {
 	webenv_vars.isLocal = false;
 }
 
-function loadWebEnv(cb) {
-	fs.readFile('webenv.txt', function(err, data) {
-		if (!err || isFileNotFound(err)) {
-			let webenv = 'remote';
-			if (!err) {
-				webenv = String(data).trim();
-			}
-			if (webenv == 'local') {
-				setLocalWebEnv();
-			} else {
-				setRemoteWebEnv();
-			}
-			cb();
+async function loadWebEnv() {
+	const setWebEnv = (we) =>
+		(we === 'local')
+			? setLocalWebEnv()
+			: setRemoteWebEnv();
+	
+	try {
+		const data = await fsPromises.readFile('webenv.txt');
+		setWebEnv(String(data).trim());
+	} catch (err) {
+		if (isFileNotFound(err)) {
+			setWebEnv('remote');
 		} else {
-			console.log('cant start server because ' + err);			
+			console.log('cannot start server because ' + err);
 		}
-	});	
+	}
 }
 
 function isFileNotFound(error) {
@@ -656,10 +654,13 @@ function getHeadInjectData() {
 	return '';
 }
 
-loadWebEnv(function() {
-	server.listen(port, hostname, () => {
-	  console.log(`Server running at http://${hostname}:${port}/`);
-	});	
-})
-
-
+(async function() {
+	try {
+		await loadWebEnv();
+		server.listen(port, hostname, () => {
+			console.log(`Server running at http://${hostname}:${port}/`);
+		  });	
+	} catch (e) {
+		console.log('Could not start server');
+	}
+})();

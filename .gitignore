@@ -1,29 +1,12 @@
 .DS_STORE
-ACTUAL_LIVECODING_IDEAS.txt
 
 .parcel-cache/
+node_modules
 
 testing/____tmpfile.txt
-node_modules
-package-lock.json
-server/attic/*
-server/packages/cc*
-server/packages/poem*
-server/packages/perf*
-server/packages/ig*
-server/src/favicon.ico
-server/sounds/*
-server/localsounds/*
+server/sounds/other_licenses/
 server/sessions/*
-server/namedsessions/music
-server/namedsessions/poetry
-server/src/audiotesting/*
+server/namedsessions/eeeeaaii
 server/docs/*
 server/webenv.txt
-soundcreation
-server/src/package-lock.json
-server/src/.parcel-cache
-server/src/node_modules
-server/node_modules
-asm/emsdk
 

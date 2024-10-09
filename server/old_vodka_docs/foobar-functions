@@ -1,0 +1,1 @@
+v2:~(|package @foobar ~(|begin ~(_bind @a [word](_[letter]"a" [letter]"p" [letter]"p" [letter]"l" [letter]"e"_)_)|)|)
