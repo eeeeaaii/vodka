@@ -1,5 +1,8 @@
 .DS_STORE
 ACTUAL_LIVECODING_IDEAS.txt
+
+.parcel-cache/
+
 testing/____tmpfile.txt
 node_modules
 package-lock.json

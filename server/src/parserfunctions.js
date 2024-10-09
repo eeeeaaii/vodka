@@ -182,7 +182,7 @@ function makeInstanceAtom(instname, privatedata, taglist, nonmutable) {
 			t = constructNil();
 			break;
 		case 'wavetable':
-			t = constructWavetable(0);
+			t = constructWavetable(concatParserString(privatedata));
 			break;
 		case 'surface':
 			t = constructSurface(concatParserString(privatedata));
