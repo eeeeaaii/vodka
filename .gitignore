@@ -1,6 +1,5 @@
 .DS_STORE
 
-.parcel-cache/
 node_modules
 
 testing/____tmpfile.txt
@@ -10,3 +9,4 @@ server/namedsessions/eeeeaaii
 server/docs/*
 server/webenv.txt
 
+server/dist/

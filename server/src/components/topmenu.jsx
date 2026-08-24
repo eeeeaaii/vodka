@@ -1,4 +1,3 @@
-import React from 'react';
 import MenuButton from './menubutton.jsx'
 import { WELCOME, QUICK_REFERENCE, FULL_API_REFERENCE, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
 

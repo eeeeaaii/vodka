@@ -1,4 +1,3 @@
-import React from 'react';
 
 const MenuButton = ({text, onMenuButtonClick}) => {
     const handleClick = () => {

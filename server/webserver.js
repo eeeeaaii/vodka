@@ -208,6 +208,9 @@ async function serviceRequestForRegularFile(sessionId, path, resp) {
 	let isSessionDownload = false;
 	if (path.indexOf('/sounds') == 0) {
 		path = "." + path;
+	} else if (path.indexOf('/dist/') == 0) {
+		// the bundled client, written by build.sh
+		path = "." + path;
 	} else if (path.indexOf('/session/') == 0) {
 		path = path.substr(8);
 		path = './sessions/' + sessionId + path;
@@ -296,6 +299,8 @@ function getMimeTypeFromExt(fname) {
 			return 'audio/x-aiff';
 		case '.wasm':
 			return 'application/wasm';
+		case '.map':
+			return 'application/json';
 	}
 	return 'text/plain';
 }
