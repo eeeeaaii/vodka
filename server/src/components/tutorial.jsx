@@ -19,7 +19,11 @@ function reducer(state, action) {
         case 'go-to-page': {
             state.stack.push(action.page);
             state.pagesSeen[action.page] = true;
-            state.stackPosition++;
+            // Jump to the page we just pushed, which is the end of the stack --
+            // NOT stackPosition + 1. Those are only the same when you're already
+            // at the end. If you'd paged backwards, incrementing would land on
+            // the next page you'd already seen instead of the new one.
+            state.stackPosition = state.stack.length - 1;
             state.currentPage = state.stack[state.stackPosition];
             state.panelOpen = true;
             return {...state};
