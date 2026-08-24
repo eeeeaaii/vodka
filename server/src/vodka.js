@@ -62,7 +62,10 @@ import { BINDINGS } from './environment.js'
 import { rootManager } from './rootmanager.js'
 import { setAPIDocCategory } from './documentation.js'
 import { maybeKillSound } from './webaudio.js'
-import { setupMobile, doMobileKeyDown } from './mobile.js'
+// MOBILE WIP: mobile support is half-finished -- the control panel markup in
+// host.html is still commented out, so everything in mobile.js reaches for
+// elements that don't exist and throws. Disabled until that markup comes back.
+// import { setupMobile, doMobileKeyDown } from './mobile.js'
 
 import { getFeatureVector } from './featurevector.js'
 
@@ -247,14 +250,19 @@ function setup() {
 
 	eventQueue.initialize();
 
-	if (Utils.getQSVal('mobile')) {
-		setupMobile();
-	}
+	// MOBILE WIP: see note at the import above.
+	// if (Utils.getQSVal('mobile')) {
+	// 	setupMobile();
+	// }
 
 
+	// Note this object has to keep existing even with mobile off, because
+	// keydispatcher calls setExplodedState unconditionally when you toggle
+	// exploded mode.
 	keyDispatcher.setUiCallbackObject({
 		'setExplodedState': function(exploded) {
-			document.getElementById("mobile_esc").innerText = (exploded) ? 'explode' : 'contract'
+			// MOBILE WIP: see note at the import above.
+			// document.getElementById("mobile_esc").innerText = (exploded) ? 'explode' : 'contract'
 		}});
 
 	// testharness.js needs this
@@ -290,7 +298,9 @@ function setup() {
 		return true;
 	}
 	document.onkeydown = function(e) {
-		doMobileKeyDown(e);
+		// MOBILE WIP: see note at the import above. This ran before the line
+		// below, so when it threw it took the whole keystroke with it.
+		// doMobileKeyDown(e);
 		return doKeydownEvent(e);
 	}
 	let filenameFromQS = getFilenameFromQueryString();
