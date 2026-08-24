@@ -150,20 +150,47 @@ function parseReturnPayload(data, callback) {
 	try {
 		result = parse(data);
 	} catch (e) {
-		if (!Utils.isError(e)) {
-			result = constructFatalError(
-`PEG PARSER PERROR
+		result = describeParseFailure(e);
+	}
+	// Always call back, even on failure. This used to be able to throw on its
+	// way out of the catch block (see below), and because the callback never
+	// ran, anything waiting on a deferred value -- like the import builtin --
+	// would just spin forever with no indication of what went wrong.
+	callback(result);
+}
+
+// Turns whatever came out of parse() into a nex we can hand back.
+//
+// Not every failure is a PEG syntax error. Bugs inside the parser's own
+// support code throw ordinary TypeErrors, which have no .location, and the
+// old version of this assumed the PEG shape unconditionally -- so a real bug
+// got replaced by "Cannot read properties of undefined (reading 'start')",
+// hiding the thing you actually needed to see.
+function describeParseFailure(e) {
+	if (Utils.isError(e)) {
+		// already a vodka error, pass it along rather than losing it
+		return e;
+	}
+	if (e && e.location && e.location.start) {
+		let expected = (e.expected && e.expected[0] && e.expected[0].type)
+				? e.expected[0].type
+				: '(unknown)';
+		return constructFatalError(
+`PEG PARSER ERROR
 full error message follows:
 ${e.name}
 ${e.message}
 line: ${e.location.start.line}
 col: ${e.location.start.column}
 found: "${e.found}"
-expected: ${e.expected[0].type}
+expected: ${expected}
 ` + e);
-		}
 	}
-	callback(result);
+	return constructFatalError(
+`PARSER ERROR (not a syntax error -- this is probably a bug in vodka)
+${e && e.name}
+${e && e.message}
+${(e && e.stack) ? e.stack : ''}`);
 }
 
 function evaluatePackage(nex) {
