@@ -83,6 +83,10 @@ function createMathBuiltins() {
 			}
 			total += arg.getTypedValue();
 		}
+		// TODO(#264): this comes back mutable, because constructInteger/constructFloat
+		// produce mutable nexes and nothing strips that afterwards. Evaluating a bare
+		// integer gives you an immutable one, so + is inconsistent with it. True of
+		// every builtin that constructs its result, not just this one.
 		let r = foundFloat ? constructFloat(total) : constructInteger(total);
 		return r;
 	}
