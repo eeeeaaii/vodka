@@ -108,8 +108,21 @@ class ParamParser {
       if (s == "") return null;
     }
     let groups = s.match(/([a-zA-Z0-9_-]*[a-zA-Z0-9-])(.*)/);
-    let typeString = groups[2];
-    s = groups[1];
+    let typeString;
+    if (groups) {
+      typeString = groups[2];
+      s = groups[1];
+    } else {
+      // No identifier characters at all, so the whole token is a bare type code
+      // with no name. That's how a return value is declared: parseString() spots
+      // a leading type code and marks it with a backslash, so "#% lst()" means
+      // "returns an integer or float, takes a container called lst". Keep the
+      // backslash as the name, because parse() routes on it and lambda.js strips
+      // it back off when rebuilding the lambda's display text.
+      let isReturnValue = (s.charAt(0) == "\\");
+      typeString = isReturnValue ? s.substring(1) : s;
+      s = isReturnValue ? "\\" : "";
+    }
 
     let typeValidator = this.getTypeValidator(typeString);
     if (typeString == ",") {
