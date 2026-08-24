@@ -48,6 +48,9 @@ class ValueNex extends Nex {
 	}
 
 	evaluate(env) {
+		// TODO(#264): this is currently the ONLY thing in the codebase that makes
+		// an evaluation result immutable, which is why values come back immutable
+		// but builtin results don't.
 		let r = super.evaluate(env);
 		r.setMutable(false);
 		return r;

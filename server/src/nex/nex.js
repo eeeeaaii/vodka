@@ -143,6 +143,9 @@ class Nex {
 		return str;
 	}
 
+	// TODO(#264): dead code. This is overridden by 8 nex types to make them
+	// immutable after evaluation, but nothing calls it any more -- see the note
+	// in evaluatorinterface.js.
 	rootLevelPostEvaluationStep() {}
 
 	setOnNextRenderCallback(callback) {

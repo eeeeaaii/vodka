@@ -26,6 +26,13 @@ import { manipulator } from './manipulator.js'
 import { evaluateNexSafely } from './evaluator.js'
 
 
+// TODO(#264): this file used to call n.rootLevelPostEvaluationStep() in
+// evaluateAndReplace and evaluateAndKeep, which is what made root-level
+// evaluation results immutable. Those calls were removed in e6a7884 (May 2022)
+// alongside the expectations cleanup, seemingly by accident. As a result only
+// self-evaluating values come back immutable and builtin results stay mutable.
+// Decide whether to restore this before doing anything else with mutability.
+
 /**
  * This method is used for when you want to evaluate the Nex inside a RenderNode
  * and replace the RenderNode with the result of the computation.
