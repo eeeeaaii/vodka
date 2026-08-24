@@ -40,13 +40,17 @@ function evaluateNexSafely(nex, executionEnvironment, skipActivation /* TODO: re
 	try {
 		result = nex.evaluate(executionEnvironment);
 
-		// TODO(#265): isMutable is a method, so this is a function reference and
-		// always truthy -- the "Adaptive Mutation" page fires on every evaluation.
-		// The condition is probably also backwards: that page explains that
-		// evaluating a mutable object yields an immutable copy, so it should
-		// likely be nex.isMutable() && !result.isMutable().
+		// The "Adaptive Mutation" tutorial page explains that evaluating a mutable
+		// object gives you back an immutable copy, so only show it when that's
+		// actually what just happened. Note isMutable is a method -- this used to
+		// test the bare reference, which is always truthy, so the page fired on
+		// every single evaluation. See TODO(#264) elsewhere: builtin results are
+		// currently still mutable, which narrows when this can fire.
 		if (!doTutorial('evaluation')) {
-			if (result.isMutable) doTutorial('mutability');
+			if (result && nex.isMutable && result.isMutable
+					&& nex.isMutable() && !result.isMutable()) {
+				doTutorial('mutability');
+			}
 		}
 	} catch (e) {
 		if (Utils.isError(e)) {
