@@ -15,6 +15,13 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+/*
+The builtins call setAPIDocCategory() and documentBuiltin() as they are
+created, which is how the API reference gets populated. This file used to
+build the reference DOM directly; now it just hands the collected data to
+the help island, which renders it.
+*/
+
 let apiDocCategory = '';
 
 let docs = {};
@@ -34,90 +41,47 @@ function documentBuiltin(name, params, info) {
 	})
 }
 
-function makespacer(p) {
-	let line = document.createElement('p');
-	line.classList.add('infospacer');
-	p.appendChild(line);
-	return line;
-}
-
-function makeline(p, contents) {
-	let line = document.createElement('p');
-	line.classList.add('infoline');
-	line.innerText = contents;
-	p.appendChild(line);
-	return line;
-}
-
-function makeindentedline(p, contents, ishtml) {
-	let line = document.createElement('p');
-	line.classList.add('infoline');
-	line.classList.add('infoindent');
-	if (ishtml) {
-		line.innerHTML = contents;
-	} else {
-		line.innerText = contents;
-	}
-	p.appendChild(line);
-	return line;
-}
-
-function makebigline(p, contents) {
-	let line = document.createElement('p');
-	line.classList.add('infotitle');
-	line.innerText = contents;
-	p.appendChild(line);
-	return line;
-}
-
-function makehotkey(contents) {
-	let line = document.createElement('span');
-	line.classList.add('infohotkey');
-	line.innerText = contents;
-	return line;
-}
-
-function makebighotkey(contents) {
-	let line = document.createElement('span');
-	line.classList.add('infohotkey');
-	line.classList.add('infohotkeylarge');
-	line.innerText = contents;
-	return line;
-}
-
-function printTitle(p, text) {
-	makebigline(p, text);
-	makespacer(p);
-}
-
-function printItem(p, item) {
-	let line = makeline(p, '')
-	line.prepend(makebighotkey(item.name))
-	if (item.params.length > 0) {
-		let l2 = makeindentedline(p, 'args: ')
-		for(let i = 0; i < item.params.length; i++) {
-			l2.appendChild(makehotkey(item.params[i]))
-		}		
-	}
-	let info = '' + item.info;
-	info = info.replace(/\|([a-zA-Z_]+) /g, "<span class=\"infohotkey\">$1</span>")
-	info = info.replace(/\|([a-zA-Z_]+)/g, "<span class=\"infohotkey\">$1</span>")
-	makeindentedline(p, info, true);
-	makespacer(p);
-	makespacer(p);
-}
-
-function writeDocs() {
-	let div = document.getElementById('fullapireference');
-	for (let j = 0; j < docorder.length; j++) {
-		let key = docorder[j];
-		printTitle(div, key);
-		let list = docs[key];
-		for (let i = 0 ; i < list.length ; i++) {
-			printItem(div, list[i]);
+// Doc strings mark up hotkeys/argument names by prefixing them with a pipe,
+// e.g. "returns the |car of the list". Rather than splice HTML together, we
+// hand back a list of {isHotkey, text} pieces for the renderer to deal with.
+function parseInfoString(info) {
+	let pieces = [];
+	let str = '' + info;
+	let re = /\|([a-zA-Z_]+)/g;
+	let lastIndex = 0;
+	let m;
+	while ((m = re.exec(str)) !== null) {
+		if (m.index > lastIndex) {
+			pieces.push({ isHotkey: false, text: str.substring(lastIndex, m.index) });
+		}
+		pieces.push({ isHotkey: true, text: m[1] });
+		lastIndex = m.index + m[0].length;
+		// the original swallowed a single trailing space after the hotkey
+		if (str[lastIndex] == ' ') {
+			lastIndex++;
 		}
 	}
+	if (lastIndex < str.length) {
+		pieces.push({ isHotkey: false, text: str.substring(lastIndex) });
+	}
+	return pieces;
 }
 
+// Returns the whole API reference as data, in the order the categories were
+// declared: [ { category, items: [ { name, params, infoPieces } ] } ]
+function getDocs() {
+	return docorder.map(function(category) {
+		return {
+			category: category,
+			items: docs[category].map(function(item) {
+				return {
+					name: item.name,
+					params: item.params,
+					infoPieces: parseInfoString(item.info)
+				};
+			})
+		};
+	});
+}
 
-export { setAPIDocCategory, documentBuiltin, writeDocs }
+export { setAPIDocCategory, documentBuiltin, getDocs }

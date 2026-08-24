@@ -1,4 +1,4 @@
-import React, { useState, useReducer } from 'react';
+import { useReducer, useEffect, useRef } from 'preact/hooks';
 
 import { tutorialContent } from './tutorial_content';
 
@@ -51,12 +51,26 @@ const Tutorial = ({onEndTutorial}) => {
         panelOpen: true,
     }); // I could pass a third argument that inits the state.
 
+    // The engine calls doTutorial() as the user does things; that arrives here.
+    // Returns whether we actually showed a page, because some callers use that
+    // to decide whether to offer a follow-up page.
+    // seen is a ref, not state, because the callback registered below is held
+    // by non-React code and would otherwise close over a stale copy.
+    const seen = useRef(state.pagesSeen);
     const tutorialCallback = (page) => {
-        if (!state.pagesSeen[page]) {
-            dispatch({ type: 'go-to-page', page })
+        if (seen.current[page]) {
+            return false;
         }
+        seen.current[page] = true;
+        dispatch({ type: 'go-to-page', page });
+        return true;
     }
-    startReactTutorial(tutorialCallback);
+
+    // Registering is a side effect, so it belongs in an effect rather than in
+    // the render body, and it needs to be torn down if this unmounts.
+    useEffect(() => {
+        startReactTutorial(tutorialCallback);
+    }, []);
 
     let canGoBack = state.stackPosition > 0;
     let canGoForward = state.stackPosition < state.stack.length - 1;

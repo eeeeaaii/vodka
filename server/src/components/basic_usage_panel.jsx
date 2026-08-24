@@ -1,4 +1,11 @@
-import React from 'react';
+import * as Utils from '../utils.js';
+
+// This used to be done after the fact by macSubst() in vodka.js, walking the
+// DOM and rewriting these labels. That can't work now that the panel renders
+// later than app setup, so the labels are just computed up front.
+const OPTION_KEY = Utils.isMac() ? 'option' : 'ctrl';
+const META_KEY = Utils.isMac() ? 'cmd' : 'ctrl';
+
 
 const BasicUsagePanel = () => {
     return (
@@ -45,10 +52,10 @@ const BasicUsagePanel = () => {
         <p className="infoline"><span className="infohotkey">tab</span>"go in" -- select first child of selected container (just moves insertion pip if container is empty)</p>
         <p className="infoline"><span className="infohotkey">shift-tab</span>"come out" -- select parent of selected object</p>
         <p className="infospacer"></p>
-        <p className="infoline"><span className="infohotkey"><span className="optionkey">option</span>-leftarrow</span>or <span className="infohotkey"><span className="optionkey">option</span>-uparrow</span>move the insertion pip to before the currently selected object</p>
-        <p className="infoline"><span className="infohotkey"><span className="optionkey">option</span>-rightarrow</span>or <span className="infohotkey"><span className="optionkey">option</span>-downarrow</span>move the insertion pip to after the currently selected object</p>
-        <p className="infoline"><span className="infohotkey"><span className="optionkey">option</span>-tab</span>move the insertion pip inside the currently selected container</p>
-        <p className="infoline"><span className="infohotkey"><span className="optionkey">option</span>-shift-tab</span>set the insertion pip to be a rectangle enclosing the currently selected object (only containers can be inserted this way)</p>
+        <p className="infoline"><span className="infohotkey"><span className="optionkey">{OPTION_KEY}</span>-leftarrow</span>or <span className="infohotkey"><span className="optionkey">{OPTION_KEY}</span>-uparrow</span>move the insertion pip to before the currently selected object</p>
+        <p className="infoline"><span className="infohotkey"><span className="optionkey">{OPTION_KEY}</span>-rightarrow</span>or <span className="infohotkey"><span className="optionkey">{OPTION_KEY}</span>-downarrow</span>move the insertion pip to after the currently selected object</p>
+        <p className="infoline"><span className="infohotkey"><span className="optionkey">{OPTION_KEY}</span>-tab</span>move the insertion pip inside the currently selected container</p>
+        <p className="infoline"><span className="infohotkey"><span className="optionkey">{OPTION_KEY}</span>-shift-tab</span>set the insertion pip to be a rectangle enclosing the currently selected object (only containers can be inserted this way)</p>
         <p className="infospacer"></p>
         <p className="infoline">
             <span className="infohotkey">)</span>
@@ -73,21 +80,21 @@ const BasicUsagePanel = () => {
         <p className="infoline"><span className="infohotkey">shift-escape</span>toggle exploded/normal modes for entire document</p>
         <p className="infoline"><span className="infohotkey">shift-alt-escape</span>toggle exploded/normal modes for selected object (and its children)</p>
         <p className="infospacer"></p>
-        <p className="infoline"><span className="infohotkey"><span className="optionkey">option</span>-shift</span>and any of&nbsp;<span className="infohotkey">{'~&*^({[<'}</span>wrap-inserts the specified container around the currently selected object</p>
+        <p className="infoline"><span className="infohotkey"><span className="optionkey">{OPTION_KEY}</span>-shift</span>and any of&nbsp;<span className="infohotkey">{'~&*^({[<'}</span>wrap-inserts the specified container around the currently selected object</p>
         <p className="infospacer"></p>
-        <p className="infoline"><span className="infohotkey"><span className="metakey">cmd</span>-c</span>copy</p>
-        <p className="infoline"><span className="infohotkey"><span className="metakey">cmd</span>-x</span>cut</p>
-        <p className="infoline"><span className="infohotkey"><span className="metakey">cmd</span>-v</span>paste</p>
-        <p className="infoline"><span className="infohotkey"><span className="metakey">cmd</span>-z</span>undo</p>
-        <p className="infoline"><span className="infohotkey"><span className="metakey">cmd</span>-z</span>redo</p>
-        <p className="infoline"><span className="infohotkey"><span className="metakey">cmd</span>-s</span>save</p>
+        <p className="infoline"><span className="infohotkey"><span className="metakey">{META_KEY}</span>-c</span>copy</p>
+        <p className="infoline"><span className="infohotkey"><span className="metakey">{META_KEY}</span>-x</span>cut</p>
+        <p className="infoline"><span className="infohotkey"><span className="metakey">{META_KEY}</span>-v</span>paste</p>
+        <p className="infoline"><span className="infohotkey"><span className="metakey">{META_KEY}</span>-z</span>undo</p>
+        <p className="infoline"><span className="infohotkey"><span className="metakey">{META_KEY}</span>-z</span>redo</p>
+        <p className="infoline"><span className="infohotkey"><span className="metakey">{META_KEY}</span>-s</span>save</p>
         <p className="infospacer"></p>
         <p className="infosubheader">In command or symbol editor:</p>
         <p className="infoline"><span className="infohotkey">enter</span>leave edit mode</p>
         <p className="infoline"><span className="infohotkey">escape</span>abort editing and restore previous value</p>
         <p className="infoline">Any of <span className="infohotkey">a-zA-Z0-9:-_&lt;&gt;=+-/*</span>can be used in names of commands or symbols.</p>
         <p className="infoline"><span className="infohotkey">delete</span>deletes previous character</p>
-        <p className="infoline"><span className="infohotkey"><span className="optionkey">option</span>-space</span>autocomplete</p>
+        <p className="infoline"><span className="infohotkey"><span className="optionkey">{OPTION_KEY}</span>-space</span>autocomplete</p>
         <p className="infospacer"></p>
         <p className="infosubheader">In lambda editor:</p>
         <p className="infoline"><span className="infohotkey">enter</span>leave edit mode</p>

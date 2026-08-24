@@ -1,17 +1,9 @@
 {
   "name": "src",
   "version": "1.0.0",
-  "description": "",
-  "main": "actions.js",
-  "directories": {
-    "test": "tests"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "description": "The vodka client. Plain ES modules, bundled by ../build.sh.",
+  "type": "module",
+  "main": "vodkastart.js",
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "tone": "^14.7.77"
-  }
+  "license": "ISC"
 }

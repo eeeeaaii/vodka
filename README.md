@@ -40,8 +40,12 @@ You can play around with Vodka right now by going to [vodka.church](http://vodka
 If you install Vodka locally, you can make changes or use your own audio samples. To do that:
 
 1. Clone this repo.
-2. In a terminal, cd into the "server" directory and execute the script `runserver.sh`.
-3. In a webserver, navigate to `http://localhost:3000`
+2. In a terminal, run `npm install`.
+3. Run `./run.sh` from the top of the repo. This builds the client and starts the server.
+4. In a browser, navigate to `http://localhost:3000`
+
+If you want the session sharing links to point at your own machine rather than at
+vodka.church, also create a file `server/webenv.txt` containing the single word `local`.
 
 ## Documentation
 

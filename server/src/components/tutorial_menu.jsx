@@ -1,4 +1,3 @@
-import React from 'react';
 import MenuButton from './menubutton.jsx'
 
 const TutorialMenu = ({onForward, onBack, onClose, onEnd}) => {

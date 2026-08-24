@@ -1,6 +1,11 @@
-import React from 'react';
+import { systemState } from '../systemstate.js';
+import { buildURL } from '../help';
+
 
 const WelcomePanel = () => {
+    const sessionId = systemState.getSessionId();
+    const oppositeTheme = (window.CSS_THEME == 'dark' ? 'light' : 'dark');
+
     return (
 
         <div className="infopanel">
@@ -15,16 +20,14 @@ const WelcomePanel = () => {
         <p className="infospacer"></p>
         <p className="infoline">There are also help pages and a tutorial/walkthrough accessible by the links above.</p>
         <p className="infospacer"></p>
-        <p className="infoline">Your session ID is <span id="sessionid">1234</span>.</p>
+        <p className="infoline">Your session ID is <span id="sessionid">{sessionId}</span>.</p>
         <p className="infoline">All data you save via the (_save_) and (_save-file_) builtins is sandboxed to this session.</p>
-        <p className="infoline">You can access this session again with <a id="sessionlink" href="">this link</a>.</p>
-        <p className="infoline">You can leave this session and start a whole new session with <a id="newsessionlink" href="">this link</a>.</p>
-        <p className="infoline">You can create an exact copy of this session (with all the same saved files) with <a id="copysessionlink" href="">this link</a>.</p>
-        <p className="infoline">You can create a read-only copy of this session (e.g. for sharing on social media) with <a id="sharesessionlink" href="">this link</a>.</p>
+        <p className="infoline">You can access this session again with <a id="sessionlink" href={buildURL({ "sessionId": sessionId })}>this link</a>.</p>
+        <p className="infoline">You can leave this session and start a whole new session with <a id="newsessionlink" href={buildURL({ "sessionId": null, "new": 1 })}>this link</a>.</p>
+        <p className="infoline">You can create an exact copy of this session (with all the same saved files) with <a id="copysessionlink" href={buildURL({ "sessionId": null, "copy": 1 })}>this link</a>.</p>
+        <p className="infoline">You can create a read-only copy of this session (e.g. for sharing on social media) with <a id="sharesessionlink" href={buildURL({ "sessionId": null, "copy": 1, "type": "readonly" })}>this link</a>.</p>
         <p className="infoline">To have a file load and be evaluated in normal mode at startup when a session link is visited, name the file "start-doc".</p>
-        <p className="infoline">To switch to <script>
-            document.write(CSS_THEME == 'dark' ? 'light' : 'dark');
-        </script> theme, click <a id="switchthemelink" href="">here</a></p>
+        <p className="infoline">To switch to {oppositeTheme} theme, click <a id="switchthemelink" href={buildURL({ "theme": oppositeTheme })}>here</a></p>
 
 
         <p className="infospacer"></p>

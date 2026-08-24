@@ -1,5 +1,5 @@
 // App.js
-import React, { useState } from 'react';
+import { useState, useEffect } from 'preact/hooks';
 import TopMenu from './topmenu.jsx'
 import BasicUsagePanel from './basic_usage_panel';
 import ApiReferencePanel from './api_reference_panel';
@@ -7,7 +7,11 @@ import WelcomePanel from './welcome_panel';
 import AccessButton from './access_button';
 import Tutorial from './tutorial';
 
-import { endReactTutorial } from '../help';
+import { systemState } from '../systemstate.js';
+import {
+    endReactTutorial, getInitialHelpState, markVisited,
+    HELP_HIDDEN, HELP_OPEN
+} from '../help';
 
 
 import { WELCOME, QUICK_REFERENCE, FULL_API_REFERENCE, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
@@ -15,14 +19,37 @@ import { WELCOME, QUICK_REFERENCE, FULL_API_REFERENCE, START_TUTORIAL, CLOSE_HEL
 const MINIMIZED = 0;
 const SHOWING_PANELS = 1;
 const SHOWING_TUTORIAL = 2;
+// No panel and no button at all. This is what the test harness gets (via the
+// NO_SPLASH experiment) and what users who opted out of the button get.
+const HIDDEN = 3;
 
 const WELCOME_PANEL = 0;
 const BASIC_USAGE_PANEL = 1;
 const API_REFERENCE_PANEL = 2;
 
+function initialUiState() {
+    switch (getInitialHelpState()) {
+        case HELP_HIDDEN: return HIDDEN;
+        case HELP_OPEN: return SHOWING_PANELS;
+        default: return MINIMIZED;
+    }
+}
+
 const App = () => {
-    let [ uiState, setUiState ] = useState(MINIMIZED);
+    let [ uiState, setUiState ] = useState(initialUiState);
     let [ panel, setPanel ] = useState(WELCOME_PANEL);
+
+    // While the help panel is up, keystrokes belong to the panel, not to the
+    // editor underneath it -- otherwise typing scrolls/inserts nexes behind
+    // the panel. The tutorial is the exception: the whole point of it is that
+    // you keep driving the editor while it's open.
+    useEffect(() => {
+        systemState.setKeyFunnelActive(uiState != SHOWING_PANELS);
+    }, [uiState]);
+
+    useEffect(() => {
+        markVisited();
+    }, []);
 
     const handleMenuChange = (menuChoice) => {
         switch(menuChoice) {
@@ -67,6 +94,8 @@ const App = () => {
             {
                 (() => {
                     switch(uiState) {
+                        case HIDDEN:
+                            return <></>;
                         case MINIMIZED:
                             return (
                             <AccessButton text="Help" onButtonClick={() => {

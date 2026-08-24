@@ -60,10 +60,9 @@ import {
 import { evaluateNexSafely } from './evaluator.js'
 import { BINDINGS } from './environment.js'
 import { rootManager } from './rootmanager.js'
-import { setAPIDocCategory, writeDocs } from './documentation.js'
+import { setAPIDocCategory } from './documentation.js'
 import { maybeKillSound } from './webaudio.js'
 import { setupMobile, doMobileKeyDown } from './mobile.js'
-import { setupHelp } from './help.js'
 
 import { getFeatureVector } from './featurevector.js'
 
@@ -228,19 +227,6 @@ function replSetup() {
 	setNextNexId(1000);
 }
 
-function macSubst() {
-	if (!Utils.isMac()) {
-		let opts = document.getElementsByClassName('optionkey');
-		for (let i = 0; i < opts.length; i++) {
-			opts[i].textContent = 'ctrl';
-		}		
-		let metas = document.getElementsByClassName('metakey');
-		for (let i = 0; i < metas.length; i++) {
-			metas[i].textContent = 'ctrl';
-		}		
-	}
-}
-
 
 function doKeydownEvent(e) {
 	possiblyRecordAction(e, 'down');
@@ -258,12 +244,6 @@ function setup() {
 	setAppFlags();
 	// do session id before doing help
 	setOrCreateSessionId();
-	macSubst();
-
- 
-// this replaced by react
-//	setupHelp();
-
 
 	eventQueue.initialize();
 
@@ -281,11 +261,6 @@ function setup() {
 	window.doKeyInput = doKeyInput;
 	window.runTest = runTest;
 	createBuiltins();
-
-
-// this also replaced by react
-//	writeDocs();
-
 
 
 	// because of https://github.com/eeeeaaii/vodka/issues/29

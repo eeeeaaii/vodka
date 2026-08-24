@@ -5,13 +5,14 @@
   "main": "index.js",
   "dependencies": {
     "glob": "^10.3.10",
-    "parcel": "^2.12.0",
     "pegjs": "^0.11.0-master.b7b87ea",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "preact": "^10.29.8",
     "uuid": "^9.0.1"
   },
   "scripts": {
+    "build": "cd server && ./build.sh",
+    "build:dev": "cd server && ./build.sh --dev",
+    "watch": "cd server && ./build.sh --watch",
     "runserver": "cd server && ./runserver.sh",
     "createparser": "cd src && ./createparser.sh",
     "runtests": "cd testing && ./runtests.sh"
@@ -25,5 +26,8 @@
   "bugs": {
     "url": "https://github.com/eeeeaarr/vodka/issues"
   },
-  "homepage": "https://github.com/eeeeaarr/vodka#readme"
+  "homepage": "https://github.com/eeeeaarr/vodka#readme",
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
 }
