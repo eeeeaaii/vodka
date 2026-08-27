@@ -5,6 +5,7 @@ import BasicUsagePanel from './basic_usage_panel';
 import ApiReferencePanel from './api_reference_panel';
 import WelcomePanel from './welcome_panel';
 import AccessButton from './access_button';
+import StatusNav from './status_nav';
 import Tutorial from './tutorial';
 
 import { systemState } from '../systemstate.js';
@@ -103,6 +104,7 @@ const App = () => {
 
     return (
         <div>
+            <StatusNav/>
             {
                 (() => {
                     switch(uiState) {

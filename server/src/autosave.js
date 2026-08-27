@@ -215,6 +215,10 @@ function installUnloadFlush(rootNode) {
 	});
 }
 
+function hasPendingSave() {
+	return !!pendingSave;
+}
+
 function clearAutosave() {
 	try {
 		window.localStorage.removeItem(storageKey());
@@ -223,4 +227,4 @@ function clearAutosave() {
 	}
 }
 
-export { scheduleAutosave, restoreAutosave, enableAutosave, clearAutosave, saveNow, installUnloadFlush }
+export { scheduleAutosave, restoreAutosave, enableAutosave, clearAutosave, saveNow, installUnloadFlush, hasPendingSave }

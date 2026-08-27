@@ -275,6 +275,19 @@ function startAuditioningBuffer(buffer, nex) {
 	thingAuditioning = nex;
 }
 
+function isAnySoundPlaying() {
+	if (auditioningPlayer) return true;
+	for (let i = 0; i < channelPlayers.length; i++) {
+		if (channelPlayers[i]) return true;
+	}
+	return false;
+}
+
+function stopAllSound() {
+	maybeKillSound();
+	abortPlayback(-1);
+}
+
 function maybeKillSound() {
 	if (thingAuditioning) {
 		thingAuditioning.stopAuditioningWave();
@@ -300,5 +313,5 @@ async function getFileAsBuffer(filepath) {
 }
 
 
-export { getAudioBufferFromData, loadSample, maybeKillSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { getAudioBufferFromData, loadSample, maybeKillSound, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 
