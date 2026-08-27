@@ -20,8 +20,34 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 
 eventQueue.initialize();
 
+// Looked up in a table rather than assembled into an eval string. A bundler
+// can't see a name built at runtime, so with eval the TEST_ functions below
+// had no visible callers and esbuild stripped every one of them out -- the
+// tests all died with "TEST_<name> is not defined" against a bundle that
+// genuinely didn't contain them. Referencing them here keeps them alive.
+function getTests() {
+	return {
+		'eventqueue_events_alertanimation': TEST_eventqueue_events_alertanimation,
+		'eventqueue_events_doclickhandleraction': TEST_eventqueue_events_doclickhandleraction,
+		'eventqueue_events_dokeyinput': TEST_eventqueue_events_dokeyinput,
+		'eventqueue_events_gc': TEST_eventqueue_events_gc,
+		'eventqueue_events_renderonlydirty': TEST_eventqueue_events_renderonlydirty,
+		'eventqueue_events_toplevelrender': TEST_eventqueue_events_toplevelrender,
+		'eventqueue_events_importanttoplevelrender': TEST_eventqueue_events_importanttoplevelrender,
+		'eventqueue_priority_inverseordering': TEST_eventqueue_priority_inverseordering,
+		'eventqueue_priority_addedwhiledequeueing': TEST_eventqueue_priority_addedwhiledequeueing,
+		'eventqueue_priority_inverseordering2': TEST_eventqueue_priority_inverseordering2,
+		'eventqueue_priority_normalandimportantrender': TEST_eventqueue_priority_normalandimportantrender,
+		'eventqueue_deduping': TEST_eventqueue_deduping,
+	};
+}
+
 export function runTest(testname) {
-	eval('TEST_' + testname + '();');
+	let test = getTests()[testname];
+	if (!test) {
+		throw new Error('no such unit test: ' + testname);
+	}
+	test();
 }
 
 function assertEqual(a, b) {
