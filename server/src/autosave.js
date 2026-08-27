@@ -41,6 +41,7 @@ import { systemState } from './systemstate.js'
 import { parse } from './nexparser2.js'
 import { setSerializeAudioData } from './nex/wavetable.js'
 import * as audioStore from './audiostore.js'
+import { saveEditorState } from './editorstate.js'
 
 const KEY_PREFIX = 'vodka.autosave.';
 const FORMAT_VERSION = 1;
@@ -113,6 +114,7 @@ function saveNow(rootNode) {
 	// out of what we just wrote is the cheapest way to know exactly what
 	// survived, and can't drift from it.
 	audioStore.pruneToKeys(collectAudioRefs(docs));
+	saveEditorState();
 }
 
 const AUDIO_REF_RE = /idb:([0-9a-f]+-[0-9a-f]+)/g;
@@ -203,6 +205,9 @@ function enableAutosave() {
  */
 function installUnloadFlush(rootNode) {
 	window.addEventListener('beforeunload', function() {
+		// zoom doesn't go through the action system, so this is the only place
+		// it reliably gets written
+		saveEditorState();
 		if (!pendingSave) return;
 		clearTimeout(pendingSave);
 		pendingSave = null;

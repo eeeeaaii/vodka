@@ -71,6 +71,7 @@ import { maybeKillSound } from './webaudio.js'
 
 import { getFeatureVector } from './featurevector.js'
 import { restoreAutosave, enableAutosave, installUnloadFlush } from './autosave.js'
+import { saveEditorState, restoreEditorState } from './editorstate.js'
 import * as audioStore from './audiostore.js'
 
 
@@ -275,6 +276,7 @@ async function setup() {
 
 	// after the session id, because records are namespaced by it
 	await audioStore.loadAll();
+	restoreEditorState();
 
 	eventQueue.initialize();
 

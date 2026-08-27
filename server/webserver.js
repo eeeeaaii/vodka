@@ -63,18 +63,31 @@ async function processRequest(req, resp) {
 	let parsedUrl = url.parse(req.url, true);
 	let query = parsedUrl.query;
 	let path = parsedUrl.path;
-	let isApi = (path == '/api');
+	// only the page itself gets redirected; assets must be served where asked
+	let isPageLoad = (parsedUrl.pathname == '/');
+	// pathname, not path: an api request now carries a query string
+	let isApi = (parsedUrl.pathname == '/api');
+
+	// keep whatever else was on the url -- flags, runfile, theme
+	function urlWithSession(sessionId) {
+		let params = new URLSearchParams(parsedUrl.query);
+		params.set('sessionId', sessionId);
+		return `http://${webenv_vars.redirectHostname}/?${params.toString()}`;
+	}
 
 	let sessionIdFromCookie = getSessionIdFromCookie(req);
 
 	if (isApi) {
-		if (!sessionIdFromCookie) {
-			sendResponse(resp, 401, 'text/html', "session cookie needed for API request.", 'ERROR');
+		// the cookie is the fallback for older clients; the session the tab is
+		// actually in comes on the request
+		let apiSessionId = query.sessionId || sessionIdFromCookie;
+		if (!apiSessionId) {
+			sendResponse(resp, 401, 'text/html', "no session id on API request.", 'ERROR');
 			return;
 		}
 		loadRequestBody(req, function(data) {
 			// need to do something with the promise or the method will exit early I guess?
-			serviceApiRequest(sessionIdFromCookie, resp, data)
+			serviceApiRequest(apiSessionId, resp, data)
 				.then(r => {
 					api_reqs++;
 					return;
@@ -87,7 +100,7 @@ async function processRequest(req, resp) {
 			sendResponse(resp, 401, 'text/html', 'could not create session');
 			return;
 		}
-		sendRedirect(resp, `http://${webenv_vars.redirectHostname}/?sessionId=${sessionId}`);
+		sendRedirect(resp, urlWithSession(sessionId));
 		return;
 
 
@@ -127,7 +140,7 @@ async function processRequest(req, resp) {
 			sendResponse(resp, 500, 'text/html', 'could not copy session files');
 			return;
 		}
-		sendRedirect(resp, `http://${webenv_vars.redirectHostname}/?sessionId=${newSessionId}`);
+		sendRedirect(resp, urlWithSession(newSessionId));
 		return;
 
 	} else if (query.sessionId) {
@@ -139,14 +152,12 @@ async function processRequest(req, resp) {
 		await serviceRequestForRegularFile(query.sessionId, path, resp);
 		return;
 
-	} else if (sessionIdFromCookie) {
+	} else if (sessionIdFromCookie && !isPageLoad) {
+		// assets only. A page load with no session in the URL gets a new
+		// session, so that opening a tab never lands you in an existing one --
+		// the URL is the only way back to a session.
 		let sessionId = sessionIdFromCookie;
 		let exists = await checkIfSessionExists(sessionId);
-		if (exists) {
-			// in the URL so it's bookmarkable, and so removing it asks for a new one
-			sendRedirect(resp, `http://${webenv_vars.redirectHostname}/?sessionId=${sessionId}`);
-			return;
-		}
 		if (!exists) {
 			// if the user sends an unknown session ID in the cookie, it could be that
 			// their session was deleted. Since users shouldn't be manually inserting
@@ -167,7 +178,11 @@ async function processRequest(req, resp) {
 			sendResponse(resp, 401, 'text/html', 'could not create session');
 			return;
 		}
-		sendRedirect(resp, `http://${webenv_vars.redirectHostname}/?sessionId=${newSessionId}`);
+		if (isPageLoad) {
+			sendRedirect(resp, urlWithSession(newSessionId));
+			return;
+		}
+		serviceRequestForRegularFile(newSessionId, path, resp);
 		return;
 	}
 };
