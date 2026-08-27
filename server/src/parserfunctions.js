@@ -182,7 +182,13 @@ function makeInstanceAtom(instname, privatedata, taglist, nonmutable) {
 			t = constructNil();
 			break;
 		case 'wavetable':
-			t = constructWavetable(concatParserString(privatedata));
+			// No size argument. constructWavetable's parameter is a sample
+			// count, and passing the serialized private data here meant
+			// new Float32Array("<base64 or reference>"), which is NaN samples,
+			// which is a zero-length buffer, which throws out of createBuffer
+			// before setPrivateData below ever gets to install the real data.
+			// Any saved wavetable failed to parse because of it.
+			t = constructWavetable();
 			break;
 		case 'surface':
 			t = constructSurface(concatParserString(privatedata));

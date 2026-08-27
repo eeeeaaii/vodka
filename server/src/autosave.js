@@ -27,9 +27,11 @@ Two things worth knowing about what gets stored:
     case where the root holds more than one thing, which doSave() clearly
     anticipates.
 
-  - Audio is not stored. A second of samples is about 250KB of base64, and the
-    whole localStorage budget is around 5MB, so wavetables are written out
-    silent and come back empty. Everything else round-trips.
+  - Audio doesn't go in localStorage. A second of samples is about 250KB of
+    base64 against a budget of around 5MB, so a wavetable serializes as a
+    reference and its samples go to IndexedDB instead -- see audiostore.js.
+    Where IndexedDB isn't available the old behaviour stands: wavetables come
+    back silent and everything else round-trips.
 
 Storage is keyed by session id, so two tabs on different sessions don't collide.
 Two tabs on the *same* session share one slot and the last writer wins.
@@ -38,6 +40,7 @@ Two tabs on the *same* session share one slot and the last writer wins.
 import { systemState } from './systemstate.js'
 import { parse } from './nexparser2.js'
 import { setSerializeAudioData } from './nex/wavetable.js'
+import * as audioStore from './audiostore.js'
 
 const KEY_PREFIX = 'vodka.autosave.';
 const FORMAT_VERSION = 1;
@@ -104,6 +107,26 @@ function saveNow(rootNode) {
 		sessionId: systemState.getSessionId() || null,
 		docs: docs
 	}));
+	// Samples the document no longer mentions are dead. Editing a wavetable
+	// gives its new contents a new hash, so without this every intermediate
+	// state of every sound would be kept forever. Reading the references back
+	// out of what we just wrote is the cheapest way to know exactly what
+	// survived, and can't drift from it.
+	audioStore.pruneToKeys(collectAudioRefs(docs));
+}
+
+const AUDIO_REF_RE = /idb:([0-9a-f]+-[0-9a-f]+)/g;
+
+function collectAudioRefs(docs) {
+	let keys = new Set();
+	for (let i = 0; i < docs.length; i++) {
+		let m;
+		AUDIO_REF_RE.lastIndex = 0;
+		while ((m = AUDIO_REF_RE.exec(docs[i])) !== null) {
+			keys.add(m[1]);
+		}
+	}
+	return keys;
 }
 
 /**
@@ -165,6 +188,28 @@ function enableAutosave() {
 	restored = true;
 }
 
+/**
+ * Writes a pending save immediately instead of waiting out the debounce.
+ *
+ * Without this, anything done in the last SAVE_DELAY_MS before a reload is
+ * simply gone -- which at 800ms is most of a second of work, and is exactly
+ * the window a person is in when they change something and reload to see what
+ * happened. beforeunload gives us a synchronous moment to spend, and
+ * localStorage is synchronous, so the pending write lands.
+ *
+ * Sample data is already in IndexedDB by this point: put() writes as soon as
+ * the samples are serialized rather than waiting for the debounce, so what's
+ * pending here is only the document itself.
+ */
+function installUnloadFlush(rootNode) {
+	window.addEventListener('beforeunload', function() {
+		if (!pendingSave) return;
+		clearTimeout(pendingSave);
+		pendingSave = null;
+		saveNow(rootNode);
+	});
+}
+
 function clearAutosave() {
 	try {
 		window.localStorage.removeItem(storageKey());
@@ -173,4 +218,4 @@ function clearAutosave() {
 	}
 }
 
-export { scheduleAutosave, restoreAutosave, enableAutosave, clearAutosave, saveNow }
+export { scheduleAutosave, restoreAutosave, enableAutosave, clearAutosave, saveNow, installUnloadFlush }

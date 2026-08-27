@@ -278,6 +278,8 @@ function runTestImpl(testinput, method, legacy, flags) {
 				window.legacyEnterBehaviorForTests = true;
 			})
 		}
+		// setup() is async, so network idle doesn't mean the app is ready
+		await page.waitForFunction(function() { return !!window.__vodkaReady; });
 		await drain(page);
 		if (method == 'direct' || method == 'direct-legacy') {
 //			await page.evaluate(function() {
