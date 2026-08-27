@@ -1694,11 +1694,21 @@ class Manipulator {
 	}
 
 	// used in keydispatcher.js
+	// Commands that already save the thing they contain. ctrl-s inside one of
+	// these should use it rather than wrapping it in a second save.
+	isSaveCommand(p) {
+		if (!Utils.isCommand(p)) {
+			return false;
+		}
+		let t = p.nex.getCommandText();
+		return t == 'save' || t == 'eval-and-save';
+	}
+
 	doSave() {
 		let p = this.selected();
 
 		while(!Utils.isRoot(p)) {
-			if (Utils.isCommand(p) && p.nex.getCommandText() == 'save') {
+			if (this.isSaveCommand(p)) {
 				return p;
 			}
 			p = p.getParent();
