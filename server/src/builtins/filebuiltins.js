@@ -56,6 +56,19 @@ import {
 } from '../servercommunication.js'
 
 
+// A listing entry is audio if it's a string ending in .wav. Anything else in a
+// bank folder (info.txt, a nested directory) is not something load-sample can use.
+function isWavFile(nex) {
+	if (!nex || Utils.isNexContainer(nex)) {
+		return false;
+	}
+	if (!nex.getFullTypedValue) {
+		return false;
+	}
+	let v = nex.getFullTypedValue();
+	return typeof v == 'string' && v.toLowerCase().endsWith('.wav');
+}
+
 function createFileBuiltins() {
 
 	Builtin.createBuiltin(
@@ -90,7 +103,32 @@ function createFileBuiltins() {
 				'list-audio', 
 				function(callback, deferredValue) {
 					listAudio(function(files) {
-						// turn files into an org or whatever
+						// The directory listing is generic: subdirectories come back
+						// as tagged orgs, loose files as plain strings. For audio we
+						// only care about the banks, and a stray file (the README,
+						// say) breaks callers that expect every item to be taggable.
+						// So drop non-containers, and flip each bank horizontal --
+						// one very tall column per bank reads badly.
+						if (files.numChildren) {
+							for (let i = files.numChildren() - 1; i >= 0; i--) {
+								let dir = files.getChildAt(i);
+								if (!Utils.isNexContainer(dir)) {
+									files.removeChildAt(i);
+									continue;
+								}
+								// Each bank also holds an info.txt naming the machine
+								// the samples came from. Keep only the audio, so a
+								// caller can map load-sample over a bank directly.
+								for (let j = dir.numChildren() - 1; j >= 0; j--) {
+									if (!isWavFile(dir.getChildAt(j))) {
+										dir.removeChildAt(j);
+									}
+								}
+								if (dir.setHorizontal) {
+									dir.setHorizontal();
+								}
+							}
+						}
 						callback(files);
 					})
 				}
