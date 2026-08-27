@@ -1,0 +1,898 @@
+[
+ {
+  "file": "Bank 1/chan-001.wav",
+  "window": "gapped-loop",
+  "facets": {
+   "instrument": [
+    {
+     "label": "a sine wave tone",
+     "z": 1.05
+    },
+    {
+     "label": "a kick drum",
+     "z": 0.5
+    }
+   ],
+   "material": [
+    {
+     "label": "membrane skin",
+     "z": 0.28
+    },
+    {
+     "label": "analog",
+     "z": 0.03
+    }
+   ],
+   "articulation": [
+    {
+     "label": "a pitch bend",
+     "z": 0.22
+    },
+    {
+     "label": "a rhythmic loop",
+     "z": 0.05
+    }
+   ],
+   "character": [
+    {
+     "label": "detuned",
+     "z": 0.3
+    },
+    {
+     "label": "boomy",
+     "z": -0.03
+    }
+   ],
+   "mood": [
+    {
+     "label": "chaotic",
+     "z": -0.46
+    },
+    {
+     "label": "organic",
+     "z": -0.56
+    }
+   ]
+  }
+ },
+ {
+  "file": "Bank 1/chan-002.wav",
+  "window": "gapped-loop",
+  "facets": {
+   "instrument": [
+    {
+     "label": "a rimshot",
+     "z": 2.56
+    },
+    {
+     "label": "a snare drum",
+     "z": 2.44
+    }
+   ],
+   "material": [
+    {
+     "label": "membrane skin",
+     "z": 1.65
+    },
+    {
+     "label": "wooden",
+     "z": -0.4
+    }
+   ],
+   "articulation": [
+    {
+     "label": "a swelling crescendo",
+     "z": 1.27
+    },
+    {
+     "label": "a sweeping filter",
+     "z": 1.08
+    }
+   ],
+   "character": [
+    {
+     "label": "lo-fi",
+     "z": 0.66
+    },
+    {
+     "label": "hi-fi",
+     "z": -0.23
+    }
+   ],
+   "mood": [
+    {
+     "label": "dreamy",
+     "z": -0.25
+    },
+    {
+     "label": "aggressive",
+     "z": -0.48
+    }
+   ]
+  }
+ },
+ {
+  "file": "Bank 1/chan-003.wav",
+  "window": "gapped-loop",
+  "facets": {
+   "instrument": [
+    {
+     "label": "a closed hi-hat",
+     "z": 2.04
+    },
+    {
+     "label": "a shaker",
+     "z": 2.03
+    }
+   ],
+   "material": [
+    {
+     "label": "vocal",
+     "z": 2.39
+    },
+    {
+     "label": "membrane skin",
+     "z": 0.89
+    }
+   ],
+   "articulation": [
+    {
+     "label": "a rhythmic loop",
+     "z": 2.74
+    },
+    {
+     "label": "a granular texture",
+     "z": 0.87
+    }
+   ],
+   "character": [
+    {
+     "label": "bright",
+     "z": 0.12
+    },
+    {
+     "label": "noisy",
+     "z": -0.46
+    }
+   ],
+   "mood": [
+    {
+     "label": "dreamy",
+     "z": 0.85
+    },
+    {
+     "label": "ambient",
+     "z": -0.1
+    }
+   ]
+  }
+ },
+ {
+  "file": "Bank 1/chan-004.wav",
+  "window": "gapped-loop",
+  "facets": {
+   "instrument": [
+    {
+     "label": "a ride cymbal",
+     "z": 2.38
+    },
+    {
+     "label": "a cowbell",
+     "z": 2.21
+    }
+   ],
+   "material": [
+    {
+     "label": "membrane skin",
+     "z": 1.03
+    },
+    {
+     "label": "vocal",
+     "z": 0.34
+    }
+   ],
+   "articulation": [
+    {
+     "label": "a rhythmic loop",
+     "z": 1.56
+    },
+    {
+     "label": "a granular texture",
+     "z": 1.29
+    }
+   ],
+   "character": [
+    {
+     "label": "warm",
+     "z": 0.73
+    },
+    {
+     "label": "bright",
+     "z": 0.57
+    }
+   ],
+   "mood": [
+    {
+     "label": "ambient",
+     "z": 0.55
+    },
+    {
+     "label": "dreamy",
+     "z": 0.41
+    }
+   ]
+  }
+ },
+ {
+  "file": "Bank 1/chan-005.wav",
+  "window": "gapped-loop",
+  "facets": {
+   "instrument": [
+    {
+     "label": "a crash cymbal",
+     "z": 2.63
+    },
+    {
+     "label": "a ride cymbal",
+     "z": 2.54
+    }
+   ],
+   "material": [
+    {
+     "label": "membrane skin",
+     "z": 1.84
+    },
+    {
+     "label": "vocal",
+     "z": 0.64
+    }
+   ],
+   "articulation": [
+    {
+     "label": "a granular texture",
+     "z": 1.95
+    },
+    {
+     "label": "a sweeping filter",
+     "z": 1.81
+    }
+   ],
+   "character": [
+    {
+     "label": "warm",
+     "z": 1.48
+    },
+    {
+     "label": "noisy",
+     "z": 0.87
+    }
+   ],
+   "mood": [
+    {
+     "label": "dreamy",
+     "z": 0.4
+    },
+    {
+     "label": "ambient",
+     "z": -0.06
+    }
+   ]
+  }
+ },
+ {
+  "file": "Bank 1/chan-006.wav",
+  "window": "gapped-loop",
+  "facets": {
+   "instrument": [
+    {
+     "label": "a bongo drum",
+     "z": 2.03
+    },
+    {
+     "label": "a conga drum",
+     "z": 1.92
+    }
+   ],
+   "material": [
+    {
+     "label": "wooden",
+     "z": 0.59
+    },
+    {
+     "label": "membrane skin",
+     "z": 0.55
+    }
+   ],
+   "articulation": [
+    {
+     "label": "a rhythmic loop",
+     "z": 0.23
+    },
+    {
+     "label": "a pitch bend",
+     "z": -0.32
+    }
+   ],
+   "character": [
+    {
+     "label": "boomy",
+     "z": 0.41
+    },
+    {
+     "label": "detuned",
+     "z": 0.39
+    }
+   ],
+   "mood": [
+    {
+     "label": "chaotic",
+     "z": -0.14
+    },
+    {
+     "label": "organic",
+     "z": -0.22
+    }
+   ]
+  }
+ },
+ {
+  "file": "Bank 1/chan-007.wav",
+  "window": "gapped-loop",
+  "facets": {
+   "instrument": [
+    {
+     "label": "a bongo drum",
+     "z": 2.32
+    },
+    {
+     "label": "a conga drum",
+     "z": 2.24
+    }
+   ],
+   "material": [
+    {
+     "label": "wooden",
+     "z": 0.95
+    },
+    {
+     "label": "membrane skin",
+     "z": 0.31
+    }
+   ],
+   "articulation": [
+    {
+     "label": "a sweeping filter",
+     "z": 1.01
+    },
+    {
+     "label": "a rhythmic loop",
+     "z": 0.4
+    }
+   ],
+   "character": [
+    {
+     "label": "crisp",
+     "z": 0.85
+    },
+    {
+     "label": "dry",
+     "z": 0.45
+    }
+   ],
+   "mood": [
+    {
+     "label": "organic",
+     "z": 0.08
+    },
+    {
+     "label": "mechanical",
+     "z": -0.08
+    }
+   ]
+  }
+ },
+ {
+  "file": "Bank 1/chan-008.wav",
+  "window": "gapped-loop",
+  "facets": {
+   "instrument": [
+    {
+     "label": "a kick drum",
+     "z": 1.25
+    },
+    {
+     "label": "a tom drum",
+     "z": 1.03
+    }
+   ],
+   "material": [
+    {
+     "label": "analog",
+     "z": 0.55
+    },
+    {
+     "label": "plastic",
+     "z": 0.41
+    }
+   ],
+   "articulation": [
+    {
+     "label": "a stuttering glitch",
+     "z": 1.1
+    },
+    {
+     "label": "a pitch bend",
+     "z": 0.9
+    }
+   ],
+   "character": [
+    {
+     "label": "muffled",
+     "z": 1.21
+    },
+    {
+     "label": "boomy",
+     "z": 0.77
+    }
+   ],
+   "mood": [
+    {
+     "label": "organic",
+     "z": 0.53
+    },
+    {
+     "label": "ambient",
+     "z": 0.5
+    }
+   ]
+  }
+ },
+ {
+  "file": "Bank 61/chan-001.wav",
+  "window": "gapped-loop",
+  "facets": {
+   "instrument": [
+    {
+     "label": "a drone",
+     "z": 2.21
+    },
+    {
+     "label": "a sound effect",
+     "z": 1.94
+    }
+   ],
+   "material": [
+    {
+     "label": "wooden",
+     "z": 1.5
+    },
+    {
+     "label": "electronic",
+     "z": 1.29
+    }
+   ],
+   "articulation": [
+    {
+     "label": "a pitch bend",
+     "z": 2.1
+    },
+    {
+     "label": "a decaying tail",
+     "z": 1.37
+    }
+   ],
+   "character": [
+    {
+     "label": "reverberant",
+     "z": 2.01
+    },
+    {
+     "label": "wobbly",
+     "z": 1.79
+    }
+   ],
+   "mood": [
+    {
+     "label": "ominous",
+     "z": 1.83
+    },
+    {
+     "label": "mechanical",
+     "z": 1.69
+    }
+   ]
+  }
+ },
+ {
+  "file": "Bank 61/chan-002.wav",
+  "window": "gapped-loop",
+  "facets": {
+   "instrument": [
+    {
+     "label": "a sound effect",
+     "z": 1.55
+    },
+    {
+     "label": "a drone",
+     "z": 1.55
+    }
+   ],
+   "material": [
+    {
+     "label": "wooden",
+     "z": 1.05
+    },
+    {
+     "label": "analog",
+     "z": 1.03
+    }
+   ],
+   "articulation": [
+    {
+     "label": "a bowed note",
+     "z": 1.56
+    },
+    {
+     "label": "a pitch bend",
+     "z": 1.47
+    }
+   ],
+   "character": [
+    {
+     "label": "muffled",
+     "z": 1.5
+    },
+    {
+     "label": "distorted",
+     "z": 1.49
+    }
+   ],
+   "mood": [
+    {
+     "label": "organic",
+     "z": 1.22
+    },
+    {
+     "label": "calm",
+     "z": 1.13
+    }
+   ]
+  }
+ },
+ {
+  "file": "Bank 61/chan-003.wav",
+  "window": "gapped-loop",
+  "facets": {
+   "instrument": [
+    {
+     "label": "a human voice",
+     "z": 1.8
+    },
+    {
+     "label": "a synthesizer bass",
+     "z": 1.23
+    }
+   ],
+   "material": [
+    {
+     "label": "vocal",
+     "z": 1.5
+    },
+    {
+     "label": "wooden",
+     "z": 0.54
+    }
+   ],
+   "articulation": [
+    {
+     "label": "a pitch bend",
+     "z": 1.44
+    },
+    {
+     "label": "a bowed note",
+     "z": 1.29
+    }
+   ],
+   "character": [
+    {
+     "label": "distorted",
+     "z": 1.83
+    },
+    {
+     "label": "wobbly",
+     "z": 1.76
+    }
+   ],
+   "mood": [
+    {
+     "label": "chaotic",
+     "z": 1.17
+    },
+    {
+     "label": "ominous",
+     "z": 1.02
+    }
+   ]
+  }
+ },
+ {
+  "file": "Bank 61/chan-004.wav",
+  "window": "gapped-loop",
+  "facets": {
+   "instrument": [
+    {
+     "label": "a vibraphone",
+     "z": 1.97
+    },
+    {
+     "label": "a pipe organ",
+     "z": 1.84
+    }
+   ],
+   "material": [
+    {
+     "label": "plastic",
+     "z": 1.71
+    },
+    {
+     "label": "digital",
+     "z": 1.58
+    }
+   ],
+   "articulation": [
+    {
+     "label": "a plucked note",
+     "z": 1.59
+    },
+    {
+     "label": "a struck note",
+     "z": 1.54
+    }
+   ],
+   "character": [
+    {
+     "label": "tonal",
+     "z": 1.7
+    },
+    {
+     "label": "soft",
+     "z": 1.61
+    }
+   ],
+   "mood": [
+    {
+     "label": "dreamy",
+     "z": 1.78
+    },
+    {
+     "label": "retro",
+     "z": 1.69
+    }
+   ]
+  }
+ },
+ {
+  "file": "Bank 61/chan-005.wav",
+  "window": "gapped-loop",
+  "facets": {
+   "instrument": [
+    {
+     "label": "a vibraphone",
+     "z": 1.94
+    },
+    {
+     "label": "a bell",
+     "z": 1.76
+    }
+   ],
+   "material": [
+    {
+     "label": "digital",
+     "z": 1.58
+    },
+    {
+     "label": "electronic",
+     "z": 1.42
+    }
+   ],
+   "articulation": [
+    {
+     "label": "a plucked note",
+     "z": 1.53
+    },
+    {
+     "label": "a decaying tail",
+     "z": 1.47
+    }
+   ],
+   "character": [
+    {
+     "label": "resonant",
+     "z": 1.51
+    },
+    {
+     "label": "tonal",
+     "z": 1.46
+    }
+   ],
+   "mood": [
+    {
+     "label": "aggressive",
+     "z": 1.37
+    },
+    {
+     "label": "ominous",
+     "z": 1.3
+    }
+   ]
+  }
+ },
+ {
+  "file": "Bank 61/chan-006.wav",
+  "window": "gapped-loop",
+  "facets": {
+   "instrument": [
+    {
+     "label": "a woodblock",
+     "z": 1.25
+    },
+    {
+     "label": "a sound effect",
+     "z": 1.15
+    }
+   ],
+   "material": [
+    {
+     "label": "analog",
+     "z": 1.19
+    },
+    {
+     "label": "wooden",
+     "z": 0.94
+    }
+   ],
+   "articulation": [
+    {
+     "label": "a short percussive hit",
+     "z": 0.8
+    },
+    {
+     "label": "a rhythmic loop",
+     "z": 0.39
+    }
+   ],
+   "character": [
+    {
+     "label": "dry",
+     "z": 2.22
+    },
+    {
+     "label": "punchy",
+     "z": 1.39
+    }
+   ],
+   "mood": [
+    {
+     "label": "organic",
+     "z": 1.74
+    },
+    {
+     "label": "mechanical",
+     "z": 1.02
+    }
+   ]
+  }
+ },
+ {
+  "file": "Bank 61/chan-007.wav",
+  "window": "gapped-loop",
+  "facets": {
+   "instrument": [
+    {
+     "label": "a string section",
+     "z": 1.12
+    },
+    {
+     "label": "a choir",
+     "z": 1.12
+    }
+   ],
+   "material": [
+    {
+     "label": "acoustic",
+     "z": 1.85
+    },
+    {
+     "label": "plastic",
+     "z": 1.7
+    }
+   ],
+   "articulation": [
+    {
+     "label": "a short percussive hit",
+     "z": 0.91
+    },
+    {
+     "label": "a struck note",
+     "z": 0.29
+    }
+   ],
+   "character": [
+    {
+     "label": "crisp",
+     "z": 2.5
+    },
+    {
+     "label": "punchy",
+     "z": 1.99
+    }
+   ],
+   "mood": [
+    {
+     "label": "retro",
+     "z": 1.9
+    },
+    {
+     "label": "calm",
+     "z": 1.27
+    }
+   ]
+  }
+ },
+ {
+  "file": "Bank 61/chan-008.wav",
+  "window": "gapped-loop",
+  "facets": {
+   "instrument": [
+    {
+     "label": "a square wave tone",
+     "z": 1.89
+    },
+    {
+     "label": "a sawtooth wave tone",
+     "z": 1.74
+    }
+   ],
+   "material": [
+    {
+     "label": "glassy",
+     "z": 1.58
+    },
+    {
+     "label": "plastic",
+     "z": 1.16
+    }
+   ],
+   "articulation": [
+    {
+     "label": "a sustained tone",
+     "z": 1.82
+    },
+    {
+     "label": "a plucked note",
+     "z": 1.72
+    }
+   ],
+   "character": [
+    {
+     "label": "crisp",
+     "z": 1.73
+    },
+    {
+     "label": "bright",
+     "z": 1.38
+    }
+   ],
+   "mood": [
+    {
+     "label": "ambient",
+     "z": 0.94
+    },
+    {
+     "label": "aggressive",
+     "z": 0.86
+    }
+   ]
+  }
+ }
+]

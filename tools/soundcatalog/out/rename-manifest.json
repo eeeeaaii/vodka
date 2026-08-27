@@ -1,0 +1,6122 @@
+[
+ [
+  "server/sounds/Bank 1",
+  "server/sounds/Bank 01 - 606 DRM"
+ ],
+ [
+  "server/sounds/Bank 2",
+  "server/sounds/Bank 02 - 707 Dm1"
+ ],
+ [
+  "server/sounds/Bank 3",
+  "server/sounds/Bank 03 - 707 Dm2"
+ ],
+ [
+  "server/sounds/Bank 4",
+  "server/sounds/Bank 04 - 727 Dm1"
+ ],
+ [
+  "server/sounds/Bank 5",
+  "server/sounds/Bank 05 - 727 Dm2"
+ ],
+ [
+  "server/sounds/Bank 6",
+  "server/sounds/Bank 06 - 808 DRM"
+ ],
+ [
+  "server/sounds/Bank 7",
+  "server/sounds/Bank 07 - 909 DRM"
+ ],
+ [
+  "server/sounds/Bank 8",
+  "server/sounds/Bank 08 - CR78"
+ ],
+ [
+  "server/sounds/Bank 9",
+  "server/sounds/Bank 09 - CR78 VR"
+ ],
+ [
+  "server/sounds/Bank 10",
+  "server/sounds/Bank 10 - Blck D1"
+ ],
+ [
+  "server/sounds/Bank 11",
+  "server/sounds/Bank 11 - Blck D2"
+ ],
+ [
+  "server/sounds/Bank 12",
+  "server/sounds/Bank 12 - Boss 110"
+ ],
+ [
+  "server/sounds/Bank 13",
+  "server/sounds/Bank 13 - R70 DRM"
+ ],
+ [
+  "server/sounds/Bank 14",
+  "server/sounds/Bank 14 - MFB 522"
+ ],
+ [
+  "server/sounds/Bank 15",
+  "server/sounds/Bank 15 - RX5 DRM"
+ ],
+ [
+  "server/sounds/Bank 16",
+  "server/sounds/Bank 16 - DrmTrks"
+ ],
+ [
+  "server/sounds/Bank 17",
+  "server/sounds/Bank 17 - Kw-R50e"
+ ],
+ [
+  "server/sounds/Bank 18",
+  "server/sounds/Bank 18 - Linn DRM"
+ ],
+ [
+  "server/sounds/Bank 19",
+  "server/sounds/Bank 19 - RZ-1 DRM"
+ ],
+ [
+  "server/sounds/Bank 20",
+  "server/sounds/Bank 20 - R8 MATE"
+ ],
+ [
+  "server/sounds/Bank 21",
+  "server/sounds/Bank 21 - HR-16"
+ ],
+ [
+  "server/sounds/Bank 22",
+  "server/sounds/Bank 22 - GenMID-1"
+ ],
+ [
+  "server/sounds/Bank 23",
+  "server/sounds/Bank 23 - GenMID-2"
+ ],
+ [
+  "server/sounds/Bank 24",
+  "server/sounds/Bank 24 - MT70-DRM"
+ ],
+ [
+  "server/sounds/Bank 25",
+  "server/sounds/Bank 25 - M5N Dm1"
+ ],
+ [
+  "server/sounds/Bank 26",
+  "server/sounds/Bank 26 - M5N Dm2"
+ ],
+ [
+  "server/sounds/Bank 27",
+  "server/sounds/Bank 27 - MUMZ-01"
+ ],
+ [
+  "server/sounds/Bank 28",
+  "server/sounds/Bank 28 - MUMZ-02"
+ ],
+ [
+  "server/sounds/Bank 29",
+  "server/sounds/Bank 29 - MUMZ-03"
+ ],
+ [
+  "server/sounds/Bank 30",
+  "server/sounds/Bank 30 - ALM-TK1"
+ ],
+ [
+  "server/sounds/Bank 31",
+  "server/sounds/Bank 31 - ALM-TK2"
+ ],
+ [
+  "server/sounds/Bank 32",
+  "server/sounds/Bank 32 - ALM-TK3"
+ ],
+ [
+  "server/sounds/Bank 33",
+  "server/sounds/Bank 33 - ALM-TK4"
+ ],
+ [
+  "server/sounds/Bank 34",
+  "server/sounds/Bank 34 - ALM-TK5"
+ ],
+ [
+  "server/sounds/Bank 35",
+  "server/sounds/Bank 35 - ALM-DN1"
+ ],
+ [
+  "server/sounds/Bank 36",
+  "server/sounds/Bank 36 - ALM-DN2"
+ ],
+ [
+  "server/sounds/Bank 37",
+  "server/sounds/Bank 37 - ALMSID-1"
+ ],
+ [
+  "server/sounds/Bank 38",
+  "server/sounds/Bank 38 - SLSUK-01"
+ ],
+ [
+  "server/sounds/Bank 39",
+  "server/sounds/Bank 39 - SLSUK-02"
+ ],
+ [
+  "server/sounds/Bank 40",
+  "server/sounds/Bank 40 - SLS-001"
+ ],
+ [
+  "server/sounds/Bank 41",
+  "server/sounds/Bank 41 - SLS-002"
+ ],
+ [
+  "server/sounds/Bank 42",
+  "server/sounds/Bank 42 - SLS-003"
+ ],
+ [
+  "server/sounds/Bank 43",
+  "server/sounds/Bank 43 - SLS-004"
+ ],
+ [
+  "server/sounds/Bank 44",
+  "server/sounds/Bank 44 - SLS-005"
+ ],
+ [
+  "server/sounds/Bank 45",
+  "server/sounds/Bank 45 - FLAX-001"
+ ],
+ [
+  "server/sounds/Bank 46",
+  "server/sounds/Bank 46 - FLAX-002"
+ ],
+ [
+  "server/sounds/Bank 47",
+  "server/sounds/Bank 47 - FLAX-003"
+ ],
+ [
+  "server/sounds/Bank 48",
+  "server/sounds/Bank 48 - SB-001"
+ ],
+ [
+  "server/sounds/Bank 49",
+  "server/sounds/Bank 49 - SB-002"
+ ],
+ [
+  "server/sounds/Bank 50",
+  "server/sounds/Bank 50 - SB-003"
+ ],
+ [
+  "server/sounds/Bank 51",
+  "server/sounds/Bank 51 - SZAM-001"
+ ],
+ [
+  "server/sounds/Bank 52",
+  "server/sounds/Bank 52 - DA-DOMP1"
+ ],
+ [
+  "server/sounds/Bank 53",
+  "server/sounds/Bank 53 - DA-DOMP2"
+ ],
+ [
+  "server/sounds/Bank 54",
+  "server/sounds/Bank 54 - NYZ-FLD1"
+ ],
+ [
+  "server/sounds/Bank 55",
+  "server/sounds/Bank 55 - NYZ-SYN1"
+ ],
+ [
+  "server/sounds/Bank 56",
+  "server/sounds/Bank 56 - NYZ-SYN2"
+ ],
+ [
+  "server/sounds/Bank 57",
+  "server/sounds/Bank 57 - NYZ-SYN3"
+ ],
+ [
+  "server/sounds/Bank 58",
+  "server/sounds/Bank 58 - NYZ-SYN4"
+ ],
+ [
+  "server/sounds/Bank 59",
+  "server/sounds/Bank 59 - CS80 C4"
+ ],
+ [
+  "server/sounds/Bank 60",
+  "server/sounds/Bank 60 - APH-JUNO"
+ ],
+ [
+  "server/sounds/Bank 61",
+  "server/sounds/Bank 61 - DX7-TG77"
+ ],
+ [
+  "server/sounds/Bank 62",
+  "server/sounds/Bank 62 - DA-BENJN"
+ ],
+ [
+  "server/sounds/Bank 63",
+  "server/sounds/Bank 63 - BEEBSAMP"
+ ],
+ [
+  "server/sounds/Bank 64",
+  "server/sounds/Bank 64 - RH-BENJN"
+ ],
+ [
+  "server/sounds/Bank 65",
+  "server/sounds/Bank 65 - RH-TAIKO"
+ ],
+ [
+  "server/sounds/Bank 66",
+  "server/sounds/Bank 66 - EBC-Coco"
+ ],
+ [
+  "server/sounds/Bank 67",
+  "server/sounds/Bank 67 - EBC-Lyra"
+ ],
+ [
+  "server/sounds/Bank 68",
+  "server/sounds/Bank 68 - MEGA-DM1"
+ ],
+ [
+  "server/sounds/Bank 69",
+  "server/sounds/Bank 69 - MEGA-DM2"
+ ],
+ [
+  "server/sounds/Bank 70",
+  "server/sounds/Bank 70 - MEGA-MnD"
+ ],
+ [
+  "server/sounds/Bank 71",
+  "server/sounds/Bank 71 - MEGAMIDI"
+ ],
+ [
+  "server/sounds/Bank 72",
+  "server/sounds/Bank 72 - MEGA-909"
+ ],
+ [
+  "server/sounds/Bank 73",
+  "server/sounds/Bank 73 - X0X-JUNO"
+ ],
+ [
+  "server/sounds/Bank 74",
+  "server/sounds/Bank 74 - FM-JUNO"
+ ],
+ [
+  "server/sounds/Bank 75",
+  "server/sounds/Bank 75 - 303--140"
+ ],
+ [
+  "server/sounds/Bank 76",
+  "server/sounds/Bank 76 - 303--125"
+ ],
+ [
+  "server/sounds/Bank 77",
+  "server/sounds/Bank 77 - SL165BPM"
+ ],
+ [
+  "server/sounds/Bank 78",
+  "server/sounds/Bank 78 - SL170BPM"
+ ],
+ [
+  "server/sounds/Bank 79",
+  "server/sounds/Bank 79 - SL175BPM"
+ ],
+ [
+  "server/sounds/Bank 80",
+  "server/sounds/Bank 80 - SL180BPM"
+ ],
+ [
+  "server/sounds/Bank 81",
+  "server/sounds/Bank 81 - SL130BPM"
+ ],
+ [
+  "server/sounds/Bank 82",
+  "server/sounds/Bank 82 - FLATPACK"
+ ],
+ [
+  "server/sounds/Bank 83",
+  "server/sounds/Bank 83 - EBC-CV1"
+ ],
+ [
+  "server/sounds/Bank 84",
+  "server/sounds/Bank 84 - CHAOS-CV"
+ ],
+ [
+  "server/sounds/Bank 85",
+  "server/sounds/Bank 85 - DREAM-CV"
+ ],
+ [
+  "server/sounds/Bank 01 - 606 DRM/chan-001.wav",
+  "server/sounds/Bank 01 - 606 DRM/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 01 - 606 DRM/chan-002.wav",
+  "server/sounds/Bank 01 - 606 DRM/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 01 - 606 DRM/chan-003.wav",
+  "server/sounds/Bank 01 - 606 DRM/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 01 - 606 DRM/chan-004.wav",
+  "server/sounds/Bank 01 - 606 DRM/4 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 01 - 606 DRM/chan-005.wav",
+  "server/sounds/Bank 01 - 606 DRM/5 Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 01 - 606 DRM/chan-006.wav",
+  "server/sounds/Bank 01 - 606 DRM/6 Low Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 01 - 606 DRM/chan-007.wav",
+  "server/sounds/Bank 01 - 606 DRM/7 High Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 01 - 606 DRM/chan-008.wav",
+  "server/sounds/Bank 01 - 606 DRM/8 Bass Drum (long decay).wav"
+ ],
+ [
+  "server/sounds/Bank 02 - 707 Dm1/chan-001.wav",
+  "server/sounds/Bank 02 - 707 Dm1/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 02 - 707 Dm1/chan-002.wav",
+  "server/sounds/Bank 02 - 707 Dm1/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 02 - 707 Dm1/chan-003.wav",
+  "server/sounds/Bank 02 - 707 Dm1/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 02 - 707 Dm1/chan-004.wav",
+  "server/sounds/Bank 02 - 707 Dm1/4 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 02 - 707 Dm1/chan-005.wav",
+  "server/sounds/Bank 02 - 707 Dm1/5 Rimshot.wav"
+ ],
+ [
+  "server/sounds/Bank 02 - 707 Dm1/chan-006.wav",
+  "server/sounds/Bank 02 - 707 Dm1/6 Cowbell.wav"
+ ],
+ [
+  "server/sounds/Bank 02 - 707 Dm1/chan-007.wav",
+  "server/sounds/Bank 02 - 707 Dm1/7 Low Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 02 - 707 Dm1/chan-008.wav",
+  "server/sounds/Bank 02 - 707 Dm1/8 Crash Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 03 - 707 Dm2/chan-001.wav",
+  "server/sounds/Bank 03 - 707 Dm2/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 03 - 707 Dm2/chan-002.wav",
+  "server/sounds/Bank 03 - 707 Dm2/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 03 - 707 Dm2/chan-003.wav",
+  "server/sounds/Bank 03 - 707 Dm2/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 03 - 707 Dm2/chan-004.wav",
+  "server/sounds/Bank 03 - 707 Dm2/4 Tambourine.wav"
+ ],
+ [
+  "server/sounds/Bank 03 - 707 Dm2/chan-005.wav",
+  "server/sounds/Bank 03 - 707 Dm2/5 Hand Clap.wav"
+ ],
+ [
+  "server/sounds/Bank 03 - 707 Dm2/chan-006.wav",
+  "server/sounds/Bank 03 - 707 Dm2/6 Low Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 03 - 707 Dm2/chan-007.wav",
+  "server/sounds/Bank 03 - 707 Dm2/7 Mid Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 03 - 707 Dm2/chan-008.wav",
+  "server/sounds/Bank 03 - 707 Dm2/8 Crash Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 04 - 727 Dm1/chan-001.wav",
+  "server/sounds/Bank 04 - 727 Dm1/1 Low Conga.wav"
+ ],
+ [
+  "server/sounds/Bank 04 - 727 Dm1/chan-002.wav",
+  "server/sounds/Bank 04 - 727 Dm1/2 Low Timbale.wav"
+ ],
+ [
+  "server/sounds/Bank 04 - 727 Dm1/chan-003.wav",
+  "server/sounds/Bank 04 - 727 Dm1/3 High Bongo.wav"
+ ],
+ [
+  "server/sounds/Bank 04 - 727 Dm1/chan-004.wav",
+  "server/sounds/Bank 04 - 727 Dm1/4 Cabasa.wav"
+ ],
+ [
+  "server/sounds/Bank 04 - 727 Dm1/chan-005.wav",
+  "server/sounds/Bank 04 - 727 Dm1/5 Agogo Bell.wav"
+ ],
+ [
+  "server/sounds/Bank 04 - 727 Dm1/chan-006.wav",
+  "server/sounds/Bank 04 - 727 Dm1/6 Maracas.wav"
+ ],
+ [
+  "server/sounds/Bank 04 - 727 Dm1/chan-007.wav",
+  "server/sounds/Bank 04 - 727 Dm1/7 Star Chime.wav"
+ ],
+ [
+  "server/sounds/Bank 04 - 727 Dm1/chan-008.wav",
+  "server/sounds/Bank 04 - 727 Dm1/8 Low Conga (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 05 - 727 Dm2/chan-001.wav",
+  "server/sounds/Bank 05 - 727 Dm2/1 High Conga.wav"
+ ],
+ [
+  "server/sounds/Bank 05 - 727 Dm2/chan-002.wav",
+  "server/sounds/Bank 05 - 727 Dm2/2 Low Timbale.wav"
+ ],
+ [
+  "server/sounds/Bank 05 - 727 Dm2/chan-003.wav",
+  "server/sounds/Bank 05 - 727 Dm2/3 Cabasa.wav"
+ ],
+ [
+  "server/sounds/Bank 05 - 727 Dm2/chan-004.wav",
+  "server/sounds/Bank 05 - 727 Dm2/4 Agogo Bell.wav"
+ ],
+ [
+  "server/sounds/Bank 05 - 727 Dm2/chan-005.wav",
+  "server/sounds/Bank 05 - 727 Dm2/5 Tuned Metallic Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 05 - 727 Dm2/chan-006.wav",
+  "server/sounds/Bank 05 - 727 Dm2/6 Woodblock.wav"
+ ],
+ [
+  "server/sounds/Bank 05 - 727 Dm2/chan-007.wav",
+  "server/sounds/Bank 05 - 727 Dm2/7 Low Bongo.wav"
+ ],
+ [
+  "server/sounds/Bank 05 - 727 Dm2/chan-008.wav",
+  "server/sounds/Bank 05 - 727 Dm2/8 Star Chime.wav"
+ ],
+ [
+  "server/sounds/Bank 06 - 808 DRM/chan-001.wav",
+  "server/sounds/Bank 06 - 808 DRM/1 Bass Drum (long decay).wav"
+ ],
+ [
+  "server/sounds/Bank 06 - 808 DRM/chan-002.wav",
+  "server/sounds/Bank 06 - 808 DRM/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 06 - 808 DRM/chan-003.wav",
+  "server/sounds/Bank 06 - 808 DRM/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 06 - 808 DRM/chan-004.wav",
+  "server/sounds/Bank 06 - 808 DRM/4 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 06 - 808 DRM/chan-005.wav",
+  "server/sounds/Bank 06 - 808 DRM/5 Hand Clap.wav"
+ ],
+ [
+  "server/sounds/Bank 06 - 808 DRM/chan-006.wav",
+  "server/sounds/Bank 06 - 808 DRM/6 Cowbell.wav"
+ ],
+ [
+  "server/sounds/Bank 06 - 808 DRM/chan-007.wav",
+  "server/sounds/Bank 06 - 808 DRM/7 Low Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 06 - 808 DRM/chan-008.wav",
+  "server/sounds/Bank 06 - 808 DRM/8 Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 07 - 909 DRM/chan-001.wav",
+  "server/sounds/Bank 07 - 909 DRM/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 07 - 909 DRM/chan-002.wav",
+  "server/sounds/Bank 07 - 909 DRM/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 07 - 909 DRM/chan-003.wav",
+  "server/sounds/Bank 07 - 909 DRM/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 07 - 909 DRM/chan-004.wav",
+  "server/sounds/Bank 07 - 909 DRM/4 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 07 - 909 DRM/chan-005.wav",
+  "server/sounds/Bank 07 - 909 DRM/5 Hand Clap.wav"
+ ],
+ [
+  "server/sounds/Bank 07 - 909 DRM/chan-006.wav",
+  "server/sounds/Bank 07 - 909 DRM/6 Mid Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 07 - 909 DRM/chan-007.wav",
+  "server/sounds/Bank 07 - 909 DRM/7 Low Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 07 - 909 DRM/chan-008.wav",
+  "server/sounds/Bank 07 - 909 DRM/8 Crash Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 08 - CR78/chan-001.wav",
+  "server/sounds/Bank 08 - CR78/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 08 - CR78/chan-002.wav",
+  "server/sounds/Bank 08 - CR78/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 08 - CR78/chan-003.wav",
+  "server/sounds/Bank 08 - CR78/3 Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 08 - CR78/chan-004.wav",
+  "server/sounds/Bank 08 - CR78/4 Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 08 - CR78/chan-005.wav",
+  "server/sounds/Bank 08 - CR78/5 Metallic Beat.wav"
+ ],
+ [
+  "server/sounds/Bank 08 - CR78/chan-006.wav",
+  "server/sounds/Bank 08 - CR78/6 Tambourine.wav"
+ ],
+ [
+  "server/sounds/Bank 08 - CR78/chan-007.wav",
+  "server/sounds/Bank 08 - CR78/7 Conga.wav"
+ ],
+ [
+  "server/sounds/Bank 08 - CR78/chan-008.wav",
+  "server/sounds/Bank 08 - CR78/8 Claves.wav"
+ ],
+ [
+  "server/sounds/Bank 09 - CR78 VR/chan-001.wav",
+  "server/sounds/Bank 09 - CR78 VR/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 09 - CR78 VR/chan-002.wav",
+  "server/sounds/Bank 09 - CR78 VR/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 09 - CR78 VR/chan-003.wav",
+  "server/sounds/Bank 09 - CR78 VR/3 Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 09 - CR78 VR/chan-004.wav",
+  "server/sounds/Bank 09 - CR78 VR/4 Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 09 - CR78 VR/chan-005.wav",
+  "server/sounds/Bank 09 - CR78 VR/5 Hi-Hat (tight).wav"
+ ],
+ [
+  "server/sounds/Bank 09 - CR78 VR/chan-006.wav",
+  "server/sounds/Bank 09 - CR78 VR/6 Metallic Beat.wav"
+ ],
+ [
+  "server/sounds/Bank 09 - CR78 VR/chan-007.wav",
+  "server/sounds/Bank 09 - CR78 VR/7 Bell.wav"
+ ],
+ [
+  "server/sounds/Bank 09 - CR78 VR/chan-008.wav",
+  "server/sounds/Bank 09 - CR78 VR/8 Conga (long).wav"
+ ],
+ [
+  "server/sounds/Bank 10 - Blck D1/chan-001.wav",
+  "server/sounds/Bank 10 - Blck D1/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 10 - Blck D1/chan-002.wav",
+  "server/sounds/Bank 10 - Blck D1/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 10 - Blck D1/chan-003.wav",
+  "server/sounds/Bank 10 - Blck D1/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 10 - Blck D1/chan-004.wav",
+  "server/sounds/Bank 10 - Blck D1/4 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 10 - Blck D1/chan-005.wav",
+  "server/sounds/Bank 10 - Blck D1/5 Rimshot.wav"
+ ],
+ [
+  "server/sounds/Bank 10 - Blck D1/chan-006.wav",
+  "server/sounds/Bank 10 - Blck D1/6 Bell.wav"
+ ],
+ [
+  "server/sounds/Bank 10 - Blck D1/chan-007.wav",
+  "server/sounds/Bank 10 - Blck D1/7 Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 10 - Blck D1/chan-008.wav",
+  "server/sounds/Bank 10 - Blck D1/8 Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 11 - Blck D2/chan-001.wav",
+  "server/sounds/Bank 11 - Blck D2/1 Bass Drum (long decay).wav"
+ ],
+ [
+  "server/sounds/Bank 11 - Blck D2/chan-002.wav",
+  "server/sounds/Bank 11 - Blck D2/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 11 - Blck D2/chan-003.wav",
+  "server/sounds/Bank 11 - Blck D2/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 11 - Blck D2/chan-004.wav",
+  "server/sounds/Bank 11 - Blck D2/4 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 11 - Blck D2/chan-005.wav",
+  "server/sounds/Bank 11 - Blck D2/5 Shaker.wav"
+ ],
+ [
+  "server/sounds/Bank 11 - Blck D2/chan-006.wav",
+  "server/sounds/Bank 11 - Blck D2/6 Blip - Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 11 - Blck D2/chan-007.wav",
+  "server/sounds/Bank 11 - Blck D2/7 Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 11 - Blck D2/chan-008.wav",
+  "server/sounds/Bank 11 - Blck D2/8 Bell.wav"
+ ],
+ [
+  "server/sounds/Bank 12 - Boss 110/chan-001.wav",
+  "server/sounds/Bank 12 - Boss 110/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 12 - Boss 110/chan-002.wav",
+  "server/sounds/Bank 12 - Boss 110/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 12 - Boss 110/chan-003.wav",
+  "server/sounds/Bank 12 - Boss 110/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 12 - Boss 110/chan-004.wav",
+  "server/sounds/Bank 12 - Boss 110/4 Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 12 - Boss 110/chan-005.wav",
+  "server/sounds/Bank 12 - Boss 110/5 Hand Clap.wav"
+ ],
+ [
+  "server/sounds/Bank 12 - Boss 110/chan-006.wav",
+  "server/sounds/Bank 12 - Boss 110/6 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 12 - Boss 110/chan-007.wav",
+  "server/sounds/Bank 12 - Boss 110/7 Bass Tone (8s sustained).wav"
+ ],
+ [
+  "server/sounds/Bank 12 - Boss 110/chan-008.wav",
+  "server/sounds/Bank 12 - Boss 110/8 Pad - Organ Tone (10s).wav"
+ ],
+ [
+  "server/sounds/Bank 13 - R70 DRM/chan-001.wav",
+  "server/sounds/Bank 13 - R70 DRM/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 13 - R70 DRM/chan-002.wav",
+  "server/sounds/Bank 13 - R70 DRM/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 13 - R70 DRM/chan-003.wav",
+  "server/sounds/Bank 13 - R70 DRM/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 13 - R70 DRM/chan-004.wav",
+  "server/sounds/Bank 13 - R70 DRM/4 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 13 - R70 DRM/chan-005.wav",
+  "server/sounds/Bank 13 - R70 DRM/5 Snare (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 13 - R70 DRM/chan-006.wav",
+  "server/sounds/Bank 13 - R70 DRM/6 Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 13 - R70 DRM/chan-007.wav",
+  "server/sounds/Bank 13 - R70 DRM/7 Tambourine.wav"
+ ],
+ [
+  "server/sounds/Bank 13 - R70 DRM/chan-008.wav",
+  "server/sounds/Bank 13 - R70 DRM/8 Crash Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 14 - MFB 522/chan-001.wav",
+  "server/sounds/Bank 14 - MFB 522/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 14 - MFB 522/chan-002.wav",
+  "server/sounds/Bank 14 - MFB 522/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 14 - MFB 522/chan-003.wav",
+  "server/sounds/Bank 14 - MFB 522/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 14 - MFB 522/chan-004.wav",
+  "server/sounds/Bank 14 - MFB 522/4 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 14 - MFB 522/chan-005.wav",
+  "server/sounds/Bank 14 - MFB 522/5 Hand Clap.wav"
+ ],
+ [
+  "server/sounds/Bank 14 - MFB 522/chan-006.wav",
+  "server/sounds/Bank 14 - MFB 522/6 Rimshot - Click.wav"
+ ],
+ [
+  "server/sounds/Bank 14 - MFB 522/chan-007.wav",
+  "server/sounds/Bank 14 - MFB 522/7 Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 14 - MFB 522/chan-008.wav",
+  "server/sounds/Bank 14 - MFB 522/8 Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 15 - RX5 DRM/chan-001.wav",
+  "server/sounds/Bank 15 - RX5 DRM/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 15 - RX5 DRM/chan-002.wav",
+  "server/sounds/Bank 15 - RX5 DRM/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 15 - RX5 DRM/chan-003.wav",
+  "server/sounds/Bank 15 - RX5 DRM/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 15 - RX5 DRM/chan-004.wav",
+  "server/sounds/Bank 15 - RX5 DRM/4 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 15 - RX5 DRM/chan-005.wav",
+  "server/sounds/Bank 15 - RX5 DRM/5 Rimshot.wav"
+ ],
+ [
+  "server/sounds/Bank 15 - RX5 DRM/chan-006.wav",
+  "server/sounds/Bank 15 - RX5 DRM/6 Low Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 15 - RX5 DRM/chan-007.wav",
+  "server/sounds/Bank 15 - RX5 DRM/7 Floor Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 15 - RX5 DRM/chan-008.wav",
+  "server/sounds/Bank 15 - RX5 DRM/8 Crash Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 16 - DrmTrks/chan-001.wav",
+  "server/sounds/Bank 16 - DrmTrks/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 16 - DrmTrks/chan-002.wav",
+  "server/sounds/Bank 16 - DrmTrks/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 16 - DrmTrks/chan-003.wav",
+  "server/sounds/Bank 16 - DrmTrks/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 16 - DrmTrks/chan-004.wav",
+  "server/sounds/Bank 16 - DrmTrks/4 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 16 - DrmTrks/chan-005.wav",
+  "server/sounds/Bank 16 - DrmTrks/5 Hand Clap.wav"
+ ],
+ [
+  "server/sounds/Bank 16 - DrmTrks/chan-006.wav",
+  "server/sounds/Bank 16 - DrmTrks/6 Tambourine.wav"
+ ],
+ [
+  "server/sounds/Bank 16 - DrmTrks/chan-007.wav",
+  "server/sounds/Bank 16 - DrmTrks/7 Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 16 - DrmTrks/chan-008.wav",
+  "server/sounds/Bank 16 - DrmTrks/8 Crash Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 17 - Kw-R50e/chan-001.wav",
+  "server/sounds/Bank 17 - Kw-R50e/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 17 - Kw-R50e/chan-002.wav",
+  "server/sounds/Bank 17 - Kw-R50e/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 17 - Kw-R50e/chan-003.wav",
+  "server/sounds/Bank 17 - Kw-R50e/3 Rimshot.wav"
+ ],
+ [
+  "server/sounds/Bank 17 - Kw-R50e/chan-004.wav",
+  "server/sounds/Bank 17 - Kw-R50e/4 Snare (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 17 - Kw-R50e/chan-005.wav",
+  "server/sounds/Bank 17 - Kw-R50e/5 Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 17 - Kw-R50e/chan-006.wav",
+  "server/sounds/Bank 17 - Kw-R50e/6 Perc Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 17 - Kw-R50e/chan-007.wav",
+  "server/sounds/Bank 17 - Kw-R50e/7 Bass Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 17 - Kw-R50e/chan-008.wav",
+  "server/sounds/Bank 17 - Kw-R50e/8 Tonal Stab.wav"
+ ],
+ [
+  "server/sounds/Bank 18 - Linn DRM/chan-001.wav",
+  "server/sounds/Bank 18 - Linn DRM/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 18 - Linn DRM/chan-002.wav",
+  "server/sounds/Bank 18 - Linn DRM/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 18 - Linn DRM/chan-003.wav",
+  "server/sounds/Bank 18 - Linn DRM/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 18 - Linn DRM/chan-004.wav",
+  "server/sounds/Bank 18 - Linn DRM/4 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 18 - Linn DRM/chan-005.wav",
+  "server/sounds/Bank 18 - Linn DRM/5 Hand Clap.wav"
+ ],
+ [
+  "server/sounds/Bank 18 - Linn DRM/chan-006.wav",
+  "server/sounds/Bank 18 - Linn DRM/6 Tambourine.wav"
+ ],
+ [
+  "server/sounds/Bank 18 - Linn DRM/chan-007.wav",
+  "server/sounds/Bank 18 - Linn DRM/7 Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 18 - Linn DRM/chan-008.wav",
+  "server/sounds/Bank 18 - Linn DRM/8 Cowbell.wav"
+ ],
+ [
+  "server/sounds/Bank 19 - RZ-1 DRM/chan-001.wav",
+  "server/sounds/Bank 19 - RZ-1 DRM/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 19 - RZ-1 DRM/chan-002.wav",
+  "server/sounds/Bank 19 - RZ-1 DRM/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 19 - RZ-1 DRM/chan-003.wav",
+  "server/sounds/Bank 19 - RZ-1 DRM/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 19 - RZ-1 DRM/chan-004.wav",
+  "server/sounds/Bank 19 - RZ-1 DRM/4 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 19 - RZ-1 DRM/chan-005.wav",
+  "server/sounds/Bank 19 - RZ-1 DRM/5 Woodblock.wav"
+ ],
+ [
+  "server/sounds/Bank 19 - RZ-1 DRM/chan-006.wav",
+  "server/sounds/Bank 19 - RZ-1 DRM/6 Hand Clap.wav"
+ ],
+ [
+  "server/sounds/Bank 19 - RZ-1 DRM/chan-007.wav",
+  "server/sounds/Bank 19 - RZ-1 DRM/7 Ride Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 19 - RZ-1 DRM/chan-008.wav",
+  "server/sounds/Bank 19 - RZ-1 DRM/8 Vocal Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 20 - R8 MATE/chan-001.wav",
+  "server/sounds/Bank 20 - R8 MATE/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 20 - R8 MATE/chan-002.wav",
+  "server/sounds/Bank 20 - R8 MATE/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 20 - R8 MATE/chan-003.wav",
+  "server/sounds/Bank 20 - R8 MATE/3 Hand Clap.wav"
+ ],
+ [
+  "server/sounds/Bank 20 - R8 MATE/chan-004.wav",
+  "server/sounds/Bank 20 - R8 MATE/4 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 20 - R8 MATE/chan-005.wav",
+  "server/sounds/Bank 20 - R8 MATE/5 Bass Drum (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 20 - R8 MATE/chan-006.wav",
+  "server/sounds/Bank 20 - R8 MATE/6 Bell - Chime.wav"
+ ],
+ [
+  "server/sounds/Bank 20 - R8 MATE/chan-007.wav",
+  "server/sounds/Bank 20 - R8 MATE/7 Floor Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 20 - R8 MATE/chan-008.wav",
+  "server/sounds/Bank 20 - R8 MATE/8 Sub Kick.wav"
+ ],
+ [
+  "server/sounds/Bank 21 - HR-16/chan-001.wav",
+  "server/sounds/Bank 21 - HR-16/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 21 - HR-16/chan-002.wav",
+  "server/sounds/Bank 21 - HR-16/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 21 - HR-16/chan-003.wav",
+  "server/sounds/Bank 21 - HR-16/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 21 - HR-16/chan-004.wav",
+  "server/sounds/Bank 21 - HR-16/4 Hand Clap.wav"
+ ],
+ [
+  "server/sounds/Bank 21 - HR-16/chan-005.wav",
+  "server/sounds/Bank 21 - HR-16/5 Triangle.wav"
+ ],
+ [
+  "server/sounds/Bank 21 - HR-16/chan-006.wav",
+  "server/sounds/Bank 21 - HR-16/6 Cowbell.wav"
+ ],
+ [
+  "server/sounds/Bank 21 - HR-16/chan-007.wav",
+  "server/sounds/Bank 21 - HR-16/7 Ride Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 21 - HR-16/chan-008.wav",
+  "server/sounds/Bank 21 - HR-16/8 Crash Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 22 - GenMID-1/chan-001.wav",
+  "server/sounds/Bank 22 - GenMID-1/1 Low Tom - Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 22 - GenMID-1/chan-002.wav",
+  "server/sounds/Bank 22 - GenMID-1/2 Perc Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 22 - GenMID-1/chan-003.wav",
+  "server/sounds/Bank 22 - GenMID-1/3 Noise Blip.wav"
+ ],
+ [
+  "server/sounds/Bank 22 - GenMID-1/chan-004.wav",
+  "server/sounds/Bank 22 - GenMID-1/4 Synth Blip.wav"
+ ],
+ [
+  "server/sounds/Bank 22 - GenMID-1/chan-005.wav",
+  "server/sounds/Bank 22 - GenMID-1/5 Texture.wav"
+ ],
+ [
+  "server/sounds/Bank 22 - GenMID-1/chan-006.wav",
+  "server/sounds/Bank 22 - GenMID-1/6 Electric Piano.wav"
+ ],
+ [
+  "server/sounds/Bank 22 - GenMID-1/chan-007.wav",
+  "server/sounds/Bank 22 - GenMID-1/7 String - Choir Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 22 - GenMID-1/chan-008.wav",
+  "server/sounds/Bank 22 - GenMID-1/8 Tonal Sustain.wav"
+ ],
+ [
+  "server/sounds/Bank 23 - GenMID-2/chan-001.wav",
+  "server/sounds/Bank 23 - GenMID-2/1 Electric Piano.wav"
+ ],
+ [
+  "server/sounds/Bank 23 - GenMID-2/chan-002.wav",
+  "server/sounds/Bank 23 - GenMID-2/2 Chime - Mallet.wav"
+ ],
+ [
+  "server/sounds/Bank 23 - GenMID-2/chan-003.wav",
+  "server/sounds/Bank 23 - GenMID-2/3 Choir.wav"
+ ],
+ [
+  "server/sounds/Bank 23 - GenMID-2/chan-004.wav",
+  "server/sounds/Bank 23 - GenMID-2/4 String Section.wav"
+ ],
+ [
+  "server/sounds/Bank 23 - GenMID-2/chan-005.wav",
+  "server/sounds/Bank 23 - GenMID-2/5 Bell Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 23 - GenMID-2/chan-006.wav",
+  "server/sounds/Bank 23 - GenMID-2/6 Synth Blip.wav"
+ ],
+ [
+  "server/sounds/Bank 23 - GenMID-2/chan-007.wav",
+  "server/sounds/Bank 23 - GenMID-2/7 Synth Lead.wav"
+ ],
+ [
+  "server/sounds/Bank 23 - GenMID-2/chan-008.wav",
+  "server/sounds/Bank 23 - GenMID-2/8 Plucked String.wav"
+ ],
+ [
+  "server/sounds/Bank 24 - MT70-DRM/chan-001.wav",
+  "server/sounds/Bank 24 - MT70-DRM/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 24 - MT70-DRM/chan-002.wav",
+  "server/sounds/Bank 24 - MT70-DRM/2 Snare (noisy).wav"
+ ],
+ [
+  "server/sounds/Bank 24 - MT70-DRM/chan-003.wav",
+  "server/sounds/Bank 24 - MT70-DRM/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 24 - MT70-DRM/chan-004.wav",
+  "server/sounds/Bank 24 - MT70-DRM/4 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 24 - MT70-DRM/chan-005.wav",
+  "server/sounds/Bank 24 - MT70-DRM/5 Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 24 - MT70-DRM/chan-006.wav",
+  "server/sounds/Bank 24 - MT70-DRM/6 Shaker.wav"
+ ],
+ [
+  "server/sounds/Bank 24 - MT70-DRM/chan-007.wav",
+  "server/sounds/Bank 24 - MT70-DRM/7 Tambourine.wav"
+ ],
+ [
+  "server/sounds/Bank 24 - MT70-DRM/chan-008.wav",
+  "server/sounds/Bank 24 - MT70-DRM/8 Vibraphone.wav"
+ ],
+ [
+  "server/sounds/Bank 25 - M5N Dm1/chan-001.wav",
+  "server/sounds/Bank 25 - M5N Dm1/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 25 - M5N Dm1/chan-002.wav",
+  "server/sounds/Bank 25 - M5N Dm1/2 Noise Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 25 - M5N Dm1/chan-003.wav",
+  "server/sounds/Bank 25 - M5N Dm1/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 25 - M5N Dm1/chan-004.wav",
+  "server/sounds/Bank 25 - M5N Dm1/4 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 25 - M5N Dm1/chan-005.wav",
+  "server/sounds/Bank 25 - M5N Dm1/5 Glitch Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 25 - M5N Dm1/chan-006.wav",
+  "server/sounds/Bank 25 - M5N Dm1/6 Metallic Crash.wav"
+ ],
+ [
+  "server/sounds/Bank 25 - M5N Dm1/chan-007.wav",
+  "server/sounds/Bank 25 - M5N Dm1/7 Noise Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 25 - M5N Dm1/chan-008.wav",
+  "server/sounds/Bank 25 - M5N Dm1/8 Bell Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 26 - M5N Dm2/chan-001.wav",
+  "server/sounds/Bank 26 - M5N Dm2/1 Distorted Kick.wav"
+ ],
+ [
+  "server/sounds/Bank 26 - M5N Dm2/chan-002.wav",
+  "server/sounds/Bank 26 - M5N Dm2/2 Kick (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 26 - M5N Dm2/chan-003.wav",
+  "server/sounds/Bank 26 - M5N Dm2/3 Perc Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 26 - M5N Dm2/chan-004.wav",
+  "server/sounds/Bank 26 - M5N Dm2/4 Noise Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 26 - M5N Dm2/chan-005.wav",
+  "server/sounds/Bank 26 - M5N Dm2/5 Noise Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 26 - M5N Dm2/chan-006.wav",
+  "server/sounds/Bank 26 - M5N Dm2/6 Low Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 26 - M5N Dm2/chan-007.wav",
+  "server/sounds/Bank 26 - M5N Dm2/7 Noise Sweep.wav"
+ ],
+ [
+  "server/sounds/Bank 26 - M5N Dm2/chan-008.wav",
+  "server/sounds/Bank 26 - M5N Dm2/8 Low Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 27 - MUMZ-01/chan-001.wav",
+  "server/sounds/Bank 27 - MUMZ-01/1 Distorted Kick.wav"
+ ],
+ [
+  "server/sounds/Bank 27 - MUMZ-01/chan-002.wav",
+  "server/sounds/Bank 27 - MUMZ-01/2 Low Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 27 - MUMZ-01/chan-003.wav",
+  "server/sounds/Bank 27 - MUMZ-01/3 Tick - Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 27 - MUMZ-01/chan-004.wav",
+  "server/sounds/Bank 27 - MUMZ-01/4 Clap - Noise Burst.wav"
+ ],
+ [
+  "server/sounds/Bank 27 - MUMZ-01/chan-005.wav",
+  "server/sounds/Bank 27 - MUMZ-01/5 Vocal Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 27 - MUMZ-01/chan-006.wav",
+  "server/sounds/Bank 27 - MUMZ-01/6 Wobble Blip.wav"
+ ],
+ [
+  "server/sounds/Bank 27 - MUMZ-01/chan-007.wav",
+  "server/sounds/Bank 27 - MUMZ-01/7 Gong - Bell.wav"
+ ],
+ [
+  "server/sounds/Bank 27 - MUMZ-01/chan-008.wav",
+  "server/sounds/Bank 27 - MUMZ-01/8 Pitch-Bend Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 28 - MUMZ-02/chan-001.wav",
+  "server/sounds/Bank 28 - MUMZ-02/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 28 - MUMZ-02/chan-002.wav",
+  "server/sounds/Bank 28 - MUMZ-02/2 Noise Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 28 - MUMZ-02/chan-003.wav",
+  "server/sounds/Bank 28 - MUMZ-02/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 28 - MUMZ-02/chan-004.wav",
+  "server/sounds/Bank 28 - MUMZ-02/4 Buzz Blip.wav"
+ ],
+ [
+  "server/sounds/Bank 28 - MUMZ-02/chan-005.wav",
+  "server/sounds/Bank 28 - MUMZ-02/5 Drone Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 28 - MUMZ-02/chan-006.wav",
+  "server/sounds/Bank 28 - MUMZ-02/6 Sustained Buzz.wav"
+ ],
+ [
+  "server/sounds/Bank 28 - MUMZ-02/chan-007.wav",
+  "server/sounds/Bank 28 - MUMZ-02/7 Organ Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 28 - MUMZ-02/chan-008.wav",
+  "server/sounds/Bank 28 - MUMZ-02/8 Square Blip.wav"
+ ],
+ [
+  "server/sounds/Bank 29 - MUMZ-03/chan-001.wav",
+  "server/sounds/Bank 29 - MUMZ-03/1 Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Bank 29 - MUMZ-03/chan-002.wav",
+  "server/sounds/Bank 29 - MUMZ-03/2 Crash - Open Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 29 - MUMZ-03/chan-003.wav",
+  "server/sounds/Bank 29 - MUMZ-03/3 Low Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 29 - MUMZ-03/chan-004.wav",
+  "server/sounds/Bank 29 - MUMZ-03/4 Hand Clap.wav"
+ ],
+ [
+  "server/sounds/Bank 29 - MUMZ-03/chan-005.wav",
+  "server/sounds/Bank 29 - MUMZ-03/5 Noise Texture.wav"
+ ],
+ [
+  "server/sounds/Bank 29 - MUMZ-03/chan-006.wav",
+  "server/sounds/Bank 29 - MUMZ-03/6 Gong (4s).wav"
+ ],
+ [
+  "server/sounds/Bank 29 - MUMZ-03/chan-007.wav",
+  "server/sounds/Bank 29 - MUMZ-03/7 Cowbell - Bell.wav"
+ ],
+ [
+  "server/sounds/Bank 29 - MUMZ-03/chan-008.wav",
+  "server/sounds/Bank 29 - MUMZ-03/8 Saw Bass Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 30 - ALM-TK1/chan-001.wav",
+  "server/sounds/Bank 30 - ALM-TK1/1 Kick (noisy).wav"
+ ],
+ [
+  "server/sounds/Bank 30 - ALM-TK1/chan-002.wav",
+  "server/sounds/Bank 30 - ALM-TK1/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 30 - ALM-TK1/chan-003.wav",
+  "server/sounds/Bank 30 - ALM-TK1/3 Click - Rim.wav"
+ ],
+ [
+  "server/sounds/Bank 30 - ALM-TK1/chan-004.wav",
+  "server/sounds/Bank 30 - ALM-TK1/4 Woodblock.wav"
+ ],
+ [
+  "server/sounds/Bank 30 - ALM-TK1/chan-005.wav",
+  "server/sounds/Bank 30 - ALM-TK1/5 Conga - Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 30 - ALM-TK1/chan-006.wav",
+  "server/sounds/Bank 30 - ALM-TK1/6 Synth Noise Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 30 - ALM-TK1/chan-007.wav",
+  "server/sounds/Bank 30 - ALM-TK1/7 Rimshot.wav"
+ ],
+ [
+  "server/sounds/Bank 30 - ALM-TK1/chan-008.wav",
+  "server/sounds/Bank 30 - ALM-TK1/8 Low Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 31 - ALM-TK2/chan-001.wav",
+  "server/sounds/Bank 31 - ALM-TK2/1 Kick.wav"
+ ],
+ [
+  "server/sounds/Bank 31 - ALM-TK2/chan-002.wav",
+  "server/sounds/Bank 31 - ALM-TK2/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 31 - ALM-TK2/chan-003.wav",
+  "server/sounds/Bank 31 - ALM-TK2/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 31 - ALM-TK2/chan-004.wav",
+  "server/sounds/Bank 31 - ALM-TK2/4 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 31 - ALM-TK2/chan-005.wav",
+  "server/sounds/Bank 31 - ALM-TK2/5 Snare (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 31 - ALM-TK2/chan-006.wav",
+  "server/sounds/Bank 31 - ALM-TK2/6 Noise Burst.wav"
+ ],
+ [
+  "server/sounds/Bank 31 - ALM-TK2/chan-007.wav",
+  "server/sounds/Bank 31 - ALM-TK2/7 Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 31 - ALM-TK2/chan-008.wav",
+  "server/sounds/Bank 31 - ALM-TK2/8 Rimshot.wav"
+ ],
+ [
+  "server/sounds/Bank 32 - ALM-TK3/chan-001.wav",
+  "server/sounds/Bank 32 - ALM-TK3/1 Kick.wav"
+ ],
+ [
+  "server/sounds/Bank 32 - ALM-TK3/chan-002.wav",
+  "server/sounds/Bank 32 - ALM-TK3/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 32 - ALM-TK3/chan-003.wav",
+  "server/sounds/Bank 32 - ALM-TK3/3 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 32 - ALM-TK3/chan-004.wav",
+  "server/sounds/Bank 32 - ALM-TK3/4 Crash Cymbal.wav"
+ ],
+ [
+  "server/sounds/Bank 32 - ALM-TK3/chan-005.wav",
+  "server/sounds/Bank 32 - ALM-TK3/5 Snare (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 32 - ALM-TK3/chan-006.wav",
+  "server/sounds/Bank 32 - ALM-TK3/6 Noise Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 32 - ALM-TK3/chan-007.wav",
+  "server/sounds/Bank 32 - ALM-TK3/7 Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 32 - ALM-TK3/chan-008.wav",
+  "server/sounds/Bank 32 - ALM-TK3/8 Floor Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 33 - ALM-TK4/chan-001.wav",
+  "server/sounds/Bank 33 - ALM-TK4/1 Kick.wav"
+ ],
+ [
+  "server/sounds/Bank 33 - ALM-TK4/chan-002.wav",
+  "server/sounds/Bank 33 - ALM-TK4/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 33 - ALM-TK4/chan-003.wav",
+  "server/sounds/Bank 33 - ALM-TK4/3 Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 33 - ALM-TK4/chan-004.wav",
+  "server/sounds/Bank 33 - ALM-TK4/4 Crash - Noise.wav"
+ ],
+ [
+  "server/sounds/Bank 33 - ALM-TK4/chan-005.wav",
+  "server/sounds/Bank 33 - ALM-TK4/5 Rimshot.wav"
+ ],
+ [
+  "server/sounds/Bank 33 - ALM-TK4/chan-006.wav",
+  "server/sounds/Bank 33 - ALM-TK4/6 Perc Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 33 - ALM-TK4/chan-007.wav",
+  "server/sounds/Bank 33 - ALM-TK4/7 Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 33 - ALM-TK4/chan-008.wav",
+  "server/sounds/Bank 33 - ALM-TK4/8 Vocal - Noise Tail.wav"
+ ],
+ [
+  "server/sounds/Bank 34 - ALM-TK5/chan-001.wav",
+  "server/sounds/Bank 34 - ALM-TK5/1 Kick (long).wav"
+ ],
+ [
+  "server/sounds/Bank 34 - ALM-TK5/chan-002.wav",
+  "server/sounds/Bank 34 - ALM-TK5/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 34 - ALM-TK5/chan-003.wav",
+  "server/sounds/Bank 34 - ALM-TK5/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 34 - ALM-TK5/chan-004.wav",
+  "server/sounds/Bank 34 - ALM-TK5/4 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 34 - ALM-TK5/chan-005.wav",
+  "server/sounds/Bank 34 - ALM-TK5/5 Low Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 34 - ALM-TK5/chan-006.wav",
+  "server/sounds/Bank 34 - ALM-TK5/6 Hand Clap.wav"
+ ],
+ [
+  "server/sounds/Bank 34 - ALM-TK5/chan-007.wav",
+  "server/sounds/Bank 34 - ALM-TK5/7 Conga.wav"
+ ],
+ [
+  "server/sounds/Bank 34 - ALM-TK5/chan-008.wav",
+  "server/sounds/Bank 34 - ALM-TK5/8 Snare (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 35 - ALM-DN1/chan-001.wav",
+  "server/sounds/Bank 35 - ALM-DN1/1 Distorted Kick.wav"
+ ],
+ [
+  "server/sounds/Bank 35 - ALM-DN1/chan-002.wav",
+  "server/sounds/Bank 35 - ALM-DN1/2 Noise Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 35 - ALM-DN1/chan-003.wav",
+  "server/sounds/Bank 35 - ALM-DN1/3 Noise Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 35 - ALM-DN1/chan-004.wav",
+  "server/sounds/Bank 35 - ALM-DN1/4 Tonal Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 35 - ALM-DN1/chan-005.wav",
+  "server/sounds/Bank 35 - ALM-DN1/5 Distorted Bass Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 35 - ALM-DN1/chan-006.wav",
+  "server/sounds/Bank 35 - ALM-DN1/6 Saw Bass Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 35 - ALM-DN1/chan-007.wav",
+  "server/sounds/Bank 35 - ALM-DN1/7 Wobble Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 35 - ALM-DN1/chan-008.wav",
+  "server/sounds/Bank 35 - ALM-DN1/8 Noise Sweep.wav"
+ ],
+ [
+  "server/sounds/Bank 36 - ALM-DN2/chan-001.wav",
+  "server/sounds/Bank 36 - ALM-DN2/1 Distorted Kick.wav"
+ ],
+ [
+  "server/sounds/Bank 36 - ALM-DN2/chan-002.wav",
+  "server/sounds/Bank 36 - ALM-DN2/2 Noise Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 36 - ALM-DN2/chan-003.wav",
+  "server/sounds/Bank 36 - ALM-DN2/3 Pitch-Bend Kick.wav"
+ ],
+ [
+  "server/sounds/Bank 36 - ALM-DN2/chan-004.wav",
+  "server/sounds/Bank 36 - ALM-DN2/4 Glitch Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 36 - ALM-DN2/chan-005.wav",
+  "server/sounds/Bank 36 - ALM-DN2/5 Harsh Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 36 - ALM-DN2/chan-006.wav",
+  "server/sounds/Bank 36 - ALM-DN2/6 Glitch Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 36 - ALM-DN2/chan-007.wav",
+  "server/sounds/Bank 36 - ALM-DN2/7 Noisy Pluck.wav"
+ ],
+ [
+  "server/sounds/Bank 36 - ALM-DN2/chan-008.wav",
+  "server/sounds/Bank 36 - ALM-DN2/8 Distorted Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 37 - ALMSID-1/chan-001.wav",
+  "server/sounds/Bank 37 - ALMSID-1/1 SID Saw Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 37 - ALMSID-1/chan-002.wav",
+  "server/sounds/Bank 37 - ALMSID-1/2 SID Noise.wav"
+ ],
+ [
+  "server/sounds/Bank 37 - ALMSID-1/chan-003.wav",
+  "server/sounds/Bank 37 - ALMSID-1/3 SID Lead.wav"
+ ],
+ [
+  "server/sounds/Bank 37 - ALMSID-1/chan-004.wav",
+  "server/sounds/Bank 37 - ALMSID-1/4 SID Bass Sweep.wav"
+ ],
+ [
+  "server/sounds/Bank 37 - ALMSID-1/chan-005.wav",
+  "server/sounds/Bank 37 - ALMSID-1/5 SID Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 37 - ALMSID-1/chan-006.wav",
+  "server/sounds/Bank 37 - ALMSID-1/6 SID Chime.wav"
+ ],
+ [
+  "server/sounds/Bank 37 - ALMSID-1/chan-007.wav",
+  "server/sounds/Bank 37 - ALMSID-1/7 SID Wobble Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 37 - ALMSID-1/chan-008.wav",
+  "server/sounds/Bank 37 - ALMSID-1/8 SID Pluck.wav"
+ ],
+ [
+  "server/sounds/Bank 38 - SLSUK-01/chan-001.wav",
+  "server/sounds/Bank 38 - SLSUK-01/1 Kick.wav"
+ ],
+ [
+  "server/sounds/Bank 38 - SLSUK-01/chan-002.wav",
+  "server/sounds/Bank 38 - SLSUK-01/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 38 - SLSUK-01/chan-003.wav",
+  "server/sounds/Bank 38 - SLSUK-01/3 Noise Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 38 - SLSUK-01/chan-004.wav",
+  "server/sounds/Bank 38 - SLSUK-01/4 Crash - Noise.wav"
+ ],
+ [
+  "server/sounds/Bank 38 - SLSUK-01/chan-005.wav",
+  "server/sounds/Bank 38 - SLSUK-01/5 Rimshot.wav"
+ ],
+ [
+  "server/sounds/Bank 38 - SLSUK-01/chan-006.wav",
+  "server/sounds/Bank 38 - SLSUK-01/6 Kick (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 38 - SLSUK-01/chan-007.wav",
+  "server/sounds/Bank 38 - SLSUK-01/7 Tambourine.wav"
+ ],
+ [
+  "server/sounds/Bank 38 - SLSUK-01/chan-008.wav",
+  "server/sounds/Bank 38 - SLSUK-01/8 FX Sweep.wav"
+ ],
+ [
+  "server/sounds/Bank 39 - SLSUK-02/chan-001.wav",
+  "server/sounds/Bank 39 - SLSUK-02/1 Kick.wav"
+ ],
+ [
+  "server/sounds/Bank 39 - SLSUK-02/chan-002.wav",
+  "server/sounds/Bank 39 - SLSUK-02/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 39 - SLSUK-02/chan-003.wav",
+  "server/sounds/Bank 39 - SLSUK-02/3 Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 39 - SLSUK-02/chan-004.wav",
+  "server/sounds/Bank 39 - SLSUK-02/4 Perc Click.wav"
+ ],
+ [
+  "server/sounds/Bank 39 - SLSUK-02/chan-005.wav",
+  "server/sounds/Bank 39 - SLSUK-02/5 Rimshot.wav"
+ ],
+ [
+  "server/sounds/Bank 39 - SLSUK-02/chan-006.wav",
+  "server/sounds/Bank 39 - SLSUK-02/6 Hi-Hat (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 39 - SLSUK-02/chan-007.wav",
+  "server/sounds/Bank 39 - SLSUK-02/7 Pad Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 39 - SLSUK-02/chan-008.wav",
+  "server/sounds/Bank 39 - SLSUK-02/8 Bass Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 40 - SLS-001/chan-001.wav",
+  "server/sounds/Bank 40 - SLS-001/1 Kick (long).wav"
+ ],
+ [
+  "server/sounds/Bank 40 - SLS-001/chan-002.wav",
+  "server/sounds/Bank 40 - SLS-001/2 Noise Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 40 - SLS-001/chan-003.wav",
+  "server/sounds/Bank 40 - SLS-001/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 40 - SLS-001/chan-004.wav",
+  "server/sounds/Bank 40 - SLS-001/4 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 40 - SLS-001/chan-005.wav",
+  "server/sounds/Bank 40 - SLS-001/5 Perc Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 40 - SLS-001/chan-006.wav",
+  "server/sounds/Bank 40 - SLS-001/6 Noise Burst.wav"
+ ],
+ [
+  "server/sounds/Bank 40 - SLS-001/chan-007.wav",
+  "server/sounds/Bank 40 - SLS-001/7 Bass Blip.wav"
+ ],
+ [
+  "server/sounds/Bank 40 - SLS-001/chan-008.wav",
+  "server/sounds/Bank 40 - SLS-001/8 FX Pitch.wav"
+ ],
+ [
+  "server/sounds/Bank 41 - SLS-002/chan-001.wav",
+  "server/sounds/Bank 41 - SLS-002/1 Kick.wav"
+ ],
+ [
+  "server/sounds/Bank 41 - SLS-002/chan-002.wav",
+  "server/sounds/Bank 41 - SLS-002/2 Glitch Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 41 - SLS-002/chan-003.wav",
+  "server/sounds/Bank 41 - SLS-002/3 Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 41 - SLS-002/chan-004.wav",
+  "server/sounds/Bank 41 - SLS-002/4 Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 41 - SLS-002/chan-005.wav",
+  "server/sounds/Bank 41 - SLS-002/5 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 41 - SLS-002/chan-006.wav",
+  "server/sounds/Bank 41 - SLS-002/6 Tonal Kick.wav"
+ ],
+ [
+  "server/sounds/Bank 41 - SLS-002/chan-007.wav",
+  "server/sounds/Bank 41 - SLS-002/7 Bell.wav"
+ ],
+ [
+  "server/sounds/Bank 41 - SLS-002/chan-008.wav",
+  "server/sounds/Bank 41 - SLS-002/8 Distorted Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 42 - SLS-003/chan-001.wav",
+  "server/sounds/Bank 42 - SLS-003/1 Kick.wav"
+ ],
+ [
+  "server/sounds/Bank 42 - SLS-003/chan-002.wav",
+  "server/sounds/Bank 42 - SLS-003/2 Noise Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 42 - SLS-003/chan-003.wav",
+  "server/sounds/Bank 42 - SLS-003/3 Low Blip.wav"
+ ],
+ [
+  "server/sounds/Bank 42 - SLS-003/chan-004.wav",
+  "server/sounds/Bank 42 - SLS-003/4 Perc Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 42 - SLS-003/chan-005.wav",
+  "server/sounds/Bank 42 - SLS-003/5 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 42 - SLS-003/chan-006.wav",
+  "server/sounds/Bank 42 - SLS-003/6 FX Sweep.wav"
+ ],
+ [
+  "server/sounds/Bank 42 - SLS-003/chan-007.wav",
+  "server/sounds/Bank 42 - SLS-003/7 Kick (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 42 - SLS-003/chan-008.wav",
+  "server/sounds/Bank 42 - SLS-003/8 Snare (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 43 - SLS-004/chan-001.wav",
+  "server/sounds/Bank 43 - SLS-004/1 Kick.wav"
+ ],
+ [
+  "server/sounds/Bank 43 - SLS-004/chan-002.wav",
+  "server/sounds/Bank 43 - SLS-004/2 Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 43 - SLS-004/chan-003.wav",
+  "server/sounds/Bank 43 - SLS-004/3 Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 43 - SLS-004/chan-004.wav",
+  "server/sounds/Bank 43 - SLS-004/4 Perc Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 43 - SLS-004/chan-005.wav",
+  "server/sounds/Bank 43 - SLS-004/5 Noise Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 43 - SLS-004/chan-006.wav",
+  "server/sounds/Bank 43 - SLS-004/6 Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 43 - SLS-004/chan-007.wav",
+  "server/sounds/Bank 43 - SLS-004/7 Wobble FX.wav"
+ ],
+ [
+  "server/sounds/Bank 43 - SLS-004/chan-008.wav",
+  "server/sounds/Bank 43 - SLS-004/8 Noise Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 44 - SLS-005/chan-001.wav",
+  "server/sounds/Bank 44 - SLS-005/1 Kick.wav"
+ ],
+ [
+  "server/sounds/Bank 44 - SLS-005/chan-002.wav",
+  "server/sounds/Bank 44 - SLS-005/2 Noise Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 44 - SLS-005/chan-003.wav",
+  "server/sounds/Bank 44 - SLS-005/3 Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Bank 44 - SLS-005/chan-004.wav",
+  "server/sounds/Bank 44 - SLS-005/4 Woodblock.wav"
+ ],
+ [
+  "server/sounds/Bank 44 - SLS-005/chan-005.wav",
+  "server/sounds/Bank 44 - SLS-005/5 Perc Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 44 - SLS-005/chan-006.wav",
+  "server/sounds/Bank 44 - SLS-005/6 Kick (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 44 - SLS-005/chan-007.wav",
+  "server/sounds/Bank 44 - SLS-005/7 Click.wav"
+ ],
+ [
+  "server/sounds/Bank 44 - SLS-005/chan-008.wav",
+  "server/sounds/Bank 44 - SLS-005/8 Low Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 45 - FLAX-001/chan-001.wav",
+  "server/sounds/Bank 45 - FLAX-001/1 Mallet Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 45 - FLAX-001/chan-002.wav",
+  "server/sounds/Bank 45 - FLAX-001/2 Struck Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 45 - FLAX-001/chan-003.wav",
+  "server/sounds/Bank 45 - FLAX-001/3 Synth Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 45 - FLAX-001/chan-004.wav",
+  "server/sounds/Bank 45 - FLAX-001/4 Chime - Xylophone.wav"
+ ],
+ [
+  "server/sounds/Bank 45 - FLAX-001/chan-005.wav",
+  "server/sounds/Bank 45 - FLAX-001/5 Plucked Tone (C4).wav"
+ ],
+ [
+  "server/sounds/Bank 45 - FLAX-001/chan-006.wav",
+  "server/sounds/Bank 45 - FLAX-001/6 Saw Pluck (C4).wav"
+ ],
+ [
+  "server/sounds/Bank 45 - FLAX-001/chan-007.wav",
+  "server/sounds/Bank 45 - FLAX-001/7 Vibraphone (C4).wav"
+ ],
+ [
+  "server/sounds/Bank 45 - FLAX-001/chan-008.wav",
+  "server/sounds/Bank 45 - FLAX-001/8 Chime (C4).wav"
+ ],
+ [
+  "server/sounds/Bank 46 - FLAX-002/chan-001.wav",
+  "server/sounds/Bank 46 - FLAX-002/1 Guitar Pluck.wav"
+ ],
+ [
+  "server/sounds/Bank 46 - FLAX-002/chan-002.wav",
+  "server/sounds/Bank 46 - FLAX-002/2 Marimba Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 46 - FLAX-002/chan-003.wav",
+  "server/sounds/Bank 46 - FLAX-002/3 Square Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 46 - FLAX-002/chan-004.wav",
+  "server/sounds/Bank 46 - FLAX-002/4 Vocal Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 46 - FLAX-002/chan-005.wav",
+  "server/sounds/Bank 46 - FLAX-002/5 Sine Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 46 - FLAX-002/chan-006.wav",
+  "server/sounds/Bank 46 - FLAX-002/6 Bright Noise - Triangle.wav"
+ ],
+ [
+  "server/sounds/Bank 46 - FLAX-002/chan-007.wav",
+  "server/sounds/Bank 46 - FLAX-002/7 Chime.wav"
+ ],
+ [
+  "server/sounds/Bank 46 - FLAX-002/chan-008.wav",
+  "server/sounds/Bank 46 - FLAX-002/8 Marimba.wav"
+ ],
+ [
+  "server/sounds/Bank 47 - FLAX-003/chan-001.wav",
+  "server/sounds/Bank 47 - FLAX-003/1 Low Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 47 - FLAX-003/chan-002.wav",
+  "server/sounds/Bank 47 - FLAX-003/2 Snare - Noise.wav"
+ ],
+ [
+  "server/sounds/Bank 47 - FLAX-003/chan-003.wav",
+  "server/sounds/Bank 47 - FLAX-003/3 Mid Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 47 - FLAX-003/chan-004.wav",
+  "server/sounds/Bank 47 - FLAX-003/4 Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 47 - FLAX-003/chan-005.wav",
+  "server/sounds/Bank 47 - FLAX-003/5 Distorted Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 47 - FLAX-003/chan-006.wav",
+  "server/sounds/Bank 47 - FLAX-003/6 Floor Tom.wav"
+ ],
+ [
+  "server/sounds/Bank 47 - FLAX-003/chan-007.wav",
+  "server/sounds/Bank 47 - FLAX-003/7 Bright Noise.wav"
+ ],
+ [
+  "server/sounds/Bank 47 - FLAX-003/chan-008.wav",
+  "server/sounds/Bank 47 - FLAX-003/8 Crash - Noise.wav"
+ ],
+ [
+  "server/sounds/Bank 48 - SB-001/chan-001.wav",
+  "server/sounds/Bank 48 - SB-001/1 Glitch FX.wav"
+ ],
+ [
+  "server/sounds/Bank 48 - SB-001/chan-002.wav",
+  "server/sounds/Bank 48 - SB-001/2 Guitar Bend.wav"
+ ],
+ [
+  "server/sounds/Bank 48 - SB-001/chan-003.wav",
+  "server/sounds/Bank 48 - SB-001/3 Bass Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 48 - SB-001/chan-004.wav",
+  "server/sounds/Bank 48 - SB-001/4 Distorted Guitar.wav"
+ ],
+ [
+  "server/sounds/Bank 48 - SB-001/chan-005.wav",
+  "server/sounds/Bank 48 - SB-001/5 Vocal - Guitar.wav"
+ ],
+ [
+  "server/sounds/Bank 48 - SB-001/chan-006.wav",
+  "server/sounds/Bank 48 - SB-001/6 Wobble Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 48 - SB-001/chan-007.wav",
+  "server/sounds/Bank 48 - SB-001/7 Reverb Guitar.wav"
+ ],
+ [
+  "server/sounds/Bank 48 - SB-001/chan-008.wav",
+  "server/sounds/Bank 48 - SB-001/8 Pad (10s).wav"
+ ],
+ [
+  "server/sounds/Bank 49 - SB-002/chan-001.wav",
+  "server/sounds/Bank 49 - SB-002/1 Glitch Noise.wav"
+ ],
+ [
+  "server/sounds/Bank 49 - SB-002/chan-002.wav",
+  "server/sounds/Bank 49 - SB-002/2 Bass Sweep.wav"
+ ],
+ [
+  "server/sounds/Bank 49 - SB-002/chan-003.wav",
+  "server/sounds/Bank 49 - SB-002/3 Noise Snare.wav"
+ ],
+ [
+  "server/sounds/Bank 49 - SB-002/chan-004.wav",
+  "server/sounds/Bank 49 - SB-002/4 Granular Texture.wav"
+ ],
+ [
+  "server/sounds/Bank 49 - SB-002/chan-005.wav",
+  "server/sounds/Bank 49 - SB-002/5 Granular Wash.wav"
+ ],
+ [
+  "server/sounds/Bank 49 - SB-002/chan-006.wav",
+  "server/sounds/Bank 49 - SB-002/6 Perc Blip.wav"
+ ],
+ [
+  "server/sounds/Bank 49 - SB-002/chan-007.wav",
+  "server/sounds/Bank 49 - SB-002/7 Boomy Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 49 - SB-002/chan-008.wav",
+  "server/sounds/Bank 49 - SB-002/8 Glitch Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 50 - SB-003/chan-001.wav",
+  "server/sounds/Bank 50 - SB-003/1 Bass Sweep (7s).wav"
+ ],
+ [
+  "server/sounds/Bank 50 - SB-003/chan-002.wav",
+  "server/sounds/Bank 50 - SB-003/2 Wobble Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 50 - SB-003/chan-003.wav",
+  "server/sounds/Bank 50 - SB-003/3 Noisy Bass Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 50 - SB-003/chan-004.wav",
+  "server/sounds/Bank 50 - SB-003/4 Glitch Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 50 - SB-003/chan-005.wav",
+  "server/sounds/Bank 50 - SB-003/5 Pad Sweep.wav"
+ ],
+ [
+  "server/sounds/Bank 50 - SB-003/chan-006.wav",
+  "server/sounds/Bank 50 - SB-003/6 Noise Texture.wav"
+ ],
+ [
+  "server/sounds/Bank 50 - SB-003/chan-007.wav",
+  "server/sounds/Bank 50 - SB-003/7 Harsh Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 50 - SB-003/chan-008.wav",
+  "server/sounds/Bank 50 - SB-003/8 Wobble Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 51 - SZAM-001/chan-001.wav",
+  "server/sounds/Bank 51 - SZAM-001/1 Bass Hit (long).wav"
+ ],
+ [
+  "server/sounds/Bank 51 - SZAM-001/chan-002.wav",
+  "server/sounds/Bank 51 - SZAM-001/2 Sub Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 51 - SZAM-001/chan-003.wav",
+  "server/sounds/Bank 51 - SZAM-001/3 Noise Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 51 - SZAM-001/chan-004.wav",
+  "server/sounds/Bank 51 - SZAM-001/4 Low Blip.wav"
+ ],
+ [
+  "server/sounds/Bank 51 - SZAM-001/chan-005.wav",
+  "server/sounds/Bank 51 - SZAM-001/5 Vocal Blip.wav"
+ ],
+ [
+  "server/sounds/Bank 51 - SZAM-001/chan-006.wav",
+  "server/sounds/Bank 51 - SZAM-001/6 Pitch Sweep.wav"
+ ],
+ [
+  "server/sounds/Bank 51 - SZAM-001/chan-007.wav",
+  "server/sounds/Bank 51 - SZAM-001/7 Glitch Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 51 - SZAM-001/chan-008.wav",
+  "server/sounds/Bank 51 - SZAM-001/8 Granular Noise.wav"
+ ],
+ [
+  "server/sounds/Bank 52 - DA-DOMP1/chan-001.wav",
+  "server/sounds/Bank 52 - DA-DOMP1/1 Low Conga.wav"
+ ],
+ [
+  "server/sounds/Bank 52 - DA-DOMP1/chan-002.wav",
+  "server/sounds/Bank 52 - DA-DOMP1/2 Woodblock.wav"
+ ],
+ [
+  "server/sounds/Bank 52 - DA-DOMP1/chan-003.wav",
+  "server/sounds/Bank 52 - DA-DOMP1/3 Bongo.wav"
+ ],
+ [
+  "server/sounds/Bank 52 - DA-DOMP1/chan-004.wav",
+  "server/sounds/Bank 52 - DA-DOMP1/4 Bell - Tambourine.wav"
+ ],
+ [
+  "server/sounds/Bank 52 - DA-DOMP1/chan-005.wav",
+  "server/sounds/Bank 52 - DA-DOMP1/5 Woodblock (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 52 - DA-DOMP1/chan-006.wav",
+  "server/sounds/Bank 52 - DA-DOMP1/6 Sustained Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 52 - DA-DOMP1/chan-007.wav",
+  "server/sounds/Bank 52 - DA-DOMP1/7 Xylophone.wav"
+ ],
+ [
+  "server/sounds/Bank 52 - DA-DOMP1/chan-008.wav",
+  "server/sounds/Bank 52 - DA-DOMP1/8 Tonal Drone (6s).wav"
+ ],
+ [
+  "server/sounds/Bank 53 - DA-DOMP2/chan-001.wav",
+  "server/sounds/Bank 53 - DA-DOMP2/1 Low Conga.wav"
+ ],
+ [
+  "server/sounds/Bank 53 - DA-DOMP2/chan-002.wav",
+  "server/sounds/Bank 53 - DA-DOMP2/2 Conga.wav"
+ ],
+ [
+  "server/sounds/Bank 53 - DA-DOMP2/chan-003.wav",
+  "server/sounds/Bank 53 - DA-DOMP2/3 Noise Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 53 - DA-DOMP2/chan-004.wav",
+  "server/sounds/Bank 53 - DA-DOMP2/4 Resonant Bell.wav"
+ ],
+ [
+  "server/sounds/Bank 53 - DA-DOMP2/chan-005.wav",
+  "server/sounds/Bank 53 - DA-DOMP2/5 Distorted Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 53 - DA-DOMP2/chan-006.wav",
+  "server/sounds/Bank 53 - DA-DOMP2/6 Woodblock.wav"
+ ],
+ [
+  "server/sounds/Bank 53 - DA-DOMP2/chan-007.wav",
+  "server/sounds/Bank 53 - DA-DOMP2/7 Granular Noise.wav"
+ ],
+ [
+  "server/sounds/Bank 53 - DA-DOMP2/chan-008.wav",
+  "server/sounds/Bank 53 - DA-DOMP2/8 Wobble Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 54 - NYZ-FLD1/chan-001.wav",
+  "server/sounds/Bank 54 - NYZ-FLD1/1 Field Texture (distorted).wav"
+ ],
+ [
+  "server/sounds/Bank 54 - NYZ-FLD1/chan-002.wav",
+  "server/sounds/Bank 54 - NYZ-FLD1/2 Field Texture (bright).wav"
+ ],
+ [
+  "server/sounds/Bank 54 - NYZ-FLD1/chan-003.wav",
+  "server/sounds/Bank 54 - NYZ-FLD1/3 Field Recording.wav"
+ ],
+ [
+  "server/sounds/Bank 54 - NYZ-FLD1/chan-004.wav",
+  "server/sounds/Bank 54 - NYZ-FLD1/4 Field Recording (bowed).wav"
+ ],
+ [
+  "server/sounds/Bank 54 - NYZ-FLD1/chan-005.wav",
+  "server/sounds/Bank 54 - NYZ-FLD1/5 Field Noise.wav"
+ ],
+ [
+  "server/sounds/Bank 54 - NYZ-FLD1/chan-006.wav",
+  "server/sounds/Bank 54 - NYZ-FLD1/6 Field Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 54 - NYZ-FLD1/chan-007.wav",
+  "server/sounds/Bank 54 - NYZ-FLD1/7 Field Drone (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 54 - NYZ-FLD1/chan-008.wav",
+  "server/sounds/Bank 54 - NYZ-FLD1/8 Field Granular.wav"
+ ],
+ [
+  "server/sounds/Bank 55 - NYZ-SYN1/chan-001.wav",
+  "server/sounds/Bank 55 - NYZ-SYN1/1 Tonal Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 55 - NYZ-SYN1/chan-002.wav",
+  "server/sounds/Bank 55 - NYZ-SYN1/2 Noise Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 55 - NYZ-SYN1/chan-003.wav",
+  "server/sounds/Bank 55 - NYZ-SYN1/3 Dark Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 55 - NYZ-SYN1/chan-004.wav",
+  "server/sounds/Bank 55 - NYZ-SYN1/4 Organ Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 55 - NYZ-SYN1/chan-005.wav",
+  "server/sounds/Bank 55 - NYZ-SYN1/5 Bass Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 55 - NYZ-SYN1/chan-006.wav",
+  "server/sounds/Bank 55 - NYZ-SYN1/6 Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 55 - NYZ-SYN1/chan-007.wav",
+  "server/sounds/Bank 55 - NYZ-SYN1/7 Evolving Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 55 - NYZ-SYN1/chan-008.wav",
+  "server/sounds/Bank 55 - NYZ-SYN1/8 Swell Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 56 - NYZ-SYN2/chan-001.wav",
+  "server/sounds/Bank 56 - NYZ-SYN2/1 Bright Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 56 - NYZ-SYN2/chan-002.wav",
+  "server/sounds/Bank 56 - NYZ-SYN2/2 Bass Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 56 - NYZ-SYN2/chan-003.wav",
+  "server/sounds/Bank 56 - NYZ-SYN2/3 Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 56 - NYZ-SYN2/chan-004.wav",
+  "server/sounds/Bank 56 - NYZ-SYN2/4 Bass Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 56 - NYZ-SYN2/chan-005.wav",
+  "server/sounds/Bank 56 - NYZ-SYN2/5 Electric Piano.wav"
+ ],
+ [
+  "server/sounds/Bank 56 - NYZ-SYN2/chan-006.wav",
+  "server/sounds/Bank 56 - NYZ-SYN2/6 Electric Piano (C4).wav"
+ ],
+ [
+  "server/sounds/Bank 56 - NYZ-SYN2/chan-007.wav",
+  "server/sounds/Bank 56 - NYZ-SYN2/7 Organ Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 56 - NYZ-SYN2/chan-008.wav",
+  "server/sounds/Bank 56 - NYZ-SYN2/8 Bell Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 57 - NYZ-SYN3/chan-001.wav",
+  "server/sounds/Bank 57 - NYZ-SYN3/1 Saw Pluck.wav"
+ ],
+ [
+  "server/sounds/Bank 57 - NYZ-SYN3/chan-002.wav",
+  "server/sounds/Bank 57 - NYZ-SYN3/2 Electric Piano.wav"
+ ],
+ [
+  "server/sounds/Bank 57 - NYZ-SYN3/chan-003.wav",
+  "server/sounds/Bank 57 - NYZ-SYN3/3 Gong Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 57 - NYZ-SYN3/chan-004.wav",
+  "server/sounds/Bank 57 - NYZ-SYN3/4 Guitar Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 57 - NYZ-SYN3/chan-005.wav",
+  "server/sounds/Bank 57 - NYZ-SYN3/5 Marimba.wav"
+ ],
+ [
+  "server/sounds/Bank 57 - NYZ-SYN3/chan-006.wav",
+  "server/sounds/Bank 57 - NYZ-SYN3/6 Synth Pluck.wav"
+ ],
+ [
+  "server/sounds/Bank 57 - NYZ-SYN3/chan-007.wav",
+  "server/sounds/Bank 57 - NYZ-SYN3/7 Bass Chime.wav"
+ ],
+ [
+  "server/sounds/Bank 57 - NYZ-SYN3/chan-008.wav",
+  "server/sounds/Bank 57 - NYZ-SYN3/8 Vibraphone.wav"
+ ],
+ [
+  "server/sounds/Bank 58 - NYZ-SYN4/chan-001.wav",
+  "server/sounds/Bank 58 - NYZ-SYN4/1 Bass Guitar.wav"
+ ],
+ [
+  "server/sounds/Bank 58 - NYZ-SYN4/chan-002.wav",
+  "server/sounds/Bank 58 - NYZ-SYN4/2 Vibraphone.wav"
+ ],
+ [
+  "server/sounds/Bank 58 - NYZ-SYN4/chan-003.wav",
+  "server/sounds/Bank 58 - NYZ-SYN4/3 Synth Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 58 - NYZ-SYN4/chan-004.wav",
+  "server/sounds/Bank 58 - NYZ-SYN4/4 Marimba.wav"
+ ],
+ [
+  "server/sounds/Bank 58 - NYZ-SYN4/chan-005.wav",
+  "server/sounds/Bank 58 - NYZ-SYN4/5 Bass Marimba.wav"
+ ],
+ [
+  "server/sounds/Bank 58 - NYZ-SYN4/chan-006.wav",
+  "server/sounds/Bank 58 - NYZ-SYN4/6 Bell.wav"
+ ],
+ [
+  "server/sounds/Bank 58 - NYZ-SYN4/chan-007.wav",
+  "server/sounds/Bank 58 - NYZ-SYN4/7 Bright Bell.wav"
+ ],
+ [
+  "server/sounds/Bank 58 - NYZ-SYN4/chan-008.wav",
+  "server/sounds/Bank 58 - NYZ-SYN4/8 Noise Pluck (7.5s).wav"
+ ],
+ [
+  "server/sounds/Bank 59 - CS80 C4/chan-001.wav",
+  "server/sounds/Bank 59 - CS80 C4/1 CS-80 Dark Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 59 - CS80 C4/chan-002.wav",
+  "server/sounds/Bank 59 - CS80 C4/2 CS-80 Swell Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 59 - CS80 C4/chan-003.wav",
+  "server/sounds/Bank 59 - CS80 C4/3 CS-80 Organ Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 59 - CS80 C4/chan-004.wav",
+  "server/sounds/Bank 59 - CS80 C4/4 CS-80 Bright Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 59 - CS80 C4/chan-005.wav",
+  "server/sounds/Bank 59 - CS80 C4/5 CS-80 Bass Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 59 - CS80 C4/chan-006.wav",
+  "server/sounds/Bank 59 - CS80 C4/6 CS-80 Tonal Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 59 - CS80 C4/chan-007.wav",
+  "server/sounds/Bank 59 - CS80 C4/7 CS-80 Warm Swell.wav"
+ ],
+ [
+  "server/sounds/Bank 59 - CS80 C4/chan-008.wav",
+  "server/sounds/Bank 59 - CS80 C4/8 CS-80 Filter Sweep.wav"
+ ],
+ [
+  "server/sounds/Bank 60 - APH-JUNO/chan-001.wav",
+  "server/sounds/Bank 60 - APH-JUNO/1 Juno Bass Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 60 - APH-JUNO/chan-002.wav",
+  "server/sounds/Bank 60 - APH-JUNO/2 Juno Perc.wav"
+ ],
+ [
+  "server/sounds/Bank 60 - APH-JUNO/chan-003.wav",
+  "server/sounds/Bank 60 - APH-JUNO/3 Juno Blip.wav"
+ ],
+ [
+  "server/sounds/Bank 60 - APH-JUNO/chan-004.wav",
+  "server/sounds/Bank 60 - APH-JUNO/4 Juno Bass Sweep.wav"
+ ],
+ [
+  "server/sounds/Bank 60 - APH-JUNO/chan-005.wav",
+  "server/sounds/Bank 60 - APH-JUNO/5 Juno Pluck (C4).wav"
+ ],
+ [
+  "server/sounds/Bank 60 - APH-JUNO/chan-006.wav",
+  "server/sounds/Bank 60 - APH-JUNO/6 Juno Wobble Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 60 - APH-JUNO/chan-007.wav",
+  "server/sounds/Bank 60 - APH-JUNO/7 Juno Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 60 - APH-JUNO/chan-008.wav",
+  "server/sounds/Bank 60 - APH-JUNO/8 Juno Distorted Sweep.wav"
+ ],
+ [
+  "server/sounds/Bank 61 - DX7-TG77/chan-001.wav",
+  "server/sounds/Bank 61 - DX7-TG77/1 FM Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 61 - DX7-TG77/chan-002.wav",
+  "server/sounds/Bank 61 - DX7-TG77/2 FM Bell.wav"
+ ],
+ [
+  "server/sounds/Bank 61 - DX7-TG77/chan-003.wav",
+  "server/sounds/Bank 61 - DX7-TG77/3 FM Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 61 - DX7-TG77/chan-004.wav",
+  "server/sounds/Bank 61 - DX7-TG77/4 FM Electric Piano.wav"
+ ],
+ [
+  "server/sounds/Bank 61 - DX7-TG77/chan-005.wav",
+  "server/sounds/Bank 61 - DX7-TG77/5 FM Bell (low).wav"
+ ],
+ [
+  "server/sounds/Bank 61 - DX7-TG77/chan-006.wav",
+  "server/sounds/Bank 61 - DX7-TG77/6 FM Bass Pluck.wav"
+ ],
+ [
+  "server/sounds/Bank 61 - DX7-TG77/chan-007.wav",
+  "server/sounds/Bank 61 - DX7-TG77/7 FM Key Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 61 - DX7-TG77/chan-008.wav",
+  "server/sounds/Bank 61 - DX7-TG77/8 FM Chime.wav"
+ ],
+ [
+  "server/sounds/Bank 62 - DA-BENJN/chan-001.wav",
+  "server/sounds/Bank 62 - DA-BENJN/1 Glitch Texture (11s).wav"
+ ],
+ [
+  "server/sounds/Bank 62 - DA-BENJN/chan-002.wav",
+  "server/sounds/Bank 62 - DA-BENJN/2 Wobble Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 62 - DA-BENJN/chan-003.wav",
+  "server/sounds/Bank 62 - DA-BENJN/3 Bass Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 62 - DA-BENJN/chan-004.wav",
+  "server/sounds/Bank 62 - DA-BENJN/4 Pitch Wobble.wav"
+ ],
+ [
+  "server/sounds/Bank 62 - DA-BENJN/chan-005.wav",
+  "server/sounds/Bank 62 - DA-BENJN/5 Noisy Bend.wav"
+ ],
+ [
+  "server/sounds/Bank 62 - DA-BENJN/chan-006.wav",
+  "server/sounds/Bank 62 - DA-BENJN/6 Vocal Wobble.wav"
+ ],
+ [
+  "server/sounds/Bank 62 - DA-BENJN/chan-007.wav",
+  "server/sounds/Bank 62 - DA-BENJN/7 Bass Texture.wav"
+ ],
+ [
+  "server/sounds/Bank 62 - DA-BENJN/chan-008.wav",
+  "server/sounds/Bank 62 - DA-BENJN/8 Rhythmic Texture.wav"
+ ],
+ [
+  "server/sounds/Bank 63 - BEEBSAMP/chan-001.wav",
+  "server/sounds/Bank 63 - BEEBSAMP/1 8-bit Blip.wav"
+ ],
+ [
+  "server/sounds/Bank 63 - BEEBSAMP/chan-002.wav",
+  "server/sounds/Bank 63 - BEEBSAMP/2 8-bit Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 63 - BEEBSAMP/chan-003.wav",
+  "server/sounds/Bank 63 - BEEBSAMP/3 8-bit Noise.wav"
+ ],
+ [
+  "server/sounds/Bank 63 - BEEBSAMP/chan-004.wav",
+  "server/sounds/Bank 63 - BEEBSAMP/4 8-bit Noise Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 63 - BEEBSAMP/chan-005.wav",
+  "server/sounds/Bank 63 - BEEBSAMP/5 8-bit Tone.wav"
+ ],
+ [
+  "server/sounds/Bank 63 - BEEBSAMP/chan-006.wav",
+  "server/sounds/Bank 63 - BEEBSAMP/6 8-bit Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 63 - BEEBSAMP/chan-007.wav",
+  "server/sounds/Bank 63 - BEEBSAMP/7 8-bit Melody Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 63 - BEEBSAMP/chan-008.wav",
+  "server/sounds/Bank 63 - BEEBSAMP/8 8-bit Click.wav"
+ ],
+ [
+  "server/sounds/Bank 64 - RH-BENJN/chan-001.wav",
+  "server/sounds/Bank 64 - RH-BENJN/1 Bass Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 64 - RH-BENJN/chan-002.wav",
+  "server/sounds/Bank 64 - RH-BENJN/2 Glitch Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 64 - RH-BENJN/chan-003.wav",
+  "server/sounds/Bank 64 - RH-BENJN/3 Sub Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 64 - RH-BENJN/chan-004.wav",
+  "server/sounds/Bank 64 - RH-BENJN/4 Sub Bass (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 64 - RH-BENJN/chan-005.wav",
+  "server/sounds/Bank 64 - RH-BENJN/5 Bass Sweep.wav"
+ ],
+ [
+  "server/sounds/Bank 64 - RH-BENJN/chan-006.wav",
+  "server/sounds/Bank 64 - RH-BENJN/6 Bass Drone (9s).wav"
+ ],
+ [
+  "server/sounds/Bank 64 - RH-BENJN/chan-007.wav",
+  "server/sounds/Bank 64 - RH-BENJN/7 Bass Blip.wav"
+ ],
+ [
+  "server/sounds/Bank 64 - RH-BENJN/chan-008.wav",
+  "server/sounds/Bank 64 - RH-BENJN/8 Harsh Bass.wav"
+ ],
+ [
+  "server/sounds/Bank 65 - RH-TAIKO/chan-001.wav",
+  "server/sounds/Bank 65 - RH-TAIKO/1 Taiko Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 65 - RH-TAIKO/chan-002.wav",
+  "server/sounds/Bank 65 - RH-TAIKO/2 Taiko Rim.wav"
+ ],
+ [
+  "server/sounds/Bank 65 - RH-TAIKO/chan-003.wav",
+  "server/sounds/Bank 65 - RH-TAIKO/3 Taiko Hit (short).wav"
+ ],
+ [
+  "server/sounds/Bank 65 - RH-TAIKO/chan-004.wav",
+  "server/sounds/Bank 65 - RH-TAIKO/4 Taiko Hit (mid).wav"
+ ],
+ [
+  "server/sounds/Bank 65 - RH-TAIKO/chan-005.wav",
+  "server/sounds/Bank 65 - RH-TAIKO/5 Taiko Hit (dry).wav"
+ ],
+ [
+  "server/sounds/Bank 65 - RH-TAIKO/chan-006.wav",
+  "server/sounds/Bank 65 - RH-TAIKO/6 Taiko Boom (long).wav"
+ ],
+ [
+  "server/sounds/Bank 65 - RH-TAIKO/chan-007.wav",
+  "server/sounds/Bank 65 - RH-TAIKO/7 Taiko Slap.wav"
+ ],
+ [
+  "server/sounds/Bank 65 - RH-TAIKO/chan-008.wav",
+  "server/sounds/Bank 65 - RH-TAIKO/8 Taiko Low.wav"
+ ],
+ [
+  "server/sounds/Bank 66 - EBC-Coco/chan-001.wav",
+  "server/sounds/Bank 66 - EBC-Coco/1 Distorted Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 66 - EBC-Coco/chan-002.wav",
+  "server/sounds/Bank 66 - EBC-Coco/2 Detuned Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 66 - EBC-Coco/chan-003.wav",
+  "server/sounds/Bank 66 - EBC-Coco/3 Sub Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 66 - EBC-Coco/chan-004.wav",
+  "server/sounds/Bank 66 - EBC-Coco/4 Glitch Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 66 - EBC-Coco/chan-005.wav",
+  "server/sounds/Bank 66 - EBC-Coco/5 Noise Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 66 - EBC-Coco/chan-006.wav",
+  "server/sounds/Bank 66 - EBC-Coco/6 Boomy Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 66 - EBC-Coco/chan-007.wav",
+  "server/sounds/Bank 66 - EBC-Coco/7 Noise Texture.wav"
+ ],
+ [
+  "server/sounds/Bank 66 - EBC-Coco/chan-008.wav",
+  "server/sounds/Bank 66 - EBC-Coco/8 Bend Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 67 - EBC-Lyra/chan-001.wav",
+  "server/sounds/Bank 67 - EBC-Lyra/1 Bowed Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 67 - EBC-Lyra/chan-002.wav",
+  "server/sounds/Bank 67 - EBC-Lyra/2 Glitch Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 67 - EBC-Lyra/chan-003.wav",
+  "server/sounds/Bank 67 - EBC-Lyra/3 Bass Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 67 - EBC-Lyra/chan-004.wav",
+  "server/sounds/Bank 67 - EBC-Lyra/4 String Swell.wav"
+ ],
+ [
+  "server/sounds/Bank 67 - EBC-Lyra/chan-005.wav",
+  "server/sounds/Bank 67 - EBC-Lyra/5 Distorted Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 67 - EBC-Lyra/chan-006.wav",
+  "server/sounds/Bank 67 - EBC-Lyra/6 Gong Drone.wav"
+ ],
+ [
+  "server/sounds/Bank 67 - EBC-Lyra/chan-007.wav",
+  "server/sounds/Bank 67 - EBC-Lyra/7 Detuned Strings.wav"
+ ],
+ [
+  "server/sounds/Bank 67 - EBC-Lyra/chan-008.wav",
+  "server/sounds/Bank 67 - EBC-Lyra/8 Dark Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 68 - MEGA-DM1/chan-001.wav",
+  "server/sounds/Bank 68 - MEGA-DM1/1 Drum Loop (low).wav"
+ ],
+ [
+  "server/sounds/Bank 68 - MEGA-DM1/chan-002.wav",
+  "server/sounds/Bank 68 - MEGA-DM1/2 Drum Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 68 - MEGA-DM1/chan-003.wav",
+  "server/sounds/Bank 68 - MEGA-DM1/3 Hat Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 68 - MEGA-DM1/chan-004.wav",
+  "server/sounds/Bank 68 - MEGA-DM1/4 Percussion Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 68 - MEGA-DM1/chan-005.wav",
+  "server/sounds/Bank 68 - MEGA-DM1/5 Drum Loop (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 68 - MEGA-DM1/chan-006.wav",
+  "server/sounds/Bank 68 - MEGA-DM1/6 Glitch Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 68 - MEGA-DM1/chan-007.wav",
+  "server/sounds/Bank 68 - MEGA-DM1/7 Melodic Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 68 - MEGA-DM1/chan-008.wav",
+  "server/sounds/Bank 68 - MEGA-DM1/8 Melodic Loop (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 69 - MEGA-DM2/chan-001.wav",
+  "server/sounds/Bank 69 - MEGA-DM2/1 Drum Loop (low).wav"
+ ],
+ [
+  "server/sounds/Bank 69 - MEGA-DM2/chan-002.wav",
+  "server/sounds/Bank 69 - MEGA-DM2/2 Drum Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 69 - MEGA-DM2/chan-003.wav",
+  "server/sounds/Bank 69 - MEGA-DM2/3 Hat Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 69 - MEGA-DM2/chan-004.wav",
+  "server/sounds/Bank 69 - MEGA-DM2/4 Snare Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 69 - MEGA-DM2/chan-005.wav",
+  "server/sounds/Bank 69 - MEGA-DM2/5 Perc Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 69 - MEGA-DM2/chan-006.wav",
+  "server/sounds/Bank 69 - MEGA-DM2/6 Drum Loop (long).wav"
+ ],
+ [
+  "server/sounds/Bank 69 - MEGA-DM2/chan-007.wav",
+  "server/sounds/Bank 69 - MEGA-DM2/7 String Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 69 - MEGA-DM2/chan-008.wav",
+  "server/sounds/Bank 69 - MEGA-DM2/8 Melodic Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 70 - MEGA-MnD/chan-001.wav",
+  "server/sounds/Bank 70 - MEGA-MnD/1 Drum Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 70 - MEGA-MnD/chan-002.wav",
+  "server/sounds/Bank 70 - MEGA-MnD/2 Perc Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 70 - MEGA-MnD/chan-003.wav",
+  "server/sounds/Bank 70 - MEGA-MnD/3 Hat Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 70 - MEGA-MnD/chan-004.wav",
+  "server/sounds/Bank 70 - MEGA-MnD/4 Shaker Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 70 - MEGA-MnD/chan-005.wav",
+  "server/sounds/Bank 70 - MEGA-MnD/5 Melodic Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 70 - MEGA-MnD/chan-006.wav",
+  "server/sounds/Bank 70 - MEGA-MnD/6 Bright Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 70 - MEGA-MnD/chan-007.wav",
+  "server/sounds/Bank 70 - MEGA-MnD/7 Drum Loop (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 70 - MEGA-MnD/chan-008.wav",
+  "server/sounds/Bank 70 - MEGA-MnD/8 Perc Loop (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 71 - MEGAMIDI/chan-001.wav",
+  "server/sounds/Bank 71 - MEGAMIDI/1 Drum Loop (low).wav"
+ ],
+ [
+  "server/sounds/Bank 71 - MEGAMIDI/chan-002.wav",
+  "server/sounds/Bank 71 - MEGAMIDI/2 Snare Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 71 - MEGAMIDI/chan-003.wav",
+  "server/sounds/Bank 71 - MEGAMIDI/3 Hat Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 71 - MEGAMIDI/chan-004.wav",
+  "server/sounds/Bank 71 - MEGAMIDI/4 Cymbal Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 71 - MEGAMIDI/chan-005.wav",
+  "server/sounds/Bank 71 - MEGAMIDI/5 Perc Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 71 - MEGAMIDI/chan-006.wav",
+  "server/sounds/Bank 71 - MEGAMIDI/6 Tom Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 71 - MEGAMIDI/chan-007.wav",
+  "server/sounds/Bank 71 - MEGAMIDI/7 Bass Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 71 - MEGAMIDI/chan-008.wav",
+  "server/sounds/Bank 71 - MEGAMIDI/8 Sustained FX.wav"
+ ],
+ [
+  "server/sounds/Bank 72 - MEGA-909/chan-001.wav",
+  "server/sounds/Bank 72 - MEGA-909/1 Kick Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 72 - MEGA-909/chan-002.wav",
+  "server/sounds/Bank 72 - MEGA-909/2 Drum Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 72 - MEGA-909/chan-003.wav",
+  "server/sounds/Bank 72 - MEGA-909/3 Hat Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 72 - MEGA-909/chan-004.wav",
+  "server/sounds/Bank 72 - MEGA-909/4 Ride Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 72 - MEGA-909/chan-005.wav",
+  "server/sounds/Bank 72 - MEGA-909/5 Snare Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 72 - MEGA-909/chan-006.wav",
+  "server/sounds/Bank 72 - MEGA-909/6 Bass Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 72 - MEGA-909/chan-007.wav",
+  "server/sounds/Bank 72 - MEGA-909/7 Bass Loop (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 72 - MEGA-909/chan-008.wav",
+  "server/sounds/Bank 72 - MEGA-909/8 Cymbal Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 73 - X0X-JUNO/chan-001.wav",
+  "server/sounds/Bank 73 - X0X-JUNO/1 Kick Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 73 - X0X-JUNO/chan-002.wav",
+  "server/sounds/Bank 73 - X0X-JUNO/2 Drum Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 73 - X0X-JUNO/chan-003.wav",
+  "server/sounds/Bank 73 - X0X-JUNO/3 Hat Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 73 - X0X-JUNO/chan-004.wav",
+  "server/sounds/Bank 73 - X0X-JUNO/4 Shaker Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 73 - X0X-JUNO/chan-005.wav",
+  "server/sounds/Bank 73 - X0X-JUNO/5 Vocal Wobble.wav"
+ ],
+ [
+  "server/sounds/Bank 73 - X0X-JUNO/chan-006.wav",
+  "server/sounds/Bank 73 - X0X-JUNO/6 Juno Chord Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 73 - X0X-JUNO/chan-007.wav",
+  "server/sounds/Bank 73 - X0X-JUNO/7 Bass Wobble.wav"
+ ],
+ [
+  "server/sounds/Bank 73 - X0X-JUNO/chan-008.wav",
+  "server/sounds/Bank 73 - X0X-JUNO/8 Organ Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 74 - FM-JUNO/chan-001.wav",
+  "server/sounds/Bank 74 - FM-JUNO/1 Kick Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 74 - FM-JUNO/chan-002.wav",
+  "server/sounds/Bank 74 - FM-JUNO/2 Perc Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 74 - FM-JUNO/chan-003.wav",
+  "server/sounds/Bank 74 - FM-JUNO/3 Hat Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 74 - FM-JUNO/chan-004.wav",
+  "server/sounds/Bank 74 - FM-JUNO/4 Noise Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 74 - FM-JUNO/chan-005.wav",
+  "server/sounds/Bank 74 - FM-JUNO/5 Organ Loop (C2).wav"
+ ],
+ [
+  "server/sounds/Bank 74 - FM-JUNO/chan-006.wav",
+  "server/sounds/Bank 74 - FM-JUNO/6 Pad Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 74 - FM-JUNO/chan-007.wav",
+  "server/sounds/Bank 74 - FM-JUNO/7 Electric Piano Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 74 - FM-JUNO/chan-008.wav",
+  "server/sounds/Bank 74 - FM-JUNO/8 Organ Wobble.wav"
+ ],
+ [
+  "server/sounds/Bank 75 - 303--140/chan-001.wav",
+  "server/sounds/Bank 75 - 303--140/1 303 Bass Loop 1.wav"
+ ],
+ [
+  "server/sounds/Bank 75 - 303--140/chan-002.wav",
+  "server/sounds/Bank 75 - 303--140/2 303 Bass Loop 2.wav"
+ ],
+ [
+  "server/sounds/Bank 75 - 303--140/chan-003.wav",
+  "server/sounds/Bank 75 - 303--140/3 303 Bass Loop 3.wav"
+ ],
+ [
+  "server/sounds/Bank 75 - 303--140/chan-004.wav",
+  "server/sounds/Bank 75 - 303--140/4 303 Bass Loop 4.wav"
+ ],
+ [
+  "server/sounds/Bank 75 - 303--140/chan-005.wav",
+  "server/sounds/Bank 75 - 303--140/5 303 Bass Loop 5.wav"
+ ],
+ [
+  "server/sounds/Bank 75 - 303--140/chan-006.wav",
+  "server/sounds/Bank 75 - 303--140/6 303 Note (low).wav"
+ ],
+ [
+  "server/sounds/Bank 75 - 303--140/chan-007.wav",
+  "server/sounds/Bank 75 - 303--140/7 303 Note (bright).wav"
+ ],
+ [
+  "server/sounds/Bank 75 - 303--140/chan-008.wav",
+  "server/sounds/Bank 75 - 303--140/8 303 Note (sustained).wav"
+ ],
+ [
+  "server/sounds/Bank 76 - 303--125/chan-001.wav",
+  "server/sounds/Bank 76 - 303--125/1 303 Bass Loop 1.wav"
+ ],
+ [
+  "server/sounds/Bank 76 - 303--125/chan-002.wav",
+  "server/sounds/Bank 76 - 303--125/2 303 Bass Loop 2.wav"
+ ],
+ [
+  "server/sounds/Bank 76 - 303--125/chan-003.wav",
+  "server/sounds/Bank 76 - 303--125/3 303 Bass Loop 3.wav"
+ ],
+ [
+  "server/sounds/Bank 76 - 303--125/chan-004.wav",
+  "server/sounds/Bank 76 - 303--125/4 303 Bass Loop 4.wav"
+ ],
+ [
+  "server/sounds/Bank 76 - 303--125/chan-005.wav",
+  "server/sounds/Bank 76 - 303--125/5 303 Bass Loop 5.wav"
+ ],
+ [
+  "server/sounds/Bank 76 - 303--125/chan-006.wav",
+  "server/sounds/Bank 76 - 303--125/6 303 Note.wav"
+ ],
+ [
+  "server/sounds/Bank 76 - 303--125/chan-007.wav",
+  "server/sounds/Bank 76 - 303--125/7 303 Note (low).wav"
+ ],
+ [
+  "server/sounds/Bank 76 - 303--125/chan-008.wav",
+  "server/sounds/Bank 76 - 303--125/8 303 Note (sub).wav"
+ ],
+ [
+  "server/sounds/Bank 77 - SL165BPM/chan-001.wav",
+  "server/sounds/Bank 77 - SL165BPM/1 Drum Loop 1.wav"
+ ],
+ [
+  "server/sounds/Bank 77 - SL165BPM/chan-002.wav",
+  "server/sounds/Bank 77 - SL165BPM/2 Drum Loop 2.wav"
+ ],
+ [
+  "server/sounds/Bank 77 - SL165BPM/chan-003.wav",
+  "server/sounds/Bank 77 - SL165BPM/3 Drum Loop 3.wav"
+ ],
+ [
+  "server/sounds/Bank 77 - SL165BPM/chan-004.wav",
+  "server/sounds/Bank 77 - SL165BPM/4 Drum Loop 4.wav"
+ ],
+ [
+  "server/sounds/Bank 77 - SL165BPM/chan-005.wav",
+  "server/sounds/Bank 77 - SL165BPM/5 Vocal Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 77 - SL165BPM/chan-006.wav",
+  "server/sounds/Bank 77 - SL165BPM/6 Bass Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 77 - SL165BPM/chan-007.wav",
+  "server/sounds/Bank 77 - SL165BPM/7 Drone Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 77 - SL165BPM/chan-008.wav",
+  "server/sounds/Bank 77 - SL165BPM/8 Organ Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 78 - SL170BPM/chan-001.wav",
+  "server/sounds/Bank 78 - SL170BPM/1 Drum Loop 1.wav"
+ ],
+ [
+  "server/sounds/Bank 78 - SL170BPM/chan-002.wav",
+  "server/sounds/Bank 78 - SL170BPM/2 Drum Loop 2.wav"
+ ],
+ [
+  "server/sounds/Bank 78 - SL170BPM/chan-003.wav",
+  "server/sounds/Bank 78 - SL170BPM/3 Drum Loop 3.wav"
+ ],
+ [
+  "server/sounds/Bank 78 - SL170BPM/chan-004.wav",
+  "server/sounds/Bank 78 - SL170BPM/4 Drum Loop 4.wav"
+ ],
+ [
+  "server/sounds/Bank 78 - SL170BPM/chan-005.wav",
+  "server/sounds/Bank 78 - SL170BPM/5 Noise Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 78 - SL170BPM/chan-006.wav",
+  "server/sounds/Bank 78 - SL170BPM/6 Bass Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 78 - SL170BPM/chan-007.wav",
+  "server/sounds/Bank 78 - SL170BPM/7 Sub Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 78 - SL170BPM/chan-008.wav",
+  "server/sounds/Bank 78 - SL170BPM/8 Pad Hit.wav"
+ ],
+ [
+  "server/sounds/Bank 79 - SL175BPM/chan-001.wav",
+  "server/sounds/Bank 79 - SL175BPM/1 Drum Loop 1.wav"
+ ],
+ [
+  "server/sounds/Bank 79 - SL175BPM/chan-002.wav",
+  "server/sounds/Bank 79 - SL175BPM/2 Drum Loop 2.wav"
+ ],
+ [
+  "server/sounds/Bank 79 - SL175BPM/chan-003.wav",
+  "server/sounds/Bank 79 - SL175BPM/3 Drum Loop 3.wav"
+ ],
+ [
+  "server/sounds/Bank 79 - SL175BPM/chan-004.wav",
+  "server/sounds/Bank 79 - SL175BPM/4 Kick Loop (4 bars).wav"
+ ],
+ [
+  "server/sounds/Bank 79 - SL175BPM/chan-005.wav",
+  "server/sounds/Bank 79 - SL175BPM/5 Drum Loop (4 bars).wav"
+ ],
+ [
+  "server/sounds/Bank 79 - SL175BPM/chan-006.wav",
+  "server/sounds/Bank 79 - SL175BPM/6 Conga Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 79 - SL175BPM/chan-007.wav",
+  "server/sounds/Bank 79 - SL175BPM/7 Mallet Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 79 - SL175BPM/chan-008.wav",
+  "server/sounds/Bank 79 - SL175BPM/8 Mallet Loop (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 80 - SL180BPM/chan-001.wav",
+  "server/sounds/Bank 80 - SL180BPM/1 Drum Loop 1.wav"
+ ],
+ [
+  "server/sounds/Bank 80 - SL180BPM/chan-002.wav",
+  "server/sounds/Bank 80 - SL180BPM/2 Drum Loop 2.wav"
+ ],
+ [
+  "server/sounds/Bank 80 - SL180BPM/chan-003.wav",
+  "server/sounds/Bank 80 - SL180BPM/3 Drum Loop 3.wav"
+ ],
+ [
+  "server/sounds/Bank 80 - SL180BPM/chan-004.wav",
+  "server/sounds/Bank 80 - SL180BPM/4 Kick Loop (long).wav"
+ ],
+ [
+  "server/sounds/Bank 80 - SL180BPM/chan-005.wav",
+  "server/sounds/Bank 80 - SL180BPM/5 Drum Loop (long).wav"
+ ],
+ [
+  "server/sounds/Bank 80 - SL180BPM/chan-006.wav",
+  "server/sounds/Bank 80 - SL180BPM/6 Vocal Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 80 - SL180BPM/chan-007.wav",
+  "server/sounds/Bank 80 - SL180BPM/7 Mallet Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 80 - SL180BPM/chan-008.wav",
+  "server/sounds/Bank 80 - SL180BPM/8 Mallet Loop (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 81 - SL130BPM/chan-001.wav",
+  "server/sounds/Bank 81 - SL130BPM/1 Drum Loop 1.wav"
+ ],
+ [
+  "server/sounds/Bank 81 - SL130BPM/chan-002.wav",
+  "server/sounds/Bank 81 - SL130BPM/2 Drum Loop 2.wav"
+ ],
+ [
+  "server/sounds/Bank 81 - SL130BPM/chan-003.wav",
+  "server/sounds/Bank 81 - SL130BPM/3 Bass Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 81 - SL130BPM/chan-004.wav",
+  "server/sounds/Bank 81 - SL130BPM/4 Drum Loop (short).wav"
+ ],
+ [
+  "server/sounds/Bank 81 - SL130BPM/chan-005.wav",
+  "server/sounds/Bank 81 - SL130BPM/5 Bass Loop (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 81 - SL130BPM/chan-006.wav",
+  "server/sounds/Bank 81 - SL130BPM/6 Electric Piano Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 81 - SL130BPM/chan-007.wav",
+  "server/sounds/Bank 81 - SL130BPM/7 Electric Piano Loop (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 81 - SL130BPM/chan-008.wav",
+  "server/sounds/Bank 81 - SL130BPM/8 Guitar Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 82 - FLATPACK/chan-001.wav",
+  "server/sounds/Bank 82 - FLATPACK/1 Bass Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 82 - FLATPACK/chan-002.wav",
+  "server/sounds/Bank 82 - FLATPACK/2 Perc Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 82 - FLATPACK/chan-003.wav",
+  "server/sounds/Bank 82 - FLATPACK/3 Clap Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 82 - FLATPACK/chan-004.wav",
+  "server/sounds/Bank 82 - FLATPACK/4 Marimba Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 82 - FLATPACK/chan-005.wav",
+  "server/sounds/Bank 82 - FLATPACK/5 Snare Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 82 - FLATPACK/chan-006.wav",
+  "server/sounds/Bank 82 - FLATPACK/6 Bell Loop.wav"
+ ],
+ [
+  "server/sounds/Bank 82 - FLATPACK/chan-007.wav",
+  "server/sounds/Bank 82 - FLATPACK/7 Bass Sweep.wav"
+ ],
+ [
+  "server/sounds/Bank 82 - FLATPACK/chan-008.wav",
+  "server/sounds/Bank 82 - FLATPACK/8 Organ Pad.wav"
+ ],
+ [
+  "server/sounds/Bank 83 - EBC-CV1/chan-001.wav",
+  "server/sounds/Bank 83 - EBC-CV1/1 CV Signal (fast).wav"
+ ],
+ [
+  "server/sounds/Bank 83 - EBC-CV1/chan-002.wav",
+  "server/sounds/Bank 83 - EBC-CV1/2 CV Signal (noisy).wav"
+ ],
+ [
+  "server/sounds/Bank 83 - EBC-CV1/chan-003.wav",
+  "server/sounds/Bank 83 - EBC-CV1/3 CV Ramp.wav"
+ ],
+ [
+  "server/sounds/Bank 83 - EBC-CV1/chan-004.wav",
+  "server/sounds/Bank 83 - EBC-CV1/4 CV Slow LFO.wav"
+ ],
+ [
+  "server/sounds/Bank 83 - EBC-CV1/chan-005.wav",
+  "server/sounds/Bank 83 - EBC-CV1/5 CV LFO.wav"
+ ],
+ [
+  "server/sounds/Bank 83 - EBC-CV1/chan-006.wav",
+  "server/sounds/Bank 83 - EBC-CV1/6 CV Slow Ramp.wav"
+ ],
+ [
+  "server/sounds/Bank 83 - EBC-CV1/chan-007.wav",
+  "server/sounds/Bank 83 - EBC-CV1/7 CV Sweep.wav"
+ ],
+ [
+  "server/sounds/Bank 83 - EBC-CV1/chan-008.wav",
+  "server/sounds/Bank 83 - EBC-CV1/8 CV Sweep (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 84 - CHAOS-CV/chan-001.wav",
+  "server/sounds/Bank 84 - CHAOS-CV/1 Chaos CV (slow).wav"
+ ],
+ [
+  "server/sounds/Bank 84 - CHAOS-CV/chan-002.wav",
+  "server/sounds/Bank 84 - CHAOS-CV/2 Chaos CV.wav"
+ ],
+ [
+  "server/sounds/Bank 84 - CHAOS-CV/chan-003.wav",
+  "server/sounds/Bank 84 - CHAOS-CV/3 Chaos CV (very slow).wav"
+ ],
+ [
+  "server/sounds/Bank 84 - CHAOS-CV/chan-004.wav",
+  "server/sounds/Bank 84 - CHAOS-CV/4 Chaos CV (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 84 - CHAOS-CV/chan-005.wav",
+  "server/sounds/Bank 84 - CHAOS-CV/5 Chaos CV (sparse).wav"
+ ],
+ [
+  "server/sounds/Bank 84 - CHAOS-CV/chan-006.wav",
+  "server/sounds/Bank 84 - CHAOS-CV/6 Chaos CV (mid).wav"
+ ],
+ [
+  "server/sounds/Bank 84 - CHAOS-CV/chan-007.wav",
+  "server/sounds/Bank 84 - CHAOS-CV/7 Chaos CV (fast).wav"
+ ],
+ [
+  "server/sounds/Bank 84 - CHAOS-CV/chan-008.wav",
+  "server/sounds/Bank 84 - CHAOS-CV/8 Chaos CV (bursty).wav"
+ ],
+ [
+  "server/sounds/Bank 85 - DREAM-CV/chan-001.wav",
+  "server/sounds/Bank 85 - DREAM-CV/1 Dream CV (slow).wav"
+ ],
+ [
+  "server/sounds/Bank 85 - DREAM-CV/chan-002.wav",
+  "server/sounds/Bank 85 - DREAM-CV/2 Dream CV.wav"
+ ],
+ [
+  "server/sounds/Bank 85 - DREAM-CV/chan-003.wav",
+  "server/sounds/Bank 85 - DREAM-CV/3 Dream CV (alt).wav"
+ ],
+ [
+  "server/sounds/Bank 85 - DREAM-CV/chan-004.wav",
+  "server/sounds/Bank 85 - DREAM-CV/4 Dream CV (fast).wav"
+ ],
+ [
+  "server/sounds/Bank 85 - DREAM-CV/chan-005.wav",
+  "server/sounds/Bank 85 - DREAM-CV/5 Dream CV (bursty).wav"
+ ],
+ [
+  "server/sounds/Bank 85 - DREAM-CV/chan-006.wav",
+  "server/sounds/Bank 85 - DREAM-CV/6 Noise Modulation.wav"
+ ],
+ [
+  "server/sounds/Bank 85 - DREAM-CV/chan-007.wav",
+  "server/sounds/Bank 85 - DREAM-CV/7 Dream CV (fast, alt).wav"
+ ],
+ [
+  "server/sounds/Bank 85 - DREAM-CV/chan-008.wav",
+  "server/sounds/Bank 85 - DREAM-CV/8 Dream CV (bursty, alt).wav"
+ ],
+ [
+  "server/sounds/Bank 01 - 606 DRM",
+  "server/sounds/606 DRM"
+ ],
+ [
+  "server/sounds/Bank 02 - 707 Dm1",
+  "server/sounds/707 Dm1"
+ ],
+ [
+  "server/sounds/Bank 03 - 707 Dm2",
+  "server/sounds/707 Dm2"
+ ],
+ [
+  "server/sounds/Bank 04 - 727 Dm1",
+  "server/sounds/727 Dm1"
+ ],
+ [
+  "server/sounds/Bank 05 - 727 Dm2",
+  "server/sounds/727 Dm2"
+ ],
+ [
+  "server/sounds/Bank 06 - 808 DRM",
+  "server/sounds/808 DRM"
+ ],
+ [
+  "server/sounds/Bank 07 - 909 DRM",
+  "server/sounds/909 DRM"
+ ],
+ [
+  "server/sounds/Bank 08 - CR78",
+  "server/sounds/CR78"
+ ],
+ [
+  "server/sounds/Bank 09 - CR78 VR",
+  "server/sounds/CR78 VR"
+ ],
+ [
+  "server/sounds/Bank 10 - Blck D1",
+  "server/sounds/Blck D1"
+ ],
+ [
+  "server/sounds/Bank 11 - Blck D2",
+  "server/sounds/Blck D2"
+ ],
+ [
+  "server/sounds/Bank 12 - Boss 110",
+  "server/sounds/Boss 110"
+ ],
+ [
+  "server/sounds/Bank 13 - R70 DRM",
+  "server/sounds/R70 DRM"
+ ],
+ [
+  "server/sounds/Bank 14 - MFB 522",
+  "server/sounds/MFB 522"
+ ],
+ [
+  "server/sounds/Bank 15 - RX5 DRM",
+  "server/sounds/RX5 DRM"
+ ],
+ [
+  "server/sounds/Bank 16 - DrmTrks",
+  "server/sounds/DrmTrks"
+ ],
+ [
+  "server/sounds/Bank 17 - Kw-R50e",
+  "server/sounds/Kw-R50e"
+ ],
+ [
+  "server/sounds/Bank 18 - Linn DRM",
+  "server/sounds/Linn DRM"
+ ],
+ [
+  "server/sounds/Bank 19 - RZ-1 DRM",
+  "server/sounds/RZ-1 DRM"
+ ],
+ [
+  "server/sounds/Bank 20 - R8 MATE",
+  "server/sounds/R8 MATE"
+ ],
+ [
+  "server/sounds/Bank 21 - HR-16",
+  "server/sounds/HR-16"
+ ],
+ [
+  "server/sounds/Bank 22 - GenMID-1",
+  "server/sounds/GenMID-1"
+ ],
+ [
+  "server/sounds/Bank 23 - GenMID-2",
+  "server/sounds/GenMID-2"
+ ],
+ [
+  "server/sounds/Bank 24 - MT70-DRM",
+  "server/sounds/MT70-DRM"
+ ],
+ [
+  "server/sounds/Bank 25 - M5N Dm1",
+  "server/sounds/M5N Dm1"
+ ],
+ [
+  "server/sounds/Bank 26 - M5N Dm2",
+  "server/sounds/M5N Dm2"
+ ],
+ [
+  "server/sounds/Bank 27 - MUMZ-01",
+  "server/sounds/MUMZ-01"
+ ],
+ [
+  "server/sounds/Bank 28 - MUMZ-02",
+  "server/sounds/MUMZ-02"
+ ],
+ [
+  "server/sounds/Bank 29 - MUMZ-03",
+  "server/sounds/MUMZ-03"
+ ],
+ [
+  "server/sounds/Bank 30 - ALM-TK1",
+  "server/sounds/ALM-TK1"
+ ],
+ [
+  "server/sounds/Bank 31 - ALM-TK2",
+  "server/sounds/ALM-TK2"
+ ],
+ [
+  "server/sounds/Bank 32 - ALM-TK3",
+  "server/sounds/ALM-TK3"
+ ],
+ [
+  "server/sounds/Bank 33 - ALM-TK4",
+  "server/sounds/ALM-TK4"
+ ],
+ [
+  "server/sounds/Bank 34 - ALM-TK5",
+  "server/sounds/ALM-TK5"
+ ],
+ [
+  "server/sounds/Bank 35 - ALM-DN1",
+  "server/sounds/ALM-DN1"
+ ],
+ [
+  "server/sounds/Bank 36 - ALM-DN2",
+  "server/sounds/ALM-DN2"
+ ],
+ [
+  "server/sounds/Bank 37 - ALMSID-1",
+  "server/sounds/ALMSID-1"
+ ],
+ [
+  "server/sounds/Bank 38 - SLSUK-01",
+  "server/sounds/SLSUK-01"
+ ],
+ [
+  "server/sounds/Bank 39 - SLSUK-02",
+  "server/sounds/SLSUK-02"
+ ],
+ [
+  "server/sounds/Bank 40 - SLS-001",
+  "server/sounds/SLS-001"
+ ],
+ [
+  "server/sounds/Bank 41 - SLS-002",
+  "server/sounds/SLS-002"
+ ],
+ [
+  "server/sounds/Bank 42 - SLS-003",
+  "server/sounds/SLS-003"
+ ],
+ [
+  "server/sounds/Bank 43 - SLS-004",
+  "server/sounds/SLS-004"
+ ],
+ [
+  "server/sounds/Bank 44 - SLS-005",
+  "server/sounds/SLS-005"
+ ],
+ [
+  "server/sounds/Bank 45 - FLAX-001",
+  "server/sounds/FLAX-001"
+ ],
+ [
+  "server/sounds/Bank 46 - FLAX-002",
+  "server/sounds/FLAX-002"
+ ],
+ [
+  "server/sounds/Bank 47 - FLAX-003",
+  "server/sounds/FLAX-003"
+ ],
+ [
+  "server/sounds/Bank 48 - SB-001",
+  "server/sounds/SB-001"
+ ],
+ [
+  "server/sounds/Bank 49 - SB-002",
+  "server/sounds/SB-002"
+ ],
+ [
+  "server/sounds/Bank 50 - SB-003",
+  "server/sounds/SB-003"
+ ],
+ [
+  "server/sounds/Bank 51 - SZAM-001",
+  "server/sounds/SZAM-001"
+ ],
+ [
+  "server/sounds/Bank 52 - DA-DOMP1",
+  "server/sounds/DA-DOMP1"
+ ],
+ [
+  "server/sounds/Bank 53 - DA-DOMP2",
+  "server/sounds/DA-DOMP2"
+ ],
+ [
+  "server/sounds/Bank 54 - NYZ-FLD1",
+  "server/sounds/NYZ-FLD1"
+ ],
+ [
+  "server/sounds/Bank 55 - NYZ-SYN1",
+  "server/sounds/NYZ-SYN1"
+ ],
+ [
+  "server/sounds/Bank 56 - NYZ-SYN2",
+  "server/sounds/NYZ-SYN2"
+ ],
+ [
+  "server/sounds/Bank 57 - NYZ-SYN3",
+  "server/sounds/NYZ-SYN3"
+ ],
+ [
+  "server/sounds/Bank 58 - NYZ-SYN4",
+  "server/sounds/NYZ-SYN4"
+ ],
+ [
+  "server/sounds/Bank 59 - CS80 C4",
+  "server/sounds/CS80 C4"
+ ],
+ [
+  "server/sounds/Bank 60 - APH-JUNO",
+  "server/sounds/APH-JUNO"
+ ],
+ [
+  "server/sounds/Bank 61 - DX7-TG77",
+  "server/sounds/DX7-TG77"
+ ],
+ [
+  "server/sounds/Bank 62 - DA-BENJN",
+  "server/sounds/DA-BENJN"
+ ],
+ [
+  "server/sounds/Bank 63 - BEEBSAMP",
+  "server/sounds/BEEBSAMP"
+ ],
+ [
+  "server/sounds/Bank 64 - RH-BENJN",
+  "server/sounds/RH-BENJN"
+ ],
+ [
+  "server/sounds/Bank 65 - RH-TAIKO",
+  "server/sounds/RH-TAIKO"
+ ],
+ [
+  "server/sounds/Bank 66 - EBC-Coco",
+  "server/sounds/EBC-Coco"
+ ],
+ [
+  "server/sounds/Bank 67 - EBC-Lyra",
+  "server/sounds/EBC-Lyra"
+ ],
+ [
+  "server/sounds/Bank 68 - MEGA-DM1",
+  "server/sounds/MEGA-DM1"
+ ],
+ [
+  "server/sounds/Bank 69 - MEGA-DM2",
+  "server/sounds/MEGA-DM2"
+ ],
+ [
+  "server/sounds/Bank 70 - MEGA-MnD",
+  "server/sounds/MEGA-MnD"
+ ],
+ [
+  "server/sounds/Bank 71 - MEGAMIDI",
+  "server/sounds/MEGAMIDI"
+ ],
+ [
+  "server/sounds/Bank 72 - MEGA-909",
+  "server/sounds/MEGA-909"
+ ],
+ [
+  "server/sounds/Bank 73 - X0X-JUNO",
+  "server/sounds/X0X-JUNO"
+ ],
+ [
+  "server/sounds/Bank 74 - FM-JUNO",
+  "server/sounds/FM-JUNO"
+ ],
+ [
+  "server/sounds/Bank 75 - 303--140",
+  "server/sounds/303--140"
+ ],
+ [
+  "server/sounds/Bank 76 - 303--125",
+  "server/sounds/303--125"
+ ],
+ [
+  "server/sounds/Bank 77 - SL165BPM",
+  "server/sounds/SL165BPM"
+ ],
+ [
+  "server/sounds/Bank 78 - SL170BPM",
+  "server/sounds/SL170BPM"
+ ],
+ [
+  "server/sounds/Bank 79 - SL175BPM",
+  "server/sounds/SL175BPM"
+ ],
+ [
+  "server/sounds/Bank 80 - SL180BPM",
+  "server/sounds/SL180BPM"
+ ],
+ [
+  "server/sounds/Bank 81 - SL130BPM",
+  "server/sounds/SL130BPM"
+ ],
+ [
+  "server/sounds/Bank 82 - FLATPACK",
+  "server/sounds/FLATPACK"
+ ],
+ [
+  "server/sounds/Bank 83 - EBC-CV1",
+  "server/sounds/EBC-CV1"
+ ],
+ [
+  "server/sounds/Bank 84 - CHAOS-CV",
+  "server/sounds/CHAOS-CV"
+ ],
+ [
+  "server/sounds/Bank 85 - DREAM-CV",
+  "server/sounds/DREAM-CV"
+ ],
+ [
+  "server/sounds/303--125/1 303 Bass Loop 1.wav",
+  "server/sounds/303--125/303 Bass Loop 1.wav"
+ ],
+ [
+  "server/sounds/303--125/2 303 Bass Loop 2.wav",
+  "server/sounds/303--125/303 Bass Loop 2.wav"
+ ],
+ [
+  "server/sounds/303--125/3 303 Bass Loop 3.wav",
+  "server/sounds/303--125/303 Bass Loop 3.wav"
+ ],
+ [
+  "server/sounds/303--125/4 303 Bass Loop 4.wav",
+  "server/sounds/303--125/303 Bass Loop 4.wav"
+ ],
+ [
+  "server/sounds/303--125/5 303 Bass Loop 5.wav",
+  "server/sounds/303--125/303 Bass Loop 5.wav"
+ ],
+ [
+  "server/sounds/303--125/6 303 Note.wav",
+  "server/sounds/303--125/303 Note.wav"
+ ],
+ [
+  "server/sounds/303--125/7 303 Note (low).wav",
+  "server/sounds/303--125/303 Note (low).wav"
+ ],
+ [
+  "server/sounds/303--125/8 303 Note (sub).wav",
+  "server/sounds/303--125/303 Note (sub).wav"
+ ],
+ [
+  "server/sounds/303--140/1 303 Bass Loop 1.wav",
+  "server/sounds/303--140/303 Bass Loop 1.wav"
+ ],
+ [
+  "server/sounds/303--140/2 303 Bass Loop 2.wav",
+  "server/sounds/303--140/303 Bass Loop 2.wav"
+ ],
+ [
+  "server/sounds/303--140/3 303 Bass Loop 3.wav",
+  "server/sounds/303--140/303 Bass Loop 3.wav"
+ ],
+ [
+  "server/sounds/303--140/4 303 Bass Loop 4.wav",
+  "server/sounds/303--140/303 Bass Loop 4.wav"
+ ],
+ [
+  "server/sounds/303--140/5 303 Bass Loop 5.wav",
+  "server/sounds/303--140/303 Bass Loop 5.wav"
+ ],
+ [
+  "server/sounds/303--140/6 303 Note (low).wav",
+  "server/sounds/303--140/303 Note (low).wav"
+ ],
+ [
+  "server/sounds/303--140/7 303 Note (bright).wav",
+  "server/sounds/303--140/303 Note (bright).wav"
+ ],
+ [
+  "server/sounds/303--140/8 303 Note (sustained).wav",
+  "server/sounds/303--140/303 Note (sustained).wav"
+ ],
+ [
+  "server/sounds/606 DRM/1 Bass Drum.wav",
+  "server/sounds/606 DRM/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/606 DRM/2 Snare.wav",
+  "server/sounds/606 DRM/Snare.wav"
+ ],
+ [
+  "server/sounds/606 DRM/3 Closed Hi-Hat.wav",
+  "server/sounds/606 DRM/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/606 DRM/4 Open Hi-Hat.wav",
+  "server/sounds/606 DRM/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/606 DRM/5 Cymbal.wav",
+  "server/sounds/606 DRM/Cymbal.wav"
+ ],
+ [
+  "server/sounds/606 DRM/6 Low Tom.wav",
+  "server/sounds/606 DRM/Low Tom.wav"
+ ],
+ [
+  "server/sounds/606 DRM/7 High Tom.wav",
+  "server/sounds/606 DRM/High Tom.wav"
+ ],
+ [
+  "server/sounds/606 DRM/8 Bass Drum (long decay).wav",
+  "server/sounds/606 DRM/Bass Drum (long decay).wav"
+ ],
+ [
+  "server/sounds/707 Dm1/1 Bass Drum.wav",
+  "server/sounds/707 Dm1/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/707 Dm1/2 Snare.wav",
+  "server/sounds/707 Dm1/Snare.wav"
+ ],
+ [
+  "server/sounds/707 Dm1/3 Closed Hi-Hat.wav",
+  "server/sounds/707 Dm1/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/707 Dm1/4 Open Hi-Hat.wav",
+  "server/sounds/707 Dm1/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/707 Dm1/5 Rimshot.wav",
+  "server/sounds/707 Dm1/Rimshot.wav"
+ ],
+ [
+  "server/sounds/707 Dm1/6 Cowbell.wav",
+  "server/sounds/707 Dm1/Cowbell.wav"
+ ],
+ [
+  "server/sounds/707 Dm1/7 Low Tom.wav",
+  "server/sounds/707 Dm1/Low Tom.wav"
+ ],
+ [
+  "server/sounds/707 Dm1/8 Crash Cymbal.wav",
+  "server/sounds/707 Dm1/Crash Cymbal.wav"
+ ],
+ [
+  "server/sounds/707 Dm2/1 Bass Drum.wav",
+  "server/sounds/707 Dm2/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/707 Dm2/2 Snare.wav",
+  "server/sounds/707 Dm2/Snare.wav"
+ ],
+ [
+  "server/sounds/707 Dm2/3 Closed Hi-Hat.wav",
+  "server/sounds/707 Dm2/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/707 Dm2/4 Tambourine.wav",
+  "server/sounds/707 Dm2/Tambourine.wav"
+ ],
+ [
+  "server/sounds/707 Dm2/5 Hand Clap.wav",
+  "server/sounds/707 Dm2/Hand Clap.wav"
+ ],
+ [
+  "server/sounds/707 Dm2/6 Low Tom.wav",
+  "server/sounds/707 Dm2/Low Tom.wav"
+ ],
+ [
+  "server/sounds/707 Dm2/7 Mid Tom.wav",
+  "server/sounds/707 Dm2/Mid Tom.wav"
+ ],
+ [
+  "server/sounds/707 Dm2/8 Crash Cymbal.wav",
+  "server/sounds/707 Dm2/Crash Cymbal.wav"
+ ],
+ [
+  "server/sounds/727 Dm1/1 Low Conga.wav",
+  "server/sounds/727 Dm1/Low Conga.wav"
+ ],
+ [
+  "server/sounds/727 Dm1/2 Low Timbale.wav",
+  "server/sounds/727 Dm1/Low Timbale.wav"
+ ],
+ [
+  "server/sounds/727 Dm1/3 High Bongo.wav",
+  "server/sounds/727 Dm1/High Bongo.wav"
+ ],
+ [
+  "server/sounds/727 Dm1/4 Cabasa.wav",
+  "server/sounds/727 Dm1/Cabasa.wav"
+ ],
+ [
+  "server/sounds/727 Dm1/5 Agogo Bell.wav",
+  "server/sounds/727 Dm1/Agogo Bell.wav"
+ ],
+ [
+  "server/sounds/727 Dm1/6 Maracas.wav",
+  "server/sounds/727 Dm1/Maracas.wav"
+ ],
+ [
+  "server/sounds/727 Dm1/7 Star Chime.wav",
+  "server/sounds/727 Dm1/Star Chime.wav"
+ ],
+ [
+  "server/sounds/727 Dm1/8 Low Conga (alt).wav",
+  "server/sounds/727 Dm1/Low Conga (alt).wav"
+ ],
+ [
+  "server/sounds/727 Dm2/1 High Conga.wav",
+  "server/sounds/727 Dm2/High Conga.wav"
+ ],
+ [
+  "server/sounds/727 Dm2/2 Low Timbale.wav",
+  "server/sounds/727 Dm2/Low Timbale.wav"
+ ],
+ [
+  "server/sounds/727 Dm2/3 Cabasa.wav",
+  "server/sounds/727 Dm2/Cabasa.wav"
+ ],
+ [
+  "server/sounds/727 Dm2/4 Agogo Bell.wav",
+  "server/sounds/727 Dm2/Agogo Bell.wav"
+ ],
+ [
+  "server/sounds/727 Dm2/5 Tuned Metallic Tone.wav",
+  "server/sounds/727 Dm2/Tuned Metallic Tone.wav"
+ ],
+ [
+  "server/sounds/727 Dm2/6 Woodblock.wav",
+  "server/sounds/727 Dm2/Woodblock.wav"
+ ],
+ [
+  "server/sounds/727 Dm2/7 Low Bongo.wav",
+  "server/sounds/727 Dm2/Low Bongo.wav"
+ ],
+ [
+  "server/sounds/727 Dm2/8 Star Chime.wav",
+  "server/sounds/727 Dm2/Star Chime.wav"
+ ],
+ [
+  "server/sounds/808 DRM/1 Bass Drum (long decay).wav",
+  "server/sounds/808 DRM/Bass Drum (long decay).wav"
+ ],
+ [
+  "server/sounds/808 DRM/2 Snare.wav",
+  "server/sounds/808 DRM/Snare.wav"
+ ],
+ [
+  "server/sounds/808 DRM/3 Closed Hi-Hat.wav",
+  "server/sounds/808 DRM/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/808 DRM/4 Open Hi-Hat.wav",
+  "server/sounds/808 DRM/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/808 DRM/5 Hand Clap.wav",
+  "server/sounds/808 DRM/Hand Clap.wav"
+ ],
+ [
+  "server/sounds/808 DRM/6 Cowbell.wav",
+  "server/sounds/808 DRM/Cowbell.wav"
+ ],
+ [
+  "server/sounds/808 DRM/7 Low Tom.wav",
+  "server/sounds/808 DRM/Low Tom.wav"
+ ],
+ [
+  "server/sounds/808 DRM/8 Cymbal.wav",
+  "server/sounds/808 DRM/Cymbal.wav"
+ ],
+ [
+  "server/sounds/909 DRM/1 Bass Drum.wav",
+  "server/sounds/909 DRM/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/909 DRM/2 Snare.wav",
+  "server/sounds/909 DRM/Snare.wav"
+ ],
+ [
+  "server/sounds/909 DRM/3 Closed Hi-Hat.wav",
+  "server/sounds/909 DRM/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/909 DRM/4 Open Hi-Hat.wav",
+  "server/sounds/909 DRM/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/909 DRM/5 Hand Clap.wav",
+  "server/sounds/909 DRM/Hand Clap.wav"
+ ],
+ [
+  "server/sounds/909 DRM/6 Mid Tom.wav",
+  "server/sounds/909 DRM/Mid Tom.wav"
+ ],
+ [
+  "server/sounds/909 DRM/7 Low Tom.wav",
+  "server/sounds/909 DRM/Low Tom.wav"
+ ],
+ [
+  "server/sounds/909 DRM/8 Crash Cymbal.wav",
+  "server/sounds/909 DRM/Crash Cymbal.wav"
+ ],
+ [
+  "server/sounds/ALM-DN1/1 Distorted Kick.wav",
+  "server/sounds/ALM-DN1/Distorted Kick.wav"
+ ],
+ [
+  "server/sounds/ALM-DN1/2 Noise Hat.wav",
+  "server/sounds/ALM-DN1/Noise Hat.wav"
+ ],
+ [
+  "server/sounds/ALM-DN1/3 Noise Snare.wav",
+  "server/sounds/ALM-DN1/Noise Snare.wav"
+ ],
+ [
+  "server/sounds/ALM-DN1/4 Tonal Tom.wav",
+  "server/sounds/ALM-DN1/Tonal Tom.wav"
+ ],
+ [
+  "server/sounds/ALM-DN1/5 Distorted Bass Hit.wav",
+  "server/sounds/ALM-DN1/Distorted Bass Hit.wav"
+ ],
+ [
+  "server/sounds/ALM-DN1/6 Saw Bass Hit.wav",
+  "server/sounds/ALM-DN1/Saw Bass Hit.wav"
+ ],
+ [
+  "server/sounds/ALM-DN1/7 Wobble Bass.wav",
+  "server/sounds/ALM-DN1/Wobble Bass.wav"
+ ],
+ [
+  "server/sounds/ALM-DN1/8 Noise Sweep.wav",
+  "server/sounds/ALM-DN1/Noise Sweep.wav"
+ ],
+ [
+  "server/sounds/ALM-DN2/1 Distorted Kick.wav",
+  "server/sounds/ALM-DN2/Distorted Kick.wav"
+ ],
+ [
+  "server/sounds/ALM-DN2/2 Noise Snare.wav",
+  "server/sounds/ALM-DN2/Noise Snare.wav"
+ ],
+ [
+  "server/sounds/ALM-DN2/3 Pitch-Bend Kick.wav",
+  "server/sounds/ALM-DN2/Pitch-Bend Kick.wav"
+ ],
+ [
+  "server/sounds/ALM-DN2/4 Glitch Bass.wav",
+  "server/sounds/ALM-DN2/Glitch Bass.wav"
+ ],
+ [
+  "server/sounds/ALM-DN2/5 Harsh Tone.wav",
+  "server/sounds/ALM-DN2/Harsh Tone.wav"
+ ],
+ [
+  "server/sounds/ALM-DN2/6 Glitch Perc.wav",
+  "server/sounds/ALM-DN2/Glitch Perc.wav"
+ ],
+ [
+  "server/sounds/ALM-DN2/7 Noisy Pluck.wav",
+  "server/sounds/ALM-DN2/Noisy Pluck.wav"
+ ],
+ [
+  "server/sounds/ALM-DN2/8 Distorted Bass.wav",
+  "server/sounds/ALM-DN2/Distorted Bass.wav"
+ ],
+ [
+  "server/sounds/ALM-TK1/1 Kick (noisy).wav",
+  "server/sounds/ALM-TK1/Kick (noisy).wav"
+ ],
+ [
+  "server/sounds/ALM-TK1/2 Snare.wav",
+  "server/sounds/ALM-TK1/Snare.wav"
+ ],
+ [
+  "server/sounds/ALM-TK1/3 Click - Rim.wav",
+  "server/sounds/ALM-TK1/Click - Rim.wav"
+ ],
+ [
+  "server/sounds/ALM-TK1/4 Woodblock.wav",
+  "server/sounds/ALM-TK1/Woodblock.wav"
+ ],
+ [
+  "server/sounds/ALM-TK1/5 Conga - Perc.wav",
+  "server/sounds/ALM-TK1/Conga - Perc.wav"
+ ],
+ [
+  "server/sounds/ALM-TK1/6 Synth Noise Hit.wav",
+  "server/sounds/ALM-TK1/Synth Noise Hit.wav"
+ ],
+ [
+  "server/sounds/ALM-TK1/7 Rimshot.wav",
+  "server/sounds/ALM-TK1/Rimshot.wav"
+ ],
+ [
+  "server/sounds/ALM-TK1/8 Low Perc.wav",
+  "server/sounds/ALM-TK1/Low Perc.wav"
+ ],
+ [
+  "server/sounds/ALM-TK2/1 Kick.wav",
+  "server/sounds/ALM-TK2/Kick.wav"
+ ],
+ [
+  "server/sounds/ALM-TK2/2 Snare.wav",
+  "server/sounds/ALM-TK2/Snare.wav"
+ ],
+ [
+  "server/sounds/ALM-TK2/3 Closed Hi-Hat.wav",
+  "server/sounds/ALM-TK2/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/ALM-TK2/4 Open Hi-Hat.wav",
+  "server/sounds/ALM-TK2/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/ALM-TK2/5 Snare (alt).wav",
+  "server/sounds/ALM-TK2/Snare (alt).wav"
+ ],
+ [
+  "server/sounds/ALM-TK2/6 Noise Burst.wav",
+  "server/sounds/ALM-TK2/Noise Burst.wav"
+ ],
+ [
+  "server/sounds/ALM-TK2/7 Tom.wav",
+  "server/sounds/ALM-TK2/Tom.wav"
+ ],
+ [
+  "server/sounds/ALM-TK2/8 Rimshot.wav",
+  "server/sounds/ALM-TK2/Rimshot.wav"
+ ],
+ [
+  "server/sounds/ALM-TK3/1 Kick.wav",
+  "server/sounds/ALM-TK3/Kick.wav"
+ ],
+ [
+  "server/sounds/ALM-TK3/2 Snare.wav",
+  "server/sounds/ALM-TK3/Snare.wav"
+ ],
+ [
+  "server/sounds/ALM-TK3/3 Open Hi-Hat.wav",
+  "server/sounds/ALM-TK3/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/ALM-TK3/4 Crash Cymbal.wav",
+  "server/sounds/ALM-TK3/Crash Cymbal.wav"
+ ],
+ [
+  "server/sounds/ALM-TK3/5 Snare (alt).wav",
+  "server/sounds/ALM-TK3/Snare (alt).wav"
+ ],
+ [
+  "server/sounds/ALM-TK3/6 Noise Hit.wav",
+  "server/sounds/ALM-TK3/Noise Hit.wav"
+ ],
+ [
+  "server/sounds/ALM-TK3/7 Tom.wav",
+  "server/sounds/ALM-TK3/Tom.wav"
+ ],
+ [
+  "server/sounds/ALM-TK3/8 Floor Tom.wav",
+  "server/sounds/ALM-TK3/Floor Tom.wav"
+ ],
+ [
+  "server/sounds/ALM-TK4/1 Kick.wav",
+  "server/sounds/ALM-TK4/Kick.wav"
+ ],
+ [
+  "server/sounds/ALM-TK4/2 Snare.wav",
+  "server/sounds/ALM-TK4/Snare.wav"
+ ],
+ [
+  "server/sounds/ALM-TK4/3 Hi-Hat.wav",
+  "server/sounds/ALM-TK4/Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/ALM-TK4/4 Crash - Noise.wav",
+  "server/sounds/ALM-TK4/Crash - Noise.wav"
+ ],
+ [
+  "server/sounds/ALM-TK4/5 Rimshot.wav",
+  "server/sounds/ALM-TK4/Rimshot.wav"
+ ],
+ [
+  "server/sounds/ALM-TK4/6 Perc Hit.wav",
+  "server/sounds/ALM-TK4/Perc Hit.wav"
+ ],
+ [
+  "server/sounds/ALM-TK4/7 Tom.wav",
+  "server/sounds/ALM-TK4/Tom.wav"
+ ],
+ [
+  "server/sounds/ALM-TK4/8 Vocal - Noise Tail.wav",
+  "server/sounds/ALM-TK4/Vocal - Noise Tail.wav"
+ ],
+ [
+  "server/sounds/ALM-TK5/1 Kick (long).wav",
+  "server/sounds/ALM-TK5/Kick (long).wav"
+ ],
+ [
+  "server/sounds/ALM-TK5/2 Snare.wav",
+  "server/sounds/ALM-TK5/Snare.wav"
+ ],
+ [
+  "server/sounds/ALM-TK5/3 Closed Hi-Hat.wav",
+  "server/sounds/ALM-TK5/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/ALM-TK5/4 Open Hi-Hat.wav",
+  "server/sounds/ALM-TK5/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/ALM-TK5/5 Low Perc.wav",
+  "server/sounds/ALM-TK5/Low Perc.wav"
+ ],
+ [
+  "server/sounds/ALM-TK5/6 Hand Clap.wav",
+  "server/sounds/ALM-TK5/Hand Clap.wav"
+ ],
+ [
+  "server/sounds/ALM-TK5/7 Conga.wav",
+  "server/sounds/ALM-TK5/Conga.wav"
+ ],
+ [
+  "server/sounds/ALM-TK5/8 Snare (alt).wav",
+  "server/sounds/ALM-TK5/Snare (alt).wav"
+ ],
+ [
+  "server/sounds/ALMSID-1/1 SID Saw Bass.wav",
+  "server/sounds/ALMSID-1/SID Saw Bass.wav"
+ ],
+ [
+  "server/sounds/ALMSID-1/2 SID Noise.wav",
+  "server/sounds/ALMSID-1/SID Noise.wav"
+ ],
+ [
+  "server/sounds/ALMSID-1/3 SID Lead.wav",
+  "server/sounds/ALMSID-1/SID Lead.wav"
+ ],
+ [
+  "server/sounds/ALMSID-1/4 SID Bass Sweep.wav",
+  "server/sounds/ALMSID-1/SID Bass Sweep.wav"
+ ],
+ [
+  "server/sounds/ALMSID-1/5 SID Pad.wav",
+  "server/sounds/ALMSID-1/SID Pad.wav"
+ ],
+ [
+  "server/sounds/ALMSID-1/6 SID Chime.wav",
+  "server/sounds/ALMSID-1/SID Chime.wav"
+ ],
+ [
+  "server/sounds/ALMSID-1/7 SID Wobble Bass.wav",
+  "server/sounds/ALMSID-1/SID Wobble Bass.wav"
+ ],
+ [
+  "server/sounds/ALMSID-1/8 SID Pluck.wav",
+  "server/sounds/ALMSID-1/SID Pluck.wav"
+ ],
+ [
+  "server/sounds/APH-JUNO/1 Juno Bass Hit.wav",
+  "server/sounds/APH-JUNO/Juno Bass Hit.wav"
+ ],
+ [
+  "server/sounds/APH-JUNO/2 Juno Perc.wav",
+  "server/sounds/APH-JUNO/Juno Perc.wav"
+ ],
+ [
+  "server/sounds/APH-JUNO/3 Juno Blip.wav",
+  "server/sounds/APH-JUNO/Juno Blip.wav"
+ ],
+ [
+  "server/sounds/APH-JUNO/4 Juno Bass Sweep.wav",
+  "server/sounds/APH-JUNO/Juno Bass Sweep.wav"
+ ],
+ [
+  "server/sounds/APH-JUNO/5 Juno Pluck (C4).wav",
+  "server/sounds/APH-JUNO/Juno Pluck (C4).wav"
+ ],
+ [
+  "server/sounds/APH-JUNO/6 Juno Wobble Bass.wav",
+  "server/sounds/APH-JUNO/Juno Wobble Bass.wav"
+ ],
+ [
+  "server/sounds/APH-JUNO/7 Juno Pad.wav",
+  "server/sounds/APH-JUNO/Juno Pad.wav"
+ ],
+ [
+  "server/sounds/APH-JUNO/8 Juno Distorted Sweep.wav",
+  "server/sounds/APH-JUNO/Juno Distorted Sweep.wav"
+ ],
+ [
+  "server/sounds/BEEBSAMP/1 8-bit Blip.wav",
+  "server/sounds/BEEBSAMP/8-bit Blip.wav"
+ ],
+ [
+  "server/sounds/BEEBSAMP/2 8-bit Bass.wav",
+  "server/sounds/BEEBSAMP/8-bit Bass.wav"
+ ],
+ [
+  "server/sounds/BEEBSAMP/3 8-bit Noise.wav",
+  "server/sounds/BEEBSAMP/8-bit Noise.wav"
+ ],
+ [
+  "server/sounds/BEEBSAMP/4 8-bit Noise Loop.wav",
+  "server/sounds/BEEBSAMP/8-bit Noise Loop.wav"
+ ],
+ [
+  "server/sounds/BEEBSAMP/5 8-bit Tone.wav",
+  "server/sounds/BEEBSAMP/8-bit Tone.wav"
+ ],
+ [
+  "server/sounds/BEEBSAMP/6 8-bit Drone.wav",
+  "server/sounds/BEEBSAMP/8-bit Drone.wav"
+ ],
+ [
+  "server/sounds/BEEBSAMP/7 8-bit Melody Loop.wav",
+  "server/sounds/BEEBSAMP/8-bit Melody Loop.wav"
+ ],
+ [
+  "server/sounds/BEEBSAMP/8 8-bit Click.wav",
+  "server/sounds/BEEBSAMP/8-bit Click.wav"
+ ],
+ [
+  "server/sounds/Blck D1/1 Bass Drum.wav",
+  "server/sounds/Blck D1/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Blck D1/2 Snare.wav",
+  "server/sounds/Blck D1/Snare.wav"
+ ],
+ [
+  "server/sounds/Blck D1/3 Closed Hi-Hat.wav",
+  "server/sounds/Blck D1/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Blck D1/4 Open Hi-Hat.wav",
+  "server/sounds/Blck D1/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Blck D1/5 Rimshot.wav",
+  "server/sounds/Blck D1/Rimshot.wav"
+ ],
+ [
+  "server/sounds/Blck D1/6 Bell.wav",
+  "server/sounds/Blck D1/Bell.wav"
+ ],
+ [
+  "server/sounds/Blck D1/7 Tom.wav",
+  "server/sounds/Blck D1/Tom.wav"
+ ],
+ [
+  "server/sounds/Blck D1/8 Cymbal.wav",
+  "server/sounds/Blck D1/Cymbal.wav"
+ ],
+ [
+  "server/sounds/Blck D2/1 Bass Drum (long decay).wav",
+  "server/sounds/Blck D2/Bass Drum (long decay).wav"
+ ],
+ [
+  "server/sounds/Blck D2/2 Snare.wav",
+  "server/sounds/Blck D2/Snare.wav"
+ ],
+ [
+  "server/sounds/Blck D2/3 Closed Hi-Hat.wav",
+  "server/sounds/Blck D2/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Blck D2/4 Open Hi-Hat.wav",
+  "server/sounds/Blck D2/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Blck D2/5 Shaker.wav",
+  "server/sounds/Blck D2/Shaker.wav"
+ ],
+ [
+  "server/sounds/Blck D2/6 Blip - Perc.wav",
+  "server/sounds/Blck D2/Blip - Perc.wav"
+ ],
+ [
+  "server/sounds/Blck D2/7 Cymbal.wav",
+  "server/sounds/Blck D2/Cymbal.wav"
+ ],
+ [
+  "server/sounds/Blck D2/8 Bell.wav",
+  "server/sounds/Blck D2/Bell.wav"
+ ],
+ [
+  "server/sounds/Boss 110/1 Bass Drum.wav",
+  "server/sounds/Boss 110/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Boss 110/2 Snare.wav",
+  "server/sounds/Boss 110/Snare.wav"
+ ],
+ [
+  "server/sounds/Boss 110/3 Closed Hi-Hat.wav",
+  "server/sounds/Boss 110/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Boss 110/4 Cymbal.wav",
+  "server/sounds/Boss 110/Cymbal.wav"
+ ],
+ [
+  "server/sounds/Boss 110/5 Hand Clap.wav",
+  "server/sounds/Boss 110/Hand Clap.wav"
+ ],
+ [
+  "server/sounds/Boss 110/6 Open Hi-Hat.wav",
+  "server/sounds/Boss 110/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Boss 110/7 Bass Tone (8s sustained).wav",
+  "server/sounds/Boss 110/Bass Tone (8s sustained).wav"
+ ],
+ [
+  "server/sounds/Boss 110/8 Pad - Organ Tone (10s).wav",
+  "server/sounds/Boss 110/Pad - Organ Tone (10s).wav"
+ ],
+ [
+  "server/sounds/CHAOS-CV/1 Chaos CV (slow).wav",
+  "server/sounds/CHAOS-CV/Chaos CV (slow).wav"
+ ],
+ [
+  "server/sounds/CHAOS-CV/2 Chaos CV.wav",
+  "server/sounds/CHAOS-CV/Chaos CV.wav"
+ ],
+ [
+  "server/sounds/CHAOS-CV/3 Chaos CV (very slow).wav",
+  "server/sounds/CHAOS-CV/Chaos CV (very slow).wav"
+ ],
+ [
+  "server/sounds/CHAOS-CV/4 Chaos CV (alt).wav",
+  "server/sounds/CHAOS-CV/Chaos CV (alt).wav"
+ ],
+ [
+  "server/sounds/CHAOS-CV/5 Chaos CV (sparse).wav",
+  "server/sounds/CHAOS-CV/Chaos CV (sparse).wav"
+ ],
+ [
+  "server/sounds/CHAOS-CV/6 Chaos CV (mid).wav",
+  "server/sounds/CHAOS-CV/Chaos CV (mid).wav"
+ ],
+ [
+  "server/sounds/CHAOS-CV/7 Chaos CV (fast).wav",
+  "server/sounds/CHAOS-CV/Chaos CV (fast).wav"
+ ],
+ [
+  "server/sounds/CHAOS-CV/8 Chaos CV (bursty).wav",
+  "server/sounds/CHAOS-CV/Chaos CV (bursty).wav"
+ ],
+ [
+  "server/sounds/CR78/1 Bass Drum.wav",
+  "server/sounds/CR78/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/CR78/2 Snare.wav",
+  "server/sounds/CR78/Snare.wav"
+ ],
+ [
+  "server/sounds/CR78/3 Hi-Hat.wav",
+  "server/sounds/CR78/Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/CR78/4 Cymbal.wav",
+  "server/sounds/CR78/Cymbal.wav"
+ ],
+ [
+  "server/sounds/CR78/5 Metallic Beat.wav",
+  "server/sounds/CR78/Metallic Beat.wav"
+ ],
+ [
+  "server/sounds/CR78/6 Tambourine.wav",
+  "server/sounds/CR78/Tambourine.wav"
+ ],
+ [
+  "server/sounds/CR78/7 Conga.wav",
+  "server/sounds/CR78/Conga.wav"
+ ],
+ [
+  "server/sounds/CR78/8 Claves.wav",
+  "server/sounds/CR78/Claves.wav"
+ ],
+ [
+  "server/sounds/CR78 VR/1 Bass Drum.wav",
+  "server/sounds/CR78 VR/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/CR78 VR/2 Snare.wav",
+  "server/sounds/CR78 VR/Snare.wav"
+ ],
+ [
+  "server/sounds/CR78 VR/3 Hi-Hat.wav",
+  "server/sounds/CR78 VR/Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/CR78 VR/4 Cymbal.wav",
+  "server/sounds/CR78 VR/Cymbal.wav"
+ ],
+ [
+  "server/sounds/CR78 VR/5 Hi-Hat (tight).wav",
+  "server/sounds/CR78 VR/Hi-Hat (tight).wav"
+ ],
+ [
+  "server/sounds/CR78 VR/6 Metallic Beat.wav",
+  "server/sounds/CR78 VR/Metallic Beat.wav"
+ ],
+ [
+  "server/sounds/CR78 VR/7 Bell.wav",
+  "server/sounds/CR78 VR/Bell.wav"
+ ],
+ [
+  "server/sounds/CR78 VR/8 Conga (long).wav",
+  "server/sounds/CR78 VR/Conga (long).wav"
+ ],
+ [
+  "server/sounds/CS80 C4/1 CS-80 Dark Pad.wav",
+  "server/sounds/CS80 C4/CS-80 Dark Pad.wav"
+ ],
+ [
+  "server/sounds/CS80 C4/2 CS-80 Swell Pad.wav",
+  "server/sounds/CS80 C4/CS-80 Swell Pad.wav"
+ ],
+ [
+  "server/sounds/CS80 C4/3 CS-80 Organ Pad.wav",
+  "server/sounds/CS80 C4/CS-80 Organ Pad.wav"
+ ],
+ [
+  "server/sounds/CS80 C4/4 CS-80 Bright Pad.wav",
+  "server/sounds/CS80 C4/CS-80 Bright Pad.wav"
+ ],
+ [
+  "server/sounds/CS80 C4/5 CS-80 Bass Pad.wav",
+  "server/sounds/CS80 C4/CS-80 Bass Pad.wav"
+ ],
+ [
+  "server/sounds/CS80 C4/6 CS-80 Tonal Pad.wav",
+  "server/sounds/CS80 C4/CS-80 Tonal Pad.wav"
+ ],
+ [
+  "server/sounds/CS80 C4/7 CS-80 Warm Swell.wav",
+  "server/sounds/CS80 C4/CS-80 Warm Swell.wav"
+ ],
+ [
+  "server/sounds/CS80 C4/8 CS-80 Filter Sweep.wav",
+  "server/sounds/CS80 C4/CS-80 Filter Sweep.wav"
+ ],
+ [
+  "server/sounds/DA-BENJN/1 Glitch Texture (11s).wav",
+  "server/sounds/DA-BENJN/Glitch Texture (11s).wav"
+ ],
+ [
+  "server/sounds/DA-BENJN/2 Wobble Drone.wav",
+  "server/sounds/DA-BENJN/Wobble Drone.wav"
+ ],
+ [
+  "server/sounds/DA-BENJN/3 Bass Loop.wav",
+  "server/sounds/DA-BENJN/Bass Loop.wav"
+ ],
+ [
+  "server/sounds/DA-BENJN/4 Pitch Wobble.wav",
+  "server/sounds/DA-BENJN/Pitch Wobble.wav"
+ ],
+ [
+  "server/sounds/DA-BENJN/5 Noisy Bend.wav",
+  "server/sounds/DA-BENJN/Noisy Bend.wav"
+ ],
+ [
+  "server/sounds/DA-BENJN/6 Vocal Wobble.wav",
+  "server/sounds/DA-BENJN/Vocal Wobble.wav"
+ ],
+ [
+  "server/sounds/DA-BENJN/7 Bass Texture.wav",
+  "server/sounds/DA-BENJN/Bass Texture.wav"
+ ],
+ [
+  "server/sounds/DA-BENJN/8 Rhythmic Texture.wav",
+  "server/sounds/DA-BENJN/Rhythmic Texture.wav"
+ ],
+ [
+  "server/sounds/DA-DOMP1/1 Low Conga.wav",
+  "server/sounds/DA-DOMP1/Low Conga.wav"
+ ],
+ [
+  "server/sounds/DA-DOMP1/2 Woodblock.wav",
+  "server/sounds/DA-DOMP1/Woodblock.wav"
+ ],
+ [
+  "server/sounds/DA-DOMP1/3 Bongo.wav",
+  "server/sounds/DA-DOMP1/Bongo.wav"
+ ],
+ [
+  "server/sounds/DA-DOMP1/4 Bell - Tambourine.wav",
+  "server/sounds/DA-DOMP1/Bell - Tambourine.wav"
+ ],
+ [
+  "server/sounds/DA-DOMP1/5 Woodblock (alt).wav",
+  "server/sounds/DA-DOMP1/Woodblock (alt).wav"
+ ],
+ [
+  "server/sounds/DA-DOMP1/6 Sustained Perc.wav",
+  "server/sounds/DA-DOMP1/Sustained Perc.wav"
+ ],
+ [
+  "server/sounds/DA-DOMP1/7 Xylophone.wav",
+  "server/sounds/DA-DOMP1/Xylophone.wav"
+ ],
+ [
+  "server/sounds/DA-DOMP1/8 Tonal Drone (6s).wav",
+  "server/sounds/DA-DOMP1/Tonal Drone (6s).wav"
+ ],
+ [
+  "server/sounds/DA-DOMP2/1 Low Conga.wav",
+  "server/sounds/DA-DOMP2/Low Conga.wav"
+ ],
+ [
+  "server/sounds/DA-DOMP2/2 Conga.wav",
+  "server/sounds/DA-DOMP2/Conga.wav"
+ ],
+ [
+  "server/sounds/DA-DOMP2/3 Noise Perc.wav",
+  "server/sounds/DA-DOMP2/Noise Perc.wav"
+ ],
+ [
+  "server/sounds/DA-DOMP2/4 Resonant Bell.wav",
+  "server/sounds/DA-DOMP2/Resonant Bell.wav"
+ ],
+ [
+  "server/sounds/DA-DOMP2/5 Distorted Perc.wav",
+  "server/sounds/DA-DOMP2/Distorted Perc.wav"
+ ],
+ [
+  "server/sounds/DA-DOMP2/6 Woodblock.wav",
+  "server/sounds/DA-DOMP2/Woodblock.wav"
+ ],
+ [
+  "server/sounds/DA-DOMP2/7 Granular Noise.wav",
+  "server/sounds/DA-DOMP2/Granular Noise.wav"
+ ],
+ [
+  "server/sounds/DA-DOMP2/8 Wobble Perc.wav",
+  "server/sounds/DA-DOMP2/Wobble Perc.wav"
+ ],
+ [
+  "server/sounds/DREAM-CV/1 Dream CV (slow).wav",
+  "server/sounds/DREAM-CV/Dream CV (slow).wav"
+ ],
+ [
+  "server/sounds/DREAM-CV/2 Dream CV.wav",
+  "server/sounds/DREAM-CV/Dream CV.wav"
+ ],
+ [
+  "server/sounds/DREAM-CV/3 Dream CV (alt).wav",
+  "server/sounds/DREAM-CV/Dream CV (alt).wav"
+ ],
+ [
+  "server/sounds/DREAM-CV/4 Dream CV (fast).wav",
+  "server/sounds/DREAM-CV/Dream CV (fast).wav"
+ ],
+ [
+  "server/sounds/DREAM-CV/5 Dream CV (bursty).wav",
+  "server/sounds/DREAM-CV/Dream CV (bursty).wav"
+ ],
+ [
+  "server/sounds/DREAM-CV/6 Noise Modulation.wav",
+  "server/sounds/DREAM-CV/Noise Modulation.wav"
+ ],
+ [
+  "server/sounds/DREAM-CV/7 Dream CV (fast, alt).wav",
+  "server/sounds/DREAM-CV/Dream CV (fast, alt).wav"
+ ],
+ [
+  "server/sounds/DREAM-CV/8 Dream CV (bursty, alt).wav",
+  "server/sounds/DREAM-CV/Dream CV (bursty, alt).wav"
+ ],
+ [
+  "server/sounds/DX7-TG77/1 FM Drone.wav",
+  "server/sounds/DX7-TG77/FM Drone.wav"
+ ],
+ [
+  "server/sounds/DX7-TG77/2 FM Bell.wav",
+  "server/sounds/DX7-TG77/FM Bell.wav"
+ ],
+ [
+  "server/sounds/DX7-TG77/3 FM Bass.wav",
+  "server/sounds/DX7-TG77/FM Bass.wav"
+ ],
+ [
+  "server/sounds/DX7-TG77/4 FM Electric Piano.wav",
+  "server/sounds/DX7-TG77/FM Electric Piano.wav"
+ ],
+ [
+  "server/sounds/DX7-TG77/5 FM Bell (low).wav",
+  "server/sounds/DX7-TG77/FM Bell (low).wav"
+ ],
+ [
+  "server/sounds/DX7-TG77/6 FM Bass Pluck.wav",
+  "server/sounds/DX7-TG77/FM Bass Pluck.wav"
+ ],
+ [
+  "server/sounds/DX7-TG77/7 FM Key Hit.wav",
+  "server/sounds/DX7-TG77/FM Key Hit.wav"
+ ],
+ [
+  "server/sounds/DX7-TG77/8 FM Chime.wav",
+  "server/sounds/DX7-TG77/FM Chime.wav"
+ ],
+ [
+  "server/sounds/DrmTrks/1 Bass Drum.wav",
+  "server/sounds/DrmTrks/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/DrmTrks/2 Snare.wav",
+  "server/sounds/DrmTrks/Snare.wav"
+ ],
+ [
+  "server/sounds/DrmTrks/3 Closed Hi-Hat.wav",
+  "server/sounds/DrmTrks/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/DrmTrks/4 Open Hi-Hat.wav",
+  "server/sounds/DrmTrks/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/DrmTrks/5 Hand Clap.wav",
+  "server/sounds/DrmTrks/Hand Clap.wav"
+ ],
+ [
+  "server/sounds/DrmTrks/6 Tambourine.wav",
+  "server/sounds/DrmTrks/Tambourine.wav"
+ ],
+ [
+  "server/sounds/DrmTrks/7 Tom.wav",
+  "server/sounds/DrmTrks/Tom.wav"
+ ],
+ [
+  "server/sounds/DrmTrks/8 Crash Cymbal.wav",
+  "server/sounds/DrmTrks/Crash Cymbal.wav"
+ ],
+ [
+  "server/sounds/EBC-CV1/1 CV Signal (fast).wav",
+  "server/sounds/EBC-CV1/CV Signal (fast).wav"
+ ],
+ [
+  "server/sounds/EBC-CV1/2 CV Signal (noisy).wav",
+  "server/sounds/EBC-CV1/CV Signal (noisy).wav"
+ ],
+ [
+  "server/sounds/EBC-CV1/3 CV Ramp.wav",
+  "server/sounds/EBC-CV1/CV Ramp.wav"
+ ],
+ [
+  "server/sounds/EBC-CV1/4 CV Slow LFO.wav",
+  "server/sounds/EBC-CV1/CV Slow LFO.wav"
+ ],
+ [
+  "server/sounds/EBC-CV1/5 CV LFO.wav",
+  "server/sounds/EBC-CV1/CV LFO.wav"
+ ],
+ [
+  "server/sounds/EBC-CV1/6 CV Slow Ramp.wav",
+  "server/sounds/EBC-CV1/CV Slow Ramp.wav"
+ ],
+ [
+  "server/sounds/EBC-CV1/7 CV Sweep.wav",
+  "server/sounds/EBC-CV1/CV Sweep.wav"
+ ],
+ [
+  "server/sounds/EBC-CV1/8 CV Sweep (alt).wav",
+  "server/sounds/EBC-CV1/CV Sweep (alt).wav"
+ ],
+ [
+  "server/sounds/EBC-Coco/1 Distorted Drone.wav",
+  "server/sounds/EBC-Coco/Distorted Drone.wav"
+ ],
+ [
+  "server/sounds/EBC-Coco/2 Detuned Drone.wav",
+  "server/sounds/EBC-Coco/Detuned Drone.wav"
+ ],
+ [
+  "server/sounds/EBC-Coco/3 Sub Drone.wav",
+  "server/sounds/EBC-Coco/Sub Drone.wav"
+ ],
+ [
+  "server/sounds/EBC-Coco/4 Glitch Drone.wav",
+  "server/sounds/EBC-Coco/Glitch Drone.wav"
+ ],
+ [
+  "server/sounds/EBC-Coco/5 Noise Drone.wav",
+  "server/sounds/EBC-Coco/Noise Drone.wav"
+ ],
+ [
+  "server/sounds/EBC-Coco/6 Boomy Drone.wav",
+  "server/sounds/EBC-Coco/Boomy Drone.wav"
+ ],
+ [
+  "server/sounds/EBC-Coco/7 Noise Texture.wav",
+  "server/sounds/EBC-Coco/Noise Texture.wav"
+ ],
+ [
+  "server/sounds/EBC-Coco/8 Bend Drone.wav",
+  "server/sounds/EBC-Coco/Bend Drone.wav"
+ ],
+ [
+  "server/sounds/EBC-Lyra/1 Bowed Drone.wav",
+  "server/sounds/EBC-Lyra/Bowed Drone.wav"
+ ],
+ [
+  "server/sounds/EBC-Lyra/2 Glitch Drone.wav",
+  "server/sounds/EBC-Lyra/Glitch Drone.wav"
+ ],
+ [
+  "server/sounds/EBC-Lyra/3 Bass Drone.wav",
+  "server/sounds/EBC-Lyra/Bass Drone.wav"
+ ],
+ [
+  "server/sounds/EBC-Lyra/4 String Swell.wav",
+  "server/sounds/EBC-Lyra/String Swell.wav"
+ ],
+ [
+  "server/sounds/EBC-Lyra/5 Distorted Drone.wav",
+  "server/sounds/EBC-Lyra/Distorted Drone.wav"
+ ],
+ [
+  "server/sounds/EBC-Lyra/6 Gong Drone.wav",
+  "server/sounds/EBC-Lyra/Gong Drone.wav"
+ ],
+ [
+  "server/sounds/EBC-Lyra/7 Detuned Strings.wav",
+  "server/sounds/EBC-Lyra/Detuned Strings.wav"
+ ],
+ [
+  "server/sounds/EBC-Lyra/8 Dark Pad.wav",
+  "server/sounds/EBC-Lyra/Dark Pad.wav"
+ ],
+ [
+  "server/sounds/FLATPACK/1 Bass Loop.wav",
+  "server/sounds/FLATPACK/Bass Loop.wav"
+ ],
+ [
+  "server/sounds/FLATPACK/2 Perc Loop.wav",
+  "server/sounds/FLATPACK/Perc Loop.wav"
+ ],
+ [
+  "server/sounds/FLATPACK/3 Clap Loop.wav",
+  "server/sounds/FLATPACK/Clap Loop.wav"
+ ],
+ [
+  "server/sounds/FLATPACK/4 Marimba Loop.wav",
+  "server/sounds/FLATPACK/Marimba Loop.wav"
+ ],
+ [
+  "server/sounds/FLATPACK/5 Snare Loop.wav",
+  "server/sounds/FLATPACK/Snare Loop.wav"
+ ],
+ [
+  "server/sounds/FLATPACK/6 Bell Loop.wav",
+  "server/sounds/FLATPACK/Bell Loop.wav"
+ ],
+ [
+  "server/sounds/FLATPACK/7 Bass Sweep.wav",
+  "server/sounds/FLATPACK/Bass Sweep.wav"
+ ],
+ [
+  "server/sounds/FLATPACK/8 Organ Pad.wav",
+  "server/sounds/FLATPACK/Organ Pad.wav"
+ ],
+ [
+  "server/sounds/FLAX-001/1 Mallet Tone.wav",
+  "server/sounds/FLAX-001/Mallet Tone.wav"
+ ],
+ [
+  "server/sounds/FLAX-001/2 Struck Tone.wav",
+  "server/sounds/FLAX-001/Struck Tone.wav"
+ ],
+ [
+  "server/sounds/FLAX-001/3 Synth Tone.wav",
+  "server/sounds/FLAX-001/Synth Tone.wav"
+ ],
+ [
+  "server/sounds/FLAX-001/4 Chime - Xylophone.wav",
+  "server/sounds/FLAX-001/Chime - Xylophone.wav"
+ ],
+ [
+  "server/sounds/FLAX-001/5 Plucked Tone (C4).wav",
+  "server/sounds/FLAX-001/Plucked Tone (C4).wav"
+ ],
+ [
+  "server/sounds/FLAX-001/6 Saw Pluck (C4).wav",
+  "server/sounds/FLAX-001/Saw Pluck (C4).wav"
+ ],
+ [
+  "server/sounds/FLAX-001/7 Vibraphone (C4).wav",
+  "server/sounds/FLAX-001/Vibraphone (C4).wav"
+ ],
+ [
+  "server/sounds/FLAX-001/8 Chime (C4).wav",
+  "server/sounds/FLAX-001/Chime (C4).wav"
+ ],
+ [
+  "server/sounds/FLAX-002/1 Guitar Pluck.wav",
+  "server/sounds/FLAX-002/Guitar Pluck.wav"
+ ],
+ [
+  "server/sounds/FLAX-002/2 Marimba Tone.wav",
+  "server/sounds/FLAX-002/Marimba Tone.wav"
+ ],
+ [
+  "server/sounds/FLAX-002/3 Square Tone.wav",
+  "server/sounds/FLAX-002/Square Tone.wav"
+ ],
+ [
+  "server/sounds/FLAX-002/4 Vocal Pad.wav",
+  "server/sounds/FLAX-002/Vocal Pad.wav"
+ ],
+ [
+  "server/sounds/FLAX-002/5 Sine Tone.wav",
+  "server/sounds/FLAX-002/Sine Tone.wav"
+ ],
+ [
+  "server/sounds/FLAX-002/6 Bright Noise - Triangle.wav",
+  "server/sounds/FLAX-002/Bright Noise - Triangle.wav"
+ ],
+ [
+  "server/sounds/FLAX-002/7 Chime.wav",
+  "server/sounds/FLAX-002/Chime.wav"
+ ],
+ [
+  "server/sounds/FLAX-002/8 Marimba.wav",
+  "server/sounds/FLAX-002/Marimba.wav"
+ ],
+ [
+  "server/sounds/FLAX-003/1 Low Tom.wav",
+  "server/sounds/FLAX-003/Low Tom.wav"
+ ],
+ [
+  "server/sounds/FLAX-003/2 Snare - Noise.wav",
+  "server/sounds/FLAX-003/Snare - Noise.wav"
+ ],
+ [
+  "server/sounds/FLAX-003/3 Mid Perc.wav",
+  "server/sounds/FLAX-003/Mid Perc.wav"
+ ],
+ [
+  "server/sounds/FLAX-003/4 Tom.wav",
+  "server/sounds/FLAX-003/Tom.wav"
+ ],
+ [
+  "server/sounds/FLAX-003/5 Distorted Tom.wav",
+  "server/sounds/FLAX-003/Distorted Tom.wav"
+ ],
+ [
+  "server/sounds/FLAX-003/6 Floor Tom.wav",
+  "server/sounds/FLAX-003/Floor Tom.wav"
+ ],
+ [
+  "server/sounds/FLAX-003/7 Bright Noise.wav",
+  "server/sounds/FLAX-003/Bright Noise.wav"
+ ],
+ [
+  "server/sounds/FLAX-003/8 Crash - Noise.wav",
+  "server/sounds/FLAX-003/Crash - Noise.wav"
+ ],
+ [
+  "server/sounds/FM-JUNO/1 Kick Loop.wav",
+  "server/sounds/FM-JUNO/Kick Loop.wav"
+ ],
+ [
+  "server/sounds/FM-JUNO/2 Perc Loop.wav",
+  "server/sounds/FM-JUNO/Perc Loop.wav"
+ ],
+ [
+  "server/sounds/FM-JUNO/3 Hat Loop.wav",
+  "server/sounds/FM-JUNO/Hat Loop.wav"
+ ],
+ [
+  "server/sounds/FM-JUNO/4 Noise Loop.wav",
+  "server/sounds/FM-JUNO/Noise Loop.wav"
+ ],
+ [
+  "server/sounds/FM-JUNO/5 Organ Loop (C2).wav",
+  "server/sounds/FM-JUNO/Organ Loop (C2).wav"
+ ],
+ [
+  "server/sounds/FM-JUNO/6 Pad Loop.wav",
+  "server/sounds/FM-JUNO/Pad Loop.wav"
+ ],
+ [
+  "server/sounds/FM-JUNO/7 Electric Piano Loop.wav",
+  "server/sounds/FM-JUNO/Electric Piano Loop.wav"
+ ],
+ [
+  "server/sounds/FM-JUNO/8 Organ Wobble.wav",
+  "server/sounds/FM-JUNO/Organ Wobble.wav"
+ ],
+ [
+  "server/sounds/GenMID-1/1 Low Tom - Bass.wav",
+  "server/sounds/GenMID-1/Low Tom - Bass.wav"
+ ],
+ [
+  "server/sounds/GenMID-1/2 Perc Hit.wav",
+  "server/sounds/GenMID-1/Perc Hit.wav"
+ ],
+ [
+  "server/sounds/GenMID-1/3 Noise Blip.wav",
+  "server/sounds/GenMID-1/Noise Blip.wav"
+ ],
+ [
+  "server/sounds/GenMID-1/4 Synth Blip.wav",
+  "server/sounds/GenMID-1/Synth Blip.wav"
+ ],
+ [
+  "server/sounds/GenMID-1/5 Texture.wav",
+  "server/sounds/GenMID-1/Texture.wav"
+ ],
+ [
+  "server/sounds/GenMID-1/6 Electric Piano.wav",
+  "server/sounds/GenMID-1/Electric Piano.wav"
+ ],
+ [
+  "server/sounds/GenMID-1/7 String - Choir Pad.wav",
+  "server/sounds/GenMID-1/String - Choir Pad.wav"
+ ],
+ [
+  "server/sounds/GenMID-1/8 Tonal Sustain.wav",
+  "server/sounds/GenMID-1/Tonal Sustain.wav"
+ ],
+ [
+  "server/sounds/GenMID-2/1 Electric Piano.wav",
+  "server/sounds/GenMID-2/Electric Piano.wav"
+ ],
+ [
+  "server/sounds/GenMID-2/2 Chime - Mallet.wav",
+  "server/sounds/GenMID-2/Chime - Mallet.wav"
+ ],
+ [
+  "server/sounds/GenMID-2/3 Choir.wav",
+  "server/sounds/GenMID-2/Choir.wav"
+ ],
+ [
+  "server/sounds/GenMID-2/4 String Section.wav",
+  "server/sounds/GenMID-2/String Section.wav"
+ ],
+ [
+  "server/sounds/GenMID-2/5 Bell Drone.wav",
+  "server/sounds/GenMID-2/Bell Drone.wav"
+ ],
+ [
+  "server/sounds/GenMID-2/6 Synth Blip.wav",
+  "server/sounds/GenMID-2/Synth Blip.wav"
+ ],
+ [
+  "server/sounds/GenMID-2/7 Synth Lead.wav",
+  "server/sounds/GenMID-2/Synth Lead.wav"
+ ],
+ [
+  "server/sounds/GenMID-2/8 Plucked String.wav",
+  "server/sounds/GenMID-2/Plucked String.wav"
+ ],
+ [
+  "server/sounds/HR-16/1 Bass Drum.wav",
+  "server/sounds/HR-16/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/HR-16/2 Snare.wav",
+  "server/sounds/HR-16/Snare.wav"
+ ],
+ [
+  "server/sounds/HR-16/3 Closed Hi-Hat.wav",
+  "server/sounds/HR-16/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/HR-16/4 Hand Clap.wav",
+  "server/sounds/HR-16/Hand Clap.wav"
+ ],
+ [
+  "server/sounds/HR-16/5 Triangle.wav",
+  "server/sounds/HR-16/Triangle.wav"
+ ],
+ [
+  "server/sounds/HR-16/6 Cowbell.wav",
+  "server/sounds/HR-16/Cowbell.wav"
+ ],
+ [
+  "server/sounds/HR-16/7 Ride Cymbal.wav",
+  "server/sounds/HR-16/Ride Cymbal.wav"
+ ],
+ [
+  "server/sounds/HR-16/8 Crash Cymbal.wav",
+  "server/sounds/HR-16/Crash Cymbal.wav"
+ ],
+ [
+  "server/sounds/Kw-R50e/1 Bass Drum.wav",
+  "server/sounds/Kw-R50e/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Kw-R50e/2 Snare.wav",
+  "server/sounds/Kw-R50e/Snare.wav"
+ ],
+ [
+  "server/sounds/Kw-R50e/3 Rimshot.wav",
+  "server/sounds/Kw-R50e/Rimshot.wav"
+ ],
+ [
+  "server/sounds/Kw-R50e/4 Snare (alt).wav",
+  "server/sounds/Kw-R50e/Snare (alt).wav"
+ ],
+ [
+  "server/sounds/Kw-R50e/5 Tom.wav",
+  "server/sounds/Kw-R50e/Tom.wav"
+ ],
+ [
+  "server/sounds/Kw-R50e/6 Perc Hit.wav",
+  "server/sounds/Kw-R50e/Perc Hit.wav"
+ ],
+ [
+  "server/sounds/Kw-R50e/7 Bass Tone.wav",
+  "server/sounds/Kw-R50e/Bass Tone.wav"
+ ],
+ [
+  "server/sounds/Kw-R50e/8 Tonal Stab.wav",
+  "server/sounds/Kw-R50e/Tonal Stab.wav"
+ ],
+ [
+  "server/sounds/Linn DRM/1 Bass Drum.wav",
+  "server/sounds/Linn DRM/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/Linn DRM/2 Snare.wav",
+  "server/sounds/Linn DRM/Snare.wav"
+ ],
+ [
+  "server/sounds/Linn DRM/3 Closed Hi-Hat.wav",
+  "server/sounds/Linn DRM/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Linn DRM/4 Open Hi-Hat.wav",
+  "server/sounds/Linn DRM/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/Linn DRM/5 Hand Clap.wav",
+  "server/sounds/Linn DRM/Hand Clap.wav"
+ ],
+ [
+  "server/sounds/Linn DRM/6 Tambourine.wav",
+  "server/sounds/Linn DRM/Tambourine.wav"
+ ],
+ [
+  "server/sounds/Linn DRM/7 Tom.wav",
+  "server/sounds/Linn DRM/Tom.wav"
+ ],
+ [
+  "server/sounds/Linn DRM/8 Cowbell.wav",
+  "server/sounds/Linn DRM/Cowbell.wav"
+ ],
+ [
+  "server/sounds/M5N Dm1/1 Bass Drum.wav",
+  "server/sounds/M5N Dm1/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/M5N Dm1/2 Noise Snare.wav",
+  "server/sounds/M5N Dm1/Noise Snare.wav"
+ ],
+ [
+  "server/sounds/M5N Dm1/3 Closed Hi-Hat.wav",
+  "server/sounds/M5N Dm1/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/M5N Dm1/4 Snare.wav",
+  "server/sounds/M5N Dm1/Snare.wav"
+ ],
+ [
+  "server/sounds/M5N Dm1/5 Glitch Perc.wav",
+  "server/sounds/M5N Dm1/Glitch Perc.wav"
+ ],
+ [
+  "server/sounds/M5N Dm1/6 Metallic Crash.wav",
+  "server/sounds/M5N Dm1/Metallic Crash.wav"
+ ],
+ [
+  "server/sounds/M5N Dm1/7 Noise Perc.wav",
+  "server/sounds/M5N Dm1/Noise Perc.wav"
+ ],
+ [
+  "server/sounds/M5N Dm1/8 Bell Perc.wav",
+  "server/sounds/M5N Dm1/Bell Perc.wav"
+ ],
+ [
+  "server/sounds/M5N Dm2/1 Distorted Kick.wav",
+  "server/sounds/M5N Dm2/Distorted Kick.wav"
+ ],
+ [
+  "server/sounds/M5N Dm2/2 Kick (alt).wav",
+  "server/sounds/M5N Dm2/Kick (alt).wav"
+ ],
+ [
+  "server/sounds/M5N Dm2/3 Perc Hit.wav",
+  "server/sounds/M5N Dm2/Perc Hit.wav"
+ ],
+ [
+  "server/sounds/M5N Dm2/4 Noise Snare.wav",
+  "server/sounds/M5N Dm2/Noise Snare.wav"
+ ],
+ [
+  "server/sounds/M5N Dm2/5 Noise Hit.wav",
+  "server/sounds/M5N Dm2/Noise Hit.wav"
+ ],
+ [
+  "server/sounds/M5N Dm2/6 Low Perc.wav",
+  "server/sounds/M5N Dm2/Low Perc.wav"
+ ],
+ [
+  "server/sounds/M5N Dm2/7 Noise Sweep.wav",
+  "server/sounds/M5N Dm2/Noise Sweep.wav"
+ ],
+ [
+  "server/sounds/M5N Dm2/8 Low Hit.wav",
+  "server/sounds/M5N Dm2/Low Hit.wav"
+ ],
+ [
+  "server/sounds/MEGA-909/1 Kick Loop.wav",
+  "server/sounds/MEGA-909/Kick Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-909/2 Drum Loop.wav",
+  "server/sounds/MEGA-909/Drum Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-909/3 Hat Loop.wav",
+  "server/sounds/MEGA-909/Hat Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-909/4 Ride Loop.wav",
+  "server/sounds/MEGA-909/Ride Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-909/5 Snare Loop.wav",
+  "server/sounds/MEGA-909/Snare Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-909/6 Bass Loop.wav",
+  "server/sounds/MEGA-909/Bass Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-909/7 Bass Loop (alt).wav",
+  "server/sounds/MEGA-909/Bass Loop (alt).wav"
+ ],
+ [
+  "server/sounds/MEGA-909/8 Cymbal Loop.wav",
+  "server/sounds/MEGA-909/Cymbal Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-DM1/1 Drum Loop (low).wav",
+  "server/sounds/MEGA-DM1/Drum Loop (low).wav"
+ ],
+ [
+  "server/sounds/MEGA-DM1/2 Drum Loop.wav",
+  "server/sounds/MEGA-DM1/Drum Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-DM1/3 Hat Loop.wav",
+  "server/sounds/MEGA-DM1/Hat Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-DM1/4 Percussion Loop.wav",
+  "server/sounds/MEGA-DM1/Percussion Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-DM1/5 Drum Loop (alt).wav",
+  "server/sounds/MEGA-DM1/Drum Loop (alt).wav"
+ ],
+ [
+  "server/sounds/MEGA-DM1/6 Glitch Loop.wav",
+  "server/sounds/MEGA-DM1/Glitch Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-DM1/7 Melodic Loop.wav",
+  "server/sounds/MEGA-DM1/Melodic Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-DM1/8 Melodic Loop (alt).wav",
+  "server/sounds/MEGA-DM1/Melodic Loop (alt).wav"
+ ],
+ [
+  "server/sounds/MEGA-DM2/1 Drum Loop (low).wav",
+  "server/sounds/MEGA-DM2/Drum Loop (low).wav"
+ ],
+ [
+  "server/sounds/MEGA-DM2/2 Drum Loop.wav",
+  "server/sounds/MEGA-DM2/Drum Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-DM2/3 Hat Loop.wav",
+  "server/sounds/MEGA-DM2/Hat Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-DM2/4 Snare Loop.wav",
+  "server/sounds/MEGA-DM2/Snare Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-DM2/5 Perc Loop.wav",
+  "server/sounds/MEGA-DM2/Perc Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-DM2/6 Drum Loop (long).wav",
+  "server/sounds/MEGA-DM2/Drum Loop (long).wav"
+ ],
+ [
+  "server/sounds/MEGA-DM2/7 String Hit.wav",
+  "server/sounds/MEGA-DM2/String Hit.wav"
+ ],
+ [
+  "server/sounds/MEGA-DM2/8 Melodic Loop.wav",
+  "server/sounds/MEGA-DM2/Melodic Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-MnD/1 Drum Loop.wav",
+  "server/sounds/MEGA-MnD/Drum Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-MnD/2 Perc Loop.wav",
+  "server/sounds/MEGA-MnD/Perc Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-MnD/3 Hat Loop.wav",
+  "server/sounds/MEGA-MnD/Hat Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-MnD/4 Shaker Loop.wav",
+  "server/sounds/MEGA-MnD/Shaker Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-MnD/5 Melodic Loop.wav",
+  "server/sounds/MEGA-MnD/Melodic Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-MnD/6 Bright Loop.wav",
+  "server/sounds/MEGA-MnD/Bright Loop.wav"
+ ],
+ [
+  "server/sounds/MEGA-MnD/7 Drum Loop (alt).wav",
+  "server/sounds/MEGA-MnD/Drum Loop (alt).wav"
+ ],
+ [
+  "server/sounds/MEGA-MnD/8 Perc Loop (alt).wav",
+  "server/sounds/MEGA-MnD/Perc Loop (alt).wav"
+ ],
+ [
+  "server/sounds/MEGAMIDI/1 Drum Loop (low).wav",
+  "server/sounds/MEGAMIDI/Drum Loop (low).wav"
+ ],
+ [
+  "server/sounds/MEGAMIDI/2 Snare Loop.wav",
+  "server/sounds/MEGAMIDI/Snare Loop.wav"
+ ],
+ [
+  "server/sounds/MEGAMIDI/3 Hat Loop.wav",
+  "server/sounds/MEGAMIDI/Hat Loop.wav"
+ ],
+ [
+  "server/sounds/MEGAMIDI/4 Cymbal Loop.wav",
+  "server/sounds/MEGAMIDI/Cymbal Loop.wav"
+ ],
+ [
+  "server/sounds/MEGAMIDI/5 Perc Loop.wav",
+  "server/sounds/MEGAMIDI/Perc Loop.wav"
+ ],
+ [
+  "server/sounds/MEGAMIDI/6 Tom Loop.wav",
+  "server/sounds/MEGAMIDI/Tom Loop.wav"
+ ],
+ [
+  "server/sounds/MEGAMIDI/7 Bass Loop.wav",
+  "server/sounds/MEGAMIDI/Bass Loop.wav"
+ ],
+ [
+  "server/sounds/MEGAMIDI/8 Sustained FX.wav",
+  "server/sounds/MEGAMIDI/Sustained FX.wav"
+ ],
+ [
+  "server/sounds/MFB 522/1 Bass Drum.wav",
+  "server/sounds/MFB 522/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/MFB 522/2 Snare.wav",
+  "server/sounds/MFB 522/Snare.wav"
+ ],
+ [
+  "server/sounds/MFB 522/3 Closed Hi-Hat.wav",
+  "server/sounds/MFB 522/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/MFB 522/4 Open Hi-Hat.wav",
+  "server/sounds/MFB 522/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/MFB 522/5 Hand Clap.wav",
+  "server/sounds/MFB 522/Hand Clap.wav"
+ ],
+ [
+  "server/sounds/MFB 522/6 Rimshot - Click.wav",
+  "server/sounds/MFB 522/Rimshot - Click.wav"
+ ],
+ [
+  "server/sounds/MFB 522/7 Tom.wav",
+  "server/sounds/MFB 522/Tom.wav"
+ ],
+ [
+  "server/sounds/MFB 522/8 Cymbal.wav",
+  "server/sounds/MFB 522/Cymbal.wav"
+ ],
+ [
+  "server/sounds/MT70-DRM/1 Bass Drum.wav",
+  "server/sounds/MT70-DRM/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/MT70-DRM/2 Snare (noisy).wav",
+  "server/sounds/MT70-DRM/Snare (noisy).wav"
+ ],
+ [
+  "server/sounds/MT70-DRM/3 Closed Hi-Hat.wav",
+  "server/sounds/MT70-DRM/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/MT70-DRM/4 Open Hi-Hat.wav",
+  "server/sounds/MT70-DRM/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/MT70-DRM/5 Cymbal.wav",
+  "server/sounds/MT70-DRM/Cymbal.wav"
+ ],
+ [
+  "server/sounds/MT70-DRM/6 Shaker.wav",
+  "server/sounds/MT70-DRM/Shaker.wav"
+ ],
+ [
+  "server/sounds/MT70-DRM/7 Tambourine.wav",
+  "server/sounds/MT70-DRM/Tambourine.wav"
+ ],
+ [
+  "server/sounds/MT70-DRM/8 Vibraphone.wav",
+  "server/sounds/MT70-DRM/Vibraphone.wav"
+ ],
+ [
+  "server/sounds/MUMZ-01/1 Distorted Kick.wav",
+  "server/sounds/MUMZ-01/Distorted Kick.wav"
+ ],
+ [
+  "server/sounds/MUMZ-01/2 Low Perc.wav",
+  "server/sounds/MUMZ-01/Low Perc.wav"
+ ],
+ [
+  "server/sounds/MUMZ-01/3 Tick - Hat.wav",
+  "server/sounds/MUMZ-01/Tick - Hat.wav"
+ ],
+ [
+  "server/sounds/MUMZ-01/4 Clap - Noise Burst.wav",
+  "server/sounds/MUMZ-01/Clap - Noise Burst.wav"
+ ],
+ [
+  "server/sounds/MUMZ-01/5 Vocal Perc.wav",
+  "server/sounds/MUMZ-01/Vocal Perc.wav"
+ ],
+ [
+  "server/sounds/MUMZ-01/6 Wobble Blip.wav",
+  "server/sounds/MUMZ-01/Wobble Blip.wav"
+ ],
+ [
+  "server/sounds/MUMZ-01/7 Gong - Bell.wav",
+  "server/sounds/MUMZ-01/Gong - Bell.wav"
+ ],
+ [
+  "server/sounds/MUMZ-01/8 Pitch-Bend Bass.wav",
+  "server/sounds/MUMZ-01/Pitch-Bend Bass.wav"
+ ],
+ [
+  "server/sounds/MUMZ-02/1 Bass Drum.wav",
+  "server/sounds/MUMZ-02/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/MUMZ-02/2 Noise Hat.wav",
+  "server/sounds/MUMZ-02/Noise Hat.wav"
+ ],
+ [
+  "server/sounds/MUMZ-02/3 Closed Hi-Hat.wav",
+  "server/sounds/MUMZ-02/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/MUMZ-02/4 Buzz Blip.wav",
+  "server/sounds/MUMZ-02/Buzz Blip.wav"
+ ],
+ [
+  "server/sounds/MUMZ-02/5 Drone Perc.wav",
+  "server/sounds/MUMZ-02/Drone Perc.wav"
+ ],
+ [
+  "server/sounds/MUMZ-02/6 Sustained Buzz.wav",
+  "server/sounds/MUMZ-02/Sustained Buzz.wav"
+ ],
+ [
+  "server/sounds/MUMZ-02/7 Organ Drone.wav",
+  "server/sounds/MUMZ-02/Organ Drone.wav"
+ ],
+ [
+  "server/sounds/MUMZ-02/8 Square Blip.wav",
+  "server/sounds/MUMZ-02/Square Blip.wav"
+ ],
+ [
+  "server/sounds/MUMZ-03/1 Bass Drum.wav",
+  "server/sounds/MUMZ-03/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/MUMZ-03/2 Crash - Open Hat.wav",
+  "server/sounds/MUMZ-03/Crash - Open Hat.wav"
+ ],
+ [
+  "server/sounds/MUMZ-03/3 Low Perc.wav",
+  "server/sounds/MUMZ-03/Low Perc.wav"
+ ],
+ [
+  "server/sounds/MUMZ-03/4 Hand Clap.wav",
+  "server/sounds/MUMZ-03/Hand Clap.wav"
+ ],
+ [
+  "server/sounds/MUMZ-03/5 Noise Texture.wav",
+  "server/sounds/MUMZ-03/Noise Texture.wav"
+ ],
+ [
+  "server/sounds/MUMZ-03/6 Gong (4s).wav",
+  "server/sounds/MUMZ-03/Gong (4s).wav"
+ ],
+ [
+  "server/sounds/MUMZ-03/7 Cowbell - Bell.wav",
+  "server/sounds/MUMZ-03/Cowbell - Bell.wav"
+ ],
+ [
+  "server/sounds/MUMZ-03/8 Saw Bass Tone.wav",
+  "server/sounds/MUMZ-03/Saw Bass Tone.wav"
+ ],
+ [
+  "server/sounds/NYZ-FLD1/1 Field Texture (distorted).wav",
+  "server/sounds/NYZ-FLD1/Field Texture (distorted).wav"
+ ],
+ [
+  "server/sounds/NYZ-FLD1/2 Field Texture (bright).wav",
+  "server/sounds/NYZ-FLD1/Field Texture (bright).wav"
+ ],
+ [
+  "server/sounds/NYZ-FLD1/3 Field Recording.wav",
+  "server/sounds/NYZ-FLD1/Field Recording.wav"
+ ],
+ [
+  "server/sounds/NYZ-FLD1/4 Field Recording (bowed).wav",
+  "server/sounds/NYZ-FLD1/Field Recording (bowed).wav"
+ ],
+ [
+  "server/sounds/NYZ-FLD1/5 Field Noise.wav",
+  "server/sounds/NYZ-FLD1/Field Noise.wav"
+ ],
+ [
+  "server/sounds/NYZ-FLD1/6 Field Drone.wav",
+  "server/sounds/NYZ-FLD1/Field Drone.wav"
+ ],
+ [
+  "server/sounds/NYZ-FLD1/7 Field Drone (alt).wav",
+  "server/sounds/NYZ-FLD1/Field Drone (alt).wav"
+ ],
+ [
+  "server/sounds/NYZ-FLD1/8 Field Granular.wav",
+  "server/sounds/NYZ-FLD1/Field Granular.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN1/1 Tonal Pad.wav",
+  "server/sounds/NYZ-SYN1/Tonal Pad.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN1/2 Noise Pad.wav",
+  "server/sounds/NYZ-SYN1/Noise Pad.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN1/3 Dark Pad.wav",
+  "server/sounds/NYZ-SYN1/Dark Pad.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN1/4 Organ Pad.wav",
+  "server/sounds/NYZ-SYN1/Organ Pad.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN1/5 Bass Pad.wav",
+  "server/sounds/NYZ-SYN1/Bass Pad.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN1/6 Drone.wav",
+  "server/sounds/NYZ-SYN1/Drone.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN1/7 Evolving Pad.wav",
+  "server/sounds/NYZ-SYN1/Evolving Pad.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN1/8 Swell Pad.wav",
+  "server/sounds/NYZ-SYN1/Swell Pad.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN2/1 Bright Pad.wav",
+  "server/sounds/NYZ-SYN2/Bright Pad.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN2/2 Bass Pad.wav",
+  "server/sounds/NYZ-SYN2/Bass Pad.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN2/3 Drone.wav",
+  "server/sounds/NYZ-SYN2/Drone.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN2/4 Bass Tone.wav",
+  "server/sounds/NYZ-SYN2/Bass Tone.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN2/5 Electric Piano.wav",
+  "server/sounds/NYZ-SYN2/Electric Piano.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN2/6 Electric Piano (C4).wav",
+  "server/sounds/NYZ-SYN2/Electric Piano (C4).wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN2/7 Organ Tone.wav",
+  "server/sounds/NYZ-SYN2/Organ Tone.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN2/8 Bell Tone.wav",
+  "server/sounds/NYZ-SYN2/Bell Tone.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN3/1 Saw Pluck.wav",
+  "server/sounds/NYZ-SYN3/Saw Pluck.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN3/2 Electric Piano.wav",
+  "server/sounds/NYZ-SYN3/Electric Piano.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN3/3 Gong Tone.wav",
+  "server/sounds/NYZ-SYN3/Gong Tone.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN3/4 Guitar Tone.wav",
+  "server/sounds/NYZ-SYN3/Guitar Tone.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN3/5 Marimba.wav",
+  "server/sounds/NYZ-SYN3/Marimba.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN3/6 Synth Pluck.wav",
+  "server/sounds/NYZ-SYN3/Synth Pluck.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN3/7 Bass Chime.wav",
+  "server/sounds/NYZ-SYN3/Bass Chime.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN3/8 Vibraphone.wav",
+  "server/sounds/NYZ-SYN3/Vibraphone.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN4/1 Bass Guitar.wav",
+  "server/sounds/NYZ-SYN4/Bass Guitar.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN4/2 Vibraphone.wav",
+  "server/sounds/NYZ-SYN4/Vibraphone.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN4/3 Synth Bass.wav",
+  "server/sounds/NYZ-SYN4/Synth Bass.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN4/4 Marimba.wav",
+  "server/sounds/NYZ-SYN4/Marimba.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN4/5 Bass Marimba.wav",
+  "server/sounds/NYZ-SYN4/Bass Marimba.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN4/6 Bell.wav",
+  "server/sounds/NYZ-SYN4/Bell.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN4/7 Bright Bell.wav",
+  "server/sounds/NYZ-SYN4/Bright Bell.wav"
+ ],
+ [
+  "server/sounds/NYZ-SYN4/8 Noise Pluck (7.5s).wav",
+  "server/sounds/NYZ-SYN4/Noise Pluck (7.5s).wav"
+ ],
+ [
+  "server/sounds/R70 DRM/1 Bass Drum.wav",
+  "server/sounds/R70 DRM/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/R70 DRM/2 Snare.wav",
+  "server/sounds/R70 DRM/Snare.wav"
+ ],
+ [
+  "server/sounds/R70 DRM/3 Closed Hi-Hat.wav",
+  "server/sounds/R70 DRM/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/R70 DRM/4 Open Hi-Hat.wav",
+  "server/sounds/R70 DRM/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/R70 DRM/5 Snare (alt).wav",
+  "server/sounds/R70 DRM/Snare (alt).wav"
+ ],
+ [
+  "server/sounds/R70 DRM/6 Tom.wav",
+  "server/sounds/R70 DRM/Tom.wav"
+ ],
+ [
+  "server/sounds/R70 DRM/7 Tambourine.wav",
+  "server/sounds/R70 DRM/Tambourine.wav"
+ ],
+ [
+  "server/sounds/R70 DRM/8 Crash Cymbal.wav",
+  "server/sounds/R70 DRM/Crash Cymbal.wav"
+ ],
+ [
+  "server/sounds/R8 MATE/1 Bass Drum.wav",
+  "server/sounds/R8 MATE/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/R8 MATE/2 Snare.wav",
+  "server/sounds/R8 MATE/Snare.wav"
+ ],
+ [
+  "server/sounds/R8 MATE/3 Hand Clap.wav",
+  "server/sounds/R8 MATE/Hand Clap.wav"
+ ],
+ [
+  "server/sounds/R8 MATE/4 Closed Hi-Hat.wav",
+  "server/sounds/R8 MATE/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/R8 MATE/5 Bass Drum (alt).wav",
+  "server/sounds/R8 MATE/Bass Drum (alt).wav"
+ ],
+ [
+  "server/sounds/R8 MATE/6 Bell - Chime.wav",
+  "server/sounds/R8 MATE/Bell - Chime.wav"
+ ],
+ [
+  "server/sounds/R8 MATE/7 Floor Tom.wav",
+  "server/sounds/R8 MATE/Floor Tom.wav"
+ ],
+ [
+  "server/sounds/R8 MATE/8 Sub Kick.wav",
+  "server/sounds/R8 MATE/Sub Kick.wav"
+ ],
+ [
+  "server/sounds/RH-BENJN/1 Bass Hit.wav",
+  "server/sounds/RH-BENJN/Bass Hit.wav"
+ ],
+ [
+  "server/sounds/RH-BENJN/2 Glitch Bass.wav",
+  "server/sounds/RH-BENJN/Glitch Bass.wav"
+ ],
+ [
+  "server/sounds/RH-BENJN/3 Sub Bass.wav",
+  "server/sounds/RH-BENJN/Sub Bass.wav"
+ ],
+ [
+  "server/sounds/RH-BENJN/4 Sub Bass (alt).wav",
+  "server/sounds/RH-BENJN/Sub Bass (alt).wav"
+ ],
+ [
+  "server/sounds/RH-BENJN/5 Bass Sweep.wav",
+  "server/sounds/RH-BENJN/Bass Sweep.wav"
+ ],
+ [
+  "server/sounds/RH-BENJN/6 Bass Drone (9s).wav",
+  "server/sounds/RH-BENJN/Bass Drone (9s).wav"
+ ],
+ [
+  "server/sounds/RH-BENJN/7 Bass Blip.wav",
+  "server/sounds/RH-BENJN/Bass Blip.wav"
+ ],
+ [
+  "server/sounds/RH-BENJN/8 Harsh Bass.wav",
+  "server/sounds/RH-BENJN/Harsh Bass.wav"
+ ],
+ [
+  "server/sounds/RH-TAIKO/1 Taiko Hit.wav",
+  "server/sounds/RH-TAIKO/Taiko Hit.wav"
+ ],
+ [
+  "server/sounds/RH-TAIKO/2 Taiko Rim.wav",
+  "server/sounds/RH-TAIKO/Taiko Rim.wav"
+ ],
+ [
+  "server/sounds/RH-TAIKO/3 Taiko Hit (short).wav",
+  "server/sounds/RH-TAIKO/Taiko Hit (short).wav"
+ ],
+ [
+  "server/sounds/RH-TAIKO/4 Taiko Hit (mid).wav",
+  "server/sounds/RH-TAIKO/Taiko Hit (mid).wav"
+ ],
+ [
+  "server/sounds/RH-TAIKO/5 Taiko Hit (dry).wav",
+  "server/sounds/RH-TAIKO/Taiko Hit (dry).wav"
+ ],
+ [
+  "server/sounds/RH-TAIKO/6 Taiko Boom (long).wav",
+  "server/sounds/RH-TAIKO/Taiko Boom (long).wav"
+ ],
+ [
+  "server/sounds/RH-TAIKO/7 Taiko Slap.wav",
+  "server/sounds/RH-TAIKO/Taiko Slap.wav"
+ ],
+ [
+  "server/sounds/RH-TAIKO/8 Taiko Low.wav",
+  "server/sounds/RH-TAIKO/Taiko Low.wav"
+ ],
+ [
+  "server/sounds/RX5 DRM/1 Bass Drum.wav",
+  "server/sounds/RX5 DRM/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/RX5 DRM/2 Snare.wav",
+  "server/sounds/RX5 DRM/Snare.wav"
+ ],
+ [
+  "server/sounds/RX5 DRM/3 Closed Hi-Hat.wav",
+  "server/sounds/RX5 DRM/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/RX5 DRM/4 Open Hi-Hat.wav",
+  "server/sounds/RX5 DRM/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/RX5 DRM/5 Rimshot.wav",
+  "server/sounds/RX5 DRM/Rimshot.wav"
+ ],
+ [
+  "server/sounds/RX5 DRM/6 Low Tom.wav",
+  "server/sounds/RX5 DRM/Low Tom.wav"
+ ],
+ [
+  "server/sounds/RX5 DRM/7 Floor Tom.wav",
+  "server/sounds/RX5 DRM/Floor Tom.wav"
+ ],
+ [
+  "server/sounds/RX5 DRM/8 Crash Cymbal.wav",
+  "server/sounds/RX5 DRM/Crash Cymbal.wav"
+ ],
+ [
+  "server/sounds/RZ-1 DRM/1 Bass Drum.wav",
+  "server/sounds/RZ-1 DRM/Bass Drum.wav"
+ ],
+ [
+  "server/sounds/RZ-1 DRM/2 Snare.wav",
+  "server/sounds/RZ-1 DRM/Snare.wav"
+ ],
+ [
+  "server/sounds/RZ-1 DRM/3 Closed Hi-Hat.wav",
+  "server/sounds/RZ-1 DRM/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/RZ-1 DRM/4 Open Hi-Hat.wav",
+  "server/sounds/RZ-1 DRM/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/RZ-1 DRM/5 Woodblock.wav",
+  "server/sounds/RZ-1 DRM/Woodblock.wav"
+ ],
+ [
+  "server/sounds/RZ-1 DRM/6 Hand Clap.wav",
+  "server/sounds/RZ-1 DRM/Hand Clap.wav"
+ ],
+ [
+  "server/sounds/RZ-1 DRM/7 Ride Cymbal.wav",
+  "server/sounds/RZ-1 DRM/Ride Cymbal.wav"
+ ],
+ [
+  "server/sounds/RZ-1 DRM/8 Vocal Perc.wav",
+  "server/sounds/RZ-1 DRM/Vocal Perc.wav"
+ ],
+ [
+  "server/sounds/SB-001/1 Glitch FX.wav",
+  "server/sounds/SB-001/Glitch FX.wav"
+ ],
+ [
+  "server/sounds/SB-001/2 Guitar Bend.wav",
+  "server/sounds/SB-001/Guitar Bend.wav"
+ ],
+ [
+  "server/sounds/SB-001/3 Bass Hit.wav",
+  "server/sounds/SB-001/Bass Hit.wav"
+ ],
+ [
+  "server/sounds/SB-001/4 Distorted Guitar.wav",
+  "server/sounds/SB-001/Distorted Guitar.wav"
+ ],
+ [
+  "server/sounds/SB-001/5 Vocal - Guitar.wav",
+  "server/sounds/SB-001/Vocal - Guitar.wav"
+ ],
+ [
+  "server/sounds/SB-001/6 Wobble Bass.wav",
+  "server/sounds/SB-001/Wobble Bass.wav"
+ ],
+ [
+  "server/sounds/SB-001/7 Reverb Guitar.wav",
+  "server/sounds/SB-001/Reverb Guitar.wav"
+ ],
+ [
+  "server/sounds/SB-001/8 Pad (10s).wav",
+  "server/sounds/SB-001/Pad (10s).wav"
+ ],
+ [
+  "server/sounds/SB-002/1 Glitch Noise.wav",
+  "server/sounds/SB-002/Glitch Noise.wav"
+ ],
+ [
+  "server/sounds/SB-002/2 Bass Sweep.wav",
+  "server/sounds/SB-002/Bass Sweep.wav"
+ ],
+ [
+  "server/sounds/SB-002/3 Noise Snare.wav",
+  "server/sounds/SB-002/Noise Snare.wav"
+ ],
+ [
+  "server/sounds/SB-002/4 Granular Texture.wav",
+  "server/sounds/SB-002/Granular Texture.wav"
+ ],
+ [
+  "server/sounds/SB-002/5 Granular Wash.wav",
+  "server/sounds/SB-002/Granular Wash.wav"
+ ],
+ [
+  "server/sounds/SB-002/6 Perc Blip.wav",
+  "server/sounds/SB-002/Perc Blip.wav"
+ ],
+ [
+  "server/sounds/SB-002/7 Boomy Bass.wav",
+  "server/sounds/SB-002/Boomy Bass.wav"
+ ],
+ [
+  "server/sounds/SB-002/8 Glitch Hit.wav",
+  "server/sounds/SB-002/Glitch Hit.wav"
+ ],
+ [
+  "server/sounds/SB-003/1 Bass Sweep (7s).wav",
+  "server/sounds/SB-003/Bass Sweep (7s).wav"
+ ],
+ [
+  "server/sounds/SB-003/2 Wobble Tone.wav",
+  "server/sounds/SB-003/Wobble Tone.wav"
+ ],
+ [
+  "server/sounds/SB-003/3 Noisy Bass Drone.wav",
+  "server/sounds/SB-003/Noisy Bass Drone.wav"
+ ],
+ [
+  "server/sounds/SB-003/4 Glitch Tone.wav",
+  "server/sounds/SB-003/Glitch Tone.wav"
+ ],
+ [
+  "server/sounds/SB-003/5 Pad Sweep.wav",
+  "server/sounds/SB-003/Pad Sweep.wav"
+ ],
+ [
+  "server/sounds/SB-003/6 Noise Texture.wav",
+  "server/sounds/SB-003/Noise Texture.wav"
+ ],
+ [
+  "server/sounds/SB-003/7 Harsh Drone.wav",
+  "server/sounds/SB-003/Harsh Drone.wav"
+ ],
+ [
+  "server/sounds/SB-003/8 Wobble Bass.wav",
+  "server/sounds/SB-003/Wobble Bass.wav"
+ ],
+ [
+  "server/sounds/SL130BPM/1 Drum Loop 1.wav",
+  "server/sounds/SL130BPM/Drum Loop 1.wav"
+ ],
+ [
+  "server/sounds/SL130BPM/2 Drum Loop 2.wav",
+  "server/sounds/SL130BPM/Drum Loop 2.wav"
+ ],
+ [
+  "server/sounds/SL130BPM/3 Bass Loop.wav",
+  "server/sounds/SL130BPM/Bass Loop.wav"
+ ],
+ [
+  "server/sounds/SL130BPM/4 Drum Loop (short).wav",
+  "server/sounds/SL130BPM/Drum Loop (short).wav"
+ ],
+ [
+  "server/sounds/SL130BPM/5 Bass Loop (alt).wav",
+  "server/sounds/SL130BPM/Bass Loop (alt).wav"
+ ],
+ [
+  "server/sounds/SL130BPM/6 Electric Piano Loop.wav",
+  "server/sounds/SL130BPM/Electric Piano Loop.wav"
+ ],
+ [
+  "server/sounds/SL130BPM/7 Electric Piano Loop (alt).wav",
+  "server/sounds/SL130BPM/Electric Piano Loop (alt).wav"
+ ],
+ [
+  "server/sounds/SL130BPM/8 Guitar Loop.wav",
+  "server/sounds/SL130BPM/Guitar Loop.wav"
+ ],
+ [
+  "server/sounds/SL165BPM/1 Drum Loop 1.wav",
+  "server/sounds/SL165BPM/Drum Loop 1.wav"
+ ],
+ [
+  "server/sounds/SL165BPM/2 Drum Loop 2.wav",
+  "server/sounds/SL165BPM/Drum Loop 2.wav"
+ ],
+ [
+  "server/sounds/SL165BPM/3 Drum Loop 3.wav",
+  "server/sounds/SL165BPM/Drum Loop 3.wav"
+ ],
+ [
+  "server/sounds/SL165BPM/4 Drum Loop 4.wav",
+  "server/sounds/SL165BPM/Drum Loop 4.wav"
+ ],
+ [
+  "server/sounds/SL165BPM/5 Vocal Loop.wav",
+  "server/sounds/SL165BPM/Vocal Loop.wav"
+ ],
+ [
+  "server/sounds/SL165BPM/6 Bass Hit.wav",
+  "server/sounds/SL165BPM/Bass Hit.wav"
+ ],
+ [
+  "server/sounds/SL165BPM/7 Drone Hit.wav",
+  "server/sounds/SL165BPM/Drone Hit.wav"
+ ],
+ [
+  "server/sounds/SL165BPM/8 Organ Hit.wav",
+  "server/sounds/SL165BPM/Organ Hit.wav"
+ ],
+ [
+  "server/sounds/SL170BPM/1 Drum Loop 1.wav",
+  "server/sounds/SL170BPM/Drum Loop 1.wav"
+ ],
+ [
+  "server/sounds/SL170BPM/2 Drum Loop 2.wav",
+  "server/sounds/SL170BPM/Drum Loop 2.wav"
+ ],
+ [
+  "server/sounds/SL170BPM/3 Drum Loop 3.wav",
+  "server/sounds/SL170BPM/Drum Loop 3.wav"
+ ],
+ [
+  "server/sounds/SL170BPM/4 Drum Loop 4.wav",
+  "server/sounds/SL170BPM/Drum Loop 4.wav"
+ ],
+ [
+  "server/sounds/SL170BPM/5 Noise Hit.wav",
+  "server/sounds/SL170BPM/Noise Hit.wav"
+ ],
+ [
+  "server/sounds/SL170BPM/6 Bass Hit.wav",
+  "server/sounds/SL170BPM/Bass Hit.wav"
+ ],
+ [
+  "server/sounds/SL170BPM/7 Sub Hit.wav",
+  "server/sounds/SL170BPM/Sub Hit.wav"
+ ],
+ [
+  "server/sounds/SL170BPM/8 Pad Hit.wav",
+  "server/sounds/SL170BPM/Pad Hit.wav"
+ ],
+ [
+  "server/sounds/SL175BPM/1 Drum Loop 1.wav",
+  "server/sounds/SL175BPM/Drum Loop 1.wav"
+ ],
+ [
+  "server/sounds/SL175BPM/2 Drum Loop 2.wav",
+  "server/sounds/SL175BPM/Drum Loop 2.wav"
+ ],
+ [
+  "server/sounds/SL175BPM/3 Drum Loop 3.wav",
+  "server/sounds/SL175BPM/Drum Loop 3.wav"
+ ],
+ [
+  "server/sounds/SL175BPM/4 Kick Loop (4 bars).wav",
+  "server/sounds/SL175BPM/Kick Loop (4 bars).wav"
+ ],
+ [
+  "server/sounds/SL175BPM/5 Drum Loop (4 bars).wav",
+  "server/sounds/SL175BPM/Drum Loop (4 bars).wav"
+ ],
+ [
+  "server/sounds/SL175BPM/6 Conga Loop.wav",
+  "server/sounds/SL175BPM/Conga Loop.wav"
+ ],
+ [
+  "server/sounds/SL175BPM/7 Mallet Loop.wav",
+  "server/sounds/SL175BPM/Mallet Loop.wav"
+ ],
+ [
+  "server/sounds/SL175BPM/8 Mallet Loop (alt).wav",
+  "server/sounds/SL175BPM/Mallet Loop (alt).wav"
+ ],
+ [
+  "server/sounds/SL180BPM/1 Drum Loop 1.wav",
+  "server/sounds/SL180BPM/Drum Loop 1.wav"
+ ],
+ [
+  "server/sounds/SL180BPM/2 Drum Loop 2.wav",
+  "server/sounds/SL180BPM/Drum Loop 2.wav"
+ ],
+ [
+  "server/sounds/SL180BPM/3 Drum Loop 3.wav",
+  "server/sounds/SL180BPM/Drum Loop 3.wav"
+ ],
+ [
+  "server/sounds/SL180BPM/4 Kick Loop (long).wav",
+  "server/sounds/SL180BPM/Kick Loop (long).wav"
+ ],
+ [
+  "server/sounds/SL180BPM/5 Drum Loop (long).wav",
+  "server/sounds/SL180BPM/Drum Loop (long).wav"
+ ],
+ [
+  "server/sounds/SL180BPM/6 Vocal Loop.wav",
+  "server/sounds/SL180BPM/Vocal Loop.wav"
+ ],
+ [
+  "server/sounds/SL180BPM/7 Mallet Loop.wav",
+  "server/sounds/SL180BPM/Mallet Loop.wav"
+ ],
+ [
+  "server/sounds/SL180BPM/8 Mallet Loop (alt).wav",
+  "server/sounds/SL180BPM/Mallet Loop (alt).wav"
+ ],
+ [
+  "server/sounds/SLS-001/1 Kick (long).wav",
+  "server/sounds/SLS-001/Kick (long).wav"
+ ],
+ [
+  "server/sounds/SLS-001/2 Noise Hat.wav",
+  "server/sounds/SLS-001/Noise Hat.wav"
+ ],
+ [
+  "server/sounds/SLS-001/3 Closed Hi-Hat.wav",
+  "server/sounds/SLS-001/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/SLS-001/4 Open Hi-Hat.wav",
+  "server/sounds/SLS-001/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/SLS-001/5 Perc Hit.wav",
+  "server/sounds/SLS-001/Perc Hit.wav"
+ ],
+ [
+  "server/sounds/SLS-001/6 Noise Burst.wav",
+  "server/sounds/SLS-001/Noise Burst.wav"
+ ],
+ [
+  "server/sounds/SLS-001/7 Bass Blip.wav",
+  "server/sounds/SLS-001/Bass Blip.wav"
+ ],
+ [
+  "server/sounds/SLS-001/8 FX Pitch.wav",
+  "server/sounds/SLS-001/FX Pitch.wav"
+ ],
+ [
+  "server/sounds/SLS-002/1 Kick.wav",
+  "server/sounds/SLS-002/Kick.wav"
+ ],
+ [
+  "server/sounds/SLS-002/2 Glitch Snare.wav",
+  "server/sounds/SLS-002/Glitch Snare.wav"
+ ],
+ [
+  "server/sounds/SLS-002/3 Closed Hi-Hat.wav",
+  "server/sounds/SLS-002/Closed Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/SLS-002/4 Open Hi-Hat.wav",
+  "server/sounds/SLS-002/Open Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/SLS-002/5 Snare.wav",
+  "server/sounds/SLS-002/Snare.wav"
+ ],
+ [
+  "server/sounds/SLS-002/6 Tonal Kick.wav",
+  "server/sounds/SLS-002/Tonal Kick.wav"
+ ],
+ [
+  "server/sounds/SLS-002/7 Bell.wav",
+  "server/sounds/SLS-002/Bell.wav"
+ ],
+ [
+  "server/sounds/SLS-002/8 Distorted Bass.wav",
+  "server/sounds/SLS-002/Distorted Bass.wav"
+ ],
+ [
+  "server/sounds/SLS-003/1 Kick.wav",
+  "server/sounds/SLS-003/Kick.wav"
+ ],
+ [
+  "server/sounds/SLS-003/2 Noise Hat.wav",
+  "server/sounds/SLS-003/Noise Hat.wav"
+ ],
+ [
+  "server/sounds/SLS-003/3 Low Blip.wav",
+  "server/sounds/SLS-003/Low Blip.wav"
+ ],
+ [
+  "server/sounds/SLS-003/4 Perc Hit.wav",
+  "server/sounds/SLS-003/Perc Hit.wav"
+ ],
+ [
+  "server/sounds/SLS-003/5 Snare.wav",
+  "server/sounds/SLS-003/Snare.wav"
+ ],
+ [
+  "server/sounds/SLS-003/6 FX Sweep.wav",
+  "server/sounds/SLS-003/FX Sweep.wav"
+ ],
+ [
+  "server/sounds/SLS-003/7 Kick (alt).wav",
+  "server/sounds/SLS-003/Kick (alt).wav"
+ ],
+ [
+  "server/sounds/SLS-003/8 Snare (alt).wav",
+  "server/sounds/SLS-003/Snare (alt).wav"
+ ],
+ [
+  "server/sounds/SLS-004/1 Kick.wav",
+  "server/sounds/SLS-004/Kick.wav"
+ ],
+ [
+  "server/sounds/SLS-004/2 Snare.wav",
+  "server/sounds/SLS-004/Snare.wav"
+ ],
+ [
+  "server/sounds/SLS-004/3 Hi-Hat.wav",
+  "server/sounds/SLS-004/Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/SLS-004/4 Perc Hit.wav",
+  "server/sounds/SLS-004/Perc Hit.wav"
+ ],
+ [
+  "server/sounds/SLS-004/5 Noise Snare.wav",
+  "server/sounds/SLS-004/Noise Snare.wav"
+ ],
+ [
+  "server/sounds/SLS-004/6 Tom.wav",
+  "server/sounds/SLS-004/Tom.wav"
+ ],
+ [
+  "server/sounds/SLS-004/7 Wobble FX.wav",
+  "server/sounds/SLS-004/Wobble FX.wav"
+ ],
+ [
+  "server/sounds/SLS-004/8 Noise Hat.wav",
+  "server/sounds/SLS-004/Noise Hat.wav"
+ ],
+ [
+  "server/sounds/SLS-005/1 Kick.wav",
+  "server/sounds/SLS-005/Kick.wav"
+ ],
+ [
+  "server/sounds/SLS-005/2 Noise Snare.wav",
+  "server/sounds/SLS-005/Noise Snare.wav"
+ ],
+ [
+  "server/sounds/SLS-005/3 Hi-Hat.wav",
+  "server/sounds/SLS-005/Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/SLS-005/4 Woodblock.wav",
+  "server/sounds/SLS-005/Woodblock.wav"
+ ],
+ [
+  "server/sounds/SLS-005/5 Perc Hit.wav",
+  "server/sounds/SLS-005/Perc Hit.wav"
+ ],
+ [
+  "server/sounds/SLS-005/6 Kick (alt).wav",
+  "server/sounds/SLS-005/Kick (alt).wav"
+ ],
+ [
+  "server/sounds/SLS-005/7 Click.wav",
+  "server/sounds/SLS-005/Click.wav"
+ ],
+ [
+  "server/sounds/SLS-005/8 Low Perc.wav",
+  "server/sounds/SLS-005/Low Perc.wav"
+ ],
+ [
+  "server/sounds/SLSUK-01/1 Kick.wav",
+  "server/sounds/SLSUK-01/Kick.wav"
+ ],
+ [
+  "server/sounds/SLSUK-01/2 Snare.wav",
+  "server/sounds/SLSUK-01/Snare.wav"
+ ],
+ [
+  "server/sounds/SLSUK-01/3 Noise Snare.wav",
+  "server/sounds/SLSUK-01/Noise Snare.wav"
+ ],
+ [
+  "server/sounds/SLSUK-01/4 Crash - Noise.wav",
+  "server/sounds/SLSUK-01/Crash - Noise.wav"
+ ],
+ [
+  "server/sounds/SLSUK-01/5 Rimshot.wav",
+  "server/sounds/SLSUK-01/Rimshot.wav"
+ ],
+ [
+  "server/sounds/SLSUK-01/6 Kick (alt).wav",
+  "server/sounds/SLSUK-01/Kick (alt).wav"
+ ],
+ [
+  "server/sounds/SLSUK-01/7 Tambourine.wav",
+  "server/sounds/SLSUK-01/Tambourine.wav"
+ ],
+ [
+  "server/sounds/SLSUK-01/8 FX Sweep.wav",
+  "server/sounds/SLSUK-01/FX Sweep.wav"
+ ],
+ [
+  "server/sounds/SLSUK-02/1 Kick.wav",
+  "server/sounds/SLSUK-02/Kick.wav"
+ ],
+ [
+  "server/sounds/SLSUK-02/2 Snare.wav",
+  "server/sounds/SLSUK-02/Snare.wav"
+ ],
+ [
+  "server/sounds/SLSUK-02/3 Hi-Hat.wav",
+  "server/sounds/SLSUK-02/Hi-Hat.wav"
+ ],
+ [
+  "server/sounds/SLSUK-02/4 Perc Click.wav",
+  "server/sounds/SLSUK-02/Perc Click.wav"
+ ],
+ [
+  "server/sounds/SLSUK-02/5 Rimshot.wav",
+  "server/sounds/SLSUK-02/Rimshot.wav"
+ ],
+ [
+  "server/sounds/SLSUK-02/6 Hi-Hat (alt).wav",
+  "server/sounds/SLSUK-02/Hi-Hat (alt).wav"
+ ],
+ [
+  "server/sounds/SLSUK-02/7 Pad Hit.wav",
+  "server/sounds/SLSUK-02/Pad Hit.wav"
+ ],
+ [
+  "server/sounds/SLSUK-02/8 Bass Tone.wav",
+  "server/sounds/SLSUK-02/Bass Tone.wav"
+ ],
+ [
+  "server/sounds/SZAM-001/1 Bass Hit (long).wav",
+  "server/sounds/SZAM-001/Bass Hit (long).wav"
+ ],
+ [
+  "server/sounds/SZAM-001/2 Sub Drone.wav",
+  "server/sounds/SZAM-001/Sub Drone.wav"
+ ],
+ [
+  "server/sounds/SZAM-001/3 Noise Bass.wav",
+  "server/sounds/SZAM-001/Noise Bass.wav"
+ ],
+ [
+  "server/sounds/SZAM-001/4 Low Blip.wav",
+  "server/sounds/SZAM-001/Low Blip.wav"
+ ],
+ [
+  "server/sounds/SZAM-001/5 Vocal Blip.wav",
+  "server/sounds/SZAM-001/Vocal Blip.wav"
+ ],
+ [
+  "server/sounds/SZAM-001/6 Pitch Sweep.wav",
+  "server/sounds/SZAM-001/Pitch Sweep.wav"
+ ],
+ [
+  "server/sounds/SZAM-001/7 Glitch Bass.wav",
+  "server/sounds/SZAM-001/Glitch Bass.wav"
+ ],
+ [
+  "server/sounds/SZAM-001/8 Granular Noise.wav",
+  "server/sounds/SZAM-001/Granular Noise.wav"
+ ],
+ [
+  "server/sounds/X0X-JUNO/1 Kick Loop.wav",
+  "server/sounds/X0X-JUNO/Kick Loop.wav"
+ ],
+ [
+  "server/sounds/X0X-JUNO/2 Drum Loop.wav",
+  "server/sounds/X0X-JUNO/Drum Loop.wav"
+ ],
+ [
+  "server/sounds/X0X-JUNO/3 Hat Loop.wav",
+  "server/sounds/X0X-JUNO/Hat Loop.wav"
+ ],
+ [
+  "server/sounds/X0X-JUNO/4 Shaker Loop.wav",
+  "server/sounds/X0X-JUNO/Shaker Loop.wav"
+ ],
+ [
+  "server/sounds/X0X-JUNO/5 Vocal Wobble.wav",
+  "server/sounds/X0X-JUNO/Vocal Wobble.wav"
+ ],
+ [
+  "server/sounds/X0X-JUNO/6 Juno Chord Loop.wav",
+  "server/sounds/X0X-JUNO/Juno Chord Loop.wav"
+ ],
+ [
+  "server/sounds/X0X-JUNO/7 Bass Wobble.wav",
+  "server/sounds/X0X-JUNO/Bass Wobble.wav"
+ ],
+ [
+  "server/sounds/X0X-JUNO/8 Organ Loop.wav",
+  "server/sounds/X0X-JUNO/Organ Loop.wav"
+ ]
+]
