@@ -147,7 +147,9 @@ class EditorContentChangeAction extends Action {
 	doAction() {
 		let selectedNode = systemState.getGlobalSelectedNode();
 		let fakeEditor = selectedNode.getEditorForType(selectedNode.nex);
-		this.savedEditorData = fakeEditor.getStateForUndo();
+		if (fakeEditor) {
+			this.savedEditorData = fakeEditor.getStateForUndo();
+		}
 		KeyResponseFunctions[this.actionName](selectedNode);
 	}
 
@@ -157,7 +159,9 @@ class EditorContentChangeAction extends Action {
 		// then you try to undo, and the correct thing isn't selected.
 		let selectedNode = systemState.getGlobalSelectedNode();
 		let fakeEditor = selectedNode.getEditorForType(selectedNode.nex);
-		fakeEditor.setStateForUndo(this.savedEditorData);
+		if (fakeEditor) {
+			fakeEditor.setStateForUndo(this.savedEditorData);
+		}
 	}
 }
 
