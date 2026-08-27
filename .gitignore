@@ -10,3 +10,7 @@ server/docs/*
 server/webenv.txt
 
 server/dist/
+
+# transient golden backups written by goldenupdate.sh
+testing/alltests/*/goldens/*/*.backup.png
+.venv-audio/

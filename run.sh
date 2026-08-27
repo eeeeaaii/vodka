@@ -24,9 +24,12 @@ cd "$(dirname "$0")"
 
 echo "=== vodka ==="
 
-if lsof -ti:3000 > /dev/null 2>&1; then
+# -sTCP:LISTEN matters: without it this also matches browsers holding a client
+# connection to port 3000, which outlive the server and make it look like the
+# old one never died.
+if lsof -ti:3000 -sTCP:LISTEN > /dev/null 2>&1; then
 	echo "run.sh: something is already listening on port 3000."
-	echo "run.sh: stop it first (pkill -f 'node webserver.js') and try again."
+	echo "run.sh: stop it first (pkill -f 'node webserver[.]js') and try again."
 	exit 1
 fi
 

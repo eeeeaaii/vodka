@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2003-2005, 2008 Jason Scherer
 # Copyright 2019 Google, Inc.
 
@@ -16,8 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
-
-#!/bin/bash
 
 echo "digraph {" > dependencies.dot
 for A in *.h; do

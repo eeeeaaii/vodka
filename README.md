@@ -47,6 +47,22 @@ If you install Vodka locally, you can make changes or use your own audio samples
 If you want the session sharing links to point at your own machine rather than at
 vodka.church, also create a file `server/webenv.txt` containing the single word `local`.
 
+### Editing the standard library
+
+Normally your work is saved into a session directory, and the standard library in
+`server/packages/` can be loaded but not written to. On a local server you can edit
+the library directly:
+
+1. Create `server/webenv.txt` containing the single word `local` (as above).
+2. Navigate to `http://localhost:3000/?sessionId=packages`
+
+Saves now go straight to `server/packages/` instead of a session directory, so you
+can edit library files in place without moving anything afterwards. Files whose
+names end in `-functions` are library files, and can *only* be saved this way.
+
+This works on a local server only. On a public one the library stays readable but
+not writable, which is why the `local` setting is what unlocks it.
+
 ## Documentation
 
 In-app documentation is available by clicking on the help button. If you can't get to the documentation, add "help=me" to your browser query string.
