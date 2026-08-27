@@ -184,7 +184,17 @@ is_vk() {
 	find ./alltests/$FILE.vk > /dev/null 2> /dev/null
 }
 
+# one session for all tests, emptied first so runs cannot affect each other
+TEST_SESSION_ID="vodka-tests"
+TEST_SESSION_DIR="../server/namedsessions/${TEST_SESSION_ID}"
+
+prepare_test_session() {
+	rm -rf "${TEST_SESSION_DIR}"
+	mkdir -p "${TEST_SESSION_DIR}"
+}
+
 run() {
+	prepare_test_session
 	echo "Vodka test runner. Options:"
 	echo "  --show      launches visible chrome instance so you can watch the test"
 	echo "  --testdir   use a different directory to look for tests"
