@@ -37,6 +37,7 @@ import { showManipulator } from '../wtmanip.js'
 import { Editor } from '../editors.js'
 import { doTutorial } from '../help.js'
 import { getAudioBufferFromData, startRecordingAudio, stopRecordingAudio } from '../webaudio.js'
+import * as audioStore from '../audiostore.js'
 
 
 // zoom essentially means a number of pixels equals a number of samples
@@ -54,6 +55,10 @@ import { getAudioBufferFromData, startRecordingAudio, stopRecordingAudio } from 
 // When false, wavetables serialize as silence instead of their real samples.
 // Used by autosave; see serializePrivateData below.
 let serializeAudioData = true;
+
+// Marks a serialized wavetable whose samples live in IndexedDB rather than in
+// the document. Chosen so it can't collide with base64, which has no colon.
+const AUDIO_REF_PREFIX = 'idb:';
 
 function setSerializeAudioData(v) {
 	serializeAudioData = v;
@@ -415,6 +420,26 @@ class Wavetable extends Nex {
 	}
 
 	deserializePrivateData(data) {
+		// A reference rather than the samples themselves, written by autosave.
+		// The lookup is synchronous because every record was read into memory
+		// during startup, before any document was built -- see audiostore.js.
+		if (data.indexOf(AUDIO_REF_PREFIX) == 0) {
+			let hash = data.substring(AUDIO_REF_PREFIX.length);
+			let samples = audioStore.get(hash);
+			if (!samples || samples.length == 0) {
+				// Referenced audio isn't there: storage was cleared, or the
+				// quota evicted it. Come back as silence rather than failing to
+				// restore the document at all. Length matters as well as
+				// presence -- a zero-length buffer is truthy, and a wavetable
+				// with no samples can't build an AudioBuffer, so it would throw
+				// on the way out of here.
+				samples = new Float32Array(DEFAULT_SIZE);
+			}
+			this.data = samples;
+			heap.requestMem(this.data.length * heap.incrementalSizeWavetable());
+			this.init();
+			return;
+		}
 		// I don't know when this gets called?
 		let s = window.atob(data);
 		let len = s.length;
@@ -434,12 +459,20 @@ class Wavetable extends Nex {
 	}
 
 	serializePrivateData() {
-		// Autosave turns this off: sample data is far too large for localStorage
-		// (roughly 250KB of base64 per second of audio), so wavetables are written
-		// out silent and come back as empty ones. Saving to the server is
-		// unaffected and still writes the real audio.
+		// Autosave turns inline serialization off: sample data is far too large
+		// for localStorage (roughly 250KB of base64 per second of audio). The
+		// samples go to IndexedDB instead and what lands in the document is a
+		// reference to them. Saving to the server is unaffected and still writes
+		// the real audio inline.
 		if (!serializeAudioData) {
-			return SILENT_WAVETABLE_DATA;
+			if (audioStore.isUnavailable()) {
+				// No IndexedDB -- a private window, blocked site data. Fall back
+				// to the old behaviour: structure survives, audio doesn't.
+				return SILENT_WAVETABLE_DATA;
+			}
+			let hash = audioStore.hashSamples(this.data);
+			audioStore.put(hash, this.data);
+			return AUDIO_REF_PREFIX + hash;
 		}
 		let s = '';
 		let bytes = new Uint8Array(this.data.buffer);

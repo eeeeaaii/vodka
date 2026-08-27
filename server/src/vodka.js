@@ -70,7 +70,8 @@ import { maybeKillSound } from './webaudio.js'
 // import { setupMobile, doMobileKeyDown } from './mobile.js'
 
 import { getFeatureVector } from './featurevector.js'
-import { restoreAutosave, enableAutosave } from './autosave.js'
+import { restoreAutosave, enableAutosave, installUnloadFlush } from './autosave.js'
+import * as audioStore from './audiostore.js'
 
 
 // EXPERIMENTS
@@ -260,12 +261,20 @@ function installTestHooks() {
 
 // app main entry point
 
-function setup() {
+// Async only because of audioStore.loadAll(), which pulls the saved samples
+// into memory before any document is built. That await is the whole of the
+// asynchrony -- after it, wavetables get their samples from a synchronous
+// lookup and nothing downstream knows storage was involved. Nothing waits on
+// setup()'s return; vodkastart.js calls it at module top level.
+async function setup() {
 	setAppFlags();
 	suppressAnimationsIfRequested();
 	installTestHooks();
 	// do session id before doing help
 	setOrCreateSessionId();
+
+	// after the session id, because records are namespaced by it
+	await audioStore.loadAll();
 
 	eventQueue.initialize();
 
@@ -345,7 +354,12 @@ function setup() {
 	// wherever a restore was attempted, so this only matters for the branches
 	// that loaded a document explicitly.
 	enableAutosave();
+	installUnloadFlush(root);
 	eventQueueDispatcher.enqueueRenderOnlyDirty()
+	// setup() is async now, so "the page has loaded" no longer means "the app
+	// is ready". Anything driving the app from outside -- the test harness --
+	// has to wait for this rather than for the network to go idle.
+	window.__vodkaReady = true;
 }
 
 
