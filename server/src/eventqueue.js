@@ -264,10 +264,34 @@ class EventQueue {
 	}
 
 	setTimeoutForProcessingNextItem(item) {
+		if (experiments.TEST_MANUAL_EVENT_QUEUE) return;
 		setTimeout(this.processNextItem.bind(this), 0);
-		// setTimeout((function() {
-		// 	this.processNextItem();
-		// }).bind(this), 0);
+	}
+
+	itemCount() {
+		let n = 0;
+		for (let i = 0; i < this.queueSet.length; i++) {
+			n += this.queueSet[i].length;
+		}
+		return n;
+	}
+
+	isEmpty() {
+		return this.itemCount() == 0;
+	}
+
+	drain(limit) {
+		if (typeof limit === 'undefined') limit = 100000;
+		let n = 0;
+		while (!this.isEmpty()) {
+			if (n >= limit) {
+				throw new Error('event queue still not empty after processing '
+						+ limit + ' items; an event is probably enqueueing itself');
+			}
+			this.processNextItem();
+			n++;
+		}
+		return n;
 	}
 
 	selectQueue() {

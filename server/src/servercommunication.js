@@ -23,12 +23,29 @@ import { evaluateNexSafely } from './evaluator.js'
 import { parse } from './nexparser2.js';
 import { systemState } from './systemstate.js'
 
+// polled by the test harness, which can't drive a request, only wait for it
+let outstandingRequests = 0;
+
+function getOutstandingRequestCount() {
+	return outstandingRequests;
+}
+
 function sendToServer(payload, cb, errcb) {
 	let xhr = new XMLHttpRequest();
+	outstandingRequests++;
+	// onload and onerror can both land; only the first one counts
+	let settled = false;
+	let settle = function() {
+		if (settled) return false;
+		settled = true;
+		outstandingRequests--;
+		return true;
+	};
 	xhr.onreadystatechange = function() {};
 	xhr.open('POST', 'api')
 	xhr.send(payload);
 	xhr.onload = function() {
+		if (!settle()) return;
 		if (xhr.readyState === xhr.DONE && xhr.status === 200) {
 			cb(xhr.response);
 		} else {
@@ -36,6 +53,7 @@ function sendToServer(payload, cb, errcb) {
 		}
 	};
 	xhr.onerror = function() {
+		if (!settle()) return;
 		errcb();
 	}
 }
@@ -222,6 +240,7 @@ function saveShortcut(namesym, val, callback) {
 }
 
 export {
+	getOutstandingRequestCount,
 	saveNex,
 	importNex,
 	loadNex,

@@ -17,10 +17,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as Utils from './utils.js'
 
-import { setAppFlags, otherflags, experiments } from './globalappflags.js'
+import { setAppFlags, suppressAnimationsIfRequested, otherflags, experiments } from './globalappflags.js'
 import { perfmon } from './perfmon.js'
 
 import { eventQueue } from './eventqueue.js'
+import { VODKA_SCHEDULER } from './testutils/virtualclock.js'
+import { getOutstandingRequestCount } from './servercommunication.js'
 
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import { keyDispatcher } from './keydispatcher.js'
@@ -241,10 +243,26 @@ function doKeydownEvent(e) {
 }
 
 
+function installTestHooks() {
+	if (!experiments.TEST_MANUAL_EVENT_QUEUE && !experiments.TEST_VIRTUAL_CLOCK) return;
+	if (experiments.TEST_VIRTUAL_CLOCK) {
+		VODKA_SCHEDULER.install();
+	}
+	window.__vodkaTest = {
+		drain: function(limit) { return eventQueue.drain(limit); },
+		queuedItemCount: function() { return eventQueue.itemCount(); },
+		pendingTimerCount: function() { return VODKA_SCHEDULER.pendingCount(); },
+		fireAllPendingTimers: function() { return VODKA_SCHEDULER.fireAllPending(); },
+		outstandingRequests: function() { return getOutstandingRequestCount(); }
+	};
+}
+
 // app main entry point
 
 function setup() {
 	setAppFlags();
+	suppressAnimationsIfRequested();
+	installTestHooks();
 	// do session id before doing help
 	setOrCreateSessionId();
 
