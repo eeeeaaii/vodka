@@ -52,6 +52,9 @@ var paused = false; // start paused erm...
 // only elapses when a test is already broken
 const IO_TIMEOUT_MS = 10000;
 
+// kept in step with runtests.sh, which clears it before each run
+const TEST_SESSION_ID = 'vodka-tests';
+
 async function drain(page) {
 	return await page.evaluate(function() { return window.__vodkaTest.drain(); });
 }
@@ -222,6 +225,8 @@ function doFlagOverrides(flags) {
 	rflags['TEST_NO_ANIMATIONS'] = true;
 	rflags['TEST_MANUAL_EVENT_QUEUE'] = true;
 	rflags['TEST_VIRTUAL_CLOCK'] = true;
+	// one session for all tests, so the server stops minting one per test
+	rflags['sessionId'] = TEST_SESSION_ID;
 
 	return rflags;
 

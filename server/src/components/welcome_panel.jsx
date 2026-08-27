@@ -23,7 +23,7 @@ const WelcomePanel = () => {
         <p className="infoline">Your session ID is <span id="sessionid">{sessionId}</span>.</p>
         <p className="infoline">All data you save via the (_save_) and (_save-file_) builtins is sandboxed to this session.</p>
         <p className="infoline">You can access this session again with <a id="sessionlink" href={buildURL({ "sessionId": sessionId })}>this link</a>.</p>
-        <p className="infoline">You can leave this session and start a whole new session with <a id="newsessionlink" href={buildURL({ "sessionId": null, "new": 1 })}>this link</a>.</p>
+        <p className="infoline">You can leave this session and start a whole new session with <a id="newsessionlink" href={buildURL({ "sessionId": null, "new": 1 })}>this link</a>, or by deleting the sessionId from the address bar.</p>
         <p className="infoline">You can create an exact copy of this session (with all the same saved files) with <a id="copysessionlink" href={buildURL({ "sessionId": null, "copy": 1 })}>this link</a>.</p>
         <p className="infoline">You can create a read-only copy of this session (e.g. for sharing on social media) with <a id="sharesessionlink" href={buildURL({ "sessionId": null, "copy": 1, "type": "readonly" })}>this link</a>.</p>
         <p className="infoline">To have a file load and be evaluated in normal mode at startup when a session link is visited, name the file "start-doc".</p>
