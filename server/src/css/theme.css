@@ -1,0 +1,171 @@
+/*
+This file is part of Vodka.
+
+Vodka is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Vodka is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+/* Both themes in one file so the theme is set before first paint. */
+
+:root {
+  --page-background: #ffffff;
+  --page-text: #000000;
+
+  --selected-border: #ff7777;
+  --unselected-border: #aaaaaa;
+  --value-background: #e8e8e8;
+  --info-text: #444444;
+  --inverted-nex-background: #444444;
+  --inverted-nex-foreground: #e8e8e8;
+  --editing-background: #ffbfbe;
+
+  --doc-selected: #1ece44;
+  --doc-unselected: #bce3c5;
+  --line-selected: #a7a7de;
+  --line-unselected: #d5d5e3;
+  --word-selected: #c7c747;
+  --word-unselected: #e6e6b3;
+
+  --org-border: #c7c7c7;
+  --org-border-strong: #a7a7a7;
+
+  --cursor-blink-color: black;
+
+  --string-background: white;
+  --string-ta-text: black;
+  --string-border: #dddddd;
+
+  --tag-background: #6e6e6e;
+  --tag-text: #dddddd;
+  --tag-editor-background: #dddddd;
+  --tag-editor-text: #414141;
+
+  --error-text: #aa0000;
+  --error-info-text: #0000aa;
+  --error-ok-text: #00aa00;
+  --error-warn-text: #aa6e00;
+
+  --alert-flash: #ffff77;
+
+  --oom-border: #660000;
+  --oom-text: #660000;
+  --oom-background: #ffdddd;
+  --oom-strong-border: #990000;
+  --oom-strong-background: #550000;
+  --oom-strong-text: #ffffff;
+
+  --wave-regular: #444444;
+  --wave-intense: #444444;
+  --wave-editing: #888888;
+  --wave-audition: #aaaaaa;
+  --wave-solid: #666666;
+  --wave-solid-editing: #999999;
+  --wave-zero: #000000;
+  --wave-marker: #ad6411;
+  --wave-marker-light: #dbae7b;
+  --wave-clipping: #cf728c;
+  --wave-playhead: #0ec43f;
+  --wave-canvas-background: #ffffff;
+  --wave-endcap-1: #ffffff;
+  --wave-endcap-2: #dddddd;
+  --wave-endcap-3: #bbbbbb;
+  --wave-endcap-4: #999999;
+  --wave-control-background: #ffffff;
+  --wave-control-text: #000000;
+  --wtm-panel: #333333;
+  --wtm-control: #000000;
+  --tag-arrow-left: #e2e21d;
+  --tag-arrow-right: #1de2ca;
+}
+
+/*
+Dark is designed for a dark room and a projector rather than derived from the
+light theme. The ground is a cool near-black so warm accents carry; structure
+colours sit at one lightness so nesting reads by hue not brightness; and the
+waveform is teal so signal is never confused with structure.
+*/
+:root[data-theme="dark"] {
+  --page-background: #12141a;
+  --page-text: #dfe3ea;
+
+  --selected-border: #ff6b5e;
+  --unselected-border: #363b47;
+  --value-background: #1c1f27;
+  --info-text: #98a0af;
+  --inverted-nex-background: #dfe3ea;
+  --inverted-nex-foreground: #12141a;
+  --editing-background: #3a2320;
+
+  --doc-selected: #4ade80;
+  --doc-unselected: #1d3b2a;
+  --line-selected: #8b9cf7;
+  --line-unselected: #262c46;
+  --word-selected: #f0c454;
+  --word-unselected: #3b3320;
+
+  --org-border: #2c313c;
+  --org-border-strong: #3a4150;
+
+  --cursor-blink-color: #dfe3ea;
+
+  --string-background: #171a21;
+  --string-ta-text: #dfe3ea;
+  --string-border: #2c313c;
+
+  --tag-background: #2c313c;
+  --tag-text: #b6bdc9;
+  --tag-editor-background: #252932;
+  --tag-editor-text: #dfe3ea;
+
+  --error-text: #ff7b6e;
+  --error-info-text: #7fb2ff;
+  --error-ok-text: #4ade80;
+  --error-warn-text: #f0b429;
+
+  --alert-flash: #6b5f1f;
+
+  --oom-border: #ff6b5e;
+  --oom-text: #ff9c92;
+  --oom-background: #2a1614;
+  --oom-strong-border: #ff6b5e;
+  --oom-strong-background: #4a1d18;
+  --oom-strong-text: #ffe3e0;
+
+  --wave-regular: #6fc9b7;
+  --wave-intense: #a9ede0;
+  --wave-editing: #8ad9c8;
+  --wave-audition: #f0c454;
+  --wave-solid: #4f9c8d;
+  --wave-solid-editing: #66b5a4;
+  --wave-zero: #3a4150;
+  --wave-marker: #f59e42;
+  --wave-marker-light: #ffc78a;
+  --wave-clipping: #ff6b5e;
+  --wave-playhead: #4ade80;
+  --wave-canvas-background: #171a21;
+  --wave-endcap-1: #171a21;
+  --wave-endcap-2: #222630;
+  --wave-endcap-3: #2c313c;
+  --wave-endcap-4: #363b47;
+  --wave-control-background: #252932;
+  --wave-control-text: #cdd3dc;
+  --wtm-panel: #dfe3ea;
+  --wtm-control: #dfe3ea;
+  --tag-arrow-left: #d6d63a;
+  --tag-arrow-right: #3ad6c2;
+}
+
+body {
+  background-color: var(--page-background);
+  color: var(--page-text);
+}

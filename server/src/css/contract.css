@@ -31,7 +31,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border-radius: 6px;	
 	font-style: italic;
 	font-family: monospace;
-	color: #000000;
+	color: var(--page-text);
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;

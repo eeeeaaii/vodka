@@ -46,7 +46,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 .org.exploded.selected {
 	padding: 3px;
-	border: 3px solid #a7a7a7;
+	border: 3px solid var(--org-border-strong);
 }
 
 .org.exploded.newselected {
@@ -69,8 +69,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 .zdir.exploded {
 	padding-left: 5px;
 	padding-top: 5px;
-/*	border-left: 5px dotted #c7c7c7;
-	border-top: 5px dotted #c7c7c7;
+/*	border-left: 5px dotted var(--org-border);
+	border-top: 5px dotted var(--org-border);
 	border-right: 0px;
 
 	border-bottom: 0px;
@@ -95,8 +95,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 .zdir.exploded.selected {
-	border-top: 5px solid #a7a7a7;
-	border-left: 5px solid #a7a7a7;
+	border-top: 5px solid var(--org-border-strong);
+	border-left: 5px solid var(--org-border-strong);
 	border-right: 0px;
 	border-bottom: 0px;
 }
@@ -104,7 +104,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 .zdir.exploded:empty {
 	width:0px;
 	height:0px;
-	border: 1px solid #c7c7c7;
+	border: 1px solid var(--org-border);
 	padding:5px;
 }
 
@@ -112,7 +112,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	width:0px;
 	height:0px;
 	padding: 3px;
-	border: 3px solid #a7a7a7;
+	border: 3px solid var(--org-border-strong);
 }
 
 

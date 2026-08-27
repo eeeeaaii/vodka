@@ -44,7 +44,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .wavetable canvas {
-	background-color: #ffffff;
+	background-color: var(--wave-canvas-background, #ffffff);
 }
 
 .wavecontrols {
@@ -55,7 +55,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .wavecontrol {
-	background-color: white;
+	background-color: var(--wave-control-background);
+	color: var(--wave-control-text);
 	border-radius: 2px;
 	font-family: Courier;
 	font-size: 9px;

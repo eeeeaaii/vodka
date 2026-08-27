@@ -98,20 +98,20 @@ body, html {
 }
 
 .render-depth-exceeded {
-	border: 2px dashed #660000;
+	border: 2px dashed var(--oom-text);
 	padding-top: 8px;
 	padding-bottom: 8px;
 	padding-left: 25px;
 	padding-right: 25px;
-	color: #660000;
+	color: var(--oom-text);
 	font-size: 30px;
-	background-color: #ffdddd;
+	background-color: var(--oom-background);
 }
 
 .exploded > .objecttag {
-	border: 1px solid #990000;
-	background-color: #550000;
-	color: #ffffff;
+	border: 1px solid var(--oom-strong-border);
+	background-color: var(--oom-strong-background);
+	color: var(--oom-strong-text);
 	display: flex;
 	flex-direction: row;
 	align-items: flex-start;
@@ -144,7 +144,7 @@ body, html {
 	width: 400px;
 	height: 300px;
 	opacity: 0.1;
-	background-color: #333333;
+	background-color: var(--wtm-panel);
 	display: flex;
 	flex-direction: row;
 	align-items: flex-start;
@@ -154,12 +154,12 @@ body, html {
 #wtmclosebutton {
 	width: 30px;
 	height: 30px;
-	background-color: #000000;
+	background-color: var(--wtm-control);
 }
 
 #wtmvertzoom {
 	width: 60px;
-	background-color: #000000;
+	background-color: var(--wtm-control);
 	align-self: stretch;
 	margin-top: 20px;
 	margin-bottom: 20px;
@@ -180,15 +180,15 @@ body, html {
 
 #wtmhorizzoom {
 	height: 80px;
-	background-color: #000000;
+	background-color: var(--wtm-control);
 }
 
 #wtmhorizscroll {
 	height: 80px;
-	background-color: #000000;
+	background-color: var(--wtm-control);
 }
 
 #wtmhorizsize {
 	height: 80px;
-	background-color: #000000;
+	background-color: var(--wtm-control);
 }*/

@@ -880,32 +880,27 @@ class Wavetable extends Nex {
 		ctx.lineWidth = 1;
 		let drawTopClippingLine = false;
 		let drawBottomClippingLine = false;
-		let darkTheme = (CSS_THEME == 'dark');
+		// from the stylesheet, so the canvas and the dom can't drift apart
+		let themeColor = (name) => getComputedStyle(document.documentElement)
+				.getPropertyValue(name).trim();
 
-		let regularColor = '#444444';
-		let intenseColor = '#444444';
-		let auditionColor = '#aaaaaa';
-		let solidRectColor = '#666666'
+		let regularColor = themeColor('--wave-regular');
+		let intenseColor = themeColor('--wave-intense');
+		let auditionColor = themeColor('--wave-audition');
+		let solidRectColor = themeColor('--wave-solid');
 
 		if (this.isEditing) {
-			regularColor = intenseColor = '#888888';
-			solidRectColor = '#999999';
+			regularColor = intenseColor = themeColor('--wave-editing');
+			solidRectColor = themeColor('--wave-solid-editing');
 		}
 
-		let markerColor = '#ad6411';
-		let lightMarkerColor = '#dbae7b';
-		let clippingColor = '#cf728c';
+		let markerColor = themeColor('--wave-marker');
+		let lightMarkerColor = themeColor('--wave-marker-light');
+		let clippingColor = themeColor('--wave-clipping');
 
-		let currentSampleColor = '#0ec43f';
+		let currentSampleColor = themeColor('--wave-playhead');
 
-		let zeroColor = '#000000';
-
-		if (darkTheme) {
-			ctx.fillStyle = 'black';
-			ctx.fillRect(0, 0, this.windowWidth(), this.windowHeight());
-			regularColor = '#bbbbbb';
-			intenseColor = '#ffffff';
-		}
+		let zeroColor = themeColor('--wave-zero');
 		for (let i = 0 ; i < this.windowWidth(); i += increment) {
 			let range = this.samplesRepresentedByMultiplePixels(i, i + increment);
 			let v = this.minMaxSoundLevelInsidePixel(i);
@@ -1046,10 +1041,12 @@ class Wavetable extends Nex {
 	}
 
 	drawEndCap(ctx) {
-		let color1 = '#ffffff';
-		let color2 = '#dddddd';
-		let color3 = '#bbbbbb';
-		let color4 = '#999999';
+		let themeColor = (name) => getComputedStyle(document.documentElement)
+				.getPropertyValue(name).trim();
+		let color1 = themeColor('--wave-endcap-1');
+		let color2 = themeColor('--wave-endcap-2');
+		let color3 = themeColor('--wave-endcap-3');
+		let color4 = themeColor('--wave-endcap-4');
 		let stripwidth = 10;
 		ctx.beginPath();
 		ctx.fillStyle = color1;

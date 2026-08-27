@@ -60,10 +60,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 @keyframes sblink {
 	0% {
-		border: 2px dotted #ff7777;
+		border: 2px dotted var(--selected-border);
 	}
 	50% {
-		border: 2px dashed #ff7777;
+		border: 2px dashed var(--selected-border);
 	}
 }
 
@@ -73,10 +73,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 @keyframes fsblink {
 	0% {
-		border: 2px dotted #ff7777;
+		border: 2px dotted var(--selected-border);
 	}
 	50% {
-		border: 2px dashed #ff7777;
+		border: 2px dashed var(--selected-border);
 	}
 }
 
@@ -85,7 +85,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	width: 5px;
 	height: 6px;
 	padding: 0px;
-	color: #ff7777;
+	color: var(--selected-border);
 	line-height: 0.4;
 	align-self: flex-start;
 	font-size: 1.2em;
@@ -123,7 +123,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 .insertionsquare {
 	padding: 4px;
-	border: 2px dotted #ff7777;
+	border: 2px dotted var(--selected-border);
 	margin: 3px;
 }
 
