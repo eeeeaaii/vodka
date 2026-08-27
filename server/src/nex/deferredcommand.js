@@ -147,9 +147,11 @@ class DeferredCommand extends Command {
 		heap.addEnvReference(executionEnv);
 		this._activationEnv = executionEnv;
 		this._activated = true;
-		this.tryToFinish();
+		// TODO: remove return once #292 is fixed
+		return this.tryToFinish();
 	}
 
+	// returns true if it finished without waiting -- TODO: remove once #292 is fixed
 	tryToFinish() {
 		if (this._cancelled) {
 			return;
@@ -158,6 +160,7 @@ class DeferredCommand extends Command {
 			return;
 		}
 		let evaluationResult = null;
+		let didNotWait = false;
 		try {
 			evaluationResult = this._runInfo.argEvaluator.evaluatePotentiallyDeferredArgs(this);
 			/*
@@ -177,6 +180,7 @@ class DeferredCommand extends Command {
 		} catch (e) {
 			if (Utils.isFatalError(e)) {
 				this.finish(e);
+				didNotWait = true;
 			} else {
 				throw e;
 			}
@@ -190,10 +194,12 @@ class DeferredCommand extends Command {
 			} else {
 				this.finish(executionResult);
 			}
+			didNotWait = true;
 		}
 		this.setDirtyForRendering(true);
 		eventQueueDispatcher.enqueueRenderOnlyDirty();
 
+		return didNotWait;
 	}
 
 	finish(result) {

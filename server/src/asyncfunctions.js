@@ -39,7 +39,8 @@ class DeferredCommandActivationFunctionGenerator extends ActivationFunctionGener
 
 	getFunction(finishCallback, settleCallback, exp) {
 		return function() {
-			this.deferredCommand.activate(this.env);
+			// TODO: remove return once #292 is fixed
+			return this.deferredCommand.activate(this.env);
 		}.bind(this);
 	}
 
