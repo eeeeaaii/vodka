@@ -1,3 +1,4 @@
+#!/bin/bash
 # This file is part of Vodka.
 
 # Vodka is free software: you can redistribute it and/or modify
@@ -13,8 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
-#!/bin/bash
-
+. "$(dirname "$0")/platform.sh"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -37,7 +37,8 @@ do_image_comparison() {
 	RVAL=0
 
 	TESTOUTPUT="$OUTDIR/${BASENAME}_OUT_${DIFF_MODE}.png"
-	GOLDEN="$OUTDIR/${BASENAME}_GOLDEN_${DIFF_MODE}.png"
+	GOLDENDIR="$OUTDIR/goldens/${VODKA_PLATFORM}"
+	GOLDEN="$GOLDENDIR/${BASENAME}_GOLDEN_${DIFF_MODE}.png"
 	DIFF="$OUTDIR/${BASENAME}_DIFF_${DIFF_MODE}.png"
 
 	REGENERATED_GOLDEN=false
@@ -52,7 +53,7 @@ do_image_comparison() {
 		# the test will fail. If I set fuzz to .2% (or higher) the test will pass
 		# because the colors are still similar enough to count as equal.
 		# if I set the fuzz to .1% it will fail.
-		if ( magick compare -metric ae -fuzz .1% ${TESTOUTPUT} ${GOLDEN} ${DIFF} > /dev/null 2> /dev/null ); then
+		if ( ${VODKA_COMPARE} -metric ae -fuzz .1% ${TESTOUTPUT} ${GOLDEN} ${DIFF} > /dev/null 2> /dev/null ); then
 			echo -e "${GREEN}[${BASENAME}]${NC} ${DIFF_MODE} diff passed"
 			echo "success" > "${OUTDIR}/${BASENAME}_${DIFF_MODE}.comparisonstatus"
 			DIFF_SUCCEEDED=true
@@ -61,6 +62,7 @@ do_image_comparison() {
 			echo "failure" > "${OUTDIR}/${BASENAME}_${DIFF_MODE}.comparisonstatus"
 		fi
 	else
+		mkdir -p "${GOLDENDIR}"
 		echo "missing" > "${OUTDIR}/${BASENAME}_${DIFF_MODE}.goldenstatus"
 		echo -e "${YELLOW}[${BASENAME}]${NC} was missing ${DIFF_MODE} golden. Check new golden at ${GOLDEN}"
 		cp ${TESTOUTPUT} ${GOLDEN}
@@ -79,11 +81,12 @@ do_vk_test() {
 	OUTPUT=$(pwd)/alltests/${BASENAME}/${BASENAME}.out
 	ERROUTPUT=$(pwd)/alltests/${BASENAME}/${BASENAME}.errout
 	OUTDIR=./alltests/${BASENAME}
-	GOLDEN=${OUTDIR}/${BASENAME}_GOLDEN.out
+	GOLDEN=${OUTDIR}/goldens/${VODKA_PLATFORM}/${BASENAME}_GOLDEN.out
 	DIFF=${OUTDIR}/${BASENAME}_DIFF.out
 	TESTFILE_ASHTML="${OUTDIR}/${BASENAME}_code.txt"
 	IGNOREFILE="${OUTDIR}/${BASENAME}.ignore"
 	test -d "$OUTDIR" || mkdir "$OUTDIR"
+	mkdir -p "${OUTDIR}/goldens/${VODKA_PLATFORM}"
 	echo "started" > "${OUTDIR}/${BASENAME}.teststatus"
 	echo "vk" > "${OUTDIR}/${BASENAME}.testtype"
 	echo "-no docs-" > "${OUTDIR}/${BASENAME}.docstring"
