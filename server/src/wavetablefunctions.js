@@ -58,6 +58,10 @@ function setBpm(b) {
 	BPM = b;
 }
 
+function getBpm() {
+	return BPM;
+}
+
 function setGlobalPixelsPerSample(n) {
 	PIXELS_PER_SAMPLE = n;
 }
@@ -100,6 +104,11 @@ function nexToTimebase(input) {
 
 function setDefaultTimebase(input) {
 	DEFAULT_TIMEBASE = nexToTimebase(input);
+}
+
+// takes the constant directly, for restoring saved state
+function setDefaultTimebaseValue(t) {
+	DEFAULT_TIMEBASE = t;
 }
 
 
@@ -241,8 +250,10 @@ export { getSampleRate,
 		 setGlobalHeightPixelsFullScale,
 		 getGlobalHeightPixelsFullScale,
 		 setBpm,
+		 getBpm,
 		 nexToTimebase,
 		 setDefaultTimebase,
+		 setDefaultTimebaseValue,
 		 getDefaultTimebase,
 		 convertValueFromTag,
 		 getConstantSignalFromValue,

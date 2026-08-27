@@ -42,7 +42,11 @@ function sendToServer(payload, cb, errcb) {
 		return true;
 	};
 	xhr.onreadystatechange = function() {};
-	xhr.open('POST', 'api')
+	// session goes on the request, not in a cookie -- cookies are shared
+	// between tabs, so two tabs in two sessions would write to whichever one
+	// loaded last
+	let sessionId = systemState.getSessionId();
+	xhr.open('POST', 'api?sessionId=' + encodeURIComponent(sessionId ? sessionId : ''))
 	xhr.send(payload);
 	xhr.onload = function() {
 		if (!settle()) return;

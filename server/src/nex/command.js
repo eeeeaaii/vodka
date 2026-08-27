@@ -26,7 +26,7 @@ import { Closure } from './closure.js'
 import { ContextType } from '../contexttype.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED, CONSOLE_DEBUG } from '../globalconstants.js'
-import { Editor } from '../editors.js'
+import { Editor, isAutocompleteChord } from '../editors.js'
 import { experiments } from '../globalappflags.js'
 import { doTutorial } from '../help.js'
 import { executeRunInfo, ArgContainer, Arg, RunInfo } from '../commandfunctions.js'
@@ -721,7 +721,7 @@ class CommandEditor extends Editor {
 	}
 
 	doAppendEdit(text) {
-		if (text == 'AltSpace') {
+		if (isAutocompleteChord(text)) {
 			this.nex.ghostedAutocomplete();
 			return;
 		}
@@ -733,14 +733,14 @@ class CommandEditor extends Editor {
 	}
 
 	shouldAppend(text) {
-		if (text == 'AltSpace') return true;
+		if (isAutocompleteChord(text)) return true;
 		if (/^[a-zA-Z0-9:. _-]$/.test(text)) return true; // normal chars
 		if (/^[/<>=+*]$/.test(text)) return true;
 		return false;
 	}
 
 	shouldTerminateAndReroute(input) {
-		if (input == 'AltSpace') return false;
+		if (isAutocompleteChord(input)) return false;
 		if (super.shouldTerminateAndReroute()) return true;
 		// don't terminate for math stuff, this is temporary
 		if (/^[/<>=+*]$/.test(input)) return false;
