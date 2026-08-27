@@ -39,6 +39,7 @@ import {
   convertValueFromTag,
   convertTimeToSamples,
   setBpm,
+  getBpm,
   nexToTimebase,
   getReferenceFrequency,
   setDefaultTimebase,
@@ -267,7 +268,7 @@ function createWavetableBuiltins() {
 
       return getConstantSignalFromValue(valfloat, dur);
     },
-    "Returns |dur samples of a constant value |val"
+    "Returns a wavetable containing the constant value |val. Length is given by |len. Valid timebase tags for |len: note, nn, seconds, second, secs, sec, hz, Hz, HZ, cps, b, beats, beat, samples, samps, samp. Untagged uses the default timebase."
   );
 
   Builtin.createBuiltin(
@@ -440,7 +441,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Returns dur samples (or seconds, etc) of white noise"
+    "Returns a wavetable of white noise. Length is given by |len. Valid timebase tags for |len: note, nn, seconds, second, secs, sec, hz, Hz, HZ, cps, b, beats, beat, samples, samps, samp. Untagged uses the default timebase."
   );
 
   Builtin.createBuiltin(
@@ -466,7 +467,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Returns a wavetable of a sine wave"
+    "Returns a wavetable containing one cycle of a sine wave. Length is given by |nn. Valid timebase tags for |nn: note, nn, seconds, second, secs, sec, hz, Hz, HZ, cps, b, beats, beat, samples, samps, samp. Untagged uses the default timebase."
   );
 
   Builtin.createBuiltin(
@@ -494,7 +495,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Returns a wavetable of a gate signal"
+    "Returns a wavetable containing a gate signal. Length is given by |nn. Valid timebase tags for |nn: note, nn, seconds, second, secs, sec, hz, Hz, HZ, cps, b, beats, beat, samples, samps, samp. Untagged uses the default timebase."
   );
 
   Builtin.createBuiltin(
@@ -532,7 +533,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Returns a wavetable of a square wave"
+    "Returns a wavetable containing one cycle of a square wave. Length is given by |nn. Valid timebase tags for |nn: note, nn, seconds, second, secs, sec, hz, Hz, HZ, cps, b, beats, beat, samples, samps, samp. Untagged uses the default timebase."
   );
 
   Builtin.createBuiltin(
@@ -559,7 +560,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Returns a wavetable of a saw wave"
+    "Returns a wavetable containing one cycle of a saw wave. Length is given by |nn. Valid timebase tags for |nn: note, nn, seconds, second, secs, sec, hz, Hz, HZ, cps, b, beats, beat, samples, samps, samp. Untagged uses the default timebase."
   );
 
   Builtin.createBuiltin(
@@ -586,7 +587,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Returns a sample that ramps from one to zero in |len."
+    "Returns a wavetable ramping from one to zero. Length is given by |len. Valid timebase tags for |len: note, nn, seconds, second, secs, sec, hz, Hz, HZ, cps, b, beats, beat, samples, samps, samp. Untagged uses the default timebase."
   );
 
   Builtin.createBuiltin(
@@ -681,7 +682,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Resamples the audio to a given duration or frequency (for example, changing a sample from 2 seconds to 4 seconds)."
+    "Resamples the audio to a given duration or frequency (for example, changing a sample from 2 seconds to 4 seconds). Valid timebase tags for |freq: note, nn, seconds, second, secs, sec, hz, Hz, HZ, cps, b, beats, beat, samples, samps, samp. Untagged uses the default timebase."
   );
 
   Builtin.createBuiltin(
@@ -1001,7 +1002,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Clips the length of the wavetable, or pads the end of it with silence, depending on whether the passed-in length is greater or less than the length of the wavetable."
+    "Clips the length of the wavetable, or pads the end of it with silence, depending on whether the passed-in length is greater or less than the length of the wavetable. Valid timebase tags for |len: note, nn, seconds, second, secs, sec, hz, Hz, HZ, cps, b, beats, beat, samples, samps, samp. Untagged uses the default timebase."
   );
 
   Builtin.createBuiltin(
@@ -1031,7 +1032,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Removes |len amount of sound from the start of |wt."
+    "Removes |len amount of sound from the start of |wt. Valid timebase tags for |len: note, nn, seconds, second, secs, sec, hz, Hz, HZ, cps, b, beats, beat, samples, samps, samp. Untagged uses the default timebase."
   );
 
   Builtin.createBuiltin(
@@ -1062,7 +1063,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Removes |len amount of sound from the end of |wt."
+    "Removes |len amount of sound from the end of |wt. Valid timebase tags for |len: note, nn, seconds, second, secs, sec, hz, Hz, HZ, cps, b, beats, beat, samples, samps, samp. Untagged uses the default timebase."
   );
 
   Builtin.createBuiltin(
@@ -1085,7 +1086,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Outputs a delayed copy of |wt (the beginning is padded with silence). Combine with the feedback builtin to get a classic delay sound."
+    "Outputs a delayed copy of |wt (the beginning is padded with silence). Combine with the feedback builtin to get a classic delay sound. Valid timebase tags for |time: note, nn, seconds, second, secs, sec, hz, Hz, HZ, cps, b, beats, beat, samples, samps, samp. Untagged uses the default timebase."
   );
 
   Builtin.createBuiltin(
@@ -1165,7 +1166,7 @@ function createWavetableBuiltins() {
       let dur = convertTimeToSamples(len);
       return constructWavetable(dur);
     },
-    "Creates an empty wavetable (silence) with a duration of the requested number of samples"
+    "Creates an empty wavetable (silence) with a duration of the requested number of samples. Valid timebase tags for |len: note, nn, seconds, second, secs, sec, hz, Hz, HZ, cps, b, beats, beat, samples, samps, samp. Untagged uses the default timebase."
   );
 
   Builtin.createBuiltin(
@@ -1236,7 +1237,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Loops a sample for |len time."
+    "Loops a sample for |len time. Valid timebase tags for |len: note, nn, seconds, second, secs, sec, hz, Hz, HZ, cps, b, beats, beat, samples, samps, samp. Untagged uses the default timebase."
   );
 
   Builtin.createBuiltin(
@@ -1355,6 +1356,15 @@ function createWavetableBuiltins() {
       return constructNil();
     },
     "Sets the global BPM used in time calculations."
+  );
+
+  Builtin.createBuiltin(
+    "get-bpm",
+    [],
+    function $getBpm(env, executionEnvironment) {
+      return constructFloat(getBpm());
+    },
+    "Returns the global BPM used in time calculations."
   );
 }
 
