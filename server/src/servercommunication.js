@@ -21,6 +21,8 @@ import { BINDINGS } from './environment.js'
 import { constructFatalError } from './nex/eerror.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { parse } from './nexparser2.js';
+import { AudioCollector, encode as encodeContainer, decode as decodeContainer } from './audiocontainer.js';
+import { setAudioCollector, setAudioReader } from './nex/wavetable.js'
 import { systemState } from './systemstate.js'
 
 // polled by the test harness, which can't drive a request, only wait for it
@@ -117,7 +119,18 @@ function loadRaw(name, callback) {
 }
 
 function saveNex(name, nex, callback) {
-	let payload = `save\t${name}\t${'v2:' + nex.toString('v2')}`;
+	// The collector has to be up for the whole walk: wavetables hand their
+	// samples to it as they're reached, and it's the walk finishing that tells
+	// us which samples the document actually refers to.
+	let collector = new AudioCollector();
+	let docText;
+	setAudioCollector(collector);
+	try {
+		docText = 'v2:' + nex.toString('v2');
+	} finally {
+		setAudioCollector(null);
+	}
+	let payload = `save\t${name}\t${encodeContainer(docText, collector)}`;
 
 	sendToServer(payload, function(data) {
 		parseReturnPayload(data, callback);
@@ -167,10 +180,30 @@ function serverError() {
 }
 
 
+/*
+Everything that comes back from the server lands here: files, but also the small
+v2: replies to save and listfiles. Only a file can be a container, and decode()
+returns null for anything that isn't one, so the replies are untouched.
+*/
+function parseFileContents(data) {
+	let container = decodeContainer(data);
+	if (!container) {
+		return parse(data);
+	}
+	setAudioReader(function(i) {
+		return container.samples[i];
+	});
+	try {
+		return parse(container.docText);
+	} finally {
+		setAudioReader(null);
+	}
+}
+
 function parseReturnPayload(data, callback) {
 	let result = null;
 	try {
-		result = parse(data);
+		result = parseFileContents(data);
 	} catch (e) {
 		result = describeParseFailure(e);
 	}
