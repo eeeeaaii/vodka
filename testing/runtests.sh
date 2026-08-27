@@ -95,7 +95,7 @@ do_vk_test() {
 	else
 		pushd ../src > /dev/null
 		echo -e "${BLUE}[${BASENAME}]${NC} running test"
-		vodkar --noprompt < "$INPUT" > "$OUTPUT" 2> "$ERROUTPUT"
+		./vodkar --noprompt < "$INPUT" > "$OUTPUT" 2> "$ERROUTPUT"
 		popd > /dev/null
 		TEST_SUCCESS=false
 		DOCSTRING="eh?"
