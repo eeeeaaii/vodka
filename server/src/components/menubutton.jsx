@@ -1,11 +1,13 @@
 
-const MenuButton = ({text, onMenuButtonClick}) => {
+const MenuButton = ({text, selected, onMenuButtonClick}) => {
     const handleClick = () => {
         onMenuButtonClick();
     }
 
+    const className = 'helpmenuitem helpbutton' + (selected ? ' helpmenuitemselected' : '');
+
     return (
-        <div className="helpmenuitem helpbutton" onClick={handleClick}>{text}</div>
+        <div className={className} onClick={handleClick}>{text}</div>
     );
 };
 

@@ -209,3 +209,53 @@ position: fixed;
 	color: white;
 	cursor: pointer;
 }
+
+/* Selected tab in the help top menu. Both .helpmenuitem and .helpbutton are on
+   these elements and .helpbutton wins on background, so this has to come after
+   it in the file to take effect. Selected reads as "continuous with the panel
+   below it": panel-colored fill instead of the dark olive. */
+.helpmenuitemselected {
+	background-color: #fcf7bb;
+	color: #736b0d;
+	font-weight: bold;
+}
+
+/* Section jump-links at the top of the full API reference. */
+.infopanel .apinav {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 5px;
+	margin-bottom: 18px;
+	padding-bottom: 12px;
+	border-bottom: 1px solid #736b0d;
+}
+
+.infopanel .apinavitem {
+	display: inline-block;
+	font-size: 1.1em;
+	padding: 2px 5px 3px 5px;
+	background-color: #eef1dc;
+	border: 1px solid #736b0d;
+	cursor: pointer;
+}
+
+.infopanel .apinavitem:hover {
+	background-color: #736b0d;
+	color: #fcf7bb;
+}
+
+.infopanel .apibacktotop {
+	display: inline-block;
+	font-size: 0.95em;
+	padding: 1px 5px 2px 5px;
+	margin-bottom: 4px;
+	border: 1px solid #736b0d;
+	background-color: #fcf7bb;
+	cursor: pointer;
+}
+
+.infopanel .apibacktotop:hover {
+	background-color: #736b0d;
+	color: #fcf7bb;
+}
