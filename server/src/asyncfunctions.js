@@ -19,6 +19,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { addMidiListener } from './midifunctions.js'
 import { convertJSMapToOrg } from './nex/org.js'
+import { VODKA_SCHEDULER } from './testutils/virtualclock.js'
 
 class ActivationFunctionGenerator {
 
@@ -39,7 +40,10 @@ class DeferredCommandActivationFunctionGenerator extends ActivationFunctionGener
 
 	getFunction(finishCallback, settleCallback, exp) {
 		return function() {
-			// TODO: remove return once #292 is fixed
+			// TODO(#292): the only activation that can complete before it
+			// returns, so it's the only one that has to report back whether it
+			// did. Everything else finishes via the event queue, long after
+			// activate() is done.
 			return this.deferredCommand.activate(this.env);
 		}.bind(this);
 	}
@@ -89,7 +93,7 @@ class DelayActivationFunctionGenerator extends ActivationFunctionGenerator {
 
 	getFunction(finishCallback, settleCallback, exp) {
 		return function() {
-			setTimeout(function() {
+			VODKA_SCHEDULER.setTimeout(function() {
 				finishCallback(null /* do not set a value, the default is whatever the child is of the exp */);
 			}, this.timeout)
 		}.bind(this);

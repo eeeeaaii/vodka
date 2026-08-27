@@ -86,6 +86,11 @@ let experiments = {
 	// if true, the pips don't flash - useful for tests
 	'STATIC_PIPS': false,
 
+	// all three are for tests only
+	'TEST_NO_ANIMATIONS': false,
+	'TEST_MANUAL_EVENT_QUEUE': false,
+	'TEST_VIRTUAL_CLOCK': false,
+
 	// make this an option in settings or w/e
 	'SHOULD_REVERT_TO_CANONICAL_NAME': false,
 
@@ -153,6 +158,20 @@ function setAppFlags() {
 	})
 }
 
+// Injected rather than done per-animation: letterblink is applied by raw CSS
+// with no JS gate.
+function suppressAnimationsIfRequested() {
+	if (!experiments.TEST_NO_ANIMATIONS) return;
+	let style = document.createElement('style');
+	style.setAttribute('id', 'no-animations');
+	style.textContent =
+			'*, *::before, *::after {'
+			+ ' animation: none !important;'
+			+ ' transition: none !important;'
+			+ ' }';
+	document.head.appendChild(style);
+}
+
 function parseBooleanValue(v) {
 	if (v == 1 || v == '1') return true;
 	if (v == 'true') return true;
@@ -199,4 +218,5 @@ export { experiments,
 	     hasSettingName,
 	     getSettings,
 		 setAppFlags,
+		 suppressAnimationsIfRequested,
 		 getExperimentsAsString }

@@ -49,6 +49,62 @@ var speed = 1;
 var step = false;
 var paused = false; // start paused erm...
 
+// only elapses when a test is already broken
+const IO_TIMEOUT_MS = 10000;
+
+async function drain(page) {
+	return await page.evaluate(function() { return window.__vodkaTest.drain(); });
+}
+
+// needed because of a bug with puppeteer where a cold browser can screenshot
+// before the first frame is composited
+async function waitForPaint(page) {
+	await page.evaluate(function() {
+		return new Promise(function(resolve) {
+			requestAnimationFrame(function() { requestAnimationFrame(resolve); });
+		});
+	});
+}
+
+async function fireAllTimersUntilNoneLeft(page) {
+	while (await page.evaluate(function() { return window.__vodkaTest.fireAllPendingTimers(); }) > 0) {
+		await drain(page);
+	}
+}
+
+async function waitForOutstandingRequests(page) {
+	let start = Date.now();
+	while (true) {
+		let pending = await page.evaluate(function() {
+			return {
+				requests: window.__vodkaTest.outstandingRequests(),
+				queued: window.__vodkaTest.queuedItemCount()
+			};
+		});
+		// a response that has arrived but hasn't been drained reads as zero
+		// requests in flight, and draining it can start the next one
+		if (pending.requests == 0 && pending.queued == 0) return;
+		if (Date.now() - start > IO_TIMEOUT_MS) {
+			console.log('TIMED OUT with ' + pending.requests + ' request(s) in flight and '
+					+ pending.queued + ' unhandled event(s)');
+			return;
+		}
+		await drain(page);
+		if (pending.requests > 0) {
+			await delay(1);
+		}
+	}
+}
+
+// a 'pause' in a test was always just a guess at how long to sleep, so ignore
+// the duration and settle everything instead
+async function settle(page) {
+	await drain(page);
+	await fireAllTimersUntilNoneLeft(page);
+	await waitForOutstandingRequests(page);
+	await drain(page);
+}
+
 function delay(timeout) {
 	return new Promise((resolve) => {
 		setTimeout(resolve, timeout);
@@ -162,6 +218,11 @@ function doFlagOverrides(flags) {
 		rflags[key] = flags[key];
 	}
 
+	// after the copy, so a per-test flag can't turn them off
+	rflags['TEST_NO_ANIMATIONS'] = true;
+	rflags['TEST_MANUAL_EVENT_QUEUE'] = true;
+	rflags['TEST_VIRTUAL_CLOCK'] = true;
+
 	return rflags;
 
 }
@@ -187,10 +248,18 @@ function runTestImpl(testinput, method, legacy, flags) {
 		}
 		let dolog = headful;
 		let browser = null;
+		// Ubuntu 23.10+ restricts unprivileged user namespaces via AppArmor, which
+		// stops Chrome's sandbox from initializing at all ("No usable sandbox!").
+		// The harness only ever loads our own app from localhost, so running
+		// without the sandbox is an acceptable trade here. Set VODKA_TEST_SANDBOX=1
+		// to opt back in on machines that don't need this.
+		let launchArgs = process.env.VODKA_TEST_SANDBOX
+				? []
+				: ['--no-sandbox', '--disable-setuid-sandbox'];
 		if (headful) {
-			browser = await puppeteer.launch({headless:false});
+			browser = await puppeteer.launch({headless:false, args:launchArgs});
 		} else {
-			browser = await puppeteer.launch();
+			browser = await puppeteer.launch({args:launchArgs});
 		}
 		const page = await browser.newPage();
 		page.on('console', msg => {
@@ -209,6 +278,7 @@ function runTestImpl(testinput, method, legacy, flags) {
 				window.legacyEnterBehaviorForTests = true;
 			})
 		}
+		await drain(page);
 		if (method == 'direct' || method == 'direct-legacy') {
 //			await page.evaluate(function() {
 //				doKeyInput('{', '{', false, false, false);
@@ -237,18 +307,17 @@ function runTestImpl(testinput, method, legacy, flags) {
 						break;
 					case 'pause':
 						if (dolog) console.log(`${spaces(i)}. pause`);
-						await page.waitFor(t.length);
+						await settle(page);
 						break;
 				}
+				await drain(page);
 				if (headful) {
 					switch(speed) {
 						case 1: await delay(250); break;
 						case 2: await delay(150); break;
 						case 3: await delay(50); break;
 
-					}					
-				} else {
-					await delay(2);
+					}
 				}
 			}
 		} else {
@@ -257,15 +326,18 @@ function runTestImpl(testinput, method, legacy, flags) {
 			// wait for the event queue to finish I guess
 			await delay(150);
 		}
-		await page.screenshot({path: exploded_out});
+		await waitForPaint(page);
+		await page.screenshot({path: exploded_out, captureBeyondViewport: false});
 		// if (headful) {
 		// 	await delay(10000);
 		// }
 		await page.evaluate(function() {
 			doKeyInput('Escape', 'Escape', false, false, false);
 		})
+		await drain(page);
 		await rl.close();
-		await page.screenshot({path: normal_out});
+		await waitForPaint(page);
+		await page.screenshot({path: normal_out, captureBeyondViewport: false});
 		await browser.close();
 	})().catch((error) => {
 		console.log("TEST FAILED");
