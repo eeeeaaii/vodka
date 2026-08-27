@@ -7,7 +7,7 @@
     "glob": "^10.3.10",
     "pegjs": "^0.11.0-master.b7b87ea",
     "preact": "^10.29.8",
-    "uuid": "^9.0.1"
+    "uuid": "^14.0.0"
   },
   "scripts": {
     "build": "cd server && ./build.sh",
