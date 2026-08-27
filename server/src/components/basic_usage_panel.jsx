@@ -77,6 +77,10 @@ const BasicUsagePanel = () => {
         <p className="infospacer"></p>
         <p className="infoline"><span className="infohotkey">shift-space</span>toggles direction of current container (horizontal/vertical)</p>
         <p className="infospacer"></p>
+        <p className="infoline"><span className="infohotkey">\\</span>collapse or expand the selected container (containers only)</p>
+        <p className="infospacer"></p>
+        <p className="infoline"><span className="infohotkey"><span className="optionkey">{OPTION_KEY}</span>-shift-delete</span>"unroll" the selected container -- dissolve it, leaving its children behind in its place (containers only)</p>
+        <p className="infospacer"></p>
         <p className="infoline"><span className="infohotkey">shift-escape</span>toggle exploded/normal modes for entire document</p>
         <p className="infoline"><span className="infohotkey">shift-alt-escape</span>toggle exploded/normal modes for selected object (and its children)</p>
         <p className="infospacer"></p>
@@ -119,6 +123,29 @@ const BasicUsagePanel = () => {
         <p className="infoline">Multiple parameter specifiers can be combined, for example <span className="infohotkey">_n#%...</span>,<span className="infohotkey">n()?</span></p>
         <p className="infoline"><span className="infohotkey">%#</span>either float or integer types allowed, others are not allowed (any type codes can be combined)</p>
         <p className="infoline">If no type is specified, any type is allowed.</p>
+        <p className="infospacer"></p>
+        <p className="infosubheader">Wavetables (sound objects):</p>
+        <p className="infolinemargin">A wavetable holds a sound. Insert one with <span className="infohotkey">_</span>, then press <span className="infohotkey">delete</span> to enter edit mode, same as any other object.</p>
+        <p className="infoline"><span className="infohotkey">enter</span>audition (play) the whole wave. Note that for wavetables this plays the sound rather than evaluating the object.</p>
+        <p className="infospacer"></p>
+        <p className="infosubheader">In wavetable editor:</p>
+        <p className="infoline"><span className="infohotkey">0</span>audition the whole wave</p>
+        <p className="infoline"><span className="infohotkey">1</span>through <span className="infohotkey">9</span>audition that numbered section (does nothing until you have added markers)</p>
+        <p className="infoline"><span className="infohotkey">v</span>add a marker at the center sample</p>
+        <p className="infolinemargin">Markers divide the wave into sections, so N markers give you N+1 sections. Sections are auditioned by number starting at 1, even though the marker buttons themselves are labelled with letters.</p>
+        <p className="infospacer"></p>
+        <p className="infosubheader">Wavetable mouse controls:</p>
+        <p className="infoline">drag on the waveform to zoom in and out in time (drag whichever direction is bigger, horizontal or vertical)</p>
+        <p className="infoline">shift-drag to zoom the amplitude (vertical scale) instead</p>
+        <p className="infoline">while in edit mode, clicking sets the center sample and dragging scrolls the view</p>
+        <p className="infospacer"></p>
+        <p className="infosubheader">Wavetable on-screen controls:</p>
+        <p className="infolinemargin">These are the small buttons in the strip above the waveform, and they are mouse-only.</p>
+        <p className="infoline"><span className="infohotkey">1.5 secs</span>the length readout. Click it to cycle the timebase: notenum, secs, hz, beats, samps</p>
+        <p className="infoline"><span className="infohotkey">* rec</span>start recording audio into this wavetable</p>
+        <p className="infoline"><span className="infohotkey">[] stop</span>stop recording</p>
+        <p className="infoline"><span className="infohotkey">v</span>add a marker (same as pressing v)</p>
+        <p className="infoline"><span className="infohotkey">a</span><span className="infohotkey">b</span><span className="infohotkey">c</span>one button per marker. Click one to delete that marker.</p>
         <p className="infospacer"></p>
         <p className="infosubheader">In tag editor:</p>
         <p className="infolinemargin">Any object can be tagged. Any character including spaces can be used in a tag.</p>

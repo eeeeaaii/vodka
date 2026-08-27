@@ -70,3 +70,32 @@ body {
   background-color:  #252623;
 }
 
+
+.helpmenuitemselected {
+  background-color: #3a392b;
+  color: #d8d6b0;
+}
+
+.infopanel .apinav {
+  border-bottom-color: #6b6a4f;
+}
+
+.infopanel .apinavitem {
+  background-color: #41413c;
+  border-color: #6b6a4f;
+}
+
+.infopanel .apinavitem:hover {
+  background-color: #6b6a4f;
+  color: #fcf7bb;
+}
+
+.infopanel .apibacktotop {
+  background-color: #3a392b;
+  border-color: #6b6a4f;
+}
+
+.infopanel .apibacktotop:hover {
+  background-color: #6b6a4f;
+  color: #fcf7bb;
+}

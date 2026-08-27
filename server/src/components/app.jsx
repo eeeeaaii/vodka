@@ -72,6 +72,18 @@ const App = () => {
         }
     }
 
+    // Which tab the top menu should show as selected. The panel constants and
+    // the menu constants are separate enumerations, so map explicitly rather
+    // than relying on them happening to line up.
+    const selectedMenuChoice = () => {
+        switch(panel) {
+            case API_REFERENCE_PANEL: return FULL_API_REFERENCE;
+            case BASIC_USAGE_PANEL:   return QUICK_REFERENCE;
+            case WELCOME_PANEL:
+            default:                  return WELCOME;
+        }
+    }
+
     const displayPanel = () => {
         switch(panel) {
             case API_REFERENCE_PANEL:
@@ -105,7 +117,9 @@ const App = () => {
                         case SHOWING_PANELS:
                             return (
                                 <>
-                                <TopMenu onMenuChange={handleMenuChange}/>
+                                <TopMenu
+                                    selectedMenuChoice={selectedMenuChoice()}
+                                    onMenuChange={handleMenuChange}/>
                                 {displayPanel()}
                                 </>
                             );
