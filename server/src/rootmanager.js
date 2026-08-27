@@ -47,36 +47,60 @@ class RootManager  {
 		if (!args.mode) {
 			args.mode = RENDER_MODE_NORM;
 		}
-		if (!args.id) {
-			args.id = 'vodkaroot';
+		if (!args.domNode) {
+			args.domNode = document.getElementById(args.id ? args.id : 'vodkaroot');
 		}
 		let rootnex = new Root(true /* attached */);
 		let root = new RenderNode(rootnex);
 		root.setRenderMode(args.mode);
 		root.setRenderDepth(0);
 		document.vodkaroot = root; // for debugging in chrome dev tools
-		let rootDomNode = document.getElementById(args.id);
-		root.setDomNode(rootDomNode);
+		root.setDomNode(args.domNode);
 		rootnex.setDirtyForRendering(true);
 		systemState.setRoot(root);
 		return root;	
 	}
 
-	renderInHiddenRoot(nex, rendermode) {
+	// renders the nex into a scratch node, hands it to measureFn to be measured,
+	// then throws the scratch node away and returns whatever measureFn returned.
+	// The measuring has to happen in here because the node can't be measured once
+	// it's been detached.
+	measureInHiddenRoot(nex, rendermode, measureFn) {
 		let wasDirty = nex.getDirtyForRendering();
-		let hiddenRoot = this.createNewRoot({
-			mode: rendermode,
-			id: 'hiddenroot'
-		})
+		let savedRoot = systemState.getRoot();
+		let savedDebugRoot = document.vodkaroot;
 
-		// render pass has to monotonically increase but it can skip, so when this is
-		// called, the main (visible) render pass number will skip numbers.
-		systemState.setGlobalRenderPassNumber(systemState.getGlobalRenderPassNumber() + 1);
-		// has to be synchronous so we can measure
-		hiddenRoot.render();
-		// if it was dirty before, re-dirty it
-		nex.setDirtyForRendering(wasDirty);
-		return nex.getRenderNodes()[0];
+		// wide so the contents don't wrap, out of flow so it doesn't disturb
+		// the real layout while it's up
+		let scratch = document.createElement('div');
+		scratch.style.visibility = 'hidden';
+		scratch.style.position = 'absolute';
+		scratch.style.top = '0';
+		scratch.style.left = '0';
+		scratch.style.width = '10000px';
+		document.body.appendChild(scratch);
+
+		try {
+			let hiddenRoot = this.createNewRoot({
+				mode: rendermode,
+				domNode: scratch
+			})
+
+			// render pass has to monotonically increase but it can skip, so when this is
+			// called, the main (visible) render pass number will skip numbers.
+			systemState.setGlobalRenderPassNumber(systemState.getGlobalRenderPassNumber() + 1);
+			// has to be synchronous so we can measure
+			hiddenRoot.render();
+			return measureFn(nex.getRenderNodes()[0]);
+		} finally {
+			// createNewRoot points systemState at whatever it just made, so the
+			// real root has to be put back
+			systemState.setRoot(savedRoot);
+			document.vodkaroot = savedDebugRoot;
+			document.body.removeChild(scratch);
+			// if it was dirty before, re-dirty it
+			nex.setDirtyForRendering(wasDirty);
+		}
 	}
 }
 
