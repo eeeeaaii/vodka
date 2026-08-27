@@ -19,6 +19,7 @@ import { systemState } from './systemstate.js';
 import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
 import { manipulator } from './manipulator.js';
 import { constructWarning } from './nex/eerror.js';
+import { scheduleAutosave } from './autosave.js'
 
 const levelsOfUndo = 100;
 
@@ -56,6 +57,7 @@ function enqueueAndPerformAction(action) {
 		nextPosition = advance(nextPosition);
 	}
 	action.doAction();
+	scheduleAutosave(systemState.getRoot());
 }
 
 
@@ -63,6 +65,7 @@ function redo() {
 	if (nextPosition != queueTop) {
 		actionStack[nextPosition].doAction();
 		nextPosition = advance(nextPosition);
+		scheduleAutosave(systemState.getRoot());
 	} else {
 		console.log('cannot redo');
 	}
@@ -73,6 +76,7 @@ function undo() {
 	if (actionStack[pos].canUndo()) {
 		nextPosition = pos;
 		actionStack[nextPosition].undoAction();
+		scheduleAutosave(systemState.getRoot());
 	} else {
 		console.log('cannot undo');
 	}
@@ -83,9 +87,9 @@ class Action {
 		this.actionName = actionName;
 	}
 
-	canUndo() {};
-	doAction() {};
-	undoAction() {};
+	canUndo() { };
+	doAction() { };
+	undoAction() { };
 }
 
 
@@ -213,7 +217,9 @@ class WrapInNewParentNodeAction extends Action {
 
 		if (this.editorDataSavedForRedo) {
 			let fakeEditor = this.newNode.getEditorForType(this.newNode.nex);
-			fakeEditor.setStateForUndo(this.editorDataSavedForRedo);
+			if (fakeEditor) {
+				fakeEditor.setStateForUndo(this.editorDataSavedForRedo);
+			}
 		}
 	}
 
@@ -253,7 +259,9 @@ class InsertNewChildNodeAction extends Action {
 
 		if (this.editorDataSavedForRedo) {
 			let fakeEditor = this.newNode.getEditorForType(this.newNode.nex);
-			fakeEditor.setStateForUndo(this.editorDataSavedForRedo);
+			if (fakeEditor) {
+				fakeEditor.setStateForUndo(this.editorDataSavedForRedo);
+			}
 		}
 	}
 
@@ -506,7 +514,9 @@ class DefaultHandlerAction extends Action {
 
 			if (this.editorDataSavedForRedo) {
 				let fakeEditor = this.newNode.getEditorForType(this.newNode.nex);
-				fakeEditor.setStateForUndo(this.editorDataSavedForRedo);
+				if (fakeEditor) {
+					fakeEditor.setStateForUndo(this.editorDataSavedForRedo);
+				}
 			}
 		}
 	}
@@ -557,10 +567,10 @@ class LegacyDefaultHandlerAction extends Action {
 
 
 function actionFactory(actionName, eventName) {
-	switch(actionName) {
+	switch (actionName) {
 		case 'do-nothing':
 			return new NoOpAction(actionName);
- 		case 'audition-wave':
+		case 'audition-wave':
 			return new TriviallyUndoableKeyResponseFunctionAction(actionName);
 		case 'move-left-up':
 		case 'move-right-down':
@@ -633,16 +643,16 @@ function actionFactory(actionName, eventName) {
 		case 'wrap-in-word':
 			return new WrapInNewParentNodeAction(actionName);
 
- 		case 'standardDefault':
+		case 'standardDefault':
 		case 'letterDefault':
 		case 'separatorDefault':
 		case 'wordDefault':
 		case 'lineDefault':
 		case 'docDefault':
- 			return new DefaultHandlerAction(actionName, eventName);
+			return new DefaultHandlerAction(actionName, eventName);
 
- 		case 'toggle-exploded':
- 			return new ChangeRenderModeAction(actionName);
+		case 'toggle-exploded':
+			return new ChangeRenderModeAction(actionName);
 
 		case 'do-line-break-for-letter':
 		case 'do-line-break-for-separator':
