@@ -67,7 +67,7 @@ class DeferredValue extends NexContainer {
 	}
 
 	notifyAllListeners() {
-		this.listeners.forEach(function(listener) {
+		this.listeners.forEach(function (listener) {
 			listener.notify();
 		}.bind(this));
 	}
@@ -165,8 +165,11 @@ class DeferredValue extends NexContainer {
 	activate() {
 		let finishCallback = ((value) => this.startFinish(value));
 		let settleCallback = ((value) => this.startSettle(value));
-		this.activationFunctionGenerator.getFunction(finishCallback, settleCallback, this)();
-		this.state = DVSTATE_ACTIVATED;
+		// TODO: remove the didNotWait check once #292 is fixed
+		let didNotWait = this.activationFunctionGenerator.getFunction(finishCallback, settleCallback, this)();
+		if (!didNotWait) {
+			this.state = DVSTATE_ACTIVATED;
+		}
 	}
 
 	prettyPrintInternal(lvl, hdir) {
@@ -268,7 +271,7 @@ class DeferredValue extends NexContainer {
 			}
 
 
-			switch(this.state) {
+			switch (this.state) {
 				case DVSTATE_CANCELLED:
 					dotspan.innerHTML = '<span class="dvglyph cancelledglyph">⤬</span>'
 					break;
