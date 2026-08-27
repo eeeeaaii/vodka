@@ -20,6 +20,11 @@ var fs = require("fs");
 var glob = require("glob")
 var path = require("path")
 
+// Goldens live under goldens/<platform>/ so the two platforms' sets can
+// coexist; see platform.sh. The per-test html sits in the test directory, so
+// the link from it is relative to that.
+const PLATFORM = (process.platform == 'darwin') ? 'mac' : 'linux';
+
 function tpath(output_suffix) {
 	return `./alltests/${basename}/${basename}${output_suffix}`;
 }
@@ -40,6 +45,7 @@ function testDiff(type) {
 	let goldenUpdateExtension = (type == 'EXPLODED' ? '-e' : '-n');
 	return {
 		'test': basename,
+		'platform': PLATFORM,
 		'diff_type': type,
 		'regenerate_golden_ext': goldenUpdateExtension,
 		'regenerated_golden': regeneratedGolden,
