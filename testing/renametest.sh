@@ -1,3 +1,4 @@
+#!/bin/bash
 # This file is part of Vodka.
 
 # Vodka is free software: you can redistribute it and/or modify
@@ -12,8 +13,6 @@
 
 # You should have received a copy of the GNU General Public License
 # along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
-
-#!/bin/bash
 
 
 if [ "$1" == "" ]; then

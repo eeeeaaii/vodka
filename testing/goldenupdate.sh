@@ -1,3 +1,4 @@
+#!/bin/bash
 # This file is part of Vodka.
 
 # Vodka is free software: you can redistribute it and/or modify
@@ -13,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
-#!/bin/bash
+. "$(dirname "$0")/platform.sh"
 
 is_vk() {
 	FILE=$1
@@ -28,7 +29,9 @@ fi
 
 if is_vk $BASENAME ; then
 	TESTOUT="./alltests/${BASENAME}/${BASENAME}.out"
-	GOLDEN="./alltests/${BASENAME}/${BASENAME}_GOLDEN.out"
+	GOLDENDIR="./alltests/${BASENAME}/goldens/${VODKA_PLATFORM}"
+	mkdir -p "${GOLDENDIR}"
+	GOLDEN="${GOLDENDIR}/${BASENAME}_GOLDEN.out"
 	cp ${TESTOUT} ${GOLDEN}
 	echo "[${BASENAME}] golden updated"
 	runtests.sh ${BASENAME}
@@ -53,12 +56,14 @@ if [ ! -e "./alltests/${BASENAME}.js" ]; then
 	exit 1
 fi
 
+GOLDENDIR_PNG="./alltests/${BASENAME}/goldens/${VODKA_PLATFORM}"
+mkdir -p "${GOLDENDIR_PNG}"
 TESTOUT_NORMAL="./alltests/${BASENAME}/${BASENAME}_OUT_NORMAL.png"
-GOLDEN_NORMAL="./alltests/${BASENAME}/${BASENAME}_GOLDEN_NORMAL.png"
-GOLDEN_NORMAL_BACKUP="./alltests/${BASENAME}/${BASENAME}_GOLDEN_NORMAL.backup.png"
+GOLDEN_NORMAL="${GOLDENDIR_PNG}/${BASENAME}_GOLDEN_NORMAL.png"
+GOLDEN_NORMAL_BACKUP="${GOLDENDIR_PNG}/${BASENAME}_GOLDEN_NORMAL.backup.png"
 TESTOUT_EXPLODED="./alltests/${BASENAME}/${BASENAME}_OUT_EXPLODED.png"
-GOLDEN_EXPLODED="./alltests/${BASENAME}/${BASENAME}_GOLDEN_EXPLODED.png"
-GOLDEN_EXPLODED_BACKUP="./alltests/${BASENAME}/${BASENAME}_GOLDEN_EXPLODED.backup.png"
+GOLDEN_EXPLODED="${GOLDENDIR_PNG}/${BASENAME}_GOLDEN_EXPLODED.png"
+GOLDEN_EXPLODED_BACKUP="${GOLDENDIR_PNG}/${BASENAME}_GOLDEN_EXPLODED.backup.png"
 
 if [ "${VARIANT}" == "-n" -o "${VARIANT}" == "-b" ]; then
 	if [ ! -e "${TESTOUT_NORMAL}" ]; then
