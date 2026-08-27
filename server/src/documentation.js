@@ -26,6 +26,11 @@ let apiDocCategory = '';
 
 let docs = {};
 let docorder = [];
+// canonical builtin name -> [alias, ...]. Kept separate from docs{} rather than
+// stored on the doc item, because aliasBuiltin() runs after the builtin it
+// aliases has already been documented, and not necessarily in the same
+// category block.
+let aliases = {};
 
 function setAPIDocCategory(str) {
 	apiDocCategory = str;
@@ -39,6 +44,13 @@ function documentBuiltin(name, params, info) {
 		info:info,
 		params:params
 	})
+}
+
+function documentAlias(aliasName, boundName) {
+	if (!aliases[boundName]) {
+		aliases[boundName] = [];
+	}
+	aliases[boundName].push(aliasName);
 }
 
 // Doc strings mark up hotkeys/argument names by prefixing them with a pipe,
@@ -68,7 +80,7 @@ function parseInfoString(info) {
 }
 
 // Returns the whole API reference as data, in the order the categories were
-// declared: [ { category, items: [ { name, params, infoPieces } ] } ]
+// declared: [ { category, items: [ { name, params, aliases, infoPieces } ] } ]
 function getDocs() {
 	return docorder.map(function(category) {
 		return {
@@ -77,6 +89,7 @@ function getDocs() {
 				return {
 					name: item.name,
 					params: item.params,
+					aliases: aliases[item.name] ? aliases[item.name].slice() : [],
 					infoPieces: parseInfoString(item.info)
 				};
 			})
@@ -84,4 +97,4 @@ function getDocs() {
 	});
 }
 
-export { setAPIDocCategory, documentBuiltin, getDocs }
+export { setAPIDocCategory, documentBuiltin, documentAlias, getDocs }

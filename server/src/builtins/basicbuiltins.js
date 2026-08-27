@@ -56,7 +56,7 @@ function createBasicBuiltins() {
 			}
 			return lst.getFirstChild();
 		},
-		'Returns the first element of |list without altering |list. Aliases: head, first.'
+		'Returns the first element of |list without altering |list.'
 	);
 	Builtin.aliasBuiltin('head', 'car');
 	Builtin.aliasBuiltin('first', 'car');
@@ -74,7 +74,7 @@ function createBasicBuiltins() {
 			c.getChildrenForCdr(newOne);
 			return newOne;
 		},
-		'Returns a copy of |list containing all elements of |list except the first one. Aliases: tail, rest.'
+		'Returns a copy of |list containing all elements of |list except the first one.'
 	);
 	Builtin.aliasBuiltin('tail', 'cdr');
 	Builtin.aliasBuiltin('rest', 'cdr');
@@ -90,7 +90,7 @@ function createBasicBuiltins() {
 			lst.setChildrenForCons(nex, newOne);
 			return newOne;
 		},
-		'Returns a new list created by prepending |nex to a copy of |list. Aliases: push, push-into.'
+		'Returns a new list created by prepending |nex to a copy of |list.'
 	);
 	Builtin.aliasBuiltin('push', 'cons');
 	Builtin.aliasBuiltin('push into', 'cons');
@@ -108,7 +108,7 @@ function createBasicBuiltins() {
 			c.removeChild(c.getChildAt(0));
 			return r;
 		},
-		'Removes the first element of |list, destructively altering list, and returns the removed element. Aliases: hard-car, hard-first, hard-head.'
+		'Removes the first element of |list, destructively altering list, and returns the removed element.'
 	);
 	Builtin.aliasBuiltin('hard-car', 'chop');
 	Builtin.aliasBuiltin('hard-first', 'chop');
@@ -126,7 +126,7 @@ function createBasicBuiltins() {
 			c.removeChild(c.getChildAt(0));
 			return c;
 		},
-		'Destructively removes the first element of |list, and returns the altered |list. Aliases: hard-cdr, hard-tail, hard-rest.'
+		'Destructively removes the first element of |list, and returns the altered |list.'
 	);
 	Builtin.aliasBuiltin('hard-cdr', 'chomp');
 	Builtin.aliasBuiltin('hard-rest', 'chomp');
@@ -141,7 +141,7 @@ function createBasicBuiltins() {
 			lst.prependChild(env.lb('nex'));
 			return lst;
 		},
-		'Destructively alters |list by prepending |nex to it. Aliases: hard-cons, hard-push, hard-push into.'
+		'Destructively alters |list by prepending |nex to it.'
 	);
 	Builtin.aliasBuiltin('hard-cons', 'cram');
 	Builtin.aliasBuiltin('hard-push', 'cram');

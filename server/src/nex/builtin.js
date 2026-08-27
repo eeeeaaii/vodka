@@ -20,7 +20,7 @@ import { ParamParser } from '../paramparser.js'
 import { BUILTINS } from '../environment.js'
 import { PERFORMANCE_MONITOR, perfmon } from '../perfmon.js'
 import { experiments } from '../globalappflags.js'
-import { documentBuiltin } from '../documentation.js'
+import { documentBuiltin, documentAlias } from '../documentation.js'
 import { heap, HeapString } from '../heap.js'
 import { throwOOM } from './eerror.js'
 
@@ -142,9 +142,9 @@ class Builtin extends Lambda {
 	}
 
 	static aliasBuiltin(aliasName, boundName) {
-		// temporarily a no-op because this messes up autocomplete
 		let bound = BUILTINS.lookupBinding(boundName);
 		Builtin.bindBuiltinObject(aliasName, bound);
+		documentAlias(aliasName, boundName);
 	}
 
 	static bindBuiltinObject(name, nex) {

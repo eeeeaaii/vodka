@@ -58,7 +58,7 @@ function createLogicBuiltins() {
 			}
 			return constructNil();
 		},
-		'Returns the first argument that does not evaluate to nil, ignoring the rest. Alias: case.'
+		'Returns the first argument that does not evaluate to nil, ignoring the rest.'
 	)
 
 	Builtin.aliasBuiltin('case', 'first-non-nil');
@@ -89,7 +89,7 @@ function createLogicBuiltins() {
 				return iffalseresult;
 			}
 		},
-		'Evalutes |cond, and if it is true, return |iftrue, otherwise return |iffalse. If |iffalse is not provided, a Nil is returned if |cond is false. Alias: if.'
+		'Evalutes |cond, and if it is true, return |iftrue, otherwise return |iffalse. If |iffalse is not provided, a Nil is returned if |cond is false.'
 	)
 	Builtin.aliasBuiltin('if', 'if then else');
 

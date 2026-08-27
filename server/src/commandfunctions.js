@@ -179,7 +179,19 @@ function executeRunInfo(runInfo, executionEnv) {
 	let result = runCommand(runInfo, executionEnv);
 
 	if (runInfo.expectedReturnType != null && !Utils.isFatalError(result)) {
-		let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[runInfo.expectedReturnType.type](result);
+		// A type can be a union -- '#%' parses to 'Integer|Float' -- so split it
+		// the way checkType does for parameters (argevaluator.js). Looking up the
+		// whole union as one key finds nothing and calls undefined as a function,
+		// which is a JS TypeError that escapes the evaluator entirely.
+		let allowedTypes = runInfo.expectedReturnType.type.split('|');
+		let typeChecksOut = false;
+		for (let i = 0; i < allowedTypes.length; i++) {
+			let validator = ArgEvaluator.ARG_VALIDATORS[allowedTypes[i]];
+			if (validator && validator(result)) {
+				typeChecksOut = true;
+				break;
+			}
+		}
 		if (!typeChecksOut) {
 			result = constructFatalError(`${runInfo.cmdname.get()}: should return ${runInfo.expectedReturnType.type} but returned ${result.getTypeName()}`);
 		}

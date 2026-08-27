@@ -65,7 +65,7 @@ function createIterationBuiltins() {
 			}
 			return resultList;
 		},
-		'Returns a new list containing only the elements of |list for which |func calls true when it is called on that element. Aliases: filter with'
+		'Returns a new list containing only the elements of |list for which |func calls true when it is called on that element.'
 	);
 
 	Builtin.aliasBuiltin('filter with', 'filter');
@@ -102,7 +102,7 @@ function createIterationBuiltins() {
 			}
 			return resultList;
 		},
-		'Goes through all the elements in |list and replaces each one with the result of calling |func on that element. Aliases: map with'
+		'Goes through all the elements in |list and replaces each one with the result of calling |func on that element.'
 	);
 
 	Builtin.aliasBuiltin('map with', 'map');
@@ -136,7 +136,7 @@ function createIterationBuiltins() {
 			}
 			return p;
 		},
-		'Progressively updates a value, starting with |startvalue, by calling |func on each element in |list, passing in 1. the list element and 2. the progressively updated value, returning the final updated value. Aliases: reduce with, reduce with starting'
+		'Progressively updates a value, starting with |startvalue, by calling |func on each element in |list, passing in 1. the list element and 2. the progressively updated value, returning the final updated value.'
 	);
 
 	Builtin.aliasBuiltin('reduce with', 'reduce');
@@ -257,7 +257,7 @@ function createIterationBuiltins() {
 			}
 			return bodyresult ? bodyresult : constructNil();
 		},
-		`Classic "for loop". First |start is evaluated, then |test. If |test returns true, |body and |inc are evaluated, and then we go back to |test. Alias: starting-with while do then-with.`
+		`Classic "for loop". First |start is evaluated, then |test. If |test returns true, |body and |inc are evaluated, and then we go back to |test.`
 	)
 
 	Builtin.aliasBuiltin('starting-with while do then-with', 'for-loop');
