@@ -35,6 +35,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 .stringinputsubmit:focus {
 	background-color: var(--string-border);
+	color: var(--string-submit-focus-text);
 }
 
 .innerspan {

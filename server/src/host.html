@@ -22,8 +22,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	var CSS_THEME = 'light';
 	let params = new URLSearchParams(window.location.search);
 	params.forEach(function(value, key) {
-		if (key == 'theme' && value == 'dark') {
-			CSS_THEME = 'dark';
+		if (key == 'theme') {
+			CSS_THEME = (value == 'dark') ? 'dark' : 'light';
 		}
 	})
 	// set before first paint so there's no flash of the wrong theme

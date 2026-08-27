@@ -44,9 +44,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
   --string-background: white;
   --string-ta-text: black;
   --string-border: #dddddd;
+  --string-submit-focus-text: #000000;
 
   --tag-background: #6e6e6e;
-  --tag-text: #dddddd;
   --tag-editor-background: #dddddd;
   --tag-editor-text: #414141;
 
@@ -56,6 +56,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
   --error-warn-text: #aa6e00;
 
   --alert-flash: #ffff77;
+
+  --help-background: #fcf7bb;
+  --help-surface: #eef1dc;
+  --help-accent: #736b0d;
+  --help-link: #0000ee;
 
   --oom-border: #660000;
   --oom-text: #660000;
@@ -95,37 +100,37 @@ colours sit at one lightness so nesting reads by hue not brightness; and the
 waveform is teal so signal is never confused with structure.
 */
 :root[data-theme="dark"] {
-  --page-background: #12141a;
+  --page-background: #000000;
   --page-text: #dfe3ea;
 
-  --selected-border: #ff6b5e;
-  --unselected-border: #363b47;
-  --value-background: #1c1f27;
-  --info-text: #98a0af;
-  --inverted-nex-background: #dfe3ea;
-  --inverted-nex-foreground: #12141a;
-  --editing-background: #3a2320;
+  --selected-border: #cc3d3d;
+  --unselected-border: #54565e;
+  --value-background: #292929;
+  --info-text: #f2f4f8;
+  --inverted-nex-background: #d0f2f1;
+  --inverted-nex-foreground: #0e1a1a;
+  --editing-background: #ad7b7b;
 
-  --doc-selected: #4ade80;
-  --doc-unselected: #1d3b2a;
-  --line-selected: #8b9cf7;
-  --line-unselected: #262c46;
-  --word-selected: #f0c454;
-  --word-unselected: #3b3320;
+  --doc-selected: #3aa869;
+  --doc-unselected: #2f5a41;
+  --line-selected: #6d79cf;
+  --line-unselected: #3d4568;
+  --word-selected: #c9a341;
+  --word-unselected: #5c5133;
 
-  --org-border: #2c313c;
-  --org-border-strong: #3a4150;
+  --org-border: #3f4149;
+  --org-border-strong: #4a4c54;
 
   --cursor-blink-color: #dfe3ea;
 
-  --string-background: #171a21;
+  --string-background: #0b0b0b;
   --string-ta-text: #dfe3ea;
-  --string-border: #2c313c;
+  --string-border: #242424;
+  --string-submit-focus-text: #ffffff;
 
-  --tag-background: #2c313c;
-  --tag-text: #b6bdc9;
-  --tag-editor-background: #252932;
-  --tag-editor-text: #dfe3ea;
+  --tag-background: #d0f2f1;
+  --tag-editor-background: #1a1a1a;
+  --tag-editor-text: #f2f4f8;
 
   --error-text: #ff7b6e;
   --error-info-text: #7fb2ff;
@@ -134,31 +139,36 @@ waveform is teal so signal is never confused with structure.
 
   --alert-flash: #6b5f1f;
 
+  --help-background: #16211f;
+  --help-surface: #1e2c2a;
+  --help-accent: #7fbdb8;
+  --help-link: #a8e0dc;
+
   --oom-border: #ff6b5e;
   --oom-text: #ff9c92;
-  --oom-background: #2a1614;
+  --oom-background: #1e0b0c;
   --oom-strong-border: #ff6b5e;
-  --oom-strong-background: #4a1d18;
+  --oom-strong-background: #3a0f13;
   --oom-strong-text: #ffe3e0;
 
-  --wave-regular: #6fc9b7;
-  --wave-intense: #a9ede0;
-  --wave-editing: #8ad9c8;
+  --wave-regular: #d0f2f1;
+  --wave-intense: #eafcfb;
+  --wave-editing: #d0f2f1;
   --wave-audition: #f0c454;
-  --wave-solid: #4f9c8d;
-  --wave-solid-editing: #66b5a4;
-  --wave-zero: #3a4150;
+  --wave-solid: #9fcbca;
+  --wave-solid-editing: #b8dedd;
+  --wave-zero: #333333;
   --wave-marker: #f59e42;
   --wave-marker-light: #ffc78a;
   --wave-clipping: #ff6b5e;
   --wave-playhead: #4ade80;
-  --wave-canvas-background: #171a21;
-  --wave-endcap-1: #171a21;
-  --wave-endcap-2: #222630;
-  --wave-endcap-3: #2c313c;
-  --wave-endcap-4: #363b47;
-  --wave-control-background: #252932;
-  --wave-control-text: #cdd3dc;
+  --wave-canvas-background: #0a0a0a;
+  --wave-endcap-1: #0a0a0a;
+  --wave-endcap-2: #141414;
+  --wave-endcap-3: #1e1e1e;
+  --wave-endcap-4: #282828;
+  --wave-control-background: #1a1a1a;
+  --wave-control-text: #98a0af;
   --wtm-panel: #dfe3ea;
   --wtm-control: #dfe3ea;
   --tag-arrow-left: #d6d63a;

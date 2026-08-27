@@ -57,8 +57,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 .helpmenuitem {
 	display: flex;
-	background-color: #fcf7bb;
-	border: 2px solid #736b0d;
+	background-color: var(--help-background);
+	border: 2px solid var(--help-accent);
 	padding: 6px;	
 	margin: 0px;
 	flex-grow: 1;
@@ -70,8 +70,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	display: block;
 	font-family: Courier;
 	font-size: 11px;
-	border: 1px solid #736b0d;
-	background-color: #fcf7bb;
+	border: 1px solid var(--help-accent);
+	background-color: var(--help-background);
 	padding: 20px;
 }
 
@@ -157,8 +157,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	padding: 6px;
 	margin: 0;
 	font-family: Georgia;
-	background-color: #eef1dc;
-	border: 1px solid #736b0d;
+	background-color: var(--help-surface);
+	border: 1px solid var(--help-accent);
 }
 
 .infopanel .infohotkey {
@@ -171,8 +171,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	padding-left: 3px;
 	padding-right: 3px;
 	padding-bottom: 2px;
-	background-color: #eef1dc;
-	border: 1px solid #736b0d;	
+	background-color: var(--help-surface);
+	border: 1px solid var(--help-accent);	
 }
 
 .infopanel .infohotkeylarge {
@@ -181,8 +181,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 #infothingstotry {
 	padding: 6px;
-	background-color: #eef1dc;
-	border: 1px solid #736b0d;
+	background-color: var(--help-surface);
+	border: 1px solid var(--help-accent);
 }
 
 
@@ -196,8 +196,8 @@ position: fixed;
 	margin-right: 3px;
 	font-family: Courier;
 	font-size: 9px;
-	border: 2px solid #736b0d;
-	background-color: #fcf7bb;
+	border: 2px solid var(--help-accent);
+	background-color: var(--help-background);
 	padding: 3px 5px 5px 3px;
 	z-index: 1001;
 }
@@ -205,8 +205,8 @@ position: fixed;
 
 .helpbutton {
 	padding: 2px 6px 2px 6px;
-	background-color: #736b0d;
-	color: white;
+	background-color: var(--help-accent);
+	color: var(--help-background);
 	cursor: pointer;
 }
 
@@ -215,8 +215,8 @@ position: fixed;
    it in the file to take effect. Selected reads as "continuous with the panel
    below it": panel-colored fill instead of the dark olive. */
 .helpmenuitemselected {
-	background-color: #fcf7bb;
-	color: #736b0d;
+	background-color: var(--help-background);
+	color: var(--help-accent);
 	font-weight: bold;
 }
 
@@ -228,21 +228,21 @@ position: fixed;
 	gap: 5px;
 	margin-bottom: 18px;
 	padding-bottom: 12px;
-	border-bottom: 1px solid #736b0d;
+	border-bottom: 1px solid var(--help-accent);
 }
 
 .infopanel .apinavitem {
 	display: inline-block;
 	font-size: 1.1em;
 	padding: 2px 5px 3px 5px;
-	background-color: #eef1dc;
-	border: 1px solid #736b0d;
+	background-color: var(--help-surface);
+	border: 1px solid var(--help-accent);
 	cursor: pointer;
 }
 
 .infopanel .apinavitem:hover {
-	background-color: #736b0d;
-	color: #fcf7bb;
+	background-color: var(--help-accent);
+	color: var(--help-background);
 }
 
 .infopanel .apibacktotop {
@@ -250,12 +250,16 @@ position: fixed;
 	font-size: 0.95em;
 	padding: 1px 5px 2px 5px;
 	margin-bottom: 4px;
-	border: 1px solid #736b0d;
-	background-color: #fcf7bb;
+	border: 1px solid var(--help-accent);
+	background-color: var(--help-background);
 	cursor: pointer;
 }
 
 .infopanel .apibacktotop:hover {
-	background-color: #736b0d;
-	color: #fcf7bb;
+	background-color: var(--help-accent);
+	color: var(--help-background);
+}
+
+.infopanel a {
+	color: var(--help-link);
 }
