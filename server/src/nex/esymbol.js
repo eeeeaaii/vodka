@@ -143,7 +143,8 @@ class ESymbol extends ValueNex {
 
 	getEventTable(context) {
 		return {
-			'AltSpace': 'autocomplete'
+			'AltSpace': 'autocomplete',
+			'CtrlSpace': 'autocomplete'
 		};
 	}
 

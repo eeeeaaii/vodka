@@ -15,6 +15,13 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+// The autocomplete chord arrives under either spelling now that ctrl is no
+// longer rewritten to alt before dispatch. Editors compare against the event
+// name directly rather than going through a table, so they need this.
+function isAutocompleteChord(text) {
+	return text == 'AltSpace' || text == 'CtrlSpace';
+}
+
 class Editor {
 	constructor(nex, type) {
 		this._isEditing = false;
@@ -47,7 +54,7 @@ class Editor {
 	}
 
 	shouldIgnore(text) {
-		return text == 'AltSpace';
+		return isAutocompleteChord(text);
 	}
 
 	shouldReroute(text) {
@@ -153,4 +160,4 @@ class Editor {
 	}
 }
 
-export { Editor }
+export { Editor, isAutocompleteChord }

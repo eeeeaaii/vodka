@@ -24,6 +24,7 @@ import { manipulator } from './manipulator.js';
 import { actionFactory, enqueueAndPerformAction, undo, redo } from './actions.js'
 import { evaluateAndKeep } from './evaluatorinterface.js';
 import { experiments } from './globalappflags.js'
+import { isAutocompleteChord } from './editors.js'
 
 class KeyDispatcher {
 	constructor() {
@@ -37,7 +38,8 @@ class KeyDispatcher {
 
 	shouldBubble(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);		
-		if (eventName == 'Meta-+' || eventName == 'Meta--') {
+		let clip = this.getClipboardCommand(eventName);
+		if (clip == 'zoom-in' || clip == 'zoom-out') {
 			return true;
 		}
 		if (hasMeta && (keycode == '2')) {
@@ -61,6 +63,7 @@ class KeyDispatcher {
 			return;
 		}
 		let eventName = this.getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichkey);
+		eventName = this.collapseUnboundChord(systemState.getGlobalSelectedNode(), eventName, keycode);
 
 		if (systemState.getGlobalSelectedNode().usingEditor()) {
 			// Will either return a keycode, or null.
@@ -78,20 +81,20 @@ class KeyDispatcher {
 		// there are a few special cases
 		if (eventName == '|') {
 			// vertical bar is unusable - 'internal use only'
-		} else if (eventName == 'Meta-z') {
+		} else if (this.getClipboardCommand(eventName) == 'undo') {
 			undo();
-		} else if (eventName == 'Meta-y') {
+		} else if (this.getClipboardCommand(eventName) == 'redo') {
 			redo();
-		} else if (eventName == 'Meta-s') {
+		} else if (this.getClipboardCommand(eventName) == 'save') {
 			let rn = manipulator.doSave();
 			if (rn) {
 				evaluateAndKeep(rn)
 			}
-		} else if (eventName == 'Meta-x') {
+		} else if (this.getClipboardCommand(eventName) == 'cut') {
 			manipulator.doCut();
-		} else if (eventName == 'Meta-c') {
+		} else if (this.getClipboardCommand(eventName) == 'copy') {
 			manipulator.doCopy();
-		} else if (eventName == 'Meta-v') {
+		} else if (this.getClipboardCommand(eventName) == 'paste') {
 			manipulator.doPaste();
 		} else if (eventName == 'Escape' && !systemState.getGlobalSelectedNode().usingEditor()) {
 			this.toggleGlobalExplodedMode();
@@ -131,7 +134,8 @@ class KeyDispatcher {
 									',' + 'whichkey=' + whichkey +
 									',' + 'hasShift=' + hasShift +
 									',' + 'hasCtrl=' + hasCtrl +
-									',' + 'hasMeta=' + hasMeta);
+									',' + 'hasMeta=' + hasMeta +
+									',' + 'hasAlt=' + hasAlt);
 				} else throw e;
 			}
 		}
@@ -151,10 +155,11 @@ class KeyDispatcher {
 
 	getActionNameFromGenericTable(sourceNode, eventName) {
 		let table = null;
+		let mac = this.isMacPlatform();
 		if (sourceNode.nex.isNexContainer()) {
-			table = this.getNexContainerGenericTable();
+			table = mac ? this.getMacNexContainerGenericTable() : this.getPcNexContainerGenericTable();
 		} else {
-			table = this.getNexGenericTable();
+			table = mac ? this.getMacNexGenericTable() : this.getPcNexGenericTable();
 		}
 		let f = table[eventName];
 		if (f) {
@@ -183,157 +188,74 @@ class KeyDispatcher {
 		return systemState.getGlobalSelectedNode().routeKeyToCurrentEditor(eventName);
 	}
 
+	// Names a physical key chord, literally. Modifiers in a fixed order (Ctrl,
+	// Alt, Meta, Shift) followed by the physical key from e.code. No platform
+	// knowledge, no aliasing one modifier onto another, and nothing rewritten
+	// afterwards -- whether ctrl means the same thing as alt is a question for
+	// the tables to answer, not this function.
+	//
+	// Keys pressed with no ctrl/alt/meta are named by e.key instead, because
+	// that is the text editors consume when you type ('a', '~', '!'), and
+	// because e.key already has shift applied to printable characters. Named
+	// keys (Tab, Enter, the arrows) don't encode shift that way, so they say so.
 	getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichKey) {
-		let eventName = this.getEventNameImpl(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichKey);
-		eventName = eventName.replace(/^Ctrl/, 'Alt');
-		return eventName;
+		if (!hasCtrl && !hasAlt && !hasMeta) {
+			if (keycode == ' ') {
+				return hasShift ? 'ShiftSpace' : keycode;
+			}
+			if (keycode.length == 1) {
+				return keycode;
+			}
+			return (hasShift ? 'Shift' : '') + keycode;
+		}
+		let name = '';
+		if (hasCtrl) name += 'Ctrl';
+		if (hasAlt) name += 'Alt';
+		if (hasMeta) name += 'Meta';
+		if (hasShift) name += 'Shift';
+		return name + whichKey;
 	}
 
-
-	getEventNameImpl(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichKey) {
-		// maybe I should rewrite this to do something like this:
-		// return `${shiftPrefix}${MetaPrefix}${keycode}`
-		// the only thing is I don't want it to return 'Shift!' or 'Shift$'
-		if (keycode == 'Enter' && hasMeta && hasShift) {
-			return 'ShiftMetaEnter';
-		} else if (keycode == 'Enter' && hasMeta) {
-			return 'MetaEnter';
-		} else if (keycode == 'Enter' && hasCtrl) {
-			return 'CtrlEnter';
-		} else if (keycode == 'Enter' && hasShift) {
-			return 'ShiftEnter';
-
-		} else if (keycode == 'ArrowDown' && hasAlt) {
-			return 'AltArrowDown';
-		} else if (keycode == 'ArrowUp' && hasAlt) {
-			return 'AltArrowUp';
-		} else if (keycode == 'ArrowRight' && hasAlt) {
-			return 'AltArrowRight';
-		} else if (keycode == 'ArrowLeft' && hasAlt) {
-			return 'AltArrowLeft';
-
-		} else if (keycode == 'ArrowDown' && hasCtrl) {
-			return 'CtrlArrowDown';
-		} else if (keycode == 'ArrowUp' && hasCtrl) {
-			return 'CtrlArrowUp';
-		} else if (keycode == 'ArrowRight' && hasCtrl) {
-			return 'CtrlArrowRight';
-		} else if (keycode == 'ArrowLeft' && hasCtrl) {
-			return 'CtrlArrowLeft';
-
-		} else if (keycode == 'ArrowDown' && hasShift) {
-			return 'ShiftArrowDown';
-		} else if (keycode == 'ArrowUp' && hasShift) {
-			return 'ShiftArrowUp';
-		} else if (keycode == 'ArrowRight' && hasShift) {
-			return 'ShiftArrowRight';
-		} else if (keycode == 'ArrowLeft' && hasShift) {
-			return 'ShiftArrowLeft';
-
-
-		} else if (keycode == 'Escape' && hasAlt && hasShift) {
-			return 'ShiftAltEscape';
-		} else if (keycode == 'Escape' && hasAlt) {
-			return 'AltEscape';
-		} else if (keycode == 'Escape' && hasShift) {
-			return 'ShiftEscape';
-
-		} else if (keycode == 'Tab' && hasShift && hasAlt) {
-			return 'ShiftAltTab';
-		} else if (keycode == 'Tab' && hasShift && hasCtrl) {
-			return 'ShiftCtrlTab';
-		} else if (keycode == 'Tab' && hasAlt) {
-			return 'AltTab';
-		} else if (keycode == 'Tab' && hasCtrl) {
-			return 'CtrlTab';
-		} else if (keycode == 'Tab' && hasShift) {
-			return 'ShiftTab';
-
-		} else if (keycode == ' ' && hasShift) {
-			return 'ShiftSpace';
-		} else if (keycode == ' ' && hasCtrl) {
-			return 'CtrlSpace';
-		} else if ((keycode == ' ' || whichKey == 'Space') && hasAlt) { // on a mac, option-space inserts ascii 160, non-breaking space
-			return 'AltSpace';
-		} else if (keycode == ' ' && hasMeta) {
-			return 'MetaSpace';
-
-		} else if (keycode == '`' && hasAlt && hasShift) {
-			return 'Alt~';
-		} else if (keycode == 'Dead' && whichKey == 'Backquote' && hasAlt && !hasShift) {
-			return 'Alt`';
-		} else if (whichKey == 'Digit6' && hasAlt && hasShift) {
-			return 'Alt^';
-		} else if (whichKey == 'Digit7' && hasAlt && hasShift) {
-			return 'Alt&';
-		} else if (whichKey == 'Digit8' && hasAlt && hasShift) {
-			return 'Alt*';
-		} else if (whichKey == 'Digit9' && hasAlt && hasShift) {
-			return 'Alt(';
-		} else if (whichKey == 'Comma' && hasAlt && hasShift) {
-			return 'Alt<';
-		} else if (whichKey == 'BracketLeft' && hasAlt && !hasShift) {
-			return 'Alt[';
-		} else if (whichKey == 'BracketLeft' && hasAlt && hasShift) {
-			return 'Alt{';
-		} else if (keycode == '`' && hasCtrl && hasShift) {
-			return 'Ctrl~';
-		} else if (keycode == 'Dead' && whichKey == 'Backquote' && hasCtrl && !hasShift) {
-			return 'Ctrl`';
-		} else if (whichKey == 'Digit7' && hasCtrl && hasShift) {
-			return 'Ctrl&';
-		} else if (whichKey == 'Digit8' && hasCtrl && hasShift) {
-			return 'Ctrl*';
-		} else if (whichKey == 'Digit9' && hasCtrl && hasShift) {
-			return 'Ctrl(';
-		} else if (whichKey == 'Digit0' && hasCtrl && hasShift) {
-			return 'Ctrl)';
-		} else if (whichKey == 'BracketLeft' && hasCtrl && !hasShift) {
-			return 'Ctrl[';
-		} else if (whichKey == 'BracketLeft' && hasCtrl && hasShift) {
-			return 'Ctrl{';
-
-		} else if (keycode == 'Backspace' && hasShift && hasAlt) {
-			return 'AltShiftBackspace';
-		} else if (keycode == 'Backspace' && hasShift && hasCtrl) {
-			return 'CtrlShiftBackspace';
-		} else if (keycode == 'Backspace' && hasShift) {
-			return 'ShiftBackspace';
-		} else if (keycode == 'Backspace' && hasCtrl) {
-			return 'CtrlBackspace';
-		} else if (keycode == 'Backspace' && hasAlt) {
-			return 'AltBackspace';
-
-		} else if (keycode == 'z' && hasCtrl) {
-			return 'Meta-z';
-		} else if (keycode == 'x' && hasCtrl) {
-			return 'Meta-x';
-		} else if (keycode == 'c' && hasCtrl) {
-			return 'Meta-c';
-		} else if (keycode == 'v' && hasCtrl) {
-			return 'Meta-v';
-		} else if (keycode == 's' && hasCtrl) {
-			return 'Meta-s';
-
-		} else if (keycode == 'z' && hasMeta) {
-			return 'Meta-z';
-		} else if (keycode == 'x' && hasMeta) {
-			return 'Meta-x';
-		} else if (keycode == 'c' && hasMeta) {
-			return 'Meta-c';
-		} else if (keycode == 'v' && hasMeta) {
-			return 'Meta-v';
-		} else if (keycode == 'y' && hasMeta) {
-			return 'Meta-y';
-		} else if (keycode == 's' && hasMeta) {
-			return 'Meta-s';
-		} else if (keycode == '=' && hasMeta) {
-			return 'Meta-+';
-		} else if (keycode == '-' && hasMeta) {
-			return 'Meta--';
-		} else {
-			return keycode;
+	// cmd on a mac and ctrl everywhere else both drive this family. Handled here
+	// rather than in the tables because these don't go through actionFactory.
+	getClipboardCommand(eventName) {
+		switch(eventName) {
+			case 'CtrlKeyZ': case 'MetaKeyZ': return 'undo';
+			case 'MetaKeyY': return 'redo';
+			case 'CtrlKeyS': case 'MetaKeyS': return 'save';
+			case 'CtrlKeyX': case 'MetaKeyX': return 'cut';
+			case 'CtrlKeyC': case 'MetaKeyC': return 'copy';
+			case 'CtrlKeyV': case 'MetaKeyV': return 'paste';
+			case 'MetaEqual': return 'zoom-in';
+			case 'MetaMinus': return 'zoom-out';
+			default: return null;
 		}
+	}
+
+	// Every chord gets a name, including chords nothing binds. A chord no table
+	// claims collapses back to the bare key, so ctrl-a still types an 'a' rather
+	// than arriving as 'CtrlKeyA', and alt-enter still evaluates. This is what
+	// the old namer's final `return keycode` did for every combination it hadn't
+	// enumerated; it is just stated in one place now instead of being the shape
+	// of a 150-line if/else chain.
+	collapseUnboundChord(sourceNode, eventName, keycode) {
+		if (eventName == keycode) return eventName;
+		if (!keycode) return eventName;
+		// Shift-only names ('ShiftArrowUp') were produced by the old namer too,
+		// and were left to reach the default handler. Only ctrl/alt/meta chords
+		// took the old `return keycode` path.
+		if (!/^(Ctrl|Alt|Meta)/.test(eventName)) return eventName;
+		if (this.getClipboardCommand(eventName)) return eventName;
+		// Editors consume the autocomplete chord by comparing the event name
+		// directly rather than through a table, so it must survive to reach them.
+		if (isAutocompleteChord(eventName)) return eventName;
+		if (this.getActionNameFromRegularTable(sourceNode, eventName)) return eventName;
+		if (this.getActionNameFromGenericTable(sourceNode, eventName)) return eventName;
+		return keycode;
+	}
+
+	isMacPlatform() {
+		return ('' + navigator.platform).substring(0, 3) == 'Mac';
 	}
 
 	toggleGlobalExplodedMode() {
@@ -342,141 +264,370 @@ class KeyDispatcher {
 		root.toggleRenderMode();
 	}
 
-	getNexContainerGenericTable() {
+	// Four tables: mac and pc, each for containers and for atoms. A table may map
+	// several chords to the same action -- that is how ctrl and alt both reach
+	// the wrap-inserts, stated outright instead of achieved by string surgery.
+	//
+	// Mac and pc currently list identical chords, because the old code aliased
+	// every Ctrl name onto its Alt twin before lookup, so both already worked on
+	// both platforms. They are separate now so they can diverge on purpose.
+	getMacNexContainerGenericTable() {
 		return {
-			'ShiftTab': 'select-parent',
-			'Tab': 'select-first-child-or-force-insert-inside-insertion-mode',
-
-			'ArrowUp': 'move-left-up',
-			'ArrowLeft': 'move-left-up',
-			'ArrowDown': 'move-right-down',
-			'ArrowRight': 'move-right-down',
-
-			'AltArrowUp': 'force-insert-before',
-			'AltArrowDown': 'force-insert-after',
-			'AltArrowLeft': 'force-insert-before',
-			'AltArrowRight': 'force-insert-after',
-
-			'AltTab': 'force-insert-inside',
-			'ShiftAltTab': 'force-insert-around',
-
-			'ShiftEnter': 'evaluate-nex-and-keep',
-			'Enter': 'evaluate-nex',
-
-			'ShiftSpace': 'toggle-dir',
-
-			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-			'AltShiftBackspace': 'unroll',
-
-
-			'LastBackspace': 'remove-selected-and-select-previous-sibling-if-empty',
-
-			'Backspace': 'start-main-editor',
-
-			'AltBackspace': 'start-main-editor',
-
-			'ShiftEscape': 'toggle-exploded',
-
-			'AltEnter': 'start-main-editor',
-
-			'~': 'insert-command-at-insertion-point',
-			'!': 'insert-bool-at-insertion-point',
-			'@': 'insert-symbol-at-insertion-point',
-			'#': 'insert-integer-at-insertion-point',
-			'$': 'insert-string-at-insertion-point',
-			'%': 'insert-float-at-insertion-point',
-			'^': 'insert-instantiator-at-insertion-point',
-			'&': 'insert-lambda-at-insertion-point',
-			'*': 'insert-deferredcommand-at-insertion-point',
-			'(': 'insert-org-at-insertion-point',
-			'[': 'insert-line-at-insertion-point',
-			'{': 'insert-doc-at-insertion-point',
-			'<': 'insert-word-at-insertion-point',
-			'_': 'insert-wavetable-at-insertion-point',
-
-			')': 'close-off-org',
-			']': 'close-off-line',
-			'}': 'close-off-doc',
-			'>': 'close-off-word',
-			'`': 'add-tag',
-
-			'\\': 'toggle-collapsed',
-
-
-			'Alt~': 'wrap-in-command',
-			'Alt&': 'wrap-in-lambda',
-			'Alt*': 'wrap-in-deferredcommand',
-			'Alt<': 'wrap-in-word',
-			'Alt(': 'wrap-in-org',
-			'Alt[': 'wrap-in-line',
-			'Alt{': 'wrap-in-doc',
-			'Alt^': 'wrap-in-instantiator',
-		};			
+			'ShiftTab':             'select-parent',
+			'Tab':                  'select-first-child-or-force-insert-inside-insertion-mode',
+			'ArrowUp':              'move-left-up',
+			'ArrowLeft':            'move-left-up',
+			'ArrowDown':            'move-right-down',
+			'ArrowRight':           'move-right-down',
+			'AltArrowUp':           'force-insert-before',
+			'CtrlArrowUp':          'force-insert-before',
+			'AltArrowDown':         'force-insert-after',
+			'CtrlArrowDown':        'force-insert-after',
+			'AltArrowLeft':         'force-insert-before',
+			'CtrlArrowLeft':        'force-insert-before',
+			'AltArrowRight':        'force-insert-after',
+			'CtrlArrowRight':       'force-insert-after',
+			'AltTab':               'force-insert-inside',
+			'CtrlTab':              'force-insert-inside',
+			'AltShiftTab':          'force-insert-around',
+			'CtrlShiftTab':         'force-insert-around',
+			'ShiftEnter':           'evaluate-nex-and-keep',
+			'Enter':                'evaluate-nex',
+			'ShiftSpace':           'toggle-dir',
+			'ShiftBackspace':       'remove-selected-and-select-previous-sibling',
+			'AltShiftBackspace':    'unroll',
+			'CtrlShiftBackspace':   'unroll',
+			'LastBackspace':        'remove-selected-and-select-previous-sibling-if-empty',
+			'Backspace':            'start-main-editor',
+			// ctrl-enter reached start-main-editor through the old Ctrl->Alt
+			// rewrite. alt-enter did not: nothing produced 'AltEnter', so it fell
+			// through to 'Enter' and evaluated. Preserving that asymmetry.
+			'CtrlEnter':            'start-main-editor',
+			'CtrlShiftEnter':       'start-main-editor',
+			'AltBackspace':         'start-main-editor',
+			'CtrlBackspace':        'start-main-editor',
+			'ShiftEscape':          'toggle-exploded',
+			'~':                    'insert-command-at-insertion-point',
+			'!':                    'insert-bool-at-insertion-point',
+			'@':                    'insert-symbol-at-insertion-point',
+			'#':                    'insert-integer-at-insertion-point',
+			'$':                    'insert-string-at-insertion-point',
+			'%':                    'insert-float-at-insertion-point',
+			'^':                    'insert-instantiator-at-insertion-point',
+			'&':                    'insert-lambda-at-insertion-point',
+			'*':                    'insert-deferredcommand-at-insertion-point',
+			'(':                    'insert-org-at-insertion-point',
+			'[':                    'insert-line-at-insertion-point',
+			'{':                    'insert-doc-at-insertion-point',
+			'<':                    'insert-word-at-insertion-point',
+			'_':                    'insert-wavetable-at-insertion-point',
+			')':                    'close-off-org',
+			']':                    'close-off-line',
+			'}':                    'close-off-doc',
+			'>':                    'close-off-word',
+			'`':                    'add-tag',
+			'\\':                 'toggle-collapsed',
+			'AltShiftBackquote':    'wrap-in-command',
+			'CtrlShiftBackquote':   'wrap-in-command',
+			'AltShiftDigit7':       'wrap-in-lambda',
+			'CtrlShiftDigit7':      'wrap-in-lambda',
+			'AltShiftDigit8':       'wrap-in-deferredcommand',
+			'CtrlShiftDigit8':      'wrap-in-deferredcommand',
+			'AltShiftComma':        'wrap-in-word',
+			'CtrlShiftComma':       'wrap-in-word',
+			'AltShiftDigit9':       'wrap-in-org',
+			'CtrlShiftDigit9':      'wrap-in-org',
+			'AltBracketLeft':       'wrap-in-line',
+			'CtrlBracketLeft':      'wrap-in-line',
+			'AltShiftBracketLeft':  'wrap-in-doc',
+			'CtrlShiftBracketLeft': 'wrap-in-doc',
+			'AltShiftDigit6':       'wrap-in-instantiator',
+			'CtrlShiftDigit6':      'wrap-in-instantiator',
+			'AltShiftArrowUp':     'force-insert-before',
+			'CtrlShiftArrowUp':    'force-insert-before',
+			'AltShiftArrowDown':   'force-insert-after',
+			'CtrlShiftArrowDown':  'force-insert-after',
+			'AltShiftArrowLeft':   'force-insert-before',
+			'CtrlShiftArrowLeft':  'force-insert-before',
+			'AltShiftArrowRight':  'force-insert-after',
+			'CtrlShiftArrowRight': 'force-insert-after',
+			'MetaShiftTab':       'select-parent',
+			'CtrlShiftEnter':     'evaluate-nex-and-keep',
+			'AltShiftEnter':      'evaluate-nex-and-keep',
+			'MetaShiftEnter':     'evaluate-nex-and-keep',
+			'CtrlShiftSpace':     'toggle-dir',
+			'AltShiftSpace':      'toggle-dir',
+			'MetaShiftSpace':     'toggle-dir',
+			'MetaShiftBackspace': 'remove-selected-and-select-previous-sibling',
+			'CtrlShiftEscape':    'toggle-exploded',
+			'AltShiftEscape':     'toggle-exploded',
+			'MetaShiftEscape':    'toggle-exploded',
+		};
 	}
 
-	getNexGenericTable() {
+	getPcNexContainerGenericTable() {
 		return {
-			'ShiftTab': 'select-parent',
-			'Tab': 'move-right-down',
+			'ShiftTab':             'select-parent',
+			'Tab':                  'select-first-child-or-force-insert-inside-insertion-mode',
+			'ArrowUp':              'move-left-up',
+			'ArrowLeft':            'move-left-up',
+			'ArrowDown':            'move-right-down',
+			'ArrowRight':           'move-right-down',
+			'AltArrowUp':           'force-insert-before',
+			'CtrlArrowUp':          'force-insert-before',
+			'AltArrowDown':         'force-insert-after',
+			'CtrlArrowDown':        'force-insert-after',
+			'AltArrowLeft':         'force-insert-before',
+			'CtrlArrowLeft':        'force-insert-before',
+			'AltArrowRight':        'force-insert-after',
+			'CtrlArrowRight':       'force-insert-after',
+			'AltTab':               'force-insert-inside',
+			'CtrlTab':              'force-insert-inside',
+			'AltShiftTab':          'force-insert-around',
+			'CtrlShiftTab':         'force-insert-around',
+			'ShiftEnter':           'evaluate-nex-and-keep',
+			'Enter':                'evaluate-nex',
+			'ShiftSpace':           'toggle-dir',
+			'ShiftBackspace':       'remove-selected-and-select-previous-sibling',
+			'AltShiftBackspace':    'unroll',
+			'CtrlShiftBackspace':   'unroll',
+			'LastBackspace':        'remove-selected-and-select-previous-sibling-if-empty',
+			'Backspace':            'start-main-editor',
+			// ctrl-enter reached start-main-editor through the old Ctrl->Alt
+			// rewrite. alt-enter did not: nothing produced 'AltEnter', so it fell
+			// through to 'Enter' and evaluated. Preserving that asymmetry.
+			'CtrlEnter':            'start-main-editor',
+			'CtrlShiftEnter':       'start-main-editor',
+			'AltBackspace':         'start-main-editor',
+			'CtrlBackspace':        'start-main-editor',
+			'ShiftEscape':          'toggle-exploded',
+			'~':                    'insert-command-at-insertion-point',
+			'!':                    'insert-bool-at-insertion-point',
+			'@':                    'insert-symbol-at-insertion-point',
+			'#':                    'insert-integer-at-insertion-point',
+			'$':                    'insert-string-at-insertion-point',
+			'%':                    'insert-float-at-insertion-point',
+			'^':                    'insert-instantiator-at-insertion-point',
+			'&':                    'insert-lambda-at-insertion-point',
+			'*':                    'insert-deferredcommand-at-insertion-point',
+			'(':                    'insert-org-at-insertion-point',
+			'[':                    'insert-line-at-insertion-point',
+			'{':                    'insert-doc-at-insertion-point',
+			'<':                    'insert-word-at-insertion-point',
+			'_':                    'insert-wavetable-at-insertion-point',
+			')':                    'close-off-org',
+			']':                    'close-off-line',
+			'}':                    'close-off-doc',
+			'>':                    'close-off-word',
+			'`':                    'add-tag',
+			'\\':                 'toggle-collapsed',
+			'AltShiftBackquote':    'wrap-in-command',
+			'CtrlShiftBackquote':   'wrap-in-command',
+			'AltShiftDigit7':       'wrap-in-lambda',
+			'CtrlShiftDigit7':      'wrap-in-lambda',
+			'AltShiftDigit8':       'wrap-in-deferredcommand',
+			'CtrlShiftDigit8':      'wrap-in-deferredcommand',
+			'AltShiftComma':        'wrap-in-word',
+			'CtrlShiftComma':       'wrap-in-word',
+			'AltShiftDigit9':       'wrap-in-org',
+			'CtrlShiftDigit9':      'wrap-in-org',
+			'AltBracketLeft':       'wrap-in-line',
+			'CtrlBracketLeft':      'wrap-in-line',
+			'AltShiftBracketLeft':  'wrap-in-doc',
+			'CtrlShiftBracketLeft': 'wrap-in-doc',
+			'AltShiftDigit6':       'wrap-in-instantiator',
+			'CtrlShiftDigit6':      'wrap-in-instantiator',
+			'AltShiftArrowUp':     'force-insert-before',
+			'CtrlShiftArrowUp':    'force-insert-before',
+			'AltShiftArrowDown':   'force-insert-after',
+			'CtrlShiftArrowDown':  'force-insert-after',
+			'AltShiftArrowLeft':   'force-insert-before',
+			'CtrlShiftArrowLeft':  'force-insert-before',
+			'AltShiftArrowRight':  'force-insert-after',
+			'CtrlShiftArrowRight': 'force-insert-after',
+			'MetaShiftTab':       'select-parent',
+			'CtrlShiftEnter':     'evaluate-nex-and-keep',
+			'AltShiftEnter':      'evaluate-nex-and-keep',
+			'MetaShiftEnter':     'evaluate-nex-and-keep',
+			'CtrlShiftSpace':     'toggle-dir',
+			'AltShiftSpace':      'toggle-dir',
+			'MetaShiftSpace':     'toggle-dir',
+			'MetaShiftBackspace': 'remove-selected-and-select-previous-sibling',
+			'CtrlShiftEscape':    'toggle-exploded',
+			'AltShiftEscape':     'toggle-exploded',
+			'MetaShiftEscape':    'toggle-exploded',
+		};
+	}
 
-			'ArrowUp': 'move-left-up',
-			'ArrowDown': 'move-right-down',
-			'ArrowLeft': 'move-left-up',
-			'ArrowRight': 'move-right-down',
+	getMacNexGenericTable() {
+		return {
+			'ShiftTab':             'select-parent',
+			'Tab':                  'move-right-down',
+			'ArrowUp':              'move-left-up',
+			'ArrowDown':            'move-right-down',
+			'ArrowLeft':            'move-left-up',
+			'ArrowRight':           'move-right-down',
+			'AltArrowUp':           'force-insert-before',
+			'CtrlArrowUp':          'force-insert-before',
+			'AltArrowDown':         'force-insert-after',
+			'CtrlArrowDown':        'force-insert-after',
+			'AltArrowLeft':         'force-insert-before',
+			'CtrlArrowLeft':        'force-insert-before',
+			'AltArrowRight':        'force-insert-after',
+			'CtrlArrowRight':       'force-insert-after',
+			'AltShiftTab':          'force-insert-around',
+			'CtrlShiftTab':         'force-insert-around',
+			'ShiftBackspace':       'remove-selected-and-select-previous-sibling',
+			'LastBackspace':        'remove-selected-and-select-previous-sibling',
+			'Backspace':            'start-main-editor',
+			// ctrl-enter reached start-main-editor through the old Ctrl->Alt
+			// rewrite. alt-enter did not: nothing produced 'AltEnter', so it fell
+			// through to 'Enter' and evaluated. Preserving that asymmetry.
+			'CtrlEnter':            'start-main-editor',
+			'CtrlShiftEnter':       'start-main-editor',
+			'AltBackspace':         'start-main-editor',
+			'CtrlBackspace':        'start-main-editor',
+			'ShiftEscape':          'toggle-exploded',
+			'ShiftEscape':          'toggle-exploded',
+			'Enter':                'evaluate-nex',
+			'~':                    'insert-command-at-insertion-point',
+			'!':                    'insert-bool-at-insertion-point',
+			'@':                    'insert-symbol-at-insertion-point',
+			'#':                    'insert-integer-at-insertion-point',
+			'$':                    'insert-string-at-insertion-point',
+			'%':                    'insert-float-at-insertion-point',
+			'^':                    'insert-instantiator-at-insertion-point',
+			'&':                    'insert-lambda-at-insertion-point',
+			'*':                    'insert-deferredcommand-at-insertion-point',
+			'(':                    'insert-org-at-insertion-point',
+			')':                    'close-off-org',
+			'[':                    'insert-line-at-insertion-point',
+			']':                    'close-off-line',
+			'{':                    'insert-doc-at-insertion-point',
+			'}':                    'close-off-doc',
+			'<':                    'insert-word-at-insertion-point',
+			'>':                    'close-off-word',
+			'_':                    'insert-wavetable-at-insertion-point',
+			'`':                    'add-tag',
+			'AltShiftBackquote':    'wrap-in-command',
+			'CtrlShiftBackquote':   'wrap-in-command',
+			'AltShiftDigit7':       'wrap-in-lambda',
+			'CtrlShiftDigit7':      'wrap-in-lambda',
+			'AltShiftDigit8':       'wrap-in-deferredcommand',
+			'CtrlShiftDigit8':      'wrap-in-deferredcommand',
+			'AltShiftComma':        'wrap-in-word',
+			'CtrlShiftComma':       'wrap-in-word',
+			'AltShiftDigit9':       'wrap-in-org',
+			'CtrlShiftDigit9':      'wrap-in-org',
+			'AltBracketLeft':       'wrap-in-line',
+			'CtrlBracketLeft':      'wrap-in-line',
+			'AltShiftBracketLeft':  'wrap-in-doc',
+			'CtrlShiftBracketLeft': 'wrap-in-doc',
+			'AltShiftDigit6':       'wrap-in-instantiator',
+			'CtrlShiftDigit6':      'wrap-in-instantiator',
+			'AltShiftArrowUp':     'force-insert-before',
+			'CtrlShiftArrowUp':    'force-insert-before',
+			'AltShiftArrowDown':   'force-insert-after',
+			'CtrlShiftArrowDown':  'force-insert-after',
+			'AltShiftArrowLeft':   'force-insert-before',
+			'CtrlShiftArrowLeft':  'force-insert-before',
+			'AltShiftArrowRight':  'force-insert-after',
+			'CtrlShiftArrowRight': 'force-insert-after',
+			'AltShiftBackspace':   'start-main-editor',
+			'CtrlShiftBackspace':  'start-main-editor',
+			'MetaShiftTab':       'select-parent',
+			'MetaShiftBackspace': 'remove-selected-and-select-previous-sibling',
+			'CtrlShiftEscape':    'toggle-exploded',
+			'AltShiftEscape':     'toggle-exploded',
+			'MetaShiftEscape':    'toggle-exploded',
+		};
+	}
 
-			'AltArrowUp': 'force-insert-before' ,
-			'AltArrowDown': 'force-insert-after',
-			'AltArrowLeft': 'force-insert-before',
-			'AltArrowRight': 'force-insert-after',
-
-			'ShiftAltTab': 'force-insert-around' ,
-
-			'ShiftBackspace': 'remove-selected-and-select-previous-sibling',
-			'LastBackspace': 'remove-selected-and-select-previous-sibling',
-
-			'Backspace': 'start-main-editor',
-
-			'AltBackspace': 'start-main-editor',
-
-			'ShiftEscape': 'toggle-exploded',
-
-			'AltEnter': 'start-main-editor',
-
-			'ShiftEscape': 'toggle-exploded',
-			'Enter': 'evaluate-nex',
-			'~': 'insert-command-at-insertion-point',
-			'!': 'insert-bool-at-insertion-point',
-			'@': 'insert-symbol-at-insertion-point',
-			'#': 'insert-integer-at-insertion-point',
-			'$': 'insert-string-at-insertion-point',
-			'%': 'insert-float-at-insertion-point',
-			'^': 'insert-instantiator-at-insertion-point',
-			'&': 'insert-lambda-at-insertion-point',
-			'*': 'insert-deferredcommand-at-insertion-point',
-
-			'(': 'insert-org-at-insertion-point',
-			')': 'close-off-org',
-			'[': 'insert-line-at-insertion-point',
-			']': 'close-off-line',
-			'{': 'insert-doc-at-insertion-point',
-			'}': 'close-off-doc',
-			'<': 'insert-word-at-insertion-point',
-			'>': 'close-off-word',
-
-			'_': 'insert-wavetable-at-insertion-point',
-
-			'`': 'add-tag',
-			'Alt~': 'wrap-in-command',
-			'Alt&': 'wrap-in-lambda',
-			'Alt*': 'wrap-in-deferredcommand',
-			'Alt<': 'wrap-in-word',
-			'Alt(': 'wrap-in-org',
-			'Alt[': 'wrap-in-line',
-			'Alt{': 'wrap-in-doc',
-			'Alt^': 'wrap-in-instantiator'
+	getPcNexGenericTable() {
+		return {
+			'ShiftTab':             'select-parent',
+			'Tab':                  'move-right-down',
+			'ArrowUp':              'move-left-up',
+			'ArrowDown':            'move-right-down',
+			'ArrowLeft':            'move-left-up',
+			'ArrowRight':           'move-right-down',
+			'AltArrowUp':           'force-insert-before',
+			'CtrlArrowUp':          'force-insert-before',
+			'AltArrowDown':         'force-insert-after',
+			'CtrlArrowDown':        'force-insert-after',
+			'AltArrowLeft':         'force-insert-before',
+			'CtrlArrowLeft':        'force-insert-before',
+			'AltArrowRight':        'force-insert-after',
+			'CtrlArrowRight':       'force-insert-after',
+			'AltShiftTab':          'force-insert-around',
+			'CtrlShiftTab':         'force-insert-around',
+			'ShiftBackspace':       'remove-selected-and-select-previous-sibling',
+			'LastBackspace':        'remove-selected-and-select-previous-sibling',
+			'Backspace':            'start-main-editor',
+			// ctrl-enter reached start-main-editor through the old Ctrl->Alt
+			// rewrite. alt-enter did not: nothing produced 'AltEnter', so it fell
+			// through to 'Enter' and evaluated. Preserving that asymmetry.
+			'CtrlEnter':            'start-main-editor',
+			'CtrlShiftEnter':       'start-main-editor',
+			'AltBackspace':         'start-main-editor',
+			'CtrlBackspace':        'start-main-editor',
+			'ShiftEscape':          'toggle-exploded',
+			'ShiftEscape':          'toggle-exploded',
+			'Enter':                'evaluate-nex',
+			'~':                    'insert-command-at-insertion-point',
+			'!':                    'insert-bool-at-insertion-point',
+			'@':                    'insert-symbol-at-insertion-point',
+			'#':                    'insert-integer-at-insertion-point',
+			'$':                    'insert-string-at-insertion-point',
+			'%':                    'insert-float-at-insertion-point',
+			'^':                    'insert-instantiator-at-insertion-point',
+			'&':                    'insert-lambda-at-insertion-point',
+			'*':                    'insert-deferredcommand-at-insertion-point',
+			'(':                    'insert-org-at-insertion-point',
+			')':                    'close-off-org',
+			'[':                    'insert-line-at-insertion-point',
+			']':                    'close-off-line',
+			'{':                    'insert-doc-at-insertion-point',
+			'}':                    'close-off-doc',
+			'<':                    'insert-word-at-insertion-point',
+			'>':                    'close-off-word',
+			'_':                    'insert-wavetable-at-insertion-point',
+			'`':                    'add-tag',
+			'AltShiftBackquote':    'wrap-in-command',
+			'CtrlShiftBackquote':   'wrap-in-command',
+			'AltShiftDigit7':       'wrap-in-lambda',
+			'CtrlShiftDigit7':      'wrap-in-lambda',
+			'AltShiftDigit8':       'wrap-in-deferredcommand',
+			'CtrlShiftDigit8':      'wrap-in-deferredcommand',
+			'AltShiftComma':        'wrap-in-word',
+			'CtrlShiftComma':       'wrap-in-word',
+			'AltShiftDigit9':       'wrap-in-org',
+			'CtrlShiftDigit9':      'wrap-in-org',
+			'AltBracketLeft':       'wrap-in-line',
+			'CtrlBracketLeft':      'wrap-in-line',
+			'AltShiftBracketLeft':  'wrap-in-doc',
+			'CtrlShiftBracketLeft': 'wrap-in-doc',
+			'AltShiftDigit6':       'wrap-in-instantiator',
+			'CtrlShiftDigit6':      'wrap-in-instantiator',
+			'AltShiftArrowUp':     'force-insert-before',
+			'CtrlShiftArrowUp':    'force-insert-before',
+			'AltShiftArrowDown':   'force-insert-after',
+			'CtrlShiftArrowDown':  'force-insert-after',
+			'AltShiftArrowLeft':   'force-insert-before',
+			'CtrlShiftArrowLeft':  'force-insert-before',
+			'AltShiftArrowRight':  'force-insert-after',
+			'CtrlShiftArrowRight': 'force-insert-after',
+			'AltShiftBackspace':   'start-main-editor',
+			'CtrlShiftBackspace':  'start-main-editor',
+			'MetaShiftTab':       'select-parent',
+			'MetaShiftBackspace': 'remove-selected-and-select-previous-sibling',
+			'CtrlShiftEscape':    'toggle-exploded',
+			'AltShiftEscape':     'toggle-exploded',
+			'MetaShiftEscape':    'toggle-exploded',
 		};
 	}
 }
+
 
 const keyDispatcher = new KeyDispatcher();
 
