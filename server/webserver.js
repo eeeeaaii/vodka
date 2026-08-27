@@ -24,8 +24,8 @@ const querystring = require('querystring');
 const { v4: uuidv4 } = require('uuid');
 
 const hostname = '127.0.0.1';
-const endpoint_hostname = 'localhost:3000';
-const port = 3000;
+const port = Number(process.env.VODKA_PORT) || 3000;
+const endpoint_hostname = 'localhost:' + port;
 
 const writeprotectionfile = 'WRITE_PROTECTED_SESSION.9999999999';
 
@@ -319,7 +319,7 @@ function getMimeTypeFromExt(fname) {
 
 function setLocalWebEnv() {
 	webenv_vars.canSaveOverLibraries = true;
-	webenv_vars.redirectHostname = 'localhost:3000';
+	webenv_vars.redirectHostname = 'localhost:' + port;
 	webenv_vars.isLocal = true;
 }
 
