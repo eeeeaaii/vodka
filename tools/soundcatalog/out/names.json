@@ -1,0 +1,1281 @@
+{
+ "Bank 1": {
+  "machine": "606 DRM",
+  "desc": "Roland TR-606 Drumatix",
+  "kind": "analog drum machine",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Open Hi-Hat",
+   "chan-005": "Cymbal",
+   "chan-006": "Low Tom",
+   "chan-007": "High Tom",
+   "chan-008": "Bass Drum (long decay)"
+  }
+ },
+ "Bank 2": {
+  "machine": "707 Dm1",
+  "desc": "Roland TR-707 kit 1",
+  "kind": "digital drum machine",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Open Hi-Hat",
+   "chan-005": "Rimshot",
+   "chan-006": "Cowbell",
+   "chan-007": "Low Tom",
+   "chan-008": "Crash Cymbal"
+  }
+ },
+ "Bank 3": {
+  "machine": "707 Dm2",
+  "desc": "Roland TR-707 kit 2",
+  "kind": "digital drum machine",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Tambourine",
+   "chan-005": "Hand Clap",
+   "chan-006": "Low Tom",
+   "chan-007": "Mid Tom",
+   "chan-008": "Crash Cymbal"
+  }
+ },
+ "Bank 4": {
+  "machine": "727 Dm1",
+  "desc": "Roland TR-727 Latin percussion, kit 1",
+  "kind": "digital percussion machine",
+  "channels": {
+   "chan-001": "Low Conga",
+   "chan-002": "Low Timbale",
+   "chan-003": "High Bongo",
+   "chan-004": "Cabasa",
+   "chan-005": "Agogo Bell",
+   "chan-006": "Maracas",
+   "chan-007": "Star Chime",
+   "chan-008": "Low Conga (alt)"
+  }
+ },
+ "Bank 5": {
+  "machine": "727 Dm2",
+  "desc": "Roland TR-727 Latin percussion, kit 2",
+  "kind": "digital percussion machine",
+  "channels": {
+   "chan-001": "High Conga",
+   "chan-002": "Low Timbale",
+   "chan-003": "Cabasa",
+   "chan-004": "Agogo Bell",
+   "chan-005": "Tuned Metallic Tone",
+   "chan-006": "Woodblock",
+   "chan-007": "Low Bongo",
+   "chan-008": "Star Chime"
+  }
+ },
+ "Bank 6": {
+  "machine": "808 DRM",
+  "desc": "Roland TR-808",
+  "kind": "analog drum machine",
+  "channels": {
+   "chan-001": "Bass Drum (long decay)",
+   "chan-002": "Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Open Hi-Hat",
+   "chan-005": "Hand Clap",
+   "chan-006": "Cowbell",
+   "chan-007": "Low Tom",
+   "chan-008": "Cymbal"
+  }
+ },
+ "Bank 7": {
+  "machine": "909 DRM",
+  "desc": "Roland TR-909",
+  "kind": "hybrid drum machine",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Open Hi-Hat",
+   "chan-005": "Hand Clap",
+   "chan-006": "Mid Tom",
+   "chan-007": "Low Tom",
+   "chan-008": "Crash Cymbal"
+  }
+ },
+ "Bank 8": {
+  "machine": "CR78",
+  "desc": "Roland CompuRhythm CR-78",
+  "kind": "analog preset rhythm box",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare",
+   "chan-003": "Hi-Hat",
+   "chan-004": "Cymbal",
+   "chan-005": "Metallic Beat",
+   "chan-006": "Tambourine",
+   "chan-007": "Conga",
+   "chan-008": "Claves"
+  }
+ },
+ "Bank 9": {
+  "machine": "CR78 VR",
+  "desc": "Roland CR-78, variation kit",
+  "kind": "analog preset rhythm box",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare",
+   "chan-003": "Hi-Hat",
+   "chan-004": "Cymbal",
+   "chan-005": "Hi-Hat (tight)",
+   "chan-006": "Metallic Beat",
+   "chan-007": "Bell",
+   "chan-008": "Conga (long)"
+  }
+ },
+ "Bank 10": {
+  "machine": "Blck D1",
+  "desc": "unidentified drum machine, kit 1",
+  "kind": "drum machine",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Open Hi-Hat",
+   "chan-005": "Rimshot",
+   "chan-006": "Bell",
+   "chan-007": "Tom",
+   "chan-008": "Cymbal"
+  }
+ },
+ "Bank 11": {
+  "machine": "Blck D2",
+  "desc": "unidentified drum machine, kit 2",
+  "kind": "drum machine",
+  "channels": {
+   "chan-001": "Bass Drum (long decay)",
+   "chan-002": "Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Open Hi-Hat",
+   "chan-005": "Shaker",
+   "chan-006": "Blip / Perc",
+   "chan-007": "Cymbal",
+   "chan-008": "Bell"
+  }
+ },
+ "Bank 12": {
+  "machine": "Boss 110",
+  "desc": "Boss DR-110 Dr. Rhythm",
+  "kind": "analog drum machine",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Cymbal",
+   "chan-005": "Hand Clap",
+   "chan-006": "Open Hi-Hat",
+   "chan-007": "Bass Tone (8s sustained)",
+   "chan-008": "Pad / Organ Tone (10s)"
+  }
+ },
+ "Bank 13": {
+  "machine": "R70 DRM",
+  "desc": "Roland R-70",
+  "kind": "digital drum machine",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Open Hi-Hat",
+   "chan-005": "Snare (alt)",
+   "chan-006": "Tom",
+   "chan-007": "Tambourine",
+   "chan-008": "Crash Cymbal"
+  }
+ },
+ "Bank 14": {
+  "machine": "MFB 522",
+  "desc": "MFB-522 analog drum machine",
+  "kind": "analog drum machine",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Open Hi-Hat",
+   "chan-005": "Hand Clap",
+   "chan-006": "Rimshot / Click",
+   "chan-007": "Tom",
+   "chan-008": "Cymbal"
+  }
+ },
+ "Bank 15": {
+  "machine": "RX5 DRM",
+  "desc": "Yamaha RX5",
+  "kind": "digital drum machine",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Open Hi-Hat",
+   "chan-005": "Rimshot",
+   "chan-006": "Low Tom",
+   "chan-007": "Floor Tom",
+   "chan-008": "Crash Cymbal"
+  }
+ },
+ "Bank 16": {
+  "machine": "DrmTrks",
+  "desc": "Sequential Circuits DrumTraks",
+  "kind": "digital drum machine",
+  "note": "also contains nested duplicates under Bank 16/N/ - byte-identical audio, safe to remove",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Open Hi-Hat",
+   "chan-005": "Hand Clap",
+   "chan-006": "Tambourine",
+   "chan-007": "Tom",
+   "chan-008": "Crash Cymbal"
+  }
+ },
+ "Bank 17": {
+  "machine": "Kw-R50e",
+  "desc": "Kawai R-50e",
+  "kind": "digital drum machine",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare",
+   "chan-003": "Rimshot",
+   "chan-004": "Snare (alt)",
+   "chan-005": "Tom",
+   "chan-006": "Perc Hit",
+   "chan-007": "Bass Tone",
+   "chan-008": "Tonal Stab"
+  }
+ },
+ "Bank 18": {
+  "machine": "Linn DRM",
+  "desc": "LinnDrum",
+  "kind": "digital drum machine",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Open Hi-Hat",
+   "chan-005": "Hand Clap",
+   "chan-006": "Tambourine",
+   "chan-007": "Tom",
+   "chan-008": "Cowbell"
+  }
+ },
+ "Bank 19": {
+  "machine": "RZ-1 DRM",
+  "desc": "Casio RZ-1",
+  "kind": "digital drum machine",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Open Hi-Hat",
+   "chan-005": "Woodblock",
+   "chan-006": "Hand Clap",
+   "chan-007": "Ride Cymbal",
+   "chan-008": "Vocal Perc"
+  }
+ },
+ "Bank 20": {
+  "machine": "R8 MATE",
+  "desc": "Roland R-8 Mate",
+  "kind": "digital drum machine",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare",
+   "chan-003": "Hand Clap",
+   "chan-004": "Closed Hi-Hat",
+   "chan-005": "Bass Drum (alt)",
+   "chan-006": "Bell / Chime",
+   "chan-007": "Floor Tom",
+   "chan-008": "Sub Kick"
+  }
+ },
+ "Bank 21": {
+  "machine": "HR-16",
+  "desc": "Alesis HR-16",
+  "kind": "digital drum machine",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Hand Clap",
+   "chan-005": "Triangle",
+   "chan-006": "Cowbell",
+   "chan-007": "Ride Cymbal",
+   "chan-008": "Crash Cymbal"
+  }
+ },
+ "Bank 22": {
+  "machine": "GenMID-1",
+  "desc": "General MIDI instrument set 1",
+  "kind": "mixed instrument set",
+  "channels": {
+   "chan-001": "Low Tom / Bass",
+   "chan-002": "Perc Hit",
+   "chan-003": "Noise Blip",
+   "chan-004": "Synth Blip",
+   "chan-005": "Texture",
+   "chan-006": "Electric Piano",
+   "chan-007": "String / Choir Pad",
+   "chan-008": "Tonal Sustain"
+  }
+ },
+ "Bank 23": {
+  "machine": "GenMID-2",
+  "desc": "General MIDI instrument set 2",
+  "kind": "tonal instrument set",
+  "channels": {
+   "chan-001": "Electric Piano",
+   "chan-002": "Chime / Mallet",
+   "chan-003": "Choir",
+   "chan-004": "String Section",
+   "chan-005": "Bell Drone",
+   "chan-006": "Synth Blip",
+   "chan-007": "Synth Lead",
+   "chan-008": "Plucked String"
+  }
+ },
+ "Bank 24": {
+  "machine": "MT70-DRM",
+  "desc": "Roland MT-70",
+  "kind": "digital drum machine",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Snare (noisy)",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Open Hi-Hat",
+   "chan-005": "Cymbal",
+   "chan-006": "Shaker",
+   "chan-007": "Tambourine",
+   "chan-008": "Vibraphone"
+  }
+ },
+ "Bank 25": {
+  "machine": "M5N Dm1",
+  "desc": "unidentified, kit 1",
+  "kind": "noisy / industrial drum kit",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Noise Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Snare",
+   "chan-005": "Glitch Perc",
+   "chan-006": "Metallic Crash",
+   "chan-007": "Noise Perc",
+   "chan-008": "Bell Perc"
+  }
+ },
+ "Bank 26": {
+  "machine": "M5N Dm2",
+  "desc": "unidentified, kit 2",
+  "kind": "noisy / industrial drum kit",
+  "channels": {
+   "chan-001": "Distorted Kick",
+   "chan-002": "Kick (alt)",
+   "chan-003": "Perc Hit",
+   "chan-004": "Noise Snare",
+   "chan-005": "Noise Hit",
+   "chan-006": "Low Perc",
+   "chan-007": "Noise Sweep",
+   "chan-008": "Low Hit"
+  }
+ },
+ "Bank 27": {
+  "machine": "MUMZ-01",
+  "desc": "unidentified electronic kit 1",
+  "kind": "experimental electronic",
+  "channels": {
+   "chan-001": "Distorted Kick",
+   "chan-002": "Low Perc",
+   "chan-003": "Tick / Hat",
+   "chan-004": "Clap / Noise Burst",
+   "chan-005": "Vocal Perc",
+   "chan-006": "Wobble Blip",
+   "chan-007": "Gong / Bell",
+   "chan-008": "Pitch-Bend Bass"
+  }
+ },
+ "Bank 28": {
+  "machine": "MUMZ-02",
+  "desc": "unidentified electronic kit 2",
+  "kind": "experimental electronic",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Noise Hat",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Buzz Blip",
+   "chan-005": "Drone Perc",
+   "chan-006": "Sustained Buzz",
+   "chan-007": "Organ Drone",
+   "chan-008": "Square Blip"
+  }
+ },
+ "Bank 29": {
+  "machine": "MUMZ-03",
+  "desc": "unidentified electronic kit 3",
+  "kind": "experimental electronic",
+  "channels": {
+   "chan-001": "Bass Drum",
+   "chan-002": "Crash / Open Hat",
+   "chan-003": "Low Perc",
+   "chan-004": "Hand Clap",
+   "chan-005": "Noise Texture",
+   "chan-006": "Gong (4s)",
+   "chan-007": "Cowbell / Bell",
+   "chan-008": "Saw Bass Tone"
+  }
+ },
+ "Bank 30": {
+  "machine": "ALM-TK1",
+  "desc": "ALM toolkit 1",
+  "kind": "electronic drum kit",
+  "channels": {
+   "chan-001": "Kick (noisy)",
+   "chan-002": "Snare",
+   "chan-003": "Click / Rim",
+   "chan-004": "Woodblock",
+   "chan-005": "Conga / Perc",
+   "chan-006": "Synth Noise Hit",
+   "chan-007": "Rimshot",
+   "chan-008": "Low Perc"
+  }
+ },
+ "Bank 31": {
+  "machine": "ALM-TK2",
+  "desc": "ALM toolkit 2",
+  "kind": "electronic drum kit",
+  "channels": {
+   "chan-001": "Kick",
+   "chan-002": "Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Open Hi-Hat",
+   "chan-005": "Snare (alt)",
+   "chan-006": "Noise Burst",
+   "chan-007": "Tom",
+   "chan-008": "Rimshot"
+  }
+ },
+ "Bank 32": {
+  "machine": "ALM-TK3",
+  "desc": "ALM toolkit 3",
+  "kind": "electronic drum kit",
+  "channels": {
+   "chan-001": "Kick",
+   "chan-002": "Snare",
+   "chan-003": "Open Hi-Hat",
+   "chan-004": "Crash Cymbal",
+   "chan-005": "Snare (alt)",
+   "chan-006": "Noise Hit",
+   "chan-007": "Tom",
+   "chan-008": "Floor Tom"
+  }
+ },
+ "Bank 33": {
+  "machine": "ALM-TK4",
+  "desc": "ALM toolkit 4",
+  "kind": "electronic drum kit",
+  "channels": {
+   "chan-001": "Kick",
+   "chan-002": "Snare",
+   "chan-003": "Hi-Hat",
+   "chan-004": "Crash / Noise",
+   "chan-005": "Rimshot",
+   "chan-006": "Perc Hit",
+   "chan-007": "Tom",
+   "chan-008": "Vocal / Noise Tail"
+  }
+ },
+ "Bank 34": {
+  "machine": "ALM-TK5",
+  "desc": "ALM toolkit 5",
+  "kind": "electronic drum kit",
+  "channels": {
+   "chan-001": "Kick (long)",
+   "chan-002": "Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Open Hi-Hat",
+   "chan-005": "Low Perc",
+   "chan-006": "Hand Clap",
+   "chan-007": "Conga",
+   "chan-008": "Snare (alt)"
+  }
+ },
+ "Bank 35": {
+  "machine": "ALM-DN1",
+  "desc": "ALM distorted/drone kit 1",
+  "kind": "distorted electronic",
+  "channels": {
+   "chan-001": "Distorted Kick",
+   "chan-002": "Noise Hat",
+   "chan-003": "Noise Snare",
+   "chan-004": "Tonal Tom",
+   "chan-005": "Distorted Bass Hit",
+   "chan-006": "Saw Bass Hit",
+   "chan-007": "Wobble Bass",
+   "chan-008": "Noise Sweep"
+  }
+ },
+ "Bank 36": {
+  "machine": "ALM-DN2",
+  "desc": "ALM distorted/drone kit 2",
+  "kind": "distorted electronic",
+  "channels": {
+   "chan-001": "Distorted Kick",
+   "chan-002": "Noise Snare",
+   "chan-003": "Pitch-Bend Kick",
+   "chan-004": "Glitch Bass",
+   "chan-005": "Harsh Tone",
+   "chan-006": "Glitch Perc",
+   "chan-007": "Noisy Pluck",
+   "chan-008": "Distorted Bass"
+  },
+  "note": "also contains nested files under Bank 36/N/ - these are DIFFERENT (shorter) audio, not duplicates; not catalogued"
+ },
+ "Bank 37": {
+  "machine": "ALMSID-1",
+  "desc": "Commodore 64 SID chip",
+  "kind": "chiptune / synth",
+  "channels": {
+   "chan-001": "SID Saw Bass",
+   "chan-002": "SID Noise",
+   "chan-003": "SID Lead",
+   "chan-004": "SID Bass Sweep",
+   "chan-005": "SID Pad",
+   "chan-006": "SID Chime",
+   "chan-007": "SID Wobble Bass",
+   "chan-008": "SID Pluck"
+  }
+ },
+ "Bank 38": {
+  "machine": "SLSUK-01",
+  "desc": "sample kit, UK set 1",
+  "kind": "electronic drum kit",
+  "channels": {
+   "chan-001": "Kick",
+   "chan-002": "Snare",
+   "chan-003": "Noise Snare",
+   "chan-004": "Crash / Noise",
+   "chan-005": "Rimshot",
+   "chan-006": "Kick (alt)",
+   "chan-007": "Tambourine",
+   "chan-008": "FX Sweep"
+  }
+ },
+ "Bank 39": {
+  "machine": "SLSUK-02",
+  "desc": "sample kit, UK set 2",
+  "kind": "electronic drum kit",
+  "channels": {
+   "chan-001": "Kick",
+   "chan-002": "Snare",
+   "chan-003": "Hi-Hat",
+   "chan-004": "Perc Click",
+   "chan-005": "Rimshot",
+   "chan-006": "Hi-Hat (alt)",
+   "chan-007": "Pad Hit",
+   "chan-008": "Bass Tone"
+  }
+ },
+ "Bank 40": {
+  "machine": "SLS-001",
+  "desc": "sample kit 1",
+  "kind": "electronic drum kit",
+  "channels": {
+   "chan-001": "Kick (long)",
+   "chan-002": "Noise Hat",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Open Hi-Hat",
+   "chan-005": "Perc Hit",
+   "chan-006": "Noise Burst",
+   "chan-007": "Bass Blip",
+   "chan-008": "FX Pitch"
+  }
+ },
+ "Bank 41": {
+  "machine": "SLS-002",
+  "desc": "sample kit 2",
+  "kind": "electronic drum kit",
+  "channels": {
+   "chan-001": "Kick",
+   "chan-002": "Glitch Snare",
+   "chan-003": "Closed Hi-Hat",
+   "chan-004": "Open Hi-Hat",
+   "chan-005": "Snare",
+   "chan-006": "Tonal Kick",
+   "chan-007": "Bell",
+   "chan-008": "Distorted Bass"
+  }
+ },
+ "Bank 42": {
+  "machine": "SLS-003",
+  "desc": "sample kit 3",
+  "kind": "electronic drum kit",
+  "channels": {
+   "chan-001": "Kick",
+   "chan-002": "Noise Hat",
+   "chan-003": "Low Blip",
+   "chan-004": "Perc Hit",
+   "chan-005": "Snare",
+   "chan-006": "FX Sweep",
+   "chan-007": "Kick (alt)",
+   "chan-008": "Snare (alt)"
+  }
+ },
+ "Bank 43": {
+  "machine": "SLS-004",
+  "desc": "sample kit 4",
+  "kind": "electronic drum kit",
+  "channels": {
+   "chan-001": "Kick",
+   "chan-002": "Snare",
+   "chan-003": "Hi-Hat",
+   "chan-004": "Perc Hit",
+   "chan-005": "Noise Snare",
+   "chan-006": "Tom",
+   "chan-007": "Wobble FX",
+   "chan-008": "Noise Hat"
+  }
+ },
+ "Bank 44": {
+  "machine": "SLS-005",
+  "desc": "sample kit 5",
+  "kind": "electronic drum kit",
+  "channels": {
+   "chan-001": "Kick",
+   "chan-002": "Noise Snare",
+   "chan-003": "Hi-Hat",
+   "chan-004": "Woodblock",
+   "chan-005": "Perc Hit",
+   "chan-006": "Kick (alt)",
+   "chan-007": "Click",
+   "chan-008": "Low Perc"
+  }
+ },
+ "Bank 45": {
+  "machine": "FLAX-001",
+  "desc": "tuned melodic set 1 (many pitched to C4)",
+  "kind": "tonal instrument set",
+  "channels": {
+   "chan-001": "Mallet Tone",
+   "chan-002": "Struck Tone",
+   "chan-003": "Synth Tone",
+   "chan-004": "Chime / Xylophone",
+   "chan-005": "Plucked Tone (C4)",
+   "chan-006": "Saw Pluck (C4)",
+   "chan-007": "Vibraphone (C4)",
+   "chan-008": "Chime (C4)"
+  }
+ },
+ "Bank 46": {
+  "machine": "FLAX-002",
+  "desc": "tuned melodic set 2",
+  "kind": "tonal instrument set",
+  "channels": {
+   "chan-001": "Guitar Pluck",
+   "chan-002": "Marimba Tone",
+   "chan-003": "Square Tone",
+   "chan-004": "Vocal Pad",
+   "chan-005": "Sine Tone",
+   "chan-006": "Bright Noise / Triangle",
+   "chan-007": "Chime",
+   "chan-008": "Marimba"
+  }
+ },
+ "Bank 47": {
+  "machine": "FLAX-003",
+  "desc": "tuned/percussive set 3",
+  "kind": "mixed percussion",
+  "channels": {
+   "chan-001": "Low Tom",
+   "chan-002": "Snare / Noise",
+   "chan-003": "Mid Perc",
+   "chan-004": "Tom",
+   "chan-005": "Distorted Tom",
+   "chan-006": "Floor Tom",
+   "chan-007": "Bright Noise",
+   "chan-008": "Crash / Noise"
+  }
+ },
+ "Bank 48": {
+  "machine": "SB-001",
+  "desc": "sampled instrument set 1",
+  "kind": "guitar / FX",
+  "channels": {
+   "chan-001": "Glitch FX",
+   "chan-002": "Guitar Bend",
+   "chan-003": "Bass Hit",
+   "chan-004": "Distorted Guitar",
+   "chan-005": "Vocal / Guitar",
+   "chan-006": "Wobble Bass",
+   "chan-007": "Reverb Guitar",
+   "chan-008": "Pad (10s)"
+  }
+ },
+ "Bank 49": {
+  "machine": "SB-002",
+  "desc": "sampled instrument set 2",
+  "kind": "granular / noise",
+  "channels": {
+   "chan-001": "Glitch Noise",
+   "chan-002": "Bass Sweep",
+   "chan-003": "Noise Snare",
+   "chan-004": "Granular Texture",
+   "chan-005": "Granular Wash",
+   "chan-006": "Perc Blip",
+   "chan-007": "Boomy Bass",
+   "chan-008": "Glitch Hit"
+  }
+ },
+ "Bank 50": {
+  "machine": "SB-003",
+  "desc": "sampled instrument set 3",
+  "kind": "long synth bass / drones",
+  "channels": {
+   "chan-001": "Bass Sweep (7s)",
+   "chan-002": "Wobble Tone",
+   "chan-003": "Noisy Bass Drone",
+   "chan-004": "Glitch Tone",
+   "chan-005": "Pad Sweep",
+   "chan-006": "Noise Texture",
+   "chan-007": "Harsh Drone",
+   "chan-008": "Wobble Bass"
+  }
+ },
+ "Bank 51": {
+  "machine": "SZAM-001",
+  "desc": "unidentified electronic set",
+  "kind": "bass / noise",
+  "channels": {
+   "chan-001": "Bass Hit (long)",
+   "chan-002": "Sub Drone",
+   "chan-003": "Noise Bass",
+   "chan-004": "Low Blip",
+   "chan-005": "Vocal Blip",
+   "chan-006": "Pitch Sweep",
+   "chan-007": "Glitch Bass",
+   "chan-008": "Granular Noise"
+  }
+ },
+ "Bank 52": {
+  "machine": "DA-DOMP1",
+  "desc": "hand percussion set 1",
+  "kind": "acoustic percussion",
+  "channels": {
+   "chan-001": "Low Conga",
+   "chan-002": "Woodblock",
+   "chan-003": "Bongo",
+   "chan-004": "Bell / Tambourine",
+   "chan-005": "Woodblock (alt)",
+   "chan-006": "Sustained Perc",
+   "chan-007": "Xylophone",
+   "chan-008": "Tonal Drone (6s)"
+  }
+ },
+ "Bank 53": {
+  "machine": "DA-DOMP2",
+  "desc": "hand percussion set 2",
+  "kind": "acoustic percussion",
+  "channels": {
+   "chan-001": "Low Conga",
+   "chan-002": "Conga",
+   "chan-003": "Noise Perc",
+   "chan-004": "Resonant Bell",
+   "chan-005": "Distorted Perc",
+   "chan-006": "Woodblock",
+   "chan-007": "Granular Noise",
+   "chan-008": "Wobble Perc"
+  }
+ },
+ "Bank 54": {
+  "machine": "NYZ-FLD1",
+  "desc": "field recordings",
+  "kind": "field recording / texture",
+  "channels": {
+   "chan-001": "Field Texture (distorted)",
+   "chan-002": "Field Texture (bright)",
+   "chan-003": "Field Recording",
+   "chan-004": "Field Recording (bowed)",
+   "chan-005": "Field Noise",
+   "chan-006": "Field Drone",
+   "chan-007": "Field Drone (alt)",
+   "chan-008": "Field Granular"
+  }
+ },
+ "Bank 55": {
+  "machine": "NYZ-SYN1",
+  "desc": "synth pads, all 11s",
+  "kind": "pad / drone",
+  "channels": {
+   "chan-001": "Tonal Pad",
+   "chan-002": "Noise Pad",
+   "chan-003": "Dark Pad",
+   "chan-004": "Organ Pad",
+   "chan-005": "Bass Pad",
+   "chan-006": "Drone",
+   "chan-007": "Evolving Pad",
+   "chan-008": "Swell Pad"
+  }
+ },
+ "Bank 56": {
+  "machine": "NYZ-SYN2",
+  "desc": "synth pads and tones",
+  "kind": "pad / tonal",
+  "channels": {
+   "chan-001": "Bright Pad",
+   "chan-002": "Bass Pad",
+   "chan-003": "Drone",
+   "chan-004": "Bass Tone",
+   "chan-005": "Electric Piano",
+   "chan-006": "Electric Piano (C4)",
+   "chan-007": "Organ Tone",
+   "chan-008": "Bell Tone"
+  }
+ },
+ "Bank 57": {
+  "machine": "NYZ-SYN3",
+  "desc": "plucked synth tones (mostly C3)",
+  "kind": "tonal instrument set",
+  "channels": {
+   "chan-001": "Saw Pluck",
+   "chan-002": "Electric Piano",
+   "chan-003": "Gong Tone",
+   "chan-004": "Guitar Tone",
+   "chan-005": "Marimba",
+   "chan-006": "Synth Pluck",
+   "chan-007": "Bass Chime",
+   "chan-008": "Vibraphone"
+  }
+ },
+ "Bank 58": {
+  "machine": "NYZ-SYN4",
+  "desc": "plucked synth tones (mostly C2)",
+  "kind": "tonal instrument set",
+  "channels": {
+   "chan-001": "Bass Guitar",
+   "chan-002": "Vibraphone",
+   "chan-003": "Synth Bass",
+   "chan-004": "Marimba",
+   "chan-005": "Bass Marimba",
+   "chan-006": "Bell",
+   "chan-007": "Bright Bell",
+   "chan-008": "Noise Pluck (7.5s)"
+  }
+ },
+ "Bank 59": {
+  "machine": "CS80 C4",
+  "desc": "Yamaha CS-80, all ~10s",
+  "kind": "analog synth pads",
+  "channels": {
+   "chan-001": "CS-80 Dark Pad",
+   "chan-002": "CS-80 Swell Pad",
+   "chan-003": "CS-80 Organ Pad",
+   "chan-004": "CS-80 Bright Pad",
+   "chan-005": "CS-80 Bass Pad",
+   "chan-006": "CS-80 Tonal Pad",
+   "chan-007": "CS-80 Warm Swell",
+   "chan-008": "CS-80 Filter Sweep"
+  }
+ },
+ "Bank 60": {
+  "machine": "APH-JUNO",
+  "desc": "Roland Juno",
+  "kind": "analog synth",
+  "channels": {
+   "chan-001": "Juno Bass Hit",
+   "chan-002": "Juno Perc",
+   "chan-003": "Juno Blip",
+   "chan-004": "Juno Bass Sweep",
+   "chan-005": "Juno Pluck (C4)",
+   "chan-006": "Juno Wobble Bass",
+   "chan-007": "Juno Pad",
+   "chan-008": "Juno Distorted Sweep"
+  }
+ },
+ "Bank 61": {
+  "machine": "DX7-TG77",
+  "desc": "Yamaha DX7 / TG77",
+  "kind": "FM synth patches",
+  "channels": {
+   "chan-001": "FM Drone",
+   "chan-002": "FM Bell",
+   "chan-003": "FM Bass",
+   "chan-004": "FM Electric Piano",
+   "chan-005": "FM Bell (low)",
+   "chan-006": "FM Bass Pluck",
+   "chan-007": "FM Key Hit",
+   "chan-008": "FM Chime"
+  }
+ },
+ "Bank 62": {
+  "machine": "DA-BENJN",
+  "desc": "long wobbly textures",
+  "kind": "glitch / texture",
+  "channels": {
+   "chan-001": "Glitch Texture (11s)",
+   "chan-002": "Wobble Drone",
+   "chan-003": "Bass Loop",
+   "chan-004": "Pitch Wobble",
+   "chan-005": "Noisy Bend",
+   "chan-006": "Vocal Wobble",
+   "chan-007": "Bass Texture",
+   "chan-008": "Rhythmic Texture"
+  }
+ },
+ "Bank 63": {
+  "machine": "BEEBSAMP",
+  "desc": "BBC Micro sample set",
+  "kind": "8-bit / chiptune",
+  "channels": {
+   "chan-001": "8-bit Blip",
+   "chan-002": "8-bit Bass",
+   "chan-003": "8-bit Noise",
+   "chan-004": "8-bit Noise Loop",
+   "chan-005": "8-bit Tone",
+   "chan-006": "8-bit Drone",
+   "chan-007": "8-bit Melody Loop",
+   "chan-008": "8-bit Click"
+  }
+ },
+ "Bank 64": {
+  "machine": "RH-BENJN",
+  "desc": "short bass hits",
+  "kind": "sub bass",
+  "channels": {
+   "chan-001": "Bass Hit",
+   "chan-002": "Glitch Bass",
+   "chan-003": "Sub Bass",
+   "chan-004": "Sub Bass (alt)",
+   "chan-005": "Bass Sweep",
+   "chan-006": "Bass Drone (9s)",
+   "chan-007": "Bass Blip",
+   "chan-008": "Harsh Bass"
+  }
+ },
+ "Bank 65": {
+  "machine": "RH-TAIKO",
+  "desc": "taiko drums",
+  "kind": "acoustic percussion",
+  "channels": {
+   "chan-001": "Taiko Hit",
+   "chan-002": "Taiko Rim",
+   "chan-003": "Taiko Hit (short)",
+   "chan-004": "Taiko Hit (mid)",
+   "chan-005": "Taiko Hit (dry)",
+   "chan-006": "Taiko Boom (long)",
+   "chan-007": "Taiko Slap",
+   "chan-008": "Taiko Low"
+  }
+ },
+ "Bank 66": {
+  "machine": "EBC-Coco",
+  "desc": "distorted drones, all 7.1s",
+  "kind": "drone / noise",
+  "channels": {
+   "chan-001": "Distorted Drone",
+   "chan-002": "Detuned Drone",
+   "chan-003": "Sub Drone",
+   "chan-004": "Glitch Drone",
+   "chan-005": "Noise Drone",
+   "chan-006": "Boomy Drone",
+   "chan-007": "Noise Texture",
+   "chan-008": "Bend Drone"
+  }
+ },
+ "Bank 67": {
+  "machine": "EBC-Lyra",
+  "desc": "drones and swells, all 8.9s",
+  "kind": "drone / pad",
+  "channels": {
+   "chan-001": "Bowed Drone",
+   "chan-002": "Glitch Drone",
+   "chan-003": "Bass Drone",
+   "chan-004": "String Swell",
+   "chan-005": "Distorted Drone",
+   "chan-006": "Gong Drone",
+   "chan-007": "Detuned Strings",
+   "chan-008": "Dark Pad"
+  }
+ },
+ "Bank 68": {
+  "machine": "MEGA-DM1",
+  "desc": "Sega Mega Drive drum loops 1",
+  "kind": "rhythmic loops",
+  "channels": {
+   "chan-001": "Drum Loop (low)",
+   "chan-002": "Drum Loop",
+   "chan-003": "Hat Loop",
+   "chan-004": "Percussion Loop",
+   "chan-005": "Drum Loop (alt)",
+   "chan-006": "Glitch Loop",
+   "chan-007": "Melodic Loop",
+   "chan-008": "Melodic Loop (alt)"
+  }
+ },
+ "Bank 69": {
+  "machine": "MEGA-DM2",
+  "desc": "Sega Mega Drive drum loops 2",
+  "kind": "rhythmic loops",
+  "channels": {
+   "chan-001": "Drum Loop (low)",
+   "chan-002": "Drum Loop",
+   "chan-003": "Hat Loop",
+   "chan-004": "Snare Loop",
+   "chan-005": "Perc Loop",
+   "chan-006": "Drum Loop (long)",
+   "chan-007": "String Hit",
+   "chan-008": "Melodic Loop"
+  }
+ },
+ "Bank 70": {
+  "machine": "MEGA-MnD",
+  "desc": "Mega Drive loops, short",
+  "kind": "rhythmic loops",
+  "channels": {
+   "chan-001": "Drum Loop",
+   "chan-002": "Perc Loop",
+   "chan-003": "Hat Loop",
+   "chan-004": "Shaker Loop",
+   "chan-005": "Melodic Loop",
+   "chan-006": "Bright Loop",
+   "chan-007": "Drum Loop (alt)",
+   "chan-008": "Perc Loop (alt)"
+  }
+ },
+ "Bank 71": {
+  "machine": "MEGAMIDI",
+  "desc": "Mega Drive MIDI loops",
+  "kind": "rhythmic loops",
+  "channels": {
+   "chan-001": "Drum Loop (low)",
+   "chan-002": "Snare Loop",
+   "chan-003": "Hat Loop",
+   "chan-004": "Cymbal Loop",
+   "chan-005": "Perc Loop",
+   "chan-006": "Tom Loop",
+   "chan-007": "Bass Loop",
+   "chan-008": "Sustained FX"
+  }
+ },
+ "Bank 72": {
+  "machine": "MEGA-909",
+  "desc": "Mega Drive 909-style loops, ~10s",
+  "kind": "rhythmic loops",
+  "channels": {
+   "chan-001": "Kick Loop",
+   "chan-002": "Drum Loop",
+   "chan-003": "Hat Loop",
+   "chan-004": "Ride Loop",
+   "chan-005": "Snare Loop",
+   "chan-006": "Bass Loop",
+   "chan-007": "Bass Loop (alt)",
+   "chan-008": "Cymbal Loop"
+  }
+ },
+ "Bank 73": {
+  "machine": "X0X-JUNO",
+  "desc": "x0x drums + Juno",
+  "kind": "rhythmic loops",
+  "channels": {
+   "chan-001": "Kick Loop",
+   "chan-002": "Drum Loop",
+   "chan-003": "Hat Loop",
+   "chan-004": "Shaker Loop",
+   "chan-005": "Vocal Wobble",
+   "chan-006": "Juno Chord Loop",
+   "chan-007": "Bass Wobble",
+   "chan-008": "Organ Loop"
+  }
+ },
+ "Bank 74": {
+  "machine": "FM-JUNO",
+  "desc": "FM drums + Juno",
+  "kind": "rhythmic loops",
+  "channels": {
+   "chan-001": "Kick Loop",
+   "chan-002": "Perc Loop",
+   "chan-003": "Hat Loop",
+   "chan-004": "Noise Loop",
+   "chan-005": "Organ Loop (C2)",
+   "chan-006": "Pad Loop",
+   "chan-007": "Electric Piano Loop",
+   "chan-008": "Organ Wobble"
+  }
+ },
+ "Bank 75": {
+  "machine": "303--140",
+  "desc": "Roland TB-303 at 140 BPM",
+  "kind": "acid bass loops + notes",
+  "channels": {
+   "chan-001": "303 Bass Loop 1",
+   "chan-002": "303 Bass Loop 2",
+   "chan-003": "303 Bass Loop 3",
+   "chan-004": "303 Bass Loop 4",
+   "chan-005": "303 Bass Loop 5",
+   "chan-006": "303 Note (low)",
+   "chan-007": "303 Note (bright)",
+   "chan-008": "303 Note (sustained)"
+  }
+ },
+ "Bank 76": {
+  "machine": "303--125",
+  "desc": "Roland TB-303 at 125 BPM",
+  "kind": "acid bass loops + notes",
+  "channels": {
+   "chan-001": "303 Bass Loop 1",
+   "chan-002": "303 Bass Loop 2",
+   "chan-003": "303 Bass Loop 3",
+   "chan-004": "303 Bass Loop 4",
+   "chan-005": "303 Bass Loop 5",
+   "chan-006": "303 Note",
+   "chan-007": "303 Note (low)",
+   "chan-008": "303 Note (sub)"
+  }
+ },
+ "Bank 77": {
+  "machine": "SL165BPM",
+  "desc": "loops at 165 BPM (2.91s = 2 bars)",
+  "kind": "tempo-locked loops",
+  "channels": {
+   "chan-001": "Drum Loop 1",
+   "chan-002": "Drum Loop 2",
+   "chan-003": "Drum Loop 3",
+   "chan-004": "Drum Loop 4",
+   "chan-005": "Vocal Loop",
+   "chan-006": "Bass Hit",
+   "chan-007": "Drone Hit",
+   "chan-008": "Organ Hit"
+  }
+ },
+ "Bank 78": {
+  "machine": "SL170BPM",
+  "desc": "loops at 170 BPM (2.82s = 2 bars)",
+  "kind": "tempo-locked loops",
+  "channels": {
+   "chan-001": "Drum Loop 1",
+   "chan-002": "Drum Loop 2",
+   "chan-003": "Drum Loop 3",
+   "chan-004": "Drum Loop 4",
+   "chan-005": "Noise Hit",
+   "chan-006": "Bass Hit",
+   "chan-007": "Sub Hit",
+   "chan-008": "Pad Hit"
+  }
+ },
+ "Bank 79": {
+  "machine": "SL175BPM",
+  "desc": "loops at 175 BPM (2.74s = 2 bars)",
+  "kind": "tempo-locked loops",
+  "channels": {
+   "chan-001": "Drum Loop 1",
+   "chan-002": "Drum Loop 2",
+   "chan-003": "Drum Loop 3",
+   "chan-004": "Kick Loop (4 bars)",
+   "chan-005": "Drum Loop (4 bars)",
+   "chan-006": "Conga Loop",
+   "chan-007": "Mallet Loop",
+   "chan-008": "Mallet Loop (alt)"
+  }
+ },
+ "Bank 80": {
+  "machine": "SL180BPM",
+  "desc": "loops at 180 BPM (2.67s = 2 bars)",
+  "kind": "tempo-locked loops",
+  "channels": {
+   "chan-001": "Drum Loop 1",
+   "chan-002": "Drum Loop 2",
+   "chan-003": "Drum Loop 3",
+   "chan-004": "Kick Loop (long)",
+   "chan-005": "Drum Loop (long)",
+   "chan-006": "Vocal Loop",
+   "chan-007": "Mallet Loop",
+   "chan-008": "Mallet Loop (alt)"
+  }
+ },
+ "Bank 81": {
+  "machine": "SL130BPM",
+  "desc": "loops at 130 BPM (7.38s = 4 bars)",
+  "kind": "tempo-locked loops",
+  "channels": {
+   "chan-001": "Drum Loop 1",
+   "chan-002": "Drum Loop 2",
+   "chan-003": "Bass Loop",
+   "chan-004": "Drum Loop (short)",
+   "chan-005": "Bass Loop (alt)",
+   "chan-006": "Electric Piano Loop",
+   "chan-007": "Electric Piano Loop (alt)",
+   "chan-008": "Guitar Loop"
+  }
+ },
+ "Bank 82": {
+  "machine": "FLATPACK",
+  "desc": "assorted loops",
+  "kind": "rhythmic loops",
+  "channels": {
+   "chan-001": "Bass Loop",
+   "chan-002": "Perc Loop",
+   "chan-003": "Clap Loop",
+   "chan-004": "Marimba Loop",
+   "chan-005": "Snare Loop",
+   "chan-006": "Bell Loop",
+   "chan-007": "Bass Sweep",
+   "chan-008": "Organ Pad"
+  },
+  "note": "chan-007 and chan-008 appear identical to Bank 12 chan-007/008"
+ },
+ "Bank 83": {
+  "machine": "EBC-CV1",
+  "desc": "control voltage signals",
+  "kind": "CV / modulation (not audio)",
+  "channels": {
+   "chan-001": "CV Signal (fast)",
+   "chan-002": "CV Signal (noisy)",
+   "chan-003": "CV Ramp",
+   "chan-004": "CV Slow LFO",
+   "chan-005": "CV LFO",
+   "chan-006": "CV Slow Ramp",
+   "chan-007": "CV Sweep",
+   "chan-008": "CV Sweep (alt)"
+  }
+ },
+ "Bank 84": {
+  "machine": "CHAOS-CV",
+  "desc": "chaotic control voltage, all 11.89s",
+  "kind": "CV / modulation (not audio)",
+  "channels": {
+   "chan-001": "Chaos CV (slow)",
+   "chan-002": "Chaos CV",
+   "chan-003": "Chaos CV (very slow)",
+   "chan-004": "Chaos CV (alt)",
+   "chan-005": "Chaos CV (sparse)",
+   "chan-006": "Chaos CV (mid)",
+   "chan-007": "Chaos CV (fast)",
+   "chan-008": "Chaos CV (bursty)"
+  }
+ },
+ "Bank 85": {
+  "machine": "DREAM-CV",
+  "desc": "smooth control voltage, all 11.89s",
+  "kind": "CV / modulation (not audio)",
+  "channels": {
+   "chan-001": "Dream CV (slow)",
+   "chan-002": "Dream CV",
+   "chan-003": "Dream CV (alt)",
+   "chan-004": "Dream CV (fast)",
+   "chan-005": "Dream CV (bursty)",
+   "chan-006": "Noise Modulation",
+   "chan-007": "Dream CV (fast, alt)",
+   "chan-008": "Dream CV (bursty, alt)"
+  },
+  "note": "chan-006 is the only non-CV item - a bright sustained noise texture chan-007/008 are byte-similar to chan-004/005."
+ }
+}

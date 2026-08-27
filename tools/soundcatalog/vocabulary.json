@@ -1,0 +1,32 @@
+{
+  "_comment": "Candidate labels scored against each sample by CLAP. Faceted so that e.g. 'kick' and 'warm' don't compete for one slot; the top match is taken per facet. Edit freely and regenerate -- scoring is a matrix multiply against cached audio embeddings, so it costs seconds.",
+  "instrument": [
+    "a kick drum", "a snare drum", "a rimshot", "a hand clap", "a closed hi-hat",
+    "an open hi-hat", "a crash cymbal", "a ride cymbal", "a tom drum", "a floor tom",
+    "a cowbell", "a woodblock", "a shaker", "a tambourine", "a conga drum",
+    "a bongo drum", "a timbale", "a marimba", "a xylophone", "a vibraphone",
+    "a bell", "a chime", "a gong", "a triangle", "a bass guitar",
+    "a synthesizer bass", "an electric piano", "a pipe organ", "a string section", "a choir",
+    "a human voice", "a guitar", "a sine wave tone", "a square wave tone", "a sawtooth wave tone",
+    "white noise", "a sound effect", "a drone", "a pad", "a field recording"
+  ],
+  "material": [
+    "metallic", "wooden", "glassy", "plastic", "membrane skin",
+    "electronic", "acoustic", "digital", "analog", "vocal"
+  ],
+  "articulation": [
+    "a short percussive hit", "a sustained tone", "a plucked note", "a struck note",
+    "a bowed note", "a swelling crescendo", "a decaying tail", "a rhythmic loop",
+    "a stuttering glitch", "a granular texture", "a sweeping filter", "a pitch bend"
+  ],
+  "character": [
+    "bright", "dark", "warm", "harsh", "clean",
+    "distorted", "muffled", "resonant", "dry", "reverberant",
+    "lo-fi", "hi-fi", "punchy", "soft", "noisy",
+    "tonal", "detuned", "wobbly", "crisp", "boomy"
+  ],
+  "mood": [
+    "ambient", "aggressive", "playful", "ominous", "dreamy",
+    "mechanical", "organic", "chaotic", "calm", "retro"
+  ]
+}

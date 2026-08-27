@@ -14,3 +14,4 @@ server/dist/
 # transient golden backups written by goldenupdate.sh
 testing/alltests/*/goldens/*/*.backup.png
 .venv-audio/
+tools/soundcatalog/out/embeddings.npz
