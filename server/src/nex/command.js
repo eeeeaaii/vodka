@@ -25,7 +25,7 @@ import { constructFatalError, throwOOM } from './eerror.js'
 import { Closure } from './closure.js'
 import { ContextType } from '../contexttype.js'
 import { evaluateNexSafely } from '../evaluator.js'
-import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
+import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED, CONSOLE_DEBUG } from '../globalconstants.js'
 import { Editor } from '../editors.js'
 import { experiments } from '../globalappflags.js'
 import { doTutorial } from '../help.js'
@@ -332,13 +332,15 @@ class Command extends NexContainer {
 
 		let argEvaluator = closure.getArgEvaluator(cmdname, argContainer, executionEnv);
 
+		const debugStr = CONSOLE_DEBUG ? this.debugString() : "";
+
 		return new RunInfo(
 			closure,
 			cmdname,
 			closure.getReturnValueParam(),
 			argContainer,
 			argEvaluator,
-			this.debugString(),
+			debugStr,
 			this.skipAlert,
 			this.getAllTags(),
 			packageName);
