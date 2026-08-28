@@ -70,6 +70,7 @@ import { maybeKillSound } from './webaudio.js'
 // import { setupMobile, doMobileKeyDown } from './mobile.js'
 
 import { getFeatureVector } from './featurevector.js'
+import { restoreAutosave, enableAutosave } from './autosave.js'
 
 
 // EXPERIMENTS
@@ -326,6 +327,12 @@ function setup() {
 		setDocRootFromFile(otherflags.FILE);
 	} else if (filenameFromQS) {
 		setDocRootFromFile(filenameFromQS);
+	} else if (restoreAutosave(root)) {
+		// Picked up where the last page load left off. An explicitly requested
+		// file still wins over this, which is why it sits below those two.
+		root.setRenderMode(RENDER_MODE_EXPLO);
+		root.setSelected(false);
+		systemState.setGlobalCurrentDefaultRenderFlags(0);
 	} else if (getFeatureVector().hasstart) {
 		// feature vector is initialized by the webserver.
 		// if hasstart is true, it means the user has added a ":start"
@@ -334,6 +341,10 @@ function setup() {
 	} else {
 		setEmptyDocRoot();
 	}
+	// Safe on every path: restoreAutosave() has already run (and enabled saving)
+	// wherever a restore was attempted, so this only matters for the branches
+	// that loaded a document explicitly.
+	enableAutosave();
 	eventQueueDispatcher.enqueueRenderOnlyDirty()
 }
 
