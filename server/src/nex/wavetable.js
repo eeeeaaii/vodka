@@ -64,6 +64,25 @@ const AUDIO_REF_PREFIX = 'idb:';
 // number is an index into that file's sample list and means nothing outside it.
 const AUDIO_INDEX_PREFIX = 'aud:';
 
+/*
+Markers are stored in front of the samples, separated by a semicolon:
+
+    [wavetable]"1000,2000,3500;aud:0"
+
+In front because in the inline form the samples are a megabyte of base64, and
+metadata you have to scroll past is metadata you will never look at.
+
+The samples are everything after the LAST semicolon rather than the first, so a
+second field can be added later without changing what this means. No markers
+means no semicolon at all, so a wavetable without them serializes exactly as it
+did before.
+
+A semicolon cannot appear in any of the four sample forms -- base64 has none,
+nor do the hex hashes, the decimal indices, or the legacy comma-separated
+sample lists -- so the split is unambiguous.
+*/
+const MARKER_SEPARATOR = ';';
+
 // Set while a file is being written: wavetables hand their samples over and
 // serialize as an index instead of inlining them. Set while a file is being
 // read, to turn those indices back into samples. See audiocontainer.js.
@@ -499,6 +518,45 @@ class Wavetable extends Nex {
 	}
 
 	deserializePrivateData(data) {
+		let markers = [];
+		let at = data.lastIndexOf(MARKER_SEPARATOR);
+		if (at >= 0) {
+			markers = data.substring(0, at).split(',');
+			data = data.substring(at + MARKER_SEPARATOR.length);
+		}
+		this.deserializeSamples(data);
+		this.restoreMarkers(markers);
+	}
+
+	/*
+	Markers are dropped rather than clamped if they do not land inside the wave
+	that actually arrived. That is the same range addMarker enforces -- a marker
+	at either end makes an empty section -- and it is what keeps a wave that came
+	back as silence, because its samples were not there to restore, from also
+	coming back covered in markers pointing into nothing.
+	*/
+	restoreMarkers(raw) {
+		let out = [];
+		for (let i = 0; i < raw.length; i++) {
+			let n = Number(raw[i]);
+			if (Number.isInteger(n) && n >= 1 && n <= this.data.length - 1) {
+				out.push(n);
+			}
+		}
+		this.markers = out.sort((a, b) => a - b);
+		if (this.markers.length == 0) return;
+		try {
+			this.cacheSections();
+		} catch (e) {
+			// Sectioning copies the whole wave again, so it can run out of
+			// memory where merely loading it did not. Keep the markers -- they
+			// draw, and they are saved again on the way out -- and leave the
+			// sections empty, which auditionSection already handles.
+			this.sections = [];
+		}
+	}
+
+	deserializeSamples(data) {
 		// A reference rather than the samples themselves, written by autosave.
 		// The lookup is synchronous because every record was read into memory
 		// during startup, before any document was built -- see audiostore.js.
@@ -524,6 +582,14 @@ class Wavetable extends Nex {
 	}
 
 	serializePrivateData() {
+		let samples = this.serializeSamples();
+		if (this.markers.length == 0) {
+			return samples;
+		}
+		return this.markers.join(',') + MARKER_SEPARATOR + samples;
+	}
+
+	serializeSamples() {
 		// Saving to a file: the samples go after the document and the document
 		// refers to them by index. Deduped on content, so the same sample used
 		// in twenty places is stored once.
