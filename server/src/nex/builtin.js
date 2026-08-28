@@ -56,7 +56,7 @@ class Builtin extends Lambda {
 		this.closure = BUILTINS;
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
 			return `[BUILTIN:${this.name.get()}]`;
 		}
@@ -109,7 +109,7 @@ class Builtin extends Lambda {
 	}
 
 	prettyPrintInternal(lvl, hdir) {
-		return ` [&]${this.toStringV2PrivateDataSection()}${this.toStringV2TagList()}`;// exp \n`;
+		return ` [&]${this.toStringV2PrivateDataSection(ctx)}${this.toStringV2TagList()}`;// exp \n`;
 	}
 
 	evaluate(executionEnvironment) {

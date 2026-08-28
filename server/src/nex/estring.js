@@ -95,23 +95,23 @@ class EString extends ValueNex {
 		r.attachedJS = this.attachedJS;
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
-			return this.toStringV2();
+			return this.toStringV2(ctx);
 		}
 		return '$"' + this.escapeContents() + '"';
 	}
 
-	toStringV2() {
+	toStringV2(ctx) {
 		
-		return `$${this.toStringV2Literal()}${this.toStringV2TagList()}${this.toStringV2PrivateDataSection()}`;
+		return `$${this.toStringV2Literal()}${this.toStringV2TagList()}${this.toStringV2PrivateDataSection(ctx)}`;
 	}
 
 	deserializePrivateData(data) {
 		this.setFullValue(data);
 	}
 
-	serializePrivateData() {
+	serializePrivateData(ctx) {
 		return this.getFullTypedValue();
 	}
 

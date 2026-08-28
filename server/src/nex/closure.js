@@ -47,7 +47,7 @@ class Closure extends ValueNex {
 		heap.addEnvReference(this.lexicalEnvironment);
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
 			return `[CLOSURE FOR: ${this.lambda.prettyPrint()}]`;
 		}

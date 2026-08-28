@@ -22,6 +22,7 @@ function setNextNexId(val) {
 }
 
 import { systemState } from '../systemstate.js'
+import { DISPLAY_CONTEXT } from '../serializationcontext.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { RENDER_FLAG_SELECTED,
 		 RENDER_FLAG_SHALLOW,
@@ -180,8 +181,11 @@ class Nex {
 		}
 	}
 
-	toStringV2PrivateDataSection() {
-		let v = this.serializePrivateData();
+	toStringV2PrivateDataSection(ctx) {
+		// Everything that doesn't say what it is serializing for means display:
+		// pretty printing, debug strings, the text in an error message.
+		if (!ctx) ctx = DISPLAY_CONTEXT;
+		let v = this.serializePrivateData(ctx);
 		if (v == '') {
 			return '';
 		}
@@ -236,7 +240,7 @@ class Nex {
      * Escaping will be handled for you.
      * @returns {string} the serialized private data.
      */
-	serializePrivateData() {
+	serializePrivateData(ctx) {
 		return '';
 	}
 

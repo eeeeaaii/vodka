@@ -47,15 +47,15 @@ class ESymbol extends ValueNex {
 	}
 
 	/** @override */
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
-			return this.toStringV2();
+			return this.toStringV2(ctx);
 		}
 		return super.toString(version);
 	}
 
 	/** @override */
-	toStringV2() {
+	toStringV2(ctx) {
 		let val = this.getValue().replace(/ /g, '--')
 		return `@${this.toStringV2Literal()}${this.toStringV2TagList()}${val}`;
 	}

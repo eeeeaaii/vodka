@@ -48,9 +48,9 @@ class Float extends ValueNex {
 		this.setMutable(false);
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
-			return this.toStringV2();
+			return this.toStringV2(ctx);
 		}
 		return super.toString(version);
 	}
@@ -65,7 +65,7 @@ class Float extends ValueNex {
 		}
 	}
 
-	toStringV2() {
+	toStringV2(ctx) {
 		return `%${this.toStringV2Literal()}${this.toStringV2TagList()}${this.getValue()}`;
 	}
 

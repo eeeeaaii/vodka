@@ -39,7 +39,7 @@ Two tabs on the *same* session share one slot and the last writer wins.
 
 import { systemState } from './systemstate.js'
 import { parse } from './nexparser2.js'
-import { setSerializeAudioData } from './nex/wavetable.js'
+import { SerializationContext, SERIALIZE_BROWSER_STORAGE } from './serializationcontext.js'
 import * as audioStore from './audiostore.js'
 import { saveEditorState } from './editorstate.js'
 
@@ -83,13 +83,9 @@ function writeStorage(key, value) {
 function serializeDocument(rootNode) {
 	let rootNex = rootNode.getNex();
 	let docs = [];
-	setSerializeAudioData(false);
-	try {
-		for (let i = 0; i < rootNex.numChildren(); i++) {
-			docs.push('v2:' + rootNex.getChildAt(i).toString('v2'));
-		}
-	} finally {
-		setSerializeAudioData(true);
+	let ctx = new SerializationContext(SERIALIZE_BROWSER_STORAGE);
+	for (let i = 0; i < rootNex.numChildren(); i++) {
+		docs.push('v2:' + rootNex.getChildAt(i).toString('v2', ctx));
 	}
 	return docs;
 }

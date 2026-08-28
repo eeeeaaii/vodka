@@ -52,10 +52,6 @@ import * as audioStore from '../audiostore.js'
 /**
  * Nex that represents a wavetable value.
  */
-// When false, wavetables serialize as silence instead of their real samples.
-// Used by autosave; see serializePrivateData below.
-let serializeAudioData = true;
-
 /*
 A wavetable's private data is a list of fields:
 
@@ -94,19 +90,10 @@ const BREAKPOINTS_KEY = 'bp';
 const AUDIO_INDEX_KEY = 'aud';
 const AUDIO_REF_KEY = 'idb';
 
-// Set while a file is being written: wavetables hand their samples over and
-// serialize as an index instead of inlining them. Set while a file is being
-// read, to turn those indices back into samples. See audiocontainer.js.
-let audioCollector = null;
+// Set while a container is being read, to turn its indices back into samples.
+// Reading has no equivalent of the serialization context because a document
+// being parsed says where its own samples are; only writing has to be told.
 let audioReader = null;
-
-function setSerializeAudioData(v) {
-	serializeAudioData = v;
-}
-
-function setAudioCollector(c) {
-	audioCollector = c;
-}
 
 function setAudioReader(r) {
 	audioReader = r;
@@ -490,15 +477,15 @@ class Wavetable extends Nex {
 		nex.cacheSections();
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
-			return this.toStringV2();
+			return this.toStringV2(ctx);
 		}
 		return '_[wavetable]';
 	}
 
-	toStringV2() {
-		return `[${this.toStringV2Literal()}wavetable]${this.toStringV2PrivateDataSection()}${this.toStringV2TagList()}`
+	toStringV2(ctx) {
+		return `[${this.toStringV2Literal()}wavetable]${this.toStringV2PrivateDataSection(ctx)}${this.toStringV2TagList()}`
 
 	}
 
@@ -585,7 +572,7 @@ class Wavetable extends Nex {
 		}
 	}
 
-	serializePrivateData() {
+	serializePrivateData(ctx) {
 		let fields = [];
 		if (this.markers.length > 0) {
 			fields.push(BREAKPOINTS_KEY + KEY_SEPARATOR + this.markers.join(','));
@@ -593,31 +580,30 @@ class Wavetable extends Nex {
 		// last, and the only field that may arrive without a key. Empty when
 		// there was nowhere to put the samples, in which case no field is
 		// written at all and reading it back gives silence.
-		let samples = this.serializeSamples();
+		let samples = this.serializeSamples(ctx);
 		if (samples != '') {
 			fields.push(samples);
 		}
 		return fields.join(FIELD_SEPARATOR);
 	}
 
-	serializeSamples() {
-		// Saving to a file: the samples go after the document and the document
-		// refers to them by index. Deduped on content, so the same sample used
-		// in twenty places is stored once.
-		if (audioCollector) {
+	serializeSamples(ctx) {
+		if (ctx.isFile()) {
+			// Into the file's resource section; the document refers to it by
+			// index. Deduped on content, so the same sample used in twenty
+			// places is stored once.
 			return AUDIO_INDEX_KEY + KEY_SEPARATOR
-					+ audioCollector.add(this.data, audioStore.hashSamples(this.data));
+					+ ctx.audioCollector.add(this.data, audioStore.hashSamples(this.data));
 		}
-		// Autosave turns inline serialization off: sample data is far too large
-		// for localStorage (roughly 250KB of base64 per second of audio). The
-		// samples go to IndexedDB instead and what lands in the document is a
-		// reference to them. Saving to the server is unaffected and still writes
-		// the real audio inline.
-		if (!serializeAudioData) {
+		if (ctx.isBrowserStorage()) {
+			// Samples are far too large for localStorage -- roughly 250KB of
+			// base64 per second of audio, against a budget of about five
+			// megabytes for everything -- so they go to IndexedDB and the
+			// document gets a reference.
 			if (audioStore.isUnavailable()) {
-				// No IndexedDB -- a private window, blocked site data. Say
+				// No IndexedDB: a private window, or blocked site data. Say
 				// nothing about the samples rather than writing out a silent
-				// buffer: a wavetable with no audio field comes back as silence
+				// buffer. A wavetable with no audio field comes back as silence
 				// anyway, and there is no reason to store a kilobyte of zeros to
 				// mean "there was nothing to store".
 				return '';
@@ -626,21 +612,10 @@ class Wavetable extends Nex {
 			audioStore.put(hash, this.data);
 			return AUDIO_REF_KEY + KEY_SEPARATOR + hash;
 		}
-		let s = '';
-		let bytes = new Uint8Array(this.data.buffer);
-		let len = bytes.byteLength;
-		for (let i = 0; i < len; i++) {
-			s += String.fromCharCode(bytes[i]);
-		}
-		return window.btoa(s);
-		// let s = '';
-		// for (let i = 0; i < this.data.length; i++) {
-		// 	if (s != '') {
-		// 		s += ',';
-		// 	}
-		// 	s += this.data[i];
-		// }
-		// return s;
+		// Display: printing, a debug string, the text of an error message.
+		// Nothing that reads those wants a megabyte of base64, and there is
+		// nowhere to put the samples anyway.
+		return '';
 	}
 
 	getDefaultHandler() {
@@ -1509,4 +1484,4 @@ stats: ${heap.stats()}`)
 }
 
 
-export { Wavetable, WavetableEditor, constructWavetable, setSerializeAudioData, setAudioCollector, setAudioReader }
+export { Wavetable, WavetableEditor, constructWavetable, setAudioReader }

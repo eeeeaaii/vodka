@@ -147,16 +147,16 @@ class EError extends NexContainer {
 		return '?"' + this.getFullTypedValue() + '"';
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
-			return this.toStringV2();
+			return this.toStringV2(ctx);
 		}
 		return '?"' + this.escapeContents() + '"';
 	}
 
-	toStringV2() {
+	toStringV2(ctx) {
 		// if this error contains \r, \t, or |, we do it the other way.
-		return '?' + this.toStringV2TagList() + this.toStringV2PrivateDataSection();
+		return '?' + this.toStringV2TagList() + this.toStringV2PrivateDataSection(ctx);
 	}
 
 	prettyPrintInternal(lvl, hdir) {
@@ -182,7 +182,7 @@ class EError extends NexContainer {
 		}
 	}
 
-	serializePrivateData() {
+	serializePrivateData(ctx) {
 		if (this.getErrorType() != 0) {
 			return `${this.getErrorType()}|${this.getFullTypedValue()}`
 		} else {

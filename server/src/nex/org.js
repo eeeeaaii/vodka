@@ -46,9 +46,9 @@ class Org extends NexContainer {
 		this.setVertical();
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
-			return this.toStringV2();
+			return this.toStringV2(ctx);
 		}
 		return `[org]`;
 	}
@@ -67,8 +67,8 @@ class Org extends NexContainer {
 		return this.standardListPrettyPrint(lvl, '[org]', hdir);
 	}
 
-	toStringV2() {
-		return `${this.toStringV2Literal()}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+	toStringV2(ctx) {
+		return `${this.toStringV2Literal()}${this.toStringV2PrivateDataSection(ctx)}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2', ctx)}${this.listEndV2()}`;
 
 	}
 
@@ -91,7 +91,7 @@ class Org extends NexContainer {
 		this.privateData = data;
 	}
 
-	serializePrivateData(data) {
+	serializePrivateData(ctx) {
 		return this.privateData;
 	}
 

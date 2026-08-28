@@ -58,15 +58,15 @@ class Word extends NexContainer {
 		return r;
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
-			return this.toStringV2();
+			return this.toStringV2(ctx);
 		}
 		return '(' + super.childrenToString() + ')';
 	}
 
-	toStringV2() {
-		return `[${this.toStringV2Literal()}word]${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+	toStringV2(ctx) {
+		return `[${this.toStringV2Literal()}word]${this.toStringV2PrivateDataSection(ctx)}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2', ctx)}${this.listEndV2()}`;
 	}
 
  	prettyPrintInternal(lvl, hdir) {
@@ -109,7 +109,7 @@ class Word extends NexContainer {
 		return new WordKeyFunnel(this);
 	}
 
-	serializePrivateData(data) {
+	serializePrivateData(ctx) {
 		return `${this.getCurrentStyle()}`;
 	}
 

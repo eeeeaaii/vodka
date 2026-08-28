@@ -22,7 +22,8 @@ import { constructFatalError } from './nex/eerror.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { parse } from './nexparser2.js';
 import { AudioCollector, encode as encodeContainer, decode as decodeContainer } from './audiocontainer.js';
-import { setAudioCollector, setAudioReader } from './nex/wavetable.js'
+import { setAudioReader } from './nex/wavetable.js'
+import { SerializationContext, SERIALIZE_FILE } from './serializationcontext.js'
 import { systemState } from './systemstate.js'
 
 // polled by the test harness, which can't drive a request, only wait for it
@@ -119,17 +120,11 @@ function loadRaw(name, callback) {
 }
 
 function saveNex(name, nex, callback) {
-	// The collector has to be up for the whole walk: wavetables hand their
-	// samples to it as they're reached, and it's the walk finishing that tells
-	// us which samples the document actually refers to.
+	// The collector rides along with the walk: wavetables hand their samples to
+	// it as they're reached, and it's the walk finishing that tells us which
+	// samples the document actually refers to.
 	let collector = new AudioCollector();
-	let docText;
-	setAudioCollector(collector);
-	try {
-		docText = 'v2:' + nex.toString('v2');
-	} finally {
-		setAudioCollector(null);
-	}
+	let docText = 'v2:' + nex.toString('v2', new SerializationContext(SERIALIZE_FILE, collector));
 	let payload = `save\t${name}\t${encodeContainer(docText, collector)}`;
 
 	sendToServer(payload, function(data) {

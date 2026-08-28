@@ -173,7 +173,7 @@ class NexContainer extends Nex {
 
 	standardListPrettyPrint(lvl, designator, hdir) {
 		// designator is like ~, or [doc], or whatever tells you the list type
-		let fline = `${this.doTabs(lvl, hdir)}${designator}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}`;// exp \n`;
+		let fline = `${this.doTabs(lvl, hdir)}${designator}${this.toStringV2PrivateDataSection(ctx)}${this.listStartV2()}${this.toStringV2TagList()}`;// exp \n`;
 		let contents = this.prettyPrintChildren(lvl + 1);
 		let lline = `${this.listEndV2()}` // exp
 		return fline + contents + lline;
@@ -187,20 +187,20 @@ class NexContainer extends Nex {
 		return r;		
 	}
 
-	childrenToStringV2() {
+	childrenToStringV2(ctx) {
 		let r = '';
 		for (let p = this.firstChildNex; p != null; p = p.next) {
 			if (r != '') {
 				r += ' ';
 			}
-			r += p.n.toString('v2');
+			r += p.n.toString('v2', ctx);
 		}
 		return r;		
 	}
 
-	childrenToString(version) {
+	childrenToString(version, ctx) {
 		if (version == 'v2') {
-			return this.childrenToStringV2();
+			return this.childrenToStringV2(ctx);
 		}
 		let r = "";
 		let i = 0;

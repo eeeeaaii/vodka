@@ -38,22 +38,22 @@ class Instantiator extends NexContainer {
 		}
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
-			return this.toStringV2();
+			return this.toStringV2(ctx);
 		}
 		return 'blerp';
 	}
 
-	toStringV2() {
-		return `^${this.toStringV2Literal()}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+	toStringV2(ctx) {
+		return `^${this.toStringV2Literal()}${this.toStringV2PrivateDataSection(ctx)}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2', ctx)}${this.listEndV2()}`;
 	}
 
 	deserializePrivateData(data) {
 		this.setOrgName(data);
 	}
 
-	serializePrivateData() {
+	serializePrivateData(ctx) {
 		return this.orgname.get();
 	}
 
