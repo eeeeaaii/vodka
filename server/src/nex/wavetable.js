@@ -775,6 +775,13 @@ class Wavetable extends Nex {
 		let initialZoom = 0;
 		let initialAmpZoom = 0;
 		let initialWindowOrigin = 0;
+		let dragged = false;
+		let downOffsetX = 0;
+		let anchorSample = 0;
+		// far enough that you meant it -- a click with a shaky hand still moves
+		// a pixel or two, and losing the playhead to that would be worse than
+		// needing a deliberate gesture to zoom
+		const DRAG_THRESHOLD_PIXELS = 4;
 		let y = 0;
 		let x = 0;
 		let t = this;
@@ -812,9 +819,15 @@ class Wavetable extends Nex {
 			// Not while playing: the click is how you zoom, and moving the
 			// playhead every time you grabbed the wave to zoom would make it
 			// impossible to zoom in on something while listening to it.
-			if (this.isEditing && !this.auditioning && !this.doingPan) {
-				this.changeCenterSample(event.offsetX);
-			}
+			// The playhead moves on mouseup, not here -- see endfunction. Where
+			// you pressed is what it moves to, which is the same thing as where
+			// you released for anything that counted as a click rather than a
+			// drag.
+			dragged = false;
+			downOffsetX = event.offsetX;
+			// what zooming holds still: the sample under the cursor, so the
+			// thing you grabbed stays where you grabbed it
+			anchorSample = this.samplesRepresentedByPixel(event.offsetX).start;
 			initialZoom = this.getPixelsPerSample();
 			initialAmpZoom = this.getHeightPixelsFullScale();
 			initialWindowOrigin = this.windowOriginSample;
@@ -826,6 +839,10 @@ class Wavetable extends Nex {
 			let x = e.clientX;
 			let deltaY = y - starty;
 			let deltaX = -(x - startx);
+			if (Math.abs(x - startx) > DRAG_THRESHOLD_PIXELS
+					|| Math.abs(y - starty) > DRAG_THRESHOLD_PIXELS) {
+				dragged = true;
+			}
 			if (this.doingPan) {
 				// Drag right and the wave goes right, because what you have hold
 				// of is the wave, not the window onto it. Zoom is untouched, and
@@ -847,16 +864,44 @@ class Wavetable extends Nex {
 			}
 
 			if (this.isEditing) {
-				let positionOfClickInWindow = startx / t.windowWidth()
+				// Zoom around the point under the cursor, not around the
+				// playhead. It used to be the playhead because pressing the
+				// mouse put the playhead where you pressed, so they were the
+				// same point; now that a drag deliberately leaves the playhead
+				// alone, using it here would throw the wave somewhere else the
+				// moment you started zooming.
+				//
+				// offsetX, not clientX -- clientX is measured from the viewport,
+				// so it carried however far the wavetable happens to sit from
+				// the left edge of the window into a fraction that should only
+				// ever be where in the wave you clicked.
+				let positionOfClickInWindow = downOffsetX / t.windowWidth();
 				let samplesInWindow = t.windowWidth() / this.getPixelsPerSample();
-				t.setWindowOriginSample(t.centerSample - (samplesInWindow * positionOfClickInWindow));				
+				t.setWindowOriginSample(anchorSample - (samplesInWindow * positionOfClickInWindow));
 			}
 			eventQueueDispatcher.enqueueTopLevelRender();			
 		}
-		this.setupMouseDragHandler(renderNode, startfunction, movefunction);
+		/*
+		A click places the playhead; a drag zooms and leaves it alone. Deciding
+		on the way up rather than the way down is what makes that possible --
+		on the way down there is no way to know yet which one you are doing.
+
+		Only while editing, and only when nothing is playing: during playback
+		the line is the playhead and clicking must not move it, which is the
+		same rule as before.
+		*/
+		let endfunction = () => {
+			if (!dragged && !this.doingPan && this.isEditing && !this.auditioning) {
+				this.changeCenterSample(downOffsetX);
+				this.updatePlayhead();
+				eventQueueDispatcher.enqueueTopLevelRender();
+			}
+			this.doingPan = false;
+		}
+		this.setupMouseDragHandler(renderNode, startfunction, movefunction, endfunction);
 	}
 
-	setupMouseDragHandler(renderNode, startf, movef) {
+	setupMouseDragHandler(renderNode, startf, movef, endf) {
 		let body = null;
 		let t = this;
 		let mousemove = function(e) {
@@ -868,6 +913,7 @@ class Wavetable extends Nex {
 		let mouseup = (event) => {
 			body.onmousemove = null;
 			body.onmouseup = null;
+			if (endf) endf(event);
 			event.stopPropagation();
 		};
 
