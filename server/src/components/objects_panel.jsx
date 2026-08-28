@@ -6,54 +6,88 @@ const ObjectsPanel = () => {
       <p className="infosubheader">Instantiation</p>
       <p className="infolinemargin"><span className="infohotkey">^</span>inserts an instantiator. But what is it instantiating?</p>
       <p className="infolinemargin">
-        To create a thing that can be instantiated, name an org by binding it to a symbol with <span className="infohotkey">bind</span>.
-        Then you will be able to instantiate something using that name.
+        A thing that can be instantiated is called a model.
+        To create a model, bind an org to a symbol with <span className="infohotkey">bind
+        </span>. Tag the children of the model with tags that describe what
+        each child is.
+        Then you will be able to create an instance of that model. Type <span className="infohotkey">^thesymbolname</span>to do this.
+      </p>
+      <p className="infospacer"></p>
+      <p className="infolinemargin">
+        What is an instance?
       </p>
       <p className="infolinemargin">
-        What is an instance? It is a copy of the original org, but any lambdas in it will have been converted to closures.
+        An instance is a copy of the model,
+        but any lambdas in it will have been converted to closures.
         Every instance is a different object.
       </p>
+      <p className="infospacer"></p>
       <p className="infolinemargin">
-        You might want to tag the children of the org you are instantiating. Why?
+        But why do lambdas get turned into closures when you instantiate?
       </p>
       <p className="infolinemargin">
-        If an org is bound to a name, then it can be used as a receiver. Receiver syntax
+        At instantiation, these closures are given an extra binding in their environment. This is the symbol <span className="infohotkey">@self</span>bound back to the instance org.
+      </p>
+      <p className="infospacer"></p>
+      <p className="infolinemargin">
+        But why am I tagging the children of the model?
+      </p>
+      <p className="infolinemargin">
+        If any org (not just an instance) is bound to a name, then it can be used as a receiver. Receiver syntax
         allows you to refer to children of that org using dots. If the org is bound
         to <span className="infohotkey">foo</span>and it has a child tagged with <span className="infohotkey">bar</span>you can refer to the child
         using <span className="infohotkey">foo.bar</span>.
+        This can, of course, be extended past the first level child. If <span className="infohotkey">foo.bar</span>is also an org
+        with tagged children, then <span className="infohotkey">foo.bar</span>can also be a receiver, and <span className="infohotkey">foo.bar.baz</span>refers
+        to a child of it tagged with <span className="infohotkey">baz</span>.
+      </p>
+      <p className="infospacer"></p>
+      <p className="infolinemargin">
+        But what does receiver syntax have to do with instances?
       </p>
       <p className="infolinemargin">
-        This can, of course, be extended past the first level child. If <span className="infohotkey">foo.bar</span>is an org
-        with tagged children, then <span className="infohotkey">foo.bar</span>can be a receiver, and <span className="infohotkey">foo.bar.baz</span>refers
-        to its children.
+        Tags in the model become tags in the instance.
+        Therefore, if an instance bound to <span className="infohotkey">foo</span>
+        has a child closure tagged with <span className="infohotkey">bar</span>, you can type <span className="infohotkey">~foo.bar</span> to call that function.
+        Similarly the symbol <span className="infohotkey">@foo.baz</span>
+        would refer to a child of that instance tagged <span className="infohotkey">baz</span>.
+      </p>
+      <p className="infospacer"></p>
+      <p className="infolinemargin">
+        But what about the arguments that you pass to  <span className="infohotkey">^</span> when instantiating?
       </p>
       <p className="infolinemargin">
-        If an org has a lambda child tagged <span className="infohotkey">:init</span>, that will run on instantiation. The arguments
-        you pass to <span className="infohotkey">^</span>will go to this lambda.
+        If the model has a lambda child tagged <span className="infohotkey">:init</span>, that function will run on instantiation. The arguments
+        will go to this lambda.
       </p>
       <p className="infolinemargin">
-        If an org has a lambda child tagged <span className="infohotkey">:draw</span>, that returns HTML, that HTML will be drawn instead
-        of the org when in normal (non-exploded) mode.
-      </p>
-      <p className="infolinemargin">
-        If an org has a doc child tagged <span className="infohotkey">:docs</span>, those docs appear in the tooltip when you type its bound name
+
+        In addition to <span className="infohotkey">:init</span>, there are other special tags that can be applied to children of
+        the model.
+        If the model has a lambda child tagged <span className="infohotkey">:draw</span>, that returns HTML, an instance of that model will
+        be rendered with that HTML in normal (non-exploded) mode.
+        If the model has a doc child tagged <span className="infohotkey">:docs</span>, those docs appear in the tooltip when you type the model name
         into the instantiator.
       </p>
-      <p className="infolinemargin">
-        Remember how I said that lambdas get turned into closures when you instantiate? When this happens,
-        they are given an extra binding in their environment. This is the symbol <span className="infohotkey">@self</span>bound back to the instance org.
-      </p>
+      <p className="infospacer"></p>
+      <p className="infospacer"></p>
       <p className="infosubheader">Contracts</p>
       <p className="infolinemargin">
-        What are types in programming languages for? They exist so that you can feel confident
+        But how are types enforced?
+      </p>
+      <p className="infolinemargin">
+        First, let us ask: what are types in programming languages for? They exist so that you can feel confident
         that certain things are true.
+        Vodka does this with things called contracts. A contract is an object that encapsulates some set of assumptions
+        about a nex. For example, a contract might say that anything
+        tagged with
+        <span className="infohotkey">int</span>
+        must be an integer.
+        To use a contract, you must sign it with the <span className="infohotkey">sign for</span>builtin.
       </p>
+      <p className="infospacer"></p>
       <p className="infolinemargin">
-        Vodka does this with contracts. A contract is an object that encapsulates some set of assumptions
-        about a nex. For example, it must be an integer.
-      </p>
-      <p className="infolinemargin">
-        To use a contract, you must sign it with the <span className="infohotkey">sign for</span>builtin. But who is the signatory?
+        But who is the signatory?
       </p>
       <p className="infolinemargin">
         A tag signs a contract. Once a tag is under contract, any nex tagged with that tag name must
@@ -61,6 +95,38 @@ const ObjectsPanel = () => {
         when instantiating instances, and when calling <span className="infohotkey">add-tag-to</span>.
         Tagged nexes that existed before the contract was signed are not affected, and these
         can be duplicated or copied and pasted without violating the contract.
+      </p>
+      <p className="infospacer"></p>
+      <p className="infolinemargin">
+        What kinds of contracts exist?
+      </p>
+      <p className="infolinemargin">
+        Three, so far.
+        <span className="infohotkey">type-contract</span>takes a nex, and is satisfied by anything of the same type as it.
+        <span className="infohotkey">has-tag-contract</span>takes a tag name, and is satisfied by anything carrying that tag.
+        <span className="infohotkey">identity-contract</span>takes a nex, and is satisfied only by that one object and nothing else.
+      </p>
+      <p className="infospacer"></p>
+      <p className="infolinemargin">
+        Two more are planned.
+      </p>
+      <p className="infolinemargin">
+        An <span className="infohotkey">and</span>contract, which holds any number of other contracts and is satisfied only when
+        every one of them is.
+        And <span className="infohotkey">has-child-tagged</span>, which takes a tag name and is satisfied by anything that has a
+        child carrying that tag.
+      </p>
+      <p className="infospacer"></p>
+      <p className="infolinemargin">
+        Why those two in particular?
+      </p>
+      <p className="infolinemargin">
+        Because together they describe shape, and most of what a type tells you about
+        something is what it must contain. A model whose instances must have children tagged
+        <span className="infohotkey">x</span>and <span className="infohotkey">y</span>is an
+        <span className="infohotkey">and</span>of two <span className="infohotkey">has-child-tagged</span>contracts.
+        Nest them, and you can describe an object whose child is itself required to have a
+        particular shape.
       </p>
     </div>
   );
