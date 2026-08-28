@@ -56,32 +56,39 @@ import * as audioStore from '../audiostore.js'
 // Used by autosave; see serializePrivateData below.
 let serializeAudioData = true;
 
-// Marks a serialized wavetable whose samples live in IndexedDB rather than in
-// the document. Chosen so it can't collide with base64, which has no colon.
-const AUDIO_REF_PREFIX = 'idb:';
-
-// Same idea, but the samples are in the same file, after the document. The
-// number is an index into that file's sample list and means nothing outside it.
-const AUDIO_INDEX_PREFIX = 'aud:';
-
 /*
-Markers are stored in front of the samples, separated by a semicolon:
+A wavetable's private data is a list of fields:
 
-    [wavetable]"1000,2000,3500;aud:0"
+    [wavetable]"bp:1000,2000,3500;aud:0"
 
-In front because in the inline form the samples are a megabyte of base64, and
-metadata you have to scroll past is metadata you will never look at.
+    key:value;key:value
 
-The samples are everything after the LAST semicolon rather than the first, so a
-second field can be added later without changing what this means. No markers
-means no semicolon at all, so a wavetable without them serializes exactly as it
-did before.
+The sample references were already this shape, so nothing had to be invented
+for them -- "aud:0" and "idb:<hash>" are just the field that says where the
+samples are. Everything else is metadata alongside it.
 
-A semicolon cannot appear in any of the four sample forms -- base64 has none,
-nor do the hex hashes, the decimal indices, or the legacy comma-separated
-sample lists -- so the split is unambiguous.
+  bp   breakpoints, ascending sample offsets
+  aud  index into this file's own sample list, meaningless outside it
+  idb  content hash of the samples in IndexedDB, written by autosave
+
+Metadata goes first and the samples last, because in the inline form the
+samples are a megabyte of base64 and anything you have to scroll past is
+something you will never read.
+
+A field with no colon is the samples themselves, unkeyed. That is what every
+file written before fields existed looks like -- raw base64, or the older
+comma-separated decimals -- and neither can be mistaken for a field, since
+neither contains a colon or a semicolon.
+
+Unknown keys are ignored rather than refused, so a file written by a later
+version loses whatever it knew that this one does not, instead of failing to
+load.
 */
-const MARKER_SEPARATOR = ';';
+const FIELD_SEPARATOR = ';';
+const KEY_SEPARATOR = ':';
+const BREAKPOINTS_KEY = 'bp';
+const AUDIO_INDEX_KEY = 'aud';
+const AUDIO_REF_KEY = 'idb';
 
 // Set while a file is being written: wavetables hand their samples over and
 // serialize as an index instead of inlining them. Set while a file is being
@@ -518,14 +525,43 @@ class Wavetable extends Nex {
 	}
 
 	deserializePrivateData(data) {
-		let markers = [];
-		let at = data.lastIndexOf(MARKER_SEPARATOR);
-		if (at >= 0) {
-			markers = data.substring(0, at).split(',');
-			data = data.substring(at + MARKER_SEPARATOR.length);
+		let fields = {};
+		let unkeyed = null;
+		let parts = data.split(FIELD_SEPARATOR);
+		for (let i = 0; i < parts.length; i++) {
+			let c = parts[i].indexOf(KEY_SEPARATOR);
+			if (c < 0) {
+				unkeyed = parts[i];
+			} else {
+				fields[parts[i].substring(0, c)] = parts[i].substring(c + 1);
+			}
 		}
-		this.deserializeSamples(data);
-		this.restoreMarkers(markers);
+		this.deserializeSamples(fields, unkeyed);
+		this.restoreMarkers(fields[BREAKPOINTS_KEY]);
+	}
+
+	deserializeSamples(fields, unkeyed) {
+		// Written by autosave. The lookup is synchronous because every record
+		// was read into memory during startup, before any document was built --
+		// see audiostore.js.
+		if (AUDIO_REF_KEY in fields) {
+			this.setSamplesOrSilence(audioStore.get(fields[AUDIO_REF_KEY]));
+			return;
+		}
+		// Samples from elsewhere in this same file. audioReader is only set
+		// while a container is being read, so a document that refers to one
+		// outside that -- pasted somewhere, loaded by something that doesn't
+		// know about containers -- falls through to silence rather than to a
+		// stray lookup in whatever happens to be loaded.
+		if (AUDIO_INDEX_KEY in fields) {
+			let i = Number(fields[AUDIO_INDEX_KEY]);
+			this.setSamplesOrSilence(audioReader ? audioReader(i) : null);
+			return;
+		}
+		// The samples themselves, unkeyed. Every file saved before containers
+		// looks like this, and autosave still writes it for the silence
+		// fallback when IndexedDB isn't available.
+		this.setSamplesOrSilence(unkeyed ? parseInlineSamples(unkeyed) : null);
 	}
 
 	/*
@@ -535,8 +571,9 @@ class Wavetable extends Nex {
 	back as silence, because its samples were not there to restore, from also
 	coming back covered in markers pointing into nothing.
 	*/
-	restoreMarkers(raw) {
+	restoreMarkers(value) {
 		let out = [];
+		let raw = value ? value.split(',') : [];
 		for (let i = 0; i < raw.length; i++) {
 			let n = Number(raw[i]);
 			if (Number.isInteger(n) && n >= 1 && n <= this.data.length - 1) {
@@ -556,37 +593,14 @@ class Wavetable extends Nex {
 		}
 	}
 
-	deserializeSamples(data) {
-		// A reference rather than the samples themselves, written by autosave.
-		// The lookup is synchronous because every record was read into memory
-		// during startup, before any document was built -- see audiostore.js.
-		if (data.indexOf(AUDIO_REF_PREFIX) == 0) {
-			this.setSamplesOrSilence(audioStore.get(data.substring(AUDIO_REF_PREFIX.length)));
-			return;
-		}
-		// Samples from elsewhere in this same file. audioReader is only set
-		// while a container is being read, so a document that refers to one
-		// outside that -- pasted somewhere, loaded by something that doesn't
-		// know about containers -- falls through to silence rather than to a
-		// stray lookup in whatever happens to be loaded.
-		if (data.indexOf(AUDIO_INDEX_PREFIX) == 0) {
-			let i = Number(data.substring(AUDIO_INDEX_PREFIX.length));
-			this.setSamplesOrSilence(audioReader ? audioReader(i) : null);
-			return;
-		}
-		// The samples themselves, in the document. This is what every file saved
-		// before files became containers looks like, and autosave still writes
-		// it for the silence fallback when IndexedDB isn't available, so it is
-		// not a legacy path that can be dropped.
-		this.setSamplesOrSilence(parseInlineSamples(data));
-	}
-
 	serializePrivateData() {
-		let samples = this.serializeSamples();
-		if (this.markers.length == 0) {
-			return samples;
+		let fields = [];
+		if (this.markers.length > 0) {
+			fields.push(BREAKPOINTS_KEY + KEY_SEPARATOR + this.markers.join(','));
 		}
-		return this.markers.join(',') + MARKER_SEPARATOR + samples;
+		// last, and the only field that may arrive without a key
+		fields.push(this.serializeSamples());
+		return fields.join(FIELD_SEPARATOR);
 	}
 
 	serializeSamples() {
@@ -594,7 +608,7 @@ class Wavetable extends Nex {
 		// refers to them by index. Deduped on content, so the same sample used
 		// in twenty places is stored once.
 		if (audioCollector) {
-			return AUDIO_INDEX_PREFIX
+			return AUDIO_INDEX_KEY + KEY_SEPARATOR
 					+ audioCollector.add(this.data, audioStore.hashSamples(this.data));
 		}
 		// Autosave turns inline serialization off: sample data is far too large
@@ -610,7 +624,7 @@ class Wavetable extends Nex {
 			}
 			let hash = audioStore.hashSamples(this.data);
 			audioStore.put(hash, this.data);
-			return AUDIO_REF_PREFIX + hash;
+			return AUDIO_REF_KEY + KEY_SEPARATOR + hash;
 		}
 		let s = '';
 		let bytes = new Uint8Array(this.data.buffer);
