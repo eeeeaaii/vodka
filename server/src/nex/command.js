@@ -169,7 +169,7 @@ class Command extends NexContainer {
 	prettyPrintInternal(lvl, hdir) {
 		// because of cmdPrefix we don't use standardListPrettyPrint
 		let cmdPrefix = Utils.convertMathToV2String(this.commandtext.get());
-		let fline = `${this.doTabs(lvl, hdir)}~${this.toStringV2PrivateDataSection(ctx)}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}`; // exp // \n`;
+		let fline = `${this.doTabs(lvl, hdir)}~${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}`; // exp // \n`;
 		let contents = this.prettyPrintChildren(lvl + 1);
 		let lline = `${this.listEndV2()}` // exp
 		return fline + contents + lline;
