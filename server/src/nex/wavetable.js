@@ -153,6 +153,8 @@ class Wavetable extends Nex {
 		this.playheadNode = null;
 		this.playheadFrame = null;
 		this.doingPan = false;
+		// where the line was before playback borrowed it
+		this.playbackStartSample = -1;
 		this.markers = [];
 		this.sectionBeingAuditioned = null;
 		this.recording = false;
@@ -585,6 +587,7 @@ class Wavetable extends Nex {
 				// the section's buffer starts at zero, but the wave it is drawn
 				// over does not
 				this.playheadOffset = sd.start;
+				this.playbackStartSample = this.centerSample;
 				startAuditioningBuffer(sd.cachedBuffer, this, 0, false /* momentary */);
 				this.setDirtyForRendering(true);
 				eventQueueDispatcher.enqueueTopLevelRender();
@@ -657,6 +660,7 @@ class Wavetable extends Nex {
 		if (!this.auditioning) {
 			this.auditioning = true;
 			this.playheadOffset = 0;
+			this.playbackStartSample = this.centerSample;
 			startAuditioningBuffer(this.cachedBuffer, this, 0, false /* momentary */);
 			// outside the editor there is no playhead layer yet -- this is the
 			// render that adds one
@@ -684,6 +688,7 @@ class Wavetable extends Nex {
 		}
 		this.auditioning = true;
 		this.playheadOffset = 0;
+		this.playbackStartSample = this.centerSample;
 		startAuditioningBuffer(this.cachedBuffer, this, this.centerSample, true /* sustained */);
 		this.startPlayheadAnimation();
 	}
@@ -693,12 +698,18 @@ class Wavetable extends Nex {
 			this.auditioning = false;
 			this.sectionBeingAuditioned = null;
 			this.stopPlayheadAnimation();
-			// The line stays where the sound stopped rather than snapping back,
-			// so pressing space again picks up from there. Outside the editor
-			// there is no selection point to leave behind, so it goes away.
+			// The line goes back to where playback started. It is the selection
+			// point as well as the playhead, so leaving it wherever the sound
+			// happened to stop would mean auditioning quietly moved your
+			// selection somewhere you did not put it. Play, stop, play again
+			// replays the same thing. Outside the editor there is no selection
+			// point to give back, so it goes away.
 			if (!this.isEditing) {
 				this.centerSample = -1;
+			} else if (this.playbackStartSample >= 0) {
+				this.centerSample = this.playbackStartSample;
 			}
+			this.playbackStartSample = -1;
 			this.updatePlayhead();
 			this.setDirtyForRendering(true);
 			eventQueueDispatcher.enqueueTopLevelRender();			
