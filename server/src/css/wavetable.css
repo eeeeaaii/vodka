@@ -45,15 +45,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	align-self: flex-start;
 }
 
+/* stacked exactly on the waveform canvas, and never in the way of a click */
 .waveplayhead {
 	position: absolute;
 	top: 0;
-	bottom: 0;
 	left: 0;
-	width: 1px;
-	background-color: var(--wave-playhead);
 	pointer-events: none;
-	display: none;
 }
 
 .wavetable.newselected {

@@ -735,14 +735,18 @@ class Wavetable extends Nex {
 
 	updatePlayhead() {
 		if (!this.playheadNode) return;
-		let visible = (this.centerSample >= 0) && (this.isEditing || this.auditioning);
-		let x = visible ? this.pixelPositionOfSample(this.centerSample) : 0;
-		if (!visible || x < 0 || x > this.windowWidth()) {
-			this.playheadNode.style.display = 'none';
-			return;
-		}
-		this.playheadNode.style.display = '';
-		this.playheadNode.style.transform = 'translateX(' + Math.round(x) + 'px)';
+		let ctx = this.playheadNode.getContext('2d');
+		// An empty overlay is an invisible one, so there is no separate hidden
+		// state to keep in step with anything.
+		ctx.clearRect(0, 0, this.windowWidth(), this.windowHeight());
+		if (this.centerSample < 0) return;
+		if (!this.isEditing && !this.auditioning) return;
+		let x = Math.round(this.pixelPositionOfSample(this.centerSample));
+		if (x < 0 || x > this.windowWidth()) return;
+		ctx.lineWidth = 1;
+		// half a pixel over, or a one-pixel line straddles two columns and comes
+		// out two pixels wide and half strength
+		this.drawVertLine(ctx, x + 0.5, false, this.playheadColor);
 	}
 
 	_setClickHandler(renderNode) {
@@ -878,8 +882,17 @@ class Wavetable extends Nex {
 		let viewport = document.createElement('div');
 		viewport.classList.add('waveviewport');
 		viewport.appendChild(this.createWaveformCanvas());
-		this.playheadNode = document.createElement('div');
+		// A second canvas the same size as the waveform, stacked on it. Same
+		// size means the same coordinate system, so the playhead is placed in
+		// samples-to-pixels exactly like everything drawn underneath it.
+		this.playheadNode = document.createElement('canvas');
 		this.playheadNode.classList.add('waveplayhead');
+		this.playheadNode.setAttribute('width', this.windowWidth());
+		this.playheadNode.setAttribute('height', this.windowHeight());
+		// cached because updatePlayhead runs every frame, and reading a computed
+		// style forces a style recalculation
+		this.playheadColor = getComputedStyle(document.documentElement)
+				.getPropertyValue('--wave-playhead').trim();
 		viewport.appendChild(this.playheadNode);
 		domNode.appendChild(viewport);
 		this.updatePlayhead();
