@@ -1,8 +1,9 @@
 const ObjectsPanel = () => {
   return (
     <div className="infopanel">
-      <p className="infotitle">Abstract Data Types</p>
+      <p className="infotitle">Abstract Data Types?</p>
 
+      <p className="infosubheader">Instantiation</p>
       <p className="infolinemargin"><span className="infohotkey">^</span>inserts an instantiator. But what is it instantiating?</p>
       <p className="infolinemargin">
         To create a thing that can be instantiated, name an org by binding it to a symbol with <span className="infohotkey">bind</span>.
@@ -18,42 +19,49 @@ const ObjectsPanel = () => {
       <p className="infolinemargin">
         If an org is bound to a name, then it can be used as a receiver. Receiver syntax
         allows you to refer to children of that org using dots. If the org is bound
-        to `foo` and it has a child tagged with `bar` you can refer to the child
-        using `foo.bar`.
+        to <span className="infohotkey">foo</span>and it has a child tagged with <span className="infohotkey">bar</span>you can refer to the child
+        using <span className="infohotkey">foo.bar</span>.
       </p>
       <p className="infolinemargin">
-        This can, of course, be extended past the first level child. If `foo.bar` is an org
-        with tagged children, then `foo.bar` can be a receiver, and `foo.bar.baz` refers
+        This can, of course, be extended past the first level child. If <span className="infohotkey">foo.bar</span>is an org
+        with tagged children, then <span className="infohotkey">foo.bar</span>can be a receiver, and <span className="infohotkey">foo.bar.baz</span>refers
         to its children.
       </p>
       <p className="infolinemargin">
-
+        If an org has a lambda child tagged <span className="infohotkey">:init</span>, that will run on instantiation. The arguments
+        you pass to <span className="infohotkey">^</span>will go to this lambda.
       </p>
-
-      <p className="infospacer"></p>
-      <p className="infosubheader">Member names that mean something:</p>
-      <p className="infoline"><span className="infohotkey">:init</span>run on instantiation, receives the arguments</p>
-      <p className="infoline"><span className="infohotkey">:draw</span>returns HTML, drawn in place of the object</p>
-      <p className="infoline"><span className="infohotkey">:docs</span>documentation</p>
-
-      <p className="infospacer"></p>
-      <p className="infosubheader">Instantiating:</p>
-      <p className="infoline">Copies the members, turns lambdas into closures with <span className="infohotkey">self</span> bound, then calls <span className="infohotkey">:init</span>.</p>
-      <p className="infoline">Members that aren't lambdas are copied, so each object gets its own.</p>
-      <p className="infoline">Instantiating something that isn't an org hands it back unchanged.</p>
-      <p className="infoline">There is no inheritance.</p>
-
-      <p className="infospacer"></p>
-      <p className="infosubheader">Contracts:</p>
-      <p className="infolinemargin">Members are named by tags, so the type system is a tag system, and contracts are how it gets constrained.</p>
-      <p className="infolinemargin">A contract is an object. <span className="infohotkey">sign for</span>attaches one to a tag name, and from then on nothing can carry that tag unless it satisfies the contract — whether tagged with <span className="infohotkey">`</span>or with <span className="infohotkey">add-tag</span>.</p>
-      <p className="infoline"><span className="infohotkey">has-tag-contract</span>satisfied by anything carrying a given tag</p>
-      <p className="infoline"><span className="infohotkey">type-contract</span>satisfied by anything of the same type as a given object</p>
-      <p className="infoline"><span className="infohotkey">identity-contract</span>satisfied only by one specific object</p>
-      <p className="infolinemargin">Because member names are tags, a contract on a member name constrains that member in every object that has one. This is the closest thing to declaring a type.</p>
-
-      <p className="infospacer"></p>
-      <p className="infolineitalic">The vector package uses all of this.</p>
+      <p className="infolinemargin">
+        If an org has a lambda child tagged <span className="infohotkey">:draw</span>, that returns HTML, that HTML will be drawn instead
+        of the org when in normal (non-exploded) mode.
+      </p>
+      <p className="infolinemargin">
+        If an org has a doc child tagged <span className="infohotkey">:docs</span>, those docs appear in the tooltip when you type its bound name
+        into the instantiator.
+      </p>
+      <p className="infolinemargin">
+        Remember how I said that lambdas get turned into closures when you instantiate? When this happens,
+        they are given an extra binding in their environment. This is the symbol <span className="infohotkey">@self</span>bound back to the instance org.
+      </p>
+      <p className="infosubheader">Contracts</p>
+      <p className="infolinemargin">
+        What are types in programming languages for? They exist so that you can feel confident
+        that certain things are true.
+      </p>
+      <p className="infolinemargin">
+        Vodka does this with contracts. A contract is an object that encapsulates some set of assumptions
+        about a nex. For example, it must be an integer.
+      </p>
+      <p className="infolinemargin">
+        To use a contract, you must sign it with the <span className="infohotkey">sign for</span>builtin. But who is the signatory?
+      </p>
+      <p className="infolinemargin">
+        A tag signs a contract. Once a tag is under contract, any nex tagged with that tag name must
+        adhere to the contract. This is enforced when creating nexes in the editor,
+        when instantiating instances, and when calling <span className="infohotkey">add-tag-to</span>.
+        Tagged nexes that existed before the contract was signed are not affected, and these
+        can be duplicated or copied and pasted without violating the contract.
+      </p>
     </div>
   );
 };
