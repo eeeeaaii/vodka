@@ -585,6 +585,8 @@ class Wavetable extends Nex {
 				// over does not
 				this.playheadOffset = sd.start;
 				startAuditioningBuffer(sd.cachedBuffer, this, 0, false /* momentary */);
+				this.setDirtyForRendering(true);
+				eventQueueDispatcher.enqueueTopLevelRender();
 				this.startPlayheadAnimation();
 			}
 		}
@@ -655,6 +657,10 @@ class Wavetable extends Nex {
 			this.auditioning = true;
 			this.playheadOffset = 0;
 			startAuditioningBuffer(this.cachedBuffer, this, 0, false /* momentary */);
+			// outside the editor there is no playhead layer yet -- this is the
+			// render that adds one
+			this.setDirtyForRendering(true);
+			eventQueueDispatcher.enqueueTopLevelRender();
 			this.startPlayheadAnimation();
 		}
 	}
@@ -882,18 +888,24 @@ class Wavetable extends Nex {
 		let viewport = document.createElement('div');
 		viewport.classList.add('waveviewport');
 		viewport.appendChild(this.createWaveformCanvas());
-		// A second canvas the same size as the waveform, stacked on it. Same
-		// size means the same coordinate system, so the playhead is placed in
-		// samples-to-pixels exactly like everything drawn underneath it.
-		this.playheadNode = document.createElement('canvas');
-		this.playheadNode.classList.add('waveplayhead');
-		this.playheadNode.setAttribute('width', this.windowWidth());
-		this.playheadNode.setAttribute('height', this.windowHeight());
-		// cached because updatePlayhead runs every frame, and reading a computed
-		// style forces a style recalculation
-		this.playheadColor = getComputedStyle(document.documentElement)
-				.getPropertyValue('--wave-playhead').trim();
-		viewport.appendChild(this.playheadNode);
+		// Only when there is something to put on it: the selection point exists
+		// while editing, and the playhead while a sound is running. The rest of
+		// the time there is no second canvas at all.
+		this.playheadNode = null;
+		if (this.isEditing || this.auditioning) {
+			// Same width and height as the waveform, stacked on it, so the
+			// playhead is placed in samples-to-pixels exactly like everything
+			// drawn underneath it.
+			this.playheadNode = document.createElement('canvas');
+			this.playheadNode.classList.add('waveplayhead');
+			this.playheadNode.setAttribute('width', this.windowWidth());
+			this.playheadNode.setAttribute('height', this.windowHeight());
+			// cached because updatePlayhead runs every frame, and reading a
+			// computed style forces a style recalculation
+			this.playheadColor = getComputedStyle(document.documentElement)
+					.getPropertyValue('--wave-playhead').trim();
+			viewport.appendChild(this.playheadNode);
+		}
 		domNode.appendChild(viewport);
 		this.updatePlayhead();
 
@@ -1043,6 +1055,7 @@ class Wavetable extends Nex {
 	createWaveformCanvas() {
 
 		let canvas = document.createElement('canvas');
+		canvas.classList.add('wavecanvas');
 		canvas.setAttribute('height', this.windowHeight());
 		canvas.setAttribute('width', this.windowWidth());
 		let ctx = canvas.getContext("2d");
