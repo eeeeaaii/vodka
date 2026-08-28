@@ -46,7 +46,7 @@ const ObjectsPanel = () => {
       <p className="infospacer"></p>
       <p className="infosubheader">Contracts:</p>
       <p className="infolinemargin">Members are named by tags, so the type system is a tag system, and contracts are how it gets constrained.</p>
-      <p className="infolinemargin">A contract is an object. <span className="infohotkey">certify satisfies</span>attaches one to a tag name, and from then on nothing can carry that tag unless it satisfies the contract — whether tagged with <span className="infohotkey">`</span>or with <span className="infohotkey">add-tag</span>.</p>
+      <p className="infolinemargin">A contract is an object. <span className="infohotkey">sign for</span>attaches one to a tag name, and from then on nothing can carry that tag unless it satisfies the contract — whether tagged with <span className="infohotkey">`</span>or with <span className="infohotkey">add-tag</span>.</p>
       <p className="infoline"><span className="infohotkey">has-tag-contract</span>satisfied by anything carrying a given tag</p>
       <p className="infoline"><span className="infohotkey">type-contract</span>satisfied by anything of the same type as a given object</p>
       <p className="infoline"><span className="infohotkey">identity-contract</span>satisfied only by one specific object</p>
