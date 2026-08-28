@@ -27,7 +27,10 @@ class Contract extends NexContainer {
 
 		super()
 		this.impl = contractImpl;
-		this.privateData = null; // unused
+		// A contract has no private data of its own, but it still gets
+		// serialized like everything else, and '' is what "nothing" looks like
+		// to a serializer. null is not a string.
+		this.privateData = '';
 		this.contractTags = [];
 	}
 

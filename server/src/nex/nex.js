@@ -186,7 +186,12 @@ class Nex {
 		// pretty printing, debug strings, the text in an error message.
 		if (!ctx) ctx = DISPLAY_CONTEXT;
 		let v = this.serializePrivateData(ctx);
-		if (v == '') {
+		// Loose equality against '' does not catch null -- null is only ever
+		// loosely equal to undefined -- so a type returning null for "I have no
+		// private data" used to reach indexOf below and throw, taking the whole
+		// operation with it. Nothing to serialize is nothing to serialize,
+		// however it was spelled.
+		if (!v) {
 			return '';
 		}
 
