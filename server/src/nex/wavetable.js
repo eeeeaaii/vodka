@@ -660,7 +660,9 @@ class Wavetable extends Nex {
 		if (!this.auditioning) {
 			this.auditioning = true;
 			this.playheadOffset = 0;
-			this.playbackStartSample = this.centerSample;
+			// Always from the beginning. You are not editing when you get here
+			// -- Enter terminates the editor -- so there is no selection point,
+			// and the line is only here to show how far in you are.
 			startAuditioningBuffer(this.cachedBuffer, this, 0, false /* momentary */);
 			// outside the editor there is no playhead layer yet -- this is the
 			// render that adds one
