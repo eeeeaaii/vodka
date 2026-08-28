@@ -3,6 +3,7 @@ import { useState, useEffect } from 'preact/hooks';
 import TopMenu from './topmenu.jsx'
 import BasicUsagePanel from './basic_usage_panel';
 import ApiReferencePanel from './api_reference_panel';
+import ObjectsPanel from './objects_panel';
 import WelcomePanel from './welcome_panel';
 import AccessButton from './access_button';
 import StatusNav from './status_nav';
@@ -15,7 +16,7 @@ import {
 } from '../help';
 
 
-import { WELCOME, QUICK_REFERENCE, FULL_API_REFERENCE, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
+import { WELCOME, QUICK_REFERENCE, OBJECTS, FULL_API_REFERENCE, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
 
 const MINIMIZED = 0;
 const SHOWING_PANELS = 1;
@@ -27,6 +28,7 @@ const HIDDEN = 3;
 const WELCOME_PANEL = 0;
 const BASIC_USAGE_PANEL = 1;
 const API_REFERENCE_PANEL = 2;
+const OBJECTS_PANEL = 3;
 
 function initialUiState() {
     switch (getInitialHelpState()) {
@@ -60,6 +62,9 @@ const App = () => {
             case QUICK_REFERENCE:
                 setPanel(BASIC_USAGE_PANEL);
                 break;
+            case OBJECTS:
+                setPanel(OBJECTS_PANEL);
+                break;
             case FULL_API_REFERENCE:
                 setPanel(API_REFERENCE_PANEL);
                 break;
@@ -79,6 +84,7 @@ const App = () => {
     const selectedMenuChoice = () => {
         switch(panel) {
             case API_REFERENCE_PANEL: return FULL_API_REFERENCE;
+            case OBJECTS_PANEL:       return OBJECTS;
             case BASIC_USAGE_PANEL:   return QUICK_REFERENCE;
             case WELCOME_PANEL:
             default:                  return WELCOME;
@@ -89,6 +95,8 @@ const App = () => {
         switch(panel) {
             case API_REFERENCE_PANEL:
                 return <ApiReferencePanel/>;
+            case OBJECTS_PANEL:
+                return <ObjectsPanel/>;
             case BASIC_USAGE_PANEL:
                 return <BasicUsagePanel/>;
             case WELCOME_PANEL:
