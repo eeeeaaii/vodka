@@ -75,6 +75,10 @@ Metadata goes first and the samples last, because in the inline form the
 samples are a megabyte of base64 and anything you have to scroll past is
 something you will never read.
 
+No audio field at all means silence: a wavetable that says nothing about its
+samples comes back as DEFAULT_SIZE of them at zero, so "there was nothing to
+store" costs nothing to store.
+
 A field with no colon is the samples themselves, unkeyed. That is what every
 file written before fields existed looks like -- raw base64, or the older
 comma-separated decimals -- and neither can be mistaken for a field, since
@@ -143,19 +147,7 @@ function parseInlineSamples(data) {
 	}
 }
 
-// A wavetable of DEFAULT_SIZE silent samples, encoded once. Emitting this rather
-// than an empty string means a restored wavetable is structurally identical to a
-// freshly inserted one, instead of a zero-length oddity the renderer has never
-// seen.
 const DEFAULT_SIZE = 256;
-const SILENT_WAVETABLE_DATA = (function() {
-	let bytes = new Uint8Array(new Float32Array(DEFAULT_SIZE).buffer);
-	let s = '';
-	for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
-	return typeof window !== 'undefined' && window.btoa
-			? window.btoa(s)
-			: Buffer.from(s, 'binary').toString('base64');
-})();
 
 class Wavetable extends Nex {
 	constructor(initSize) {
@@ -598,8 +590,13 @@ class Wavetable extends Nex {
 		if (this.markers.length > 0) {
 			fields.push(BREAKPOINTS_KEY + KEY_SEPARATOR + this.markers.join(','));
 		}
-		// last, and the only field that may arrive without a key
-		fields.push(this.serializeSamples());
+		// last, and the only field that may arrive without a key. Empty when
+		// there was nowhere to put the samples, in which case no field is
+		// written at all and reading it back gives silence.
+		let samples = this.serializeSamples();
+		if (samples != '') {
+			fields.push(samples);
+		}
 		return fields.join(FIELD_SEPARATOR);
 	}
 
@@ -618,9 +615,12 @@ class Wavetable extends Nex {
 		// the real audio inline.
 		if (!serializeAudioData) {
 			if (audioStore.isUnavailable()) {
-				// No IndexedDB -- a private window, blocked site data. Fall back
-				// to the old behaviour: structure survives, audio doesn't.
-				return SILENT_WAVETABLE_DATA;
+				// No IndexedDB -- a private window, blocked site data. Say
+				// nothing about the samples rather than writing out a silent
+				// buffer: a wavetable with no audio field comes back as silence
+				// anyway, and there is no reason to store a kilobyte of zeros to
+				// mean "there was nothing to store".
+				return '';
 			}
 			let hash = audioStore.hashSamples(this.data);
 			audioStore.put(hash, this.data);
