@@ -152,6 +152,7 @@ class Wavetable extends Nex {
 		this.playheadOffset = 0;
 		this.playheadNode = null;
 		this.playheadFrame = null;
+		this.doingPan = false;
 		this.markers = [];
 		this.sectionBeingAuditioned = null;
 		this.recording = false;
@@ -760,12 +761,15 @@ class Wavetable extends Nex {
 		let startx = 0;
 		let initialZoom = 0;
 		let initialAmpZoom = 0;
+		let initialWindowOrigin = 0;
 		let y = 0;
 		let x = 0;
 		let t = this;
 		let startedBelow = false;
 		let ampnegative = 1;
 		let startfunction = (event) => {
+			// ctrl pans, shift zooms amplitude, neither zooms time
+			this.doingPan = event.ctrlKey;
 			if (event.shiftKey) {
 				this.doingAmplitudeZoom = true;
 			} else {
@@ -785,11 +789,12 @@ class Wavetable extends Nex {
 			// Not while playing: the click is how you zoom, and moving the
 			// playhead every time you grabbed the wave to zoom would make it
 			// impossible to zoom in on something while listening to it.
-			if (this.isEditing && !this.auditioning) {
+			if (this.isEditing && !this.auditioning && !this.doingPan) {
 				this.changeCenterSample(event.offsetX);
 			}
 			initialZoom = this.getPixelsPerSample();
 			initialAmpZoom = this.getHeightPixelsFullScale();
+			initialWindowOrigin = this.windowOriginSample;
 			// enqueue a redraw for the center line
 			eventQueueDispatcher.enqueueTopLevelRender();			
 		}
@@ -798,6 +803,17 @@ class Wavetable extends Nex {
 			let x = e.clientX;
 			let deltaY = y - starty;
 			let deltaX = -(x - startx);
+			if (this.doingPan) {
+				// Drag right and the wave goes right, because what you have hold
+				// of is the wave, not the window onto it. Zoom is untouched, and
+				// so is the selection point -- panning is a way to look
+				// somewhere else, not to choose somewhere else.
+				this.setWindowOriginSample(
+						initialWindowOrigin - (x - startx) / this.getPixelsPerSample());
+				this.updatePlayhead();
+				eventQueueDispatcher.enqueueTopLevelRender();
+				return;
+			}
 			let delta = (Math.abs(deltaX) > Math.abs(deltaY)) ? deltaX : deltaY;
 			let factor = Math.pow(2, -(delta * 0.01));
 			let ampfactor = Math.pow(2, ampnegative * (deltaY * 0.01));
