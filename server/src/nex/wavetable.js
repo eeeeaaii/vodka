@@ -768,8 +768,11 @@ class Wavetable extends Nex {
 		let startedBelow = false;
 		let ampnegative = 1;
 		let startfunction = (event) => {
-			// ctrl pans, shift zooms amplitude, neither zooms time
-			this.doingPan = event.ctrlKey;
+			// ctrl pans, shift zooms amplitude, neither zooms time. Panning is
+			// editing-only: the window origin is part of the editing view and
+			// stopEditing puts it back to zero, so panning outside the editor
+			// would be undone the moment you looked away.
+			this.doingPan = event.ctrlKey && this.isEditing;
 			if (event.shiftKey) {
 				this.doingAmplitudeZoom = true;
 			} else {
