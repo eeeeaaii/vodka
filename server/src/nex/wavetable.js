@@ -51,6 +51,28 @@ import { getAudioBufferFromData, startRecordingAudio, stopRecordingAudio } from 
 /**
  * Nex that represents a wavetable value.
  */
+// When false, wavetables serialize as silence instead of their real samples.
+// Used by autosave; see serializePrivateData below.
+let serializeAudioData = true;
+
+function setSerializeAudioData(v) {
+	serializeAudioData = v;
+}
+
+// A wavetable of DEFAULT_SIZE silent samples, encoded once. Emitting this rather
+// than an empty string means a restored wavetable is structurally identical to a
+// freshly inserted one, instead of a zero-length oddity the renderer has never
+// seen.
+const DEFAULT_SIZE = 256;
+const SILENT_WAVETABLE_DATA = (function() {
+	let bytes = new Uint8Array(new Float32Array(DEFAULT_SIZE).buffer);
+	let s = '';
+	for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+	return typeof window !== 'undefined' && window.btoa
+			? window.btoa(s)
+			: Buffer.from(s, 'binary').toString('base64');
+})();
+
 class Wavetable extends Nex {
 	constructor(initSize) {
 		super();
@@ -412,6 +434,13 @@ class Wavetable extends Nex {
 	}
 
 	serializePrivateData() {
+		// Autosave turns this off: sample data is far too large for localStorage
+		// (roughly 250KB of base64 per second of audio), so wavetables are written
+		// out silent and come back as empty ones. Saving to the server is
+		// unaffected and still writes the real audio.
+		if (!serializeAudioData) {
+			return SILENT_WAVETABLE_DATA;
+		}
 		let s = '';
 		let bytes = new Uint8Array(this.data.buffer);
 		let len = bytes.byteLength;
@@ -1101,4 +1130,4 @@ stats: ${heap.stats()}`)
 }
 
 
-export { Wavetable, WavetableEditor, constructWavetable }
+export { Wavetable, WavetableEditor, constructWavetable, setSerializeAudioData }
