@@ -772,9 +772,13 @@ class Wavetable extends Nex {
 			// Command as well as ctrl because on a mac ctrl-click is right
 			// click, so ctrl-drag there is fighting the context menu.
 			//
-			// Panning is editing-only: the window origin is part of the editing
-			// view and stopEditing puts it back to zero, so panning outside the
-			// editor would be undone the moment you looked away.
+			// Panning is editing-only because outside the editor there is no
+			// window to pan. windowWidth sizes the canvas to the wave, so a
+			// short one is entirely on screen with nothing to move to, and only
+			// a wave long enough to hit the 65%-of-screen cap has anything
+			// hidden -- see rightIsClipping. Ctrl-drag out there would do
+			// nothing at all on some waveforms and move on others, with nothing
+			// on screen to say which you were looking at.
 			this.doingPan = (event.ctrlKey || event.metaKey) && this.isEditing;
 			if (event.shiftKey) {
 				this.doingAmplitudeZoom = true;
