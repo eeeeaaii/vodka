@@ -80,8 +80,7 @@ const ObjectsPanel = () => {
         that certain things are true.
         Vodka does this with things called contracts. A contract is an object that encapsulates some set of assumptions
         about a nex. For example, a contract might say that anything
-        tagged with
-        <span className="infohotkey">int</span>
+        tagged with <span className="infohotkey">int</span>
         must be an integer.
         To use a contract, you must sign it with the <span className="infohotkey">sign for</span>builtin.
       </p>
@@ -100,33 +99,64 @@ const ObjectsPanel = () => {
       <p className="infolinemargin">
         What kinds of contracts exist?
       </p>
-      <p className="infolinemargin">
-        Three, so far.
-        <span className="infohotkey">type-contract</span>takes a nex, and is satisfied by anything of the same type as it.
-        <span className="infohotkey">has-tag-contract</span>takes a tag name, and is satisfied by anything carrying that tag.
-        <span className="infohotkey">identity-contract</span>takes a nex, and is satisfied only by that one object and nothing else.
+      <p className="infoline">
+        <span className="infohotkey">type-contract</span>
+        the nex must be a given type
+      </p>
+      <p className="infoline">
+        <span className="infohotkey">identity-contract</span>
+        only this exact nex can bear this tag
+      </p>
+      <p className="infoline">
+        <span className="infohotkey">tag-contract</span>
+        the tag under contract can only be applied
+        to nexes that additionally have another specific tag
       </p>
       <p className="infospacer"></p>
       <p className="infolinemargin">
-        Two more are planned.
+        What kinds of contracts are planned?
       </p>
-      <p className="infolinemargin">
-        An <span className="infohotkey">and</span>contract, which holds any number of other contracts and is satisfied only when
-        every one of them is.
-        And <span className="infohotkey">has-child-tagged</span>, which takes a tag name and is satisfied by anything that has a
-        child carrying that tag.
+      <p className="infoline">
+        <span className="infohotkey">and-contract</span>
+        the nex must satisfy some set of other contracts
+      </p>
+      <p className="infoline">
+        <span className="infohotkey">has-child-contract</span>
+        the nex must be an org or other container type
+        and it must have a child with a specific tag
       </p>
       <p className="infospacer"></p>
       <p className="infolinemargin">
-        Why those two in particular?
+        How would I express an abstract data type using these contracts?
       </p>
       <p className="infolinemargin">
-        Because together they describe shape, and most of what a type tells you about
-        something is what it must contain. A model whose instances must have children tagged
-        <span className="infohotkey">x</span>and <span className="infohotkey">y</span>is an
-        <span className="infohotkey">and</span>of two <span className="infohotkey">has-child-tagged</span>contracts.
-        Nest them, and you can describe an object whose child is itself required to have a
-        particular shape.
+        Compose them. For example, let's say you want
+        a 2d mathematical vector type. Your contracts:
+      </p>
+      <p className="infoline">
+        <span className="infohotkey">type-contract</span>
+        anything tagged <span className="infohotkey">float</span>must be a float.
+      </p>
+      <p className="infoline">
+        <span className="infohotkey">tag-contract</span>
+        anything tagged <span className="infohotkey">x-dimension</span>must have the tag <span className="infohotkey">float</span>.
+      </p>
+      <p className="infoline">
+        <span className="infohotkey">tag-contract</span>
+        anything tagged <span className="infohotkey">y-dimension</span>must have the tag <span className="infohotkey">float</span>.
+      </p>
+      <p className="infoline">
+        <span className="infohotkey">and-contract</span>
+        any org tagged <span className="infohotkey">2d-vector</span>must have:
+        <ul>
+          <li>
+            <span className="infohotkey">has-child-contract</span>it must have a child tagged <span className="infohotkey">y-dimension</span>
+          </li>
+          <li>
+            <span className="infohotkey">has-child-contract</span>it must have
+            a child tagged <span className="infohotkey">x-dimension</span>
+          </li>
+        </ul>
       </p>
     </div>
   );
