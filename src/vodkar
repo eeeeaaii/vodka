@@ -1,4 +1,19 @@
 #!/bin/bash
 
 
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+	cat <<'USAGE'
+usage: ./vodkar [--noprompt]
+
+Starts a vodka read-eval-print loop in the terminal.
+
+  --noprompt    no prompt characters, for piping a script in
+  --help        this message
+
+Run from the src directory.
+USAGE
+	exit 0
+fi
+
+
 node --experimental-modules vodkar.js "$@"

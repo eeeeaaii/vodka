@@ -18,6 +18,17 @@
 # along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+	cat <<'USAGE'
+usage: ./makedepgraph.sh
+
+Builds a header dependency graph from the .h files here and opens it as a PDF.
+Needs graphviz. Run from native/src.
+USAGE
+	exit 0
+fi
+
+
 echo "digraph {" > dependencies.dot
 for A in *.h; do
 	cat $A | grep '#include "' | sed 's/#include/   "'$A'" -> /' >> dependencies.dot

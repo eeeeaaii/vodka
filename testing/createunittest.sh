@@ -14,6 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+	cat <<'USAGE'
+usage: ./createunittest.sh [testname]
+
+Creates an empty unit test file in alltests/. Prompts for a name if you do not
+pass one, then for a description.
+
+Run from the testing directory.
+USAGE
+	exit 0
+fi
+
+
 if [ "$1" == "" ]; then
 	echo "Type name of the new test:"
 	read NAME

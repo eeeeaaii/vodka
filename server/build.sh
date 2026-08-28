@@ -46,6 +46,24 @@ while [ "$1" != "" ]; do
 		--quiet)
 			LOG_ARGS="--log-level=error"
 			;;
+		--help|-h)
+			cat <<'USAGE'
+usage: ./build.sh [--dev|--watch] [--quiet]
+
+Bundles the vodka client into server/dist/.
+
+  --dev     unminified, with sourcemaps
+  --watch   unminified, rebuild on change
+  --quiet   report errors only, not warnings
+  --help    this message
+
+Writing to server/dist/ changes what the running server serves, immediately.
+Use ./run.sh from the repository root to build and serve in one step.
+
+Run from the server directory.
+USAGE
+			exit 0
+			;;
 		*)
 			echo "build.sh: unknown option '$1'"
 			echo "usage: ./build.sh [--dev|--watch] [--quiet]"

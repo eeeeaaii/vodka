@@ -15,6 +15,22 @@
 # along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+	cat <<'USAGE'
+usage: ./renametest.sh <oldname> <newname>
+
+Renames a test, rewrites the name inside the test file, drops the old output
+directory and reruns under the new name. Asks for confirmation first.
+
+Goldens are NOT carried over -- the old output directory is deleted, so the
+renamed test starts with no golden and will need one captured.
+
+Run from the testing directory.
+USAGE
+	exit 0
+fi
+
+
 if [ "$1" == "" ]; then
 	echo "requires 2 arguments"
 	exit 1

@@ -19,6 +19,22 @@
 #   ./run.sh          minified build, then serve
 #   ./run.sh --dev    unminified build with sourcemaps, then serve
 
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+	cat <<'USAGE'
+usage: ./run.sh [--dev]
+
+Builds the client and starts the server. This is the one you want.
+
+  --dev     unminified build with sourcemaps
+  --help    this message
+
+Refuses to start if something is already listening on port 3000.
+Serves on http://localhost:3000; ctrl-c stops it.
+USAGE
+	exit 0
+fi
+
+
 set -e
 cd "$(dirname "$0")"
 

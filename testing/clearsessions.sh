@@ -14,6 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+	cat <<'USAGE'
+usage: ./clearsessions.sh
+
+Deletes every generated session in server/sessions/. Named sessions in
+server/namedsessions/ are left alone.
+
+This is destructive and does not ask. Run from the testing directory.
+USAGE
+	exit 0
+fi
+
+
 pushd ../server/sessions
 rm -rf *
 popd

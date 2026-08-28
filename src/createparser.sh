@@ -14,6 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+	cat <<'USAGE'
+usage: ./createparser.sh
+
+Regenerates the parser from parser.pegjs and installs it, writing
+server/src/nexparser2.js and server/src/parserfunctions.js.
+
+Needs pegjs on the path. Run from the src directory.
+USAGE
+	exit 0
+fi
+
+
 pegjs --format es -o ./tmp parser.pegjs 
 cat ./parser_prelude.js ./tmp > ./parser_for_testing.js
 cat ./parser_prelude.js ./tmp > ../server/src/nexparser2.js

@@ -32,6 +32,20 @@ const GENERATED_SESSION_PREFIX = 'vs-';
 
 const RESERVED = ['packages', 'samples'];
 
+const USAGE = `usage: node tools/createnamedsession.js <name>
+
+Creates a named session, which is a directory under namedsessions/ that vodka
+saves and loads files in. Named sessions can only be made here -- the server
+used to allow it over HTTP, which let anyone claim any name.
+
+Names may contain letters, digits, underscores and hyphens. "packages" and
+"samples" are reserved, and a name cannot start with "vs-", which marks the
+sessions the server generates for itself.
+
+Open the result at /?sessionId=<name>
+
+Run from the server directory.`;
+
 function fail(message) {
 	console.error('createnamedsession: ' + message);
 	process.exit(1);
@@ -40,9 +54,21 @@ function fail(message) {
 function main() {
 	let name = process.argv[2];
 
+	if (name == '--help' || name == '-h') {
+		console.log(USAGE);
+		process.exit(0);
+	}
+
 	if (!name) {
-		console.error('usage: node tools/createnamedsession.js <name>');
+		console.error(USAGE);
 		process.exit(1);
+	}
+
+	// Hyphens are legal inside a name, so an option typo like --dry-run would
+	// otherwise pass validation and create a directory named after the flag.
+	if (name.indexOf('-') === 0) {
+		fail(`"${name}" starts with a hyphen. If you meant an option, the only`
+				+ ` one is --help.`);
 	}
 
 	if (RESERVED.indexOf(name) >= 0) {

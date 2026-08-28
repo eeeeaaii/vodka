@@ -15,4 +15,18 @@
 # along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+	cat <<'USAGE'
+usage: ./runserver.sh
+
+Starts the vodka server on port 3000. Does not build first -- use ./run.sh
+from the repository root for build-then-serve, or ./build.sh here to build
+without serving.
+
+Run from the server directory.
+USAGE
+	exit 0
+fi
+
+
 node webserver.js
