@@ -17,7 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Nex } from './nex.js'
 import { experiments } from '../globalappflags.js'
-import { startAuditioningBuffer, getFileAsBuffer } from '../webaudio.js'
+import { startAuditioningBuffer, getFileAsBuffer, getAuditionPositionSamples, maybeKillSound } from '../webaudio.js'
 import { possiblyRecordAction } from '../testrecorder.js'
 import { heap } from '../heap.js'
 import { constructFatalError, throwOOM } from './eerror.js'
@@ -147,6 +147,11 @@ class Wavetable extends Nex {
 		this.localPixelsPerSample = -1;
 		this.localHeightPixelsFullScale = -1;
 		this.centerSample = -1;
+		// while a section is auditioning, the buffer being played starts partway
+		// into the wave, so positions coming back from it need shifting
+		this.playheadOffset = 0;
+		this.playheadNode = null;
+		this.playheadFrame = null;
 		this.markers = [];
 		this.sectionBeingAuditioned = null;
 		this.recording = false;
@@ -230,6 +235,10 @@ class Wavetable extends Nex {
 	}
 
 	stopEditing() {
+		if (this.auditioning) {
+			maybeKillSound(true /* force -- editing is over, so playback is too */);
+		}
+		this.stopPlayheadAnimation();
 		this.centerSample = -1;
 		this.localPixelsPerSample = -1;
 		this.localHeightPixelsFullScale = -1;
@@ -572,7 +581,11 @@ class Wavetable extends Nex {
 			if (!this.auditioning) {
 				this.auditioning = true;
 				this.sectionBeingAuditioned = sd;
-				startAuditioningBuffer(sd.cachedBuffer, this);
+				// the section's buffer starts at zero, but the wave it is drawn
+				// over does not
+				this.playheadOffset = sd.start;
+				startAuditioningBuffer(sd.cachedBuffer, this, 0, false /* momentary */);
+				this.startPlayheadAnimation();
 			}
 		}
 	}
@@ -640,17 +653,96 @@ class Wavetable extends Nex {
 	auditionWave() {
 		if (!this.auditioning) {
 			this.auditioning = true;
-			startAuditioningBuffer(this.cachedBuffer, this);
+			this.playheadOffset = 0;
+			startAuditioningBuffer(this.cachedBuffer, this, 0, false /* momentary */);
+			this.startPlayheadAnimation();
 		}
+	}
+
+	/*
+	Space, while editing. Unlike holding enter this survives the keyup, so it
+	plays until you press space again.
+
+	Playback starts from the green line, which is the selection point, and the
+	same line then becomes the playhead and moves. With nothing selected the
+	line has not been placed yet, so it starts at the beginning.
+	*/
+	togglePlayback() {
+		if (this.auditioning) {
+			maybeKillSound(true /* force -- a toggle is an explicit stop */);
+			return;
+		}
+		if (this.centerSample < 0 || this.centerSample >= this.data.length) {
+			this.centerSample = 0;
+		}
+		this.auditioning = true;
+		this.playheadOffset = 0;
+		startAuditioningBuffer(this.cachedBuffer, this, this.centerSample, true /* sustained */);
+		this.startPlayheadAnimation();
 	}
 
 	stopAuditioningWave() {
 		if (this.auditioning) {
 			this.auditioning = false;
 			this.sectionBeingAuditioned = null;
+			this.stopPlayheadAnimation();
+			// The line stays where the sound stopped rather than snapping back,
+			// so pressing space again picks up from there. Outside the editor
+			// there is no selection point to leave behind, so it goes away.
+			if (!this.isEditing) {
+				this.centerSample = -1;
+			}
+			this.updatePlayhead();
 			this.setDirtyForRendering(true);
 			eventQueueDispatcher.enqueueTopLevelRender();			
 		}
+	}
+
+	/*
+	The playhead is a positioned div over the canvas rather than something drawn
+	into it, so moving it is one style write. Redrawing the waveform every frame
+	would mean rescanning the samples behind every pixel column sixty times a
+	second, which is far too much work to be doing during a set.
+	*/
+	startPlayheadAnimation() {
+		if (this.playheadFrame) return;
+		let step = () => {
+			if (!this.auditioning) {
+				this.playheadFrame = null;
+				return;
+			}
+			let pos = getAuditionPositionSamples();
+			if (pos >= 0) {
+				this.centerSample = Math.floor(this.playheadOffset + pos);
+				this.updatePlayhead();
+			}
+			this.playheadFrame = window.requestAnimationFrame(step);
+		};
+		this.playheadFrame = window.requestAnimationFrame(step);
+	}
+
+	stopPlayheadAnimation() {
+		if (this.playheadFrame) {
+			window.cancelAnimationFrame(this.playheadFrame);
+			this.playheadFrame = null;
+		}
+	}
+
+	// pixel column showing this sample, the inverse of samplesRepresentedByPixel
+	pixelPositionOfSample(sample) {
+		return (sample - this.windowOriginSample) * this.getPixelsPerSample();
+	}
+
+	updatePlayhead() {
+		if (!this.playheadNode) return;
+		let visible = (this.centerSample >= 0) && (this.isEditing || this.auditioning);
+		let x = visible ? this.pixelPositionOfSample(this.centerSample) : 0;
+		if (!visible || x < 0 || x > this.windowWidth()) {
+			this.playheadNode.style.display = 'none';
+			return;
+		}
+		this.playheadNode.style.display = '';
+		this.playheadNode.style.transform = 'translateX(' + Math.round(x) + 'px)';
 	}
 
 	_setClickHandler(renderNode) {
@@ -680,7 +772,10 @@ class Wavetable extends Nex {
 			if (this.windowHeight() == 1000) {
 				ampnegative = startedBelow ? 1 : -1;
 			}
-			if (this.isEditing) {
+			// Not while playing: the click is how you zoom, and moving the
+			// playhead every time you grabbed the wave to zoom would make it
+			// impossible to zoom in on something while listening to it.
+			if (this.isEditing && !this.auditioning) {
 				this.changeCenterSample(event.offsetX);
 			}
 			initialZoom = this.getPixelsPerSample();
@@ -780,8 +875,14 @@ class Wavetable extends Nex {
 			topcontrols.appendChild(this.createAddMarker())
 		}
 
-		let canvas = this.createWaveformCanvas();
-		domNode.appendChild(canvas);
+		let viewport = document.createElement('div');
+		viewport.classList.add('waveviewport');
+		viewport.appendChild(this.createWaveformCanvas());
+		this.playheadNode = document.createElement('div');
+		this.playheadNode.classList.add('waveplayhead');
+		viewport.appendChild(this.playheadNode);
+		domNode.appendChild(viewport);
+		this.updatePlayhead();
 
 		if (this.isEditing) {
 			domNode.classList.add('editing');
@@ -958,8 +1059,6 @@ class Wavetable extends Nex {
 		let lightMarkerColor = themeColor('--wave-marker-light');
 		let clippingColor = themeColor('--wave-clipping');
 
-		let currentSampleColor = themeColor('--wave-playhead');
-
 		let zeroColor = themeColor('--wave-zero');
 		for (let i = 0 ; i < this.windowWidth(); i += increment) {
 			let range = this.samplesRepresentedByMultiplePixels(i, i + increment);
@@ -1043,9 +1142,6 @@ class Wavetable extends Nex {
 					if (this.shouldDoLine(marker, range)) {
 						this.drawVertLine(ctx, i, false, markerColor);
 					}
-				}
-				if (this.shouldDoLine(this.centerSample, range)) {
-					this.drawVertLine(ctx, i, false, currentSampleColor);
 				}
 			} else {
 				for (let j = 0; j < this.markers.length; j++) {
@@ -1180,12 +1276,14 @@ class WavetableEditor extends Editor {
 
 
 	shouldIgnore(text) {
-		if (/^[0-9v]$/.test(text)) return false;
+		if (/^[0-9v ]$/.test(text)) return false;
 		return text != 'Enter'
 	}
 
 	doAppendEdit(text) {
-		if (text == 'v') {
+		if (text == ' ') {
+			this.nex.togglePlayback();
+		} else if (text == 'v') {
 			this.nex.addMarker();
 		} else {
 			this.nex.auditionSection(text);
@@ -1193,7 +1291,7 @@ class WavetableEditor extends Editor {
 	}
 
 	shouldAppend(text) {
-		if (/^[0-9v]$/.test(text)) return true;
+		if (/^[0-9v ]$/.test(text)) return true;
 		return false;
 	}
 

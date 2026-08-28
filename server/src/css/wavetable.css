@@ -36,7 +36,24 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .wavetable canvas {
+	display: block;
+}
+
+/* the playhead is positioned against this, so it has to be the canvas's box */
+.waveviewport {
+	position: relative;
 	align-self: flex-start;
+}
+
+.waveplayhead {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: 1px;
+	background-color: var(--wave-playhead);
+	pointer-events: none;
+	display: none;
 }
 
 .wavetable.newselected {
