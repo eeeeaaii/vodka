@@ -70,6 +70,7 @@ function addMidiListener(id, f) {
 
 function setupFirstInputListener(id, f) {
 	inputListeners[id] = [ f ];
+	if (!midi) return;
 	for (let entry of midi.inputs) {
 		let input = entry[1];
 		if (id == input.id) {
@@ -146,6 +147,18 @@ want the note and should get it.
 */
 const MIDI_NOTE_GAP_MS = 5;
 
+/*
+Ports opened with open-midi-port in this session.
+
+Opening is required before sending to a port or listening to one, always --
+not only when it turns out to be necessary. It is necessary after a refresh,
+because a port org is a value like any other and comes back with the document
+while requestMIDIAccess has not been called in the new session. Making it
+required only then would mean the same code working or not depending on how the
+session started, which is not a thing anyone should have to reason about.
+*/
+const openedPorts = {};
+
 // (port, channel, note) currently sounding, so they can be turned off again
 const soundingNotes = {};
 
@@ -158,21 +171,22 @@ Ports are named by an id that came from list-midi-ports. The device behind one
 can be unplugged between listing it and sending to it, in which case the lookup
 returns nothing and sending would fail somewhere less helpful.
 */
+function isPortOpen(portId) {
+	return !!openedPorts[portId];
+}
+
 function midiOutputOrThrow(portId) {
-	if (!midi) {
-		throw constructFatalError('midi is not set up yet. Call list-midi-ports first.');
+	if (!midi || !openedPorts[portId]) {
+		throw constructFatalError(
+				'that midi port is not open. Pass it to open-midi-port first. A port is only '
+				+ 'its name and id until it is opened, and one remembered from a previous '
+				+ 'session is never open to begin with.');
 	}
 	let out = midi.outputs.get(portId);
 	if (!out) {
 		throw constructFatalError(
 				`no midi output with id ${portId}. It may have been unplugged -- `
 				+ `call list-midi-ports again to see what is there now.`);
-	}
-	// send() opens a closed port by itself, but that open is asynchronous, and
-	// it is not worth finding out the hard way whether the first message of a
-	// session survives it. Opening is idempotent.
-	if (out.connection == 'closed') {
-		out.open();
 	}
 	return out;
 }
@@ -261,6 +275,31 @@ function midiPanic() {
 	}
 }
 
+/*
+Reconnects one port that is already known by id.
+
+A port org is a value like any other, so it is saved with the document and
+comes back after a refresh -- with its name and id intact and nothing behind
+them, because requestMIDIAccess has not been called in the new session. This
+asks for access again and opens that one port, without listing everything.
+*/
+function openMidiPort(portId, incb) {
+	let cb = function() {
+		let port = midi.outputs.get(portId);
+		if (!port) {
+			port = midi.inputs.get(portId);
+		}
+		if (!port) {
+			incb(null);
+			return;
+		}
+		port.open();
+		openedPorts[portId] = true;
+		incb(describePort(port));
+	}
+	maybeSetupMidi(cb);
+}
+
 function getMidiPorts(incb) {
 	let cb = function() {
 		let r = [];
@@ -276,5 +315,5 @@ function getMidiPorts(incb) {
 }
 
 
-export { getMidiPorts, addMidiListener, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
+export { getMidiPorts, openMidiPort, isPortOpen, addMidiListener, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
 		 sendMidiNoteWithDuration, anyMidiNotesSounding, midiPanic }
