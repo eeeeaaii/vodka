@@ -159,6 +159,9 @@ function createSyscalls() {
 			});
 
 			let dv = constructDeferredValue();
+			// Needs a child: a deferred renders and serializes through its first
+			// one, so an empty one cannot be drawn or saved.
+			dv.appendChild(interval);
 			dv.set(afg);
 			dv.activate();
 			runningLoops[id] = afg;
