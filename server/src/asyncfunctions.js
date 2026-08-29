@@ -188,6 +188,46 @@ class MidiActivationFunctionGenerator extends ActivationFunctionGenerator {
 	}
 }
 
+class EveryActivationFunctionGenerator extends ActivationFunctionGenerator {
+	constructor(intervalMs, onTick) {
+		super();
+		this.intervalMs = intervalMs;
+		this.onTick = onTick;
+		this.timer = null;
+	}
+
+	getFunction(finishCallback, settleCallback, exp) {
+		return function() {
+			// Corrected against a running total, not against the last wake up,
+			// so lateness does not accumulate. More than a whole interval
+			// missed means the skipped ones are dropped rather than fired in a
+			// burst.
+			let expected = performance.now() + this.intervalMs;
+			let tick = function() {
+				settleCallback(this.onTick());
+				let now = performance.now();
+				expected += this.intervalMs;
+				if (expected < now) {
+					expected += Math.ceil((now - expected) / this.intervalMs) * this.intervalMs;
+				}
+				this.timer = VODKA_SCHEDULER.setTimeout(tick, expected - now);
+			}.bind(this);
+			this.timer = VODKA_SCHEDULER.setTimeout(tick, this.intervalMs);
+		}.bind(this);
+	}
+
+	stop() {
+		if (this.timer) {
+			window.clearTimeout(this.timer);
+			this.timer = null;
+		}
+	}
+
+	getAFGName() {
+		return 'every';
+	}
+}
+
 class OnContentsChangedActivationFunctionGenerator extends ActivationFunctionGenerator {
 	constructor(nex) {
 		super();
@@ -211,6 +251,7 @@ class OnContentsChangedActivationFunctionGenerator extends ActivationFunctionGen
 export {
 	ImmediateActivationFunctionGenerator,
 	DelayActivationFunctionGenerator,
+	EveryActivationFunctionGenerator,
 	ClickActivationFunctionGenerator,
 	GenericActivationFunctionGenerator,
 	MidiActivationFunctionGenerator,
