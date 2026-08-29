@@ -168,6 +168,12 @@ function midiOutputOrThrow(portId) {
 				`no midi output with id ${portId}. It may have been unplugged -- `
 				+ `call list-midi-ports again to see what is there now.`);
 	}
+	// send() opens a closed port by itself, but that open is asynchronous, and
+	// it is not worth finding out the hard way whether the first message of a
+	// session survives it. Opening is idempotent.
+	if (out.connection == 'closed') {
+		out.open();
+	}
 	return out;
 }
 
