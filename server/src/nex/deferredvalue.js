@@ -111,6 +111,17 @@ class DeferredValue extends NexContainer {
 	}
 
 	// rename this
+	/*
+	Some activation sources hold something that keeps running whether or not
+	anyone is still listening -- a repeating timer, most obviously. Deleting the
+	deferred should stop it.
+	*/
+	cleanupOnMemoryFree() {
+		if (this.activationFunctionGenerator && this.activationFunctionGenerator.stop) {
+			this.activationFunctionGenerator.stop();
+		}
+	}
+
 	set(activationFunctionGenerator) {
 		this.activationFunctionGenerator = activationFunctionGenerator;
 		this.ffgen = getFFGen();
