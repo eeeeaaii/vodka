@@ -16,7 +16,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Builtin } from '../nex/builtin.js'; 
-import { getMidiPorts } from '../midifunctions.js'
+import { getMidiPorts, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
+		 sendMidiNoteWithDuration } from '../midifunctions.js'
+import { convertTimeToSamples, nexToTimebase, getSampleRate } from '../wavetablefunctions.js'
 import { constructOrg } from '../nex/org.js'; 
 import { constructDeferredValue } from '../nex/deferredvalue.js'; 
 import { constructFatalError, constructInfo, newTagOrThrowOOM } from '../nex/eerror.js'
@@ -61,6 +63,133 @@ function createMidiBuiltins() {
 		'Lists every midi port, in both directions. Each port is tagged |midiport, and its |type says whether it is an input or an output.'
 	);
 
+
+
+	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
+
+	/*
+	Shared by both send builtins: a port org came from list-midi-ports, so it
+	carries the id the browser knows it by, and says which direction it is.
+	*/
+	function portIdOrError(port, who) {
+		if (!port.hasTag(newTagOrThrowOOM('midiport', who + ', is midi port'))) {
+			return { error: constructFatalError(who + ': that is not a midi port. Use list-midi-ports.') };
+		}
+		let type = port.getChildTagged(newTagOrThrowOOM('type', who + ', type'));
+		if (type && type.getFullTypedValue() != 'output') {
+			return { error: constructFatalError(who + ': that is an input port. Midi is sent to outputs.') };
+		}
+		let id = port.getChildTagged(newTagOrThrowOOM('id', who + ', id'));
+		if (!id) {
+			return { error: constructFatalError(who + ': that midi port has no id.') };
+		}
+		return { id: id.getFullTypedValue() };
+	}
+
+	function taggedInt(org, name, who) {
+		let c = org.getChildTagged(newTagOrThrowOOM(name, who + ', ' + name));
+		return c ? c.getTypedValue() : null;
+	}
+
+	Builtin.createBuiltin(
+		'send-midi-data on',
+		[ 'data()', 'port()' ],
+		function $sendMidiData(env, executionEnvironment) {
+			let data = env.lb('data');
+			let port = portIdOrError(env.lb('port'), 'send-midi-data');
+			if (port.error) return port.error;
+
+			let bytes = [];
+			for (let i = 0; i < data.numChildren(); i++) {
+				let b = data.getChildAt(i).getTypedValue();
+				if (!Number.isInteger(b) || b < 0 || b > 255) {
+					return constructFatalError(
+							`send-midi-data: ${b} is not a byte. Midi data is whole numbers from 0 to 255.`);
+				}
+				bytes.push(b);
+			}
+			if (bytes.length == 0) {
+				return constructFatalError('send-midi-data: nothing to send.');
+			}
+			sendMidiData(port.id, bytes);
+			return data;
+		},
+		'Sends |data, an org of integers, to the midi port |port exactly as given. For anything the note builtin does not cover -- control changes, program changes, clock, sysex.'
+	);
+
+	/*
+	The tag on the integer says what kind of message this is, the same way a tag
+	on a number says what timebase it is in. `note` is a note with a duration,
+	which sends the note on now and schedules the note off; `note-on` and
+	`note-off` are the halves on their own, for an instrument where something
+	else decides when the note ends.
+
+	Deliberately no converting between a note off and a note on at velocity
+	zero. Devices differ, and note off velocity means release velocity on some
+	of them, so the two are not interchangeable. Writing `note-on` with a
+	velocity of 0 gives the second form if that is what a device wants.
+	*/
+	Builtin.createBuiltin(
+		'send-midi-note on',
+		[ 'note()', 'port()' ],
+		function $sendMidiNote(env, executionEnvironment) {
+			let n = env.lb('note');
+			let port = portIdOrError(env.lb('port'), 'send-midi-note');
+			if (port.error) return port.error;
+
+			let kind = null;
+			let notenum = null;
+			for (let k of ['note', 'note-on', 'note-off']) {
+				let v = taggedInt(n, k, 'send-midi-note');
+				if (v !== null) {
+					kind = k;
+					notenum = v;
+					break;
+				}
+			}
+			if (kind == null) {
+				return constructFatalError(
+						'send-midi-note: needs an integer tagged note, note-on or note-off.');
+			}
+			if (notenum < 0 || notenum > 127) {
+				return constructFatalError(
+						`send-midi-note: ${notenum} is not a midi note. Notes run from 0 to 127.`);
+			}
+
+			let velocity = taggedInt(n, 'velocity', 'send-midi-note');
+			if (velocity == null) velocity = 127;
+			if (velocity < 0 || velocity > 127) {
+				return constructFatalError(
+						`send-midi-note: velocity ${velocity} is out of range. Velocity runs from 0 to 127.`);
+			}
+
+			// 1-16, the way hardware shows them
+			let channel = taggedInt(n, 'channel', 'send-midi-note');
+			if (channel == null) channel = 1;
+			if (channel < 1 || channel > 16) {
+				return constructFatalError(
+						`send-midi-note: there is no channel ${channel}. Midi channels run from 1 to 16.`);
+			}
+
+			if (kind == 'note-on') {
+				sendMidiNoteOn(port.id, channel, notenum, velocity);
+			} else if (kind == 'note-off') {
+				sendMidiNoteOff(port.id, channel, notenum, velocity);
+			} else {
+				let dur = n.getChildTagged(newTagOrThrowOOM('duration', 'send-midi-note, duration'));
+				if (!dur) {
+					return constructFatalError(
+							'send-midi-note: a note tagged `note` needs a duration. Tag one with note-on '
+							+ 'and send a note-off yourself if you do not know how long it lasts.');
+				}
+				let timebase = nexToTimebase(dur);
+				let ms = (convertTimeToSamples(dur, timebase) / getSampleRate()) * 1000;
+				sendMidiNoteWithDuration(port.id, channel, notenum, velocity, ms, timebase == 'BEATS');
+			}
+			return n;
+		},
+		'Sends a midi note to the port |port. |note is an org holding an integer tagged note, note-on or note-off. A note tagged |note also needs a float tagged duration, which takes a timebase tag like any other length. Velocity defaults to 127 and channel to 1.'
+	);
 
 	Builtin.createBuiltin(
 		'wait-for-midi',

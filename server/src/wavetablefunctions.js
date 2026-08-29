@@ -83,10 +83,16 @@ function getReferenceFrequency() {
 }
 
 
+/*
+Every tag is checked, not just the first. A value can carry more than one -- a
+midi note's duration is tagged `duration` as well as with its timebase -- and
+which came first should not decide whether the timebase is seen. Anything with
+a single tag behaves exactly as before.
+*/
 function nexToTimebase(input) {
 	let type = DEFAULT_TIMEBASE;
-	if (input.numTags() > 0) {
-		let t = input.getTag(0).getTagString();
+	for (let i = 0; i < input.numTags(); i++) {
+		let t = input.getTag(i).getTagString();
 		if (t == 'note' || t == 'nn') {
 			type = 'NOTE';
 		} else if (t == 'seconds' || t == 'second' || t == 'secs' || t == 'sec') {
@@ -97,7 +103,10 @@ function nexToTimebase(input) {
 			type = 'BEATS';
 		} else if (t == 'samples' || t == 'samps' || t == 'samp') {
 			type = 'SAMPLES';
+		} else {
+			continue;
 		}
+		break;
 	}
 	return type;
 }
