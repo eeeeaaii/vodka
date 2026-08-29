@@ -22,13 +22,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	display: none;
 }
 
-.cglyph {
-	font-size: 20px;
-	font-family: Courier;
-	padding-right: 10px;
-	color: var(--clip-glyph);
-}
-
 .clip.exploded {
 	border-radius: 6px;
 	font-style: italic;
@@ -41,6 +34,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	background-color: var(--value-background);
 	border: 1px solid var(--unselected-border);
 	padding-right: 6px;
+	padding-left: 4px;
 	padding-bottom: 6px;
 	padding-top: 6px;
 }
@@ -49,18 +43,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border: 3px solid var(--selected-border);
 }
 
-.clipframe {
-	display: flex;
-	flex-direction: row;
-	padding-bottom: 6px;
-}
-
-.cinnerspans {
-	flex-direction: column;
-	display: flex;
-}
-
 .clippos {
 	font-variant-numeric: tabular-nums;
 	color: var(--clip-position);
+}
+
+.clip .sysglyph {
+	color: var(--clip-glyph);
 }
