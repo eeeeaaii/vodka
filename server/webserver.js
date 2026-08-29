@@ -34,6 +34,14 @@ const webenv_vars = {}
 
 const ERROR = "Rather than a beep<br>Or a rude error message,<br>These words: \"File not found.\"";
  
+// generated sessions live in sessions/, named ones in namedsessions/
+const GENERATED_SESSION_PREFIX = 'vs-';
+
+function isGeneratedSessionId(sessionId) {
+	return typeof sessionId === 'string'
+			&& sessionId.indexOf(GENERATED_SESSION_PREFIX) === 0;
+}
+
 let api_reqs = 1;
 let total_reqs = 1;
 
@@ -73,28 +81,11 @@ async function processRequest(req, resp) {
 				});
 		})
 	} else if (query.new) {
-		let sessionId = query.sessionId;
-		if (sessionId) {
-			let exists = await checkIfSessionExists(query.sessionId);
-			if (exists) {
-				sendResponse(resp, 401, 'text/html', 'cannot create, session exists already.');
-				return;
-			}
-			if (!isValidSessionNameForUserCreate(query.sessionId)) {
-				sendResponse(resp, 401, 'text/html', 'invalid session name');
-				return;
-			}
-			let success = await createSession(sessionId, resp);
-			if (!success) {
-				sendResponse(resp, 401, 'text/html', 'could not create session');
-				return;
-			}
-		} else {
-			sessionId = await createNewUUIDSession(resp);
-			if (!sessionId) {
-				sendResponse(resp, 401, 'text/html', 'could not create session');
-				return;
-			}
+		// named sessions are made with tools/createnamedsession.js
+		let sessionId = await createNewUUIDSession(resp);
+		if (!sessionId) {
+			sendResponse(resp, 401, 'text/html', 'could not create session');
+			return;
 		}
 		sendRedirect(resp, `http://${webenv_vars.redirectHostname}/?sessionId=${sessionId}`);
 		return;
@@ -151,6 +142,11 @@ async function processRequest(req, resp) {
 	} else if (sessionIdFromCookie) {
 		let sessionId = sessionIdFromCookie;
 		let exists = await checkIfSessionExists(sessionId);
+		if (exists) {
+			// in the URL so it's bookmarkable, and so removing it asks for a new one
+			sendRedirect(resp, `http://${webenv_vars.redirectHostname}/?sessionId=${sessionId}`);
+			return;
+		}
 		if (!exists) {
 			// if the user sends an unknown session ID in the cookie, it could be that
 			// their session was deleted. Since users shouldn't be manually inserting
@@ -171,13 +167,13 @@ async function processRequest(req, resp) {
 			sendResponse(resp, 401, 'text/html', 'could not create session');
 			return;
 		}
-		serviceRequestForRegularFile(newSessionId, path, resp);
+		sendRedirect(resp, `http://${webenv_vars.redirectHostname}/?sessionId=${newSessionId}`);
 		return;
 	}
 };
 
 async function createNewUUIDSession(resp) {
-	let newSessionId = uuidv4();
+	let newSessionId = GENERATED_SESSION_PREFIX + uuidv4();
 	let success = await createSession(newSessionId, resp);
 	return success ? newSessionId : null;
 }
@@ -185,7 +181,8 @@ async function createNewUUIDSession(resp) {
 function isValidSessionNameForUserCreate(sessionName) {
 	if (sessionName == 'packages') return false;
 	if (sessionName == 'samples') return false;
-	let isIdentifier = /^[a-zA-Z0-9_]+$/.test(sessionName);
+	if (isGeneratedSessionId(sessionName)) return false;
+	let isIdentifier = /^[a-zA-Z0-9_-]+$/.test(sessionName);
 	return isIdentifier;
 }
 
@@ -422,19 +419,10 @@ function getSessionDirectory(sessionId, localAccessOnly) {
 	let r = '';
 	if (sessionId == 'packages' && (!localAccessOnly || webenv_vars.isLocal)) {
 		r = './packages/'
-	} else {
-
-		let hasDash = /-/.test(sessionId);
-
-		// we don't let users create sessions with dashes in them.
-		// only UUID sessions have dashes.
-		// that way we can keep them in separate directories.
-
+	} else if (isGeneratedSessionId(sessionId)) {
 		r = `./sessions/${sessionId}/`;
-		if (!hasDash) {
-			r = `./namedsessions/${sessionId}/`;
-		}
-
+	} else {
+		r = `./namedsessions/${sessionId}/`;
 	}
 	return r;
 
