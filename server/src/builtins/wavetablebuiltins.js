@@ -1376,9 +1376,11 @@ function createWavetableBuiltins() {
     function $millisecondsOf(env, executionEnvironment) {
       let len = env.lb("len");
       let ms = (convertTimeToSamples(len) / getSampleRate()) * 1000;
-      return constructFloat(ms);
+      // setTimeout drops anything after the decimal point, so a float here
+      // would only be rounded later, somewhere less obvious.
+      return constructInteger(Math.round(ms));
     },
-    "Returns the length of |len in milliseconds. |len takes a timebase tag like any other length, so this is how a length in beats becomes a number that something outside the audio system can use."
+    "Returns the length of |len in whole milliseconds, rounded. |len takes a timebase tag like any other length, so this is how a length in beats becomes a number that something outside the audio system can use."
   );
 
   Builtin.createBuiltin(
