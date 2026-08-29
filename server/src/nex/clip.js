@@ -45,6 +45,8 @@ class Clip extends Nex {
 		this.ended = false;
 		this.posFrame = null;
 		this.posSpan = null;
+		// nothing here is yours to type over
+		this.setMutable(false);
 	}
 
 	getTypeName() {
@@ -64,11 +66,9 @@ class Clip extends Nex {
 	}
 
 	/*
-	A clip evaluates to itself rather than to a copy, which is what lets it sit
-	in the expression that made it: loop-play hands back the very clip it was
-	given, so re-evaluating can throw the result away and the clip is still
-	there in the expression, still naming the loop it did before. A copy would
-	be a picture of it, and the ids would go stale the first time round.
+	Never a copy, whatever the mutable flag says: a copy of a clip is a picture
+	of it and cannot stop the loop, so an expression holding one would go on
+	naming a loop it could no longer reach.
 	*/
 	evaluate(env) {
 		return this;
