@@ -169,18 +169,13 @@ function stopRecordingAudio(wt) {
 	wt.stopRecording();
 }
 
-function startRecordingAudio(wt) {
+function startRecordingAudio(wt, channel) {
 	maybeCreateAudioContext();	
+	if (!channel) channel = 0;
 	if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 		navigator.mediaDevices.getUserMedia({
-			/*
-			Not `audio: true`, which leaves the webrtc voice processing on. With
-			echo cancellation enabled a stereo input is merged to mono and then
-			duplicated into two identical channels, so there is no stereo to
-			record even from a stereo source. Automatic gain control pumps and
-			noise suppression eats transients, neither of which is wanted on
-			anything musical.
-			*/
+			// Echo cancellation merges a stereo input to mono and duplicates it, so
+			// it must be off for channelCount: 2 to give two real channels.
 			audio: {
 				echoCancellation: false,
 				noiseSuppression: false,
@@ -196,17 +191,15 @@ function startRecordingAudio(wt) {
 				let allblobs = wt.getBlobsAsOneBlob();
 				allblobs.arrayBuffer().then(function(ab) {
 					ctx.decodeAudioData(ab, function(buffer) {
-						// A wavetable holds one channel, so a stereo interface
-						// is recorded one side at a time -- see
-						// AUDIO_RECORD_CHANNEL.
-						let want = settings.AUDIO_RECORD_CHANNEL;
-						let ch = Math.min(want, buffer.numberOfChannels - 1);
-						if (ch != want) {
-							console.log('vodka: asked to record channel ' + want
-									+ ' but the input only has ' + buffer.numberOfChannels
-									+ ', using ' + ch);
+						// A wavetable holds one channel, so a stereo input is
+						// recorded one side at a time.
+						if (channel >= buffer.numberOfChannels) {
+							throw constructFatalError(
+									`cannot record channel ${channel}: this input has `
+									+ `${buffer.numberOfChannels} channel`
+									+ `${buffer.numberOfChannels == 1 ? '' : 's'}.`);
 						}
-						wt.setRecordedData(buffer.getChannelData(ch));
+						wt.setRecordedData(buffer.getChannelData(channel));
 					}, function(err) {
 						console.log('oh well');
 					})
