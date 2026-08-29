@@ -200,10 +200,7 @@ function startRecordingAudio(wt, channel) {
 						// A wavetable holds one channel, so a stereo input is
 						// recorded one side at a time.
 						if (channel >= buffer.numberOfChannels) {
-							throw constructFatalError(
-									`cannot record channel ${channel}: this input has `
-									+ `${buffer.numberOfChannels} channel`
-									+ `${buffer.numberOfChannels == 1 ? '' : 's'}.`);
+							throw constructFatalError(`no input channel ${channel}. Sorry!`);
 						}
 						wt.setRecordedData(buffer.getChannelData(channel));
 					}, function(err) {
@@ -272,10 +269,7 @@ function checkChannelExists(channel) {
 	let n = channelMergerNode.numberOfInputs;
 	if (!Number.isInteger(channel) || channel < 0 || channel >= n) {
 		throw constructFatalError(
-				`there is no channel ${channel}. The current audio device has ${n} output `
-				+ `channel${n == 1 ? '' : 's'}, so channels 0 through ${n - 1} can be played. `
-				+ `If you expected more, the browser may have opened a different device than `
-				+ `you meant -- it reads the channel count once, when the first sound plays.`);
+				`no channel ${channel}, this device has ${n} (0-${n - 1}). Sorry!`);
 	}
 }
 

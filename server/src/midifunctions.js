@@ -128,35 +128,15 @@ function describePort(port) {
 	return m;
 }
 
-/*
-Every port, both directions, in one list. Web midi has no notion of a device --
-a MIDIPort says nothing about which box it belongs to, and a bidirectional
-device appears as two separate ports, one in each map. Grouping them would mean
-matching on manufacturer and name, which is a guess, so the names are handed
-over as they are and anything that wants to group can do it where the strings
-are visible.
-*/
-/*
-Note offs for a note with a duration are scheduled a little early, so that in a
-sequence the off lands before the next note on rather than racing it. Five
-milliseconds is inaudible -- a note that short cannot be heard at all -- and is
-comfortably more than the wire takes to carry a three byte message.
-
-Only for beats. Someone working in seconds or hz has said exactly how long they
-want the note and should get it.
-*/
+// Both directions in one list. Web midi has no notion of a device -- a
+// bidirectional box appears as two ports with nothing tying them together --
+// so grouping is left to whoever can see the names.
+// Beat durations are shortened by this so a note off lands before the next note
+// on. Inaudible. Other timebases are left alone -- that length was asked for.
 const MIDI_NOTE_GAP_MS = 5;
 
-/*
-Ports opened with open-midi-port in this session.
-
-Opening is required before sending to a port or listening to one, always --
-not only when it turns out to be necessary. It is necessary after a refresh,
-because a port org is a value like any other and comes back with the document
-while requestMIDIAccess has not been called in the new session. Making it
-required only then would mean the same code working or not depending on how the
-session started, which is not a thing anyone should have to reason about.
-*/
+// Opening is required always, not just after a refresh -- otherwise the same
+// code works or doesn't depending on how the session started.
 const openedPorts = {};
 
 // (port, channel, note) currently sounding, so they can be turned off again
@@ -166,27 +146,17 @@ function noteKey(portId, channel, note) {
 	return portId + ':' + channel + ':' + note;
 }
 
-/*
-Ports are named by an id that came from list-midi-ports. The device behind one
-can be unplugged between listing it and sending to it, in which case the lookup
-returns nothing and sending would fail somewhere less helpful.
-*/
 function isPortOpen(portId) {
 	return !!openedPorts[portId];
 }
 
 function midiOutputOrThrow(portId) {
 	if (!midi || !openedPorts[portId]) {
-		throw constructFatalError(
-				'that midi port is not open. Pass it to open-midi-port first. A port is only '
-				+ 'its name and id until it is opened, and one remembered from a previous '
-				+ 'session is never open to begin with.');
+		throw constructFatalError('you must open the midi port first. Sorry!');
 	}
 	let out = midi.outputs.get(portId);
 	if (!out) {
-		throw constructFatalError(
-				`no midi output with id ${portId}. It may have been unplugged -- `
-				+ `call list-midi-ports again to see what is there now.`);
+		throw constructFatalError(`no midi output with id ${portId}. Sorry!`);
 	}
 	return out;
 }
@@ -213,15 +183,9 @@ function sendMidiNoteOff(portId, channel, note, velocity) {
 	delete soundingNotes[noteKey(portId, channel, note)];
 }
 
-/*
-On now, off later. The off is handed to the browser with a timestamp rather
-than sent from a timer of ours, so its timing does not depend on the event
-queue, which is driven by setTimeout and is not steady enough to hold a
-sequence together.
-
-The timer alongside it only forgets the note; the message is already scheduled
-and will go whatever happens here.
-*/
+// The off is scheduled by the browser, not by a timer of ours -- the event
+// queue is setTimeout-driven and too jittery to hold a sequence together. The
+// timer here only forgets the note; the message is already on its way.
 function sendMidiNoteWithDuration(portId, channel, note, velocity, durationMs, isBeats) {
 	let ms = durationMs;
 	if (isBeats) {
@@ -248,11 +212,8 @@ function anyMidiNotesSounding() {
 	return false;
 }
 
-/*
-Every note we know to be sounding, turned off, plus an all-notes-off on each
-channel touched as a backstop for anything we lost track of -- a note on sent
-as raw data, or one left over from before a reload.
-*/
+// All-notes-off per channel as well, for anything sent as raw data that we
+// never tracked.
 function midiPanic() {
 	if (!midi) return;
 	let channelsTouched = {};
@@ -275,14 +236,8 @@ function midiPanic() {
 	}
 }
 
-/*
-Reconnects one port that is already known by id.
-
-A port org is a value like any other, so it is saved with the document and
-comes back after a refresh -- with its name and id intact and nothing behind
-them, because requestMIDIAccess has not been called in the new session. This
-asks for access again and opens that one port, without listing everything.
-*/
+// A port org is saved with the document, so after a refresh it comes back as
+// just a name and an id. This asks for access again and opens that one port.
 function openMidiPort(portId, incb) {
 	let cb = function() {
 		let port = midi.outputs.get(portId);
