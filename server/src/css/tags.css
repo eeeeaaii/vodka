@@ -28,8 +28,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .tag.exploded {
-	background-color:#6e6e6e;
-	color:#dddddd;
+	background-color:var(--tag-background);
+	color:var(--tag-editor-background);
 	padding: 4px 8px 4px 8px;
 	margin: 3px;
 	display: flex;
@@ -40,17 +40,17 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .tag-editing.exploded {
-	background-color: #dddddd;
-	border: 1px solid #6e6e6e;
+	background-color: var(--tag-editor-background);
+	border: 1px solid var(--tag-background);
 	padding: 3px 7px 3px 7px;
-	color: #414141;
+	color: var(--tag-editor-text);
 }
 
 .tag-ghost.exploded {
-	background-color: #dddddd;
-	border: 1px solid #6e6e6e;
+	background-color: var(--tag-editor-background);
+	border: 1px solid var(--tag-background);
 	padding: 3px 7px 3px 7px;
-	color: #414141;
+	color: var(--tag-editor-text);
 }
 
 /*
@@ -66,7 +66,7 @@ align-items: center;
 .tag.exploded:before {
   content: ' ';
   border-top: 8px solid transparent;
-  border-left: 10px solid #e2e21d;
+  border-left: 10px solid var(--tag-arrow-left);
   border-bottom: 8px solid transparent;
   border-right: 4px solid transparent;
 }
@@ -78,7 +78,7 @@ align-items: center;
 .tag.exploded:after {
   content: ' ';
   border-top: 8px solid transparent;
-  border-right: 10px solid #1de2ca;
+  border-right: 10px solid var(--tag-arrow-right);
   border-bottom: 8px solid transparent;
   border-left: 4px solid transparent;
 }

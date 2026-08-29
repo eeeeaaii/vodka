@@ -23,7 +23,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border-radius: 6px;	
 	font-style: italic;
 	font-family: monospace;
-	color: #aa0000;
+	color: var(--error-text);
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
@@ -31,19 +31,19 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .eerror.fatal {
-	color: #aa0000;
+	color: var(--error-text);
 }
 
 .eerror.warning {
-	color: #0000aa;
+	color: var(--error-info-text);
 }
 
 .eerror.info {
-	color: #00aa00;
+	color: var(--error-ok-text);
 }
 
 .eerror.previouslyfatal {
-	color: #aa6e00;
+	color: var(--error-warn-text);
 }
 
 .eerror > .innerspan {

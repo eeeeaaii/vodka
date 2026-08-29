@@ -24,7 +24,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 .stringta {
 	margin-left: 5px;
-	border: 1px solid #dddddd;
+	border: 1px solid var(--string-border);
 	padding: 3px;
 	border-radius: 2px 2px 2px 2px;
 	height:100px;
@@ -34,12 +34,13 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .stringinputsubmit:focus {
-	background-color: #dddddd;
+	background-color: var(--string-border);
+	color: var(--string-submit-focus-text);
 }
 
 .innerspan {
 	background-color: var(--string-background);
-	border: 1px solid #dddddd;
+	border: 1px solid var(--string-border);
 	padding: 3px;
 	margin-left: 5px;
 	margin-right: 5px;
