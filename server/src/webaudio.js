@@ -173,7 +173,20 @@ function startRecordingAudio(wt) {
 	maybeCreateAudioContext();	
 	if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 		navigator.mediaDevices.getUserMedia({
-			audio:true
+			/*
+			Not `audio: true`, which leaves the webrtc voice processing on. With
+			echo cancellation enabled a stereo input is merged to mono and then
+			duplicated into two identical channels, so there is no stereo to
+			record even from a stereo source. Automatic gain control pumps and
+			noise suppression eats transients, neither of which is wanted on
+			anything musical.
+			*/
+			audio: {
+				echoCancellation: false,
+				noiseSuppression: false,
+				autoGainControl: false,
+				channelCount: 2
+			}
 		}).then(function(stream) {
 			wt.startRecording();
 			mediaRecorder = new MediaRecorder(stream);
@@ -183,12 +196,29 @@ function startRecordingAudio(wt) {
 				let allblobs = wt.getBlobsAsOneBlob();
 				allblobs.arrayBuffer().then(function(ab) {
 					ctx.decodeAudioData(ab, function(buffer) {
-						// now have an audio buffer of the data
-						wt.setRecordedData(buffer.getChannelData(0));
+						// A wavetable holds one channel, so a stereo interface
+						// is recorded one side at a time -- see
+						// AUDIO_RECORD_CHANNEL.
+						let want = settings.AUDIO_RECORD_CHANNEL;
+						let ch = Math.min(want, buffer.numberOfChannels - 1);
+						if (ch != want) {
+							console.log('vodka: asked to record channel ' + want
+									+ ' but the input only has ' + buffer.numberOfChannels
+									+ ', using ' + ch);
+						}
+						wt.setRecordedData(buffer.getChannelData(ch));
 					}, function(err) {
 						console.log('oh well');
 					})
 				})
+			}
+			// what the device actually gave us, which is not always what was asked
+			let track = stream.getAudioTracks()[0];
+			if (track) {
+				let st = track.getSettings();
+				console.log('vodka: recording from "' + track.label + '" -- '
+						+ (st.channelCount ? st.channelCount : '?') + ' channel(s) at '
+						+ (st.sampleRate ? st.sampleRate : '?') + 'Hz');
 			}
 			mediaRecorder.start(500);
 			window.setTimeout(function() {
