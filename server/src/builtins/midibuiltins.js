@@ -67,21 +67,17 @@ function createMidiBuiltins() {
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
-	/*
-	Shared by both send builtins: a port org came from list-midi-ports, so it
-	carries the id the browser knows it by, and says which direction it is.
-	*/
 	function portIdOrError(port, who) {
 		if (!port.hasTag(newTagOrThrowOOM('midiport', who + ', is midi port'))) {
-			return { error: constructFatalError(who + ': that is not a midi port. Use list-midi-ports.') };
+			return { error: constructFatalError(who + ': not a midi port. Sorry!') };
 		}
 		let type = port.getChildTagged(newTagOrThrowOOM('type', who + ', type'));
 		if (type && type.getFullTypedValue() != 'output') {
-			return { error: constructFatalError(who + ': that is an input port. Midi is sent to outputs.') };
+			return { error: constructFatalError(who + ': that is an input port. Sorry!') };
 		}
 		let id = port.getChildTagged(newTagOrThrowOOM('id', who + ', id'));
 		if (!id) {
-			return { error: constructFatalError(who + ': that midi port has no id.') };
+			return { error: constructFatalError(who + ': midi port has no id. Sorry!') };
 		}
 		return { id: id.getFullTypedValue() };
 	}
@@ -109,9 +105,7 @@ function createMidiBuiltins() {
 					openMidiPort(idstr, function(desc) {
 						if (!desc) {
 							callback(constructFatalError(
-									`open-midi-port: there is no port with id ${idstr} any more. `
-									+ `It may have been unplugged -- call list-midi-ports to see `
-									+ `what is there now.`));
+									`open-midi-port: no port with id ${idstr}. Sorry!`));
 							return;
 						}
 						let org = convertJSMapToOrg(desc);
@@ -141,13 +135,12 @@ function createMidiBuiltins() {
 			for (let i = 0; i < data.numChildren(); i++) {
 				let b = data.getChildAt(i).getTypedValue();
 				if (!Number.isInteger(b) || b < 0 || b > 255) {
-					return constructFatalError(
-							`send-midi-data: ${b} is not a byte. Midi data is whole numbers from 0 to 255.`);
+					return constructFatalError(`send-midi-data: ${b} is not a byte (0-255). Sorry!`);
 				}
 				bytes.push(b);
 			}
 			if (bytes.length == 0) {
-				return constructFatalError('send-midi-data: nothing to send.');
+				return constructFatalError('send-midi-data: nothing to send. Sorry!');
 			}
 			sendMidiData(port.id, bytes);
 			return data;
@@ -155,18 +148,9 @@ function createMidiBuiltins() {
 		'Sends |data, an org of integers, to the midi port |port exactly as given. For anything the note builtin does not cover -- control changes, program changes, clock, sysex.'
 	);
 
-	/*
-	The tag on the integer says what kind of message this is, the same way a tag
-	on a number says what timebase it is in. `note` is a note with a duration,
-	which sends the note on now and schedules the note off; `note-on` and
-	`note-off` are the halves on their own, for an instrument where something
-	else decides when the note ends.
-
-	Deliberately no converting between a note off and a note on at velocity
-	zero. Devices differ, and note off velocity means release velocity on some
-	of them, so the two are not interchangeable. Writing `note-on` with a
-	velocity of 0 gives the second form if that is what a device wants.
-	*/
+	// The tag on the int picks the message, like a timebase tag picks a unit.
+	// No converting note-off to note-on-at-zero: note off velocity is release
+	// velocity on some devices, so they aren't interchangeable.
 	Builtin.createBuiltin(
 		'send-midi-note on',
 		[ 'note()', 'port()' ],
@@ -187,26 +171,23 @@ function createMidiBuiltins() {
 			}
 			if (kind == null) {
 				return constructFatalError(
-						'send-midi-note: needs an integer tagged note, note-on or note-off.');
+						'send-midi-note: needs an int tagged note, note-on or note-off. Sorry!');
 			}
 			if (notenum < 0 || notenum > 127) {
-				return constructFatalError(
-						`send-midi-note: ${notenum} is not a midi note. Notes run from 0 to 127.`);
+				return constructFatalError(`send-midi-note: ${notenum} is not a note (0-127). Sorry!`);
 			}
 
 			let velocity = taggedInt(n, 'velocity', 'send-midi-note');
 			if (velocity == null) velocity = 127;
 			if (velocity < 0 || velocity > 127) {
-				return constructFatalError(
-						`send-midi-note: velocity ${velocity} is out of range. Velocity runs from 0 to 127.`);
+				return constructFatalError(`send-midi-note: velocity ${velocity} is out of range (0-127). Sorry!`);
 			}
 
 			// 1-16, the way hardware shows them
 			let channel = taggedInt(n, 'channel', 'send-midi-note');
 			if (channel == null) channel = 1;
 			if (channel < 1 || channel > 16) {
-				return constructFatalError(
-						`send-midi-note: there is no channel ${channel}. Midi channels run from 1 to 16.`);
+				return constructFatalError(`send-midi-note: no channel ${channel} (1-16). Sorry!`);
 			}
 
 			if (kind == 'note-on') {
@@ -216,9 +197,7 @@ function createMidiBuiltins() {
 			} else {
 				let dur = n.getChildTagged(newTagOrThrowOOM('duration', 'send-midi-note, duration'));
 				if (!dur) {
-					return constructFatalError(
-							'send-midi-note: a note tagged `note` needs a duration. Tag one with note-on '
-							+ 'and send a note-off yourself if you do not know how long it lasts.');
+					return constructFatalError('send-midi-note: a note needs a duration. Sorry!');
 				}
 				let timebase = nexToTimebase(dur);
 				let ms = (convertTimeToSamples(dur, timebase) / getSampleRate()) * 1000;
@@ -243,12 +222,10 @@ function createMidiBuiltins() {
 			// by mistake, and listening to one just never fires
 			let type = midiport.getChildTagged(newTagOrThrowOOM('type', 'wait for midi builtin, type'));
 			if (type && type.getFullTypedValue() != 'input') {
-				return constructFatalError(
-						'wait-for-midi: that is an output port. Only input ports receive midi.');
+				return constructFatalError('wait-for-midi: that is an output port. Sorry!');
 			}
 			if (!isPortOpen(id.getTypedValue())) {
-				return constructFatalError(
-						'wait-for-midi: that midi port is not open. Pass it to open-midi-port first.');
+				return constructFatalError('wait-for-midi: you must open the midi port first. Sorry!');
 			}
 			let dv = constructDeferredValue();
 			dv.setAutoreset(true);

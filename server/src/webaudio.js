@@ -194,10 +194,7 @@ function startRecordingAudio(wt, channel) {
 						// A wavetable holds one channel, so a stereo input is
 						// recorded one side at a time.
 						if (channel >= buffer.numberOfChannels) {
-							throw constructFatalError(
-									`cannot record channel ${channel}: this input has `
-									+ `${buffer.numberOfChannels} channel`
-									+ `${buffer.numberOfChannels == 1 ? '' : 's'}.`);
+							throw constructFatalError(`no input channel ${channel}. Sorry!`);
 						}
 						wt.setRecordedData(buffer.getChannelData(channel));
 					}, function(err) {
