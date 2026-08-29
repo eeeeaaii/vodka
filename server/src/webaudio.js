@@ -39,6 +39,10 @@ let auditioningPlayer = null;
 
 let mediaRecorder = null;
 
+// A guardrail, not a real limit -- so a first recording cannot fill the disk
+// before anyone knows how to stop it. The `unlimited` tag lifts it.
+const RECORDING_LIMIT_MS = 30000;
+
 class AuditionPlayer {
 	// sustained means the sound keeps going after the key comes back up. Holding
 	// enter to audition is momentary; toggling playback with space is not.
@@ -169,7 +173,7 @@ function stopRecordingAudio(wt) {
 	wt.stopRecording();
 }
 
-function startRecordingAudio(wt, channel) {
+function startRecordingAudio(wt, channel, unlimited) {
 	maybeCreateAudioContext();	
 	if (!channel) channel = 0;
 	if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -210,12 +214,20 @@ function startRecordingAudio(wt, channel) {
 						+ (st.channelCount ? st.channelCount : '?') + ' channel(s) at '
 						+ (st.sampleRate ? st.sampleRate : '?') + 'Hz');
 			}
-			mediaRecorder.start(500);
-			window.setTimeout(function() {
-				if (wt.isRecording()) {
-					stopRecordingAudio(wt);
-				}
-			}, 30000)
+			// No timeslice: one dataavailable, at stop, with the whole take.
+			// Chunking made ondataavailable fire twice a second and each one
+			// decoded everything recorded so far, so a take got quadratically
+			// more expensive the longer it ran.
+			mediaRecorder.start();
+			if (!unlimited) {
+				window.setTimeout(function() {
+					if (wt.isRecording()) {
+						stopRecordingAudio(wt);
+						console.log('vodka: stopped at the 30 second limit. Tag start-recording '
+								+ 'with `unlimited` to record for longer.');
+					}
+				}, RECORDING_LIMIT_MS)
+			}
 		}).catch(function(err) {
 			console.log('couldnt open audio stream');
 		})
