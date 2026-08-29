@@ -19,23 +19,19 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 A saved file that contains audio is a container: the document text, followed by
 the samples that document refers to, in one file.
 
-Wavetables serialize as an index instead of a base64 blob, and the sample list
-after the document supplies the bytes. The serializer mints the indices while
-walking the tree, so they are only meaningful inside the file they were written
-in -- nothing here is an identity that survives being copied somewhere else.
-See issue #319.
+Wavetables serialize as their id instead of a base64 blob, and the sample list
+after the document supplies the bytes under the same ids. That is the id the
+wavetable is known by everywhere its samples might be kept, so a file and
+indexeddb name the same thing the same way.
 
-Two things fall out of that, both for free:
-
-  - Nothing unreachable gets written. Only wavetables the walk actually reached
-    ever got the chance to hand over their samples.
-  - The same sample used twice is stored once, because add() dedupes on content.
+Nothing unreachable gets written: only wavetables the walk actually reached ever
+got the chance to hand over their samples.
 
 The header is length-prefixed rather than delimited, so no part of the document
 has to be escaped and no sentinel has to be picked that document text could
 never contain:
 
-    VODKAC1 <doclen> <len0> <len1> ...\n<doctext><b64 0><b64 1>...
+    VODKAC1 <doclen> <id0>:<len0> <id1>:<len1> ...\n<doctext><b64 0><b64 1>...
 
 A document with no audio in it is written with no container at all. The common
 case stays byte-for-byte what earlier versions wrote, and files written before
@@ -53,18 +49,16 @@ const CHUNK = 0x8000;
 class AudioCollector {
 	constructor() {
 		this.samples = [];
-		this.indexByHash = {};
+		this.ids = [];
+		this.seen = {};
 	}
 
-	// returns the index the document should refer to
-	add(float32array, hash) {
-		if (hash in this.indexByHash) {
-			return this.indexByHash[hash];
-		}
-		let i = this.samples.length;
+	add(id, float32array) {
+		// the same wavetable reached twice is still one wavetable
+		if (this.seen[id]) return;
+		this.seen[id] = true;
+		this.ids.push(id);
 		this.samples.push(float32array);
-		this.indexByHash[hash] = i;
-		return i;
 	}
 
 	isEmpty() {
@@ -110,14 +104,15 @@ function encode(docText, collector) {
 	}
 	let header = [ CONTAINER_MAGIC, docText.length ];
 	for (let i = 0; i < encoded.length; i++) {
-		header.push(encoded[i].length);
+		header.push(collector.ids[i] + ':' + encoded[i].length);
 	}
 	return header.join(' ') + '\n' + docText + encoded.join('');
 }
 
 /*
-Returns { docText, samples } for a container, or null for anything else -- a
-plain document, a server error string, a file from before containers existed.
+Returns { docText, samples } for a container, where samples maps a wavetable id
+to its Float32Array. Returns null for anything else -- a plain document, a
+server error string, a file from before containers existed.
 Callers treat null as "parse this as-is".
 
 A container that doesn't decode also comes back as null rather than throwing.
@@ -132,28 +127,34 @@ function decode(fileText) {
 	if (nl < 0) return null;
 
 	let fields = fileText.substring(0, nl).split(' ');
+	// the document length, then one id:length per wavetable
+	let docLen = Number(fields[1]);
+	if (!Number.isInteger(docLen) || docLen < 0) return null;
+	let ids = [];
 	let lengths = [];
-	for (let i = 1; i < fields.length; i++) {
-		let n = Number(fields[i]);
+	for (let i = 2; i < fields.length; i++) {
+		let c = fields[i].indexOf(':');
+		if (c < 0) return null;
+		let n = Number(fields[i].substring(c + 1));
 		if (!Number.isInteger(n) || n < 0) return null;
+		ids.push(fields[i].substring(0, c));
 		lengths.push(n);
 	}
-	// a doc length and at least one sample, or it wouldn't have been a container
-	if (lengths.length < 2) return null;
+	if (ids.length == 0) return null;
 
-	let total = nl + 1;
+	let total = nl + 1 + docLen;
 	for (let i = 0; i < lengths.length; i++) {
 		total += lengths[i];
 	}
 	if (total != fileText.length) return null;
 
 	let pos = nl + 1;
-	let docText = fileText.substr(pos, lengths[0]);
-	pos += lengths[0];
+	let docText = fileText.substr(pos, docLen);
+	pos += docLen;
 
-	let samples = [];
-	for (let i = 1; i < lengths.length; i++) {
-		samples.push(fromBase64(fileText.substr(pos, lengths[i])));
+	let samples = {};
+	for (let i = 0; i < lengths.length; i++) {
+		samples[ids[i]] = fromBase64(fileText.substr(pos, lengths[i]));
 		pos += lengths[i];
 	}
 	return { docText: docText, samples: samples };
