@@ -53,6 +53,9 @@ function createMidiBuiltins() {
 			));
 			let waitmessage = constructInfo(`listing midi ports`);
 			dv.appendChild(waitmessage)
+			// without this the activation function never runs: the deferred sits
+			// showing its wait message forever, never having asked for anything
+			dv.activate();
 			return dv;
 		},
 		'Lists every midi port, in both directions. Each port is tagged |midiport, and its |type says whether it is an input or an output.'
