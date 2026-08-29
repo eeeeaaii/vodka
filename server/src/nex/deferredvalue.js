@@ -102,9 +102,10 @@ class DeferredValue extends NexContainer {
 	toStringV2(ctx) {
 		// I think deferred values should just save as not a container but rather save as the string of its
 		// contained value, whatever that is. We can't, for example, save the state of a file read operation that is in progress.
+		// It can have no contained value at all -- `wait` with no argument makes
+		// one, and so does anything still waiting for its first result. Nothing
+		// is nil.
 		let c = this.getChildAt(0);
-		// A deferred with nothing in it yet is a bug in whatever made it, but it
-		// should not take autosave down with it.
 		return c ? c.toStringV2(ctx) : '[nil]';
 	}
 
