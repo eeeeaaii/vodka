@@ -18,6 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { Tag } from './tag.js'
 import { constructOrg, convertJSMapToOrg } from './nex/org.js'
 import { constructFatalError } from './nex/eerror.js'
+import { addCycleMember, contextTimeToPerformanceTime } from './webaudio.js'
 
 
 var midi = null;
@@ -205,6 +206,61 @@ function sendMidiNoteWithDuration(portId, channel, note, velocity, durationMs, i
 	}, ms);
 }
 
+
+/*
+A midi sequence on the global cycle.
+
+events is a list of { atSeconds, channel, note, velocity, durationSeconds,
+shortenable }, already converted out of whatever timebase they were written in.
+lengthSeconds is how long the sequence is, including any trailing spacer, and is
+what it contributes to the cycle length.
+
+Every message is handed to the browser with a timestamp, so the timing does not
+depend on when any of this javascript runs. The cycle boundary is in audio time
+and midi wants wall time, which is what contextTimeToPerformanceTime is for.
+*/
+function addMidiSequence(portId, events, lengthSeconds) {
+	let out = midiOutputOrThrow(portId);
+	let member = {
+		lengthSeconds: lengthSeconds,
+		scheduled: [],
+		start: function(startTime, cycleLen) {
+			// the sequence repeats within the cycle if the cycle is longer
+			for (let base = 0; base < cycleLen; base += lengthSeconds) {
+				for (let i = 0; i < events.length; i++) {
+					let e = events[i];
+					let at = base + e.atSeconds;
+					if (at >= cycleLen) continue;
+					let onAt = contextTimeToPerformanceTime(startTime + at);
+					out.send([statusByte(0x90, e.channel), e.note, e.velocity], onAt);
+					let dur = e.durationSeconds;
+					if (e.shortenable) {
+						dur = dur - (MIDI_NOTE_GAP_MS / 1000);
+					}
+					if (dur < 0.001) dur = 0.001;
+					let offAt = contextTimeToPerformanceTime(startTime + at + dur);
+					out.send([statusByte(0x80, e.channel), e.note, 0], offAt);
+					member.scheduled.push({ channel: e.channel, note: e.note });
+				}
+			}
+		},
+		stop: function() {
+			// messages already handed over cannot be recalled, so silence
+			// whatever this sequence could have left sounding
+			let seen = {};
+			for (let i = 0; i < member.scheduled.length; i++) {
+				let n = member.scheduled[i];
+				let k = n.channel + ':' + n.note;
+				if (seen[k]) continue;
+				seen[k] = true;
+				out.send([statusByte(0x80, n.channel), n.note, 0]);
+			}
+			member.scheduled = [];
+		}
+	};
+	return addCycleMember(member);
+}
+
 function anyMidiNotesSounding() {
 	for (let k in soundingNotes) {
 		return true;
@@ -270,5 +326,5 @@ function getMidiPorts(incb) {
 }
 
 
-export { getMidiPorts, openMidiPort, isPortOpen, addMidiListener, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
+export { getMidiPorts, openMidiPort, isPortOpen, addMidiListener, addMidiSequence, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
 		 sendMidiNoteWithDuration, anyMidiNotesSounding, midiPanic }
