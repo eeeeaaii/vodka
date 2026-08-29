@@ -29,23 +29,21 @@ import { Tag } from '../tag.js'
 
 function createContractBuiltins() {
 
-	// tagged as -- satisfies --
-
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
 
 	Builtin.createBuiltin(
-		'certify satisfies',
-		[ 'tag$', 'contractк' ],
-		function $mustBe(env, executionEnvironment) {
+		'sign for',
+		[ 'contractк', 'tag$' ],
+		function $signFor(env, executionEnvironment) {
 			// TODO: type check
 			let tagname = env.lb('tag');
 			let c = env.lb('contract');
-			let tag = newTagOrThrowOOM(tagname.getFullTypedValue(), 'certify satisfies builtin');
+			let tag = newTagOrThrowOOM(tagname.getFullTypedValue(), 'sign for builtin');
 			contractEnforcer.createContract(tag, c.getImpl());
 			c.addContractTag(tag);
 			return c;
 		},
-		'Declares that any object tagged with |tag must satisfy the passed-in |contract.'
+		'Declares that anything tagged with |tag must satisfy |contract.'
 	);
 
 

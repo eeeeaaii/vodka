@@ -187,20 +187,20 @@ class NexContainer extends Nex {
 		return r;		
 	}
 
-	childrenToStringV2() {
+	childrenToStringV2(ctx) {
 		let r = '';
 		for (let p = this.firstChildNex; p != null; p = p.next) {
 			if (r != '') {
 				r += ' ';
 			}
-			r += p.n.toString('v2');
+			r += p.n.toString('v2', ctx);
 		}
 		return r;		
 	}
 
-	childrenToString(version) {
+	childrenToString(version, ctx) {
 		if (version == 'v2') {
-			return this.childrenToStringV2();
+			return this.childrenToStringV2(ctx);
 		}
 		let r = "";
 		let i = 0;

@@ -27,7 +27,10 @@ class Contract extends NexContainer {
 
 		super()
 		this.impl = contractImpl;
-		this.privateData = null; // unused
+		// A contract has no private data of its own, but it still gets
+		// serialized like everything else, and '' is what "nothing" looks like
+		// to a serializer. null is not a string.
+		this.privateData = '';
 		this.contractTags = [];
 	}
 
@@ -39,7 +42,7 @@ class Contract extends NexContainer {
 		return this.impl;
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
 			return `[CONTRACT]`;
 		}
@@ -50,15 +53,15 @@ class Contract extends NexContainer {
 		return this.standardListPrettyPrint(lvl, '[contract]', hdir);
 	}
 
-	toStringV2() {
-		return `${this.toStringV2Literal()}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+	toStringV2(ctx) {
+		return `${this.toStringV2Literal()}${this.toStringV2PrivateDataSection(ctx)}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2', ctx)}${this.listEndV2()}`;
 	}
 
 	deserializePrivateData(data) {
 		this.privateData = data;
 	}
 
-	serializePrivateData(data) {
+	serializePrivateData(ctx) {
 		return this.privateData;
 	}
 

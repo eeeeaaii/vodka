@@ -46,6 +46,21 @@ class SystemState {
 		return this.syntheticCodeFactory;
 	}
 
+	/*
+	While a container file is being read, this resolves the index in a wavetable's
+	aud: reference to the samples that came with the document. Null at any other
+	time, which is what stops a document that mentions one outside a load -- pasted
+	from somewhere, or read by something that predates containers -- from picking
+	up whatever happens to be loaded.
+	*/
+	setAudioSampleResolver(fn) {
+		this.audioSampleResolver = fn;
+	}
+
+	getAudioSampleResolver() {
+		return this.audioSampleResolver ? this.audioSampleResolver : null;
+	}
+
 	getSessionId() {
 		return this.sessionId;
 	}

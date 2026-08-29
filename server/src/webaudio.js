@@ -39,10 +39,30 @@ let auditioningPlayer = null;
 let mediaRecorder = null;
 
 class AuditionPlayer {
-	constructor(buffer) {
+	// sustained means the sound keeps going after the key comes back up. Holding
+	// enter to audition is momentary; toggling playback with space is not.
+	constructor(buffer, startOffsetSamples, sustained) {
+		this.buffer = buffer;
+		this.sustained = !!sustained;
+		this.startOffsetSamples = startOffsetSamples ? startOffsetSamples : 0;
+		this.startedAt = ctx.currentTime;
 		this.source = getSourceFromBuffer(buffer, true /* loop */);
 		this.source.connect(channelMergerNode, 0, settings.AUDIO_AUDITION_CHANNEL);
-		this.source.start(ctx.currentTime);
+		this.source.start(ctx.currentTime, this.startOffsetSamples / SAMPLE_RATE);
+	}
+
+	/*
+	Where the playhead is now, in samples from the start of the buffer.
+
+	Read from ctx.currentTime rather than counted in frames: the audio clock is
+	the one the sound is actually playing on, so the line cannot drift away from
+	what you are hearing even if frames are dropped.
+	*/
+	positionInSamples() {
+		if (!this.buffer.length) return 0;
+		let elapsed = ctx.currentTime - this.startedAt;
+		let pos = this.startOffsetSamples + elapsed * SAMPLE_RATE;
+		return pos % this.buffer.length;
 	}
 
 	canChangeLoopData() {
@@ -269,10 +289,16 @@ function abortPlayback(channel) {
 }
 
 
-function startAuditioningBuffer(buffer, nex) {
+function startAuditioningBuffer(buffer, nex, startOffsetSamples, sustained) {
 	maybeCreateAudioContext();
-	auditioningPlayer = new AuditionPlayer(buffer);
+	auditioningPlayer = new AuditionPlayer(buffer, startOffsetSamples, sustained);
 	thingAuditioning = nex;
+}
+
+// -1 when nothing is auditioning, so callers can tell "at the start" from "not
+// playing" without a second question.
+function getAuditionPositionSamples() {
+	return auditioningPlayer ? auditioningPlayer.positionInSamples() : -1;
 }
 
 function isAnySoundPlaying() {
@@ -284,16 +310,22 @@ function isAnySoundPlaying() {
 }
 
 function stopAllSound() {
-	maybeKillSound();
+	maybeKillSound(true /* force -- this is the stop button, nothing survives it */);
 	abortPlayback(-1);
 }
 
-function maybeKillSound() {
-	if (thingAuditioning) {
-		thingAuditioning.stopAuditioningWave();
-		auditioningPlayer.abortPlay();
-		thingAuditioning = null;
-	}
+/*
+Called on every keyup, which is what makes auditioning momentary -- you hold the
+key and the sound stops when you let go. A sustained audition (space toggling
+playback) has to survive that, so it is only stopped when force says so, which
+is what stop-all-sound and an explicit toggle pass.
+*/
+function maybeKillSound(force) {
+	if (!thingAuditioning) return;
+	if (auditioningPlayer && auditioningPlayer.sustained && !force) return;
+	thingAuditioning.stopAuditioningWave();
+	if (auditioningPlayer) auditioningPlayer.abortPlay();
+	thingAuditioning = null;
 }
 
 function loadSample(fname, callback) {
@@ -313,5 +345,5 @@ async function getFileAsBuffer(filepath) {
 }
 
 
-export { getAudioBufferFromData, loadSample, maybeKillSound, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { getAudioBufferFromData, loadSample, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 

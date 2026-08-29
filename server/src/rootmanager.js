@@ -18,27 +18,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { RenderNode } from './rendernode.js'
 import { Root } from './nex/root.js'
 import { systemState } from './systemstate.js'
-import {
-	RENDER_MODE_EXPLO,
-	RENDER_MODE_NORM
-} from './globalconstants.js'
+import { RENDER_MODE_NORM } from './globalconstants.js'
 
 
-/**
- * The hidden root controller is used for the awkward situation where we want to be
- * able to get information about a nex that pertains to the way it will be rendered
- * (for example, its width and height). Nexes are technically in a lower-level-layer
- * than the rendering code, so in some cases you might ask for rendering info about
- * a nex that *has never been rendered*. So, to get that information, it has to be
- * rendered in "secret" (invisibly).
- */
 class RootManager  {
 	constructor() {
 	}
-
-	// This is currently unused, instead get-pixel-height and get-pixel-width just return
-	// zero if something's never been rendered -- fine for now but we might bring
-	// back this class at some point?
 
 	createNewRoot(args) {
 		if (!args) {
@@ -60,51 +45,8 @@ class RootManager  {
 		systemState.setRoot(root);
 		return root;	
 	}
-
-	// renders the nex into a scratch node, hands it to measureFn to be measured,
-	// then throws the scratch node away and returns whatever measureFn returned.
-	// The measuring has to happen in here because the node can't be measured once
-	// it's been detached.
-	measureInHiddenRoot(nex, rendermode, measureFn) {
-		let wasDirty = nex.getDirtyForRendering();
-		let savedRoot = systemState.getRoot();
-		let savedDebugRoot = document.vodkaroot;
-
-		// wide so the contents don't wrap, out of flow so it doesn't disturb
-		// the real layout while it's up
-		let scratch = document.createElement('div');
-		scratch.style.visibility = 'hidden';
-		scratch.style.position = 'absolute';
-		scratch.style.top = '0';
-		scratch.style.left = '0';
-		scratch.style.width = '10000px';
-		document.body.appendChild(scratch);
-
-		try {
-			let hiddenRoot = this.createNewRoot({
-				mode: rendermode,
-				domNode: scratch
-			})
-
-			// render pass has to monotonically increase but it can skip, so when this is
-			// called, the main (visible) render pass number will skip numbers.
-			systemState.setGlobalRenderPassNumber(systemState.getGlobalRenderPassNumber() + 1);
-			// has to be synchronous so we can measure
-			hiddenRoot.render();
-			return measureFn(nex.getRenderNodes()[0]);
-		} finally {
-			// createNewRoot points systemState at whatever it just made, so the
-			// real root has to be put back
-			systemState.setRoot(savedRoot);
-			document.vodkaroot = savedDebugRoot;
-			document.body.removeChild(scratch);
-			// if it was dirty before, re-dirty it
-			nex.setDirtyForRendering(wasDirty);
-		}
-	}
 }
 
 const rootManager = new RootManager();
 
 export { rootManager  }
-

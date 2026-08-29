@@ -35,14 +35,14 @@ class Nil extends ValueNex {
 		return r;
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
-			return this.toStringV2();
+			return this.toStringV2(ctx);
 		}
 		return super.toString(version);
 	}
 
-	toStringV2() {
+	toStringV2(ctx) {
 		return '[nil]' + this.toStringV2TagList();
 	}
 

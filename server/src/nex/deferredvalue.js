@@ -93,13 +93,13 @@ class DeferredValue extends NexContainer {
 		return this.state == DVSTATE_CANCELLED;
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
-			return this.toStringV2();
+			return this.toStringV2(ctx);
 		}
 	}
 
-	toStringV2() {
+	toStringV2(ctx) {
 		// I think deferred values should just save as not a container but rather save as the string of its
 		// contained value, whatever that is. We can't, for example, save the state of a file read operation that is in progress.
 		return this.getChildAt(0).toStringV2();
@@ -180,7 +180,7 @@ class DeferredValue extends NexContainer {
 		this.privateData = data;
 	}
 
-	serializePrivateData() {
+	serializePrivateData(ctx) {
 		return this.privateData;
 	}
 

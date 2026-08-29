@@ -56,7 +56,7 @@ class Builtin extends Lambda {
 		this.closure = BUILTINS;
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
 			return `[BUILTIN:${this.name.get()}]`;
 		}

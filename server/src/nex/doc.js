@@ -35,9 +35,9 @@ class Doc extends NexContainer {
 		this.setVertical();
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
-			return this.toStringV2();
+			return this.toStringV2(ctx);
 		}
 		return '{' + super.childrenToString() + '}';
 	}
@@ -47,8 +47,8 @@ class Doc extends NexContainer {
 	}
 
 
-	toStringV2() {
-		return `[${this.toStringV2Literal()}doc]${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+	toStringV2(ctx) {
+		return `[${this.toStringV2Literal()}doc]${this.toStringV2PrivateDataSection(ctx)}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2', ctx)}${this.listEndV2()}`;
 	}
 
 	toggleDir() {} // can only be vertical
@@ -65,7 +65,7 @@ class Doc extends NexContainer {
 		})
 	}
 
-	serializePrivateData(data) {
+	serializePrivateData(ctx) {
 		return `${this.getCurrentStyle()}`;
 	}
 

@@ -140,14 +140,14 @@ class Command extends NexContainer {
 		return r;
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
-			return this.toStringV2();
+			return this.toStringV2(ctx);
 		}
 		// dead code , v2 always there?
 	}
 
-	toStringV2() {
+	toStringV2(ctx) {
 		let cmdPrefix = Utils.convertMathToV2String(this.commandtext.get());
 		// If the command contains characters that aren't parsable we put the command name
 		// in the private data section instead.
@@ -156,11 +156,11 @@ class Command extends NexContainer {
 			if (cmdPrefix != '') {
 				cmdPrefix = cmdPrefix + ' ';
 			}
-			return `~${this.toStringV2Literal()}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}${super.childrenToString('v2')}${this.listEndV2()}`;
+			return `~${this.toStringV2Literal()}${this.toStringV2PrivateDataSection(ctx)}${this.listStartV2()}${this.toStringV2TagList()}${cmdPrefix}${super.childrenToString('v2', ctx)}${this.listEndV2()}`;
 		} else {
 			// I only need this when serializing
 			this.unparsableCommandName = cmdPrefix;
-			let r = `~${this.toStringV2Literal()}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+			let r = `~${this.toStringV2Literal()}${this.toStringV2PrivateDataSection(ctx)}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2', ctx)}${this.listEndV2()}`;
 			this.unparsableCommandName = '';
 			return r;
 		}
@@ -183,7 +183,7 @@ class Command extends NexContainer {
 		}
 	}
 
-	serializePrivateData() {
+	serializePrivateData(ctx) {
 		if (this.unparsableCommandName) {
 			return this.unparsableCommandName;
 		}

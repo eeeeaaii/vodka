@@ -36,14 +36,30 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .wavetable canvas {
+	display: block;
+}
+
+/* the playhead is positioned against this, so it has to be the canvas's box */
+.waveviewport {
+	position: relative;
 	align-self: flex-start;
+}
+
+/* stacked exactly on the waveform canvas, and never in the way of a click */
+.waveplayhead {
+	position: absolute;
+	top: 0;
+	left: 0;
+	pointer-events: none;
 }
 
 .wavetable.newselected {
 	border: 3px solid var(--selected-border);	
 }
 
-.wavetable canvas {
+/* the waveform only -- the playhead layer on top of it has to stay
+   transparent, and a bare `canvas` selector paints that one too */
+.wavetable canvas.wavecanvas {
 	background-color: var(--wave-canvas-background, #ffffff);
 }
 

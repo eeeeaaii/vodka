@@ -65,15 +65,15 @@ class DeferredCommand extends Command {
 		return true;
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
-			return this.toStringV2();
+			return this.toStringV2(ctx);
 		}
 		return `*(${super.childrenToString()}*)`;
 	}
 
-	toStringV2() {
-		return `*${this.toStringV2Literal()}${this.toStringV2PrivateDataSection()}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2')}${this.listEndV2()}`;
+	toStringV2(ctx) {
+		return `*${this.toStringV2Literal()}${this.toStringV2PrivateDataSection(ctx)}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2', ctx)}${this.listEndV2()}`;
 	}
 
 	deserializePrivateData(data) {
@@ -82,7 +82,7 @@ class DeferredCommand extends Command {
 		}
 	}
 
-	serializePrivateData() {
+	serializePrivateData(ctx) {
 		let r = this.getCommandText();
 		if (!r) return '';
 		return r;

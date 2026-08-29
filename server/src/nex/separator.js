@@ -38,14 +38,14 @@ class Separator extends Letter {
 
 	// makeCopy is same as superclass
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
-			return this.toStringV2();
+			return this.toStringV2(ctx);
 		}
 		return '|[' + this.getText() + ']|';
 	}
 
-	toStringV2() {
+	toStringV2(ctx) {
 		return `[${this.toStringV2Literal()}separator]${this.toStringV2PrivateDataSection(this.getText())}${this.toStringV2TagList()}`
 	}
 

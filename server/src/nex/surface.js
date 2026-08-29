@@ -53,9 +53,9 @@ class Surface extends Nex {
 		nex.canvas.getContext('2d').drawImage(this.canvas, 0, 0);
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
-			return this.toStringV2();
+			return this.toStringV2(ctx);
 		}
 		return super.toString(version);
 	}
@@ -196,14 +196,14 @@ class Surface extends Nex {
 		});
 	}
 
-	toStringV2() {
-		return `[${this.toStringV2Literal()}surface]${this.toStringV2PrivateDataSection()}${this.toStringV2TagList()}`
+	toStringV2(ctx) {
+		return `[${this.toStringV2Literal()}surface]${this.toStringV2PrivateDataSection(ctx)}${this.toStringV2TagList()}`
 	}
 
 	deserializePrivateData(data) {
 	}
 
-	serializePrivateData() {
+	serializePrivateData(ctx) {
 		return '';
 	}
 

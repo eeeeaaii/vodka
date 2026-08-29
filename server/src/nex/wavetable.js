@@ -17,7 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Nex } from './nex.js'
 import { experiments } from '../globalappflags.js'
-import { startAuditioningBuffer, getFileAsBuffer } from '../webaudio.js'
+import { startAuditioningBuffer, getFileAsBuffer, getAuditionPositionSamples, maybeKillSound } from '../webaudio.js'
 import { possiblyRecordAction } from '../testrecorder.js'
 import { heap } from '../heap.js'
 import { constructFatalError, throwOOM } from './eerror.js'
@@ -38,6 +38,7 @@ import { Editor } from '../editors.js'
 import { doTutorial } from '../help.js'
 import { getAudioBufferFromData, startRecordingAudio, stopRecordingAudio } from '../webaudio.js'
 import * as audioStore from '../audiostore.js'
+import { systemState } from '../systemstate.js'
 
 
 // zoom essentially means a number of pixels equals a number of samples
@@ -52,35 +53,43 @@ import * as audioStore from '../audiostore.js'
 /**
  * Nex that represents a wavetable value.
  */
-// When false, wavetables serialize as silence instead of their real samples.
-// Used by autosave; see serializePrivateData below.
-let serializeAudioData = true;
+/*
+A wavetable's private data is a list of fields:
 
-// Marks a serialized wavetable whose samples live in IndexedDB rather than in
-// the document. Chosen so it can't collide with base64, which has no colon.
-const AUDIO_REF_PREFIX = 'idb:';
+    [wavetable]"bp:1000,2000,3500;aud:0"
 
-// Same idea, but the samples are in the same file, after the document. The
-// number is an index into that file's sample list and means nothing outside it.
-const AUDIO_INDEX_PREFIX = 'aud:';
+    key:value;key:value
 
-// Set while a file is being written: wavetables hand their samples over and
-// serialize as an index instead of inlining them. Set while a file is being
-// read, to turn those indices back into samples. See audiocontainer.js.
-let audioCollector = null;
-let audioReader = null;
+The sample references were already this shape, so nothing had to be invented
+for them -- "aud:0" and "idb:<hash>" are just the field that says where the
+samples are. Everything else is metadata alongside it.
 
-function setSerializeAudioData(v) {
-	serializeAudioData = v;
-}
+  bp   breakpoints, ascending sample offsets
+  aud  index into this file's own sample list, meaningless outside it
+  idb  content hash of the samples in IndexedDB, written by autosave
 
-function setAudioCollector(c) {
-	audioCollector = c;
-}
+Metadata goes first and the samples last, because in the inline form the
+samples are a megabyte of base64 and anything you have to scroll past is
+something you will never read.
 
-function setAudioReader(r) {
-	audioReader = r;
-}
+No audio field at all means silence: a wavetable that says nothing about its
+samples comes back as DEFAULT_SIZE of them at zero, so "there was nothing to
+store" costs nothing to store.
+
+A field with no colon is the samples themselves, unkeyed. That is what every
+file written before fields existed looks like -- raw base64, or the older
+comma-separated decimals -- and neither can be mistaken for a field, since
+neither contains a colon or a semicolon.
+
+Unknown keys are ignored rather than refused, so a file written by a later
+version loses whatever it knew that this one does not, instead of failing to
+load.
+*/
+const FIELD_SEPARATOR = ';';
+const KEY_SEPARATOR = ':';
+const BREAKPOINTS_KEY = 'bp';
+const AUDIO_INDEX_KEY = 'aud';
+const AUDIO_REF_KEY = 'idb';
 
 /*
 Decodes samples stored directly in a document. Two formats have been written
@@ -88,48 +97,44 @@ over the years: base64 of the raw Float32 bytes, and before that a list of
 decimal numbers separated by commas. Telling them apart is unambiguous because
 the base64 alphabet has no comma in it.
 
-Returns null instead of throwing. A wavetable that can't be decoded should cost
-you that one wavetable, not the whole document -- atob throws on malformed
-input, and a Float32Array needs a byte count divisible by four, so a truncated
-file used to take the entire load down with it.
+Throws on data it cannot read, like the rest of the file-reading code. Data that
+is there and wrong is a different thing from data that is missing -- a reference
+to samples that are not there comes back as silence, because storage being
+cleared is expected, but a wavetable whose own bytes are malformed means the
+document is damaged and should say so.
 */
 function parseInlineSamples(data) {
-	try {
-		if (data.indexOf(',') >= 0) {
-			let parts = data.split(',');
-			let out = new Float32Array(parts.length);
-			for (let i = 0; i < parts.length; i++) {
-				let n = Number(parts[i]);
-				if (!isFinite(n)) return null;
-				out[i] = n;
+	if (data.indexOf(',') >= 0) {
+		let parts = data.split(',');
+		let out = new Float32Array(parts.length);
+		for (let i = 0; i < parts.length; i++) {
+			let n = Number(parts[i]);
+			if (!isFinite(n)) {
+				throw constructFatalError(`wavetable sample list has a value that is not a number: ${parts[i]}`);
 			}
-			return out;
+			out[i] = n;
 		}
-		let s = window.atob(data);
+		return out;
+	} else {
+		let s;
+		try {
+			s = window.atob(data);
+		} catch (e) {
+			throw constructFatalError('wavetable data is not valid base64');
+		}
 		let bytes = new Uint8Array(s.length);
 		for (let i = 0; i < s.length; i++) {
 			bytes[i] = s.charCodeAt(i);
 		}
-		if (bytes.length % 4 != 0) return null;
+		// four bytes to a sample; anything else means the data was truncated
+		if (bytes.length % 4 != 0) {
+			throw constructFatalError('wavetable data is not a whole number of samples');
+		}
 		return new Float32Array(bytes.buffer);
-	} catch (e) {
-		return null;
 	}
 }
 
-// A wavetable of DEFAULT_SIZE silent samples, encoded once. Emitting this rather
-// than an empty string means a restored wavetable is structurally identical to a
-// freshly inserted one, instead of a zero-length oddity the renderer has never
-// seen.
 const DEFAULT_SIZE = 256;
-const SILENT_WAVETABLE_DATA = (function() {
-	let bytes = new Uint8Array(new Float32Array(DEFAULT_SIZE).buffer);
-	let s = '';
-	for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
-	return typeof window !== 'undefined' && window.btoa
-			? window.btoa(s)
-			: Buffer.from(s, 'binary').toString('base64');
-})();
 
 class Wavetable extends Nex {
 	constructor(initSize) {
@@ -147,6 +152,16 @@ class Wavetable extends Nex {
 		this.localPixelsPerSample = -1;
 		this.localHeightPixelsFullScale = -1;
 		this.centerSample = -1;
+		// while a section is auditioning, the buffer being played starts partway
+		// into the wave, so positions coming back from it need shifting
+		this.playheadOffset = 0;
+		this.playheadNode = null;
+		this.playheadFrame = null;
+		this.doingPan = false;
+		// where the line was before playback borrowed it
+		this.playbackStartSample = -1;
+		// invalidated by cacheValues; see getContentHash
+		this.cachedHash = null;
 		this.markers = [];
 		this.sectionBeingAuditioned = null;
 		this.recording = false;
@@ -230,6 +245,10 @@ class Wavetable extends Nex {
 	}
 
 	stopEditing() {
+		if (this.auditioning) {
+			maybeKillSound(true /* force -- editing is over, so playback is too */);
+		}
+		this.stopPlayheadAnimation();
 		this.centerSample = -1;
 		this.localPixelsPerSample = -1;
 		this.localHeightPixelsFullScale = -1;
@@ -362,6 +381,22 @@ class Wavetable extends Nex {
 		let absMin = Math.abs(mm.min);
 		this.setAmp(Math.max(absMin, mm.max));
 		this.cachedBuffer = getAudioBufferFromData(this.data);
+		// The audio changed, so anything derived from its exact contents is
+		// stale. This is the one place that knows that.
+		this.cachedHash = null;
+	}
+
+	/*
+	Hashing walks every byte, and serializing happens on every autosave, so the
+	result is kept until the audio changes rather than being recomputed from
+	scratch each time. Computed on demand rather than in cacheValues, so loading
+	a document full of audio does not hash all of it before anything is saved.
+	*/
+	getContentHash() {
+		if (!this.cachedHash) {
+			this.cachedHash = audioStore.hashSamples(this.data);
+		}
+		return this.cachedHash;
 	}
 
 	getMinMaxInDataRange(start, end) {
@@ -460,15 +495,15 @@ class Wavetable extends Nex {
 		nex.cacheSections();
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
-			return this.toStringV2();
+			return this.toStringV2(ctx);
 		}
 		return '_[wavetable]';
 	}
 
-	toStringV2() {
-		return `[${this.toStringV2Literal()}wavetable]${this.toStringV2PrivateDataSection()}${this.toStringV2TagList()}`
+	toStringV2(ctx) {
+		return `[${this.toStringV2Literal()}wavetable]${this.toStringV2PrivateDataSection(ctx)}${this.toStringV2TagList()}`
 
 	}
 
@@ -487,68 +522,116 @@ class Wavetable extends Nex {
 	}
 
 	deserializePrivateData(data) {
-		// A reference rather than the samples themselves, written by autosave.
-		// The lookup is synchronous because every record was read into memory
-		// during startup, before any document was built -- see audiostore.js.
-		if (data.indexOf(AUDIO_REF_PREFIX) == 0) {
-			this.setSamplesOrSilence(audioStore.get(data.substring(AUDIO_REF_PREFIX.length)));
-			return;
+		let fields = {};
+		let unkeyed = null;
+		let parts = data.split(FIELD_SEPARATOR);
+		for (let i = 0; i < parts.length; i++) {
+			let c = parts[i].indexOf(KEY_SEPARATOR);
+			if (c < 0) {
+				unkeyed = parts[i];
+			} else {
+				fields[parts[i].substring(0, c)] = parts[i].substring(c + 1);
+			}
 		}
-		// Samples from elsewhere in this same file. audioReader is only set
-		// while a container is being read, so a document that refers to one
-		// outside that -- pasted somewhere, loaded by something that doesn't
-		// know about containers -- falls through to silence rather than to a
-		// stray lookup in whatever happens to be loaded.
-		if (data.indexOf(AUDIO_INDEX_PREFIX) == 0) {
-			let i = Number(data.substring(AUDIO_INDEX_PREFIX.length));
-			this.setSamplesOrSilence(audioReader ? audioReader(i) : null);
-			return;
-		}
-		// The samples themselves, in the document. This is what every file saved
-		// before files became containers looks like, and autosave still writes
-		// it for the silence fallback when IndexedDB isn't available, so it is
-		// not a legacy path that can be dropped.
-		this.setSamplesOrSilence(parseInlineSamples(data));
+		this.deserializeSamples(fields, unkeyed);
+		this.restoreMarkers(fields[BREAKPOINTS_KEY]);
 	}
 
-	serializePrivateData() {
-		// Saving to a file: the samples go after the document and the document
-		// refers to them by index. Deduped on content, so the same sample used
-		// in twenty places is stored once.
-		if (audioCollector) {
-			return AUDIO_INDEX_PREFIX
-					+ audioCollector.add(this.data, audioStore.hashSamples(this.data));
+	deserializeSamples(fields, unkeyed) {
+		// Written by autosave. The lookup is synchronous because every record
+		// was read into memory during startup, before any document was built --
+		// see audiostore.js.
+		if (AUDIO_REF_KEY in fields) {
+			this.setSamplesOrSilence(audioStore.get(fields[AUDIO_REF_KEY]));
+			return;
 		}
-		// Autosave turns inline serialization off: sample data is far too large
-		// for localStorage (roughly 250KB of base64 per second of audio). The
-		// samples go to IndexedDB instead and what lands in the document is a
-		// reference to them. Saving to the server is unaffected and still writes
-		// the real audio inline.
-		if (!serializeAudioData) {
-			if (audioStore.isUnavailable()) {
-				// No IndexedDB -- a private window, blocked site data. Fall back
-				// to the old behaviour: structure survives, audio doesn't.
-				return SILENT_WAVETABLE_DATA;
+		// Samples from elsewhere in this same file. The resolver is only set
+		// while a container is being read -- see systemState.
+		if (AUDIO_INDEX_KEY in fields) {
+			let resolver = systemState.getAudioSampleResolver();
+			let i = Number(fields[AUDIO_INDEX_KEY]);
+			this.setSamplesOrSilence(resolver ? resolver(i) : null);
+			return;
+		}
+		// The samples themselves, unkeyed. Every file saved before containers
+		// looks like this, and autosave still writes it for the silence
+		// fallback when IndexedDB isn't available.
+		this.setSamplesOrSilence(unkeyed ? parseInlineSamples(unkeyed) : null);
+	}
+
+	/*
+	Markers are dropped rather than clamped if they do not land inside the wave
+	that actually arrived. That is the same range addMarker enforces -- a marker
+	at either end makes an empty section -- and it is what keeps a wave that came
+	back as silence, because its samples were not there to restore, from also
+	coming back covered in markers pointing into nothing.
+	*/
+	restoreMarkers(value) {
+		let out = [];
+		let raw = value ? value.split(',') : [];
+		for (let i = 0; i < raw.length; i++) {
+			let n = Number(raw[i]);
+			if (Number.isInteger(n) && n >= 1 && n <= this.data.length - 1) {
+				out.push(n);
 			}
-			let hash = audioStore.hashSamples(this.data);
+		}
+		this.markers = out.sort((a, b) => a - b);
+		if (this.markers.length == 0) return;
+		try {
+			this.cacheSections();
+		} catch (e) {
+			// Sectioning copies the whole wave again, so it can run out of
+			// memory where merely loading it did not. Keep the markers -- they
+			// draw, and they are saved again on the way out -- and leave the
+			// sections empty, which auditionSection already handles.
+			this.sections = [];
+		}
+	}
+
+	serializePrivateData(ctx) {
+		let fields = [];
+		if (this.markers.length > 0) {
+			fields.push(BREAKPOINTS_KEY + KEY_SEPARATOR + this.markers.join(','));
+		}
+		// last, and the only field that may arrive without a key. Empty when
+		// there was nowhere to put the samples, in which case no field is
+		// written at all and reading it back gives silence.
+		let samples = this.serializeSamples(ctx);
+		if (samples != '') {
+			fields.push(samples);
+		}
+		return fields.join(FIELD_SEPARATOR);
+	}
+
+	serializeSamples(ctx) {
+		if (ctx.isFile()) {
+			// Into the file's resource section; the document refers to it by
+			// index. Deduped on content, so the same sample used in twenty
+			// places is stored once.
+			return AUDIO_INDEX_KEY + KEY_SEPARATOR
+					+ ctx.audioCollector.add(this.data, this.getContentHash());
+		}
+		if (ctx.isBrowserStorage()) {
+			// Samples are far too large for localStorage -- roughly 250KB of
+			// base64 per second of audio, against a budget of about five
+			// megabytes for everything -- so they go to IndexedDB and the
+			// document gets a reference.
+			if (audioStore.isUnavailable()) {
+				// No IndexedDB: a private window, or blocked site data. Say
+				// nothing about the samples rather than writing out a silent
+				// buffer. A wavetable with no audio field comes back as silence
+				// anyway, and there is no reason to store a kilobyte of zeros to
+				// mean "there was nothing to store".
+				return '';
+			}
+			let hash = this.getContentHash();
 			audioStore.put(hash, this.data);
-			return AUDIO_REF_PREFIX + hash;
+			return AUDIO_REF_KEY + KEY_SEPARATOR + hash;
 		}
-		let s = '';
-		let bytes = new Uint8Array(this.data.buffer);
-		let len = bytes.byteLength;
-		for (let i = 0; i < len; i++) {
-			s += String.fromCharCode(bytes[i]);
-		}
-		return window.btoa(s);
-		// let s = '';
-		// for (let i = 0; i < this.data.length; i++) {
-		// 	if (s != '') {
-		// 		s += ',';
-		// 	}
-		// 	s += this.data[i];
-		// }
-		// return s;
+		// Display: printing, a debug string, the text of an error message.
+		// Nothing that reads those wants a megabyte of base64, and there is
+		// nowhere to put the samples anyway.
+		return '';
 	}
 
 	getDefaultHandler() {
@@ -572,7 +655,14 @@ class Wavetable extends Nex {
 			if (!this.auditioning) {
 				this.auditioning = true;
 				this.sectionBeingAuditioned = sd;
-				startAuditioningBuffer(sd.cachedBuffer, this);
+				// the section's buffer starts at zero, but the wave it is drawn
+				// over does not
+				this.playheadOffset = sd.start;
+				this.playbackStartSample = this.centerSample;
+				startAuditioningBuffer(sd.cachedBuffer, this, 0, false /* momentary */);
+				this.setDirtyForRendering(true);
+				eventQueueDispatcher.enqueueTopLevelRender();
+				this.startPlayheadAnimation();
 			}
 		}
 	}
@@ -640,17 +730,114 @@ class Wavetable extends Nex {
 	auditionWave() {
 		if (!this.auditioning) {
 			this.auditioning = true;
-			startAuditioningBuffer(this.cachedBuffer, this);
+			this.playheadOffset = 0;
+			// Always from the beginning. You are not editing when you get here
+			// -- Enter terminates the editor -- so there is no selection point,
+			// and the line is only here to show how far in you are.
+			startAuditioningBuffer(this.cachedBuffer, this, 0, false /* momentary */);
+			// outside the editor there is no playhead layer yet -- this is the
+			// render that adds one
+			this.setDirtyForRendering(true);
+			eventQueueDispatcher.enqueueTopLevelRender();
+			this.startPlayheadAnimation();
 		}
+	}
+
+	/*
+	Space, while editing. Unlike holding enter this survives the keyup, so it
+	plays until you press space again.
+
+	Playback starts from the green line, which is the selection point, and the
+	same line then becomes the playhead and moves. With nothing selected the
+	line has not been placed yet, so it starts at the beginning.
+	*/
+	togglePlayback() {
+		if (this.auditioning) {
+			maybeKillSound(true /* force -- a toggle is an explicit stop */);
+			return;
+		}
+		if (this.centerSample < 0 || this.centerSample >= this.data.length) {
+			this.centerSample = 0;
+		}
+		this.auditioning = true;
+		this.playheadOffset = 0;
+		this.playbackStartSample = this.centerSample;
+		startAuditioningBuffer(this.cachedBuffer, this, this.centerSample, true /* sustained */);
+		this.startPlayheadAnimation();
 	}
 
 	stopAuditioningWave() {
 		if (this.auditioning) {
 			this.auditioning = false;
 			this.sectionBeingAuditioned = null;
+			this.stopPlayheadAnimation();
+			// The line goes back to where playback started. It is the selection
+			// point as well as the playhead, so leaving it wherever the sound
+			// happened to stop would mean auditioning quietly moved your
+			// selection somewhere you did not put it. Play, stop, play again
+			// replays the same thing. Outside the editor there is no selection
+			// point to give back, so it goes away.
+			if (!this.isEditing) {
+				this.centerSample = -1;
+			} else if (this.playbackStartSample >= 0) {
+				this.centerSample = this.playbackStartSample;
+			}
+			this.playbackStartSample = -1;
+			this.updatePlayhead();
 			this.setDirtyForRendering(true);
 			eventQueueDispatcher.enqueueTopLevelRender();			
 		}
+	}
+
+	/*
+	The playhead is a positioned div over the canvas rather than something drawn
+	into it, so moving it is one style write. Redrawing the waveform every frame
+	would mean rescanning the samples behind every pixel column sixty times a
+	second, which is far too much work to be doing during a set.
+	*/
+	startPlayheadAnimation() {
+		if (this.playheadFrame) return;
+		let step = () => {
+			if (!this.auditioning) {
+				this.playheadFrame = null;
+				return;
+			}
+			let pos = getAuditionPositionSamples();
+			if (pos >= 0) {
+				this.centerSample = Math.floor(this.playheadOffset + pos);
+				this.updatePlayhead();
+			}
+			this.playheadFrame = window.requestAnimationFrame(step);
+		};
+		this.playheadFrame = window.requestAnimationFrame(step);
+	}
+
+	stopPlayheadAnimation() {
+		if (this.playheadFrame) {
+			window.cancelAnimationFrame(this.playheadFrame);
+			this.playheadFrame = null;
+		}
+	}
+
+	// pixel column showing this sample, the inverse of samplesRepresentedByPixel
+	pixelPositionOfSample(sample) {
+		return (sample - this.windowOriginSample) * this.getPixelsPerSample();
+	}
+
+	updatePlayhead() {
+		if (!this.playheadNode) return;
+		let ctx = this.playheadNode.getContext('2d');
+		// An empty overlay is an invisible one, so there is no separate hidden
+		// state to keep in step with anything.
+		ctx.clearRect(0, 0, this.windowWidth(), this.windowHeight());
+		if (this.centerSample < 0) return;
+		if (!this.isEditing && !this.auditioning) return;
+		let x = Math.round(this.pixelPositionOfSample(this.centerSample));
+		if (x < 0 || x > this.windowWidth()) return;
+		ctx.lineWidth = 1;
+		// half a pixel over, or a one-pixel line straddles two columns and comes
+		// out two pixels wide and half strength
+		this.drawVertLine(ctx, x + 0.5, false, this.playheadColor);
 	}
 
 	_setClickHandler(renderNode) {
@@ -658,12 +845,32 @@ class Wavetable extends Nex {
 		let startx = 0;
 		let initialZoom = 0;
 		let initialAmpZoom = 0;
+		let initialWindowOrigin = 0;
+		let dragged = false;
+		let downOffsetX = 0;
+		let anchorSample = 0;
+		// far enough that you meant it -- a click with a shaky hand still moves
+		// a pixel or two, and losing the playhead to that would be worse than
+		// needing a deliberate gesture to zoom
+		const DRAG_THRESHOLD_PIXELS = 4;
 		let y = 0;
 		let x = 0;
 		let t = this;
 		let startedBelow = false;
 		let ampnegative = 1;
 		let startfunction = (event) => {
+			// ctrl or command pans, shift zooms amplitude, neither zooms time.
+			// Command as well as ctrl because on a mac ctrl-click is right
+			// click, so ctrl-drag there is fighting the context menu.
+			//
+			// Panning is editing-only because outside the editor there is no
+			// window to pan. windowWidth sizes the canvas to the wave, so a
+			// short one is entirely on screen with nothing to move to, and only
+			// a wave long enough to hit the 65%-of-screen cap has anything
+			// hidden -- see rightIsClipping. Ctrl-drag out there would do
+			// nothing at all on some waveforms and move on others, with nothing
+			// on screen to say which you were looking at.
+			this.doingPan = (event.ctrlKey || event.metaKey) && this.isEditing;
 			if (event.shiftKey) {
 				this.doingAmplitudeZoom = true;
 			} else {
@@ -680,11 +887,21 @@ class Wavetable extends Nex {
 			if (this.windowHeight() == 1000) {
 				ampnegative = startedBelow ? 1 : -1;
 			}
-			if (this.isEditing) {
-				this.changeCenterSample(event.offsetX);
-			}
+			// Not while playing: the click is how you zoom, and moving the
+			// playhead every time you grabbed the wave to zoom would make it
+			// impossible to zoom in on something while listening to it.
+			// The playhead moves on mouseup, not here -- see endfunction. Where
+			// you pressed is what it moves to, which is the same thing as where
+			// you released for anything that counted as a click rather than a
+			// drag.
+			dragged = false;
+			downOffsetX = event.offsetX;
+			// what zooming holds still: the sample under the cursor, so the
+			// thing you grabbed stays where you grabbed it
+			anchorSample = this.samplesRepresentedByPixel(event.offsetX).start;
 			initialZoom = this.getPixelsPerSample();
 			initialAmpZoom = this.getHeightPixelsFullScale();
+			initialWindowOrigin = this.windowOriginSample;
 			// enqueue a redraw for the center line
 			eventQueueDispatcher.enqueueTopLevelRender();			
 		}
@@ -693,6 +910,21 @@ class Wavetable extends Nex {
 			let x = e.clientX;
 			let deltaY = y - starty;
 			let deltaX = -(x - startx);
+			if (Math.abs(x - startx) > DRAG_THRESHOLD_PIXELS
+					|| Math.abs(y - starty) > DRAG_THRESHOLD_PIXELS) {
+				dragged = true;
+			}
+			if (this.doingPan) {
+				// Drag right and the wave goes right, because what you have hold
+				// of is the wave, not the window onto it. Zoom is untouched, and
+				// so is the selection point -- panning is a way to look
+				// somewhere else, not to choose somewhere else.
+				this.setWindowOriginSample(
+						initialWindowOrigin - (x - startx) / this.getPixelsPerSample());
+				this.updatePlayhead();
+				eventQueueDispatcher.enqueueTopLevelRender();
+				return;
+			}
 			let delta = (Math.abs(deltaX) > Math.abs(deltaY)) ? deltaX : deltaY;
 			let factor = Math.pow(2, -(delta * 0.01));
 			let ampfactor = Math.pow(2, ampnegative * (deltaY * 0.01));
@@ -703,16 +935,44 @@ class Wavetable extends Nex {
 			}
 
 			if (this.isEditing) {
-				let positionOfClickInWindow = startx / t.windowWidth()
+				// Zoom around the point under the cursor, not around the
+				// playhead. It used to be the playhead because pressing the
+				// mouse put the playhead where you pressed, so they were the
+				// same point; now that a drag deliberately leaves the playhead
+				// alone, using it here would throw the wave somewhere else the
+				// moment you started zooming.
+				//
+				// offsetX, not clientX -- clientX is measured from the viewport,
+				// so it carried however far the wavetable happens to sit from
+				// the left edge of the window into a fraction that should only
+				// ever be where in the wave you clicked.
+				let positionOfClickInWindow = downOffsetX / t.windowWidth();
 				let samplesInWindow = t.windowWidth() / this.getPixelsPerSample();
-				t.setWindowOriginSample(t.centerSample - (samplesInWindow * positionOfClickInWindow));				
+				t.setWindowOriginSample(anchorSample - (samplesInWindow * positionOfClickInWindow));
 			}
 			eventQueueDispatcher.enqueueTopLevelRender();			
 		}
-		this.setupMouseDragHandler(renderNode, startfunction, movefunction);
+		/*
+		A click places the playhead; a drag zooms and leaves it alone. Deciding
+		on the way up rather than the way down is what makes that possible --
+		on the way down there is no way to know yet which one you are doing.
+
+		Only while editing, and only when nothing is playing: during playback
+		the line is the playhead and clicking must not move it, which is the
+		same rule as before.
+		*/
+		let endfunction = () => {
+			if (!dragged && !this.doingPan && this.isEditing && !this.auditioning) {
+				this.changeCenterSample(downOffsetX);
+				this.updatePlayhead();
+				eventQueueDispatcher.enqueueTopLevelRender();
+			}
+			this.doingPan = false;
+		}
+		this.setupMouseDragHandler(renderNode, startfunction, movefunction, endfunction);
 	}
 
-	setupMouseDragHandler(renderNode, startf, movef) {
+	setupMouseDragHandler(renderNode, startf, movef, endf) {
 		let body = null;
 		let t = this;
 		let mousemove = function(e) {
@@ -724,6 +984,7 @@ class Wavetable extends Nex {
 		let mouseup = (event) => {
 			body.onmousemove = null;
 			body.onmouseup = null;
+			if (endf) endf(event);
 			event.stopPropagation();
 		};
 
@@ -780,8 +1041,29 @@ class Wavetable extends Nex {
 			topcontrols.appendChild(this.createAddMarker())
 		}
 
-		let canvas = this.createWaveformCanvas();
-		domNode.appendChild(canvas);
+		let viewport = document.createElement('div');
+		viewport.classList.add('waveviewport');
+		viewport.appendChild(this.createWaveformCanvas());
+		// Only when there is something to put on it: the selection point exists
+		// while editing, and the playhead while a sound is running. The rest of
+		// the time there is no second canvas at all.
+		this.playheadNode = null;
+		if (this.isEditing || this.auditioning) {
+			// Same width and height as the waveform, stacked on it, so the
+			// playhead is placed in samples-to-pixels exactly like everything
+			// drawn underneath it.
+			this.playheadNode = document.createElement('canvas');
+			this.playheadNode.classList.add('waveplayhead');
+			this.playheadNode.setAttribute('width', this.windowWidth());
+			this.playheadNode.setAttribute('height', this.windowHeight());
+			// cached because updatePlayhead runs every frame, and reading a
+			// computed style forces a style recalculation
+			this.playheadColor = getComputedStyle(document.documentElement)
+					.getPropertyValue('--wave-playhead').trim();
+			viewport.appendChild(this.playheadNode);
+		}
+		domNode.appendChild(viewport);
+		this.updatePlayhead();
 
 		if (this.isEditing) {
 			domNode.classList.add('editing');
@@ -929,6 +1211,7 @@ class Wavetable extends Nex {
 	createWaveformCanvas() {
 
 		let canvas = document.createElement('canvas');
+		canvas.classList.add('wavecanvas');
 		canvas.setAttribute('height', this.windowHeight());
 		canvas.setAttribute('width', this.windowWidth());
 		let ctx = canvas.getContext("2d");
@@ -957,8 +1240,6 @@ class Wavetable extends Nex {
 		let markerColor = themeColor('--wave-marker');
 		let lightMarkerColor = themeColor('--wave-marker-light');
 		let clippingColor = themeColor('--wave-clipping');
-
-		let currentSampleColor = themeColor('--wave-playhead');
 
 		let zeroColor = themeColor('--wave-zero');
 		for (let i = 0 ; i < this.windowWidth(); i += increment) {
@@ -1043,9 +1324,6 @@ class Wavetable extends Nex {
 					if (this.shouldDoLine(marker, range)) {
 						this.drawVertLine(ctx, i, false, markerColor);
 					}
-				}
-				if (this.shouldDoLine(this.centerSample, range)) {
-					this.drawVertLine(ctx, i, false, currentSampleColor);
 				}
 			} else {
 				for (let j = 0; j < this.markers.length; j++) {
@@ -1180,12 +1458,14 @@ class WavetableEditor extends Editor {
 
 
 	shouldIgnore(text) {
-		if (/^[0-9v]$/.test(text)) return false;
+		if (/^[0-9v ]$/.test(text)) return false;
 		return text != 'Enter'
 	}
 
 	doAppendEdit(text) {
-		if (text == 'v') {
+		if (text == ' ') {
+			this.nex.togglePlayback();
+		} else if (text == 'v') {
 			this.nex.addMarker();
 		} else {
 			this.nex.auditionSection(text);
@@ -1193,7 +1473,7 @@ class WavetableEditor extends Editor {
 	}
 
 	shouldAppend(text) {
-		if (/^[0-9v]$/.test(text)) return true;
+		if (/^[0-9v ]$/.test(text)) return true;
 		return false;
 	}
 
@@ -1220,4 +1500,4 @@ stats: ${heap.stats()}`)
 }
 
 
-export { Wavetable, WavetableEditor, constructWavetable, setSerializeAudioData, setAudioCollector, setAudioReader }
+export { Wavetable, WavetableEditor, constructWavetable }

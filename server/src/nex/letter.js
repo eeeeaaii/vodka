@@ -66,18 +66,18 @@ class Letter extends Nex {
 		this.setDirtyForRendering(true);
 	}
 
-	toString(version) {
+	toString(version, ctx) {
 		if (version == 'v2') {
-			return this.toStringV2();
+			return this.toStringV2(ctx);
 		}
 		return '|(' + this.letterValue + ')|';
 	}
 
-	toStringV2() {
-		return `[${this.toStringV2Literal()}letter]${this.toStringV2PrivateDataSection()}${this.toStringV2TagList()}`
+	toStringV2(ctx) {
+		return `[${this.toStringV2Literal()}letter]${this.toStringV2PrivateDataSection(ctx)}${this.toStringV2TagList()}`
 	}
 
-	serializePrivateData(data) {
+	serializePrivateData(ctx) {
 		let style = this.getCurrentStyle();
 		if (style) {
 			return `${this.letterValue}|${this.getCurrentStyle()}`;
