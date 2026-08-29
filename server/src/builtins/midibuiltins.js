@@ -16,9 +16,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Builtin } from '../nex/builtin.js'; 
-import { getMidiPorts, openMidiPort, isPortOpen, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
+import { getMidiPorts, openMidiPort, isPortOpen, addMidiSequence, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
 		 sendMidiNoteWithDuration } from '../midifunctions.js'
 import { convertTimeToSamples, nexToTimebase, getSampleRate } from '../wavetablefunctions.js'
+import { constructSequence } from '../nex/sequence.js'
+import { endLoops } from '../webaudio.js'
 import { constructOrg } from '../nex/org.js'; 
 import { constructDeferredValue } from '../nex/deferredvalue.js'; 
 import { constructFatalError, constructInfo, newTagOrThrowOOM } from '../nex/eerror.js'
@@ -121,6 +123,96 @@ function createMidiBuiltins() {
 			return dv;
 		},
 		'Reconnects the midi port |port and returns it with its state as it is now. A port remembered from a previous session is only its name and id until this is called; list-midi-ports does the same thing for every port at once.'
+	);
+
+
+	/*
+	Reads one note out of a loop-midi list. Same shape send-midi-note takes,
+	plus a float tagged `time` saying where in the sequence it goes.
+	*/
+	function readSequenceNote(n) {
+		let kind = null;
+		let notenum = null;
+		for (let k of ['note', 'note-on', 'note-off']) {
+			let v = taggedInt(n, k, 'loop-midi');
+			if (v !== null) { kind = k; notenum = v; break; }
+		}
+		if (kind == null) {
+			return { error: 'loop-midi: needs an int tagged note, note-on or note-off. Sorry!' };
+		}
+		if (kind != 'note') {
+			return { error: 'loop-midi: every note needs a duration, so tag it note. Sorry!' };
+		}
+		if (notenum < 0 || notenum > 127) {
+			return { error: `loop-midi: ${notenum} is not a note (0-127). Sorry!` };
+		}
+		let timenex = n.getChildTagged(newTagOrThrowOOM('time', 'loop midi, time'));
+		if (!timenex) {
+			return { error: 'loop-midi: every note needs a float tagged time. Sorry!' };
+		}
+		let durnex = n.getChildTagged(newTagOrThrowOOM('duration', 'loop midi, duration'));
+		if (!durnex) {
+			return { error: 'loop-midi: every note needs a duration. Sorry!' };
+		}
+		let velocity = taggedInt(n, 'velocity', 'loop-midi');
+		if (velocity == null) velocity = 127;
+		let channel = taggedInt(n, 'channel', 'loop-midi');
+		if (channel == null) channel = 1;
+		if (channel < 1 || channel > 16) {
+			return { error: `loop-midi: no channel ${channel} (1-16). Sorry!` };
+		}
+		let durTimebase = nexToTimebase(durnex);
+		return {
+			atSeconds: convertTimeToSamples(timenex) / getSampleRate(),
+			durationSeconds: convertTimeToSamples(durnex) / getSampleRate(),
+			// only beats are shortened; anything else asked for that length
+			shortenable: durTimebase == 'BEATS',
+			note: notenum,
+			velocity: velocity,
+			channel: channel
+		};
+	}
+
+	Builtin.createBuiltin(
+		'loop-midi on',
+		[ 'seq()', 'port()' ],
+		function $loopMidi(env, executionEnvironment) {
+			let list = env.lb('seq');
+			let port = portIdOrError(env.lb('port'), 'loop-midi');
+			if (port.error) return port.error;
+
+			let events = [];
+			let spacerSeconds = 0;
+			let n = list.numChildren();
+			for (let i = 0; i < n; i++) {
+				let c = list.getChildAt(i);
+				// a bare number last is the gap before the sequence repeats
+				if (i == n - 1 && !c.isNexContainer()) {
+					spacerSeconds = convertTimeToSamples(c) / getSampleRate();
+					break;
+				}
+				let e = readSequenceNote(c);
+				if (e.error) return constructFatalError(e.error);
+				events.push(e);
+			}
+			if (events.length == 0) {
+				return constructFatalError('loop-midi: nothing to play. Sorry!');
+			}
+
+			// The sequence is as long as its last note nominally ends, plus the
+			// gap. Nominally: shortening a note to keep it clear of the next one
+			// gives the time back to the gap, so it never changes the length.
+			let nominalEnd = 0;
+			for (let i = 0; i < events.length; i++) {
+				let end = events[i].atSeconds + events[i].durationSeconds;
+				if (end > nominalEnd) nominalEnd = end;
+			}
+			let lengthSeconds = nominalEnd + spacerSeconds;
+
+			let id = addMidiSequence(port.id, events, lengthSeconds);
+			return constructSequence('midi loop, ' + events.length + ' notes', [ id ], endLoops);
+		},
+		'Plays a list of midi notes in a loop on |port, joining the global cycle at its next boundary. Each note is what send-midi-note takes, with a float tagged time saying where in the sequence it falls. A bare number at the end of the list is the gap before the sequence repeats. Returns a sequence, which ends the loop when it is deleted, or at the next boundary if passed to end-seq.'
 	);
 
 	Builtin.createBuiltin(

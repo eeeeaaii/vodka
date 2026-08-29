@@ -424,6 +424,12 @@ function startCycleAt(startTime) {
 	}
 	for (let id in cycleLoops) {
 		let loop = cycleLoops[id];
+		// A member that brings its own way of starting -- midi does, and
+		// schedules messages rather than making a sound.
+		if (loop.start) {
+			loop.start(startTime, len);
+			continue;
+		}
 		let node = getSourceFromBuffer(loop.buffer, true);
 		node.connect(channelMergerNode, 0, loop.channel);
 		node.start(startTime);
@@ -447,14 +453,23 @@ ones wait for the boundary, which is what keeps everything in phase.
 function addLoop(buffer, channel) {
 	maybeCreateAudioContext();
 	checkChannelExists(channel);
-	let id = nextCycleLoopId++;
-	let loop = {
+	return addCycleMember({
 		buffer: buffer,
 		channel: channel,
 		lengthSeconds: buffer.length / SAMPLE_RATE,
-		node: null,
-		endAfterCycle: false
-	};
+		node: null
+	});
+}
+
+/*
+Anything with a length can join the cycle. An audio loop brings a buffer and a
+channel; a midi sequence brings start and stop functions instead, and schedules
+messages rather than making a sound.
+*/
+function addCycleMember(loop) {
+	maybeCreateAudioContext();
+	let id = nextCycleLoopId++;
+	loop.endAfterCycle = false;
 	if (!cycleRunning) {
 		cycleLoops[id] = loop;
 		cycleRunning = true;
@@ -473,6 +488,7 @@ function endLoops(ids, atCycleEnd) {
 		if (atCycleEnd) {
 			loop.endAfterCycle = true;
 		} else {
+			if (loop.stop) loop.stop();
 			if (loop.node) {
 				try { loop.node.stop(); } catch (e) {}
 				loop.node.disconnect();
@@ -493,6 +509,24 @@ function endAllLoops() {
 		cycleTimer = null;
 	}
 	cycleRunning = false;
+}
+
+/*
+Audio time to the wall clock time midi wants, read fresh each time. The two run
+off different oscillators and drift apart by tens of parts per million, but
+getOutputTimestamp pairs a reading of both, so converting per event re-anchors
+every time and nothing accumulates.
+
+Its contextTime is the frame reaching the output, not the frame being computed,
+so the output buffer delay is already in the answer.
+*/
+function contextTimeToPerformanceTime(contextTime) {
+	let ts = ctx.getOutputTimestamp();
+	if (ts && ts.contextTime != undefined && ts.performanceTime != undefined) {
+		return ts.performanceTime + (contextTime - ts.contextTime) * 1000;
+	}
+	// no timestamp available: fall back to the current time plus the gap
+	return performance.now() + (contextTime - ctx.currentTime) * 1000;
 }
 
 // When the next cycle begins, in ctx.currentTime, and how long a cycle is.
@@ -588,5 +622,5 @@ async function getFileAsBuffer(filepath) {
 }
 
 
-export { getAudioBufferFromData, loadSample, addLoop, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { getAudioBufferFromData, loadSample, addLoop, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 
