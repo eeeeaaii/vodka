@@ -106,28 +106,9 @@ function saveNow(rootNode) {
 	}));
 	// A save that did not happen says nothing about what is still in use.
 	if (!wrote) return;
-	// Samples the document no longer mentions are dead. Editing a wavetable
-	// gives its new contents a new hash, so without this every intermediate
-	// state of every sound would be kept forever. Reading the references back
-	// out of what we just wrote is the cheapest way to know exactly what
-	// survived, and can't drift from it.
-	audioStore.pruneToKeys(collectAudioRefs(docs));
 	saveEditorState();
 }
 
-const AUDIO_REF_RE = /idb:([0-9a-f]+-[0-9a-f]+)/g;
-
-function collectAudioRefs(docs) {
-	let keys = new Set();
-	for (let i = 0; i < docs.length; i++) {
-		let m;
-		AUDIO_REF_RE.lastIndex = 0;
-		while ((m = AUDIO_REF_RE.exec(docs[i])) !== null) {
-			keys.add(m[1]);
-		}
-	}
-	return keys;
-}
 
 /**
  * Called after anything that changes the document. Debounced, because

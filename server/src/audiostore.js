@@ -173,58 +173,20 @@ session would accumulate every intermediate state of every sound.
 Takes the set of hashes the document still mentions. Background, like put().
 */
 /*
-How many saves in a row a sample has to go unmentioned before it is deleted.
-
-Deleting is forever and recorded audio has no other copy, so the question is not
-"is this referenced right now" but "has this stopped being referenced". Those
-differ whenever the document momentarily fails to mention something it still
-holds -- a builtin that starts returning a handle instead of a wavetable, a
-serialization that took a branch nobody thought about. One bad save should not
-be able to destroy a recording.
-
-At the autosave interval this is on the order of a minute of editing, which is
-long enough to notice and stop.
+Forgets a wavetable's samples. Called when the wavetable itself is freed, which
+vodka knows the moment it happens -- heap.free calls cleanupOnMemoryFree as soon
+as the last reference drops. Nothing has to be inferred from what a document
+does or does not mention.
 */
-const PRUNE_AFTER_MISSES = 30;
-
-// hash -> how many consecutive saves have not mentioned it
-const misses = new Map();
-
-function pruneToKeys(keysInUse) {
+function remove(id) {
+	if (!id) return;
+	loaded.delete(id);
 	if (unavailable) return;
-	// Nothing referenced at all is not a document with no audio in it, it is a
-	// document that failed to say. Never act on it.
-	if (keysInUse.size == 0) {
-		misses.clear();
-		return;
-	}
-	let dead = [];
-	loaded.forEach(function(value, hash) {
-		if (keysInUse.has(hash)) {
-			misses.delete(hash);
-			return;
-		}
-		let n = (misses.get(hash) || 0) + 1;
-		misses.set(hash, n);
-		if (n >= PRUNE_AFTER_MISSES) {
-			dead.push(hash);
-		}
-	});
-	for (let i = 0; i < dead.length; i++) {
-		misses.delete(dead[i]);
-	}
-	if (dead.length == 0) return;
-	for (let i = 0; i < dead.length; i++) {
-		loaded.delete(dead[i]);
-	}
 	openDb().then(function(db) {
 		if (!db) return;
 		try {
 			let tx = db.transaction(STORE, 'readwrite');
-			let store = tx.objectStore(STORE);
-			for (let i = 0; i < dead.length; i++) {
-				store.delete(scopedKey(dead[i]));
-			}
+			tx.objectStore(STORE).delete(scopedKey(id));
 		} catch (e) {
 			unavailable = true;
 		}
@@ -240,24 +202,6 @@ bytes rather than the float values.
 Cost is a pass over the buffer, which at a 800ms save debounce is not something
 a person can notice.
 */
-function hashSamples(float32array) {
-	let bytes = new Uint8Array(
-			float32array.buffer,
-			float32array.byteOffset,
-			float32array.byteLength);
-	let h1 = 0x811c9dc5;
-	let h2 = 0x01000193;
-	for (let i = 0; i < bytes.length; i++) {
-		h1 ^= bytes[i];
-		h1 = Math.imul(h1, 0x01000193);
-		// second accumulator over the same data with a different seed, so the
-		// key is 64 bits rather than 32
-		h2 = Math.imul(h2 ^ bytes[i], 0x85ebca6b);
-	}
-	let a = (h1 >>> 0).toString(16);
-	let b = (h2 >>> 0).toString(16);
-	return bytes.length.toString(16) + '-' + a + b;
-}
 
 function isUnavailable() {
 	return unavailable;
@@ -268,7 +212,6 @@ export {
 	get,
 	has,
 	put,
-	pruneToKeys,
-	hashSamples,
+	remove,
 	isUnavailable
 }
