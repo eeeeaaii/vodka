@@ -60,8 +60,61 @@ let serializeAudioData = true;
 // the document. Chosen so it can't collide with base64, which has no colon.
 const AUDIO_REF_PREFIX = 'idb:';
 
+// Same idea, but the samples are in the same file, after the document. The
+// number is an index into that file's sample list and means nothing outside it.
+const AUDIO_INDEX_PREFIX = 'aud:';
+
+// Set while a file is being written: wavetables hand their samples over and
+// serialize as an index instead of inlining them. Set while a file is being
+// read, to turn those indices back into samples. See audiocontainer.js.
+let audioCollector = null;
+let audioReader = null;
+
 function setSerializeAudioData(v) {
 	serializeAudioData = v;
+}
+
+function setAudioCollector(c) {
+	audioCollector = c;
+}
+
+function setAudioReader(r) {
+	audioReader = r;
+}
+
+/*
+Decodes samples stored directly in a document. Two formats have been written
+over the years: base64 of the raw Float32 bytes, and before that a list of
+decimal numbers separated by commas. Telling them apart is unambiguous because
+the base64 alphabet has no comma in it.
+
+Returns null instead of throwing. A wavetable that can't be decoded should cost
+you that one wavetable, not the whole document -- atob throws on malformed
+input, and a Float32Array needs a byte count divisible by four, so a truncated
+file used to take the entire load down with it.
+*/
+function parseInlineSamples(data) {
+	try {
+		if (data.indexOf(',') >= 0) {
+			let parts = data.split(',');
+			let out = new Float32Array(parts.length);
+			for (let i = 0; i < parts.length; i++) {
+				let n = Number(parts[i]);
+				if (!isFinite(n)) return null;
+				out[i] = n;
+			}
+			return out;
+		}
+		let s = window.atob(data);
+		let bytes = new Uint8Array(s.length);
+		for (let i = 0; i < s.length; i++) {
+			bytes[i] = s.charCodeAt(i);
+		}
+		if (bytes.length % 4 != 0) return null;
+		return new Float32Array(bytes.buffer);
+	} catch (e) {
+		return null;
+	}
 }
 
 // A wavetable of DEFAULT_SIZE silent samples, encoded once. Emitting this rather
@@ -419,46 +472,53 @@ class Wavetable extends Nex {
 
 	}
 
+	// Referenced audio can be missing: storage cleared, quota evicted, a file
+	// truncated. Coming back as silence beats failing to restore the document at
+	// all. Length matters as well as presence -- a zero-length buffer is truthy,
+	// and a wavetable with no samples can't build an AudioBuffer, so it would
+	// throw on the way out of here.
+	setSamplesOrSilence(samples) {
+		if (!samples || samples.length == 0) {
+			samples = new Float32Array(DEFAULT_SIZE);
+		}
+		this.data = samples;
+		heap.requestMem(this.data.length * heap.incrementalSizeWavetable());
+		this.init();
+	}
+
 	deserializePrivateData(data) {
 		// A reference rather than the samples themselves, written by autosave.
 		// The lookup is synchronous because every record was read into memory
 		// during startup, before any document was built -- see audiostore.js.
 		if (data.indexOf(AUDIO_REF_PREFIX) == 0) {
-			let hash = data.substring(AUDIO_REF_PREFIX.length);
-			let samples = audioStore.get(hash);
-			if (!samples || samples.length == 0) {
-				// Referenced audio isn't there: storage was cleared, or the
-				// quota evicted it. Come back as silence rather than failing to
-				// restore the document at all. Length matters as well as
-				// presence -- a zero-length buffer is truthy, and a wavetable
-				// with no samples can't build an AudioBuffer, so it would throw
-				// on the way out of here.
-				samples = new Float32Array(DEFAULT_SIZE);
-			}
-			this.data = samples;
-			heap.requestMem(this.data.length * heap.incrementalSizeWavetable());
-			this.init();
+			this.setSamplesOrSilence(audioStore.get(data.substring(AUDIO_REF_PREFIX.length)));
 			return;
 		}
-		// I don't know when this gets called?
-		let s = window.atob(data);
-		let len = s.length;
-		let bytes = new Uint8Array(len);
-		for (let i = 0; i < len; i++) {
-			bytes[i] = s.charCodeAt(i);
+		// Samples from elsewhere in this same file. audioReader is only set
+		// while a container is being read, so a document that refers to one
+		// outside that -- pasted somewhere, loaded by something that doesn't
+		// know about containers -- falls through to silence rather than to a
+		// stray lookup in whatever happens to be loaded.
+		if (data.indexOf(AUDIO_INDEX_PREFIX) == 0) {
+			let i = Number(data.substring(AUDIO_INDEX_PREFIX.length));
+			this.setSamplesOrSilence(audioReader ? audioReader(i) : null);
+			return;
 		}
-		this.data = new Float32Array(bytes.buffer);
-		heap.requestMem(this.data.length * heap.incrementalSizeWavetable());
-		this.init();
-		// let sa = data.split(',');
-		// let d = [];
-		// for (let i = 0; i < sa.length; i++) {
-		// 	d[i] = Number(sa[i]);
-		// }
-		// this.initWith(d);
+		// The samples themselves, in the document. This is what every file saved
+		// before files became containers looks like, and autosave still writes
+		// it for the silence fallback when IndexedDB isn't available, so it is
+		// not a legacy path that can be dropped.
+		this.setSamplesOrSilence(parseInlineSamples(data));
 	}
 
 	serializePrivateData() {
+		// Saving to a file: the samples go after the document and the document
+		// refers to them by index. Deduped on content, so the same sample used
+		// in twenty places is stored once.
+		if (audioCollector) {
+			return AUDIO_INDEX_PREFIX
+					+ audioCollector.add(this.data, audioStore.hashSamples(this.data));
+		}
 		// Autosave turns inline serialization off: sample data is far too large
 		// for localStorage (roughly 250KB of base64 per second of audio). The
 		// samples go to IndexedDB instead and what lands in the document is a
@@ -1160,4 +1220,4 @@ stats: ${heap.stats()}`)
 }
 
 
-export { Wavetable, WavetableEditor, constructWavetable, setSerializeAudioData }
+export { Wavetable, WavetableEditor, constructWavetable, setSerializeAudioData, setAudioCollector, setAudioReader }
