@@ -470,12 +470,21 @@ function addCycleMember(loop) {
 	maybeCreateAudioContext();
 	let id = nextCycleLoopId++;
 	loop.endAfterCycle = false;
+	cyclePending[id] = loop;
+	/*
+	Starting is deferred by a microtask so that everything added in one go
+	starts together.
+
+	loop-play adds one loop per channel, one at a time. Starting the cycle as
+	soon as the first arrived meant the second was already too late for it and
+	waited for the next boundary -- so a stereo pair played left only for its
+	first time round, then both from then on.
+	*/
 	if (!cycleRunning) {
-		cycleLoops[id] = loop;
 		cycleRunning = true;
-		startCycleAt(ctx.currentTime);
-	} else {
-		cyclePending[id] = loop;
+		Promise.resolve().then(function() {
+			startCycleAt(ctx.currentTime);
+		});
 	}
 	return id;
 }
