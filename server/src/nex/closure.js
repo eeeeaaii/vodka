@@ -127,7 +127,7 @@ class Closure extends ValueNex {
 	}
 
 	closureline(n, s) {
-		return `<div class="closureline${n}">${s.trim()}</div>`
+		return `<div class="innerspan closureline${n}">${s.trim()}</div>`
 	}
 
 	getSummaryLine() {
@@ -158,13 +158,18 @@ class Closure extends ValueNex {
 		}
 	}
 
+	// Drawn like a contract or a clip: the prefix becomes the glyph, and
+	// everything that describes this particular closure stacks up beside it.
 	getRenderedHTML() {
-		return this.closureline('0', this.prefix) +
-		    this.closureline('1', this.getSummaryLine()) +
+		return '<div class="sysframe">' +
+			`<div class="sysglyph">${this.prefix}</div>` +
+			'<div class="sysinnerspans">' +
+			this.closureline('1', this.getSummaryLine()) +
 			this.closureline('2', this.getLambdaArgString()) +
 			this.closureline('3', this.getDocString()) +
 			this.closureline('4', this.getLambdaDebugString()) +
-			this.closureline('5', this.getEnvironmentLine());
+			this.closureline('5', this.getEnvironmentLine()) +
+			'</div></div>';
 	}
 
 	renderValue() {
