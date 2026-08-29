@@ -21,6 +21,7 @@ import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js
 import { manipulator } from './manipulator.js';
 import { constructWarning } from './nex/eerror.js';
 import { scheduleAutosave } from './autosave.js'
+import * as Utils from './utils.js'
 
 const levelsOfUndo = 50;
 
@@ -423,6 +424,22 @@ class TriviallyUndoableKeyResponseFunctionAction extends Action {
 }
 
 
+/*
+Deleting is something you did; being freed is bookkeeping, and undo defers that
+by up to fifty more deletions. Anything that has to react the moment it leaves
+the document -- a clip, which has to stop making noise -- is told here rather
+than waiting for the heap to get round to it.
+*/
+function notifyDeletedFromDocument(nex) {
+	if (!nex) return;
+	if (nex.onDeletedFromDocument) nex.onDeletedFromDocument();
+	if (Utils.isNexContainer(nex)) {
+		for (let i = 0; i < nex.numChildren(); i++) {
+			notifyDeletedFromDocument(nex.getChildAt(i));
+		}
+	}
+}
+
 class DeleteNexAction extends Action {
 	constructor(actionName) {
 		super(actionName);
@@ -438,6 +455,7 @@ class DeleteNexAction extends Action {
 		this.index = this.parentOfNodeWeAreDeleting.getIndexOfChild(this.savedNodeToRestore);
 		this.savedInsertionMode = this.savedNodeToRestore.getInsertionMode();
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
+		notifyDeletedFromDocument(this.savedNodeToRestore.getNex());
 	}
 
 	undoAction() {

@@ -82,10 +82,16 @@ class Clip extends Nex {
 		return this.ended;
 	}
 
-	// deleting a clip stops it, with no waiting -- the point of deleting a
-	// thing is that it goes away
-	cleanupOnMemoryFree() {
+	// Deleting a clip stops it, with no waiting -- the point of deleting a
+	// thing is that it goes away. This cannot wait for the clip to be freed:
+	// undo holds on to what you deleted, so being freed can be a long way off.
+	onDeletedFromDocument() {
 		this.end(false /* now, not at the cycle boundary */);
+	}
+
+	// and if it is still playing when it finally does go, stop it then
+	cleanupOnMemoryFree() {
+		this.end(false);
 	}
 
 	makeCopy(shallow) {
