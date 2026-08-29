@@ -112,7 +112,11 @@ const App = () => {
 
     return (
         <div>
-            <StatusNav/>
+            {/* HIDDEN means no help chrome at all -- what the test harness gets
+                via NO_SPLASH, and what someone who turned the button off asked
+                for. The status nav is help chrome too, and a dot that appears
+                in every screenshot is a dot in every golden. */}
+            {uiState != HIDDEN && <StatusNav/>}
             {
                 (() => {
                     switch(uiState) {
