@@ -47,11 +47,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //    that, keep it here with a comment saying // UNUSED BUT DO NOT REUSE
 
 let settings = {
-	'AUDIO_AUDITION_CHANNEL': 0,
-
-	// Which channel of the input device recording takes. A wavetable holds one
-	// channel, so a stereo interface has to be recorded one side at a time.
-	'AUDIO_RECORD_CHANNEL': 0
+	'AUDIO_AUDITION_CHANNEL': 0
 
 }
 

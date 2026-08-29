@@ -169,8 +169,9 @@ function stopRecordingAudio(wt) {
 	wt.stopRecording();
 }
 
-function startRecordingAudio(wt) {
+function startRecordingAudio(wt, channel) {
 	maybeCreateAudioContext();	
+	if (!channel) channel = 0;
 	if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 		navigator.mediaDevices.getUserMedia({
 			/*
@@ -196,17 +197,15 @@ function startRecordingAudio(wt) {
 				let allblobs = wt.getBlobsAsOneBlob();
 				allblobs.arrayBuffer().then(function(ab) {
 					ctx.decodeAudioData(ab, function(buffer) {
-						// A wavetable holds one channel, so a stereo interface
-						// is recorded one side at a time -- see
-						// AUDIO_RECORD_CHANNEL.
-						let want = settings.AUDIO_RECORD_CHANNEL;
-						let ch = Math.min(want, buffer.numberOfChannels - 1);
-						if (ch != want) {
-							console.log('vodka: asked to record channel ' + want
-									+ ' but the input only has ' + buffer.numberOfChannels
-									+ ', using ' + ch);
+						// A wavetable holds one channel, so a stereo input is
+						// recorded one side at a time.
+						if (channel >= buffer.numberOfChannels) {
+							throw constructFatalError(
+									`cannot record channel ${channel}: this input has `
+									+ `${buffer.numberOfChannels} channel`
+									+ `${buffer.numberOfChannels == 1 ? '' : 's'}.`);
 						}
-						wt.setRecordedData(buffer.getChannelData(ch));
+						wt.setRecordedData(buffer.getChannelData(channel));
 					}, function(err) {
 						console.log('oh well');
 					})

@@ -147,13 +147,14 @@ function createWavetableBuiltins() {
 
   Builtin.createBuiltin(
     "start-recording",
-    ["_wt_"],
+    ["_wt_", "channel#?"],
     function $startRecording(env, executionEnvironment) {
       let wt = env.lb("wt");
-      startRecordingAudio(wt);
+      let channel = env.lb("channel");
+      startRecordingAudio(wt, channel == UNBOUND ? 0 : channel.getTypedValue());
       return wt;
     },
-    "Tells |wt to start recording."
+    "Tells |wt to start recording from |channel of the audio input, or the first channel if |channel is not given. A wavetable holds one channel, so a stereo input is recorded one side at a time."
   );
 
   Builtin.createBuiltin(
