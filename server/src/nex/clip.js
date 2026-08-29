@@ -63,11 +63,23 @@ class Clip extends Nex {
 		return this.channels;
 	}
 
+	/*
+	A clip evaluates to itself rather than to a copy, which is what lets it sit
+	in the expression that made it: loop-play hands back the very clip it was
+	given, so re-evaluating can throw the result away and the clip is still
+	there in the expression, still naming the loop it did before. A copy would
+	be a picture of it, and the ids would go stale the first time round.
+	*/
+	evaluate(env) {
+		return this;
+	}
+
 	// replacing what a clip names keeps the clip itself valid
 	setIds(ids, what) {
 		this.ids = ids;
 		if (what) this.what = what;
 		this.ended = false;
+		this.setDirtyForRendering(true);
 	}
 
 	// true if there was anything left to end
