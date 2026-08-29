@@ -4,7 +4,7 @@
   "description": "## Introduction",
   "main": "index.js",
   "dependencies": {
-    "glob": "^10.3.10",
+    "glob": "^12.0.0",
     "pegjs": "^0.11.0-master.b7b87ea",
     "preact": "^10.29.8",
     "uuid": "^14.0.0"
