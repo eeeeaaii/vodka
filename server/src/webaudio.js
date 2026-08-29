@@ -16,6 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { settings } from './globalappflags.js'
+import { constructFatalError } from './nex/eerror.js'
 
 
 /*
@@ -231,8 +232,27 @@ function getSourceFromBuffer(buffer, loop) {
 }
 
 // this plays immediately
+/*
+The merger is built with as many inputs as the output device had when the
+context was opened, so asking for a channel past that is an ordinary mistake --
+the wrong device is selected, or the patch expects more outputs than are there.
+Connecting anyway throws IndexSizeError from deep inside the web audio api,
+which says nothing about channels and stops evaluation dead.
+*/
+function checkChannelExists(channel) {
+	let n = channelMergerNode.numberOfInputs;
+	if (!Number.isInteger(channel) || channel < 0 || channel >= n) {
+		throw constructFatalError(
+				`there is no channel ${channel}. The current audio device has ${n} output `
+				+ `channel${n == 1 ? '' : 's'}, so channels 0 through ${n - 1} can be played. `
+				+ `If you expected more, the browser may have opened a different device than `
+				+ `you meant -- it reads the channel count once, when the first sound plays.`);
+	}
+}
+
 function oneshotPlay(bufferList, channelList) {
 	maybeCreateAudioContext();
+	channelList.forEach(checkChannelExists);
 
 	let bufferIndex = 0;
 
@@ -251,6 +271,7 @@ function oneshotPlay(bufferList, channelList) {
 
 function loopPlay(bufferList, channelList) {
 	maybeCreateAudioContext();
+	channelList.forEach(checkChannelExists);
 	// if there is just one wave, fan it out to all the channels.
 	// if there are two, alternate...
 	// if there are three, you know.
@@ -291,6 +312,7 @@ function abortPlayback(channel) {
 
 function startAuditioningBuffer(buffer, nex, startOffsetSamples, sustained) {
 	maybeCreateAudioContext();
+	checkChannelExists(settings.AUDIO_AUDITION_CHANNEL);
 	auditioningPlayer = new AuditionPlayer(buffer, startOffsetSamples, sustained);
 	thingAuditioning = nex;
 }
