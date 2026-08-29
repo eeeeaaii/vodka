@@ -172,14 +172,47 @@ session would accumulate every intermediate state of every sound.
 
 Takes the set of hashes the document still mentions. Background, like put().
 */
+/*
+How many saves in a row a sample has to go unmentioned before it is deleted.
+
+Deleting is forever and recorded audio has no other copy, so the question is not
+"is this referenced right now" but "has this stopped being referenced". Those
+differ whenever the document momentarily fails to mention something it still
+holds -- a builtin that starts returning a handle instead of a wavetable, a
+serialization that took a branch nobody thought about. One bad save should not
+be able to destroy a recording.
+
+At the autosave interval this is on the order of a minute of editing, which is
+long enough to notice and stop.
+*/
+const PRUNE_AFTER_MISSES = 30;
+
+// hash -> how many consecutive saves have not mentioned it
+const misses = new Map();
+
 function pruneToKeys(keysInUse) {
 	if (unavailable) return;
+	// Nothing referenced at all is not a document with no audio in it, it is a
+	// document that failed to say. Never act on it.
+	if (keysInUse.size == 0) {
+		misses.clear();
+		return;
+	}
 	let dead = [];
 	loaded.forEach(function(value, hash) {
-		if (!keysInUse.has(hash)) {
+		if (keysInUse.has(hash)) {
+			misses.delete(hash);
+			return;
+		}
+		let n = (misses.get(hash) || 0) + 1;
+		misses.set(hash, n);
+		if (n >= PRUNE_AFTER_MISSES) {
 			dead.push(hash);
 		}
 	});
+	for (let i = 0; i < dead.length; i++) {
+		misses.delete(dead[i]);
+	}
 	if (dead.length == 0) return;
 	for (let i = 0; i < dead.length; i++) {
 		loaded.delete(dead[i]);

@@ -99,11 +99,13 @@ function saveNow(rootNode) {
 		console.log('vodka: autosave could not serialize the document: ' + e);
 		return;
 	}
-	writeStorage(storageKey(), JSON.stringify({
+	let wrote = writeStorage(storageKey(), JSON.stringify({
 		version: FORMAT_VERSION,
 		sessionId: systemState.getSessionId() || null,
 		docs: docs
 	}));
+	// A save that did not happen says nothing about what is still in use.
+	if (!wrote) return;
 	// Samples the document no longer mentions are dead. Editing a wavetable
 	// gives its new contents a new hash, so without this every intermediate
 	// state of every sound would be kept forever. Reading the references back
