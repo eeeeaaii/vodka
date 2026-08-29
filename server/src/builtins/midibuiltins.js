@@ -16,7 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Builtin } from '../nex/builtin.js'; 
-import { getMidiPorts, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
+import { getMidiPorts, openMidiPort, isPortOpen, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
 		 sendMidiNoteWithDuration } from '../midifunctions.js'
 import { convertTimeToSamples, nexToTimebase, getSampleRate } from '../wavetablefunctions.js'
 import { constructOrg } from '../nex/org.js'; 
@@ -90,6 +90,44 @@ function createMidiBuiltins() {
 		let c = org.getChildTagged(newTagOrThrowOOM(name, who + ', ' + name));
 		return c ? c.getTypedValue() : null;
 	}
+
+	Builtin.createBuiltin(
+		'open-midi-port',
+		[ 'port()' ],
+		function $openMidiPort(env, executionEnvironment) {
+			let port = env.lb('port');
+			let id = port.getChildTagged(newTagOrThrowOOM('id', 'open midi port, id'));
+			if (!port.hasTag(newTagOrThrowOOM('midiport', 'open midi port, is midi port')) || !id) {
+				return constructFatalError('open-midi-port: must pass in a midiport object with a valid ID');
+			}
+			let idstr = id.getFullTypedValue();
+
+			let dv = constructDeferredValue();
+			dv.set(new GenericActivationFunctionGenerator(
+				'open-midi-port',
+				function(callback, exp) {
+					openMidiPort(idstr, function(desc) {
+						if (!desc) {
+							callback(constructFatalError(
+									`open-midi-port: there is no port with id ${idstr} any more. `
+									+ `It may have been unplugged -- call list-midi-ports to see `
+									+ `what is there now.`));
+							return;
+						}
+						let org = convertJSMapToOrg(desc);
+						org.setHorizontal();
+						org.addTag(newTagOrThrowOOM('midiport', 'open midi port builtin'));
+						callback(org);
+					})
+				}
+			));
+			let waitmessage = constructInfo(`opening midi port`);
+			dv.appendChild(waitmessage)
+			dv.activate();
+			return dv;
+		},
+		'Reconnects the midi port |port and returns it with its state as it is now. A port remembered from a previous session is only its name and id until this is called; list-midi-ports does the same thing for every port at once.'
+	);
 
 	Builtin.createBuiltin(
 		'send-midi-data on',
@@ -207,6 +245,10 @@ function createMidiBuiltins() {
 			if (type && type.getFullTypedValue() != 'input') {
 				return constructFatalError(
 						'wait-for-midi: that is an output port. Only input ports receive midi.');
+			}
+			if (!isPortOpen(id.getTypedValue())) {
+				return constructFatalError(
+						'wait-for-midi: that midi port is not open. Pass it to open-midi-port first.');
 			}
 			let dv = constructDeferredValue();
 			dv.setAutoreset(true);
