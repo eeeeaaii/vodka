@@ -22,7 +22,6 @@ import { constructFatalError } from './nex/eerror.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { parse } from './nexparser2.js';
 import { AudioCollector, encode as encodeContainer, decode as decodeContainer } from './audiocontainer.js';
-import { setAudioReader } from './nex/wavetable.js'
 import { SerializationContext, SERIALIZE_FILE } from './serializationcontext.js'
 import { systemState } from './systemstate.js'
 
@@ -185,13 +184,13 @@ function parseFileContents(data) {
 	if (!container) {
 		return parse(data);
 	}
-	setAudioReader(function(i) {
+	systemState.setAudioSampleResolver(function(i) {
 		return container.samples[i];
 	});
 	try {
 		return parse(container.docText);
 	} finally {
-		setAudioReader(null);
+		systemState.setAudioSampleResolver(null);
 	}
 }
 

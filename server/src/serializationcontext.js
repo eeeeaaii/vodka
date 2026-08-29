@@ -24,12 +24,6 @@ the samples go in the file's own resource section, and hopeless in localStorage,
 which holds about five megabytes in total, so autosave puts them in IndexedDB
 and writes a reference. A surface will have the same problem when its drawing is
 made to persist at all.
-
-This used to be two module-level flags in wavetable.js, one saying "a file save
-is in progress, here is the collector" and one saying "do not inline audio". Two
-independent globals for one three-way choice, with nothing to stop them being
-set at once and no way to answer "what kind of save is this?" except by reading
-both and knowing the priority order.
 */
 
 // A file. Bulk data goes in the file's resource section; the document refers to

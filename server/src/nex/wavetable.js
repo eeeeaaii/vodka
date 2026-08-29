@@ -38,6 +38,7 @@ import { Editor } from '../editors.js'
 import { doTutorial } from '../help.js'
 import { getAudioBufferFromData, startRecordingAudio, stopRecordingAudio } from '../webaudio.js'
 import * as audioStore from '../audiostore.js'
+import { systemState } from '../systemstate.js'
 
 
 // zoom essentially means a number of pixels equals a number of samples
@@ -90,47 +91,46 @@ const BREAKPOINTS_KEY = 'bp';
 const AUDIO_INDEX_KEY = 'aud';
 const AUDIO_REF_KEY = 'idb';
 
-// Set while a container is being read, to turn its indices back into samples.
-// Reading has no equivalent of the serialization context because a document
-// being parsed says where its own samples are; only writing has to be told.
-let audioReader = null;
-
-function setAudioReader(r) {
-	audioReader = r;
-}
-
 /*
 Decodes samples stored directly in a document. Two formats have been written
 over the years: base64 of the raw Float32 bytes, and before that a list of
 decimal numbers separated by commas. Telling them apart is unambiguous because
 the base64 alphabet has no comma in it.
 
-Returns null instead of throwing. A wavetable that can't be decoded should cost
-you that one wavetable, not the whole document -- atob throws on malformed
-input, and a Float32Array needs a byte count divisible by four, so a truncated
-file used to take the entire load down with it.
+Throws on data it cannot read, like the rest of the file-reading code. Data that
+is there and wrong is a different thing from data that is missing -- a reference
+to samples that are not there comes back as silence, because storage being
+cleared is expected, but a wavetable whose own bytes are malformed means the
+document is damaged and should say so.
 */
 function parseInlineSamples(data) {
-	try {
-		if (data.indexOf(',') >= 0) {
-			let parts = data.split(',');
-			let out = new Float32Array(parts.length);
-			for (let i = 0; i < parts.length; i++) {
-				let n = Number(parts[i]);
-				if (!isFinite(n)) return null;
-				out[i] = n;
+	if (data.indexOf(',') >= 0) {
+		let parts = data.split(',');
+		let out = new Float32Array(parts.length);
+		for (let i = 0; i < parts.length; i++) {
+			let n = Number(parts[i]);
+			if (!isFinite(n)) {
+				throw constructFatalError(`wavetable sample list has a value that is not a number: ${parts[i]}`);
 			}
-			return out;
+			out[i] = n;
 		}
-		let s = window.atob(data);
+		return out;
+	} else {
+		let s;
+		try {
+			s = window.atob(data);
+		} catch (e) {
+			throw constructFatalError('wavetable data is not valid base64');
+		}
 		let bytes = new Uint8Array(s.length);
 		for (let i = 0; i < s.length; i++) {
 			bytes[i] = s.charCodeAt(i);
 		}
-		if (bytes.length % 4 != 0) return null;
+		// four bytes to a sample; anything else means the data was truncated
+		if (bytes.length % 4 != 0) {
+			throw constructFatalError('wavetable data is not a whole number of samples');
+		}
 		return new Float32Array(bytes.buffer);
-	} catch (e) {
-		return null;
 	}
 }
 
@@ -160,6 +160,8 @@ class Wavetable extends Nex {
 		this.doingPan = false;
 		// where the line was before playback borrowed it
 		this.playbackStartSample = -1;
+		// invalidated by cacheValues; see getContentHash
+		this.cachedHash = null;
 		this.markers = [];
 		this.sectionBeingAuditioned = null;
 		this.recording = false;
@@ -379,6 +381,22 @@ class Wavetable extends Nex {
 		let absMin = Math.abs(mm.min);
 		this.setAmp(Math.max(absMin, mm.max));
 		this.cachedBuffer = getAudioBufferFromData(this.data);
+		// The audio changed, so anything derived from its exact contents is
+		// stale. This is the one place that knows that.
+		this.cachedHash = null;
+	}
+
+	/*
+	Hashing walks every byte, and serializing happens on every autosave, so the
+	result is kept until the audio changes rather than being recomputed from
+	scratch each time. Computed on demand rather than in cacheValues, so loading
+	a document full of audio does not hash all of it before anything is saved.
+	*/
+	getContentHash() {
+		if (!this.cachedHash) {
+			this.cachedHash = audioStore.hashSamples(this.data);
+		}
+		return this.cachedHash;
 	}
 
 	getMinMaxInDataRange(start, end) {
@@ -527,14 +545,12 @@ class Wavetable extends Nex {
 			this.setSamplesOrSilence(audioStore.get(fields[AUDIO_REF_KEY]));
 			return;
 		}
-		// Samples from elsewhere in this same file. audioReader is only set
-		// while a container is being read, so a document that refers to one
-		// outside that -- pasted somewhere, loaded by something that doesn't
-		// know about containers -- falls through to silence rather than to a
-		// stray lookup in whatever happens to be loaded.
+		// Samples from elsewhere in this same file. The resolver is only set
+		// while a container is being read -- see systemState.
 		if (AUDIO_INDEX_KEY in fields) {
+			let resolver = systemState.getAudioSampleResolver();
 			let i = Number(fields[AUDIO_INDEX_KEY]);
-			this.setSamplesOrSilence(audioReader ? audioReader(i) : null);
+			this.setSamplesOrSilence(resolver ? resolver(i) : null);
 			return;
 		}
 		// The samples themselves, unkeyed. Every file saved before containers
@@ -593,7 +609,7 @@ class Wavetable extends Nex {
 			// index. Deduped on content, so the same sample used in twenty
 			// places is stored once.
 			return AUDIO_INDEX_KEY + KEY_SEPARATOR
-					+ ctx.audioCollector.add(this.data, audioStore.hashSamples(this.data));
+					+ ctx.audioCollector.add(this.data, this.getContentHash());
 		}
 		if (ctx.isBrowserStorage()) {
 			// Samples are far too large for localStorage -- roughly 250KB of
@@ -608,7 +624,7 @@ class Wavetable extends Nex {
 				// mean "there was nothing to store".
 				return '';
 			}
-			let hash = audioStore.hashSamples(this.data);
+			let hash = this.getContentHash();
 			audioStore.put(hash, this.data);
 			return AUDIO_REF_KEY + KEY_SEPARATOR + hash;
 		}
@@ -1484,4 +1500,4 @@ stats: ${heap.stats()}`)
 }
 
 
-export { Wavetable, WavetableEditor, constructWavetable, setAudioReader }
+export { Wavetable, WavetableEditor, constructWavetable }

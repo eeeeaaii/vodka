@@ -1,5 +1,5 @@
 import MenuButton from './menubutton.jsx'
-import { WELCOME, QUICK_REFERENCE, OBJECTS, FULL_API_REFERENCE, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
+import { WELCOME, QUICK_REFERENCE, ABSTRACT_DATA_TYPES, FULL_API_REFERENCE, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
 
 // Only the first three are tabs -- the last two are actions, so they never
 // show as selected.
@@ -17,10 +17,10 @@ const TopMenu = ({ selectedMenuChoice, onMenuChange }) => {
                 selected={selectedMenuChoice == QUICK_REFERENCE}
                 onMenuButtonClick={() => onMenuChange(QUICK_REFERENCE)} />
             <MenuButton
-                key="OBJECTS"
+                key="ABSTRACT_DATA_TYPES"
                 text="Abstract Data Types"
-                selected={selectedMenuChoice == OBJECTS}
-                onMenuButtonClick={() => onMenuChange(OBJECTS)} />
+                selected={selectedMenuChoice == ABSTRACT_DATA_TYPES}
+                onMenuButtonClick={() => onMenuChange(ABSTRACT_DATA_TYPES)} />
             <MenuButton
                 key="FULL_API_REFERENCE"
                 text="Full API Reference"

@@ -24,8 +24,11 @@ const StatusNav = () => {
             {playing &&
                 <div className="statusnavitem stopbutton" title="stop all sound"
                      onClick={() => { stopAllSound(); setPlaying(false); }}>
-                    <span className="stopbar"></span>
-                    <span className="stopbar"></span>
+                    {/* currentColor so the icon follows the theme token on the parent */}
+                    <svg viewBox="0 0 8 9" width="8" height="9" aria-hidden="true">
+                        <rect x="0" y="0" width="3" height="9" fill="currentColor"/>
+                        <rect x="5" y="0" width="3" height="9" fill="currentColor"/>
+                    </svg>
                 </div>}
         </div>
     );

@@ -1,4 +1,4 @@
-const ObjectsPanel = () => {
+const AbstractDataTypesPanel = () => {
   return (
     <div className="infopanel">
       <p className="infotitle">Abstract Data Types?</p>
@@ -162,4 +162,4 @@ const ObjectsPanel = () => {
   );
 };
 
-export default ObjectsPanel;
+export default AbstractDataTypesPanel;
