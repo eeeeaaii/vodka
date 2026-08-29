@@ -37,7 +37,6 @@ let thingAuditioning = null;
 let channelPlayers = [];
 let auditioningPlayer = null;
 
-let mediaRecorder = null;
 
 // A guardrail, not a real limit -- so a first recording cannot fill the disk
 // before anyone knows how to stop it. The `unlimited` tag lifts it.
@@ -169,77 +168,145 @@ class LoopingPlayer {
 }
 
 function stopRecordingAudio(wt) {
-	mediaRecorder.stop();
 	wt.stopRecording();
+	if (!recordingRig || recordingRig.wt != wt) return;
+	if (recordingRig.timer) window.clearTimeout(recordingRig.timer);
+	recordingRig.node.port.onmessage = null;
+	recordingRig.source.disconnect();
+	recordingRig.node.disconnect();
+	recordingRig.silence.disconnect();
+	// let go of the microphone, or the browser keeps showing it as in use
+	recordingRig.stream.getTracks().forEach(function(t) { t.stop(); });
+	recordingRig = null;
 }
 
 function startRecordingAudio(wt, channel, unlimited) {
-	maybeCreateAudioContext();	
+	maybeCreateAudioContext();
 	if (!channel) channel = 0;
-	if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-		navigator.mediaDevices.getUserMedia({
-			/*
-			Not `audio: true`, which leaves the webrtc voice processing on. With
-			echo cancellation enabled a stereo input is merged to mono and then
-			duplicated into two identical channels, so there is no stereo to
-			record even from a stereo source. Automatic gain control pumps and
-			noise suppression eats transients, neither of which is wanted on
-			anything musical.
-			*/
-			audio: {
-				echoCancellation: false,
-				noiseSuppression: false,
-				autoGainControl: false,
-				channelCount: 2
-			}
-		}).then(function(stream) {
+	if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+		console.log('vodka: this browser has no audio input');
+		return;
+	}
+	navigator.mediaDevices.getUserMedia({
+		/*
+		Not `audio: true`, which leaves the webrtc voice processing on. With
+		echo cancellation enabled a stereo input is merged to mono and then
+		duplicated into two identical channels, so there is no stereo to record
+		even from a stereo source. Automatic gain control pumps and noise
+		suppression eats transients, neither of which is wanted on anything
+		musical.
+		*/
+		audio: {
+			echoCancellation: false,
+			noiseSuppression: false,
+			autoGainControl: false,
+			channelCount: 2
+		}
+	}).then(function(stream) {
+		let track = stream.getAudioTracks()[0];
+		if (track) {
+			let st = track.getSettings();
+			console.log('vodka: recording from "' + track.label + '" -- '
+					+ (st.channelCount ? st.channelCount : '?') + ' channel(s) at '
+					+ (st.sampleRate ? st.sampleRate : '?') + 'Hz');
+		}
+		return maybeLoadRecorderWorklet().then(function() {
+			let source = ctx.createMediaStreamSource(stream);
+			let node = new AudioWorkletNode(ctx, 'vodka-recorder');
+			// A worklet only runs while it is connected to the graph, and this
+			// one listens rather than making a sound, so it goes to a silent
+			// gain node.
+			let silence = ctx.createGain();
+			silence.gain.value = 0;
+			source.connect(node);
+			node.connect(silence);
+			silence.connect(ctx.destination);
+
 			wt.startRecording();
-			mediaRecorder = new MediaRecorder(stream);
-			mediaRecorder.ondataavailable = function(e) {
-				let blob = e.data;
-				wt.addBlob(blob);
-				let allblobs = wt.getBlobsAsOneBlob();
-				allblobs.arrayBuffer().then(function(ab) {
-					ctx.decodeAudioData(ab, function(buffer) {
-						// A wavetable holds one channel, so a stereo input is
-						// recorded one side at a time.
-						if (channel >= buffer.numberOfChannels) {
-							throw constructFatalError(`no input channel ${channel}. Sorry!`);
-						}
-						wt.setRecordedData(buffer.getChannelData(channel));
-					}, function(err) {
-						console.log('oh well');
-					})
-				})
-			}
-			// what the device actually gave us, which is not always what was asked
-			let track = stream.getAudioTracks()[0];
-			if (track) {
-				let st = track.getSettings();
-				console.log('vodka: recording from "' + track.label + '" -- '
-						+ (st.channelCount ? st.channelCount : '?') + ' channel(s) at '
-						+ (st.sampleRate ? st.sampleRate : '?') + 'Hz');
-			}
-			// No timeslice: one dataavailable, at stop, with the whole take.
-			// Chunking made ondataavailable fire twice a second and each one
-			// decoded everything recorded so far, so a take got quadratically
-			// more expensive the longer it ran.
-			mediaRecorder.start();
+			node.port.onmessage = function(e) {
+				if (!wt.isRecording()) return;
+				let batch = e.data;
+				for (let i = 0; i < batch.length; i++) {
+					let blk = batch[i];
+					// a wavetable holds one channel, so a stereo input is
+					// recorded one side at a time
+					wt.appendRecordedData(blk[channel] ? blk[channel] : blk[0]);
+				}
+			};
+
+			recordingRig = { wt: wt, stream: stream, node: node,
+					source: source, silence: silence, timer: null };
 			if (!unlimited) {
-				window.setTimeout(function() {
+				recordingRig.timer = window.setTimeout(function() {
 					if (wt.isRecording()) {
 						stopRecordingAudio(wt);
-						console.log('vodka: stopped at the 30 second limit. Tag start-recording '
-								+ 'with `unlimited` to record for longer.');
+						console.log('vodka: stopped at the 30 second limit. Tag '
+								+ 'start-recording with `unlimited` to record for longer.');
 					}
-				}, RECORDING_LIMIT_MS)
+				}, RECORDING_LIMIT_MS);
 			}
-		}).catch(function(err) {
-			console.log('couldnt open audio stream');
-		})
-	} else {
-		console.log('no user media');
+		});
+	}).catch(function(err) {
+		console.log('vodka: could not open the audio input: '
+				+ err.name + ': ' + err.message
+				+ (err.constraint ? ' (constraint: ' + err.constraint + ')' : ''));
+	});
+}
+
+/*
+RECORDING
+
+Samples are captured with an audio worklet rather than a MediaRecorder. A
+MediaRecorder hands back an encoded blob whose chunks are not independently
+decodable, so showing the waveform as it arrived meant decoding the whole take
+again on every chunk -- work that grew with the length of the recording. A
+worklet hands over raw floats, which is what a wavetable holds anyway, so
+nothing is decoded and the waveform can grow as you record.
+
+The processor is a string loaded from a blob url. A worklet module has to be
+fetched by url, and keeping it in the bundle rather than as a separately served
+file means there is nothing to get out of step.
+*/
+const RECORDER_WORKLET = `
+class VodkaRecorder extends AudioWorkletProcessor {
+	constructor() {
+		super();
+		this.batch = [];
+		this.batched = 0;
 	}
+	process(inputs) {
+		let input = inputs[0];
+		if (input && input.length > 0 && input[0]) {
+			let copy = [];
+			for (let c = 0; c < input.length; c++) {
+				copy.push(new Float32Array(input[c]));
+			}
+			this.batch.push(copy);
+			this.batched += input[0].length;
+			// a block is 128 frames; batching keeps the message rate sane
+			if (this.batched >= 4096) {
+				this.port.postMessage(this.batch);
+				this.batch = [];
+				this.batched = 0;
+			}
+		}
+		return true;
+	}
+}
+registerProcessor('vodka-recorder', VodkaRecorder);
+`;
+
+let recorderWorkletReady = null;
+// what is recording now, so stopRecordingAudio can end it
+let recordingRig = null;
+
+function maybeLoadRecorderWorklet() {
+	if (!recorderWorkletReady) {
+		let url = URL.createObjectURL(
+				new Blob([RECORDER_WORKLET], { type: 'application/javascript' }));
+		recorderWorkletReady = ctx.audioWorklet.addModule(url);
+	}
+	return recorderWorkletReady;
 }
 
 function maybeCreateAudioContext() {
