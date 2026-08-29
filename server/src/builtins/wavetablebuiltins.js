@@ -148,13 +148,19 @@ function createWavetableBuiltins() {
   Builtin.createBuiltin(
     "start-recording",
     ["_wt_", "channel#?"],
-    function $startRecording(env, executionEnvironment) {
+    function $startRecording(env, executionEnvironment, commandTags) {
       let wt = env.lb("wt");
       let channel = env.lb("channel");
-      startRecordingAudio(wt, channel == UNBOUND ? 0 : channel.getTypedValue());
+      let unlimited = false;
+      for (let i = 0; commandTags && i < commandTags.length; i++) {
+        if (commandTags[i].getTagString() == "unlimited") {
+          unlimited = true;
+        }
+      }
+      startRecordingAudio(wt, channel == UNBOUND ? 0 : channel.getTypedValue(), unlimited);
       return wt;
     },
-    "Tells |wt to start recording from |channel of the audio input, or the first channel if |channel is not given. A wavetable holds one channel, so a stereo input is recorded one side at a time."
+    "Tells |wt to start recording from |channel of the audio input, or the first channel if |channel is not given. A wavetable holds one channel, so a stereo input is recorded one side at a time. Recording stops after 30 seconds unless this command is tagged `unlimited`."
   );
 
   Builtin.createBuiltin(
