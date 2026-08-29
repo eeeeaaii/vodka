@@ -16,7 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Builtin } from '../nex/builtin.js'; 
-import { getMidiDevices } from '../midifunctions.js'
+import { getMidiPorts } from '../midifunctions.js'
 import { constructOrg } from '../nex/org.js'; 
 import { constructDeferredValue } from '../nex/deferredvalue.js'; 
 import { constructFatalError, constructInfo, newTagOrThrowOOM } from '../nex/eerror.js'
@@ -30,32 +30,32 @@ import {
 
 function createMidiBuiltins() {
 	Builtin.createBuiltin(
-		'list-midi-inputs',
+		'list-midi-ports',
 		[ ],
 		function $listMidiInputs(env, executionEnvironment) {
 			let dv = constructDeferredValue();
 			dv.set(new GenericActivationFunctionGenerator(
-				'list-midi-inputs', 
+				'list-midi-ports', 
 				function(callback, exp) {
-					getMidiDevices(function(devs) {
+					getMidiPorts(function(devs) {
 						// devices will just be a string
 						// convert to nice estrings
 						let r = constructOrg();
 						for (let i = 0; i < devs.length ; i++) {
 							let org = convertJSMapToOrg(devs[i]);
 							org.setHorizontal();
-							org.addTag(newTagOrThrowOOM('midiport', 'list midi imputs builtin'));
+							org.addTag(newTagOrThrowOOM('midiport', 'list midi ports builtin'));
 							r.appendChild(org);
 						}
 						callback(r);
 					})
 				}
 			));
-			let waitmessage = constructInfo(`listing midi inputs`);
+			let waitmessage = constructInfo(`listing midi ports`);
 			dv.appendChild(waitmessage)
 			return dv;
 		},
-		'Lists midi inputs.'
+		'Lists every midi port, in both directions. Each port is tagged |midiport, and its |type says whether it is an input or an output.'
 	);
 
 
@@ -68,6 +68,13 @@ function createMidiBuiltins() {
 			let id = midiport.getChildTagged(newTagOrThrowOOM('id', 'wait for midi builtin, id'));
 			if (!ismidiport || !id) {
 				return constructFatalError('wait-for-midi: must pass in a midiport object with a valid ID');
+			}
+			// now that both directions are listed, an output can be passed here
+			// by mistake, and listening to one just never fires
+			let type = midiport.getChildTagged(newTagOrThrowOOM('type', 'wait for midi builtin, type'));
+			if (type && type.getFullTypedValue() != 'input') {
+				return constructFatalError(
+						'wait-for-midi: that is an output port. Only input ports receive midi.');
 			}
 			let dv = constructDeferredValue();
 			dv.setAutoreset(true);

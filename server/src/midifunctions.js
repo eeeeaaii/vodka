@@ -113,21 +113,35 @@ function respondToMidiMessage(id, msg) {
 	}
 }
 
-function getMidiDevices(incb) {
+function describePort(port) {
+	let m = {};
+	addToMap(m, port, 'id');
+	addToMap(m, port, 'manufacturer');
+	// already 'input' or 'output' -- MIDIPort.type in the spec
+	addToMap(m, port, 'type');
+	addToMap(m, port, 'name');
+	addToMap(m, port, 'version');
+	addToMap(m, port, 'state');
+	addToMap(m, port, 'connection');
+	return m;
+}
+
+/*
+Every port, both directions, in one list. Web midi has no notion of a device --
+a MIDIPort says nothing about which box it belongs to, and a bidirectional
+device appears as two separate ports, one in each map. Grouping them would mean
+matching on manufacturer and name, which is a guess, so the names are handed
+over as they are and anything that wants to group can do it where the strings
+are visible.
+*/
+function getMidiPorts(incb) {
 	let cb = function() {
 		let r = [];
 		for (let entry of midi.inputs) {
-			var input = entry[1];
-			let m = {};
-			addToMap(m, input, 'id');
-			addToMap(m, input, 'manufacturer');
-			addToMap(m, input, 'name');
-			addToMap(m, input, 'type');
-			addToMap(m, input, 'version');
-			addToMap(m, input, 'state');
-			addToMap(m, input, 'connection');
-
-			r.push(m);
+			r.push(describePort(entry[1]));
+		}
+		for (let entry of midi.outputs) {
+			r.push(describePort(entry[1]));
 		}
 		incb(r);
 	}
@@ -135,4 +149,4 @@ function getMidiDevices(incb) {
 }
 
 
-export { getMidiDevices, addMidiListener }
+export { getMidiPorts, addMidiListener }
