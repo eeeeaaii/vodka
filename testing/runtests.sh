@@ -14,6 +14,25 @@
 # You should have received a copy of the GNU General Public License
 # along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+	cat <<'USAGE'
+usage: ./runtests.sh [testname] [--show] [--testdir dir] [--params qs]
+
+Runs the test suite, or one test if you name one. Writes testresults.html.
+
+  --show, -s      run headful, so you can watch the browser
+  --testdir dir   take tests from somewhere other than alltests
+  --params qs     extra query string parameters for the page under test
+  --help          this message
+
+Needs the server running on port 3000.
+
+Run from the testing directory.
+USAGE
+	exit 0
+fi
+
+
 . "$(dirname "$0")/platform.sh"
 
 RED='\033[0;31m'

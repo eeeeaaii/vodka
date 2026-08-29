@@ -15,6 +15,20 @@
 # along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+	cat <<'USAGE'
+usage: ./capturetest.sh [testname]
+
+Creates a screenshot test from vodka code on the clipboard. Prompts for a name
+if you do not pass one, shows you the clipboard to confirm, then asks for a
+description.
+
+Run from the testing directory.
+USAGE
+	exit 0
+fi
+
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'

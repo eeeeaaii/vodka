@@ -14,6 +14,18 @@
 # You should have received a copy of the GNU General Public License
 # along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+	cat <<'USAGE'
+usage: ./unignoretest.sh <testname>
+
+Removes the ignore mark from a test, then reruns it.
+
+Run from the testing directory.
+USAGE
+	exit 0
+fi
+
+
 if [ "$1" == "" ]; then
 	echo "requires argument"
 	exit 1

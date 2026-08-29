@@ -13,4 +13,14 @@
 
 # You should have received a copy of the GNU General Public License
 # along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+	cat <<'USAGE'
+usage: ./testparser.sh
+
+Runs testparser.js against the generated parser. Run from the src directory.
+USAGE
+	exit 0
+fi
+
+
 node --experimental-modules testparser.js

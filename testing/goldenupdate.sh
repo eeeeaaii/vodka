@@ -14,6 +14,24 @@
 # You should have received a copy of the GNU General Public License
 # along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+	cat <<'USAGE'
+usage: ./goldenupdate.sh <testname> [-b]
+
+Replaces one test's golden with its current output, then reruns it.
+
+  -b        batch: skip the confirmation prompt
+
+Goldens are per platform, under alltests/<testname>/goldens/<platform>/,
+because font rendering differs between operating systems. This updates the
+golden for the platform you are on now and leaves the others alone.
+
+Run from the testing directory.
+USAGE
+	exit 0
+fi
+
+
 . "$(dirname "$0")/platform.sh"
 
 is_vk() {

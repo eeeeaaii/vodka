@@ -51,6 +51,19 @@ def do_test_line(match, line):
 def do_regular_line(line):
 	print(line, end='')
 
+USAGE = """usage: fixtest.py <testfile>
+
+Rewrites an old-style test file that calls harness.runTest with a function
+into the newer form that builds a testactions list and calls runTestNew.
+
+Prints the converted test to standard output; it does not modify the file.
+
+Run from the testing directory."""
+
+if len(sys.argv) > 1 and sys.argv[1] in ('--help', '-h'):
+	print(USAGE)
+	sys.exit(0)
+
 if len(sys.argv) < 2:
 	print("need argument: file to fix.")
 	sys.exit()

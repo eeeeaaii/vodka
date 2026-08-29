@@ -14,6 +14,18 @@
 # You should have received a copy of the GNU General Public License
 # along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+	cat <<'USAGE'
+usage: ./removetest.sh <testname>
+
+Deletes a test and its goldens. Asks for confirmation first.
+
+Run from the testing directory.
+USAGE
+	exit 0
+fi
+
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
