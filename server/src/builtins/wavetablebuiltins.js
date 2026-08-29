@@ -47,7 +47,8 @@ import {
   getSampleRate,
   getConstantSignalFromValue,
 } from "../wavetablefunctions.js";
-import { loopPlay, oneshotPlay, abortPlayback } from "../webaudio.js";
+import { loopPlay, oneshotPlay, abortPlayback, endLoops } from "../webaudio.js";
+import { constructSequence } from "../nex/sequence.js";
 import { Tag } from "../tag.js";
 import { ERROR_TYPE_INFO } from "../nex/eerror.js";
 import { Command } from "../nex/command.js";
@@ -112,6 +113,20 @@ function createWavetableBuiltins() {
   );
 
   Builtin.createBuiltin(
+    "end-seq",
+    ["seq"],
+    function $endSeq(env, executionEnvironment) {
+      let seq = env.lb("seq");
+      if (seq.getTypeName() != "-sequence-") {
+        return constructFatalError("end-seq: not a sequence. Sorry!");
+      }
+      seq.end(true /* at the end of the cycle, not now */);
+      return seq;
+    },
+    "Ends |seq at the end of the current cycle, so it finishes what it is playing rather than being cut off. Deleting a sequence ends it immediately instead."
+  );
+
+  Builtin.createBuiltin(
     "loop-play",
     ["wt_", "channels#()?"],
     function $loopPlay(env, executionEnvironment) {
@@ -139,8 +154,11 @@ function createWavetableBuiltins() {
         }
       }
 
-      loopPlay(buffers, channelnumbers);
-      return wt;
+      let ids = loopPlay(buffers, channelnumbers);
+      return constructSequence(
+          "loop on channel" + (channelnumbers.length == 1 ? " " : "s ") + channelnumbers.join(", "),
+          ids,
+          endLoops);
     },
     "Starts playing wt| at the next measure start on |channel.  If |channel is not provided, the sound is played on the first 2 channels. If |channel and/or |wt are lists, Vodka will do its best to match up sounds with channels."
   );

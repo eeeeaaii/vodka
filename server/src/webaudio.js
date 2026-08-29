@@ -371,29 +371,159 @@ function oneshotPlay(bufferList, channelList) {
 	}
 }
 
+
+/*
+THE GLOBAL CYCLE
+
+Every loop shares one cycle, whose length is the longest loop in it. Adding a
+loop waits for the current cycle to finish, then the cycle becomes as long as it
+needs to be and everything starts together.
+
+That is what `mix` already does, made to happen live rather than in advance:
+mixing a four beat wave with a six beat one gives six beats, with the short one
+playing through and then its first half again, because valueAtSample wraps. Here
+each loop is its own source node set to repeat, and all of them are cut and
+restarted at the cycle boundary, which comes to the same thing while leaving
+each loop separately removable.
+
+The boundary is scheduled on ctx.currentTime, so it is exact. setTimeout is only
+used to wake up early enough to do the scheduling.
+*/
+
+// how far ahead of a boundary we wake up to schedule it
+const CYCLE_LOOKAHEAD_SECONDS = 0.15;
+
+let cycleLoops = {};        // id -> { buffer, channel, lengthSeconds, node, endAfterCycle }
+let cyclePending = {};      // loops that join at the next boundary
+let nextCycleLoopId = 1;
+let cycleTimer = null;
+let cycleRunning = false;
+let cycleNextBoundaryTime = 0;
+
+function cycleLengthSeconds() {
+	let longest = 0;
+	for (let id in cycleLoops) {
+		if (cycleLoops[id].lengthSeconds > longest) {
+			longest = cycleLoops[id].lengthSeconds;
+		}
+	}
+	return longest;
+}
+
+function anyLoopsPlaying() {
+	for (let id in cycleLoops) return true;
+	for (let id in cyclePending) return true;
+	return false;
+}
+
+// Starts every loop at the boundary and cuts it at the end of the cycle, so a
+// loop shorter than the cycle repeats inside it and is truncated.
+function startCycleAt(startTime) {
+	for (let id in cyclePending) {
+		cycleLoops[id] = cyclePending[id];
+		delete cyclePending[id];
+	}
+	for (let id in cycleLoops) {
+		if (cycleLoops[id].endAfterCycle) {
+			delete cycleLoops[id];
+		}
+	}
+	let len = cycleLengthSeconds();
+	if (len <= 0) {
+		cycleRunning = false;
+		cycleTimer = null;
+		return;
+	}
+	for (let id in cycleLoops) {
+		let loop = cycleLoops[id];
+		let node = getSourceFromBuffer(loop.buffer, true);
+		node.connect(channelMergerNode, 0, loop.channel);
+		node.start(startTime);
+		node.stop(startTime + len);
+		loop.node = node;
+	}
+	let nextBoundary = startTime + len;
+	cycleNextBoundaryTime = nextBoundary;
+	let wakeIn = (nextBoundary - CYCLE_LOOKAHEAD_SECONDS - ctx.currentTime) * 1000;
+	cycleTimer = window.setTimeout(function() {
+		startCycleAt(nextBoundary);
+	}, wakeIn > 0 ? wakeIn : 0);
+}
+
+/*
+Joins the cycle. Returns an id.
+
+The first loop starts immediately, since there is no cycle to wait for. Later
+ones wait for the boundary, which is what keeps everything in phase.
+*/
+function addLoop(buffer, channel) {
+	maybeCreateAudioContext();
+	checkChannelExists(channel);
+	let id = nextCycleLoopId++;
+	let loop = {
+		buffer: buffer,
+		channel: channel,
+		lengthSeconds: buffer.length / SAMPLE_RATE,
+		node: null,
+		endAfterCycle: false
+	};
+	if (!cycleRunning) {
+		cycleLoops[id] = loop;
+		cycleRunning = true;
+		startCycleAt(ctx.currentTime);
+	} else {
+		cyclePending[id] = loop;
+	}
+	return id;
+}
+
+function endLoops(ids, atCycleEnd) {
+	for (let i = 0; i < ids.length; i++) {
+		let id = ids[i];
+		let loop = cycleLoops[id] || cyclePending[id];
+		if (!loop) continue;
+		if (atCycleEnd) {
+			loop.endAfterCycle = true;
+		} else {
+			if (loop.node) {
+				try { loop.node.stop(); } catch (e) {}
+				loop.node.disconnect();
+			}
+			delete cycleLoops[id];
+			delete cyclePending[id];
+		}
+	}
+}
+
+function endAllLoops() {
+	let ids = [];
+	for (let id in cycleLoops) ids.push(id);
+	for (let id in cyclePending) ids.push(id);
+	endLoops(ids, false);
+	if (cycleTimer) {
+		window.clearTimeout(cycleTimer);
+		cycleTimer = null;
+	}
+	cycleRunning = false;
+}
+
+// When the next cycle begins, in ctx.currentTime, and how long a cycle is.
+// This is what midi aligns to.
+function nextCycleBoundary() {
+	return { at: cycleNextBoundaryTime, lengthSeconds: cycleLengthSeconds() };
+}
+
 function loopPlay(bufferList, channelList) {
 	maybeCreateAudioContext();
 	channelList.forEach(checkChannelExists);
-	// if there is just one wave, fan it out to all the channels.
-	// if there are two, alternate...
-	// if there are three, you know.
-
+	// one wave fans out to every channel, two alternate, and so on
 	let bufferIndex = 0;
-
+	let ids = [];
 	for (let i = 0; i < channelList.length; i++) {
-		let channelNum = channelList[i];
-		let buffer = bufferList[bufferIndex];
-
-		if (channelPlayers[channelNum]) {
-			if (channelPlayers[channelNum].canChangeLoopData()) {
-				channelPlayers[channelNum].changeLoopData(buffer);
-			}
-		} else {
-			channelPlayers[channelNum] = new LoopingPlayer(buffer, channelNum);
-		}
-
+		ids.push(addLoop(bufferList[bufferIndex], channelList[i]));
 		bufferIndex = (bufferIndex + 1) % bufferList.length;
 	}
+	return ids;
 }
 
 // we don't need to stop nicely at end of loop
@@ -434,6 +564,7 @@ function isAnySoundPlaying() {
 }
 
 function stopAllSound() {
+	endAllLoops();
 	maybeKillSound(true /* force -- this is the stop button, nothing survives it */);
 	abortPlayback(-1);
 }
@@ -469,5 +600,5 @@ async function getFileAsBuffer(filepath) {
 }
 
 
-export { getAudioBufferFromData, loadSample, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { getAudioBufferFromData, loadSample, addLoop, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 

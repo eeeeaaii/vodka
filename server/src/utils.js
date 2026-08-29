@@ -181,6 +181,10 @@ function isContract(n) {
 	return n.getTypeName() == '-contract-';
 }
 
+function isSequence(n) {
+	return n.getTypeName() == '-sequence-';
+}
+
 function isFloat(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n || !n.getTypeName) return false;
@@ -321,6 +325,7 @@ export {
 	isEString,
 	isCommand,
 	isContract,
+	isSequence,
 	isLambda,
 	isRoot,
 	isNex,

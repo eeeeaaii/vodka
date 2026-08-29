@@ -234,6 +234,70 @@ vlang used: ${this.usedSpace}
   incrementalSizeString() {
     return 2;
   }
+
+  sizeSequence() {
+    return 1500;
+  } // NOT VERIFIED
+  sizeDeferredCommand() {
+    return 1500;
+  } // NOT VERIFIED
+  sizeDeferredValue() {
+    return 1500;
+  } // NOT VERIFIED
+  sizeDoc() {
+    return 1500;
+  } // NOT VERIFIED
+  sizeEError() {
+    return 1500;
+  } // NOT VERIFIED
+  sizeEString() {
+    return 1500;
+  } // NOT VERIFIED
+  sizeESymbol() {
+    return 1500;
+  } // NOT VERIFIED
+  sizeFloat() {
+    return 1500;
+  } // NOT VERIFIED
+  sizeInstantiator() {
+    return 1500;
+  } // NOT VERIFIED
+  sizeInteger() {
+    return 1500;
+  } // NOT VERIFIED
+  sizeLambda() {
+    return 1500;
+  } // NOT VERIFIED
+  sizeLetter() {
+    return 1500;
+  } // NOT VERIFIED
+  sizeLine() {
+    return 1500;
+  } // NOT VERIFIED
+  sizeNil() {
+    return 1500;
+  } // NOT VERIFIED
+  sizeOrg() {
+    return 1500;
+  } // NOT VERIFIED
+  sizeSeparator() {
+    return 1500;
+  } // NOT VERIFIED
+  sizeWavetable() {
+    return 1500;
+  } // NOT VERIFIED
+  sizeWord() {
+    return 1500;
+  } // NOT VERIFIED
+
+  // these functions return incremental size
+
+  // these types allocate a variable amount of internal memory
+  // this number tells us about how much that internal memory is per "unit"
+  // these values I got from research, not experimenting
+  incrementalSizeString() {
+    return 2;
+  }
   incrementalSizeSurface() {
     return 4;
   }
