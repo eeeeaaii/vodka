@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'preact/hooks';
-import { isAnySoundPlaying, stopAllSound } from '../webaudio.js';
+import { isAnySoundPlaying, stopAllSound, anyLoopsPlaying } from '../webaudio.js';
 import { anyMidiNotesSounding, midiPanic } from '../midifunctions.js';
 import { stopAllLoops, anyLoopsRunning } from '../builtins/asyncbuiltins.js';
 import { hasPendingSave } from '../autosave.js';
@@ -16,7 +16,7 @@ const StatusNav = () => {
         const id = setInterval(() => {
             // a midi note left sounding is the same kind of problem as audio
             // still running, and more urgent -- nothing stops it on its own
-            setPlaying(isAnySoundPlaying() || anyMidiNotesSounding() || anyLoopsRunning());
+            setPlaying(isAnySoundPlaying() || anyMidiNotesSounding() || anyLoopsRunning() || anyLoopsPlaying());
             setUnsaved(hasPendingSave());
         }, POLL_MS);
         return () => clearInterval(id);
