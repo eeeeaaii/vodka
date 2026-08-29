@@ -235,6 +235,7 @@ class Wavetable extends Nex {
 	at the end.
 	*/
 	appendRecordedData(block) {
+		if (!this.recordedChunks) return;
 		this.recordedChunks.push(block);
 		this.recordedLength += block.length;
 		let joined = new Float32Array(this.recordedLength);

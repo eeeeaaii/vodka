@@ -15,13 +15,14 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { systemState } from './systemstate.js';
+import { systemState } from './systemstate.js'
+import { heap } from './heap.js';
 import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
 import { manipulator } from './manipulator.js';
 import { constructWarning } from './nex/eerror.js';
 import { scheduleAutosave } from './autosave.js'
 
-const levelsOfUndo = 100;
+const levelsOfUndo = 50;
 
 const actionStack = [];
 
@@ -43,7 +44,58 @@ function retreat(queuePos) {
 	}
 }
 
+/*
+What an action is holding so it can be undone.
+
+Its saved state is on its own fields, as render nodes or as nexes, so they are
+found by looking rather than by every action having to declare them. Children
+are refcounted through their parent, so holding the top of a detached subtree
+holds all of it.
+*/
+function nexesHeldBy(action) {
+	let r = [];
+	for (let k in action) {
+		let v = action[k];
+		if (!v || typeof v != 'object') continue;
+		if (typeof v.getNex == 'function') {
+			let n = v.getNex();
+			if (n) r.push(n);
+		} else if (typeof v.getTypeName == 'function' && v.references !== undefined) {
+			r.push(v);
+		}
+	}
+	return r;
+}
+
+/*
+Something in the undo buffer is still in use, whatever the document says. It has
+to be counted, or the heap frees things undo is still holding -- and being freed
+is no longer only bookkeeping: a wavetable forgets its samples when it goes, so
+an uncounted reference is a wavetable that comes back silent.
+
+Falling off the end of the buffer is therefore the other moment something can
+become free, which is why the slot is released before it is written over. That
+covers a discarded redo tail as well, since those slots are overwritten too.
+*/
+function retainActionNexes(action) {
+	let held = nexesHeldBy(action);
+	for (let i = 0; i < held.length; i++) {
+		heap.addReference(held[i]);
+	}
+	action.heldNexes = held;
+}
+
+function releaseActionNexes(action) {
+	if (!action || !action.heldNexes) return;
+	for (let i = 0; i < action.heldNexes.length; i++) {
+		heap.removeReference(action.heldNexes[i]);
+	}
+	action.heldNexes = null;
+}
+
 function enqueueAndPerformAction(action) {
+	// whatever was in this slot is falling out of the buffer
+	releaseActionNexes(actionStack[nextPosition]);
 	actionStack[nextPosition] = action;
 	if (nextPosition == queueTop) {
 		queueTop = advance(queueTop);
@@ -57,6 +109,8 @@ function enqueueAndPerformAction(action) {
 		nextPosition = advance(nextPosition);
 	}
 	action.doAction();
+	// after doAction, which is where an action captures what it is holding
+	retainActionNexes(action);
 	scheduleAutosave(systemState.getRoot());
 }
 

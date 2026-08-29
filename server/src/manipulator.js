@@ -774,10 +774,13 @@ class Manipulator {
 		} else if (a) {
 			a.setSelected();
 			this._forceInsertionMode(INSERT_BEFORE, a);
-		} else {
+		} else if (p) {
 			p.setSelected();
 			this._forceInsertionMode(INSERT_INSIDE, p);
 		}
+		// No siblings and no parent means it was not in the tree, which undo can
+		// reach by removing something that has already been removed. Nothing
+		// left to select, but nothing to crash over either.
 	}
 
 	removeAndSelectPreviousSiblingIfEmpty(s) {
