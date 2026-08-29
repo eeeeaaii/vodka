@@ -235,7 +235,7 @@ vlang used: ${this.usedSpace}
     return 2;
   }
 
-  sizeSequence() {
+  sizeHandle() {
     return 1500;
   } // NOT VERIFIED
   sizeDeferredCommand() {

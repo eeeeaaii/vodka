@@ -181,8 +181,8 @@ function isContract(n) {
 	return n.getTypeName() == '-contract-';
 }
 
-function isSequence(n) {
-	return n.getTypeName() == '-sequence-';
+function isResourceHandle(n) {
+	return n.getTypeName() == '-handle-';
 }
 
 function isFloat(n) {
@@ -325,7 +325,7 @@ export {
 	isEString,
 	isCommand,
 	isContract,
-	isSequence,
+	isResourceHandle,
 	isLambda,
 	isRoot,
 	isNex,

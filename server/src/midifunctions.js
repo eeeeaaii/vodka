@@ -18,7 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { Tag } from './tag.js'
 import { constructOrg, convertJSMapToOrg } from './nex/org.js'
 import { constructFatalError } from './nex/eerror.js'
-import { addCycleMember, contextTimeToPerformanceTime } from './webaudio.js'
+import { addCycleMember, replaceCycleMember, contextTimeToPerformanceTime } from './webaudio.js'
 
 
 var midi = null;
@@ -220,6 +220,17 @@ depend on when any of this javascript runs. The cycle boundary is in audio time
 and midi wants wall time, which is what contextTimeToPerformanceTime is for.
 */
 function addMidiSequence(portId, events, lengthSeconds) {
+	let member = makeMidiCycleMember(portId, events, lengthSeconds);
+	return addCycleMember(member);
+}
+
+// Swaps what a running midi loop plays. The notes for the next cycle are read
+// at the boundary, so replacing them here is enough.
+function replaceMidiSequence(id, portId, events, lengthSeconds) {
+	return replaceCycleMember(id, makeMidiCycleMember(portId, events, lengthSeconds));
+}
+
+function makeMidiCycleMember(portId, events, lengthSeconds) {
 	let out = midiOutputOrThrow(portId);
 	let member = {
 		lengthSeconds: lengthSeconds,
@@ -258,7 +269,7 @@ function addMidiSequence(portId, events, lengthSeconds) {
 			member.scheduled = [];
 		}
 	};
-	return addCycleMember(member);
+	return member;
 }
 
 function anyMidiNotesSounding() {
@@ -326,5 +337,5 @@ function getMidiPorts(incb) {
 }
 
 
-export { getMidiPorts, openMidiPort, isPortOpen, addMidiListener, addMidiSequence, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
+export { getMidiPorts, openMidiPort, isPortOpen, addMidiListener, addMidiSequence, replaceMidiSequence, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
 		 sendMidiNoteWithDuration, anyMidiNotesSounding, midiPanic }
