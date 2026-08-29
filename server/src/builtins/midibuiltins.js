@@ -16,11 +16,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Builtin } from '../nex/builtin.js'; 
-import { getMidiPorts, openMidiPort, isPortOpen, addMidiSequence, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
+import { getMidiPorts, openMidiPort, isPortOpen, addMidiSequence, replaceMidiSequence, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
 		 sendMidiNoteWithDuration } from '../midifunctions.js'
 import { convertTimeToSamples, nexToTimebase, getSampleRate } from '../wavetablefunctions.js'
-import { constructSequence } from '../nex/sequence.js'
+import { constructResourceHandle } from '../nex/handle.js'
 import { endLoops } from '../webaudio.js'
+import { UNBOUND } from '../environment.js'
 import { constructOrg } from '../nex/org.js'; 
 import { constructDeferredValue } from '../nex/deferredvalue.js'; 
 import { constructFatalError, constructInfo, newTagOrThrowOOM } from '../nex/eerror.js'
@@ -170,7 +171,7 @@ function createMidiBuiltins() {
 
 	Builtin.createBuiltin(
 		'loop-midi on',
-		[ 'seq()', 'port()' ],
+		[ 'seq()', 'port()', 'handle?' ],
 		function $loopMidi(env, executionEnvironment) {
 			let list = env.lb('seq');
 			let port = portIdOrError(env.lb('port'), 'loop-midi');
@@ -204,8 +205,26 @@ function createMidiBuiltins() {
 			}
 			let lengthSeconds = nominalEnd + spacerSeconds;
 
+			let what = 'midi loop, ' + events.length + ' note' + (events.length == 1 ? '' : 's');
+
+			// Handed a handle, replace what it names rather than starting a
+			// second loop alongside it.
+			let handle = env.lb('handle');
+			if (handle != UNBOUND) {
+				if (handle.getTypeName() != '-handle-' || handle.getKind() != 'midi loop') {
+					return constructFatalError('loop-midi: that is not a midi loop handle. Sorry!');
+				}
+				let ids = handle.getIds();
+				if (ids.length != 1
+						|| !replaceMidiSequence(ids[0], port.id, events, lengthSeconds)) {
+					return constructFatalError('loop-midi: that loop is not running any more. Sorry!');
+				}
+				handle.setIds(ids, what);
+				return handle;
+			}
+
 			let id = addMidiSequence(port.id, events, lengthSeconds);
-			return constructSequence('midi loop, ' + events.length + ' notes', [ id ], endLoops);
+			return constructResourceHandle('midi loop', what, [ id ], endLoops);
 		},
 		'Plays a list of midi notes in a loop on |port, joining the global cycle at its next boundary. Each note is what send-midi-note takes, with a float tagged time saying where in the sequence it falls. A bare number at the end of the list is the gap before the sequence repeats. Returns a sequence, which ends the loop when it is deleted, or at the next boundary if passed to end-seq.'
 	);

@@ -80,7 +80,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
   --wave-marker-light: #dbae7b;
   --wave-clipping: #cf728c;
   --wave-playhead: #0ec43f;
-  --sequence-glyph: #736b0d;
+  --handle-glyph: #736b0d;
   --wave-canvas-background: #ffffff;
   --wave-endcap-1: #ffffff;
   --wave-endcap-2: #dddddd;
@@ -163,7 +163,7 @@ waveform is teal so signal is never confused with structure.
   --wave-marker-light: #ffc78a;
   --wave-clipping: #ff6b5e;
   --wave-playhead: #4ade80;
-  --sequence-glyph: #7fbdb8;
+  --handle-glyph: #7fbdb8;
   --wave-canvas-background: #0a0a0a;
   --wave-endcap-1: #0a0a0a;
   --wave-endcap-2: #141414;

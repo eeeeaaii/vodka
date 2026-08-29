@@ -18,18 +18,18 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 /* follows contract.css -- both are things the system hands you rather than
    things you type */
 
-.sequence {
+.handle {
 	display: none;
 }
 
-.sglyph {
+.hglyph {
 	font-size: 20px;
 	font-family: Courier;
 	padding-right: 10px;
-	color: var(--sequence-glyph);
+	color: var(--handle-glyph);
 }
 
-.sequence.exploded {
+.handle.exploded {
 	border-radius: 6px;
 	font-style: italic;
 	font-family: monospace;
@@ -45,17 +45,17 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	padding-top: 6px;
 }
 
-.sequence.exploded.newselected {
+.handle.exploded.newselected {
 	border: 3px solid var(--selected-border);
 }
 
-.seqframe {
+.handleframe {
 	display: flex;
 	flex-direction: row;
 	padding-bottom: 6px;
 }
 
-.sinnerspans {
+.hinnerspans {
 	flex-direction: column;
 	display: flex;
 }

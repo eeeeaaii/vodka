@@ -480,6 +480,33 @@ function addCycleMember(loop) {
 	return id;
 }
 
+/*
+Swaps what a running loop plays, keeping its place in the cycle. Nodes are
+rebuilt at every boundary anyway, so changing the buffer here is enough -- the
+next boundary picks it up, and the loop never leaves the cycle. If the new wave
+is a different length the cycle re-measures itself at that boundary too.
+*/
+function replaceLoop(id, buffer, channel) {
+	let loop = cycleLoops[id] || cyclePending[id];
+	if (!loop) return false;
+	loop.buffer = buffer;
+	loop.channel = channel;
+	loop.lengthSeconds = buffer.length / SAMPLE_RATE;
+	loop.endAfterCycle = false;
+	return true;
+}
+
+// Same idea for a member that brings its own start and stop, like midi.
+function replaceCycleMember(id, member) {
+	let existing = cycleLoops[id] || cyclePending[id];
+	if (!existing) return false;
+	if (existing.stop) existing.stop();
+	member.endAfterCycle = false;
+	if (cycleLoops[id]) cycleLoops[id] = member;
+	if (cyclePending[id]) cyclePending[id] = member;
+	return true;
+}
+
 function endLoops(ids, atCycleEnd) {
 	for (let i = 0; i < ids.length; i++) {
 		let id = ids[i];
@@ -622,5 +649,5 @@ async function getFileAsBuffer(filepath) {
 }
 
 
-export { getAudioBufferFromData, loadSample, addLoop, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { getAudioBufferFromData, loadSample, addLoop, replaceLoop, addCycleMember, replaceCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 
