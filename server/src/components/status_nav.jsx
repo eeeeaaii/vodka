@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'preact/hooks';
 import { isAnySoundPlaying, stopAllSound } from '../webaudio.js';
 import { anyMidiNotesSounding, midiPanic } from '../midifunctions.js';
-import { stopAllLoops, anyLoopsRunning } from '../builtins/syscalls.js';
+import { stopAllLoops, anyLoopsRunning } from '../builtins/asyncbuiltins.js';
 import { hasPendingSave } from '../autosave.js';
 
 // Neither playback nor the save debounce announces itself, so poll. Cheap --
