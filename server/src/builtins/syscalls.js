@@ -30,6 +30,8 @@ import { rootManager } from '../rootmanager.js'
 import { experiments, getExperimentsAsString, getSettings, setSettingValue, hasSettingName } from '../globalappflags.js'
 import { UNBOUND, BINDINGS } from '../environment.js'
 import { convertTimeToSamples, getSampleRate } from '../wavetablefunctions.js'
+import { constructDeferredValue } from '../nex/deferredvalue.js'
+import { EveryActivationFunctionGenerator } from '../asyncfunctions.js'
 import { webFontManager } from '../webfonts.js'
 import {
 	RENDER_MODE_NORM,
@@ -45,7 +47,7 @@ let nextLoopId = 1;
 
 function stopAllLoops() {
 	for (let id in runningLoops) {
-		window.clearTimeout(runningLoops[id]);
+		runningLoops[id].stop();
 		delete runningLoops[id];
 	}
 }
@@ -145,32 +147,24 @@ function createSyscalls() {
 
 			let id = nextLoopId++;
 			let seq = 0;
-			let expected = performance.now() + ms;
-
-			function tick() {
-				if (!runningLoops[id]) return;
+			let afg = new EveryActivationFunctionGenerator(ms, function() {
 				let cmd = systemState.getSCF().makeCommandWithClosureOneArg(f, constructInteger(seq));
 				let r = systemState.getSCF().sEval2(cmd, BINDINGS, 'do every');
 				seq++;
 				if (Utils.isFatalError(r)) {
+					afg.stop();
 					delete runningLoops[id];
-					return;
 				}
-				// Correcting against a running total rather than the last wake
-				// up, so lateness does not accumulate. If more than a whole
-				// interval was missed the skipped ones are dropped rather than
-				// fired in a burst to catch up.
-				let now = performance.now();
-				expected += ms;
-				if (expected < now) {
-					expected += Math.ceil((now - expected) / ms) * ms;
-				}
-				runningLoops[id] = window.setTimeout(tick, expected - now);
-			}
-			runningLoops[id] = window.setTimeout(tick, ms);
-			return f;
+				return r;
+			});
+
+			let dv = constructDeferredValue();
+			dv.set(afg);
+			dv.activate();
+			runningLoops[id] = afg;
+			return dv;
 		},
-		'Runs |f every |interval, forever. |interval takes a timebase tag like any other length. |f is passed the number of times it has run, starting at zero, which it can take as an argument or ignore. Stops if |f returns a fatal error, or when the stop button is pressed.'
+		'Returns a deferred value that settles every |interval with whatever |f returned. |interval takes a timebase tag like any other length. |f is passed the number of times it has run, starting at zero, which it can take as an argument or ignore. Stops if |f returns a fatal error, or when the stop button is pressed.'
 	);
 
 	Builtin.createBuiltin(
