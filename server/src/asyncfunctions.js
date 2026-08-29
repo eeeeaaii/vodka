@@ -202,7 +202,8 @@ class EveryActivationFunctionGenerator extends ActivationFunctionGenerator {
 			// so lateness does not accumulate. More than a whole interval
 			// missed means the skipped ones are dropped rather than fired in a
 			// burst.
-			let expected = performance.now() + this.intervalMs;
+			// The first one happens now, not an interval from now.
+			let expected = performance.now();
 			let tick = function() {
 				settleCallback(this.onTick());
 				let now = performance.now();
@@ -212,7 +213,7 @@ class EveryActivationFunctionGenerator extends ActivationFunctionGenerator {
 				}
 				this.timer = VODKA_SCHEDULER.setTimeout(tick, expected - now);
 			}.bind(this);
-			this.timer = VODKA_SCHEDULER.setTimeout(tick, this.intervalMs);
+			this.timer = VODKA_SCHEDULER.setTimeout(tick, 0);
 		}.bind(this);
 	}
 

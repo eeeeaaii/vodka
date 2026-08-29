@@ -28,10 +28,7 @@ import { RenderNode } from '../rendernode.js'
 import { systemState } from '../systemstate.js'
 import { rootManager } from '../rootmanager.js'
 import { experiments, getExperimentsAsString, getSettings, setSettingValue, hasSettingName } from '../globalappflags.js'
-import { UNBOUND, BINDINGS } from '../environment.js'
-import { convertTimeToSamples, getSampleRate } from '../wavetablefunctions.js'
-import { constructDeferredValue } from '../nex/deferredvalue.js'
-import { EveryActivationFunctionGenerator } from '../asyncfunctions.js'
+import { UNBOUND } from '../environment.js'
 import { webFontManager } from '../webfonts.js'
 import {
 	RENDER_MODE_NORM,
@@ -41,24 +38,6 @@ import {
 /**
  * Creates all syscall builtins.
  */
-// running `do every` loops, so the stop button can end them
-const runningLoops = {};
-let nextLoopId = 1;
-
-function stopAllLoops() {
-	for (let id in runningLoops) {
-		runningLoops[id].stop();
-		delete runningLoops[id];
-	}
-}
-
-function anyLoopsRunning() {
-	for (let id in runningLoops) {
-		return true;
-	}
-	return false;
-}
-
 function createSyscalls() {
 
 	Builtin.createBuiltin(
@@ -133,42 +112,6 @@ function createSyscalls() {
 
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
-
-	Builtin.createBuiltin(
-		'do every',
-		[ 'f&', 'interval' ],
-		function $doEvery(env, executionEnvironment) {
-			let f = env.lb('f');
-			let interval = env.lb('interval');
-			let ms = (convertTimeToSamples(interval) / getSampleRate()) * 1000;
-			if (!(ms > 0)) {
-				return constructFatalError('do every: interval must be more than zero. Sorry!');
-			}
-
-			let id = nextLoopId++;
-			let seq = 0;
-			let afg = new EveryActivationFunctionGenerator(ms, function() {
-				let cmd = systemState.getSCF().makeCommandWithClosureOneArg(f, constructInteger(seq));
-				let r = systemState.getSCF().sEval2(cmd, BINDINGS, 'do every');
-				seq++;
-				if (Utils.isFatalError(r)) {
-					afg.stop();
-					delete runningLoops[id];
-				}
-				return r;
-			});
-
-			let dv = constructDeferredValue();
-			// Needs a child: a deferred renders and serializes through its first
-			// one, so an empty one cannot be drawn or saved.
-			dv.appendChild(interval);
-			dv.set(afg);
-			dv.activate();
-			runningLoops[id] = afg;
-			return dv;
-		},
-		'Returns a deferred value that settles every |interval with whatever |f returned. |interval takes a timebase tag like any other length. |f is passed the number of times it has run, starting at zero, which it can take as an argument or ignore. Stops if |f returns a fatal error, or when the stop button is pressed.'
-	);
 
 	Builtin.createBuiltin(
 		'get-time',
@@ -320,5 +263,5 @@ function createSyscalls() {
 	);
 }
 
-export { createSyscalls, stopAllLoops, anyLoopsRunning }
+export { createSyscalls }
 

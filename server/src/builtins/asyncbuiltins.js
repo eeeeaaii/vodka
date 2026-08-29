@@ -28,6 +28,9 @@ import { experiments } from '../globalappflags.js'
 import { Tag } from '../tag.js'
 import { constructDeferredValue } from '../nex/deferredvalue.js'
 import { incFFGen } from '../gc.js'
+import { constructInteger } from '../nex/integer.js'
+import { constructFatalError } from '../nex/eerror.js'
+import { BINDINGS } from '../environment.js'
 import { constructBool } from '../nex/bool.js'; 
 import { systemState } from '../systemstate.js'
 import { evaluateNexSafely, wrapError } from '../evaluator.js'
@@ -36,6 +39,7 @@ import { evaluateNexSafely, wrapError } from '../evaluator.js'
 import {
 	ImmediateActivationFunctionGenerator,
 	DelayActivationFunctionGenerator,
+	EveryActivationFunctionGenerator,
 	ClickActivationFunctionGenerator,
 	OnContentsChangedActivationFunctionGenerator,
 	CallbackActivationFunctionGenerator,
@@ -43,6 +47,24 @@ import {
 } from '../asyncfunctions.js'
 
 
+
+// running `do every` loops, so the stop button can end them
+const runningLoops = {};
+let nextLoopId = 1;
+
+function stopAllLoops() {
+	for (let id in runningLoops) {
+		runningLoops[id].stop();
+		delete runningLoops[id];
+	}
+}
+
+function anyLoopsRunning() {
+	for (let id in runningLoops) {
+		return true;
+	}
+	return false;
+}
 
 function createAsyncBuiltins() {
 
@@ -178,6 +200,42 @@ function createAsyncBuiltins() {
 		'Returns a deferred value that settles every time |nex is clicked on.'
 	);
 
+
+	Builtin.createBuiltin(
+		'do every',
+		[ 'f&', 'interval#' ],
+		function $doEvery(env, executionEnvironment) {
+			let f = env.lb('f');
+			let intervalnex = env.lb('interval');
+			let ms = intervalnex.getTypedValue();
+			if (!(ms > 0)) {
+				return constructFatalError('do every: interval must be more than zero. Sorry!');
+			}
+
+			let id = nextLoopId++;
+			let seq = 0;
+			let afg = new EveryActivationFunctionGenerator(ms, function() {
+				let cmd = systemState.getSCF().makeCommandWithClosureOneArg(f, constructInteger(seq));
+				let r = systemState.getSCF().sEval2(cmd, BINDINGS, 'do every');
+				seq++;
+				if (Utils.isFatalError(r)) {
+					afg.stop();
+					delete runningLoops[id];
+				}
+				return r;
+			});
+
+			let dv = constructDeferredValue();
+			// a deferred renders and serializes through its first child
+			dv.appendChild(intervalnex);
+			dv.set(afg);
+			dv.activate();
+			runningLoops[id] = afg;
+			return dv;
+		},
+		'Returns a deferred value that settles every |interval milliseconds with whatever |f returned. The first one happens straight away. |f is passed the number of times it has run, starting at zero, which it can take as an argument or ignore. Stops if |f returns a fatal error, when the deferred value is deleted, or when the stop button is pressed.'
+	);
+
 	Builtin.createBuiltin(
 		'wait-for-delay',
 		[ 'time#' ],
@@ -225,5 +283,5 @@ function createAsyncBuiltins() {
 	);
 }
 
-export { createAsyncBuiltins }
+export { createAsyncBuiltins, stopAllLoops, anyLoopsRunning }
 
