@@ -263,3 +263,43 @@ position: fixed;
 .infopanel a {
 	color: var(--help-link);
 }
+
+/* Small persistent nav, sitting to the left of the help button. */
+.statusnav {
+	position: fixed;
+	top: 0px;
+	right: 44px;
+	/* matches the help button's box: 3px margin + 2px border + 2px padding +
+	   9px Courier line, so the row centres against it */
+	margin-top: 3px;
+	height: 17px;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 6px;
+	z-index: 1001;
+}
+
+.statusnavitem {
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.stopbutton {
+	gap: 2px;
+}
+
+.stopbar {
+	width: 3px;
+	height: 9px;
+	background-color: var(--help-accent);
+}
+
+.unsaveddot {
+	width: 4px;
+	height: 4px;
+	border-radius: 50%;
+	background-color: var(--help-accent);
+}
