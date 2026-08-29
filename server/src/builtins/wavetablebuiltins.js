@@ -47,8 +47,8 @@ import {
   getSampleRate,
   getConstantSignalFromValue,
 } from "../wavetablefunctions.js";
-import { loopPlay, oneshotPlay, abortPlayback, endLoops, replaceLoop } from "../webaudio.js";
-import { constructResourceHandle } from "../nex/handle.js";
+import { loopPlay, oneshotPlay, abortPlayback, endLoops } from "../webaudio.js";
+import { constructClip } from "../nex/clip.js";
 import { Tag } from "../tag.js";
 import { ERROR_TYPE_INFO } from "../nex/eerror.js";
 import { Command } from "../nex/command.js";
@@ -114,24 +114,23 @@ function createWavetableBuiltins() {
 
   Builtin.createBuiltin(
     "end-seq",
-    ["seq"],
+    ["clip"],
     function $endSeq(env, executionEnvironment) {
-      let seq = env.lb("seq");
-      if (seq.getTypeName() != "-handle-") {
-        return constructFatalError("end-seq: not a handle. Sorry!");
+      let clip = env.lb("clip");
+      if (!Utils.isClip(clip)) {
+        return constructFatalError("end-seq: not a clip. Sorry!");
       }
-      seq.end(true /* at the end of the cycle, not now */);
-      return seq;
+      clip.end(true /* at the end of the cycle, not now */);
+      return clip;
     },
-    "Ends |seq at the end of the current cycle, so it finishes what it is playing rather than being cut off. Deleting a sequence ends it immediately instead."
+    "Ends |clip at the end of the current cycle, so it finishes what it is playing rather than being cut off. Deleting a clip ends it immediately instead."
   );
 
   Builtin.createBuiltin(
     "loop-play",
-    ["wt_", "channels#()?", "handle?"],
+    ["wt_", "channelsorclip?"],
     function $loopPlay(env, executionEnvironment) {
       let wt = env.lb("wt");
-      let channels = env.lb("channels");
 
       let buffers = [];
       if (Utils.isNexContainer(wt)) {
@@ -142,49 +141,43 @@ function createWavetableBuiltins() {
         buffers.push(wt.getCachedBuffer());
       }
 
+      // Channels or a clip, never both: a replacement stays on the channels
+      // the clip is already playing on, so there is nothing for channels to say.
+      let arg = env.lb("channelsorclip");
+
       let channelnumbers = [0, 1];
-      if (channels != UNBOUND) {
+      let clip = null;
+
+      if (arg != UNBOUND && Utils.isClip(arg)) {
+        if (arg.getKind() != "audio loop") {
+          return constructFatalError("loop-play: that is not an audio clip. Sorry!");
+        }
+        clip = arg;
+        channelnumbers = clip.getChannels();
+        // Out at the boundary and back in at the same one, so the swap is not
+        // heard. Nothing here has to know how a loop is put together.
+        endLoops(clip.getIds(), true /* at the cycle end */);
+      } else if (arg != UNBOUND) {
         channelnumbers = [];
-        if (Utils.isNexContainer(channels)) {
-          for (let i = 0; i < channels.numChildren(); i++) {
-            channelnumbers.push(channels.getChildAt(i).getTypedValue());
+        if (Utils.isNexContainer(arg)) {
+          for (let i = 0; i < arg.numChildren(); i++) {
+            channelnumbers.push(arg.getChildAt(i).getTypedValue());
           }
         } else {
-          channelnumbers.push(channels.getTypedValue());
+          channelnumbers.push(arg.getTypedValue());
         }
-      }
-
-      let what =
-          "loop on channel" + (channelnumbers.length == 1 ? " " : "s ") + channelnumbers.join(", ");
-
-      // Handed a handle, replace what it names rather than starting something
-      // alongside it. That is what lets the same expression be run again.
-      let handle = env.lb("handle");
-      if (handle != UNBOUND) {
-        if (handle.getTypeName() != "-handle-" || handle.getKind() != "audio loop") {
-          return constructFatalError("loop-play: that is not a loop handle. Sorry!");
-        }
-        let ids = handle.getIds();
-        if (ids.length != channelnumbers.length) {
-          return constructFatalError(
-              "loop-play: that handle is on " + ids.length + " channel" +
-              (ids.length == 1 ? "" : "s") + ", not " + channelnumbers.length + ". Sorry!");
-        }
-        let bi = 0;
-        for (let i = 0; i < ids.length; i++) {
-          if (!replaceLoop(ids[i], buffers[bi], channelnumbers[i])) {
-            return constructFatalError("loop-play: that loop is not running any more. Sorry!");
-          }
-          bi = (bi + 1) % buffers.length;
-        }
-        handle.setIds(ids, what);
-        return handle;
       }
 
       let ids = loopPlay(buffers, channelnumbers);
-      return constructResourceHandle("audio loop", what, ids, endLoops);
+      let what =
+          "channel" + (channelnumbers.length == 1 ? " " : "s ") + channelnumbers.join(", ");
+      if (clip) {
+        clip.setIds(ids, what);
+        return clip;
+      }
+      return constructClip("audio loop", what, ids, endLoops, channelnumbers);
     },
-    "Starts playing wt| at the next measure start on |channel.  If |channel is not provided, the sound is played on the first 2 channels. If |channel and/or |wt are lists, Vodka will do its best to match up sounds with channels."
+    "Starts playing wt| at the next measure start, and returns a clip naming the loop. |channelsorclip is either the channels to play on, or a clip returned by an earlier loop-play -- given a clip, the loop it names is replaced at the next measure start, staying on the channels it is already on, and you get the same clip back. If it is not provided, the sound is played on the first 2 channels. If it and/or |wt are lists, Vodka will do its best to match up sounds with channels."
   );
 
   Builtin.createBuiltin(
