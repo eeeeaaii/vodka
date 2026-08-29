@@ -223,7 +223,7 @@ function createAsyncBuiltins() {
 					delete runningLoops[id];
 				}
 				return r;
-			});
+			}, f);
 
 			let dv = constructDeferredValue();
 			// a deferred renders and serializes through its first child

@@ -20,6 +20,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { addMidiListener } from './midifunctions.js'
 import { convertJSMapToOrg } from './nex/org.js'
 import { VODKA_SCHEDULER } from './testutils/virtualclock.js'
+import { heap } from './heap.js'
 
 class ActivationFunctionGenerator {
 
@@ -189,10 +190,20 @@ class MidiActivationFunctionGenerator extends ActivationFunctionGenerator {
 }
 
 class EveryActivationFunctionGenerator extends ActivationFunctionGenerator {
-	constructor(intervalMs, onTick) {
+	/*
+	held is whatever onTick is going to call -- the lambda `do every` was given.
+	It is referenced from here and nowhere the document knows about, so without
+	saying so it can be deleted while the loop is still running: freed, its
+	lexical environment released, and then called every interval regardless.
+	*/
+	constructor(intervalMs, onTick, held) {
 		super();
 		this.intervalMs = intervalMs;
 		this.onTick = onTick;
+		this.held = held ? held : null;
+		if (this.held) {
+			heap.addReference(this.held);
+		}
 		this.timer = null;
 	}
 
@@ -221,6 +232,13 @@ class EveryActivationFunctionGenerator extends ActivationFunctionGenerator {
 		if (this.timer) {
 			window.clearTimeout(this.timer);
 			this.timer = null;
+		}
+		// stop can be reached more than once -- an error in the lambda, the stop
+		// button, the deferred being deleted -- and the reference is given up
+		// once
+		if (this.held) {
+			heap.removeReference(this.held);
+			this.held = null;
 		}
 	}
 
