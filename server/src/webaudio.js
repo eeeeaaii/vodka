@@ -502,19 +502,17 @@ function addCycleMember(loop) {
 }
 
 /*
-Swaps what a running loop plays, keeping its place in the cycle. Nodes are
-rebuilt at every boundary anyway, so changing the buffer here is enough -- the
-next boundary picks it up, and the loop never leaves the cycle. If the new wave
-is a different length the cycle re-measures itself at that boundary too.
+Where a running loop is, for the counter on a clip. Reckoned the same way the
+audition player does it, and like that one it is a readout rather than anything
+to synchronise against. -1 when the loop is not running.
 */
-function replaceLoop(id, buffer, channel) {
-	let loop = cycleLoops[id] || cyclePending[id];
-	if (!loop) return false;
-	loop.buffer = buffer;
-	loop.channel = channel;
-	loop.lengthSeconds = buffer.length / SAMPLE_RATE;
-	loop.endAfterCycle = false;
-	return true;
+function getLoopPositionSamples(id) {
+	if (!ctx) return -1;
+	let loop = cycleLoops[id];
+	if (!loop || !loop.lengthSeconds) return -1;
+	let elapsed = ctx.currentTime - (cycleNextBoundaryTime - cycleLengthSeconds());
+	if (elapsed < 0) return -1;
+	return Math.floor((elapsed * SAMPLE_RATE) % (loop.lengthSeconds * SAMPLE_RATE));
 }
 
 // Same idea for a member that brings its own start and stop, like midi.
@@ -670,5 +668,5 @@ async function getFileAsBuffer(filepath) {
 }
 
 
-export { getAudioBufferFromData, loadSample, addLoop, replaceLoop, addCycleMember, replaceCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { getAudioBufferFromData, loadSample, addLoop, getLoopPositionSamples, addCycleMember, replaceCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 
