@@ -28,7 +28,8 @@ import { RenderNode } from '../rendernode.js'
 import { systemState } from '../systemstate.js'
 import { rootManager } from '../rootmanager.js'
 import { experiments, getExperimentsAsString, getSettings, setSettingValue, hasSettingName } from '../globalappflags.js'
-import { UNBOUND } from '../environment.js'
+import { UNBOUND, BINDINGS } from '../environment.js'
+import { convertTimeToSamples, getSampleRate } from '../wavetablefunctions.js'
 import { webFontManager } from '../webfonts.js'
 import {
 	RENDER_MODE_NORM,
@@ -38,6 +39,24 @@ import {
 /**
  * Creates all syscall builtins.
  */
+// running `do every` loops, so the stop button can end them
+const runningLoops = {};
+let nextLoopId = 1;
+
+function stopAllLoops() {
+	for (let id in runningLoops) {
+		window.clearTimeout(runningLoops[id]);
+		delete runningLoops[id];
+	}
+}
+
+function anyLoopsRunning() {
+	for (let id in runningLoops) {
+		return true;
+	}
+	return false;
+}
+
 function createSyscalls() {
 
 	Builtin.createBuiltin(
@@ -108,6 +127,50 @@ function createSyscalls() {
 			return constructNil();
 		},
 		'Disconnects the event funnel (used to disable IDE features).'
+	);
+
+
+	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
+
+	Builtin.createBuiltin(
+		'do every',
+		[ 'f&', 'interval' ],
+		function $doEvery(env, executionEnvironment) {
+			let f = env.lb('f');
+			let interval = env.lb('interval');
+			let ms = (convertTimeToSamples(interval) / getSampleRate()) * 1000;
+			if (!(ms > 0)) {
+				return constructFatalError('do every: interval must be more than zero. Sorry!');
+			}
+
+			let id = nextLoopId++;
+			let seq = 0;
+			let expected = performance.now() + ms;
+
+			function tick() {
+				if (!runningLoops[id]) return;
+				let cmd = systemState.getSCF().makeCommandWithClosureOneArg(f, constructInteger(seq));
+				let r = systemState.getSCF().sEval2(cmd, BINDINGS, 'do every');
+				seq++;
+				if (Utils.isFatalError(r)) {
+					delete runningLoops[id];
+					return;
+				}
+				// Correcting against a running total rather than the last wake
+				// up, so lateness does not accumulate. If more than a whole
+				// interval was missed the skipped ones are dropped rather than
+				// fired in a burst to catch up.
+				let now = performance.now();
+				expected += ms;
+				if (expected < now) {
+					expected += Math.ceil((now - expected) / ms) * ms;
+				}
+				runningLoops[id] = window.setTimeout(tick, expected - now);
+			}
+			runningLoops[id] = window.setTimeout(tick, ms);
+			return f;
+		},
+		'Runs |f every |interval, forever. |interval takes a timebase tag like any other length. |f is passed the number of times it has run, starting at zero, which it can take as an argument or ignore. Stops if |f returns a fatal error, or when the stop button is pressed.'
 	);
 
 	Builtin.createBuiltin(
@@ -260,5 +323,5 @@ function createSyscalls() {
 	);
 }
 
-export { createSyscalls }
+export { createSyscalls, stopAllLoops, anyLoopsRunning }
 
