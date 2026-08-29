@@ -48,7 +48,6 @@ function createMidiBuiltins() {
 						for (let i = 0; i < devs.length ; i++) {
 							let org = convertJSMapToOrg(devs[i]);
 							org.setHorizontal();
-							org.addTag(newTagOrThrowOOM('midiport', 'list midi ports builtin'));
 							r.appendChild(org);
 						}
 						callback(r);
@@ -62,7 +61,7 @@ function createMidiBuiltins() {
 			dv.activate();
 			return dv;
 		},
-		'Lists every midi port, in both directions. Each port is tagged |midiport, and its |type says whether it is an input or an output.'
+		'Lists every midi port, in both directions. The |type of each says whether it is an input or an output.'
 	);
 
 
@@ -70,9 +69,6 @@ function createMidiBuiltins() {
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
 	function portIdOrError(port, who) {
-		if (!port.hasTag(newTagOrThrowOOM('midiport', who + ', is midi port'))) {
-			return { error: constructFatalError(who + ': not a midi port. Sorry!') };
-		}
 		let type = port.getChildTagged(newTagOrThrowOOM('type', who + ', type'));
 		if (type && type.getFullTypedValue() != 'output') {
 			return { error: constructFatalError(who + ': that is an input port. Sorry!') };
@@ -95,8 +91,8 @@ function createMidiBuiltins() {
 		function $openMidiPort(env, executionEnvironment) {
 			let port = env.lb('port');
 			let id = port.getChildTagged(newTagOrThrowOOM('id', 'open midi port, id'));
-			if (!port.hasTag(newTagOrThrowOOM('midiport', 'open midi port, is midi port')) || !id) {
-				return constructFatalError('open-midi-port: must pass in a midiport object with a valid ID');
+			if (!id) {
+				return constructFatalError('open-midi-port: not a midi port. Sorry!');
 			}
 			let idstr = id.getFullTypedValue();
 
@@ -112,7 +108,6 @@ function createMidiBuiltins() {
 						}
 						let org = convertJSMapToOrg(desc);
 						org.setHorizontal();
-						org.addTag(newTagOrThrowOOM('midiport', 'open midi port builtin'));
 						callback(org);
 					})
 				}
@@ -305,10 +300,9 @@ function createMidiBuiltins() {
 		[ 'midiport()' ],
 		function $setMidi(env, executionEnvironment) {
 			let midiport = env.lb('midiport');
-			let ismidiport = midiport.hasTag(newTagOrThrowOOM('midiport', 'wait for midi builtin, is midi port'))
 			let id = midiport.getChildTagged(newTagOrThrowOOM('id', 'wait for midi builtin, id'));
-			if (!ismidiport || !id) {
-				return constructFatalError('wait-for-midi: must pass in a midiport object with a valid ID');
+			if (!id) {
+				return constructFatalError('wait-for-midi: not a midi port. Sorry!');
 			}
 			// now that both directions are listed, an output can be passed here
 			// by mistake, and listening to one just never fires
