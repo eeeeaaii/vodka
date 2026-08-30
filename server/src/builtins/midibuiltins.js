@@ -263,7 +263,6 @@ function createMidiBuiltins() {
 			}
 
 			let events = [];
-			let spacerSeconds = 0;
 			// where the next entry starts if it does not say, and how long the
 			// sequence has got to so far
 			let cursorSeconds = 0;
@@ -271,10 +270,9 @@ function createMidiBuiltins() {
 			let n = list.numChildren();
 			for (let i = 0; i < n; i++) {
 				let c = list.getChildAt(i);
-				// a bare number last is the gap before the sequence repeats
-				if (i == n - 1 && !c.isNexContainer()) {
-					spacerSeconds = convertTimeToSamples(c) / getSampleRate();
-					break;
+				if (!c.isNexContainer()) {
+					return constructFatalError(
+							'play-midi: every entry has to be an org. Sorry!');
 				}
 				let e = readSequenceEntry(c, cursorSeconds);
 				if (e.error) return constructFatalError(e.error);
@@ -287,11 +285,11 @@ function createMidiBuiltins() {
 				return constructFatalError('play-midi: nothing to play. Sorry!');
 			}
 
-			// The sequence is as long as its last entry nominally ends, plus the
-			// gap. Nominally: shortening a note to keep it clear of the next one
-			// gives the time back to the gap, so it never changes the length. A
-			// rest at the end counts, which is one way to put space there.
-			let lengthSeconds = nominalEnd + spacerSeconds;
+			// The sequence is as long as its last entry nominally ends. Nominally:
+			// shortening a note to keep it clear of the next one is a note off
+			// sent early, not a shorter sequence. A rest at the end counts, which
+			// is how you put space before the repeat.
+			let lengthSeconds = nominalEnd;
 
 			// the clip already says it is midi, so this says what is in it
 			let what = events.length + ' note' + (events.length == 1 ? '' : 's');
@@ -314,7 +312,7 @@ function createMidiBuiltins() {
 			clipStartedPlaying(clip, [ id ]);
 			return clip;
 		},
-		'Plays a list of midi notes in a loop, joining the global cycle at its next boundary, and returns a clip naming it. Each note is what send-midi-note takes, and may carry a float tagged time saying where in the sequence it falls. Without a time it starts where the entry before it ended, so a list of notes carrying nothing but durations plays one after another. An entry with a duration and no note number is a rest: it takes up its time and sounds nothing, and a rest at the end is one way to put space before the repeat. A bare number at the end of the list is another. The loop plays for as long as something holds the clip: keep the clip and it loops, throw it away and it plays once, delete it and it stops at the end of the pass it is in. |portorclip is either the port to play on, or a clip from an earlier play-midi -- given a clip, what it is playing is replaced at the next boundary, staying on the port it is already on, and you get the same clip back. Given neither, it plays on the port set by set-default-port.'
+		'Plays a list of midi notes in a loop, joining the global cycle at its next boundary, and returns a clip naming it. Each note is what send-midi-note takes, and may carry a float tagged time saying where in the sequence it falls. Without a time it starts where the entry before it ended, so a list of notes carrying nothing but durations plays one after another. An entry with a duration and no note number is a rest: it takes up its time and sounds nothing, and a rest at the end is how you put space before the sequence repeats. The loop plays for as long as something holds the clip: keep the clip and it loops, throw it away and it plays once, delete it and it stops at the end of the pass it is in. |portorclip is either the port to play on, or a clip from an earlier play-midi -- given a clip, what it is playing is replaced at the next boundary, staying on the port it is already on, and you get the same clip back. Given neither, it plays on the port set by set-default-port.'
 	);
 
 	Builtin.aliasBuiltin('loop-midi on', 'play-midi');
