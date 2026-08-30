@@ -84,10 +84,26 @@ const DocItem = ({item}) => {
     );
 };
 
-const ApiReferencePanel = () => {
-    const groups = docs();
+/*
+Making sound and writing code are different jobs, and there are enough builtins
+for each that one list means scrolling past all of one to reach the other.
+*/
+const SOUND_CATEGORIES = [
+    'Wavetable Builtins',
+    'Wave Math Builtins',
+    'Midi Builtins',
+];
+
+function isSound(category) {
+    return SOUND_CATEGORIES.indexOf(category) != -1;
+}
+
+const ApiReferencePanel = ({sound}) => {
+    // an unrecognised category is not sound, so one added later shows up in
+    // the base api rather than in neither
+    const groups = docs().filter((group) => isSound(group.category) == !!sound);
     return (
-        <div className="infopanel" id="fullapireference">
+        <div className="infopanel" id={sound ? 'soundapireference' : 'baseapireference'}>
             <SectionNav groups={groups} />
             {groups.map((group) => (
                 <div key={group.category}>
