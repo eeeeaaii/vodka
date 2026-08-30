@@ -340,27 +340,6 @@ function checkChannelExists(channel) {
 		throw constructFatalError('Unknown audio channel number. Sorry!');
 	}
 }
-
-function oneshotPlay(bufferList, channelList) {
-	maybeCreateAudioContext();
-	channelList.forEach(checkChannelExists);
-
-	let bufferIndex = 0;
-
-	for (let i = 0; i < channelList.length; i++) {
-		let channel = channelList[i];
-		let buffer = bufferList[bufferIndex];
-
-		if (channelPlayers[channel]) {
-			channelPlayers[channel].abortPlay();
-		}
-		channelPlayers[channel] = new OneshotPlayer(buffer, channel);
-
-		bufferIndex = (bufferIndex + 1) % bufferList.length;
-	}
-}
-
-
 /*
 THE GLOBAL CYCLE
 
@@ -477,9 +456,10 @@ function startCycleAt(startTime) {
 		// A member that brings its own way of starting -- midi does, and
 		// schedules messages rather than making a sound.
 		if (loop.start) {
-			loop.start(startTime, len);
+			if (!loop.paused) loop.start(startTime, len);
 			continue;
 		}
+		if (loop.paused) continue;
 		let node = getSourceFromBuffer(loop.buffer, true);
 		node.connect(channelMergerNode, 0, loop.channel);
 		node.start(startTime);
@@ -565,6 +545,30 @@ function replaceCycleMember(id, member) {
 	if (cycleLoops[id]) cycleLoops[id] = member;
 	if (cyclePending[id]) cyclePending[id] = member;
 	return true;
+}
+
+/*
+A paused loop keeps its place in the cycle and its length, so it is still what
+the cycle is measured against and it comes back in phase rather than starting a
+new bar of its own. It simply is not scheduled while it is paused.
+*/
+function pauseLoops(ids, paused) {
+	let found = false;
+	for (let i = 0; i < ids.length; i++) {
+		let loop = cycleLoops[ids[i]] || cyclePending[ids[i]];
+		if (!loop) continue;
+		found = true;
+		loop.paused = paused;
+		if (paused) {
+			if (loop.stop) loop.stop();
+			if (loop.node) {
+				try { loop.node.stop(); } catch (e) {}
+				loop.node.disconnect();
+				loop.node = null;
+			}
+		}
+	}
+	return found;
 }
 
 function endLoops(ids, atCycleEnd) {
@@ -715,5 +719,5 @@ async function getFileAsBuffer(filepath) {
 }
 
 
-export { getAudioBufferFromData, loadSample, addLoop, getLoopPositionSamples, clipStartedPlaying, addCycleMember, replaceCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { getAudioBufferFromData, loadSample, addLoop, getLoopPositionSamples, clipStartedPlaying, pauseLoops, addCycleMember, replaceCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 

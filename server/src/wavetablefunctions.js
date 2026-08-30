@@ -89,26 +89,32 @@ midi note's duration is tagged `duration` as well as with its timebase -- and
 which came first should not decide whether the timebase is seen. Anything with
 a single tag behaves exactly as before.
 */
-function nexToTimebase(input) {
-	let type = DEFAULT_TIMEBASE;
-	for (let i = 0; i < input.numTags(); i++) {
-		let t = input.getTag(i).getTagString();
-		if (t == 'note' || t == 'nn') {
-			type = 'NOTE';
-		} else if (t == 'seconds' || t == 'second' || t == 'secs' || t == 'sec') {
-			type = 'SECONDS';
-		} else if (t == 'hz' || t == 'Hz' || t == 'HZ' || t == 'cps') {
-			type = 'HZ';
-		} else if (t == 'b' || t == 'beats' || t == 'beat') {
-			type = 'BEATS';
-		} else if (t == 'samples' || t == 'samps' || t == 'samp') {
-			type = 'SAMPLES';
-		} else {
-			continue;
-		}
-		break;
+// null for a tag that does not name a timebase, so callers can tell a tag they
+// understand from one meant for something else
+function timebaseForTagString(t) {
+	if (t == 'note' || t == 'nn') return 'NOTE';
+	if (t == 'seconds' || t == 'second' || t == 'secs' || t == 'sec') return 'SECONDS';
+	if (t == 'hz' || t == 'Hz' || t == 'HZ' || t == 'cps') return 'HZ';
+	if (t == 'b' || t == 'beats' || t == 'beat') return 'BEATS';
+	if (t == 'samples' || t == 'samps' || t == 'samp') return 'SAMPLES';
+	return null;
+}
+
+// tags on a command rather than on one of its arguments
+function timebaseFromTags(tags) {
+	for (let i = 0; tags && i < tags.length; i++) {
+		let type = timebaseForTagString(tags[i].getTagString());
+		if (type) return type;
 	}
-	return type;
+	return null;
+}
+
+function nexToTimebase(input) {
+	for (let i = 0; i < input.numTags(); i++) {
+		let type = timebaseForTagString(input.getTag(i).getTagString());
+		if (type) return type;
+	}
+	return DEFAULT_TIMEBASE;
 }
 
 function setDefaultTimebase(input) {
@@ -261,6 +267,8 @@ export { getSampleRate,
 		 setBpm,
 		 getBpm,
 		 nexToTimebase,
+		 timebaseForTagString,
+		 timebaseFromTags,
 		 setDefaultTimebase,
 		 setDefaultTimebaseValue,
 		 getDefaultTimebase,

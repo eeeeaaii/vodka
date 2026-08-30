@@ -41,13 +41,15 @@ import {
   setBpm,
   getBpm,
   nexToTimebase,
+  timebaseFromTags,
+  convertSamplesToTimebase,
   getReferenceFrequency,
   setDefaultTimebase,
   getDefaultTimebase,
   getSampleRate,
   getConstantSignalFromValue,
 } from "../wavetablefunctions.js";
-import { loopPlay, oneshotPlay, abortPlayback, endLoops, clipStartedPlaying } from "../webaudio.js";
+import { loopPlay, abortPlayback, endLoops, clipStartedPlaying, pauseLoops } from "../webaudio.js";
 import { constructClip } from "../nex/clip.js";
 import { Tag } from "../tag.js";
 import { ERROR_TYPE_INFO } from "../nex/eerror.js";
@@ -78,53 +80,34 @@ function createWavetableBuiltins() {
     "Returns the default timebase."
   );
 
-  Builtin.createBuiltin(
-    "oneshot-play",
-    ["wt_", "channels#()?"],
-    function $oneshotPlay(env, executionEnvironment) {
-      let wt = env.lb("wt");
-      let channels = env.lb("channels");
-
-      let buffers = [];
-      if (Utils.isNexContainer(wt)) {
-        for (let i = 0; i < wt.numChildren(); i++) {
-          buffers.push(wt.getChildAt(i).getCachedBuffer());
+  /*
+  Pausing is the only way left to silence a clip without waiting for the pass
+  it is in to finish, and it is not the end of anything: the loop keeps its
+  place in the cycle, so resuming brings it back in phase rather than starting
+  a bar of its own. If you did not want it at all you would delete it.
+  */
+  function pauseOrResume(name, paused) {
+    Builtin.createBuiltin(
+      name,
+      ["clip"],
+      function (env, executionEnvironment) {
+        let clip = env.lb("clip");
+        if (!Utils.isClip(clip)) {
+          return constructFatalError(name + ": not a clip. Sorry!");
         }
-      } else {
-        buffers.push(wt.getCachedBuffer());
-      }
-
-      let channelnumbers = [0, 1];
-      if (channels != UNBOUND) {
-        channelnumbers = [];
-        if (Utils.isNexContainer(channels)) {
-          for (let i = 0; i < channels.numChildren(); i++) {
-            channelnumbers.push(channels.getChildAt(i).getTypedValue());
-          }
-        } else {
-          channelnumbers.push(channels.getTypedValue());
+        if (!pauseLoops(clip.getIds(), paused)) {
+          return constructFatalError(name + ": that clip already stopped. Sorry!");
         }
-      }
+        return clip;
+      },
+      paused
+          ? "Silences |clip straight away, keeping its place in the cycle so that resume brings it back in time. Deleting a clip instead lets it finish the pass it is in."
+          : "Starts |clip playing again after pause, at the next measure start and in phase with everything else."
+    );
+  }
 
-      oneshotPlay(buffers, channelnumbers);
-      return wt;
-    },
-    "Plays |wt immediately on the given channel. If |channel is not provided, the sound is played on the first 2 channels. If |channel and/or |wt are lists, Vodka will do its best to match up sounds with channels."
-  );
-
-  Builtin.createBuiltin(
-    "end-seq",
-    ["clip"],
-    function $endSeq(env, executionEnvironment) {
-      let clip = env.lb("clip");
-      if (!Utils.isClip(clip)) {
-        return constructFatalError("end-seq: not a clip. Sorry!");
-      }
-      clip.end(true /* at the end of the cycle, not now */);
-      return clip;
-    },
-    "Ends |clip at the end of the current cycle, so it finishes what it is playing rather than being cut off. Deleting a clip ends it immediately instead."
-  );
+  pauseOrResume("pause", true);
+  pauseOrResume("resume", false);
 
   Builtin.createBuiltin(
     "play",
@@ -963,7 +946,7 @@ function createWavetableBuiltins() {
   );
 
   Builtin.createBuiltin(
-    "clipad",
+    "fit to",
     ["wt_", "len#%"],
     function $sizeto(env, executionEnvironment) {
       let len = env.lb("len");
@@ -988,6 +971,9 @@ function createWavetableBuiltins() {
     },
     "Clips the length of the wavetable, or pads the end of it with silence, depending on whether the passed-in length is greater or less than the length of the wavetable. Timebase tag (nn, secs, hz, b, samps) is on |len."
   );
+
+  // short enough to type mid-set
+  Builtin.aliasBuiltin("f", "fit to");
 
   Builtin.createBuiltin(
     "remove-from-start",
@@ -1127,12 +1113,16 @@ function createWavetableBuiltins() {
   Builtin.createBuiltin(
     "duration",
     ["wt_"],
-    function $duration(env, executionEnvironment) {
+    function $duration(env, executionEnvironment, commandTags) {
       let wt = env.lb("wt");
-      let val = wt.getDuration();
-      return constructInteger(val);
+      let samples = wt.getDuration();
+      let timebase = timebaseFromTags(commandTags);
+      if (!timebase || timebase == "SAMPLES") {
+        return constructInteger(samples);
+      }
+      return constructFloat(convertSamplesToTimebase(timebase, samples));
     },
-    "Gets the duration of a signal in samples"
+    "How long wt| is, in samples. Tag the command with a timebase (nn, secs, hz, b, samps) to get it in that instead."
   );
 
   Builtin.createBuiltin(
@@ -1376,7 +1366,34 @@ function createWavetableBuiltins() {
       r.cacheSections();
       return r;
     },
-    "Returns a copy of wt| with breakpoints at |points, the same breakpoints you get by pressing v while editing a wave. |points is one number or a list of them, and n of them give n+1 slices. They are lengths, so they can be tagged with a timebase, and additionally with of-total to read them as a fraction of this wave -- 0.5 of-total is halfway along. A tag on the list applies to every point in it."
+    "Returns a copy of wt| with split points at |points, the same ones you get by pressing v while editing a wave. |points is one number or a list of them, and n of them give n+1 slices. They are lengths, so they can be tagged with a timebase, and additionally with of-total to read them as a fraction of this wave -- 0.5 of-total is halfway along. A tag on the list applies to every point in it."
+  );
+
+  Builtin.createBuiltin(
+    "split-points-of",
+    ["wt_"],
+    function $splitPointsOf(env, executionEnvironment, commandTags) {
+      let wt = env.lb("wt");
+      let total = wt.getDuration();
+      let ofTotal = false;
+      for (let i = 0; commandTags && i < commandTags.length; i++) {
+        if (commandTags[i].getTagString() == "of-total") ofTotal = true;
+      }
+      let timebase = timebaseFromTags(commandTags);
+      let r = constructOrg();
+      for (let i = 0; i < wt.markers.length; i++) {
+        let at = wt.markers[i];
+        if (ofTotal) {
+          r.appendChild(constructFloat(total == 0 ? 0 : at / total));
+        } else if (!timebase || timebase == "SAMPLES") {
+          r.appendChild(constructInteger(at));
+        } else {
+          r.appendChild(constructFloat(convertSamplesToTimebase(timebase, at)));
+        }
+      }
+      return r;
+    },
+    "The split points in wt|, as an org of sample offsets. Tag the command with a timebase (nn, secs, hz, b, samps) to get them in that, or with of-total to get each one as a fraction of the whole wave."
   );
 
   Builtin.createBuiltin(
