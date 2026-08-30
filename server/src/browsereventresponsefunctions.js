@@ -18,6 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import { systemState } from './systemstate.js'
 import { manipulator } from './manipulator.js'
+import { enqueueAndPerformAction, MultiSelectAction } from './actions.js'
 
 // can return null if user clicks on some other thing
 function getParentNexOfDomElement(elt) {
@@ -33,7 +34,9 @@ function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 	if (atTarget && browserEvent.shiftKey
 			&& (browserEvent.ctrlKey || browserEvent.metaKey)) {
 		browserEvent.stopPropagation();
-		if (manipulator.multiSelect(renderNode)) {
+		let plan = manipulator.planMultiSelect(renderNode);
+		if (plan) {
+			enqueueAndPerformAction(new MultiSelectAction(plan));
 			eventQueueDispatcher.enqueueImportantTopLevelRender();
 		}
 		return;

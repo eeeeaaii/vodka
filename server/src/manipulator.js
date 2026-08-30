@@ -1453,18 +1453,22 @@ class Manipulator {
 	only thing enclosing both is the document itself. Selecting the document
 	would be selecting everything, so an enclosure is made instead: a vertical
 	org around those two top-level nexes and everything between them.
+
+	Worked out first and carried out second, so that the click can be an
+	undoable action: nothing happens for a click with no answer, and a plan can
+	be applied again on redo.
 	*/
-	multiSelect(clickedNode) {
+	planMultiSelect(clickedNode) {
 		let a = systemState.getGlobalSelectedNode();
 		let b = clickedNode;
-		if (!a || !b || a == b) return false;
+		if (!a || !b || a == b) return null;
 		let root = systemState.getRoot();
 
 		let aChain = [];
 		for (let n = a; n; n = n.getParent()) aChain.push(n);
 		// the selection is not in the document at all, so there is nothing to
 		// find a common ancestor in
-		if (aChain.indexOf(root) == -1) return false;
+		if (aChain.indexOf(root) == -1) return null;
 
 		let common = null;
 		for (let n = b; n; n = n.getParent()) {
@@ -1473,12 +1477,46 @@ class Manipulator {
 				break;
 			}
 		}
-		if (!common) return false;
+		if (!common) return null;
 		if (common != root) {
-			common.setSelected();
-			return true;
+			return { kind: 'select', node: common };
 		}
-		return this._encloseTopLevelSpan(a, b, root);
+
+		let r1 = this._topLevelAncestor(a, root);
+		let r2 = this._topLevelAncestor(b, root);
+		if (!r1 || !r2 || r1 == r2) return null;
+		let i1 = root.getIndexOfChild(r1);
+		let i2 = root.getIndexOfChild(r2);
+		return {
+			kind: 'enclose',
+			from: Math.min(i1, i2),
+			to: Math.max(i1, i2)
+		};
+	}
+
+	// the org that was made, so undo can find it again
+	applyMultiSelect(plan) {
+		if (plan.kind == 'select') {
+			plan.node.setSelected();
+			return null;
+		}
+		let root = systemState.getRoot();
+		let taken = this._takeChildren(root, plan.from, plan.to);
+		let org = new RenderNode(constructOrg());
+		root.insertChildAt(org, plan.from);
+		this._putChildren(org, taken, 0);
+		org.setSelected();
+		return org;
+	}
+
+	unapplyMultiSelect(plan, org) {
+		if (plan.kind == 'select' || !org) return;
+		let root = systemState.getRoot();
+		let at = root.getIndexOfChild(org);
+		if (at == -1) return;
+		let taken = this._takeChildren(org, 0, org.numChildren() - 1);
+		root.removeChildAt(at);
+		this._putChildren(root, taken, at);
 	}
 
 	_topLevelAncestor(node, root) {
@@ -1488,34 +1526,28 @@ class Manipulator {
 		return null;
 	}
 
-	_encloseTopLevelSpan(a, b, root) {
-		let r1 = this._topLevelAncestor(a, root);
-		let r2 = this._topLevelAncestor(b, root);
-		if (!r1 || !r2 || r1 == r2) return false;
-
-		let from = Math.min(root.getIndexOfChild(r1), root.getIndexOfChild(r2));
-		let to = Math.max(root.getIndexOfChild(r1), root.getIndexOfChild(r2));
-
-		/*
-		Held across the move, because taking a nex out of the document is the
-		last reference to it letting go: without this the heap would free each
-		one and then have to reallocate it as it went back in.
-		*/
+	/*
+	Held across the move, because taking a nex out of the document is the last
+	reference to it letting go: without this the heap would free each one --
+	and a wavetable being freed forgets its samples -- and then have to
+	reallocate it as it went back in.
+	*/
+	_takeChildren(parent, from, to) {
 		let taken = [];
 		for (let i = to; i >= from; i--) {
-			let child = root.getChildAt(i);
+			let child = parent.getChildAt(i);
+			if (!child) continue;
 			heap.addReference(child.getNex());
-			taken.unshift(root.removeChildAt(i));
+			taken.unshift(parent.removeChildAt(i));
 		}
+		return taken;
+	}
 
-		let org = new RenderNode(constructOrg());
-		root.insertChildAt(org, from);
+	_putChildren(parent, taken, at) {
 		for (let i = 0; i < taken.length; i++) {
-			org.appendChild(taken[i]);
+			parent.insertChildAt(taken[i], at + i);
 			heap.removeReference(taken[i].getNex());
 		}
-		org.setSelected();
-		return true;
 	}
 
 	wrapSelectedInAndSelect(wrapperNode) {
