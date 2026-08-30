@@ -446,6 +446,15 @@ function startCycleAt(startTime) {
 			delete cycleLoops[id];
 		}
 	}
+	/*
+	Counted before the length check, so that a clip holding nothing still gets
+	a pass and can be retired when nobody else wants it. An empty clip makes
+	the cycle length zero and stops the cycle, and a clip that never counts a
+	pass is never retired.
+	*/
+	for (let i = 0; i < playingClips.length; i++) {
+		playingClips[i].passes++;
+	}
 	let len = cycleLengthSeconds();
 	if (len <= 0) {
 		cycleRunning = false;
@@ -466,9 +475,6 @@ function startCycleAt(startTime) {
 		node.start(startTime);
 		node.stop(startTime + len);
 		loop.node = node;
-	}
-	for (let i = 0; i < playingClips.length; i++) {
-		playingClips[i].passes++;
 	}
 	let nextBoundary = startTime + len;
 	cycleNextBoundaryTime = nextBoundary;
