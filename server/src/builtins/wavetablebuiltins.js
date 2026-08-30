@@ -985,47 +985,6 @@ function createWavetableBuiltins() {
   );
 
   Builtin.createBuiltin(
-    "gain",
-    ["wtlst#%_..."],
-    function $gain(env, executionEnvironment) {
-      let wtlst = env.lb("wtlst");
-
-      // if the first arg to wtlst is a list instead of a wt, use it
-      if (wtlst.numChildren() == 1 && wtlst.getChildAt(0).isNexContainer()) {
-        wtlst = wtlst.getChildAt(0);
-      }
-
-      let waves = [];
-
-      let dur = 0;
-      for (let i = 0; i < wtlst.numChildren(); i++) {
-        let c = wtlst.getChildAt(i);
-        if (!(c.getTypeName() == "-wavetable-")) {
-          c = getConstantSignalFromValue(c.getTypedValue());
-        }
-        let d = c.getDuration();
-        if (d > dur) {
-          dur = d;
-        }
-        waves.push(c);
-      }
-      let r = constructWavetable(dur);
-      let data = r.getData();
-
-      for (let i = 0; i < dur; i++) {
-        let v = 1;
-        for (let j = 0; j < waves.length; j++) {
-          v *= waves[j].valueAtSample(i);
-        }
-        data[i] = v;
-      }
-      r.init();
-      return r;
-    },
-    "Multiplies together all the passed in numbers or waves"
-  );
-
-  Builtin.createBuiltin(
     "clipad",
     ["wt_", "len#%"],
     function $sizeto(env, executionEnvironment) {
@@ -1214,47 +1173,6 @@ function createWavetableBuiltins() {
       return constructWavetable(dur);
     },
     "Creates an empty wavetable (silence) with a duration of the requested number of samples. Timebase tag (nn, secs, hz, b, samps) is on |len."
-  );
-
-  Builtin.createBuiltin(
-    "mix",
-    ["wtlst#%_..."],
-    function $mix(env, executionEnvironment) {
-      let wtlst = env.lb("wtlst");
-
-      // if the first arg to wtlst is a list instead of a wt, use it
-      if (wtlst.numChildren() == 1 && wtlst.getChildAt(0).isNexContainer()) {
-        wtlst = wtlst.getChildAt(0);
-      }
-
-      let waves = [];
-
-      let dur = 0;
-      for (let i = 0; i < wtlst.numChildren(); i++) {
-        let c = wtlst.getChildAt(i);
-        if (!(c.getTypeName() == "-wavetable-")) {
-          c = getConstantSignalFromValue(c.getTypedValue());
-        }
-        let d = c.getDuration();
-        if (d > dur) {
-          dur = d;
-        }
-        waves.push(c);
-      }
-
-      let r = constructWavetable(dur);
-      let data = r.getData();
-      for (let i = 0; i < dur; i++) {
-        let v = 0;
-        for (let j = 0; j < waves.length; j++) {
-          v += waves[j].valueAtSample(i);
-        }
-        data[i] = v;
-      }
-      r.init();
-      return r;
-    },
-    "Mixes together all the wavetables passed in"
   );
 
   Builtin.createBuiltin(
