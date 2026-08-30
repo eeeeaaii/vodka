@@ -27,7 +27,16 @@ const StatusNav = () => {
             {unsaved && <div className="unsaveddot" title="not saved yet"></div>}
             {playing &&
                 <div className="statusnavitem stopbutton" title="stop everything"
-                     onClick={() => { stopAllSound(); midiPanic(); stopAllLoops(); setPlaying(false); }}>
+                     onClick={() => {
+                         // midi first: it throws away messages the browser has
+                         // already been handed, and those are the ones that
+                         // would otherwise keep sounding after everything else
+                         // has stopped
+                         midiPanic();
+                         stopAllSound();
+                         stopAllLoops();
+                         setPlaying(false);
+                     }}>
                     {/* currentColor so the icon follows the theme token on the parent */}
                     <svg viewBox="0 0 8 9" width="8" height="9" aria-hidden="true">
                         <rect x="0" y="0" width="3" height="9" fill="currentColor"/>
