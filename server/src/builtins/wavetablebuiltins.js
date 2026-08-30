@@ -421,6 +421,69 @@ function createWavetableBuiltins() {
     "A shape for waveshape that pushes loud parts down and brings the rest up to meet them. Anything above |threshold is squashed by |ratio, and the whole thing is scaled so the limit is still the limit. Defaults are a threshold of 0.5 and a ratio of 4. Note this is the curve of a compressor and not the timing: it has no attack or release, so it acts on each sample by itself."
   );
 
+  /*
+  The two ways a digital sound is made cheap, which are not the same thing.
+  bitcrush is about how finely a sample is measured; sample-reduce is about how
+  often. Neither is a shape you could hand to waveshape: one is a staircase too
+  fine to draw as a wave, and the other happens over time rather than sample by
+  sample.
+  */
+  Builtin.createBuiltin(
+    "bitcrush",
+    ["wt_", "bits#%_?"],
+    function $bitcrush(env, executionEnvironment) {
+      let wt = env.lb("wt");
+      let bits = amountAt(env.lb("bits"), 8);
+
+      let dur = wt.getDuration();
+      let r = constructWavetable(dur);
+      let data = r.getData();
+      for (let i = 0; i < dur; i++) {
+        let b = bits(i);
+        if (b < 1) b = 1;
+        if (b > 32) b = 32;
+        // half the levels either side of zero, so silence stays silent
+        let half = Math.pow(2, b) / 2;
+        data[i] = Math.round(wt.valueAtSample(i) * half) / half;
+      }
+      r.init();
+      return r;
+    },
+    "Rounds every sample in wt| to one of a smaller number of levels, the way an old sampler with |bits bits to spend would have measured it. Fewer bits is more crunch: 8 is a drum machine, 4 is a toy, 1 is a square wave of whatever went in. Defaults to 8, and takes a wave rather than a number if you want it to change while the sound plays. This is how finely each sample is measured -- sample-reduce is how often."
+  );
+
+  Builtin.createBuiltin(
+    "sample-reduce",
+    ["wt_", "hold#%_"],
+    function $sampleReduce(env, executionEnvironment) {
+      let wt = env.lb("wt");
+      let holdFor = lengthAt(env.lb("hold"));
+
+      /*
+      Held rather than resampled, because the aliasing is the whole point.
+      resample-by interpolates, which is the right thing there and removes
+      exactly the ringing that makes this sound like cheap hardware.
+      */
+      let dur = wt.getDuration();
+      let r = constructWavetable(dur);
+      let data = r.getData();
+      let held = 0;
+      let left = 0;
+      for (let i = 0; i < dur; i++) {
+        if (left <= 0) {
+          held = wt.valueAtSample(i);
+          let h = holdFor(i);
+          left += h > 1 ? h : 1;
+        }
+        data[i] = held;
+        left -= 1;
+      }
+      r.init();
+      return r;
+    },
+    "Holds each sample of wt| for |hold samples before looking at the next one, which is what a sound played back at a lower rate does. |hold tagged hz says the rate to drop to rather than the number of samples to hold, so 8000 hz is eight kilohertz whatever the wave was recorded at. Takes a wave rather than a number to make it move. Held rather than resampled on purpose: the aliasing is the sound, and resample-by interpolates it away. This is how often the sound is measured -- bitcrush is how finely."
+  );
+
   Builtin.createBuiltin(
     "reverse",
     ["wt_"],
@@ -1435,7 +1498,7 @@ function createWavetableBuiltins() {
 
   // per-sample delay in samples. A wave says it directly, since a wave has
   // nowhere to put a timebase tag -- build one with wave math to get a flanger.
-  function delayAt(nex) {
+  function lengthAt(nex) {
     if (nex.getTypeName() == "-wavetable-") {
       return function (i) {
         return nex.valueAtSample(i);
@@ -1494,7 +1557,7 @@ function createWavetableBuiltins() {
     let g = gnex == UNBOUND ? 0.5 : gnex.getTypedValue();
     if (g > 0.99) g = 0.99;
     if (g < -0.99) g = -0.99;
-    let delayAtSample = delayAt(timenex);
+    let delayAtSample = lengthAt(timenex);
 
     let dur = wt.getDuration();
     let wrap = hasCommandTag(commandTags, "wrap");
