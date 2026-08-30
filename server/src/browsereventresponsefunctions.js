@@ -28,6 +28,16 @@ function getParentNexOfDomElement(elt) {
 }
 
 function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
+	// ctrl-shift-click, and command-shift-click on a mac, selects whatever
+	// contains both this and what is already selected
+	if (atTarget && browserEvent.shiftKey
+			&& (browserEvent.ctrlKey || browserEvent.metaKey)) {
+		browserEvent.stopPropagation();
+		if (manipulator.multiSelect(renderNode)) {
+			eventQueueDispatcher.enqueueImportantTopLevelRender();
+		}
+		return;
+	}
 	if (nex.extraClickHandler) {
 		nex.extraClickHandler(browserEvent.clientX, browserEvent.clientY);
 		return;

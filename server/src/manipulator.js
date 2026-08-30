@@ -1443,6 +1443,81 @@ class Manipulator {
 		}
 	}
 
+	/*
+	Multiselect without a second selection model. Rather than holding two things
+	selected at once, ctrl-shift-click works out the one nex that contains both
+	of them and selects that -- which is usually a nex that already exists, so
+	nothing is disturbed.
+
+	The exception is when the two are in different top-level nexes, where the
+	only thing enclosing both is the document itself. Selecting the document
+	would be selecting everything, so an enclosure is made instead: a vertical
+	org around those two top-level nexes and everything between them.
+	*/
+	multiSelect(clickedNode) {
+		let a = systemState.getGlobalSelectedNode();
+		let b = clickedNode;
+		if (!a || !b || a == b) return false;
+		let root = systemState.getRoot();
+
+		let aChain = [];
+		for (let n = a; n; n = n.getParent()) aChain.push(n);
+		// the selection is not in the document at all, so there is nothing to
+		// find a common ancestor in
+		if (aChain.indexOf(root) == -1) return false;
+
+		let common = null;
+		for (let n = b; n; n = n.getParent()) {
+			if (aChain.indexOf(n) != -1) {
+				common = n;
+				break;
+			}
+		}
+		if (!common) return false;
+		if (common != root) {
+			common.setSelected();
+			return true;
+		}
+		return this._encloseTopLevelSpan(a, b, root);
+	}
+
+	_topLevelAncestor(node, root) {
+		for (let n = node; n; n = n.getParent()) {
+			if (n.getParent() == root) return n;
+		}
+		return null;
+	}
+
+	_encloseTopLevelSpan(a, b, root) {
+		let r1 = this._topLevelAncestor(a, root);
+		let r2 = this._topLevelAncestor(b, root);
+		if (!r1 || !r2 || r1 == r2) return false;
+
+		let from = Math.min(root.getIndexOfChild(r1), root.getIndexOfChild(r2));
+		let to = Math.max(root.getIndexOfChild(r1), root.getIndexOfChild(r2));
+
+		/*
+		Held across the move, because taking a nex out of the document is the
+		last reference to it letting go: without this the heap would free each
+		one and then have to reallocate it as it went back in.
+		*/
+		let taken = [];
+		for (let i = to; i >= from; i--) {
+			let child = root.getChildAt(i);
+			heap.addReference(child.getNex());
+			taken.unshift(root.removeChildAt(i));
+		}
+
+		let org = new RenderNode(constructOrg());
+		root.insertChildAt(org, from);
+		for (let i = 0; i < taken.length; i++) {
+			org.appendChild(taken[i]);
+			heap.removeReference(taken[i].getNex());
+		}
+		org.setSelected();
+		return true;
+	}
+
 	wrapSelectedInAndSelect(wrapperNode) {
 		let s = this.selected();
 		let p = s.getParent();
