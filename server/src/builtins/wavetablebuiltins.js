@@ -47,7 +47,7 @@ import {
   getSampleRate,
   getConstantSignalFromValue,
 } from "../wavetablefunctions.js";
-import { loopPlay, oneshotPlay, abortPlayback, endLoops } from "../webaudio.js";
+import { loopPlay, oneshotPlay, abortPlayback, endLoops, clipStartedPlaying } from "../webaudio.js";
 import { constructClip } from "../nex/clip.js";
 import { Tag } from "../tag.js";
 import { ERROR_TYPE_INFO } from "../nex/eerror.js";
@@ -127,7 +127,7 @@ function createWavetableBuiltins() {
   );
 
   Builtin.createBuiltin(
-    "loop-play",
+    "play",
     ["wt_", "channelsorclip?"],
     function $loopPlay(env, executionEnvironment) {
       let wt = env.lb("wt");
@@ -173,12 +173,19 @@ function createWavetableBuiltins() {
           "channel" + (channelnumbers.length == 1 ? " " : "s ") + channelnumbers.join(", ");
       if (clip) {
         clip.setIds(ids, what);
-        return clip;
+      } else {
+        clip = constructClip("audio loop", what, ids, endLoops, channelnumbers);
       }
-      return constructClip("audio loop", what, ids, endLoops, channelnumbers);
+      // the audio system owns it while it plays, and how long that lasts is
+      // decided by whether anything else owns it too
+      clipStartedPlaying(clip, ids);
+      return clip;
     },
-    "Starts playing wt| at the next measure start, and returns a clip naming the loop. |channelsorclip is either the channels to play on, or a clip returned by an earlier loop-play -- given a clip, the loop it names is replaced at the next measure start, staying on the channels it is already on, and you get the same clip back. If it is not provided, the sound is played on the first 2 channels. If it and/or |wt are lists, Vodka will do its best to match up sounds with channels."
+    "Starts playing wt| at the next measure start, and returns a clip naming it. It plays for as long as something holds that clip: keep the clip and it loops, throw it away and it plays once, delete it and it stops at the end of the pass it is in. |channelsorclip is either the channels to play on, or a clip returned by an earlier loop-play -- given a clip, the loop it names is replaced at the next measure start, staying on the channels it is already on, and you get the same clip back. If it is not provided, the sound is played on the first 2 channels. If it and/or |wt are lists, Vodka will do its best to match up sounds with channels."
   );
+
+  // what it was called before it could do both
+  Builtin.aliasBuiltin("loop-play", "play");
 
   Builtin.createBuiltin(
     "start-recording",
