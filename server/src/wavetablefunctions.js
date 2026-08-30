@@ -209,6 +209,11 @@ function numSamplesForNoteNum(n) {
 	return Math.round(getSampleRate() / fn);
 }
 
+function frequencyToNoteNum(f) {
+	if (f <= 0) return 0;
+	return REFERENCE_NOTE + (Math.log(f / REFERENCE_NOTE_FREQ) / Math.log(1.059463094359));
+}
+
 function nexToValuebase(input) {
 	let onebase = input.hasTag(newTagOrThrowOOM('onebase', 'changing wavetable timebase')) || input.hasTag(newTagOrThrowOOM('1', 'changing wavetable timebase'))
 	let note = input.hasTag(newTagOrThrowOOM('n', 'changing wavetable timebase')) || input.hasTag(newTagOrThrowOOM('note', 'changing wavetable timebase'));
@@ -274,7 +279,8 @@ export { getSampleRate,
 		 getDefaultTimebase,
 		 convertValueFromTag,
 		 getConstantSignalFromValue,
-		 getReferenceFrequency
+		 getReferenceFrequency,
+		 frequencyToNoteNum
 		}
 
 
