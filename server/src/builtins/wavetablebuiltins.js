@@ -143,7 +143,7 @@ function createWavetableBuiltins() {
 
       if (arg != UNBOUND && Utils.isClip(arg)) {
         if (arg.getKind() != "audio loop") {
-          return constructFatalError("loop-play: that is not an audio clip. Sorry!");
+          return constructFatalError("play: that is not an audio clip. Sorry!");
         }
         clip = arg;
         channelnumbers = clip.getChannels();
@@ -174,7 +174,7 @@ function createWavetableBuiltins() {
       clipStartedPlaying(clip, ids);
       return clip;
     },
-    "Starts playing wt| at the next measure start, and returns a clip naming it. It plays for as long as something holds that clip: keep the clip and it loops, throw it away and it plays once, delete it and it stops at the end of the pass it is in. |channelsorclip is either the channels to play on, or a clip returned by an earlier loop-play -- given a clip, the loop it names is replaced at the next measure start, staying on the channels it is already on, and you get the same clip back. If it is not provided, the sound is played on the first 2 channels. If it and/or |wt are lists, Vodka will do its best to match up sounds with channels."
+    "Starts playing wt| at the next measure start, and returns a clip naming it. It plays for as long as something holds that clip: keep the clip and it loops, throw it away and it plays once, delete it and it stops at the end of the pass it is in. |channelsorclip is either the channels to play on, or a clip returned by an earlier play -- given a clip, the loop it names is replaced at the next measure start, staying on the channels it is already on, and you get the same clip back. If it is not provided, the sound is played on the first 2 channels. If it and/or |wt are lists, Vodka will do its best to match up sounds with channels."
   );
 
   // what it was called before it could do both

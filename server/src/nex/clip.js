@@ -17,7 +17,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Nex } from './nex.js'
 import { heap } from '../heap.js'
-import { getLoopPositionSamples } from '../webaudio.js'
+import { getLoopPositionSamples, loopExists } from '../webaudio.js'
+import { getMidiLastNote } from '../midifunctions.js'
 
 /*
 A clip is a running loop -- audio or midi -- as something you can hold. Made by
@@ -27,7 +28,7 @@ than like a value.
 It holds ids rather than the sound itself, plus whatever else describes the
 loop: which channels it is on, how to end it. Deleting a clip stops it.
 
-Passing a clip back to loop-play replaces what it names rather than starting
+Passing a clip back to play replaces what it names rather than starting
 something alongside it, which is what lets an expression be re-evaluated in
 place. A clip is not a generic handle: it names a loop and nothing else.
 */
@@ -171,10 +172,18 @@ class Clip extends Nex {
 		this.startPositionCounter();
 	}
 
+	isMidi() {
+		return this.kind == 'midi loop';
+	}
+
 	/*
 	The counter writes one string into its own span, so it never asks the
 	document to render -- watching a clip count samples must not cost anything
 	that editing would notice.
+
+	An audio clip counts samples, because that is what it is playing. A midi
+	clip has no position of its own -- it sends messages and the sound is made
+	somewhere else -- so it shows the last note it played instead.
 	*/
 	startPositionCounter() {
 		if (this.posFrame) return;
@@ -185,15 +194,23 @@ class Clip extends Nex {
 				this.showPosition(-1);
 				return;
 			}
-			let pos = this.ids.length ? getLoopPositionSamples(this.ids[0]) : -1;
+			let alive = this.ids.length && loopExists(this.ids[0]);
+			let pos = -1;
+			if (alive) {
+				pos = this.isMidi()
+						? getMidiLastNote(this.ids[0])
+						: getLoopPositionSamples(this.ids[0]);
+			}
 			this.showPosition(pos);
 			// stopped from somewhere else, like the stop button -- give up
-			// rather than spin for the rest of the session
-			if (pos < 0 && ++quiet > 60) {
+			// rather than spin for the rest of the session. Having no position
+			// is not that: a loop waiting for the boundary is still ours, and a
+			// midi loop has no note to show until its first one goes past.
+			if (!alive && ++quiet > 60) {
 				this.posFrame = null;
 				return;
 			}
-			if (pos >= 0) quiet = 0;
+			if (alive) quiet = 0;
 			this.posFrame = window.requestAnimationFrame(step);
 		};
 		this.posFrame = window.requestAnimationFrame(step);
@@ -201,7 +218,11 @@ class Clip extends Nex {
 
 	showPosition(pos) {
 		if (!this.posSpan) return;
-		this.posSpan.textContent = pos < 0 ? '--' : (pos + ' samps');
+		if (pos < 0) {
+			this.posSpan.textContent = '--';
+			return;
+		}
+		this.posSpan.textContent = this.isMidi() ? ('note ' + pos) : (pos + ' samps');
 	}
 
 	getDefaultHandler() {

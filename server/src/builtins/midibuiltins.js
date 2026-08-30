@@ -16,7 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Builtin } from '../nex/builtin.js'; 
-import { getMidiPorts, openMidiPort, isPortOpen, addMidiSequence, replaceMidiSequence, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
+import { getMidiPorts, openMidiPort, isPortOpen, addMidiSequence, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
 		 sendMidiNoteWithDuration } from '../midifunctions.js'
 import { convertTimeToSamples, nexToTimebase, getSampleRate } from '../wavetablefunctions.js'
 import { constructClip } from '../nex/clip.js'
@@ -124,39 +124,39 @@ function createMidiBuiltins() {
 
 
 	/*
-	Reads one note out of a loop-midi list. Same shape send-midi-note takes,
+	Reads one note out of a play-midi list. Same shape send-midi-note takes,
 	plus a float tagged `time` saying where in the sequence it goes.
 	*/
 	function readSequenceNote(n) {
 		let kind = null;
 		let notenum = null;
 		for (let k of ['note', 'note-on', 'note-off']) {
-			let v = taggedInt(n, k, 'loop-midi');
+			let v = taggedInt(n, k, 'play-midi');
 			if (v !== null) { kind = k; notenum = v; break; }
 		}
 		if (kind == null) {
-			return { error: 'loop-midi: needs an int tagged note, note-on or note-off. Sorry!' };
+			return { error: 'play-midi: needs an int tagged note, note-on or note-off. Sorry!' };
 		}
 		if (kind != 'note') {
-			return { error: 'loop-midi: every note needs a duration, so tag it note. Sorry!' };
+			return { error: 'play-midi: every note needs a duration, so tag it note. Sorry!' };
 		}
 		if (notenum < 0 || notenum > 127) {
-			return { error: `loop-midi: ${notenum} is not a note (0-127). Sorry!` };
+			return { error: `play-midi: ${notenum} is not a note (0-127). Sorry!` };
 		}
-		let timenex = n.getChildTagged(newTagOrThrowOOM('time', 'loop midi, time'));
+		let timenex = n.getChildTagged(newTagOrThrowOOM('time', 'play midi, time'));
 		if (!timenex) {
-			return { error: 'loop-midi: every note needs a float tagged time. Sorry!' };
+			return { error: 'play-midi: every note needs a float tagged time. Sorry!' };
 		}
-		let durnex = n.getChildTagged(newTagOrThrowOOM('duration', 'loop midi, duration'));
+		let durnex = n.getChildTagged(newTagOrThrowOOM('duration', 'play midi, duration'));
 		if (!durnex) {
-			return { error: 'loop-midi: every note needs a duration. Sorry!' };
+			return { error: 'play-midi: every note needs a duration. Sorry!' };
 		}
-		let velocity = taggedInt(n, 'velocity', 'loop-midi');
+		let velocity = taggedInt(n, 'velocity', 'play-midi');
 		if (velocity == null) velocity = 127;
-		let channel = taggedInt(n, 'channel', 'loop-midi');
+		let channel = taggedInt(n, 'channel', 'play-midi');
 		if (channel == null) channel = 1;
 		if (channel < 1 || channel > 16) {
-			return { error: `loop-midi: no channel ${channel} (1-16). Sorry!` };
+			return { error: `play-midi: no channel ${channel} (1-16). Sorry!` };
 		}
 		let durTimebase = nexToTimebase(durnex);
 		return {
@@ -171,11 +171,11 @@ function createMidiBuiltins() {
 	}
 
 	Builtin.createBuiltin(
-		'loop-midi on',
+		'play-midi on',
 		[ 'seq()', 'port()', 'clip?' ],
-		function $loopMidi(env, executionEnvironment) {
+		function $playMidi(env, executionEnvironment) {
 			let list = env.lb('seq');
-			let port = portIdOrError(env.lb('port'), 'loop-midi');
+			let port = portIdOrError(env.lb('port'), 'play-midi');
 			if (port.error) return port.error;
 
 			let events = [];
@@ -193,7 +193,7 @@ function createMidiBuiltins() {
 				events.push(e);
 			}
 			if (events.length == 0) {
-				return constructFatalError('loop-midi: nothing to play. Sorry!');
+				return constructFatalError('play-midi: nothing to play. Sorry!');
 			}
 
 			// The sequence is as long as its last note nominally ends, plus the
@@ -206,32 +206,39 @@ function createMidiBuiltins() {
 			}
 			let lengthSeconds = nominalEnd + spacerSeconds;
 
-			let what = 'midi loop, ' + events.length + ' note' + (events.length == 1 ? '' : 's');
+			// the clip already says it is midi, so this says what is in it
+			let what = events.length + ' note' + (events.length == 1 ? '' : 's');
 
 			// Handed a clip, replace what it names rather than starting a
 			// second loop alongside it.
-			let clip = env.lb('clip');
-			if (clip != UNBOUND) {
-				if (!Utils.isClip(clip) || clip.getKind() != 'midi loop') {
-					return constructFatalError('loop-midi: that is not a midi clip. Sorry!');
+			let arg = env.lb('clip');
+			let clip = null;
+			if (arg != UNBOUND) {
+				if (!Utils.isClip(arg) || arg.getKind() != 'midi loop') {
+					return constructFatalError('play-midi: that is not a midi clip. Sorry!');
 				}
-				let ids = clip.getIds();
-				if (ids.length != 1
-						|| !replaceMidiSequence(ids[0], port.id, events, lengthSeconds)) {
-					return constructFatalError('loop-midi: that loop already ended. Sorry!');
-				}
-				clip.setIds(ids, what);
-				clipStartedPlaying(clip, ids);
-				return clip;
+				clip = arg;
+				// Out at the boundary and back in at the same one, the way an
+				// audio loop is replaced. Stopping the old sequence now instead
+				// would send its note offs early and cut a note that is sounding.
+				endLoops(clip.getIds(), true /* at the cycle end */);
 			}
 
 			let id = addMidiSequence(port.id, events, lengthSeconds);
-			let newclip = constructClip('midi loop', what, [ id ], endLoops);
-			clipStartedPlaying(newclip, [ id ]);
-			return newclip;
+			if (clip) {
+				clip.setIds([ id ], what);
+			} else {
+				clip = constructClip('midi loop', what, [ id ], endLoops);
+			}
+			// the midi system owns it while it plays, and how long that lasts is
+			// decided by whether anything else owns it too
+			clipStartedPlaying(clip, [ id ]);
+			return clip;
 		},
-		'Plays a list of midi notes in a loop on |port, joining the global cycle at its next boundary. Each note is what send-midi-note takes, with a float tagged time saying where in the sequence it falls. A bare number at the end of the list is the gap before the sequence repeats. Returns a clip, which ends the loop when it is deleted, or at the next boundary if passed to end-seq. Passing that clip back in |clip replaces what it is playing rather than starting a second loop.'
+		'Plays a list of midi notes in a loop on |port, joining the global cycle at its next boundary, and returns a clip naming it. Each note is what send-midi-note takes, with a float tagged time saying where in the sequence it falls. A bare number at the end of the list is the gap before the sequence repeats. The loop plays for as long as something holds the clip: keep the clip and it loops, throw it away and it plays once, delete it and it stops at the end of the pass it is in. Passing that clip back in |clip replaces what it is playing at the next boundary rather than starting a second loop, and you get the same clip back.'
 	);
+
+	Builtin.aliasBuiltin('loop-midi on', 'play-midi on');
 
 	Builtin.createBuiltin(
 		'send-midi-data on',
