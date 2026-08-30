@@ -229,6 +229,7 @@ function createWaveMathBuiltins() {
 	unary('wfloor', Math.floor, 'Every sample rounded down.');
 	unary('wceiling', Math.ceil, 'Every sample rounded up.');
 	unary('wround', Math.round, 'Every sample rounded to the nearest whole number.');
+	unary('wabs', Math.abs, 'The absolute value of every sample, so anything below zero is flipped above it.');
 
 	binary('watan2', Math.atan2, true,
 		'The arctangent of |lhs over |rhs, sample by sample, in radians.');
@@ -239,10 +240,19 @@ function createWaveMathBuiltins() {
 	binary('wmodulo', function(a, b) { return a % b; }, false,
 		'The remainder of |lhs divided by |rhs, sample by sample.');
 
-	// These predate the w names and did exactly this, so they stay as the
-	// names people already have in their documents.
+	/*
+	These predate the w names and did exactly this a sample at a time, so they
+	stay as the names people already have in their documents rather than as
+	four more copies of the same loop.
+
+	offset gains a fix by becoming an alias: its loop started at sample 1, so
+	the first sample of anything it returned was always zero.
+	*/
 	Builtin.aliasBuiltin('mix', 'w+');
 	Builtin.aliasBuiltin('gain', 'w*');
+	Builtin.aliasBuiltin('offset', 'w+');
+	Builtin.aliasBuiltin('invert', 'w-');
+	Builtin.aliasBuiltin('full-rectify', 'wabs');
 }
 
 export { createWaveMathBuiltins }

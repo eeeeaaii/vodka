@@ -366,6 +366,18 @@ function createMathBuiltins() {
 
 
 	Builtin.createBuiltin(
+		'abs',
+		[ 'arg#%' ],
+		function $abs(env, executionEnvironment) {
+			let arg = env.lb('arg');
+			let a = Math.abs(arg.getTypedValue());
+			return Utils.isFloat(arg) ? constructFloat(a) : constructInteger(a);
+		},
+		'The absolute value of |arg, so a negative number comes back positive.'
+	);
+
+
+	Builtin.createBuiltin(
 		'floor',
 		[ 'arg%' ],
 		function $floor(env, executionEnvironment) {
