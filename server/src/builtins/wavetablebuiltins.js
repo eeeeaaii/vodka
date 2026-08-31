@@ -252,6 +252,46 @@ function createWavetableBuiltins() {
   );
 
   Builtin.createBuiltin(
+    "wave-to-samples",
+    ["wt_"],
+    function $waveToSamples(env, executionEnvironment) {
+      let wt = env.lb("wt");
+      let data = wt.getData();
+      let r = constructOrg();
+      for (let i = 0; i < data.length; i++) {
+        r.appendChild(constructFloat(data[i]));
+      }
+      return r;
+    },
+    "Turns wt| into an org holding one float for every sample. A second of audio is tens of thousands of samples, so this is meant for short waves."
+  );
+
+  Builtin.createBuiltin(
+    "samples-to-wave",
+    ["samples()"],
+    function $samplesToWave(env, executionEnvironment) {
+      let samples = env.lb("samples");
+      let n = samples.numChildren();
+      if (n == 0) {
+        return constructFatalError("samples-to-wave: nothing to make a wave out of. Sorry!");
+      }
+      let r = constructWavetable(n);
+      let data = r.getData();
+      for (let i = 0; i < n; i++) {
+        let c = samples.getChildAt(i);
+        if (!Utils.isFloat(c) && !Utils.isInteger(c)) {
+          return constructFatalError(
+              "samples-to-wave: item " + (i + 1) + " is not a number. Sorry!");
+        }
+        data[i] = c.getTypedValue();
+      }
+      r.init();
+      return r;
+    },
+    "Turns |samples, an org of numbers, into a wavetable one sample long for each of them. The reverse of wave-to-samples."
+  );
+
+  Builtin.createBuiltin(
     "wavefold",
     ["wt_"],
     function $reverse(env, executionEnvironment) {
@@ -887,75 +927,6 @@ function createWavetableBuiltins() {
   );
 
   Builtin.createBuiltin(
-    "full-rectify",
-    ["wt_"],
-    function $fullrectify(env, executionEnvironment) {
-      let wt = env.lb("wt");
-
-      let dur = wt.getDuration();
-      let r = constructWavetable(dur);
-      let data = r.getData();
-      for (let i = 0; i < wt.getDuration(); i++) {
-        let val = wt.valueAtSample(i);
-        if (val >= 0) {
-          data[i] = val;
-        } else {
-          data[i] = -val;
-        }
-      }
-      r.init();
-      return r;
-    },
-    "Inverts just the negative signal values in |wt, leaving positive values alone."
-  );
-
-  Builtin.createBuiltin(
-    "invert",
-    ["wt_"],
-    function $invert(env, executionEnvironment) {
-      let wt = env.lb("wt");
-
-      let dur = wt.getDuration();
-      let r = constructWavetable(dur);
-      let data = r.getData();
-      for (let i = 0; i < wt.getDuration(); i++) {
-        let val = wt.valueAtSample(i);
-        data[i] = -val;
-      }
-      r.init();
-      return r;
-    },
-    "Inverts the sign of all values in |wt, making positive negative and negative positive."
-  );
-
-  Builtin.createBuiltin(
-    "offset",
-    ["wt_", "amt#%_"],
-    function $offset(env, executionEnvironment) {
-      let wt = env.lb("wt");
-      let amt = env.lb("amt");
-
-      if (!(amt.getTypeName() == "-wavetable-")) {
-        amt = getConstantSignalFromValue(amt.getTypedValue(), wt.getDuration());
-        sAttach(amt);
-      }
-
-      let dur = Math.max(wt.getDuration(), amt.getDuration());
-      let r = constructWavetable(dur);
-      let data = r.getData();
-
-      for (let i = 1; i < dur; i++) {
-        let val = wt.valueAtSample(i);
-        let offset = amt.valueAtSample(i);
-        data[i] = val + offset;
-      }
-      r.init();
-      return r;
-    },
-    "Offsets the signal value of |wt by |amt (note that |amt can be another wavetable)."
-  );
-
-  Builtin.createBuiltin(
     "phase-shift",
     ["wt_", "amt#%_"],
     function $offset(env, executionEnvironment) {
@@ -982,47 +953,6 @@ function createWavetableBuiltins() {
       return r;
     },
     'phase shifts the signal by |amt. The length of |wt is considered to be one "cycle" (even if it is a complex waveform). The values for |amt should range from 1.0 (full cycle shift forward) to -1.0 (full cycle shift backward). A wavetable can be passed in for |amt.'
-  );
-
-  Builtin.createBuiltin(
-    "gain",
-    ["wtlst#%_..."],
-    function $gain(env, executionEnvironment) {
-      let wtlst = env.lb("wtlst");
-
-      // if the first arg to wtlst is a list instead of a wt, use it
-      if (wtlst.numChildren() == 1 && wtlst.getChildAt(0).isNexContainer()) {
-        wtlst = wtlst.getChildAt(0);
-      }
-
-      let waves = [];
-
-      let dur = 0;
-      for (let i = 0; i < wtlst.numChildren(); i++) {
-        let c = wtlst.getChildAt(i);
-        if (!(c.getTypeName() == "-wavetable-")) {
-          c = getConstantSignalFromValue(c.getTypedValue());
-        }
-        let d = c.getDuration();
-        if (d > dur) {
-          dur = d;
-        }
-        waves.push(c);
-      }
-      let r = constructWavetable(dur);
-      let data = r.getData();
-
-      for (let i = 0; i < dur; i++) {
-        let v = 1;
-        for (let j = 0; j < waves.length; j++) {
-          v *= waves[j].valueAtSample(i);
-        }
-        data[i] = v;
-      }
-      r.init();
-      return r;
-    },
-    "Multiplies together all the passed in numbers or waves"
   );
 
   Builtin.createBuiltin(
@@ -1217,47 +1147,6 @@ function createWavetableBuiltins() {
   );
 
   Builtin.createBuiltin(
-    "mix",
-    ["wtlst#%_..."],
-    function $mix(env, executionEnvironment) {
-      let wtlst = env.lb("wtlst");
-
-      // if the first arg to wtlst is a list instead of a wt, use it
-      if (wtlst.numChildren() == 1 && wtlst.getChildAt(0).isNexContainer()) {
-        wtlst = wtlst.getChildAt(0);
-      }
-
-      let waves = [];
-
-      let dur = 0;
-      for (let i = 0; i < wtlst.numChildren(); i++) {
-        let c = wtlst.getChildAt(i);
-        if (!(c.getTypeName() == "-wavetable-")) {
-          c = getConstantSignalFromValue(c.getTypedValue());
-        }
-        let d = c.getDuration();
-        if (d > dur) {
-          dur = d;
-        }
-        waves.push(c);
-      }
-
-      let r = constructWavetable(dur);
-      let data = r.getData();
-      for (let i = 0; i < dur; i++) {
-        let v = 0;
-        for (let j = 0; j < waves.length; j++) {
-          v += waves[j].valueAtSample(i);
-        }
-        data[i] = v;
-      }
-      r.init();
-      return r;
-    },
-    "Mixes together all the wavetables passed in"
-  );
-
-  Builtin.createBuiltin(
     "loop-for",
     ["wt#%_", "len%#?"],
     function $loopFor(env, executionEnvironment) {
@@ -1416,6 +1305,71 @@ function createWavetableBuiltins() {
       return constructInteger(Math.round(ms));
     },
     "Returns the length of |len in whole milliseconds, rounded. |len takes a timebase tag like any other length, so this is how a length in beats becomes a number that something outside the audio system can use."
+  );
+
+  /*
+  A slice point can be tagged the way any other length can, and additionally
+  with of-total, which reads it as a fraction of this particular wave: 0.5
+  of-total is halfway along whatever you passed in. A tag on the list applies
+  to every point in it, so you do not have to tag them one at a time.
+  */
+  function hasTagNamed(nex, name) {
+    for (let i = 0; i < nex.numTags(); i++) {
+      if (nex.getTag(i).getTagString() == name) return true;
+    }
+    return false;
+  }
+
+  function slicePointToSamples(point, list, total) {
+    if (hasTagNamed(point, "of-total") || (list && hasTagNamed(list, "of-total"))) {
+      return Math.round(point.getTypedValue() * total);
+    }
+    let timebase = null;
+    if (point.numTags() > 0) {
+      timebase = nexToTimebase(point);
+    } else if (list && list.numTags() > 0) {
+      timebase = nexToTimebase(list);
+    }
+    return convertTimeToSamples(point, timebase);
+  }
+
+  Builtin.createBuiltin(
+    "slice-at",
+    ["wt_", "points#%()"],
+    function $sliceAt(env, executionEnvironment) {
+      let wt = env.lb("wt");
+      let points = env.lb("points");
+      let total = wt.getDuration();
+
+      let list = Utils.isNexContainer(points) ? points : null;
+      let each = list ? [] : [points];
+      for (let i = 0; list && i < list.numChildren(); i++) {
+        each.push(list.getChildAt(i));
+      }
+
+      let marks = [];
+      for (let i = 0; i < each.length; i++) {
+        let at = slicePointToSamples(each[i], list, total);
+        // the same range the editor enforces: a slice at either end would make
+        // an empty section
+        if (!(at >= 1 && at <= total - 1)) {
+          return constructFatalError(
+              "slice-at: slice point " + at + " is not inside the wave. Sorry!");
+        }
+        marks.push(at);
+      }
+
+      let r = wt.makeCopy();
+      for (let i = 0; i < marks.length; i++) {
+        if (r.markers.indexOf(marks[i]) == -1) {
+          r.markers.push(marks[i]);
+        }
+      }
+      r.markers.sort(function(a, b) { return a - b; });
+      r.cacheSections();
+      return r;
+    },
+    "Returns a copy of wt| with breakpoints at |points, the same breakpoints you get by pressing v while editing a wave. |points is one number or a list of them, and n of them give n+1 slices. They are lengths, so they can be tagged with a timebase, and additionally with of-total to read them as a fraction of this wave -- 0.5 of-total is halfway along. A tag on the list applies to every point in it."
   );
 
   Builtin.createBuiltin(
