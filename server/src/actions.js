@@ -427,6 +427,38 @@ class TriviallyUndoableKeyResponseFunctionAction extends Action {
 }
 
 
+/*
+The only click that changes the document, so the only one that has to be an
+action. It is built and enqueued directly rather than coming from the factory,
+which is keyed on the name of a keystroke.
+
+The plan is worked out before the action is made, so a click with no answer
+never becomes an undo entry, and redo can apply the same plan again rather than
+recomputing it from a selection that has since moved.
+*/
+class MultiSelectAction extends Action {
+	constructor(plan) {
+		super('multi-select');
+		this.plan = plan;
+	}
+
+	canUndo() {
+		return true;
+	}
+
+	doAction() {
+		this.previousSelection = systemState.getGlobalSelectedNode();
+		this.org = manipulator.applyMultiSelect(this.plan);
+	}
+
+	undoAction() {
+		manipulator.unapplyMultiSelect(this.plan, this.org);
+		if (this.previousSelection) {
+			this.previousSelection.setSelected();
+		}
+	}
+}
+
 class DeleteNexAction extends Action {
 	constructor(actionName) {
 		super(actionName);
@@ -732,4 +764,4 @@ function actionFactory(actionName, eventName) {
 
 
 
-export { actionFactory, enqueueAndPerformAction, undo, redo }
+export { actionFactory, enqueueAndPerformAction, MultiSelectAction, undo, redo }
