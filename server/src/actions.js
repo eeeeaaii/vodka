@@ -30,6 +30,13 @@ let nextPosition = 0;
 let queueBottom = 0;
 let queueTop = 0;
 let numItemsInQueue = 0;
+/*
+How far back undo has walked. Needed because the ring cannot say on its own:
+once the buffer is full, nextPosition and queueBottom are the same slot whether
+there are fifty things to undo or none, and undo walked straight past the
+bottom and undid already-undone actions a second time.
+*/
+let undosDeep = 0;
 
 function advance(queuePos) {
 	return (queuePos + 1) % levelsOfUndo;
@@ -110,8 +117,21 @@ function enqueueAndPerformAction(action) {
 			numItemsInQueue++;
 		}
 	} else {
+		/*
+		Acting after an undo abandons everything ahead of us. Those entries
+		describe a document that no longer exists, and redo would replay them
+		onto this one -- the comment above claimed overwriting the slot covered
+		it, but only this one slot is overwritten, not the rest of the tail.
+		*/
 		nextPosition = advance(nextPosition);
+		for (let p = nextPosition; p != queueTop; p = advance(p)) {
+			releaseActionNexes(actionStack[p]);
+			actionStack[p] = null;
+			numItemsInQueue--;
+		}
+		queueTop = nextPosition;
 	}
+	undosDeep = 0;
 	action.doAction();
 	// after doAction, which is where an action captures what it is holding
 	retainActionNexes(action);
@@ -123,6 +143,7 @@ function redo() {
 	if (nextPosition != queueTop) {
 		actionStack[nextPosition].doAction();
 		nextPosition = advance(nextPosition);
+		undosDeep--;
 		scheduleAutosave(systemState.getRoot());
 	} else {
 		console.log('cannot redo');
@@ -130,9 +151,17 @@ function redo() {
 }
 
 function undo() {
+	// nothing recorded yet, or undo has already reached the oldest thing the
+	// buffer still holds. Without this, the first ctrl-z of a session reads an
+	// empty slot and throws.
+	if (undosDeep >= numItemsInQueue) {
+		console.log('cannot undo');
+		return;
+	}
 	let pos = retreat(nextPosition);
-	if (actionStack[pos].canUndo()) {
+	if (actionStack[pos] && actionStack[pos].canUndo()) {
 		nextPosition = pos;
+		undosDeep++;
 		actionStack[nextPosition].undoAction();
 		scheduleAutosave(systemState.getRoot());
 	} else {
