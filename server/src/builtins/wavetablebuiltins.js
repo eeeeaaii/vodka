@@ -1571,6 +1571,125 @@ function createWavetableBuiltins() {
   );
 
   /*
+  A bank of combs into a chain of allpasses, which is the shape every
+  algorithmic reverb has had since Schroeder, with Freeverb's delay lengths and
+  its damping. Eight combs at lengths that share no common factor make the
+  echoes dense enough to stop being heard as echoes; the allpasses then smear
+  what is left so that nothing rings at a pitch of its own.
+
+  Convolution gets you a more faithful room than this ever will, and you have
+  that already. This is for when you have no impulse response to hand, and for
+  the things convolution cannot do -- a tail you can make longer or darker by
+  changing a number.
+  */
+  const REVERB_COMBS = [1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617];
+  const REVERB_ALLPASSES = [556, 441, 341, 225];
+  // the lengths above were chosen at this rate, so they are scaled from it
+  const REVERB_TUNED_AT = 44100;
+  // eight combs at that feedback multiply up, and this brings the wet signal
+  // back to about the level it came in at
+  const REVERB_INPUT_GAIN = 0.045;
+
+  function zeroToOne(nex, dflt) {
+    if (nex == UNBOUND) return dflt;
+    let v = nex.getTypedValue();
+    if (v < 0) return 0;
+    if (v > 1) return 1;
+    return v;
+  }
+
+  Builtin.createBuiltin(
+    "reverb",
+    ["wt_", "size#%?", "mix#%?", "damping#%?"],
+    function $reverb(env, executionEnvironment, commandTags) {
+      let wt = env.lb("wt");
+      let size = zeroToOne(env.lb("size"), 0.5);
+      let mix = zeroToOne(env.lb("mix"), 0.3);
+      let damping = zeroToOne(env.lb("damping"), 0.5);
+
+      let scale = getSampleRate() / REVERB_TUNED_AT;
+      let combLen = [];
+      let allpassLen = [];
+      for (let i = 0; i < REVERB_COMBS.length; i++) {
+        combLen.push(Math.max(1, Math.round(REVERB_COMBS[i] * scale)));
+      }
+      for (let i = 0; i < REVERB_ALLPASSES.length; i++) {
+        allpassLen.push(Math.max(1, Math.round(REVERB_ALLPASSES[i] * scale)));
+      }
+
+      // size is the tail length, damping is how fast the high end of it dies
+      let feedback = 0.7 + 0.28 * size;
+      let damp = 0.4 * damping;
+      let longest = combLen[combLen.length - 1];
+
+      let dur = wt.getDuration();
+      let wrap = hasCommandTag(commandTags, "wrap");
+      let outDur = wrap ? dur : dur + decayTailSamples(feedback, longest);
+      if (outDur < 1) outDur = dur;
+
+      let r = constructWavetable(outDur);
+      let data = r.getData();
+
+      let combBuf = [];
+      let combAt = [];
+      let combStore = [];
+      for (let k = 0; k < combLen.length; k++) {
+        combBuf.push(new Float64Array(combLen[k]));
+        combAt.push(0);
+        combStore.push(0);
+      }
+      let apBuf = [];
+      let apAt = [];
+      for (let j = 0; j < allpassLen.length; j++) {
+        apBuf.push(new Float64Array(allpassLen[j]));
+        apAt.push(0);
+      }
+
+      let passes = wrap ? chargePasses(feedback, longest, dur) : 1;
+      let previous = passes > 1 ? new Float64Array(outDur) : null;
+
+      for (let p = 0; p < passes; p++) {
+        for (let i = 0; i < outDur; i++) {
+          let dry = i < dur ? wt.valueAtSample(i) : 0;
+          let input = dry * REVERB_INPUT_GAIN;
+
+          let wet = 0;
+          for (let k = 0; k < combBuf.length; k++) {
+            let out = combBuf[k][combAt[k]];
+            // one pole lowpass inside the loop, so each time round is duller
+            // than the last -- which is what a room does
+            combStore[k] = out * (1 - damp) + combStore[k] * damp;
+            combBuf[k][combAt[k]] = input + combStore[k] * feedback;
+            combAt[k] = (combAt[k] + 1) % combBuf[k].length;
+            wet += out;
+          }
+          for (let j = 0; j < apBuf.length; j++) {
+            let bufout = apBuf[j][apAt[j]];
+            apBuf[j][apAt[j]] = wet + bufout * 0.5;
+            apAt[j] = (apAt[j] + 1) % apBuf[j].length;
+            wet = bufout - wet;
+          }
+
+          data[i] = dry * (1 - mix) + wet * mix;
+        }
+        if (!previous) break;
+        if (p > 0) {
+          let worst = 0;
+          for (let i = 0; i < outDur; i++) {
+            let diff = Math.abs(data[i] - previous[i]);
+            if (diff > worst) worst = diff;
+          }
+          if (worst < 0.00001) break;
+        }
+        previous.set(data);
+      }
+      r.init();
+      return r;
+    },
+    "Puts wt| in a room. |size is how big the room is, |mix how much of it you hear against the dry sound, and |damping how quickly the bright part of the tail dies away -- all three run 0 to 1, and default to a half, a third and a half. Tag the command with wrap to keep the original length and have the tail come round to the beginning, which for a wave you are going to loop sounds like it has been playing in the room all along; without it the wave gets longer to make room for the tail. convolve gives you a more faithful room if you have an impulse response for one; this is for when you do not, and for a tail you want to change by changing a number."
+  );
+
+  /*
   Measured over a window that slides along the wave, so what comes back is a
   wave itself: how loud the sound is as it goes, rather than one number for the
   whole thing. Ask without a window and you get the one number instead, since
