@@ -145,11 +145,29 @@ class Heap {
           "was subsequently added, so memory will be reallocated."
       );
       this.requestMem(obj.memUsed());
+      // it is not freed any more, and saying so is what lets it be freed again
+      // later -- otherwise the flag above would refuse forever
+      obj.wasFreed = false;
+      obj.memAllocated = true;
     }
     obj.references++;
   }
 
+  /*
+  Freeing twice takes the memory off twice, which walks usedSpace down to
+  negative and makes freeMem throw, and runs cleanupOnMemoryFree twice -- a
+  clip ended again, a wavetable told to drop samples it has already dropped, an
+  environment's reference removed a second time.
+
+  It happens because an action performs its delete before the undo buffer takes
+  hold of what was deleted. For that moment nothing at all holds the nex, so it
+  is freed there and then, and freed again later when the action falls out of
+  the buffer.
+  */
   free(obj) {
+    if (obj.wasFreed) {
+      return;
+    }
     this.freeMem(obj.memUsed());
     obj.cleanupOnMemoryFree();
     obj.memAllocated = false;
