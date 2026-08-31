@@ -94,14 +94,13 @@ class Clip extends Nex {
 		return this.ended;
 	}
 
-	// Deleting a clip stops it, with no waiting -- the point of deleting a
-	// thing is that it goes away. This cannot wait for the clip to be freed:
-	// undo holds on to what you deleted, so being freed can be a long way off.
-	onDeletedFromDocument() {
-		this.end(false /* now, not at the cycle boundary */);
-	}
-
-	// and if it is still playing when it finally does go, stop it then
+	/*
+	Deleting a clip does not stop it here. The document lets go of it, which
+	is the whole story: at the next boundary the audio system finds it is the
+	only one left holding it and does not schedule another pass. So a deleted
+	clip finishes what it is playing rather than being cut off, and that is
+	the same rule that makes a thrown-away clip play once.
+	*/
 	cleanupOnMemoryFree() {
 		this.end(false);
 	}

@@ -21,7 +21,7 @@ import { getMidiPorts, openMidiPort, isPortOpen, addMidiSequence, replaceMidiSeq
 import { convertTimeToSamples, nexToTimebase, getSampleRate } from '../wavetablefunctions.js'
 import { constructClip } from '../nex/clip.js'
 import * as Utils from '../utils.js'
-import { endLoops } from '../webaudio.js'
+import { endLoops, clipStartedPlaying } from '../webaudio.js'
 import { UNBOUND } from '../environment.js'
 import { constructOrg } from '../nex/org.js'; 
 import { constructDeferredValue } from '../nex/deferredvalue.js'; 
@@ -221,11 +221,14 @@ function createMidiBuiltins() {
 					return constructFatalError('loop-midi: that loop already ended. Sorry!');
 				}
 				clip.setIds(ids, what);
+				clipStartedPlaying(clip, ids);
 				return clip;
 			}
 
 			let id = addMidiSequence(port.id, events, lengthSeconds);
-			return constructClip('midi loop', what, [ id ], endLoops);
+			let newclip = constructClip('midi loop', what, [ id ], endLoops);
+			clipStartedPlaying(newclip, [ id ]);
+			return newclip;
 		},
 		'Plays a list of midi notes in a loop on |port, joining the global cycle at its next boundary. Each note is what send-midi-note takes, with a float tagged time saying where in the sequence it falls. A bare number at the end of the list is the gap before the sequence repeats. Returns a clip, which ends the loop when it is deleted, or at the next boundary if passed to end-seq. Passing that clip back in |clip replaces what it is playing rather than starting a second loop.'
 	);
