@@ -148,7 +148,7 @@ function createWavetableBuiltins() {
   Builtin.createBuiltin(
     "start-recording",
     ["_wt_", "channel#?"],
-    function $startRecording(env, executionEnvironment) {
+    function $startRecording(env, executionEnvironment, commandTags) {
       let wt = env.lb("wt");
       let channel = env.lb("channel");
       // 1-based to the user, the way audio hardware numbers channels
@@ -156,10 +156,16 @@ function createWavetableBuiltins() {
       if (n < 1) {
         return constructFatalError("start-recording: there is no channel " + n + ". Sorry!");
       }
-      startRecordingAudio(wt, n - 1);
+      let unlimited = false;
+      for (let i = 0; commandTags && i < commandTags.length; i++) {
+        if (commandTags[i].getTagString() == "unlimited") {
+          unlimited = true;
+        }
+      }
+      startRecordingAudio(wt, n - 1, unlimited);
       return wt;
     },
-    "Tells |wt to record from |channel (or channel 1 if |channel is not given). A wavetable holds one channel, so a stereo input is recorded one side at a time."
+    "Tells |wt to record from |channel (or channel 1 if |channel is not given). A wavetable holds one channel, so a stereo input is recorded one side at a time. Recording stops after 30 seconds unless this command is tagged `unlimited`."
   );
 
   Builtin.createBuiltin(
