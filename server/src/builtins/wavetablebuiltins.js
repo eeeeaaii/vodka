@@ -575,7 +575,7 @@ function createWavetableBuiltins() {
 
   // the usual cookbook biquad, written into a reused array so a swept cutoff
   // does not allocate once per sample
-  function biquadInto(c, kind, hz, q, sampleRate) {
+  function biquadInto(c, kind, hz, q, gainDb, sampleRate) {
     let nyquist = sampleRate / 2;
     if (hz < 1) hz = 1;
     if (hz > nyquist * 0.99) hz = nyquist * 0.99;
@@ -584,6 +584,10 @@ function createWavetableBuiltins() {
     let cosw = Math.cos(w0);
     let sinw = Math.sin(w0);
     let alpha = sinw / (2 * q);
+    // half of gainDb, because a peak or a shelf gets it on the way in and
+    // again on the way out
+    let A = Math.pow(10, gainDb / 40);
+    let sqrtA2 = 2 * Math.sqrt(A) * alpha;
     let a0, a1, a2, b0, b1, b2;
     a0 = 1 + alpha;
     a1 = -2 * cosw;
@@ -608,6 +612,30 @@ function createWavetableBuiltins() {
         b0 = 1;
         b1 = -2 * cosw;
         b2 = 1;
+        break;
+      case "peak":
+        b0 = 1 + alpha * A;
+        b1 = -2 * cosw;
+        b2 = 1 - alpha * A;
+        a0 = 1 + alpha / A;
+        a1 = -2 * cosw;
+        a2 = 1 - alpha / A;
+        break;
+      case "lowshelf":
+        b0 = A * (A + 1 - (A - 1) * cosw + sqrtA2);
+        b1 = 2 * A * (A - 1 - (A + 1) * cosw);
+        b2 = A * (A + 1 - (A - 1) * cosw - sqrtA2);
+        a0 = A + 1 + (A - 1) * cosw + sqrtA2;
+        a1 = -2 * (A - 1 + (A + 1) * cosw);
+        a2 = A + 1 + (A - 1) * cosw - sqrtA2;
+        break;
+      case "highshelf":
+        b0 = A * (A + 1 + (A - 1) * cosw + sqrtA2);
+        b1 = -2 * A * (A - 1 + (A + 1) * cosw);
+        b2 = A * (A + 1 + (A - 1) * cosw - sqrtA2);
+        a0 = A + 1 - (A - 1) * cosw + sqrtA2;
+        a1 = 2 * (A - 1 - (A + 1) * cosw);
+        a2 = A + 1 - (A - 1) * cosw - sqrtA2;
         break;
     }
     c[0] = b0 / a0;
@@ -637,7 +665,7 @@ function createWavetableBuiltins() {
       let c = [0, 0, 0, 0, 0];
       let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
       for (let i = 0; i < dur; i++) {
-        biquadInto(c, kind, cutoff(i), resonanceToQ(resonance(i)), sampleRate);
+        biquadInto(c, kind, cutoff(i), resonanceToQ(resonance(i)), 0, sampleRate);
         let x = wt.valueAtSample(i);
         let y = c[0] * x + c[1] * x1 + c[2] * x2 - c[3] * y1 - c[4] * y2;
         x2 = x1;
@@ -650,6 +678,48 @@ function createWavetableBuiltins() {
       return r;
     },
     "Runs wt| through a two pole filter. |type is low, high, band or notch, and defaults to low. |cutoff is a fraction of 20kHz, so 0.05 is 1kHz, or a number tagged with a timebase (hz, nn) to name a real frequency. |resonance runs 0 to 1 and is what makes a sweep sound like a filter rather than a tone control -- it lives inside the filter's loop, which is why you cannot get it by feeding a filter back into itself. Both |cutoff and |resonance can be waves, so both can move while the sound plays."
+  );
+
+  Builtin.createBuiltin(
+    "param-eq",
+    ["wt_", "freq#%_", "gain#%_", "q#%_?", "type$?"],
+    function $paramEq(env, executionEnvironment) {
+      let wt = env.lb("wt");
+      let kind = filterKind(env.lb("type"), ["peak", "lowshelf", "highshelf"]);
+      if (!kind) {
+        return constructFatalError(
+            "param-eq: type must be peak, lowshelf or highshelf. Sorry!");
+      }
+      let freq = frequencyAt(env.lb("freq"));
+      let gain = amountAt(env.lb("gain"), 0);
+      let q = amountAt(env.lb("q"), 1);
+
+      /*
+      One band per call. Chaining calls is how you get a whole eq, and it
+      reads better than pairing up parallel lists of frequencies and gains.
+      Unlike a filter this leaves everything outside the band alone, which is
+      what makes it the thing you reach for when a sound is nearly right.
+      */
+      let dur = wt.getDuration();
+      let r = constructWavetable(dur);
+      let data = r.getData();
+      let sampleRate = getSampleRate();
+      let c = [0, 0, 0, 0, 0];
+      let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+      for (let i = 0; i < dur; i++) {
+        biquadInto(c, kind, freq(i), q(i), gain(i), sampleRate);
+        let x = wt.valueAtSample(i);
+        let y = c[0] * x + c[1] * x1 + c[2] * x2 - c[3] * y1 - c[4] * y2;
+        x2 = x1;
+        x1 = x;
+        y2 = y1;
+        y1 = y;
+        data[i] = y;
+      }
+      r.init();
+      return r;
+    },
+    "One band of parametric eq on wt|: lifts or drops a region around |freq by |gain decibels and leaves the rest alone. |q is how wide that region is, higher being narrower, and defaults to 1. |type is peak, lowshelf or highshelf, and defaults to peak -- a shelf moves everything below or above |freq instead of a band around it. |freq is a fraction of 20kHz, so 0.05 is 1kHz, or a number tagged with a timebase (hz, nn). Chain calls to build up a whole eq. All three of |freq, |gain and |q can be waves, so a band can move."
   );
 
   Builtin.createBuiltin(
