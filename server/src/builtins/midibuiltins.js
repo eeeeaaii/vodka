@@ -16,7 +16,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Builtin } from '../nex/builtin.js'; 
-import { getMidiPorts, openMidiPort, isPortOpen, addMidiSequence, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
+import { getMidiPorts, openMidiPort, isPortOpen, addMidiSequence, setDefaultMidiPort, getDefaultMidiPort,
+		 sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
 		 sendMidiNoteWithDuration } from '../midifunctions.js'
 import { convertTimeToSamples, nexToTimebase, getSampleRate } from '../wavetablefunctions.js'
 import { constructClip } from '../nex/clip.js'
@@ -71,6 +72,18 @@ function createMidiBuiltins() {
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -
 
 	function portIdOrError(port, who) {
+		if (port == UNBOUND) {
+			let id = getDefaultMidiPort();
+			if (!id) {
+				return { error: constructFatalError(
+						who + ': no port given and no default set. Sorry!') };
+			}
+			return { id: id };
+		}
+		// play-midi takes this argument untyped, so it can be handed anything
+		if (!Utils.isNexContainer(port)) {
+			return { error: constructFatalError(who + ': that is not a midi port. Sorry!') };
+		}
 		let type = port.getChildTagged(newTagOrThrowOOM('type', who + ', type'));
 		if (type && type.getFullTypedValue() != 'output') {
 			return { error: constructFatalError(who + ': that is an input port. Sorry!') };
@@ -122,6 +135,19 @@ function createMidiBuiltins() {
 		'Reconnects the midi port |port and returns it with its state as it is now. A port remembered from a previous session is only its name and id until this is called; list-midi-ports does the same thing for every port at once.'
 	);
 
+	Builtin.createBuiltin(
+		'set-default-port',
+		[ 'port()' ],
+		function $setDefaultPort(env, executionEnvironment) {
+			let port = env.lb('port');
+			let found = portIdOrError(port, 'set-default-port');
+			if (found.error) return found.error;
+			setDefaultMidiPort(found.id);
+			return port;
+		},
+		'Sets the midi port that send-midi-note, send-midi-data and play-midi use when they are not given one, and hands |port back so it can be set and used in the same breath. Lasts for this session only: a port id belongs to this machine, so saving one into a document would name a port that may not be there next time.'
+	);
+
 
 	/*
 	Reads one note out of a play-midi list. Same shape send-midi-note takes,
@@ -147,10 +173,8 @@ function createMidiBuiltins() {
 		if (!timenex) {
 			return { error: 'play-midi: every note needs a float tagged time. Sorry!' };
 		}
+		// velocity and channel already have defaults, so a duration has one too
 		let durnex = n.getChildTagged(newTagOrThrowOOM('duration', 'play midi, duration'));
-		if (!durnex) {
-			return { error: 'play-midi: every note needs a duration. Sorry!' };
-		}
 		let velocity = taggedInt(n, 'velocity', 'play-midi');
 		if (velocity == null) velocity = 127;
 		let channel = taggedInt(n, 'channel', 'play-midi');
@@ -158,10 +182,13 @@ function createMidiBuiltins() {
 		if (channel < 1 || channel > 16) {
 			return { error: `play-midi: no channel ${channel} (1-16). Sorry!` };
 		}
-		let durTimebase = nexToTimebase(durnex);
+		let durTimebase = durnex ? nexToTimebase(durnex) : 'BEATS';
+		let durSamples = durnex
+				? convertTimeToSamples(durnex)
+				: convertTimeToSamples(1, 'BEATS');
 		return {
 			atSeconds: convertTimeToSamples(timenex) / getSampleRate(),
-			durationSeconds: convertTimeToSamples(durnex) / getSampleRate(),
+			durationSeconds: durSamples / getSampleRate(),
 			// only beats are shortened; anything else asked for that length
 			shortenable: durTimebase == 'BEATS',
 			note: notenum,
@@ -171,12 +198,45 @@ function createMidiBuiltins() {
 	}
 
 	Builtin.createBuiltin(
-		'play-midi on',
-		[ 'seq()', 'port()', 'clip?' ],
+		'play-midi',
+		[ 'seq()', 'portorclip?' ],
 		function $playMidi(env, executionEnvironment) {
 			let list = env.lb('seq');
-			let port = portIdOrError(env.lb('port'), 'play-midi');
-			if (port.error) return port.error;
+
+			/*
+			Port and clip share one argument because they can never both mean
+			anything: handed a clip, the replacement stays on the port that clip
+			is already playing on, so there is nothing left for a port to say.
+			Optional arguments bind by position and not by type, so two of them
+			would put a clip where the port belongs.
+			*/
+			let arg = env.lb('portorclip');
+			let clip = null;
+			let portNex = UNBOUND;
+			if (arg != UNBOUND) {
+				if (Utils.isClip(arg)) {
+					if (arg.getKind() != 'midi loop') {
+						return constructFatalError('play-midi: that is not a midi clip. Sorry!');
+					}
+					clip = arg;
+				} else {
+					portNex = arg;
+				}
+			}
+			let portId;
+			if (clip) {
+				portId = clip.getPort();
+				// a copy of a clip does not remember its port
+				if (!portId) {
+					let found = portIdOrError(UNBOUND, 'play-midi');
+					if (found.error) return found.error;
+					portId = found.id;
+				}
+			} else {
+				let found = portIdOrError(portNex, 'play-midi');
+				if (found.error) return found.error;
+				portId = found.id;
+			}
 
 			let events = [];
 			let spacerSeconds = 0;
@@ -209,40 +269,33 @@ function createMidiBuiltins() {
 			// the clip already says it is midi, so this says what is in it
 			let what = events.length + ' note' + (events.length == 1 ? '' : 's');
 
-			// Handed a clip, replace what it names rather than starting a
-			// second loop alongside it.
-			let arg = env.lb('clip');
-			let clip = null;
-			if (arg != UNBOUND) {
-				if (!Utils.isClip(arg) || arg.getKind() != 'midi loop') {
-					return constructFatalError('play-midi: that is not a midi clip. Sorry!');
-				}
-				clip = arg;
+			if (clip) {
 				// Out at the boundary and back in at the same one, the way an
 				// audio loop is replaced. Stopping the old sequence now instead
 				// would send its note offs early and cut a note that is sounding.
 				endLoops(clip.getIds(), true /* at the cycle end */);
 			}
 
-			let id = addMidiSequence(port.id, events, lengthSeconds);
+			let id = addMidiSequence(portId, events, lengthSeconds);
 			if (clip) {
 				clip.setIds([ id ], what);
 			} else {
-				clip = constructClip('midi loop', what, [ id ], endLoops);
+				clip = constructClip('midi loop', what, [ id ], endLoops, null, portId);
 			}
 			// the midi system owns it while it plays, and how long that lasts is
 			// decided by whether anything else owns it too
 			clipStartedPlaying(clip, [ id ]);
 			return clip;
 		},
-		'Plays a list of midi notes in a loop on |port, joining the global cycle at its next boundary, and returns a clip naming it. Each note is what send-midi-note takes, with a float tagged time saying where in the sequence it falls. A bare number at the end of the list is the gap before the sequence repeats. The loop plays for as long as something holds the clip: keep the clip and it loops, throw it away and it plays once, delete it and it stops at the end of the pass it is in. Passing that clip back in |clip replaces what it is playing at the next boundary rather than starting a second loop, and you get the same clip back.'
+		'Plays a list of midi notes in a loop, joining the global cycle at its next boundary, and returns a clip naming it. Each note is what send-midi-note takes, with a float tagged time saying where in the sequence it falls. A bare number at the end of the list is the gap before the sequence repeats. The loop plays for as long as something holds the clip: keep the clip and it loops, throw it away and it plays once, delete it and it stops at the end of the pass it is in. |portorclip is either the port to play on, or a clip from an earlier play-midi -- given a clip, what it is playing is replaced at the next boundary, staying on the port it is already on, and you get the same clip back. Given neither, it plays on the port set by set-default-port.'
 	);
 
-	Builtin.aliasBuiltin('loop-midi on', 'play-midi on');
+	Builtin.aliasBuiltin('loop-midi on', 'play-midi');
+	Builtin.aliasBuiltin('play-midi on', 'play-midi');
 
 	Builtin.createBuiltin(
-		'send-midi-data on',
-		[ 'data()', 'port()' ],
+		'send-midi-data',
+		[ 'data()', 'port()?' ],
 		function $sendMidiData(env, executionEnvironment) {
 			let data = env.lb('data');
 			let port = portIdOrError(env.lb('port'), 'send-midi-data');
@@ -262,15 +315,17 @@ function createMidiBuiltins() {
 			sendMidiData(port.id, bytes);
 			return data;
 		},
-		'Sends |data, an org of integers, to the midi port |port exactly as given. For anything the note builtin does not cover -- control changes, program changes, clock, sysex.'
+		'Sends |data, an org of integers, to the midi port |port exactly as given, or to the one set by set-default-port if you do not name one. For anything the note builtin does not cover -- control changes, program changes, clock, sysex.'
 	);
+
+	Builtin.aliasBuiltin('send-midi-data on', 'send-midi-data');
 
 	// The tag on the int picks the message, like a timebase tag picks a unit.
 	// No converting note-off to note-on-at-zero: note off velocity is release
 	// velocity on some devices, so they aren't interchangeable.
 	Builtin.createBuiltin(
-		'send-midi-note on',
-		[ 'note()', 'port()' ],
+		'send-midi-note',
+		[ 'note()', 'port()?' ],
 		function $sendMidiNote(env, executionEnvironment) {
 			let n = env.lb('note');
 			let port = portIdOrError(env.lb('port'), 'send-midi-note');
@@ -312,18 +367,21 @@ function createMidiBuiltins() {
 			} else if (kind == 'note-off') {
 				sendMidiNoteOff(port.id, channel, notenum, velocity);
 			} else {
+				// no duration means one beat, the way no velocity means 127
 				let dur = n.getChildTagged(newTagOrThrowOOM('duration', 'send-midi-note, duration'));
-				if (!dur) {
-					return constructFatalError('send-midi-note: a note needs a duration. Sorry!');
-				}
-				let timebase = nexToTimebase(dur);
-				let ms = (convertTimeToSamples(dur, timebase) / getSampleRate()) * 1000;
+				let timebase = dur ? nexToTimebase(dur) : 'BEATS';
+				let samples = dur
+						? convertTimeToSamples(dur, timebase)
+						: convertTimeToSamples(1, 'BEATS');
+				let ms = (samples / getSampleRate()) * 1000;
 				sendMidiNoteWithDuration(port.id, channel, notenum, velocity, ms, timebase == 'BEATS');
 			}
 			return n;
 		},
-		'Sends a midi note to the port |port. |note is an org holding an integer tagged note, note-on or note-off. A note tagged |note also needs a float tagged duration, which takes a timebase tag like any other length. Velocity defaults to 127 and channel to 1.'
+		'Sends a midi note to the port |port, or to the one set by set-default-port if you do not name one. |note is an org holding an integer tagged note, note-on or note-off. A note tagged |note may also carry a float tagged duration, which takes a timebase tag like any other length. Duration defaults to one beat, velocity to 127 and channel to 1.'
 	);
+
+	Builtin.aliasBuiltin('send-midi-note on', 'send-midi-note');
 
 	Builtin.createBuiltin(
 		'wait-for-midi',
