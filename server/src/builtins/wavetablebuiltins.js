@@ -1371,6 +1371,19 @@ function createWavetableBuiltins() {
   );
 
   Builtin.createBuiltin(
+    "milliseconds-of",
+    ["len"],
+    function $millisecondsOf(env, executionEnvironment) {
+      let len = env.lb("len");
+      let ms = (convertTimeToSamples(len) / getSampleRate()) * 1000;
+      // setTimeout drops anything after the decimal point, so a float here
+      // would only be rounded later, somewhere less obvious.
+      return constructInteger(Math.round(ms));
+    },
+    "Returns the length of |len in whole milliseconds, rounded. |len takes a timebase tag like any other length, so this is how a length in beats becomes a number that something outside the audio system can use."
+  );
+
+  Builtin.createBuiltin(
     "get-bpm",
     [],
     function $getBpm(env, executionEnvironment) {

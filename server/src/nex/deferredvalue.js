@@ -102,7 +102,11 @@ class DeferredValue extends NexContainer {
 	toStringV2(ctx) {
 		// I think deferred values should just save as not a container but rather save as the string of its
 		// contained value, whatever that is. We can't, for example, save the state of a file read operation that is in progress.
-		return this.getChildAt(0).toStringV2();
+		// It can have no contained value at all -- `wait` with no argument makes
+		// one, and so does anything still waiting for its first result. Nothing
+		// is nil.
+		let c = this.getChildAt(0);
+		return c ? c.toStringV2(ctx) : '[nil]';
 	}
 
 	// deferred values are containers but we don't let you insert things in the editor
@@ -111,6 +115,17 @@ class DeferredValue extends NexContainer {
 	}
 
 	// rename this
+	/*
+	Some activation sources hold something that keeps running whether or not
+	anyone is still listening -- a repeating timer, most obviously. Deleting the
+	deferred should stop it.
+	*/
+	cleanupOnMemoryFree() {
+		if (this.activationFunctionGenerator && this.activationFunctionGenerator.stop) {
+			this.activationFunctionGenerator.stop();
+		}
+	}
+
 	set(activationFunctionGenerator) {
 		this.activationFunctionGenerator = activationFunctionGenerator;
 		this.ffgen = getFFGen();
