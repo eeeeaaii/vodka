@@ -1513,7 +1513,17 @@ class Manipulator {
 		if (plan.kind == 'select' || !org) return;
 		let root = systemState.getRoot();
 		let at = root.getIndexOfChild(org);
-		if (at == -1) return;
+		/*
+		getIndexOfChild answers -100 when the child is not there, not -1, so
+		this guard never fired. Going on with -100 detached every enclosed nex
+		from the org and then handed them to insertChildAt, which refuses a
+		negative index but has already had their reference removed -- so they
+		were freed instead of being put back. A wavetable lost its samples and
+		a clip was ended.
+
+		Anything negative, so a different sentinel cannot bring this back.
+		*/
+		if (at < 0) return;
 		let taken = this._takeChildren(org, 0, org.numChildren() - 1);
 		root.removeChildAt(at);
 		this._putChildren(root, taken, at);
@@ -1543,10 +1553,19 @@ class Manipulator {
 		return taken;
 	}
 
+	/*
+	The reference _takeChildren added is what holds a detached child while it is
+	in hand, and it is given up here because the new parent now holds it
+	instead. insertChildAt refuses an index outside the parent rather than
+	saying so, so giving it up regardless would free a child that never landed
+	anywhere -- which is destroying it, not moving it.
+	*/
 	_putChildren(parent, taken, at) {
 		for (let i = 0; i < taken.length; i++) {
 			parent.insertChildAt(taken[i], at + i);
-			heap.removeReference(taken[i].getNex());
+			if (taken[i].getParent() == parent) {
+				heap.removeReference(taken[i].getNex());
+			}
 		}
 	}
 
