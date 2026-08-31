@@ -109,10 +109,20 @@ class Environment {
 		heap.removeEnvReference(this.parentEnv);
 	}
 
+	/*
+	The binding record is not the thing that was bound. This released the
+	record, whose `references` is undefined -- so the zero check did not throw,
+	the decrement wrote NaN, the free test failed, and the reference on the nex
+	itself stayed put. Every argument to every command leaked one count,
+	silently, for as long as the session lasted.
+
+	Nothing consulted a reference count for a decision until clips did, so the
+	leak had no visible effect: heap.free simply almost never ran. It is the
+	reason a clip passed as an argument could never be retired.
+	*/
 	cleanUp() {
 		for (let name in this.symbols) {
-			let val = this.symbols[name];
-			heap.removeReference(val);
+			heap.removeReference(this.symbols[name].val);
 		}
 	}
 
