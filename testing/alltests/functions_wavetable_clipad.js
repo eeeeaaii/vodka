@@ -19,27 +19,17 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testname// functions_wavetable_clipad
 //startdescription//
 /*
-test the "clipad" primitive (clip or pad)
+test the "f" primitive, the short name for "fit to" (clip or pad)
 */
 //enddescription//
-//testspec// |c|l|i|p|a|d|Enter|s|i|n|e|w|a|v|e|ArrowRight|5|0|`|s|a|m|p|l|e|s|Enter|Shift|Tab|Enter|c|l|i|p|a|d|Enter|s|i|n|e|w|a|v|e|ArrowRight|1|0|0|0|Enter|`|s|a|m|p|l|e|s|Shift|Tab|Enter
+//testspec// |f|Enter|s|i|n|e|w|a|v|e|ArrowRight|5|0|`|s|a|m|p|l|e|s|Enter|Shift|Tab|Enter|f|Enter|s|i|n|e|w|a|v|e|ArrowRight|1|0|0|0|Enter|`|s|a|m|p|l|e|s|Shift|Tab|Enter
 //starttest//
 var harness = require('../testharness');
 
 var testactions = [];
 
-testactions.push({type:'keydown',code:'KeyC'});
-testactions.push({type:'keydown',code:'KeyL'});
-testactions.push({type:'keyup',code:'KeyC'});
-testactions.push({type:'keyup',code:'KeyL'});
-testactions.push({type:'keydown',code:'KeyI'});
-testactions.push({type:'keydown',code:'KeyP'});
-testactions.push({type:'keyup',code:'KeyI'});
-testactions.push({type:'keyup',code:'KeyP'});
-testactions.push({type:'keydown',code:'KeyA'});
-testactions.push({type:'keydown',code:'KeyD'});
-testactions.push({type:'keyup',code:'KeyA'});
-testactions.push({type:'keyup',code:'KeyD'});
+testactions.push({type:'keydown',code:'KeyF'});
+testactions.push({type:'keyup',code:'KeyF'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
 testactions.push({type:'keydown',code:'KeyS'});
@@ -88,18 +78,8 @@ testactions.push({type:'keyup',code:'Tab'});
 testactions.push({type:'keyup',code:'ShiftRight'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
-testactions.push({type:'keydown',code:'KeyC'});
-testactions.push({type:'keyup',code:'KeyC'});
-testactions.push({type:'keydown',code:'KeyL'});
-testactions.push({type:'keyup',code:'KeyL'});
-testactions.push({type:'keydown',code:'KeyI'});
-testactions.push({type:'keydown',code:'KeyP'});
-testactions.push({type:'keyup',code:'KeyI'});
-testactions.push({type:'keyup',code:'KeyP'});
-testactions.push({type:'keydown',code:'KeyA'});
-testactions.push({type:'keyup',code:'KeyA'});
-testactions.push({type:'keydown',code:'KeyD'});
-testactions.push({type:'keyup',code:'KeyD'});
+testactions.push({type:'keydown',code:'KeyF'});
+testactions.push({type:'keyup',code:'KeyF'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
 testactions.push({type:'keydown',code:'KeyS'});

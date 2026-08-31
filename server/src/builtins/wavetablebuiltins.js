@@ -24,6 +24,7 @@ import { constructNil } from "../nex/nil.js";
 import { constructInteger } from "../nex/integer.js";
 import { constructOrg } from "../nex/org.js";
 import { constructFloat } from "../nex/float.js";
+import { constructBool } from "../nex/bool.js";
 import { constructEString } from "../nex/estring.js";
 import { constructDeferredValue } from "../nex/deferredvalue.js";
 import { constructEError } from "../nex/eerror.js";
@@ -49,7 +50,7 @@ import {
   getSampleRate,
   getConstantSignalFromValue,
 } from "../wavetablefunctions.js";
-import { loopPlay, abortPlayback, endLoops, clipStartedPlaying, pauseLoops } from "../webaudio.js";
+import { loopPlay, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying } from "../webaudio.js";
 import { constructClip } from "../nex/clip.js";
 import { Tag } from "../tag.js";
 import { ERROR_TYPE_INFO } from "../nex/eerror.js";
@@ -80,34 +81,40 @@ function createWavetableBuiltins() {
     "Returns the default timebase."
   );
 
-  /*
-  Pausing is the only way left to silence a clip without waiting for the pass
-  it is in to finish, and it is not the end of anything: the loop keeps its
-  place in the cycle, so resuming brings it back in phase rather than starting
-  a bar of its own. If you did not want it at all you would delete it.
-  */
-  function pauseOrResume(name, paused) {
-    Builtin.createBuiltin(
-      name,
-      ["clip"],
-      function (env, executionEnvironment) {
-        let clip = env.lb("clip");
-        if (!Utils.isClip(clip)) {
-          return constructFatalError(name + ": not a clip. Sorry!");
-        }
-        if (!pauseLoops(clip.getIds(), paused)) {
-          return constructFatalError(name + ": that clip already stopped. Sorry!");
-        }
-        return clip;
-      },
-      paused
-          ? "Silences |clip straight away, keeping its place in the cycle so that resume brings it back in time. Deleting a clip instead lets it finish the pass it is in."
-          : "Starts |clip playing again after pause, at the next measure start and in phase with everything else."
-    );
-  }
+  Builtin.createBuiltin(
+    "toggle-playback",
+    ["clip"],
+    function $togglePlayback(env, executionEnvironment) {
+      let clip = env.lb("clip");
+      if (!Utils.isClip(clip)) {
+        return constructFatalError("toggle-playback: not a clip. Sorry!");
+      }
+      if (!togglePauseLoops(clip.getIds())) {
+        return constructFatalError("toggle-playback: that clip already stopped. Sorry!");
+      }
+      return clip;
+    },
+    /*
+    Silencing a clip is not the end of it: the loop keeps its place in the
+    cycle and its length, so starting it again puts it back in phase rather
+    than starting a bar of its own. Delete the clip if you meant to be rid of
+    it, which lets it finish the pass it is in.
+    */
+    "Silences |clip if it is playing and starts it again if it is not. A silenced clip keeps its place in the cycle, so it comes back in time with everything else."
+  );
 
-  pauseOrResume("pause", true);
-  pauseOrResume("resume", false);
+  Builtin.createBuiltin(
+    "is-playing",
+    ["clip"],
+    function $isPlaying(env, executionEnvironment) {
+      let clip = env.lb("clip");
+      if (!Utils.isClip(clip)) {
+        return constructFatalError("is-playing: not a clip. Sorry!");
+      }
+      return constructBool(loopsArePlaying(clip.getIds()));
+    },
+    "True if |clip is making sound: still in the cycle, and not silenced by toggle-playback."
+  );
 
   Builtin.createBuiltin(
     "play",
@@ -194,7 +201,7 @@ function createWavetableBuiltins() {
   );
 
   Builtin.createBuiltin(
-    "stopRecording",
+    "stop-recording",
     ["_wt_"],
     function $startRecording(env, executionEnvironment) {
       let wt = env.lb("wt");
@@ -466,36 +473,6 @@ function createWavetableBuiltins() {
   // fix this, example situation where it breaks:
   // take a normal ramp (2 beats) and pass it through a function that takes the value to the 5th power
   // the function will return, but some async bullshit will continue and some numbers will keep incrementing in the js console, not sure what is happening
-
-  Builtin.createBuiltin(
-    "wavecalc",
-    ["wt_", "f&"],
-    function $const(env, executionEnvironment) {
-      let wt = env.lb("wt");
-      let f = env.lb("f");
-
-      let dur = wt.getDuration();
-      let r = constructWavetable(dur);
-      let data = r.getData();
-      for (let i = 0; i < dur; i++) {
-        let v = constructFloat(wt.valueAtSample(i));
-        let result = sEval(
-          systemState
-            .getSCF()
-            .makeCommandWithClosureOneArg(f, systemState.getSCF().makeQuote(v)),
-          executionEnvironment,
-          "wavecalc: error returned from function"
-        );
-        if (result.getTypeName() != "-float-") {
-          return constructFatalError("wavecalc: function must return a float");
-        }
-        data[i] = result.getTypedValue();
-      }
-      r.init();
-      return r;
-    },
-    "Calls function |f on every sample in |wt (this may take a while for long samples)"
-  );
 
   Builtin.createBuiltin(
     "noise",
@@ -976,95 +953,51 @@ function createWavetableBuiltins() {
   Builtin.aliasBuiltin("f", "fit to");
 
   Builtin.createBuiltin(
-    "remove-from-start",
-    ["wt_", "len#%"],
-    function $removeStart(env, executionEnvironment) {
-      let len = env.lb("len");
-      let wt = env.lb("wt");
-
-      let amountToRemove = convertTimeToSamples(len);
-      let originalDuration = wt.getDuration();
-      if (amountToRemove > originalDuration) {
-        amountToRemove = originalDuration;
-      }
-      if (amountToRemove < 0) {
-        amountToRemove = 0;
-      }
-      let startPosition = amountToRemove;
-      let resultDur = originalDuration - amountToRemove;
-
-      let r = constructWavetable(resultDur);
-      let data = r.getData();
-
-      for (let i = startPosition; i < originalDuration; i++) {
-        data[i - startPosition] = wt.valueAtSample(i);
-      }
-      r.init();
-      return r;
-    },
-    "Removes |len amount of sound from the start of |wt. Timebase tag (nn, secs, hz, b, samps) is on |len."
-  );
-
-  Builtin.createBuiltin(
-    "remove-from-end",
-    ["wt_", "len#%"],
-    function $removeEnd(env, executionEnvironment) {
-      let len = env.lb("len");
-      let wt = env.lb("wt");
-
-      let amountToRemove = convertTimeToSamples(len);
-      let originalDuration = wt.getDuration();
-      if (amountToRemove > originalDuration) {
-        amountToRemove = originalDuration;
-      }
-      if (amountToRemove < 0) {
-        amountToRemove = 0;
-      }
-
-      let placeToStop = originalDuration - amountToRemove;
-      let resultDur = placeToStop;
-
-      let r = constructWavetable(resultDur);
-      let data = r.getData();
-
-      for (let i = 0; i < placeToStop; i++) {
-        data[i] = wt.valueAtSample(i);
-      }
-      r.init();
-      return r;
-    },
-    "Removes |len amount of sound from the end of |wt. Timebase tag (nn, secs, hz, b, samps) is on |len."
-  );
-
-  Builtin.createBuiltin(
     "delay",
     ["wt_", "time#%"],
-    function $delay(env, executionEnvironment) {
+    function $delay(env, executionEnvironment, commandTags) {
       let time = env.lb("time");
       let wt = env.lb("wt");
 
       time = convertTimeToSamples(time);
       let originalDuration = wt.getDuration();
-      let outputDuration = originalDuration + time;
+      /*
+      Anything pushed past the end has to go somewhere. By default the wave
+      gets longer to make room for it, which is what you want for a sound that
+      ends. Tagged wrap, the length is left alone and what falls off the end
+      comes back round to the beginning, which is what you want for something
+      that is going to be looped -- otherwise the tail is either cut off or the
+      loop grows by the delay time every pass.
+      */
+      let wrap = hasCommandTag(commandTags, "wrap");
+      let outputDuration = wrap ? originalDuration : originalDuration + time;
 
       let r = constructWavetable(outputDuration);
       let data = r.getData();
 
-      for (let i = time; i < outputDuration; i++) {
-        data[i] = wt.valueAtSample(i - time);
+      if (wrap) {
+        for (let i = 0; i < originalDuration; i++) {
+          data[(i + time) % outputDuration] += wt.valueAtSample(i);
+        }
+      } else {
+        for (let i = time; i < outputDuration; i++) {
+          data[i] = wt.valueAtSample(i - time);
+        }
       }
       r.init();
       return r;
     },
-    "Outputs a delayed copy of |wt (the beginning is padded with silence). Combine with the feedback builtin to get a classic delay sound. Timebase tag (nn, secs, hz, b, samps) is on |time."
+    "Outputs a delayed copy of |wt, the beginning padded with silence and the wave made longer by |time to fit the tail. Tag the command with wrap to keep the original length instead and let the tail come back round to the beginning, which is what you want for a wave you are going to loop. Combine with feedback to get a classic delay sound. Timebase tag (nn, secs, hz, b, samps) is on |time."
   );
 
   Builtin.createBuiltin(
     "feedback",
     ["wt_", "f&", "attenuation%", "n#"],
-    function $delay(env, executionEnvironment) {
+    function $feedback(env, executionEnvironment, commandTags) {
       let wt = env.lb("wt");
       let f = env.lb("f");
+      // as with delay: round to the beginning rather than off the end
+      let wrap = hasCommandTag(commandTags, "wrap");
       let attenuation = env.lb("attenuation").getTypedValue();
       let n = env.lb("n").getTypedValue();
 
@@ -1086,9 +1019,15 @@ function createWavetableBuiltins() {
         for (let j = 0; j < fedBackSignal.getDuration(); j++) {
           fedBackData[j] = fedBackData[j] * attenuation;
         }
-        for (let j = 0; j < dur; j++) {
-          if (j < fedBackSignal.getDuration()) {
-            outData[j] += fedBackData[j];
+        if (wrap) {
+          for (let j = 0; j < fedBackSignal.getDuration(); j++) {
+            outData[j % dur] += fedBackData[j];
+          }
+        } else {
+          for (let j = 0; j < dur; j++) {
+            if (j < fedBackSignal.getDuration()) {
+              outData[j] += fedBackData[j];
+            }
           }
         }
       }
@@ -1096,7 +1035,7 @@ function createWavetableBuiltins() {
       output.init();
       return output;
     },
-    "Calls the function |f on |wt to produce an output, then calls |f on that output, then calls |f on the output of that, and so on, |n times, attenuating the output by |attenuation each time before passing it back into |f. The output of this function is the sum of all the outputs. This mimics analog feedback, but note that the |n parameter is a hard limit on the number of times the function is fed back into itself."
+    "Calls the function |f on |wt to produce an output, then calls |f on that output, then calls |f on the output of that, and so on, |n times, attenuating the output by |attenuation each time before passing it back into |f. The output of this function is the sum of all the outputs. This mimics analog feedback, but note that the |n parameter is a hard limit on the number of times the function is fed back into itself. Tag the command with wrap to have anything that runs past the end come back round to the beginning rather than being cut off, which is what you want for a wave you are going to loop."
   );
 
   Builtin.createBuiltin(
@@ -1141,36 +1080,6 @@ function createWavetableBuiltins() {
       return constructWavetable(dur);
     },
     "Creates an empty wavetable (silence) with a duration of the requested number of samples. Timebase tag (nn, secs, hz, b, samps) is on |len."
-  );
-
-  Builtin.createBuiltin(
-    "loop-for",
-    ["wt#%_", "len%#?"],
-    function $loopFor(env, executionEnvironment) {
-      let wt = env.lb("wt");
-      if (!(wt.getTypeName() == "-wavetable-")) {
-        wt = getConstantSignalFromValue(wt.getTypedValue());
-      }
-
-      let len = env.lb("len");
-      if (len == UNBOUND) {
-        len = constructInteger(4);
-        len.addTag(
-          newTagOrThrowOOM("beats", "loop-for wavetable builtin, timebase")
-        );
-        sAttach(len);
-      }
-      let dur = convertTimeToSamples(len);
-      let r = constructWavetable(dur);
-      let data = r.getData();
-
-      for (let i = 0; i < dur; i++) {
-        data[i] = wt.valueAtSample(i);
-      }
-      r.init();
-      return r;
-    },
-    "Loops a sample for |len time. Timebase tag (nn, secs, hz, b, samps) is on |len."
   );
 
   Builtin.createBuiltin(
@@ -1310,6 +1219,13 @@ function createWavetableBuiltins() {
   of-total is halfway along whatever you passed in. A tag on the list applies
   to every point in it, so you do not have to tag them one at a time.
   */
+  function hasCommandTag(commandTags, name) {
+    for (let i = 0; commandTags && i < commandTags.length; i++) {
+      if (commandTags[i].getTagString() == name) return true;
+    }
+    return false;
+  }
+
   function hasTagNamed(nex, name) {
     for (let i = 0; i < nex.numTags(); i++) {
       if (nex.getTag(i).getTagString() == name) return true;
@@ -1331,7 +1247,7 @@ function createWavetableBuiltins() {
   }
 
   Builtin.createBuiltin(
-    "slice-at",
+    "set-split-points",
     ["wt_", "points#%()"],
     function $sliceAt(env, executionEnvironment) {
       let wt = env.lb("wt");
@@ -1351,7 +1267,7 @@ function createWavetableBuiltins() {
         // an empty section
         if (!(at >= 1 && at <= total - 1)) {
           return constructFatalError(
-              "slice-at: slice point " + at + " is not inside the wave. Sorry!");
+              "set-split-points: split point " + at + " is not inside the wave. Sorry!");
         }
         marks.push(at);
       }
