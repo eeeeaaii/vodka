@@ -45,13 +45,25 @@ class Closure extends ValueNex {
 
 		this.lexicalEnvironment = lexicalEnvironment;
 		heap.addEnvReference(this.lexicalEnvironment);
+		// nothing here is yours to type over
+		this.setMutable(false);
 	}
 
 	toString(version, ctx) {
 		if (version == 'v2') {
-			return `[CLOSURE FOR: ${this.lambda.prettyPrint()}]`;
+			return this.toStringV2(ctx);
 		}
 		return super.toString(version);
+	}
+
+	/*
+	A closure is a runtime thing and is never written to a file: it holds a
+	lexical environment, which does not outlive the session. It saves as nil,
+	the same as a contract or a clip. What it used to write was a description
+	of itself with spaces and an expression in it, which nothing could read.
+	*/
+	toStringV2(ctx) {
+		return '[nil]';
 	}
 
 	// According to what I wrote in my blog, I should not really copy
