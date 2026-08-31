@@ -119,6 +119,19 @@ function createWavetableBuiltins() {
     "True if |clip is making sound: still in the cycle, and not silenced by toggle-playback."
   );
 
+  // Channels are 1-based to the user, the way audio hardware numbers them.
+  function toChannelIndexes(numbers, who) {
+    let r = [];
+    for (let i = 0; i < numbers.length; i++) {
+      if (!(numbers[i] >= 1)) {
+        return { error: constructFatalError(
+            who + ": there is no channel " + numbers[i] + ". Sorry!") };
+      }
+      r.push(numbers[i] - 1);
+    }
+    return { indexes: r };
+  }
+
   Builtin.createBuiltin(
     "play",
     ["wt_", "channelsorclip?"],
@@ -138,7 +151,7 @@ function createWavetableBuiltins() {
       // the clip is already playing on, so there is nothing for channels to say.
       let arg = env.lb("channelsorclip");
 
-      let channelnumbers = [0, 1];
+      let channelnumbers = [1, 2];
       let clip = null;
 
       if (arg != UNBOUND && Utils.isClip(arg)) {
@@ -161,7 +174,9 @@ function createWavetableBuiltins() {
         }
       }
 
-      let ids = loopPlay(buffers, channelnumbers);
+      let converted = toChannelIndexes(channelnumbers, "play");
+      if (converted.error) return converted.error;
+      let ids = loopPlay(buffers, converted.indexes);
       let what =
           "channel" + (channelnumbers.length == 1 ? " " : "s ") + channelnumbers.join(", ");
       if (clip) {
@@ -174,7 +189,7 @@ function createWavetableBuiltins() {
       clipStartedPlaying(clip, ids);
       return clip;
     },
-    "Starts playing wt| at the next measure start, and returns a clip naming it. It plays for as long as something holds that clip: keep the clip and it loops, throw it away and it plays once, delete it and it stops at the end of the pass it is in. |channelsorclip is either the channels to play on, or a clip returned by an earlier play -- given a clip, the loop it names is replaced at the next measure start, staying on the channels it is already on, and you get the same clip back. If it is not provided, the sound is played on the first 2 channels. If it and/or |wt are lists, Vodka will do its best to match up sounds with channels."
+    "Starts playing wt| at the next measure start, and returns a clip naming it. It plays for as long as something holds that clip: keep the clip and it loops, throw it away and it plays once, delete it and it stops at the end of the pass it is in. |channelsorclip is either the channels to play on, or a clip returned by an earlier play -- given a clip, the loop it names is replaced at the next measure start, staying on the channels it is already on, and you get the same clip back. Channels are numbered from 1, the way audio hardware numbers them, and if you do not say, the sound plays on channels 1 and 2. If it and/or |wt are lists, Vodka will do its best to match up sounds with channels."
   );
 
   // what it was called before it could do both
@@ -186,14 +201,14 @@ function createWavetableBuiltins() {
     function $audioChannels(env, executionEnvironment) {
       let n = getAudioChannelCount();
       let r = constructOrg();
-      for (let i = 0; i < n; i++) {
+      for (let i = 1; i <= n; i++) {
         r.appendChild(constructInteger(i));
       }
       // one short row rather than a tall column
       r.setHorizontal();
       return r;
     },
-    "Every audio output this device has, as an org of channel numbers, which is exactly what play takes -- so play a wave across all of them by passing this straight in. Two things worth knowing: asking is what opens the audio device if nothing has made a sound yet, and the answer is fixed when that happens, so plugging in a different interface does not change it until you reload."
+    "Every audio output this device has, as an org of channel numbers counting from 1, which is exactly what play takes -- so play a wave across all of them by passing this straight in. Two things worth knowing: asking is what opens the audio device if nothing has made a sound yet, and the answer is fixed when that happens, so plugging in a different interface does not change it until you reload."
   );
 
   Builtin.createBuiltin(
@@ -235,9 +250,12 @@ function createWavetableBuiltins() {
     ["channel#?"],
     function $abortPlayback(env, executionEnvironment) {
       let channel = env.lb("channel");
+      // -1 is every channel, which is what no argument means
       let channelnumber = -1;
       if (channel != UNBOUND) {
-        channelnumber = channel.getTypedValue();
+        let converted = toChannelIndexes([channel.getTypedValue()], "abort-playback");
+        if (converted.error) return converted.error;
+        channelnumber = converted.indexes[0];
       }
 
       abortPlayback(channelnumber);
