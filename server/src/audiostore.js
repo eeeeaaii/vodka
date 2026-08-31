@@ -172,26 +172,21 @@ session would accumulate every intermediate state of every sound.
 
 Takes the set of hashes the document still mentions. Background, like put().
 */
-function pruneToKeys(keysInUse) {
+/*
+Forgets a wavetable's samples. Called when the wavetable itself is freed, which
+vodka knows the moment it happens -- heap.free calls cleanupOnMemoryFree as soon
+as the last reference drops. Nothing has to be inferred from what a document
+does or does not mention.
+*/
+function remove(id) {
+	if (!id) return;
+	loaded.delete(id);
 	if (unavailable) return;
-	let dead = [];
-	loaded.forEach(function(value, hash) {
-		if (!keysInUse.has(hash)) {
-			dead.push(hash);
-		}
-	});
-	if (dead.length == 0) return;
-	for (let i = 0; i < dead.length; i++) {
-		loaded.delete(dead[i]);
-	}
 	openDb().then(function(db) {
 		if (!db) return;
 		try {
 			let tx = db.transaction(STORE, 'readwrite');
-			let store = tx.objectStore(STORE);
-			for (let i = 0; i < dead.length; i++) {
-				store.delete(scopedKey(dead[i]));
-			}
+			tx.objectStore(STORE).delete(scopedKey(id));
 		} catch (e) {
 			unavailable = true;
 		}
@@ -207,24 +202,6 @@ bytes rather than the float values.
 Cost is a pass over the buffer, which at a 800ms save debounce is not something
 a person can notice.
 */
-function hashSamples(float32array) {
-	let bytes = new Uint8Array(
-			float32array.buffer,
-			float32array.byteOffset,
-			float32array.byteLength);
-	let h1 = 0x811c9dc5;
-	let h2 = 0x01000193;
-	for (let i = 0; i < bytes.length; i++) {
-		h1 ^= bytes[i];
-		h1 = Math.imul(h1, 0x01000193);
-		// second accumulator over the same data with a different seed, so the
-		// key is 64 bits rather than 32
-		h2 = Math.imul(h2 ^ bytes[i], 0x85ebca6b);
-	}
-	let a = (h1 >>> 0).toString(16);
-	let b = (h2 >>> 0).toString(16);
-	return bytes.length.toString(16) + '-' + a + b;
-}
 
 function isUnavailable() {
 	return unavailable;
@@ -235,7 +212,6 @@ export {
 	get,
 	has,
 	put,
-	pruneToKeys,
-	hashSamples,
+	remove,
 	isUnavailable
 }
