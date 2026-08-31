@@ -16,10 +16,31 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 var CLIPBOARD = null;
+
+/*
+The clipboard is holding this, so it is still in use however little the document
+mentions it -- the same as the undo buffer. Refcounting has to know, because
+being freed is not only bookkeeping: a wavetable forgets its samples when it
+goes, and a resource handle ends the loop it names.
+
+Cut is where it shows. It puts the nex on the clipboard and then removes it from
+the tree, which was the last reference, so the thing you were about to paste got
+freed on its way to the clipboard.
+*/
+function setClipboard(nex) {
+	if (CLIPBOARD) {
+		heap.removeReference(CLIPBOARD);
+	}
+	CLIPBOARD = nex;
+	if (CLIPBOARD) {
+		heap.addReference(CLIPBOARD);
+	}
+}
 var CLIPBOARD_INSERTION_MODE = null;
 
 import * as Utils from './utils.js'
 import { systemState } from './systemstate.js'
+import { heap } from './heap.js'
 import { RenderNode } from './rendernode.js' 
 import { Nex } from './nex/nex.js' 
 import { Root } from './nex/root.js' 
@@ -774,10 +795,13 @@ class Manipulator {
 		} else if (a) {
 			a.setSelected();
 			this._forceInsertionMode(INSERT_BEFORE, a);
-		} else {
+		} else if (p) {
 			p.setSelected();
 			this._forceInsertionMode(INSERT_INSIDE, p);
 		}
+		// No siblings and no parent means it was not in the tree, which undo can
+		// reach by removing something that has already been removed. Nothing
+		// left to select, but nothing to crash over either.
 	}
 
 	removeAndSelectPreviousSiblingIfEmpty(s) {
@@ -1683,7 +1707,7 @@ class Manipulator {
 
 	// used in keydispatcher.js
 	doCut() {
-		CLIPBOARD = systemState.getGlobalSelectedNode().getNex();
+		setClipboard(systemState.getGlobalSelectedNode().getNex());
 		CLIPBOARD_INSERTION_MODE = systemState.getGlobalSelectedNode().getInsertionMode();
 		if (!isRecordingTest()) {
 			this.copyTextToSystemClipboard(CLIPBOARD.prettyPrint());
@@ -1745,7 +1769,7 @@ class Manipulator {
 	// used in keydispatcher.js
 	doCopy() {
 		try {
-			CLIPBOARD = systemState.getGlobalSelectedNode().getNex().makeCopy();
+			setClipboard(systemState.getGlobalSelectedNode().getNex().makeCopy());
 			CLIPBOARD_INSERTION_MODE = systemState.getGlobalSelectedNode().getInsertionMode();
 			if (!isRecordingTest()) {
 				this.copyTextToSystemClipboard(CLIPBOARD.prettyPrint());
