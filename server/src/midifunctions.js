@@ -18,7 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { Tag } from './tag.js'
 import { constructOrg, convertJSMapToOrg } from './nex/org.js'
 import { constructFatalError } from './nex/eerror.js'
-import { addCycleMember, replaceCycleMember, contextTimeToPerformanceTime } from './webaudio.js'
+import { addCycleMember, contextTimeToPerformanceTime } from './webaudio.js'
 
 
 var midi = null;
@@ -219,15 +219,31 @@ Every message is handed to the browser with a timestamp, so the timing does not
 depend on when any of this javascript runs. The cycle boundary is in audio time
 and midi wants wall time, which is what contextTimeToPerformanceTime is for.
 */
+// kept so a clip can ask what its sequence last played
+let midiMembers = {};
+
 function addMidiSequence(portId, events, lengthSeconds) {
 	let member = makeMidiCycleMember(portId, events, lengthSeconds);
-	return addCycleMember(member);
+	let id = addCycleMember(member);
+	member.id = id;
+	midiMembers[id] = member;
+	return id;
 }
 
-// Swaps what a running midi loop plays. The notes for the next cycle are read
-// at the boundary, so replacing them here is enough.
-function replaceMidiSequence(id, portId, events, lengthSeconds) {
-	return replaceCycleMember(id, makeMidiCycleMember(portId, events, lengthSeconds));
+/*
+What a midi clip shows instead of a position in samples: the note whose start
+has most recently gone past. Everything is scheduled ahead with a timestamp, so
+this is a question about the clock rather than about anything that has happened.
+*/
+function getMidiLastNote(id) {
+	let member = midiMembers[id];
+	if (!member) return -1;
+	let now = performance.now();
+	let list = member.scheduled;
+	for (let i = list.length - 1; i >= 0; i--) {
+		if (list[i].at <= now) return list[i].note;
+	}
+	return -1;
 }
 
 function makeMidiCycleMember(portId, events, lengthSeconds) {
@@ -235,7 +251,14 @@ function makeMidiCycleMember(portId, events, lengthSeconds) {
 	let member = {
 		lengthSeconds: lengthSeconds,
 		scheduled: [],
+		thisCycle: [],
 		start: function(startTime, cycleLen) {
+			// A cycle is scheduled a little before it starts, so notes from the
+			// cycle before this one can still be sounding. Two cycles' worth is
+			// therefore everything that might need a note off, and keeping only
+			// that stops the list growing for as long as the loop runs.
+			let previous = member.thisCycle;
+			member.thisCycle = [];
 			// the sequence repeats within the cycle if the cycle is longer
 			for (let base = 0; base < cycleLen; base += lengthSeconds) {
 				for (let i = 0; i < events.length; i++) {
@@ -251,9 +274,13 @@ function makeMidiCycleMember(portId, events, lengthSeconds) {
 					if (dur < 0.001) dur = 0.001;
 					let offAt = contextTimeToPerformanceTime(startTime + at + dur);
 					out.send([statusByte(0x80, e.channel), e.note, 0], offAt);
-					member.scheduled.push({ channel: e.channel, note: e.note });
+					member.thisCycle.push({ channel: e.channel, note: e.note, at: onAt });
 				}
 			}
+			member.scheduled = previous.concat(member.thisCycle);
+		},
+		retired: function() {
+			delete midiMembers[member.id];
 		},
 		stop: function() {
 			// messages already handed over cannot be recalled, so silence
@@ -267,6 +294,7 @@ function makeMidiCycleMember(portId, events, lengthSeconds) {
 				out.send([statusByte(0x80, n.channel), n.note, 0]);
 			}
 			member.scheduled = [];
+			member.thisCycle = [];
 		}
 	};
 	return member;
@@ -337,5 +365,5 @@ function getMidiPorts(incb) {
 }
 
 
-export { getMidiPorts, openMidiPort, isPortOpen, addMidiListener, addMidiSequence, replaceMidiSequence, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
+export { getMidiPorts, openMidiPort, isPortOpen, addMidiListener, addMidiSequence, getMidiLastNote, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
 		 sendMidiNoteWithDuration, anyMidiNotesSounding, midiPanic }
