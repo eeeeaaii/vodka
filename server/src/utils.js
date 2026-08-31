@@ -181,6 +181,10 @@ function isContract(n) {
 	return n.getTypeName() == '-contract-';
 }
 
+function isResourceHandle(n) {
+	return n.getTypeName() == '-handle-';
+}
+
 function isFloat(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n || !n.getTypeName) return false;
@@ -321,6 +325,7 @@ export {
 	isEString,
 	isCommand,
 	isContract,
+	isResourceHandle,
 	isLambda,
 	isRoot,
 	isNex,

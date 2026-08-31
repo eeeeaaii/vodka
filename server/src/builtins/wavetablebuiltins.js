@@ -47,7 +47,8 @@ import {
   getSampleRate,
   getConstantSignalFromValue,
 } from "../wavetablefunctions.js";
-import { loopPlay, oneshotPlay, abortPlayback } from "../webaudio.js";
+import { loopPlay, oneshotPlay, abortPlayback, endLoops, replaceLoop } from "../webaudio.js";
+import { constructResourceHandle } from "../nex/handle.js";
 import { Tag } from "../tag.js";
 import { ERROR_TYPE_INFO } from "../nex/eerror.js";
 import { Command } from "../nex/command.js";
@@ -112,8 +113,22 @@ function createWavetableBuiltins() {
   );
 
   Builtin.createBuiltin(
+    "end-seq",
+    ["seq"],
+    function $endSeq(env, executionEnvironment) {
+      let seq = env.lb("seq");
+      if (seq.getTypeName() != "-handle-") {
+        return constructFatalError("end-seq: not a handle. Sorry!");
+      }
+      seq.end(true /* at the end of the cycle, not now */);
+      return seq;
+    },
+    "Ends |seq at the end of the current cycle, so it finishes what it is playing rather than being cut off. Deleting a sequence ends it immediately instead."
+  );
+
+  Builtin.createBuiltin(
     "loop-play",
-    ["wt_", "channels#()?"],
+    ["wt_", "channels#()?", "handle?"],
     function $loopPlay(env, executionEnvironment) {
       let wt = env.lb("wt");
       let channels = env.lb("channels");
@@ -139,8 +154,35 @@ function createWavetableBuiltins() {
         }
       }
 
-      loopPlay(buffers, channelnumbers);
-      return wt;
+      let what =
+          "loop on channel" + (channelnumbers.length == 1 ? " " : "s ") + channelnumbers.join(", ");
+
+      // Handed a handle, replace what it names rather than starting something
+      // alongside it. That is what lets the same expression be run again.
+      let handle = env.lb("handle");
+      if (handle != UNBOUND) {
+        if (handle.getTypeName() != "-handle-" || handle.getKind() != "audio loop") {
+          return constructFatalError("loop-play: that is not a loop handle. Sorry!");
+        }
+        let ids = handle.getIds();
+        if (ids.length != channelnumbers.length) {
+          return constructFatalError(
+              "loop-play: that handle is on " + ids.length + " channel" +
+              (ids.length == 1 ? "" : "s") + ", not " + channelnumbers.length + ". Sorry!");
+        }
+        let bi = 0;
+        for (let i = 0; i < ids.length; i++) {
+          if (!replaceLoop(ids[i], buffers[bi], channelnumbers[i])) {
+            return constructFatalError("loop-play: that loop is not running any more. Sorry!");
+          }
+          bi = (bi + 1) % buffers.length;
+        }
+        handle.setIds(ids, what);
+        return handle;
+      }
+
+      let ids = loopPlay(buffers, channelnumbers);
+      return constructResourceHandle("audio loop", what, ids, endLoops);
     },
     "Starts playing wt| at the next measure start on |channel.  If |channel is not provided, the sound is played on the first 2 channels. If |channel and/or |wt are lists, Vodka will do its best to match up sounds with channels."
   );
