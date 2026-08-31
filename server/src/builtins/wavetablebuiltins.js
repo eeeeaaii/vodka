@@ -52,7 +52,7 @@ import {
   getConstantSignalFromValue,
   frequencyToNoteNum,
 } from "../wavetablefunctions.js";
-import { forEachSpectrum } from "../fft.js";
+import { forEachSpectrum, hannWindow } from "../fft.js";
 import { loopPlay, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying } from "../webaudio.js";
 import { constructClip } from "../nex/clip.js";
 import { Tag } from "../tag.js";
@@ -1091,6 +1091,140 @@ function createWavetableBuiltins() {
       return r;
     },
     "Returns a wavetable ramping from one to zero. Length is given by |len. Timebase tag (nn, secs, hz, b, samps) is on |len."
+  );
+
+  /*
+  Changing how long a sound is without changing its pitch means cutting it into
+  overlapping pieces and laying them back down at a different spacing. Laid down
+  at the spacing they came from, the pieces still line up and nothing has moved;
+  at any other spacing they do not, and where two pieces disagree about where a
+  waveform is you hear a click.
+
+  So each piece is not taken from exactly where the arithmetic says, but from
+  the best matching place within a short distance of it -- the place where the
+  wave continues most like the piece before it did. That search is the whole
+  trick, and it is why this sounds like the sound rather than like a stutter.
+  */
+  const STRETCH_FRAME = 2048;
+  const STRETCH_MAX_OUTPUT = 10000000;
+
+  // the raw samples rather than valueAtSample, because this runs a few million
+  // times and valueAtSample takes a modulus on every one of them
+  function bestMatchOffset(src, dur, ideal, wanted, search, compare) {
+    let best = ideal;
+    let bestScore = -Infinity;
+    for (let k = ideal - search; k <= ideal + search; k++) {
+      if (k < 0 || k + compare >= dur) continue;
+      let score = 0;
+      for (let i = 0; i < compare; i++) {
+        score += src[k + i] * wanted[i];
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        best = k;
+      }
+    }
+    return best;
+  }
+
+  function timeStretched(wt, factor) {
+    let dur = wt.getDuration();
+    let outDur = Math.round(dur * factor);
+    if (outDur < 1) outDur = 1;
+
+    let frame = Math.min(STRETCH_FRAME, dur);
+    let hopOut = Math.floor(frame / 2);
+    if (hopOut < 1) {
+      // too short to cut into pieces at all
+      let r = constructWavetable(outDur);
+      let data = r.getData();
+      for (let i = 0; i < outDur; i++) {
+        data[i] = wt.valueAtSample(Math.floor(i / factor));
+      }
+      r.init();
+      return r;
+    }
+    let hopIn = hopOut / factor;
+    let search = Math.floor(hopOut / 2);
+    // half a hop is enough to say whether two places line up, and the search
+    // costs the length of this times the width of it on every frame
+    let compare = Math.max(1, Math.floor(hopOut / 2));
+    let src = wt.getData();
+
+    let window = hannWindow(frame);
+    let r = constructWavetable(outDur);
+    let data = r.getData();
+    // hann at half a frame sums to one, but not at the two ends, so the window
+    // is added up as well and divided out
+    let weight = new Float64Array(outDur);
+    let wanted = new Float64Array(compare);
+    let previousEnd = 0;
+
+    for (let m = 0; ; m++) {
+      let outAt = m * hopOut;
+      if (outAt >= outDur) break;
+      let ideal = Math.round(m * hopIn);
+      let from = ideal;
+      if (m > 0) {
+        for (let i = 0; i < compare; i++) {
+          let at = previousEnd + i;
+          wanted[i] = at < dur ? src[at] : 0;
+        }
+        from = bestMatchOffset(src, dur, ideal, wanted, search, compare);
+      }
+      if (from < 0) from = 0;
+      if (from > dur - 1) from = dur - 1;
+      for (let i = 0; i < frame; i++) {
+        let o = outAt + i;
+        if (o >= outDur) break;
+        let at = from + i;
+        if (at >= dur) break;
+        data[o] += src[at] * window[i];
+        weight[o] += window[i];
+      }
+      previousEnd = from + hopOut;
+    }
+    /*
+    Dividing by the window sum puts the level right where the windows overlap
+    properly. Where they do not -- the very ends -- the sum goes to nothing,
+    and dividing by nothing turns the last few samples into a bang. Below half
+    a window the sum is left alone, so the ends fade instead.
+    */
+    for (let i = 0; i < outDur; i++) {
+      data[i] /= weight[i] > 0.5 ? weight[i] : 0.5;
+    }
+    r.init();
+    return r;
+  }
+
+  Builtin.createBuiltin(
+    "time-stretch",
+    ["wt_", "amount#%"],
+    function $timeStretch(env, executionEnvironment) {
+      let wt = env.lb("wt");
+      let amount = env.lb("amount");
+      let dur = wt.getDuration();
+      if (dur < 2) {
+        return constructFatalError("time-stretch: nothing to stretch. Sorry!");
+      }
+
+      // tagged with a timebase it is the length you want; untagged it is how
+      // many times longer to make it
+      let factor;
+      if (explicitTimebase(amount)) {
+        factor = convertTimeToSamples(amount) / dur;
+      } else {
+        factor = amount.getTypedValue();
+      }
+      if (!(factor > 0)) {
+        return constructFatalError("time-stretch: length must be more than zero. Sorry!");
+      }
+      if (Math.round(dur * factor) > STRETCH_MAX_OUTPUT) {
+        return constructFatalError("time-stretch: that would be too long to hold. Sorry!");
+      }
+      return timeStretched(wt, factor);
+    },
+    "Makes wt| |amount times longer without changing its pitch, which is not what resample-by does -- that changes both together. Tag |amount with a timebase (nn, secs, hz, b, samps) and it is the length you want rather than a multiple of the one you have. Works by laying overlapping pieces of the sound back down at a different spacing, choosing each piece from the place it fits best, so a long stretch of anything rhythmic will eventually sound like it is smearing rather than slowing."
   );
 
   Builtin.createBuiltin(
