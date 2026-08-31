@@ -336,22 +336,44 @@ function anyMidiNotesSounding() {
 // never tracked.
 function midiPanic() {
 	if (!midi) return;
-	let channelsTouched = {};
+
+	/*
+	A sequence hands the browser a whole cycle of messages at once, each with
+	the time it should go out. Sending a note off now does not cancel any of
+	them -- the note on that was already queued arrives afterwards and the note
+	comes back. So the queue has to be thrown away first, and clear() is the
+	only thing that does it.
+
+	This drops what every sequence on the port had scheduled, which is why it
+	belongs to the stop button and not to any one clip stopping.
+	*/
+	for (let entry of midi.outputs) {
+		let out = entry[1];
+		if (out.clear) {
+			out.clear();
+		}
+	}
+
 	for (let k in soundingNotes) {
 		let n = soundingNotes[k];
-		channelsTouched[n.portId + ':' + n.channel] = n;
 		let out = midi.outputs.get(n.portId);
 		if (out) {
 			out.send([statusByte(0x80, n.channel), n.note, 0]);
 		}
 		delete soundingNotes[k];
 	}
-	for (let k in channelsTouched) {
-		let n = channelsTouched[k];
-		let out = midi.outputs.get(n.portId);
-		// cc 123, all notes off
-		if (out) {
-			out.send([statusByte(0xB0, n.channel), 123, 0]);
+
+	/*
+	Every channel, not only the ones soundingNotes knows about. Only
+	send-midi-note records anything there -- a play-midi sequence records
+	nothing, so going by that list meant a running sequence got no all notes
+	off at all, which is exactly the case the stop button is for.
+	*/
+	for (let entry of midi.outputs) {
+		let out = entry[1];
+		for (let channel = 1; channel <= 16; channel++) {
+			// cc 123, all notes off
+			out.send([statusByte(0xB0, channel), 123, 0]);
 		}
 	}
 }
