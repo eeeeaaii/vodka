@@ -91,11 +91,12 @@ class KeyDispatcher {
 				evaluateAndKeep(rn)
 			}
 		} else if (this.getClipboardCommand(eventName) == 'cut') {
-			manipulator.doCut();
+			enqueueAndPerformAction(actionFactory('cut'));
 		} else if (this.getClipboardCommand(eventName) == 'copy') {
+			// copy does not change the document, so there is nothing to undo
 			manipulator.doCopy();
 		} else if (this.getClipboardCommand(eventName) == 'paste') {
-			manipulator.doPaste();
+			enqueueAndPerformAction(actionFactory('paste'));
 		} else if (eventName == 'Escape' && !systemState.getGlobalSelectedNode().usingEditor()) {
 			this.toggleGlobalExplodedMode();
 		} else {
