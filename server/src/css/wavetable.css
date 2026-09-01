@@ -70,6 +70,16 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	margin-bottom: 2px;
 }
 
+body.hidewavecontrols .wavecontrols {
+	display: none;
+}
+
+/* with the controls gone there is nothing marking where a wave starts and
+   stops, and where it stops is the thing being looked at */
+body.hidewavecontrols .waveviewport {
+	border: 1px solid var(--unselected-border);
+}
+
 .wavecontrol {
 	background-color: var(--wave-control-background);
 	color: var(--wave-control-text);
