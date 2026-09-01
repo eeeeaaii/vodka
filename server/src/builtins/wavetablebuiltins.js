@@ -2208,25 +2208,41 @@ function createWavetableBuiltins() {
 
   Builtin.createBuiltin(
     "repeat",
-    ["wt_", "reps#?"],
+    ["wt_", "reps#%?"],
     function $repeat(env, executionEnvironment) {
       let wt = env.lb("wt");
-      let times = 1;
-      if (times != UNBOUND) {
-        times = env.lb("reps").getTypedValue();
-      }
+      let reps = env.lb("reps");
       let wtdur = wt.getDuration();
-      let dur = wtdur * times;
+      if (wtdur < 1) {
+        return constructFatalError("repeat: there is nothing to repeat. Sorry!");
+      }
+
+      // tagged with a timebase it is the length to fill, untagged it is how
+      // many times round
+      let dur;
+      if (reps == UNBOUND) {
+        dur = wtdur;
+      } else if (explicitTimebase(reps)) {
+        dur = convertTimeToSamples(reps);
+      } else {
+        dur = Math.round(wtdur * reps.getTypedValue());
+      }
+      if (!(dur >= 1)) {
+        return constructFatalError("repeat: that is not long enough to hold anything. Sorry!");
+      }
+      if (dur > STRETCH_MAX_OUTPUT) {
+        return constructFatalError("repeat: that would be too long to hold. Sorry!");
+      }
+
       let r = constructWavetable(dur);
       let data = r.getData();
-
       for (let i = 0; i < dur; i++) {
         data[i] = wt.valueAtSample(i % wtdur);
       }
       r.init();
       return r;
     },
-    "Repeats (loops) a sample a number of times exactly equal to |reps."
+    "Repeats wt| |reps times over. Tag |reps with a timebase (nn, secs, hz, b, samps) and it is the length to fill instead, so a one cycle wave repeated for a beat lasts exactly a beat, with the last time round cut off wherever it lands. Without |reps you get one copy."
   );
 
   Builtin.createBuiltin(
