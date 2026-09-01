@@ -750,6 +750,7 @@ function actionFactory(actionName, eventName) {
 		case 'do-nothing':
 			return new NoOpAction(actionName);
 		case 'audition-wave':
+		case 'toggle-wave-controls':
 			return new TriviallyUndoableKeyResponseFunctionAction(actionName);
 		case 'move-left-up':
 		case 'move-right-down':
