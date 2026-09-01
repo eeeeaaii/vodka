@@ -310,6 +310,56 @@ function maybeCreateAudioContext() {
 		channelMergerNode = ctx.createChannelMerger(ctx.destination.maxChannelCount);
 		channelMergerNode.connect(ctx.destination);
 	}
+	// a suspended context's clock does not advance, and everything in the cycle
+	// is scheduled against that clock
+	if (ctx.state == 'suspended') {
+		ctx.resume();
+	}
+}
+
+let silentKeepAlive = null;
+let warnedAboutMissingAudioClock = false;
+
+// getOutputTimestamp answers zeros until the context has produced output, so the
+// midi clock needs something playing whenever anything is in the cycle.
+function startSilentKeepAlive() {
+	maybeCreateAudioContext();
+	if (silentKeepAlive) return;
+	let buffer = ctx.createBuffer(1, Math.round(ctx.sampleRate), ctx.sampleRate);
+	let source = ctx.createBufferSource();
+	source.buffer = buffer;
+	source.loop = true;
+	let gain = ctx.createGain();
+	gain.gain.value = 0;
+	source.connect(gain);
+	gain.connect(ctx.destination);
+	source.start();
+	silentKeepAlive = source;
+}
+
+function audioClockIsReady() {
+	if (!ctx || ctx.state != 'running') return false;
+	let ts = ctx.getOutputTimestamp();
+	return !!(ts && ts.performanceTime > 0 && ts.contextTime != undefined);
+}
+
+// The first cycle waits for a clock to exist rather than starting against a
+// context time of zero, which would put every midi message in the past.
+function whenAudioClockIsReady(f) {
+	startSilentKeepAlive();
+	if (audioClockIsReady()) {
+		Promise.resolve().then(f);
+		return;
+	}
+	let tries = 0;
+	let check = function() {
+		if (audioClockIsReady() || ++tries > 200) {
+			f();
+			return;
+		}
+		window.setTimeout(check, 5);
+	};
+	window.setTimeout(check, 5);
 }
 
 function getAudioBufferFromData(data) {
@@ -527,7 +577,7 @@ function addCycleMember(loop) {
 	*/
 	if (!cycleRunning) {
 		cycleRunning = true;
-		Promise.resolve().then(function() {
+		whenAudioClockIsReady(function() {
 			startCycleAt(ctx.currentTime);
 		});
 	}
@@ -651,10 +701,14 @@ so the output buffer delay is already in the answer.
 */
 function contextTimeToPerformanceTime(contextTime) {
 	let ts = ctx.getOutputTimestamp();
-	if (ts && ts.contextTime != undefined && ts.performanceTime != undefined) {
+	// A context that has not produced output answers with zeros, not with nothing.
+	if (ts && ts.contextTime != undefined && ts.performanceTime > 0) {
 		return ts.performanceTime + (contextTime - ts.contextTime) * 1000;
 	}
-	// no timestamp available: fall back to the current time plus the gap
+	if (!warnedAboutMissingAudioClock) {
+		warnedAboutMissingAudioClock = true;
+		console.log('vodka: no audio clock, midi timing will drift from audio');
+	}
 	return performance.now() + (contextTime - ctx.currentTime) * 1000;
 }
 
