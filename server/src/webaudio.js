@@ -310,6 +310,11 @@ function maybeCreateAudioContext() {
 		channelMergerNode = ctx.createChannelMerger(ctx.destination.maxChannelCount);
 		channelMergerNode.connect(ctx.destination);
 	}
+	// a suspended context's clock does not advance, and everything in the cycle
+	// is scheduled against that clock
+	if (ctx.state == 'suspended') {
+		ctx.resume();
+	}
 }
 
 function getAudioBufferFromData(data) {
@@ -651,7 +656,14 @@ so the output buffer delay is already in the answer.
 */
 function contextTimeToPerformanceTime(contextTime) {
 	let ts = ctx.getOutputTimestamp();
-	if (ts && ts.contextTime != undefined && ts.performanceTime != undefined) {
+	/*
+	A context that has not produced any output yet answers with zeros rather
+	than with nothing, and zero is a real performanceTime as far as the test
+	below is concerned. Anchoring to it puts every midi message at its context
+	time in milliseconds, which is however long the page has been open in the
+	past -- so the browser sends the whole sequence at once, immediately.
+	*/
+	if (ts && ts.contextTime != undefined && ts.performanceTime > 0) {
 		return ts.performanceTime + (contextTime - ts.contextTime) * 1000;
 	}
 	// no timestamp available: fall back to the current time plus the gap
