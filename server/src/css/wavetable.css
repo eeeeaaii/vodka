@@ -70,6 +70,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	margin-bottom: 2px;
 }
 
+body.hidewavecontrols .wavecontrols {
+	display: none;
+}
+
 .wavecontrol {
 	background-color: var(--wave-control-background);
 	color: var(--wave-control-text);
