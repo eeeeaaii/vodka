@@ -423,8 +423,22 @@ class RenderNode {
 		let childFlags = renderFlags;
 		if (useFlags & RENDER_FLAG_RENDER_IF_DIRTY) {
 			if (this.nex.getDirtyForRendering() || this.getRenderNodeDirtyForRendering()) {
-				// from here on down, normal rendering.
-				childFlags &= (~RENDER_FLAG_RENDER_IF_DIRTY);
+				/*
+				Rendering this node detaches its children but does not destroy
+				them: each child render node still holds its own dom node, and
+				it is put back a few lines below. So a child that is not itself
+				dirty does not need rebuilding, and leaving the flag on is what
+				lets it say so and return.
+
+				Exploded mode is the exception -- children are drawn a different
+				way, so every one of them has to be done again.
+				*/
+				let explodedChanged =
+						this.isCurrentlyExploded != !!(useFlags & RENDER_FLAG_EXPLODED);
+				if (explodedChanged || !experiments.SHALLOW_DIRTY_RENDER) {
+					// from here on down, normal rendering.
+					childFlags &= (~RENDER_FLAG_RENDER_IF_DIRTY);
+				}
 			} else {
 				// not dirty but children might be!
 				for (let i = 0; i < this.childnodes.length; i++) {
