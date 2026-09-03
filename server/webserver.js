@@ -85,6 +85,10 @@ async function processRequest(req, resp) {
 			sendResponse(resp, 401, 'text/html', "no session id on API request.", 'ERROR');
 			return;
 		}
+		if (apiSessionId != 'packages' && !isLegalSessionId(apiSessionId)) {
+			sendResponse(resp, 400, 'text/html', "bad session id on API request.", 'ERROR');
+			return;
+		}
 		loadRequestBody(req, function(data) {
 			// need to do something with the promise or the method will exit early I guess?
 			serviceApiRequest(apiSessionId, resp, data)
@@ -430,10 +434,25 @@ function containsIllegalFilenameCharacters(fn) {
 	return !isIdentifier;
 }
 
+/*
+A session id names a directory, so anything in it that is not an identifier can
+walk out of the sessions directory and into the rest of the disk. The file name
+has always been checked; this is the other half of the path.
+
+isGeneratedSessionId only looks at the prefix, so a generated id needs checking
+too -- the prefix says where the directory lives, not that the rest of the name
+is safe.
+*/
+function isLegalSessionId(sessionId) {
+	return typeof sessionId === 'string' && /^[a-zA-Z0-9_-]+$/.test(sessionId);
+}
+
 function getSessionDirectory(sessionId, localAccessOnly) {
 	let r = '';
 	if (sessionId == 'packages' && (!localAccessOnly || webenv_vars.isLocal)) {
 		r = './packages/'
+	} else if (!isLegalSessionId(sessionId)) {
+		return null;
 	} else if (isGeneratedSessionId(sessionId)) {
 		r = `./sessions/${sessionId}/`;
 	} else {
@@ -451,6 +470,9 @@ async function serviceApiSaveRequest(data, sessionId) {
 		return `v2:?"save failed (illegal filename). Sorry!"`;
 	}
 	let sessionDirectory = getSessionDirectory(sessionId, true /*local only*/);
+	if (!sessionDirectory) {
+		return `v2:?"save failed (bad session). Sorry!"`;
+	}
 	if (isLibraryFile && sessionDirectory != './packages/') {
 		return `v2:?"save failed: the filename suffix '-functions' is reserved for library files, but you are trying to save this in a non-library session.  Sorry!"`;
 	}
@@ -489,7 +511,11 @@ async function writeProtectSession(sessionId) {
 }
 
 async function serviceApiLoadRequestUserSession(nm, sessionId, fallback) {
-	let path = `${getSessionDirectory(sessionId)}/${nm}`;
+	let sessionDirectory = getSessionDirectory(sessionId);
+	if (!sessionDirectory) {
+		return `v2:?"load failed (bad session). Sorry!"`;
+	}
+	let path = `${sessionDirectory}/${nm}`;
 	try {
 		return await fsPromises.readFile(path);
 	} catch (err) {
