@@ -364,7 +364,10 @@ function whenAudioClockIsReady(f) {
 
 function getAudioBufferFromData(data) {
   maybeCreateAudioContext();
-	let buffer = ctx.createBuffer(1, data.length, SAMPLE_RATE);
+	// createBuffer throws on nothing at all, and one silent frame sounds like
+	// what a wave with no samples should sound like
+	let frames = data.length > 0 ? data.length : 1;
+	let buffer = ctx.createBuffer(1, frames, SAMPLE_RATE);
 	let chan = buffer.getChannelData(0);
 	chan.set(data);	
 	return buffer;

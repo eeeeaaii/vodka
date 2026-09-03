@@ -1505,6 +1505,17 @@ function constructWavetable(initSize) {
 	if (!initSize) {
 		initSize = 256;
 	}
+	/*
+	Float32Array truncates a fractional length rather than refusing it, so a
+	size below one becomes a wave with no samples -- and nothing below one is
+	falsy, so the test above lets it through. That wave cannot be given an
+	audio buffer, which is where it finally fails, a long way from whoever
+	asked for it.
+	*/
+	initSize = Math.floor(initSize);
+	if (initSize < 1) {
+		initSize = 1;
+	}
 	let sizeRequired = heap.sizeWavetable() + initSize * heap.incrementalSizeWavetable();
 	if (!heap.requestMem(sizeRequired)) {
 		throw constructFatalError(`OUT OF MEMORY: cannot allocate Wavetable.
