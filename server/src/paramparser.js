@@ -29,6 +29,7 @@ variadics are packaged up inside a list of some type (maybe a word)
 */
 
 import { BUILTIN_ARG_PREFIX } from "./environment.js";
+import { lexParam, typeUnionOf } from "./paramlexer.js";
 import { experiments } from "./globalappflags.js";
 
 class ParamParser {
@@ -47,7 +48,7 @@ class ParamParser {
   }
 
   parseString(str) {
-    let hasReturnVal = /^[~!@#$%^𝒞&*?(),.]+/.test(str);
+    let hasReturnVal = /^[~!@#$%^&*?(),.\u03ba\u03bc]+/.test(str);
     let a = str.split(" ");
     if (hasReturnVal) {
       a[0] = "\\" + a[0];
@@ -75,79 +76,34 @@ class ParamParser {
     }
   }
 
+  /*
+  The spec is lexed rather than picked apart by hand. A builtin's spec is a
+  constant written here in the source, so one that does not lex is a mistake to
+  be shouted about at startup; a lambda's is being typed by someone and is
+  half-finished most of the time, so that one just says no for now.
+  */
   parseParam(s) {
-    let originals = s;
-    let skipeval = false;
-    let variadic = false;
-    let optional = false;
-    let skipactivate = false;
-    let convert = true;
-    // we re-parse every time the user changes the args
-    // when they are editing the args -- this means that there are transition states
-    // while they are typing when the args may not make sense and it's just okay.
-    if (s.charAt(0) == "_") {
-      skipeval = true;
-      s = s.substring(1);
-      if (s == "") return null;
+    let lexed = lexParam(s);
+    if (lexed.error) {
+      if (this.isBuiltin) {
+        throw new Error("bad builtin argument spec: " + lexed.error);
+      }
+      return null;
     }
-
-    if (s.charAt(0) == "=") {
-      convert = false;
-      s = s.substring(1);
-      if (s == "") return null;
-    }
-
-    if (s.length >= 3 && s.endsWith("...")) {
-      variadic = true;
-      s = s.substring(0, s.length - 3);
-      if (s == "") return null;
-    }
-    if (s.endsWith("?")) {
-      optional = true;
-      s = s.substring(0, s.length - 1);
-      if (s == "") return null;
-    }
-    let groups = s.match(/([a-zA-Z0-9_-]*[a-zA-Z0-9-])(.*)/);
-    let typeString;
-    if (groups) {
-      typeString = groups[2];
-      s = groups[1];
-    } else {
-      // No identifier characters at all, so the whole token is a bare type code
-      // with no name. That's how a return value is declared: parseString() spots
-      // a leading type code and marks it with a backslash, so "#% lst()" means
-      // "returns an integer or float, takes a container called lst". Keep the
-      // backslash as the name, because parse() routes on it and lambda.js strips
-      // it back off when rebuilding the lambda's display text.
-      let isReturnValue = (s.charAt(0) == "\\");
-      typeString = isReturnValue ? s.substring(1) : s;
-      s = isReturnValue ? "\\" : "";
-    }
-
-    let typeValidator = this.getTypeValidator(typeString);
-    if (typeString == ",") {
-      // is this deprecated?
-      skipactivate = true;
-    }
-    // why not if '*'?
-    // if (typeValidator != "*") {
-    //   s = s.substring(0, s.length - typeString.length);
-    //   if (s == "") return null;
-    // }
+    let name = lexed.isReturnValue ? "\\" : lexed.name;
     if (this.isBuiltin) {
-      s = BUILTIN_ARG_PREFIX + s;
+      name = BUILTIN_ARG_PREFIX + name;
     }
-    // TODO: make this a more solid data type with a memUsed function etc.
     return {
-      name: s,
-      debugName: originals,
-      typeString: typeString,
-      type: typeValidator,
-      skipeval: skipeval,
-      skipactivate: skipactivate,
-      variadic: variadic,
-      optional: optional,
-      convert: convert,
+      name: name,
+      debugName: s,
+      typeString: lexed.typeString,
+      type: typeUnionOf(lexed.types),
+      skipeval: lexed.skipeval,
+      skipactivate: lexed.skipactivate,
+      variadic: lexed.variadic,
+      optional: lexed.optional,
+      convert: lexed.convert,
     };
   }
 
@@ -165,60 +121,6 @@ class ParamParser {
   //     }
   //   }
 
-  getTypeValidator(typeString) {
-    let r = "*";
-    for (let i = 0; i < typeString.length; i++) {
-      let typechar = typeString.charAt(i);
-      let type = "";
-      switch (typechar) {
-        case "!":
-          type = "Bool";
-          break;
-        case "~":
-          type = "Command";
-          break;
-        case "*":
-          type = "Deferred";
-          break;
-        case "(":
-          type = "NexContainer";
-          break;
-        case "$":
-          type = "EString";
-          break;
-        case "@":
-          type = "ESymbol";
-          break;
-        case "%":
-          type = "Float";
-          break;
-        case "#":
-          type = "Integer";
-          break;
-        case "_":
-          type = "Wavetable";
-          break;
-        case "^":
-          type = "Instantiator";
-          break;
-        case "&":
-          type = "Closure";
-          break;
-        case "к":
-          type = "Contract";
-          break;
-      }
-      if (r == "*") {
-        r = type;
-      } else {
-        r = r + "|" + type;
-      }
-      if (typechar == "(") {
-        i++;
-      }
-    }
-    return r;
-  }
 }
 
 export { ParamParser };

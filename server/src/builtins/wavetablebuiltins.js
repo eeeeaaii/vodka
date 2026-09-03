@@ -86,7 +86,7 @@ function createWavetableBuiltins() {
 
   Builtin.createBuiltin(
     "toggle-playback",
-    ["clip"],
+    ["clipμ"],
     function $togglePlayback(env, executionEnvironment) {
       let clip = env.lb("clip");
       if (Utils.isNil(clip)) return goneClipError("toggle-playback");
@@ -109,7 +109,7 @@ function createWavetableBuiltins() {
 
   Builtin.createBuiltin(
     "is-playing",
-    ["clip"],
+    ["clipμ"],
     function $isPlaying(env, executionEnvironment) {
       let clip = env.lb("clip");
       if (Utils.isNil(clip)) return goneClipError("is-playing");
@@ -146,7 +146,7 @@ function createWavetableBuiltins() {
 
   Builtin.createBuiltin(
     "play",
-    ["wt_", "channelsorclip?"],
+    ["wt_", "channelsorclip#%()μ?"],
     function $loopPlay(env, executionEnvironment) {
       let wt = env.lb("wt");
 
