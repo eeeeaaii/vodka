@@ -2377,11 +2377,17 @@ function createWavetableBuiltins() {
     if (hasTagNamed(point, "of-total") || (list && hasTagNamed(list, "of-total"))) {
       return Math.round(point.getTypedValue() * total);
     }
-    let timebase = null;
-    if (point.numTags() > 0) {
-      timebase = nexToTimebase(point);
-    } else if (list && list.numTags() > 0) {
-      timebase = nexToTimebase(list);
+    let timebase = explicitTimebase(point);
+    if (!timebase && list) {
+      timebase = explicitTimebase(list);
+    }
+    /*
+    No tag means a sample offset. Going through the default timebase read a
+    plain 0.5 as half a beat, and made split-points-of impossible to feed back
+    in -- that hands back sample offsets, and they were being read as beats.
+    */
+    if (!timebase) {
+      return Math.round(point.getTypedValue());
     }
     return convertTimeToSamples(point, timebase);
   }
@@ -2406,8 +2412,11 @@ function createWavetableBuiltins() {
         // the same range the editor enforces: a slice at either end would make
         // an empty section
         if (!(at >= 1 && at <= total - 1)) {
-          return constructFatalError(
-              "set-split-points: split point " + at + " is not inside the wave. Sorry!");
+          // both numbers, because a tagged point converts to something the
+          // caller never typed and reporting only that reads as nonsense
+          return constructFatalError("set-split-points: " + each[i].getTypedValue()
+              + " is sample " + at + ", which is not inside this "
+              + total + " sample wave. Sorry!");
         }
         marks.push(at);
       }
@@ -2422,7 +2431,7 @@ function createWavetableBuiltins() {
       r.cacheSections();
       return r;
     },
-    "Returns a copy of wt| with split points at |points, the same ones you get by pressing v while editing a wave. |points is one number or a list of them, and n of them give n+1 slices. They are lengths, so they can be tagged with a timebase, and additionally with of-total to read them as a fraction of this wave -- 0.5 of-total is halfway along. A tag on the list applies to every point in it."
+    "Returns a copy of wt| with split points at |points, the same ones you get by pressing v while editing a wave. |points is one number or a list of them, and n of them give n+1 slices. Untagged they are sample offsets, which is what split-points-of hands back, so its output can go straight back in. Tag one with a timebase (nn, secs, hz, b, samps) to give it as a length instead, or with of-total to read it as a fraction of this wave -- 0.5 of-total is halfway along. A tag on the list applies to every point in it."
   );
 
   Builtin.createBuiltin(
