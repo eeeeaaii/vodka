@@ -153,7 +153,8 @@ class ArgEvaluator {
     let isAllowedType = false;
     for (let j = 0; j < allowedTypes.length; j++) {
       let expectedType = allowedTypes[j];
-      let typeChecksOut = ArgEvaluator.ARG_VALIDATORS[expectedType](argnex);
+      let validator = ArgEvaluator.ARG_VALIDATORS[expectedType];
+      let typeChecksOut = validator ? validator(argnex) : false;
       if (typeChecksOut) {
         isAllowedType = true;
         break;
@@ -350,6 +351,7 @@ ArgEvaluator.ARG_VALIDATORS = {
   Lambda: (arg) => arg.getTypeName() == "-lambda-",
   Closure: (arg) => arg.getTypeName() == "-closure-",
   Contract: (arg) => arg.getTypeName() == "-contract-",
+  Clip: (arg) => arg.getTypeName() == "-clip-",
 };
 
 export {
