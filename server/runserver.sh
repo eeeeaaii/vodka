@@ -29,4 +29,6 @@ USAGE
 fi
 
 
-node webserver.js
+# Running it yourself means it is yours to save into. A deployed vodka leaves
+# this unset and keeps nothing -- see writesAllowed in webserver.js.
+VODKA_WEBENV="${VODKA_WEBENV:-local}" node webserver.js
