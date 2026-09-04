@@ -62,6 +62,22 @@ const INSERT_AROUND = 4;
 
 const MAX_SIBLING_COUNT = 1000;
 
+// there is one selection, so there is at most one insertion pip. Tracking
+// it lets selection changes move it without re-rendering anything.
+let liveInsertionPips = [];
+
+function registerInsertionPip(el) {
+	liveInsertionPips = liveInsertionPips.filter(p => p.isConnected);
+	liveInsertionPips.push(el);
+}
+
+function removeLiveInsertionPips() {
+	for (let p of liveInsertionPips) {
+		p.remove();
+	}
+	liveInsertionPips = [];
+}
+
 /**
  * Represents a rectangle on the screen where a nex is actually rendered or
  * displayed.
@@ -152,6 +168,7 @@ class RenderNode {
 
 	stopEditing() {
 		this.setCurrentEditor(null);
+		this.setRenderNodeDirtyForRendering(true);
 		// set parent dirty when you stop editing because of redrawing pips
 		let p = this.getParent();
 		let toSetDirty = p ? p : this;
@@ -244,6 +261,8 @@ class RenderNode {
 		}
 		this.setCurrentEditor(editor);
 		this.getCurrentEditor().startEditing();
+		// the node's own chrome changes too, not just the parent's pips
+		this.setRenderNodeDirtyForRendering(true);
 		let p = this.getParent();
 		let toSetDirty = p ? p : this;
 		toSetDirty.nex.setDirtyForRendering(true);
@@ -423,8 +442,22 @@ class RenderNode {
 		let childFlags = renderFlags;
 		if (useFlags & RENDER_FLAG_RENDER_IF_DIRTY) {
 			if (this.nex.getDirtyForRendering() || this.getRenderNodeDirtyForRendering()) {
-				// from here on down, normal rendering.
-				childFlags &= (~RENDER_FLAG_RENDER_IF_DIRTY);
+				/*
+				Rendering this node detaches its children but does not destroy
+				them: each child render node still holds its own dom node, and
+				it is put back a few lines below. So a child that is not itself
+				dirty does not need rebuilding, and leaving the flag on is what
+				lets it say so and return.
+
+				Exploded mode is the exception -- children are drawn a different
+				way, so every one of them has to be done again.
+				*/
+				let explodedChanged =
+						this.isCurrentlyExploded != !!(useFlags & RENDER_FLAG_EXPLODED);
+				if (explodedChanged || !experiments.SHALLOW_DIRTY_RENDER) {
+					// from here on down, normal rendering.
+					childFlags &= (~RENDER_FLAG_RENDER_IF_DIRTY);
+				}
 			} else {
 				// not dirty but children might be!
 				for (let i = 0; i < this.childnodes.length; i++) {
@@ -466,11 +499,14 @@ class RenderNode {
 			if ((useFlags & RENDER_FLAG_EXPLODED) && this.insertionMode == INSERT_INSIDE) {
 				this.doInsertionPip(this);
 			}
+			// getChildAt walks the child list from the head every call, so
+			// snapshot the children once instead of paying c squared
+			let childNexes = this.getNex().getChildArray();
 			let i = 0;
 			for (i = 0; i < this.childnodes.length; i++) {
-				if (i >= this.getNex().numChildren()) {
+				if (i >= childNexes.length) {
 					// oops, we lost children since the last time we rendered
-					this.childnodes.splice(i, this.getNex().numChildren() - i);
+					this.childnodes.splice(i, childNexes.length - i);
 					// example:
 					// there were 5 nodes.
 					// two were deleted, now there are just 3.
@@ -483,10 +519,10 @@ class RenderNode {
 				}
 				let childRenderNode = this.childnodes[i];
 
-				if (childRenderNode.getNex().getID() != this.getNex().getChildAt(i).getID()) {
+				if (childRenderNode.getNex().getID() != childNexes[i].getID()) {
 					// the child changed since the last time we rendered!!!
 					// need to fix.
-					this.childnodes[i] = childRenderNode = new RenderNode(this.getNex().getChildAt(i));
+					this.childnodes[i] = childRenderNode = new RenderNode(childNexes[i]);
 					this.childnodes[i].setParent(this, i);
 				}
 				childRenderNode.setRenderDepth(this.renderDepth + 1);
@@ -510,10 +546,10 @@ class RenderNode {
 					this.doInsertionPip(childRenderNode);
 				}
 			}
-			if (i < (this.getNex().numChildren())) {
+			if (i < childNexes.length) {
 				// oops, more nodes added since the last time we rendered.
 
-				let n = this.getNex().numChildren();
+				let n = childNexes.length;
 				// if we are exploded we trust the user to just render the right number of things
 				// this might be bad
 				let truncated = false;
@@ -522,13 +558,13 @@ class RenderNode {
 					truncated = true;
 				}
 				for ( ; i < n; i++) {
-					this.renderNewChildAt(i, childFlags, useFlags, true);
+					this.renderNewChildAt(childNexes[i], i, childFlags, useFlags, true);
 				}
 				if (truncated) {
 					// we are truncating because too many children, first display the ellipses
 					this.domNode.appendChild(this.getSiblingCountExceededDomElement());
 					// then put last child, so it's like 1, 2, 3 ... 1000
-					this.renderNewChildAt(this.getNex().numChildren() - 1, childFlags, useFlags, false);
+					this.renderNewChildAt(childNexes[childNexes.length - 1], childNexes.length - 1, childFlags, useFlags, false);
 				}
 			}
 		}
@@ -540,8 +576,8 @@ class RenderNode {
 		this.setRenderNodeDirtyForRendering(false);
 	}
 
-	renderNewChildAt(i, childFlags, useFlags, doChildNode) {
-		let newNode = new RenderNode(this.getNex().getChildAt(i));
+	renderNewChildAt(childNex, i, childFlags, useFlags, doChildNode) {
+		let newNode = new RenderNode(childNex);
 		newNode.setParent(this, i);
 		newNode.setRenderDepth(this.renderDepth + 1);
 		if (doChildNode) {
@@ -565,6 +601,10 @@ class RenderNode {
 	// INSERT_INSIDE
 
 	doInsertionPip(selectedNode) {
+		this.domNode.appendChild(this.makeInsertionPip(selectedNode));
+	}
+
+	makeInsertionPip(selectedNode) {
 		let pip = document.createElement('div');
 		pip.classList.add('insertionpip');
 
@@ -614,7 +654,8 @@ class RenderNode {
 		}
 
 		pip.innerHTML = "&bull;";
-		this.domNode.appendChild(pip);
+		registerInsertionPip(pip);
+		return pip;
 	}
 
 	doInsertionSquare(i, childRenderNode) {
@@ -640,17 +681,53 @@ class RenderNode {
 		if (Utils.isRoot(this.nex)) {
 			mode = (mode == INSERT_UNSPECIFIED) ? mode : INSERT_INSIDE;
 		}
-		if (mode != this.insertionMode) {
+		if (mode == this.insertionMode) {
+			return false; // no change
+		}
+		let oldMode = this.insertionMode;
+		this.insertionMode = mode;
+		if (oldMode == INSERT_AROUND || mode == INSERT_AROUND) {
+			// the square wraps the child's dom node, so wrapping and
+			// unwrapping is the parent's render to do
+			this.setRenderNodeDirtyForRendering(true);
 			let p = this.getParent();
 			if (p) {
 				p.setRenderNodeDirtyForRendering(true);
-			} else {
-				this.setRenderNodeDirtyForRendering(true);
 			}
-			this.insertionMode = mode;
+			eventQueueDispatcher.enqueueRenderOnlyDirty()
 			return true;
-		} else {
-			return false; // no change
+		}
+		if (this.nex.rendersInsertionClasses()) {
+			// letters, words and lines show the mode as a class on themselves
+			this.setRenderNodeDirtyForRendering(true);
+			eventQueueDispatcher.enqueueRenderOnlyDirty()
+		}
+		this.refreshInsertionPip();
+		return true;
+	}
+
+	refreshInsertionPip() {
+		removeLiveInsertionPips();
+		let mode = this.insertionMode;
+		if (mode == INSERT_BEFORE || mode == INSERT_AFTER) {
+			let p = this.getParent();
+			if (!p || !p.isCurrentlyExploded) return;
+			if (this.domNode.parentNode != p.getDomNode()) {
+				// not where a pip can go next to it -- let a render sort it out
+				p.setRenderNodeDirtyForRendering(true);
+				eventQueueDispatcher.enqueueRenderOnlyDirty()
+				return;
+			}
+			let pip = p.makeInsertionPip(this);
+			let anchor = (mode == INSERT_BEFORE) ? this.domNode : this.domNode.nextSibling;
+			p.getDomNode().insertBefore(pip, anchor);
+		} else if (mode == INSERT_INSIDE) {
+			if (!this.isCurrentlyExploded || !this.nex.isNexContainer() || this.getCollapsed()) return;
+			let firstChildDom = null;
+			if (this.childnodes.length > 0 && this.childnodes[0].getDomNode().parentNode == this.domNode) {
+				firstChildDom = this.childnodes[0].getDomNode();
+			}
+			this.domNode.insertBefore(this.makeInsertionPip(this), firstChildDom);
 		}
 	}
 
@@ -709,28 +786,23 @@ class RenderNode {
 	// TODO: this is confusing because you might think that the boolean passed in tells it whether
 	// or not to make the thing selected.
 	setSelected(rerender) {
-		// when we change the selection state we have to set the parent dirty because the parent
-		// render node of the selected render node is responsible for drawing the insertion pip
 		let selectedNode = systemState.getGlobalSelectedNode();
 		if (selectedNode == this) return;
 		if (selectedNode) {
 			selectedNode.setUnselected();
-			selectedNode.setRenderNodeDirtyForRendering(true);
-			if (selectedNode.getParent()) {
-				selectedNode.getParent().setRenderNodeDirtyForRendering(true);
-			}
-			eventQueueDispatcher.enqueueRenderOnlyDirty()
+			selectedNode.applySelectionClass();
 		}
-		selectedNode = this;
 		this.selected = true;
-		let nex = this.getNex();
-		this.setInsertionMode(this.getDefaultInsertionMode(nex));
-		selectedNode.setRenderNodeDirtyForRendering(true);
-		if (selectedNode.getParent()) {
-			selectedNode.getParent().setRenderNodeDirtyForRendering(true);
-		}
+		this.setInsertionMode(this.getDefaultInsertionMode(this.getNex()));
+		this.applySelectionClass();
+		systemState.setGlobalSelectedNode(this);
 		eventQueueDispatcher.enqueueRenderOnlyDirty()
-		systemState.setGlobalSelectedNode(selectedNode);
+	}
+
+	applySelectionClass() {
+		if (this.domNode) {
+			this.domNode.classList.toggle('newselected', this.selected);
+		}
 	}
 
 	setUnselected() {

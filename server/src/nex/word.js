@@ -42,6 +42,10 @@ class Word extends NexContainer {
 		this.setHorizontal();
 	}
 
+	rendersInsertionClasses() {
+		return true;
+	}
+
 	getTypeName() {
 		return '-word-';
 	}

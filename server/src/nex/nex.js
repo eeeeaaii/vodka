@@ -151,8 +151,14 @@ class Nex {
 	// in evaluatorinterface.js.
 	rootLevelPostEvaluationStep() {}
 
+	rendersInsertionClasses() {
+		return false;
+	}
+
 	setOnNextRenderCallback(callback) {
 		this.onNextRenderCallback = callback;
+		// the callback fires from this nex's next render, so there has to be one
+		this.renderOnlyThisNex();
 	}
 
 	doOnNextRenderCallback() {

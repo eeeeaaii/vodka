@@ -221,8 +221,7 @@ class Wavetable extends Nex {
 		this.recordedChunks = [];
 		this.recordedLength = 0;
 		this.recording = true;
-		this.setDirtyForRendering(true);
-		eventQueueDispatcher.enqueueTopLevelRender();
+		this.renderOnlyThisNex();
 	}
 
 	/*
@@ -246,8 +245,7 @@ class Wavetable extends Nex {
 			at += this.recordedChunks[i].length;
 		}
 		this.data = joined;
-		this.setDirtyForRendering(true);
-		eventQueueDispatcher.enqueueTopLevelRender();
+		this.renderOnlyThisNex();
 	}
 
 	stopRecording() {
@@ -259,15 +257,13 @@ class Wavetable extends Nex {
 		}
 		// the amplitude and the playback buffer, once, now that it is over
 		this.cacheValues();
-		this.setDirtyForRendering(true);
-		eventQueueDispatcher.enqueueTopLevelRender();			
+		this.renderOnlyThisNex();
 	}
 
 	setRecordedData(buf) {
 		this.data = Float32Array.from(buf);
 		this.cacheValues();
-		this.setDirtyForRendering(true);
-		eventQueueDispatcher.enqueueTopLevelRender();			
+		this.renderOnlyThisNex();
 	}
 
 	startEditing() {
@@ -297,12 +293,12 @@ class Wavetable extends Nex {
 		this.markers.push(this.centerSample);
 		this.markers = this.markers.sort((a, b) => { return a - b; })
 		this.cacheSections();
-		eventQueueDispatcher.enqueueTopLevelRender();			
+		this.renderOnlyThisNex();
 	}
 
 	deleteMarker(i) {
 		this.markers.splice(i, 1);
-		eventQueueDispatcher.enqueueTopLevelRender();			
+		this.renderOnlyThisNex();
 	}
 
 	getData() {
@@ -671,8 +667,7 @@ class Wavetable extends Nex {
 				this.playheadOffset = sd.start;
 				this.playbackStartSample = this.centerSample;
 				startAuditioningBuffer(sd.cachedBuffer, this, 0, false /* momentary */);
-				this.setDirtyForRendering(true);
-				eventQueueDispatcher.enqueueTopLevelRender();
+				this.renderOnlyThisNex();
 				this.startPlayheadAnimation();
 			}
 		}
@@ -748,8 +743,7 @@ class Wavetable extends Nex {
 			startAuditioningBuffer(this.cachedBuffer, this, 0, false /* momentary */);
 			// outside the editor there is no playhead layer yet -- this is the
 			// render that adds one
-			this.setDirtyForRendering(true);
-			eventQueueDispatcher.enqueueTopLevelRender();
+			this.renderOnlyThisNex();
 			this.startPlayheadAnimation();
 		}
 	}
@@ -795,8 +789,7 @@ class Wavetable extends Nex {
 			}
 			this.playbackStartSample = -1;
 			this.updatePlayhead();
-			this.setDirtyForRendering(true);
-			eventQueueDispatcher.enqueueTopLevelRender();			
+			this.renderOnlyThisNex();
 		}
 	}
 
@@ -914,7 +907,7 @@ class Wavetable extends Nex {
 			initialAmpZoom = this.getHeightPixelsFullScale();
 			initialWindowOrigin = this.windowOriginSample;
 			// enqueue a redraw for the center line
-			eventQueueDispatcher.enqueueTopLevelRender();			
+			this.renderOnlyThisNex();
 		}
 		let movefunction = (e) => {
 			let y = e.clientY;
@@ -933,7 +926,7 @@ class Wavetable extends Nex {
 				this.setWindowOriginSample(
 						initialWindowOrigin - (x - startx) / this.getPixelsPerSample());
 				this.updatePlayhead();
-				eventQueueDispatcher.enqueueTopLevelRender();
+				this.renderOnlyThisNex();
 				return;
 			}
 			let delta = (Math.abs(deltaX) > Math.abs(deltaY)) ? deltaX : deltaY;
@@ -961,7 +954,7 @@ class Wavetable extends Nex {
 				let samplesInWindow = t.windowWidth() / this.getPixelsPerSample();
 				t.setWindowOriginSample(anchorSample - (samplesInWindow * positionOfClickInWindow));
 			}
-			eventQueueDispatcher.enqueueTopLevelRender();			
+			this.renderOnlyThisNex();
 		}
 		/*
 		A click places the playhead; a drag zooms and leaves it alone. Deciding
@@ -976,7 +969,7 @@ class Wavetable extends Nex {
 			if (!dragged && !this.doingPan && this.isEditing && !this.auditioning) {
 				this.changeCenterSample(downOffsetX);
 				this.updatePlayhead();
-				eventQueueDispatcher.enqueueTopLevelRender();
+				this.renderOnlyThisNex();
 			}
 			this.doingPan = false;
 		}
@@ -1099,8 +1092,7 @@ class Wavetable extends Nex {
 		timelabel.innerText = '' + n + ' ' + suffix;
 		timelabel.onmousedown = (event) => {
 			this.advanceToNextTimebase();
-			this.setDirtyForRendering(true);
-			eventQueueDispatcher.enqueueTopLevelRender();			
+			this.renderOnlyThisNex();
 			event.stopPropagation();
 			event.preventDefault();
 			return false;
