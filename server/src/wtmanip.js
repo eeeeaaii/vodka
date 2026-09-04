@@ -2,10 +2,19 @@ import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 
 class ManipulatorDragHandler {
 
-	setup(domobject, listener) {
+	redraw() {
+		if (this.renderTarget) {
+			this.renderTarget.renderOnlyThisNex();
+		} else {
+			eventQueueDispatcher.enqueueTopLevelRender();
+		}
+	}
+
+	setup(domobject, listener, renderTarget) {
 		let t = this;
 		this.domobject = domobject;
 		this.listener = listener;
+		this.renderTarget = renderTarget;
 
 		domobject.onmousedown = (e) => {
 			t.startDrag(e);
@@ -28,7 +37,7 @@ class ManipulatorDragHandler {
 			starty: this.starty,
 			startx: this.startx
 		});
-		eventQueueDispatcher.enqueueTopLevelRender();			
+		this.redraw();
 	}
 
 	drag(e) {
@@ -43,7 +52,7 @@ class ManipulatorDragHandler {
 			deltaY: deltaY,
 			deltaX: deltaX
 		})
-		eventQueueDispatcher.enqueueTopLevelRender();			
+		this.redraw();
 	}
 
 	stopDrag(e) {
@@ -60,7 +69,7 @@ class ManipulatorDragHandler {
 			deltaY: deltaY,
 			deltaX: deltaX
 		})
-		eventQueueDispatcher.enqueueTopLevelRender();			
+		this.redraw();
 	}
 }
 
@@ -76,13 +85,13 @@ function setupCloseButton() {
 function setupHorizZoom(wt) {
 	let wtm = document.getElementById('wtmhorizzoom');
 	currentDragHandler = new ManipulatorDragHandler();
-	currentDragHandler.setup(wtm, wt.getHorizZoomListener());
+	currentDragHandler.setup(wtm, wt.getHorizZoomListener(), wt);
 }
 
 function setupHorizScroll(wt) {
 	let wtm = document.getElementById('wtmhorizscroll');
 	currentDragHandler = new ManipulatorDragHandler();
-	currentDragHandler.setup(wtm, wt.getHorizScrollListener());
+	currentDragHandler.setup(wtm, wt.getHorizScrollListener(), wt);
 }
 
 function showManipulator(wt) {
