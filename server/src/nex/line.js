@@ -169,13 +169,11 @@ class Line extends NexContainer {
 		}
 		// weird
 		let hasDocChild = false;
-		for (let i = 0; i < this.numChildren() ;i++) {
-			let c = this.getChildAt(i);
+		this.doForEachChild(function(c) {
 			if (Utils.isDocElement(c)) {
 				hasDocChild = true;
-				break;
 			}
-		}
+		});
 		if ((!(renderFlags & RENDER_FLAG_EXPLODED)) && !hasDocChild) {
 			domNode.classList.add('emptyline');
 		} else {

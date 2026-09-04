@@ -483,11 +483,14 @@ class RenderNode {
 			if ((useFlags & RENDER_FLAG_EXPLODED) && this.insertionMode == INSERT_INSIDE) {
 				this.doInsertionPip(this);
 			}
+			// getChildAt walks the child list from the head every call, so
+			// snapshot the children once instead of paying c squared
+			let childNexes = this.getNex().getChildArray();
 			let i = 0;
 			for (i = 0; i < this.childnodes.length; i++) {
-				if (i >= this.getNex().numChildren()) {
+				if (i >= childNexes.length) {
 					// oops, we lost children since the last time we rendered
-					this.childnodes.splice(i, this.getNex().numChildren() - i);
+					this.childnodes.splice(i, childNexes.length - i);
 					// example:
 					// there were 5 nodes.
 					// two were deleted, now there are just 3.
@@ -500,10 +503,10 @@ class RenderNode {
 				}
 				let childRenderNode = this.childnodes[i];
 
-				if (childRenderNode.getNex().getID() != this.getNex().getChildAt(i).getID()) {
+				if (childRenderNode.getNex().getID() != childNexes[i].getID()) {
 					// the child changed since the last time we rendered!!!
 					// need to fix.
-					this.childnodes[i] = childRenderNode = new RenderNode(this.getNex().getChildAt(i));
+					this.childnodes[i] = childRenderNode = new RenderNode(childNexes[i]);
 					this.childnodes[i].setParent(this, i);
 				}
 				childRenderNode.setRenderDepth(this.renderDepth + 1);
@@ -527,10 +530,10 @@ class RenderNode {
 					this.doInsertionPip(childRenderNode);
 				}
 			}
-			if (i < (this.getNex().numChildren())) {
+			if (i < childNexes.length) {
 				// oops, more nodes added since the last time we rendered.
 
-				let n = this.getNex().numChildren();
+				let n = childNexes.length;
 				// if we are exploded we trust the user to just render the right number of things
 				// this might be bad
 				let truncated = false;
@@ -539,13 +542,13 @@ class RenderNode {
 					truncated = true;
 				}
 				for ( ; i < n; i++) {
-					this.renderNewChildAt(i, childFlags, useFlags, true);
+					this.renderNewChildAt(childNexes[i], i, childFlags, useFlags, true);
 				}
 				if (truncated) {
 					// we are truncating because too many children, first display the ellipses
 					this.domNode.appendChild(this.getSiblingCountExceededDomElement());
 					// then put last child, so it's like 1, 2, 3 ... 1000
-					this.renderNewChildAt(this.getNex().numChildren() - 1, childFlags, useFlags, false);
+					this.renderNewChildAt(childNexes[childNexes.length - 1], childNexes.length - 1, childFlags, useFlags, false);
 				}
 			}
 		}
@@ -557,8 +560,8 @@ class RenderNode {
 		this.setRenderNodeDirtyForRendering(false);
 	}
 
-	renderNewChildAt(i, childFlags, useFlags, doChildNode) {
-		let newNode = new RenderNode(this.getNex().getChildAt(i));
+	renderNewChildAt(childNex, i, childFlags, useFlags, doChildNode) {
+		let newNode = new RenderNode(childNex);
 		newNode.setParent(this, i);
 		newNode.setRenderDepth(this.renderDepth + 1);
 		if (doChildNode) {
