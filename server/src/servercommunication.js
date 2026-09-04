@@ -22,6 +22,7 @@ import { constructFatalError } from './nex/eerror.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { parse } from './nexparser2.js';
 import { AudioCollector, encode as encodeContainer, decode as decodeContainer } from './audiocontainer.js';
+import { hasLiveIndex } from './deployment.js';
 import { SerializationContext, SERIALIZE_FILE } from './serializationcontext.js'
 import { systemState } from './systemstate.js'
 
@@ -64,7 +65,47 @@ function sendToServer(payload, cb, errcb) {
 	}
 }
 
+/*
+Reading a file that ships with the app is a plain GET, so it works the same
+whether the vodka server is answering or a static host is. Only writes still
+need the api, and only the vodka server allows those.
+*/
+function fetchShippedFile(name) {
+	return fetch('packages/' + encodeURIComponent(name)).then(function (r) {
+		if (!r.ok) throw new Error('not found');
+		return r.text();
+	});
+}
+
+/*
+A live server reads its own directory, so a file added while you work shows up
+without a rebuild. A static host was given the list at build time.
+*/
+function fetchIndex(which) {
+	return fetch(which + '/index.json').then(function (r) {
+		if (!r.ok) throw new Error('no index');
+		return r.json();
+	});
+}
+
+function namesToOrgPayload(names) {
+	let quoted = names.map(function (n) { return '"' + n + '"'; }).join(' ');
+	return 'v2:(| ' + quoted + ' |)';
+}
+
+function listFromIndex(which, callback) {
+	fetchIndex(which).then(function (names) {
+		parseReturnPayload(namesToOrgPayload(names), callback);
+	}).catch(function () {
+		callback(serverError());
+	});
+}
+
 function listFiles(callback) {
+	if (!hasLiveIndex()) {
+		listFromIndex('packages', callback);
+		return;
+	}
 	let payload = `listfiles`;
 
 	sendToServer(payload, function(data) {
@@ -75,6 +116,10 @@ function listFiles(callback) {
 }
 
 function listAudio(callback) {
+	if (!hasLiveIndex()) {
+		listFromIndex('sounds', callback);
+		return;
+	}
 	let payload = `listaudio`;
 
 	sendToServer(payload, function(data) {
@@ -86,6 +131,10 @@ function listAudio(callback) {
 
 
 function listStandardFunctionFiles(callback) {
+	if (!hasLiveIndex()) {
+		listFromIndex('packages', callback);
+		return;
+	}
 	let payload = `liststandardfunctionfiles`;
 
 	sendToServer(payload, function(data) {
@@ -97,6 +146,16 @@ function listStandardFunctionFiles(callback) {
 
 
 function loadNex(name, callback) {
+	if (!hasLiveIndex()) {
+		fetchShippedFile(name).then(function (text) {
+			document.title = name;
+			systemState.setDefaultFileName(name);
+			parseReturnPayload(text, callback);
+		}).catch(function () {
+			callback(serverError());
+		});
+		return;
+	}
 	let payload = `load\t${name}`;
 
 	sendToServer(payload, function(data) {
@@ -156,6 +215,16 @@ function importNex(name, callback) {
 }
 
 function loadAndRun(name, callback) {
+	if (!hasLiveIndex()) {
+		fetchShippedFile(name).then(function (text) {
+			parseReturnPayload(text, function (parsed) {
+				callback(evaluateNexSafely(parsed, BINDINGS));
+			});
+		}).catch(function () {
+			callback(serverError());
+		});
+		return;
+	}
 	let payload = `load\t${name}`;
 
 	sendToServer(payload, function(data) {

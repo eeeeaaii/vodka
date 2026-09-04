@@ -46,15 +46,19 @@ while [ "$1" != "" ]; do
 		--quiet)
 			LOG_ARGS="--log-level=error"
 			;;
+		--static)
+			MAKE_STATIC=1
+			;;
 		--help|-h)
 			cat <<'USAGE'
-usage: ./build.sh [--dev|--watch] [--quiet]
+usage: ./build.sh [--dev|--watch] [--quiet] [--static]
 
 Bundles the vodka client into server/dist/.
 
   --dev     unminified, with sourcemaps
   --watch   unminified, rebuild on change
   --quiet   report errors only, not warnings
+  --static  also write server/static/, a folder any web server can serve
   --help    this message
 
 Writing to server/dist/ changes what the running server serves, immediately.
@@ -66,7 +70,7 @@ USAGE
 			;;
 		*)
 			echo "build.sh: unknown option '$1'"
-			echo "usage: ./build.sh [--dev|--watch] [--quiet]"
+			echo "usage: ./build.sh [--dev|--watch] [--quiet] [--static]"
 			exit 1
 			;;
 	esac
@@ -94,3 +98,7 @@ npx esbuild src/vodkastart.js \
 
 echo "vodka build: done. Files written:"
 ls -lh dist | tail -n +2 | awk '{ printf "vodka build:   %-28s %s\n", $9, $5 }'
+
+if [ "$MAKE_STATIC" = "1" ]; then
+	node tools/makestatic.js ./static
+fi

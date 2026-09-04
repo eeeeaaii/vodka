@@ -15,3 +15,4 @@ server/dist/
 testing/alltests/*/goldens/*/*.backup.png
 .venv-audio/
 tools/soundcatalog/out/embeddings.npz
+server/static/
