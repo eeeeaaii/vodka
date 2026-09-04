@@ -61,11 +61,20 @@ function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 		}
 
 		browserEvent.stopPropagation();
+		/*
+		setSelected already marks the node losing selection, the node gaining
+		it, and both their parents, and asks for a render of what is dirty.
+		Rendering the whole document on top of that is the cost of every click,
+		and it grows with the size of the document rather than with what
+		changed.
+		*/
 		renderNode.setSelected();
 		if (insertAfterRemove && systemState.getGlobalSelectedNode() != oldSelectedNode) {
+			let wasIn = oldSelectedNode.getParent();
 			manipulator.removeNex(oldSelectedNode);
+			if (wasIn) wasIn.setRenderNodeDirtyForRendering(true);
 		}
-		eventQueueDispatcher.enqueueImportantTopLevelRender();
+		eventQueueDispatcher.enqueueRenderOnlyDirty();
 	}
 }
 
