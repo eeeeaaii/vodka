@@ -1,11 +1,16 @@
 import MenuButton from './menubutton.jsx'
-import { QUICK_REFERENCE, BASE_API, SOUND_API, ABSTRACT_DATA_TYPES, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
+import { WELCOME, QUICK_REFERENCE, BASE_API, SOUND_API, ABSTRACT_DATA_TYPES, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
 
-// Only the first four are tabs -- the last two are actions, so they never
+// Only the first five are tabs -- the last two are actions, so they never
 // show as selected.
 const TopMenu = ({ selectedMenuChoice, onMenuChange }) => {
     return (
         <div className="helpmenupanel">
+            <MenuButton
+                key="WELCOME"
+                text="Welcome"
+                selected={selectedMenuChoice == WELCOME}
+                onMenuButtonClick={() => onMenuChange(WELCOME)} />
             <MenuButton
                 key="QUICK_REFERENCE"
                 text="Quick Reference"
