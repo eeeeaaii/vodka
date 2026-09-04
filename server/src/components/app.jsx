@@ -42,7 +42,7 @@ function initialUiState() {
 const App = () => {
     let [ uiState, setUiState ] = useState(initialUiState);
     // opens on the quick reference, since welcome is no longer a tab
-    let [ panel, setPanel ] = useState(BASIC_USAGE_PANEL);
+    let [ panel, setPanel ] = useState(WELCOME_PANEL);
 
     // While the help panel is up, keystrokes belong to the panel, not to the
     // editor underneath it -- otherwise typing scrolls/inserts nexes behind
