@@ -44,7 +44,14 @@ function createMidiBuiltins() {
 			dv.set(new GenericActivationFunctionGenerator(
 				'list-midi-ports', 
 				function(callback, exp) {
-					getMidiPorts(function(devs) {
+					getMidiPorts(function(devs, err) {
+						// an error rather than nothing, so anything waiting on
+						// this gets to carry on rather than waiting forever
+						if (err) {
+							callback(constructFatalError(
+									'list-midi-ports: no midi access in this browser. Sorry!'));
+							return;
+						}
 						// devices will just be a string
 						// convert to nice estrings
 						let r = constructOrg();
@@ -115,7 +122,12 @@ function createMidiBuiltins() {
 			dv.set(new GenericActivationFunctionGenerator(
 				'open-midi-port',
 				function(callback, exp) {
-					openMidiPort(idstr, function(desc) {
+					openMidiPort(idstr, function(desc, err) {
+						if (err) {
+							callback(constructFatalError(
+									'open-midi-port: no midi access in this browser. Sorry!'));
+							return;
+						}
 						if (!desc) {
 							callback(constructFatalError(
 									`open-midi-port: no port with id ${idstr}. Sorry!`));
