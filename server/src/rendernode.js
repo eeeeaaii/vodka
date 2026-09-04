@@ -62,6 +62,22 @@ const INSERT_AROUND = 4;
 
 const MAX_SIBLING_COUNT = 1000;
 
+// there is one selection, so there is at most one insertion pip. Tracking
+// it lets selection changes move it without re-rendering anything.
+let liveInsertionPips = [];
+
+function registerInsertionPip(el) {
+	liveInsertionPips = liveInsertionPips.filter(p => p.isConnected);
+	liveInsertionPips.push(el);
+}
+
+function removeLiveInsertionPips() {
+	for (let p of liveInsertionPips) {
+		p.remove();
+	}
+	liveInsertionPips = [];
+}
+
 /**
  * Represents a rectangle on the screen where a nex is actually rendered or
  * displayed.
@@ -585,6 +601,10 @@ class RenderNode {
 	// INSERT_INSIDE
 
 	doInsertionPip(selectedNode) {
+		this.domNode.appendChild(this.makeInsertionPip(selectedNode));
+	}
+
+	makeInsertionPip(selectedNode) {
 		let pip = document.createElement('div');
 		pip.classList.add('insertionpip');
 
@@ -634,7 +654,8 @@ class RenderNode {
 		}
 
 		pip.innerHTML = "&bull;";
-		this.domNode.appendChild(pip);
+		registerInsertionPip(pip);
+		return pip;
 	}
 
 	doInsertionSquare(i, childRenderNode) {
@@ -660,17 +681,53 @@ class RenderNode {
 		if (Utils.isRoot(this.nex)) {
 			mode = (mode == INSERT_UNSPECIFIED) ? mode : INSERT_INSIDE;
 		}
-		if (mode != this.insertionMode) {
-			// self draws the inside pip and the insert classes, parent draws the rest
+		if (mode == this.insertionMode) {
+			return false; // no change
+		}
+		let oldMode = this.insertionMode;
+		this.insertionMode = mode;
+		if (oldMode == INSERT_AROUND || mode == INSERT_AROUND) {
+			// the square wraps the child's dom node, so wrapping and
+			// unwrapping is the parent's render to do
 			this.setRenderNodeDirtyForRendering(true);
 			let p = this.getParent();
 			if (p) {
 				p.setRenderNodeDirtyForRendering(true);
 			}
-			this.insertionMode = mode;
+			eventQueueDispatcher.enqueueRenderOnlyDirty()
 			return true;
-		} else {
-			return false; // no change
+		}
+		if (this.nex.rendersInsertionClasses()) {
+			// letters, words and lines show the mode as a class on themselves
+			this.setRenderNodeDirtyForRendering(true);
+			eventQueueDispatcher.enqueueRenderOnlyDirty()
+		}
+		this.refreshInsertionPip();
+		return true;
+	}
+
+	refreshInsertionPip() {
+		removeLiveInsertionPips();
+		let mode = this.insertionMode;
+		if (mode == INSERT_BEFORE || mode == INSERT_AFTER) {
+			let p = this.getParent();
+			if (!p || !p.isCurrentlyExploded) return;
+			if (this.domNode.parentNode != p.getDomNode()) {
+				// not where a pip can go next to it -- let a render sort it out
+				p.setRenderNodeDirtyForRendering(true);
+				eventQueueDispatcher.enqueueRenderOnlyDirty()
+				return;
+			}
+			let pip = p.makeInsertionPip(this);
+			let anchor = (mode == INSERT_BEFORE) ? this.domNode : this.domNode.nextSibling;
+			p.getDomNode().insertBefore(pip, anchor);
+		} else if (mode == INSERT_INSIDE) {
+			if (!this.isCurrentlyExploded || !this.nex.isNexContainer() || this.getCollapsed()) return;
+			let firstChildDom = null;
+			if (this.childnodes.length > 0 && this.childnodes[0].getDomNode().parentNode == this.domNode) {
+				firstChildDom = this.childnodes[0].getDomNode();
+			}
+			this.domNode.insertBefore(this.makeInsertionPip(this), firstChildDom);
 		}
 	}
 
@@ -729,28 +786,23 @@ class RenderNode {
 	// TODO: this is confusing because you might think that the boolean passed in tells it whether
 	// or not to make the thing selected.
 	setSelected(rerender) {
-		// when we change the selection state we have to set the parent dirty because the parent
-		// render node of the selected render node is responsible for drawing the insertion pip
 		let selectedNode = systemState.getGlobalSelectedNode();
 		if (selectedNode == this) return;
 		if (selectedNode) {
 			selectedNode.setUnselected();
-			selectedNode.setRenderNodeDirtyForRendering(true);
-			if (selectedNode.getParent()) {
-				selectedNode.getParent().setRenderNodeDirtyForRendering(true);
-			}
-			eventQueueDispatcher.enqueueRenderOnlyDirty()
+			selectedNode.applySelectionClass();
 		}
-		selectedNode = this;
 		this.selected = true;
-		let nex = this.getNex();
-		this.setInsertionMode(this.getDefaultInsertionMode(nex));
-		selectedNode.setRenderNodeDirtyForRendering(true);
-		if (selectedNode.getParent()) {
-			selectedNode.getParent().setRenderNodeDirtyForRendering(true);
-		}
+		this.setInsertionMode(this.getDefaultInsertionMode(this.getNex()));
+		this.applySelectionClass();
+		systemState.setGlobalSelectedNode(this);
 		eventQueueDispatcher.enqueueRenderOnlyDirty()
-		systemState.setGlobalSelectedNode(selectedNode);
+	}
+
+	applySelectionClass() {
+		if (this.domNode) {
+			this.domNode.classList.toggle('newselected', this.selected);
+		}
 	}
 
 	setUnselected() {

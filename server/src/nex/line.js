@@ -53,6 +53,10 @@ class Line extends NexContainer {
 
 
 	/** @override */
+	rendersInsertionClasses() {
+		return true;
+	}
+
 	getTypeName() {
 		return '-line-';
 	}
