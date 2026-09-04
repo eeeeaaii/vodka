@@ -152,6 +152,7 @@ class RenderNode {
 
 	stopEditing() {
 		this.setCurrentEditor(null);
+		this.setRenderNodeDirtyForRendering(true);
 		// set parent dirty when you stop editing because of redrawing pips
 		let p = this.getParent();
 		let toSetDirty = p ? p : this;
@@ -244,6 +245,8 @@ class RenderNode {
 		}
 		this.setCurrentEditor(editor);
 		this.getCurrentEditor().startEditing();
+		// the node's own chrome changes too, not just the parent's pips
+		this.setRenderNodeDirtyForRendering(true);
 		let p = this.getParent();
 		let toSetDirty = p ? p : this;
 		toSetDirty.nex.setDirtyForRendering(true);
@@ -655,11 +658,11 @@ class RenderNode {
 			mode = (mode == INSERT_UNSPECIFIED) ? mode : INSERT_INSIDE;
 		}
 		if (mode != this.insertionMode) {
+			// self draws the inside pip and the insert classes, parent draws the rest
+			this.setRenderNodeDirtyForRendering(true);
 			let p = this.getParent();
 			if (p) {
 				p.setRenderNodeDirtyForRendering(true);
-			} else {
-				this.setRenderNodeDirtyForRendering(true);
 			}
 			this.insertionMode = mode;
 			return true;
