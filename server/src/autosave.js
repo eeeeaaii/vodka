@@ -76,6 +76,20 @@ function writeStorage(key, value) {
 		// large enough that we should stop trying rather than retry every edit.
 		console.log('vodka: autosave failed (' + e.name + '), disabling for this session.');
 		disabled = true;
+		/*
+		Said out loud, not only to the console. This is the browser's only copy
+		of the document, so from here on nothing is being kept and reloading
+		loses whatever comes next. Once per session, because `disabled` means
+		we never come back through here.
+		*/
+		try {
+			window.alert('Vodka has stopped saving this session in the browser ('
+					+ e.name + ').\n\nAnything you do from now on will be lost if you '
+					+ 'reload. Export this session to a file from the Welcome tab to '
+					+ 'keep it.');
+		} catch (ignored) {
+			// an alert we cannot show is not worth failing over
+		}
 		return false;
 	}
 }
