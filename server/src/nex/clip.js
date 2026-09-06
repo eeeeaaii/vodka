@@ -17,8 +17,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Nex } from './nex.js'
 import { heap } from '../heap.js'
-import { getLoopPositionSamples, loopExists } from '../webaudio.js'
+import { getLoopPositionSamples, loopExists, muteLoops } from '../webaudio.js'
 import { getMidiLastNote } from '../midifunctions.js'
+import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 
 /*
 A clip is a running loop -- audio or midi -- as something you can hold. Made by
@@ -48,12 +49,54 @@ class Clip extends Nex {
 		this.ended = false;
 		this.posFrame = null;
 		this.posSpan = null;
+		/*
+		Two reasons a clip can be silent, kept apart because they are not each
+		other's business. The button is something you asked for; the collapse
+		one is bookkeeping that follows whether the nex is hidden. Uncollapsing
+		must not unmute something you muted on purpose, and pressing the button
+		twice inside a collapsed nex must not make it audible.
+		*/
+		this.mutedByUser = false;
+		this.mutedByCollapse = false;
 		// nothing here is yours to type over
 		this.setMutable(false);
 	}
 
 	getTypeName() {
 		return '-clip-';
+	}
+
+	isMuted() {
+		return this.mutedByUser || this.mutedByCollapse;
+	}
+
+	isMutedByUser() {
+		return this.mutedByUser;
+	}
+
+	// pressing the button means now
+	setMutedByUser(v) {
+		if (this.mutedByUser == !!v) return;
+		this.mutedByUser = !!v;
+		this.applyMute(true /* immediately */);
+	}
+
+	// being covered up means at the end of the pass -- what is sounding gets to
+	// finish, and the next time round does not start
+	setMutedByCollapse(v) {
+		if (this.mutedByCollapse == !!v) return;
+		this.mutedByCollapse = !!v;
+		this.applyMute(false /* at the cycle end */);
+	}
+
+	toggleMutedByUser() {
+		this.setMutedByUser(!this.mutedByUser);
+	}
+
+	applyMute(immediately) {
+		muteLoops(this.ids, this.isMuted(), !immediately);
+		this.setDirtyForRendering(true);
+		eventQueueDispatcher.enqueueRenderOnlyDirty();
 	}
 
 	getKind() {
@@ -86,6 +129,13 @@ class Clip extends Nex {
 		this.ids = ids;
 		if (what) this.what = what;
 		this.ended = false;
+		// the clip is the same clip, so a muted one stays muted across a
+		// replacement rather than coming back audible
+		// these loops have not started, so there is nothing playing to let
+		// finish and no difference between the two kinds of muting
+		if (this.isMuted()) {
+			muteLoops(this.ids, true, false /* immediately */);
+		}
 		this.setDirtyForRendering(true);
 	}
 
@@ -171,11 +221,49 @@ class Clip extends Nex {
 		this.posSpan.classList.add('clippos');
 		innerspans.appendChild(this.posSpan);
 
-		frame.appendChild(glyph);
+		// the glyph and the mute square share a column, so the square sits
+		// under the infinity sign rather than off at the end of the row
+		let glyphcol = document.createElement('div');
+		glyphcol.classList.add('sysglyphcol');
+		glyphcol.appendChild(glyph);
+		glyphcol.appendChild(this.createMuteButton());
+
+		frame.appendChild(glyphcol);
 		frame.appendChild(innerspans);
 		domNode.appendChild(frame);
 
+		if (this.isMuted()) {
+			domNode.classList.add('muted');
+		}
+
 		this.startPositionCounter();
+	}
+
+	/*
+	A square under the infinity sign: hollow when the clip can be heard, filled
+	when it cannot.
+
+	Only the button's own state is shown, because that is the only half you can
+	do anything about from here. A clip silenced by being collapsed is inside
+	something you cannot see anyway.
+
+	mousedown rather than click, and the event stops here: the same press would
+	otherwise go on to select the nex, which is what every other press on it
+	does.
+	*/
+	createMuteButton() {
+		let b = document.createElement('div');
+		b.classList.add('clipmute');
+		if (this.mutedByUser) {
+			b.classList.add('on');
+		}
+		b.onmousedown = (event) => {
+			this.toggleMutedByUser();
+			event.stopPropagation();
+			event.preventDefault();
+			return false;
+		}
+		return b;
 	}
 
 	isMidi() {
