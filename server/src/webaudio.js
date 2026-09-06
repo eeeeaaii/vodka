@@ -75,8 +75,17 @@ class AuditionPlayer {
 	}
 
 	abortPlay() {
-		this.source.stop();
-		this.source.disconnect(channelMergerNode);
+		/*
+		stop() raises on a node the browser has already finished with, and if
+		that got out of here the player would never be cleared and the sound
+		never stopped.
+		*/
+		try {
+			this.source.stop();
+			this.source.disconnect(channelMergerNode);
+		} catch (e) {
+			// already finished; nothing left to stop
+		}
 		auditioningPlayer = null;
 	}
 }
@@ -425,6 +434,9 @@ let nextCycleLoopId = 1;
 let cycleTimer = null;
 let cycleRunning = false;
 let cycleNextBoundaryTime = 0;
+// when the pass now playing began, which is what every loop's own repeats are
+// measured from -- they all start together at the top of the cycle
+let cycleStartedAt = 0;
 
 function cycleLengthSeconds() {
 	let longest = 0;
@@ -524,16 +536,20 @@ function startCycleAt(startTime) {
 		// A member that brings its own way of starting -- midi does, and
 		// schedules messages rather than making a sound.
 		if (loop.start) {
-			if (!loop.paused) loop.start(startTime, len);
+			if (!loop.paused && !loop.muted) loop.start(startTime, len);
 			continue;
 		}
-		if (loop.paused) continue;
+		// Muting is not pausing. Pausing is something you asked for and can
+		// undo with the same gesture; muting can also come from the nex being
+		// collapsed, and un-pausing must not undo that.
+		if (loop.paused || loop.muted) continue;
 		let node = getSourceFromBuffer(loop.buffer, true);
 		node.connect(channelMergerNode, 0, loop.channel);
 		node.start(startTime);
 		node.stop(startTime + len);
 		loop.node = node;
 	}
+	cycleStartedAt = startTime;
 	let nextBoundary = startTime + len;
 	cycleNextBoundaryTime = nextBoundary;
 	let wakeIn = (nextBoundary - CYCLE_LOOKAHEAD_SECONDS - ctx.currentTime) * 1000;
@@ -637,6 +653,111 @@ function pauseLoops(ids, paused) {
 
 // playing means in the cycle and not paused -- a clip whose loops have gone is
 // not playing either
+/*
+Silences the loops a clip owns without taking them out of the cycle, so they
+come back in phase. Independent of pausing on purpose: a clip can be both, and
+stops being silent only when neither says so.
+
+atCycleEnd is the difference between the two ways of asking. Pressing the
+button on a clip means now, and cuts the sound off where it is. Muting because
+the nex was collapsed means at the end of the pass: the flag is set and the
+note already sounding is left to finish, and the next time round the boundary
+simply does not start one, because startCycleAt skips a muted loop. Nothing has
+to be scheduled for later -- not starting is what happens by default.
+
+Unmuting always waits for the boundary, the same as unpausing: a loop that
+started again in the middle of a bar would be out of time with everything else.
+*/
+/*
+When a loop next comes back round to its own beginning.
+
+The cycle is as long as the longest loop, and a shorter one repeats inside that
+-- a four count loop in a six count cycle starts again at four. Its own
+boundaries are what matter for muting it: a four count loop told to stop should
+stop after four, not wait for the six. They are measured from the top of the
+cycle, because that is where every loop is started.
+
+Never returns the moment it is asked about, so a loop is always allowed to
+finish the repeat it is in the middle of.
+
+The answer can land past the end of the cycle, and for a loop whose length does
+not divide the cycle it usually does -- the four count loop's next own boundary
+after count five is eight, and the cycle ends at six. The caller compares
+against the cycle boundary; the node stops there regardless.
+*/
+function nextOwnBoundary(loop, after) {
+	let len = loop.lengthSeconds;
+	if (!(len > 0)) {
+		return cycleNextBoundaryTime;
+	}
+	let elapsed = after - cycleStartedAt;
+	let n = Math.floor(elapsed / len) + 1;
+	return cycleStartedAt + n * len;
+}
+
+function muteLoops(ids, muted, atCycleEnd) {
+	let found = false;
+	for (let i = 0; i < ids.length; i++) {
+		let loop = cycleLoops[ids[i]] || cyclePending[ids[i]];
+		if (!loop) continue;
+		found = true;
+		let was = loop.muted;
+		loop.muted = muted;
+
+		/*
+		Not skipped when the flag was already set, because the two kinds of
+		muting differ in urgency as well as in fact: a clip left to finish its
+		pass and then muted with the button has to be cut off now, and it is
+		already flagged muted when that happens.
+		*/
+		if (muted && !atCycleEnd) {
+			if (loop.stop) loop.stop();
+			if (loop.node) {
+				try { loop.node.stop(); } catch (e) {}
+				loop.node.disconnect();
+				loop.node = null;
+			}
+			continue;
+		}
+		if (muted) {
+			// already on its way out; asking again must not move the time
+			if (was) continue;
+			/*
+			Stop where this loop comes round again rather than where the cycle
+			does. Calling stop a second time replaces the time the first call
+			asked for, so the node that was going to run to the end of the
+			cycle is simply told to finish sooner; if its own boundary is later
+			than the cycle's there is nothing to change.
+			*/
+			if (loop.node) {
+				let at = nextOwnBoundary(loop, ctx.currentTime);
+				if (at < cycleNextBoundaryTime) {
+					try { loop.node.stop(at); } catch (e) {}
+				}
+			}
+			continue;
+		}
+		/*
+		Unmuting, and the same boundary decides when: the loop comes back where
+		it would have come back anyway, in phase with itself. If that is still
+		inside this pass it is started for the rest of the pass; if not, the
+		next pass starts it in the ordinary way.
+		*/
+		if (!was) continue;
+		if (!loop.start && !loop.node && cycleRunning) {
+			let at = nextOwnBoundary(loop, ctx.currentTime);
+			if (at < cycleNextBoundaryTime) {
+				let node = getSourceFromBuffer(loop.buffer, true);
+				node.connect(channelMergerNode, 0, loop.channel);
+				node.start(at);
+				node.stop(cycleNextBoundaryTime);
+				loop.node = node;
+			}
+		}
+	}
+	return found;
+}
+
 function loopsArePlaying(ids) {
 	for (let i = 0; i < ids.length; i++) {
 		let loop = cycleLoops[ids[i]] || cyclePending[ids[i]];
@@ -753,6 +874,32 @@ function abortPlayback(channel) {
 function startAuditioningBuffer(buffer, nex, startOffsetSamples, sustained) {
 	maybeCreateAudioContext();
 	checkChannelExists(settings.AUDIO_AUDITION_CHANNEL);
+
+	/*
+	Whatever was auditioning ends here, because there is only one of each of
+	these to point at it with.
+
+	Starting a second audition used to overwrite both, and the first player was
+	then playing with nothing referring to it. The audition source loops, so it
+	did not run out on its own, and maybeKillSound could only ever reach the
+	newest one -- so the sound went on for good, and pressing the key again only
+	started and stopped another player while the stuck one carried on. The
+	guards on the callers are per wavetable, so two different waves both get
+	through: audition one, select another, audition that, and the first is
+	stranded.
+
+	The old nex is told to stop as well, so it drops its playhead, but only when
+	it is a different one: the caller has already set its own flags by the time
+	it gets here, and clearing them would stop the animation it is about to
+	start.
+	*/
+	if (thingAuditioning && thingAuditioning != nex) {
+		thingAuditioning.stopAuditioningWave();
+	}
+	if (auditioningPlayer) {
+		auditioningPlayer.abortPlay();
+	}
+
 	auditioningPlayer = new AuditionPlayer(buffer, startOffsetSamples, sustained);
 	thingAuditioning = nex;
 }
@@ -791,22 +938,39 @@ function maybeKillSound(force) {
 	thingAuditioning = null;
 }
 
-function loadSample(fname, callback) {
-		getFileAsBuffer(fname).then(function(result) {
+// The two audio libraries are two directories; a single-cycle wave is read
+// exactly the way a drum hit is. Anything not in this table is not a library.
+const AUDIO_LIBRARY_DIRS = {
+	sample: 'sounds/',
+	wave: 'waves/',
+};
+
+function loadAudio(fname, library, callback, errback) {
+		let dir = AUDIO_LIBRARY_DIRS[library ? library : 'sample'];
+		if (!dir) {
+			errback(`no audio library called ${library}`);
+			return;
+		}
+		getFileAsBuffer(fname, dir).then(function(result) {
 			// getChannelData returns a float32 array but it still works
 			// TODO: this class stores an audio buffer
 			callback(result.getChannelData(0));
+		}).catch(function(e) {
+			// a missing file comes back as a 404 page, which is not audio, so
+			// the decode is usually what fails rather than the fetch
+			errback(`could not load ${dir}${fname}`);
 		})
 }
 
-async function getFileAsBuffer(filepath) {
+async function getFileAsBuffer(filepath, dir) {
   maybeCreateAudioContext();
-  const response = await fetch("sounds/" + filepath);
+  const response = await fetch((dir ? dir : "sounds/") + filepath);
+  if (!response.ok) throw new Error('not found');
   const arrayBuffer = await response.arrayBuffer();
   const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
   return audioBuffer;
 }
 
 
-export { getAudioBufferFromData, loadSample, addLoop, getAudioChannelCount, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { getAudioBufferFromData, loadAudio, muteLoops, addLoop, getAudioChannelCount, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 
