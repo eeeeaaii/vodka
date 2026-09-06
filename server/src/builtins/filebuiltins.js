@@ -104,6 +104,30 @@ function createFileBuiltins() {
 	taggable. So drop non-containers, and flip each folder horizontal -- one
 	very tall column per folder reads badly.
 	*/
+	/*
+	A listing is meant to be walked with dot syntax --
+
+		~(_bind @audio ~(_list-audio_)_)   then   @audio.sample.SB_003.Wobble_Tone
+
+	-- and each step of that is a tag looked up by name. The folders arrive
+	tagged already; the files arrive as bare strings, so they get a tag here.
+
+	The extension comes off both the tag and the name itself. A dot separates
+	one step of a walk from the next, so a tag ending in .wav could never be
+	reached, and once every name in the library is a wav the extension was only
+	ever four characters of noise. load-audio puts it back.
+	*/
+	function nameAudioFile(file) {
+		let full = file.getFullTypedValue();
+		let stripped = full.substring(0, full.length - '.wav'.length);
+		file.setFullValue(stripped);
+		let at = stripped.lastIndexOf('/');
+		let leaf = at == -1 ? stripped : stripped.substring(at + 1);
+		if (!file.hasTagWithString(leaf)) {
+			file.addTag(newTagOrThrowOOM(leaf, 'list-audio file name'));
+		}
+	}
+
 	function tidyAudioListing(files) {
 		if (!files.numChildren) {
 			return files;
@@ -120,6 +144,8 @@ function createFileBuiltins() {
 			for (let j = dir.numChildren() - 1; j >= 0; j--) {
 				if (!isWavFile(dir.getChildAt(j))) {
 					dir.removeChildAt(j);
+				} else {
+					nameAudioFile(dir.getChildAt(j));
 				}
 			}
 			if (dir.setHorizontal) {
@@ -250,12 +276,14 @@ function createFileBuiltins() {
 			deferredValue.activate();
 			return deferredValue;
 		},
-		'Lists the audio libraries: one org per folder, holding the wav files in '
+		'Lists the audio libraries: one org per folder, holding the audio files in '
 		+ 'it. With no tag you get every library, each as its own org tagged with '
 		+ 'its name; tag the command sample or wave to get just that one, and '
 		+ 'additionally with a folder name to get just that folder -- a folder tag '
 		+ 'needs its library tag alongside it. A name from this listing is what '
-		+ 'load-audio takes, along with the tag of the library it came from.'
+		+ 'load-audio takes. Names have no .wav on the end, and every library, '
+		+ 'folder and file is tagged with its own name, so a listing can be walked '
+		+ 'with dots: bind it to @audio and one sample is @audio.sample.SB-003.Wobble_Tone.'
 	);
 
 	Builtin.createBuiltin(
