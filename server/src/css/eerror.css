@@ -54,3 +54,27 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	padding-left:22px;
 	border: 3px solid var(--selected-border);
 }
+/*
+A repeated error counts up instead of repeating down the document. The count
+sits in its own box to the left of the message, with the error's own background
+showing between the two so they read as separate areas.
+*/
+.eerror > .errorheadline {
+	display: flex;
+	flex-direction: row;
+	align-items: stretch;
+	margin-bottom: 4px;
+}
+
+.eerror > .errorheadline > .innerspan {
+	margin-bottom: 0;
+	margin-left: 8px;
+}
+
+.eerror .repeatcount {
+	display: flex;
+	align-items: center;
+	padding: 0 5px;
+	background-color: var(--error-repeat-background);
+	color: var(--error-repeat-text);
+}

@@ -62,6 +62,41 @@ const INSERT_AROUND = 4;
 
 const MAX_SIBLING_COUNT = 1000;
 
+/*
+A collapsed nex is hidden, and something you cannot see should not still be
+making noise. So every clip inside one goes quiet for as long as it is covered,
+and comes back when it is uncovered.
+
+Worked out from the tree each time rather than tracked as it changes: collapses
+nest, and a clip inside two of them has to stay quiet until both are open,
+which is a counting problem if you record it as it happens and no problem at
+all if you just look. The tree is small and collapsing is something a person
+does by hand.
+
+Only the collapse half of muting is touched here. A clip you muted with its own
+button stays muted when it is uncovered, which is the point of their being two
+things.
+
+Duck typed rather than importing Clip, which would be a cycle.
+*/
+function updateCollapseMutes() {
+	let root = systemState.getRoot();
+	if (!root) {
+		return;
+	}
+	let walk = function(node, hidden) {
+		let hiddenHere = hidden || node.getCollapsed();
+		let nex = node.getNex();
+		if (nex.setMutedByCollapse) {
+			nex.setMutedByCollapse(hiddenHere);
+		}
+		for (let i = 0; i < node.childnodes.length; i++) {
+			walk(node.childnodes[i], hiddenHere);
+		}
+	};
+	walk(root, false);
+}
+
 // there is one selection, so there is at most one insertion pip. Tracking
 // it lets selection changes move it without re-rendering anything.
 let liveInsertionPips = [];
@@ -69,6 +104,42 @@ let liveInsertionPips = [];
 function registerInsertionPip(el) {
 	liveInsertionPips = liveInsertionPips.filter(p => p.isConnected);
 	liveInsertionPips.push(el);
+	scrollPipIntoView();
+}
+
+/*
+The pip is the cursor, so it has to stay on screen. #vodkaroot grows to fit the
+document rather than scrolling inside itself, so it is the window that scrolls,
+and moving the selection with the keyboard can easily put the pip past the
+bottom or the right edge of it.
+
+'nearest' rather than centering: this runs on every selection change, and a view
+that re-centres itself on every keystroke is far worse than one that moves only
+when it has to. It also means a pip that is already visible causes no scrolling
+at all. No smooth behavior either -- by the time you look, the scrolling should
+be over.
+
+A pip is made before it goes into the document, and a render can make one inside
+a subtree that is not attached yet, so this waits a frame. Several pips can be
+registered in that time and only the last attached one is live, which is the one
+worth scrolling to.
+*/
+let pendingPipScroll = false;
+
+function scrollPipIntoView() {
+	if (pendingPipScroll || typeof window == 'undefined' || !window.requestAnimationFrame) {
+		return;
+	}
+	pendingPipScroll = true;
+	window.requestAnimationFrame(function() {
+		pendingPipScroll = false;
+		let attached = liveInsertionPips.filter(p => p.isConnected);
+		let pip = attached[attached.length - 1];
+		if (!pip || !pip.scrollIntoView) {
+			return;
+		}
+		pip.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+	});
 }
 
 function removeLiveInsertionPips() {
@@ -302,7 +373,7 @@ class RenderNode {
 	toggleCollapsed(v) {
 		this.isCollapsed = !this.isCollapsed;
 		this.setRenderNodeDirtyForRendering(true);
-
+		updateCollapseMutes();
 	}
 
 	getCollapsed() {
@@ -780,6 +851,30 @@ class RenderNode {
 			}
 		} else {
 			return INSERT_AFTER;			
+		}
+	}
+
+	/*
+	Selecting with the mouse puts the pip before the thing rather than wherever
+	the type of thing would usually put it.
+
+	Only for the mouse. Moving through a document with the arrow keys carries
+	the pip along at whatever position suits what you land on, and that is worth
+	keeping; a click is the case where you are picking something out and looking
+	at it, and it is the case that scrolls.
+
+	Before, not after: the view follows the pip, so landing after a begin
+	statement several screens tall scrolls to its bottom, and the bottom of one
+	large thing looks like the bottom of any other. Before, not inside: inside
+	would mean copying something and pasting it straight back put the copy
+	inside the original.
+
+	The root is the exception, having no before to be at.
+	*/
+	setSelectedByClick() {
+		this.setSelected();
+		if (!Utils.isRoot(this.nex)) {
+			this.setInsertionMode(INSERT_BEFORE);
 		}
 	}
 

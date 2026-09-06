@@ -628,6 +628,38 @@ class EvaluateInPlaceAction extends Action {
 }
 
 
+/*
+Stepping a number with shift and an arrow.
+
+The undo saves the value it started from rather than stepping back by the same
+amount. The two are the same until something else changes the number in
+between, and then only the saved value is right.
+
+It also holds on to the node it acted on instead of reading the selection when
+the undo runs -- by then the selection may be somewhere else entirely, and
+undoing an edit to whatever happens to be selected now is how you lose work.
+*/
+class StepValueAction extends Action {
+	constructor(actionName) {
+		super(actionName);
+	}
+
+	canUndo() {
+		return true;
+	}
+
+	doAction() {
+		this.node = systemState.getGlobalSelectedNode();
+		this.oldValue = this.node.getNex().getValue();
+		KeyResponseFunctions[this.actionName](this.node);
+	}
+
+	undoAction() {
+		this.node.getNex().setValue(this.oldValue);
+	}
+}
+
+
 class ChangeRenderModeAction extends Action {
 	constructor(actionName) {
 		super(actionName);
@@ -776,6 +808,9 @@ function actionFactory(actionName, eventName) {
 		case 'move-up-for-line':
 		case 'move-down-for-line':
 			return new ChangeSelectedNodeAction(actionName);
+		case 'increment-value':
+		case 'decrement-value':
+			return new StepValueAction(actionName);
 		case 'toggle-dir':
 			return new ChangeDirectionAction(actionName);
 

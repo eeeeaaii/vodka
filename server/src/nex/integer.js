@@ -116,6 +116,23 @@ class Integer extends ValueNex {
 		return Number(this.getValue());
 	}
 
+	/*
+	Shift with an arrow steps the number, the way it does on a number box in
+	max and everything descended from one -- the point being that you can hear
+	a parameter move without stopping to retype it.
+
+	Only when the integer is selected rather than being edited: keys go to the
+	editor while one is open, so shift-up there is whatever the editor makes of
+	it. Anything not named here falls through to the generic table, so arrows
+	still move the selection as usual.
+	*/
+	getEventTable(context) {
+		return {
+			'ShiftArrowUp': 'increment-value',
+			'ShiftArrowDown': 'decrement-value',
+		};
+	}
+
 	renderInto(renderNode, renderFlags, withEditor) {
 		super.renderInto(renderNode, renderFlags, withEditor);
 		let domNode = renderNode.getDomNode();

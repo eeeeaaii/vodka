@@ -63,6 +63,7 @@ class EventQueue {
 		eventQueueDispatcher.createDelegate('enqueueAlertAnimation', this);
 		eventQueueDispatcher.createDelegate('enqueueRenderOnlyDirty', this);
 		eventQueueDispatcher.createDelegate('enqueueDoKeyInput', this);
+		eventQueueDispatcher.createDelegate('enqueueKillSound', this);
 		eventQueueDispatcher.createDelegate('enqueueDoClickHandlerAction', this);
 		eventQueueDispatcher.createDelegate('enqueueImportantTopLevelRender', this);
 		eventQueueDispatcher.createDelegate('enqueueDeferredFinish', this);
@@ -125,6 +126,31 @@ class EventQueue {
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
+
+	/*
+	Stopping a sound goes through the queue for the same reason starting one
+	does: so that they stay in the order they were asked for.
+
+	Key input is enqueued, so holding a key fills the queue with autorepeats
+	that have not run yet. Killing the sound straight from the keyup handler
+	jumped all of them -- the release was acted on before the press it belonged
+	to, found nothing playing, and the audition then started behind it with
+	nothing left to stop it. Same priority as doKeyInput, so first in first out
+	puts the release back after the press.
+	*/
+	enqueueKillSound() {
+		EVENT_DEBUG ? console.log('enqueueing: KillSound'):null;
+		let item = {
+			action: "killSound",
+			shouldDedupe: false,
+			equals: null, // not needed when shouldDedupe = false
+			do: function doKillSound() {
+				Vodka.doKillSound();
+			}
+		};
+		this.queueSet[USER_EVENT_PRIORITY].push(item);
+		this.setTimeoutForProcessingNextItem(item);
+	}
 
 	/**
 	 * Enqueues an event that renders only nexes that are marked as dirty.

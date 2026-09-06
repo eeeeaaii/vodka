@@ -20,6 +20,7 @@ import * as Utils from "./utils.js";
 import { evaluateNexSafely, wrapError } from "./evaluator.js";
 import { constructOrg } from "./nex/org.js";
 import { constructFatalError } from "./nex/eerror.js";
+import { constructNil } from "./nex/nil.js";
 
 const ARGRESULT_ALREADY_PROCESSED = 0;
 const ARGRESULT_FINISHED = 1;
@@ -62,7 +63,20 @@ function getParameterInfo(params) {
  * and bind them to variables in the new scope.
  */
 class ArgEvaluator {
-  constructor(name, params, argContainer, executionEnvironment) {
+  /*
+  nilMissingOptionals: bind an optional parameter that was not passed to nil
+  rather than leaving it unbound.
+
+  A builtin reads its arguments with env.lb, which turns a missing binding into
+  the UNBOUND sentinel, so a builtin can already tell that it was not given one.
+  Code written in vodka has no such sentinel: an unbound name is just an
+  undefined symbol, so an optional parameter was impossible to test for and
+  therefore impossible to default. Binding it to nil is what gives vodka code
+  the same ability, and it pairs with first-non-nil:
+
+      ~(_first-non-nil @b <the default>_)
+  */
+  constructor(name, params, argContainer, executionEnvironment, nilMissingOptionals) {
     // name is only used for debugging so to get out of the business of heap
     // counting it I truncate it.
     this.name = name.substr(0, 256);
@@ -71,6 +85,7 @@ class ArgEvaluator {
     // reference counted elsewhere
     this.executionEnvironment = executionEnvironment;
     this.paramInfo = getParameterInfo(this.params);
+    this.nilMissingOptionals = !!nilMissingOptionals;
   }
 
   debugString() {
@@ -293,11 +308,29 @@ class ArgEvaluator {
         }
         scope.bind(param.name, org);
       } else if (param.optional) {
-        if (i < this.argContainer.numArgs()) {
-          scope.bind(
-            param.name,
-            this.argContainer.getArgAt(i).getNexOrSubstitute()
-          );
+        let supplied = i < this.argContainer.numArgs()
+            ? this.argContainer.getArgAt(i).getNexOrSubstitute()
+            : null;
+        /*
+        Passing nil to an optional parameter means the same as not passing it.
+        That is what lets an optional argument be handed straight on to
+        something else: one that was not passed is nil, so without this every
+        such call would have to test for nil first and pick between two calls,
+        which is most of the reason not to bother having the optional.
+
+        Only reachable for a parameter that declares it accepts nil, with the
+        empty set token -- anything else rejects nil in checkType before it
+        gets here. So a builtin opts into this by saying so in its parameter
+        list, and the ones that do go on asking whether their argument is
+        UNBOUND, and applying their defaults, without learning about nil.
+        */
+        if (supplied && Utils.isNil(supplied)) {
+          supplied = null;
+        }
+        if (supplied) {
+          scope.bind(param.name, supplied);
+        } else if (this.nilMissingOptionals) {
+          scope.bind(param.name, constructNil());
         }
       } else {
         scope.bind(

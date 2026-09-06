@@ -135,7 +135,16 @@ class Closure extends ValueNex {
 	}
 
 	getArgEvaluator(cmdname, argContainer, executionEnvironment) {
-		return new ArgEvaluator(cmdname, this.lambda.paramsArray, argContainer, executionEnvironment);
+		/*
+		Only vodka lambdas get their missing optional arguments bound to nil.
+		A builtin reads its arguments with env.lb, which reports a missing one
+		as UNBOUND, and every builtin with an optional parameter tests for that
+		-- binding nil instead would make those tests silently false and every
+		default silently stop being applied.
+		*/
+		let isLambda = this.lambda.getTypeName() != '-builtin-';
+		return new ArgEvaluator(cmdname, this.lambda.paramsArray, argContainer,
+				executionEnvironment, isLambda /* nilMissingOptionals */);
 	}
 
 	closureline(n, s) {
