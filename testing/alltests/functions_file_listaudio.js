@@ -19,7 +19,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 //testname// functions_file_listaudio
 //startdescription//
 /*
-Tests the list audio function, which lists the audio files in the standard sample library.
+Tests the list-audio function with no tags, which lists the wav files in the standard sample library.
 */
 //enddescription//
 //testspec// |l|i|s|t|-|a|u|d|i|o|Enter|Enter
@@ -29,25 +29,29 @@ var harness = require('../testharness');
 var testactions = [];
 
 testactions.push({type:'keydown',code:'KeyL'});
-testactions.push({type:'keydown',code:'KeyI'});
-testactions.push({type:'keydown',code:'KeyS'});
 testactions.push({type:'keyup',code:'KeyL'});
+testactions.push({type:'keydown',code:'KeyI'});
 testactions.push({type:'keyup',code:'KeyI'});
-testactions.push({type:'keydown',code:'KeyT'});
-testactions.push({type:'keydown',code:'Minus'});
+testactions.push({type:'keydown',code:'KeyS'});
 testactions.push({type:'keyup',code:'KeyS'});
+testactions.push({type:'keydown',code:'KeyT'});
 testactions.push({type:'keyup',code:'KeyT'});
+testactions.push({type:'keydown',code:'Minus'});
 testactions.push({type:'keyup',code:'Minus'});
 testactions.push({type:'keydown',code:'KeyA'});
-testactions.push({type:'keydown',code:'KeyU'});
 testactions.push({type:'keyup',code:'KeyA'});
-testactions.push({type:'keydown',code:'KeyD'});
+testactions.push({type:'keydown',code:'KeyU'});
 testactions.push({type:'keyup',code:'KeyU'});
-testactions.push({type:'keydown',code:'KeyI'});
+testactions.push({type:'keydown',code:'KeyD'});
 testactions.push({type:'keyup',code:'KeyD'});
-testactions.push({type:'keydown',code:'KeyO'});
+testactions.push({type:'keydown',code:'KeyI'});
 testactions.push({type:'keyup',code:'KeyI'});
+testactions.push({type:'keydown',code:'KeyO'});
 testactions.push({type:'keyup',code:'KeyO'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
+testactions.push({type:'keydown',code:'Enter'});
+testactions.push({type:'keyup',code:'Enter'});
 testactions.push({type:'keydown',code:'Enter'});
 testactions.push({type:'keyup',code:'Enter'});
 testactions.push({type:'keydown',code:'Enter'});
