@@ -96,7 +96,17 @@ class KeyDispatcher {
 			// copy does not change the document, so there is nothing to undo
 			manipulator.doCopy();
 		} else if (this.getClipboardCommand(eventName) == 'paste') {
-			enqueueAndPerformAction(actionFactory('paste'));
+			/*
+			The system clipboard is how a nex gets from one browser window to
+			another, and reading it is asynchronous. Read it here, then make the
+			action -- the action itself stays synchronous, so it is still one
+			undo.
+			*/
+			manipulator.readSystemClipboard(function(text) {
+				let action = actionFactory('paste');
+				action.systemClipboardText = text;
+				enqueueAndPerformAction(action);
+			});
 		} else if (eventName == 'Escape' && !systemState.getGlobalSelectedNode().usingEditor()) {
 			this.toggleGlobalExplodedMode();
 		} else {
