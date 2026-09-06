@@ -142,9 +142,19 @@ class Lambda extends NexContainer {
     return r;
   }
 
+  /*
+  ctx has to go to the children too. Without it they serialize as though for
+  display, and anything that keeps its bulk outside the document -- a wavetable,
+  whose samples go to indexeddb on autosave and to the file's resource section
+  on save -- writes no samples and no id at all, because display serialization
+  has nowhere to put them. A wavetable sitting in a lambda body came back
+  silent after a reload while every other wavetable in the document survived.
+
+  Every other container passes it; this was the only one that did not.
+  */
   toStringV2(ctx) {
     return `&${this.toStringV2Literal()}${this.toStringV2PrivateDataSection(ctx)}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString(
-      "v2"
+      "v2", ctx
     )}${this.listEndV2()}`;
   }
 

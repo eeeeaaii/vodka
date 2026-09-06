@@ -34,6 +34,20 @@ function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 	if (atTarget && browserEvent.shiftKey
 			&& (browserEvent.ctrlKey || browserEvent.metaKey)) {
 		browserEvent.stopPropagation();
+		/*
+		The browser reads shift with a click as "extend the text selection from
+		wherever the last one was", and it does that on mousedown before anyone
+		gets a say. Stopping propagation keeps it away from vodka's own
+		handlers, but the browser's default is a separate thing and has to be
+		refused separately -- otherwise picking two nexes also paints a
+		selection across everything between them.
+		*/
+		browserEvent.preventDefault();
+		if (window.getSelection) {
+			// one may already have been started by an earlier press
+			let sel = window.getSelection();
+			if (sel && sel.removeAllRanges) sel.removeAllRanges();
+		}
 		let plan = manipulator.planMultiSelect(renderNode);
 		if (plan) {
 			enqueueAndPerformAction(new MultiSelectAction(plan));
@@ -68,7 +82,7 @@ function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 		and it grows with the size of the document rather than with what
 		changed.
 		*/
-		renderNode.setSelected();
+		renderNode.setSelectedByClick();
 		if (insertAfterRemove && systemState.getGlobalSelectedNode() != oldSelectedNode) {
 			let wasIn = oldSelectedNode.getParent();
 			manipulator.removeNex(oldSelectedNode);

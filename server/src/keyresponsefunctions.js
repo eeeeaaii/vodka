@@ -347,6 +347,15 @@ const DefaultHandlers = {
 	}
 }
 
+function stepValue(s, delta) {
+	let nex = s.getNex();
+	let n = nex.getTypedValue();
+	if (isNaN(n)) {
+		n = 0;
+	}
+	nex.setValue(String(n + delta));
+}
+
 const KeyResponseFunctions = {
 	// if we make generator functions, like insert-or-append(thing) instead of
 	// insert-or-append-command, we have to make it so that we don't accidentally
@@ -362,6 +371,19 @@ const KeyResponseFunctions = {
 
 	'evaluate-nex-and-keep': function(s) {
 		evaluateAndKeep(s);
+	},
+
+	/*
+	Stepping a number with shift and an arrow. The value is kept as a string, so
+	the arithmetic goes through getTypedValue and back -- an empty one reads as
+	zero, which makes the first press give you 1 rather than NaN.
+	*/
+	'increment-value': function(s) {
+		stepValue(s, 1);
+	},
+
+	'decrement-value': function(s) {
+		stepValue(s, -1);
 	},
 
 	'toggle-dir': function(s) {

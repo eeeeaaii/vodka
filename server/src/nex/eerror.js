@@ -190,13 +190,42 @@ class EError extends NexContainer {
 		}
 	}
 
+	/*
+	The same failure arriving over and over should not push the document down a
+	line at a time, so a repeat is counted on the error that is already there
+	rather than added next to it -- the way a console collapses a repeated
+	message. The count is display state and is deliberately not serialized: the
+	private data section is errorType|message and adding a third field would
+	change a format that older files are written in.
+	*/
+	getRepeatCount() {
+		return this.repeatCount ? this.repeatCount : 1;
+	}
+
+	incrementRepeatCount() {
+		this.repeatCount = this.getRepeatCount() + 1;
+		this.setDirtyForRendering(true);
+	}
+
 	drawNormal(renderNode) {
 		let domNode = renderNode.getDomNode();
 		if (this.displayValue !== '') {
 			this.innerspan = document.createElement("div");
 			this.innerspan.classList.add('innerspan');
 			this.innerspan.innerHTML = '? ' + this.escape('' + this.displayValue);
-			domNode.appendChild(this.innerspan);
+			// one occurrence renders exactly as it always did, no extra markup
+			if (this.getRepeatCount() < 2) {
+				domNode.appendChild(this.innerspan);
+				return;
+			}
+			let headline = document.createElement("div");
+			headline.classList.add('errorheadline');
+			let count = document.createElement("div");
+			count.classList.add('repeatcount');
+			count.innerHTML = this.escape('' + this.getRepeatCount());
+			headline.appendChild(count);
+			headline.appendChild(this.innerspan);
+			domNode.appendChild(headline);
 		}
 	}
 

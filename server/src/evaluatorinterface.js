@@ -17,6 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 import * as Utils from './utils.js'
+import { sHoldDeferred } from './syntheticroot.js'
 
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import { RenderNode, INSERT_AFTER } from './rendernode.js'
@@ -56,9 +57,15 @@ function evaluateAndReplace(s) {
 }
 
 /**
- * This method is used to evaluate a Nex and throw away the result. Obviously only
- * useful if evaluating the Nex has side effects. If it returns an error, the error
- * will be prepended to the parent of the selected node before the selected node.
+ * This method is used to evaluate a Nex and keep the code rather than replacing
+ * it with the result. An error thrown while evaluating is prepended to the
+ * parent of the selected node, before the selected node.
+ *
+ * The result itself is not wanted, but a deferred result cannot simply be
+ * dropped: it is still running, and it is not in the document, so nothing would
+ * ever show what it came back with -- which is how a failed save reported
+ * nothing at all. sHoldDeferred gives it to the engine to hold, and an error it
+ * finishes with goes to the top of the document.
  *
  * @param {RenderNode} s = the RenderNode to evaluate
  */
@@ -67,6 +74,8 @@ function evaluateAndKeep(s) {
 	if (Utils.isFatalError(n)) {
 		Utils.beep();
 		manipulator.insertBeforeSelectedAndSelect(new RenderNode(n));
+	} else {
+		sHoldDeferred(n);
 	}
 
 	eventQueueDispatcher.enqueueAlertAnimation(s);

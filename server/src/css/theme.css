@@ -60,6 +60,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
   --error-info-text: #0000aa;
   --error-ok-text: #00aa00;
   --error-warn-text: #aa6e00;
+  --error-repeat-background: #ffffff;
+  --error-repeat-text: #000000;
 
   --alert-flash: #ffff77;
 
@@ -152,6 +154,8 @@ waveform is teal so signal is never confused with structure.
   --error-info-text: #7fb2ff;
   --error-ok-text: #4ade80;
   --error-warn-text: #f0b429;
+  --error-repeat-background: #ffffff;
+  --error-repeat-text: #000000;
 
   --alert-flash: #6b5f1f;
 
