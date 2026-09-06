@@ -5,7 +5,10 @@ node_modules
 testing/____tmpfile.txt
 server/sounds/other_licenses/
 server/sessions/*
-server/namedsessions/eeeeaaii
+# named sessions are working documents, not part of the app. samples is the
+# exception: it ships with vodka.
+server/namedsessions/*
+!server/namedsessions/samples/
 server/docs/*
 server/webenv.txt
 
@@ -16,3 +19,5 @@ testing/alltests/*/goldens/*/*.backup.png
 .venv-audio/
 tools/soundcatalog/out/embeddings.npz
 server/static/
+
+__pycache__
