@@ -462,7 +462,14 @@ function createMidiBuiltins() {
 				return constructFatalError('wait-for-midi: you must open the midi port first. Sorry!');
 			}
 			let dv = constructDeferredValue();
-			dv.setAutoreset(true);
+			/*
+			There was a dv.setAutoreset(true) here, and nothing has defined that
+			method for a long time, so asking for a midi event threw before it
+			could ever wait for one. What it was asking for is what settling
+			already does: a deferred that settles stays live and can settle
+			again, which is how wait-for-click and do every repeat, and neither
+			of them says anything special to arrange it.
+			*/
 			let afg = new MidiActivationFunctionGenerator(id.getFullTypedValue());
 			dv.set(afg);
 			dv.activate();
