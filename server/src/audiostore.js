@@ -106,21 +106,57 @@ function loadAll() {
 				return;
 			}
 			let store = tx.objectStore(STORE);
-			let req = store.openCursor();
 			let prefix = scopedKey('');
-			req.onsuccess = function() {
-				let cursor = req.result;
-				if (!cursor) {
-					resolve();
-					return;
+			/*
+			Only this session's records. Keys are '<session>/<hash>', so every
+			one of them sorts inside this range and nothing else does.
+
+			This used to open a cursor over the whole store and check the prefix
+			as each record went by. Every record in the database, from every
+			session that ever existed, cost a separate task and a full read of
+			its samples -- and startup waits for this before it builds the
+			document, so a new session with no audio of its own still sat
+			through everyone else's. getAll asks for the range in one go, so it
+			is two requests rather than one per record.
+			*/
+			let range;
+			try {
+				range = IDBKeyRange.bound(prefix, prefix + '\uffff');
+			} catch (e) {
+				resolve();
+				return;
+			}
+			if (!store.getAll || !store.getAllKeys) {
+				// older browser: a cursor, but at least only over the range
+				let req = store.openCursor(range);
+				req.onsuccess = function() {
+					let cursor = req.result;
+					if (!cursor) {
+						resolve();
+						return;
+					}
+					loaded.set(('' + cursor.key).substring(prefix.length), cursor.value);
+					cursor.continue();
+				};
+				req.onerror = function() { resolve(); };
+				return;
+			}
+			let keysReq = store.getAllKeys(range);
+			let valsReq = store.getAll(range);
+			let done = 0;
+			function bothDone() {
+				if (++done < 2) return;
+				let keys = keysReq.result || [];
+				let vals = valsReq.result || [];
+				for (let i = 0; i < keys.length && i < vals.length; i++) {
+					loaded.set(('' + keys[i]).substring(prefix.length), vals[i]);
 				}
-				let k = '' + cursor.key;
-				if (k.indexOf(prefix) == 0) {
-					loaded.set(k.substring(prefix.length), cursor.value);
-				}
-				cursor.continue();
-			};
-			req.onerror = function() { resolve(); };
+				resolve();
+			}
+			keysReq.onsuccess = bothDone;
+			valsReq.onsuccess = bothDone;
+			keysReq.onerror = function() { resolve(); };
+			valsReq.onerror = function() { resolve(); };
 		});
 	}).catch(function() {
 		unavailable = true;
