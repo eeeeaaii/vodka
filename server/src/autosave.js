@@ -212,6 +212,18 @@ function hasPendingSave() {
 	return !!pendingSave;
 }
 
+/*
+Stops this page writing the document again -- on the timer, and on the way out.
+Deleting a session has to be able to say "and stop putting it back".
+*/
+function stopAutosave() {
+	disabled = true;
+	if (pendingSave) {
+		clearTimeout(pendingSave);
+		pendingSave = null;
+	}
+}
+
 function clearAutosave() {
 	try {
 		window.localStorage.removeItem(storageKey());
@@ -220,4 +232,4 @@ function clearAutosave() {
 	}
 }
 
-export { scheduleAutosave, restoreAutosave, enableAutosave, clearAutosave, saveNow, installUnloadFlush, hasPendingSave }
+export { scheduleAutosave, restoreAutosave, enableAutosave, clearAutosave, stopAutosave, saveNow, installUnloadFlush, hasPendingSave }

@@ -11,6 +11,7 @@ import {
     parseSessionFile,
     importSession,
     duplicateCurrentSession,
+    deleteSessionData,
     saveTextToFile,
     readTextFromFile,
 } from '../sessionmanager.js';
@@ -22,6 +23,9 @@ const WelcomePanel = () => {
     // {title, id} while a name is being asked for, null the rest of the time
     const [dialog, setDialog] = useState(null);
     const [message, setMessage] = useState(null);
+    // deleting is not undoable and there is no copy anywhere else, so it asks
+    // once before doing it
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
     const sessions = listSessions();
 
     const goTo = (id) => { window.location.href = buildURL({ 'sessionId': id }); };
@@ -51,6 +55,23 @@ const WelcomePanel = () => {
         e.preventDefault();
         let text = JSON.stringify(exportCurrentSession(), null, 1);
         saveTextToFile(text, fileNameForCurrentSession());
+    };
+
+    const askToDelete = (e) => {
+        e.preventDefault();
+        setConfirmingDelete(true);
+    };
+
+    const doDelete = (e) => {
+        e.preventDefault();
+        setConfirmingDelete(false);
+        setMessage('Deleting this session...');
+        deleteSessionData(sessionId).then(() => {
+            // this session no longer exists, so there is nowhere to stay --
+            // a fresh one, and a reload, because what is on screen was built
+            // from the document that was just deleted
+            window.location.href = buildURL({ 'sessionId': newSessionId() });
+        });
     };
 
     const doImport = (e) => {
@@ -95,6 +116,16 @@ const WelcomePanel = () => {
                 To create a new session, <a href="#" onClick={askForNewSession}>click here</a>. To make a duplicate of this session, <a href="#" onClick={askForDuplicate}>click here</a>. Saving and loading files is disabled
                 on the web. If you clone the vodka repo and run a local server, you can save files
                 within your session.</p>
+            <p className="infoline">To delete this session's browser data completely
+                &mdash; its document, its name, and all of its audio &mdash;
+                &nbsp;<a href="#" onClick={askToDelete}>click here</a>. This cannot be undone,
+                so export it first if you might want it back.</p>
+            {confirmingDelete &&
+                <p className="infoline sessiondeleteconfirm">
+                    Really delete everything stored for <b>{sessionId}</b>?
+                    &nbsp;<a href="#" onClick={doDelete}>yes, delete it</a>
+                    &nbsp;/&nbsp;<a href="#" onClick={(e) => { e.preventDefault(); setConfirmingDelete(false); }}>cancel</a>
+                </p>}
             <p className="infoline">To switch to {oppositeTheme} theme, click <a id="switchthemelink" href={buildURL({ "theme": oppositeTheme })}>here</a>.</p>
             <p className="infospacer"></p>
             <p className="infoline">Vodka is in beta and is a part-time side project.

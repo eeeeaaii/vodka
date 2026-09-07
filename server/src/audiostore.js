@@ -253,6 +253,37 @@ function putForSession(sessionId, hash, buffer) {
 	});
 }
 
+/*
+Everything this session ever stored, gone in one go. Deleting a session means
+deleting its audio too, and the audio is the part that is measured in gigabytes.
+
+A key range rather than a list of ids, because the point is to catch records
+this session wrote that nothing in the document refers to any more -- those are
+exactly the ones no caller could name.
+*/
+function removeAllForSession(sessionId) {
+	return openDb().then(function(db) {
+		if (!db) return;
+		return new Promise(function(resolve) {
+			try {
+				let prefix = sessionId + '/';
+				let range = IDBKeyRange.bound(prefix, prefix + '\uffff');
+				let tx = db.transaction(STORE, 'readwrite');
+				tx.objectStore(STORE).delete(range);
+				tx.oncomplete = function() { resolve(); };
+				tx.onerror = function() { resolve(); };
+				tx.onabort = function() { resolve(); };
+			} catch (e) {
+				resolve();
+			}
+		});
+	}).then(function() {
+		if (sessionId == systemState.getSessionId()) {
+			loaded.clear();
+		}
+	}).catch(function() {});
+}
+
 function remove(id) {
 	if (!id) return;
 	loaded.delete(id);
@@ -289,6 +320,7 @@ export {
 	put,
 	entries,
 	putForSession,
+	removeAllForSession,
 	remove,
 	isUnavailable
 }
