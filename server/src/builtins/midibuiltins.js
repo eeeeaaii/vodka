@@ -25,15 +25,35 @@ import * as Utils from '../utils.js'
 import { endLoops, clipStartedPlaying } from '../webaudio.js'
 import { UNBOUND } from '../environment.js'
 import { constructOrg } from '../nex/org.js'; 
+import { constructEString } from '../nex/estring.js'
 import { constructDeferredValue } from '../nex/deferredvalue.js'; 
 import { constructFatalError, constructInfo, newTagOrThrowOOM } from '../nex/eerror.js'
-import { convertJSMapToOrg } from '../nex/org.js'
 import { Tag } from '../tag.js'
 import {
 	MidiActivationFunctionGenerator,
 	GenericActivationFunctionGenerator
 } from '../asyncfunctions.js'
 
+
+/*
+A midi port, built by hand rather than by convertJSMapToOrg. Every field of a
+MIDIPort is a string in the web midi spec -- id, manufacturer, name, version,
+type, state, connection -- so there is nothing here to work out. That helper
+picks the type by asking !isNaN(value), and chrome's port ids are usually all
+digits, so a perfectly ordinary port arrived with an integer where its id should
+be and open-midi-port fell over reading it. Nothing about a port is a number,
+and a port id is not a quantity even when it happens to look like one.
+*/
+function portToOrg(desc) {
+	let r = constructOrg();
+	for (let key in desc) {
+		let v = constructEString('' + (desc[key] === undefined || desc[key] === null
+				? '' : desc[key]));
+		v.addTag(newTagOrThrowOOM(key, 'building a midi port'));
+		r.appendChild(v);
+	}
+	return r;
+}
 
 function createMidiBuiltins() {
 	Builtin.createBuiltin(
@@ -56,7 +76,7 @@ function createMidiBuiltins() {
 						// convert to nice estrings
 						let r = constructOrg();
 						for (let i = 0; i < devs.length ; i++) {
-							let org = convertJSMapToOrg(devs[i]);
+							let org = portToOrg(devs[i]);
 							org.setHorizontal();
 							r.appendChild(org);
 						}
@@ -133,7 +153,7 @@ function createMidiBuiltins() {
 									`open-midi-port: no port with id ${idstr}. Sorry!`));
 							return;
 						}
-						let org = convertJSMapToOrg(desc);
+						let org = portToOrg(desc);
 						org.setHorizontal();
 						callback(org);
 					})
@@ -438,12 +458,12 @@ function createMidiBuiltins() {
 			if (type && type.getFullTypedValue() != 'input') {
 				return constructFatalError('wait-for-midi: that is an output port. Sorry!');
 			}
-			if (!isPortOpen(id.getTypedValue())) {
+			if (!isPortOpen(id.getFullTypedValue())) {
 				return constructFatalError('wait-for-midi: you must open the midi port first. Sorry!');
 			}
 			let dv = constructDeferredValue();
 			dv.setAutoreset(true);
-			let afg = new MidiActivationFunctionGenerator(id.getTypedValue());
+			let afg = new MidiActivationFunctionGenerator(id.getFullTypedValue());
 			dv.set(afg);
 			dv.activate();
 			return dv;
