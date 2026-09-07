@@ -51,6 +51,14 @@ let pendingSave = null;
 let restored = false;
 let disabled = false;
 
+/*
+Whether every stored item came back. A document that lost an item to a parse
+error still opens -- one bad child should not cost you the rest -- but it is no
+longer a complete account of what this session refers to, and the audio sweep
+below must not treat it as one.
+*/
+let restoreWasComplete = false;
+
 function storageKey() {
 	let id = systemState.getSessionId();
 	return KEY_PREFIX + (id ? id : 'nosession');
@@ -171,6 +179,7 @@ function restoreAutosave(rootNode) {
 		}
 	}
 	restored = true;
+	restoreWasComplete = (appended == stored.docs.length);
 	return appended > 0;
 }
 
@@ -208,6 +217,47 @@ function installUnloadFlush(rootNode) {
 	});
 }
 
+function collectWavetableIds(nex, into) {
+	if (nex.getTypeName() == '-wavetable-' && nex.wavetableId) {
+		into.add(nex.wavetableId);
+	}
+	if (nex.isNexContainer && nex.isNexContainer()) {
+		for (let i = 0; i < nex.numChildren(); i++) {
+			collectWavetableIds(nex.getChildAt(i), into);
+		}
+	}
+	return into;
+}
+
+/*
+Samples are released by refcounting while the page is alive -- see
+cleanupOnMemoryFree -- but a refresh takes the whole heap with it, and anything
+holding a wavetable outside the document goes with it unheard: a binding, the
+undo buffer, a value that was never put on the page at all. Those records were
+written and can now never be released, because the thing that would have
+released them no longer exists.
+
+A page load is the only moment that can be noticed, and it is also the only
+moment it is safe to act on: the document has just been rebuilt, nothing else is
+in memory yet, so anything this session stored that the document does not name
+is unreachable by construction.
+
+Only after a complete restore. A document that dropped an item to a parse error
+still opens, but it no longer names everything it refers to, and sweeping
+against it would delete the audio of the part that failed to load.
+*/
+function pruneStoredAudio(rootNode) {
+	if (!restoreWasComplete) return;
+	let ids = collectWavetableIds(rootNode.getNex(), new Set());
+	audioStore.pruneToReferenced(ids).then(function(removed) {
+		if (removed > 0) {
+			console.log('vodka: released ' + removed + ' stored sample'
+					+ (removed == 1 ? '' : 's') + ' that nothing refers to any more ('
+					+ ids.size + ' still in use).');
+		}
+	});
+}
+
 function hasPendingSave() {
 	return !!pendingSave;
 }
@@ -232,4 +282,4 @@ function clearAutosave() {
 	}
 }
 
-export { scheduleAutosave, restoreAutosave, enableAutosave, clearAutosave, stopAutosave, saveNow, installUnloadFlush, hasPendingSave }
+export { scheduleAutosave, restoreAutosave, enableAutosave, clearAutosave, stopAutosave, pruneStoredAudio, saveNow, installUnloadFlush, hasPendingSave }

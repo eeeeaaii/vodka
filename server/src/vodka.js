@@ -73,7 +73,7 @@ import { maybeKillSound } from './webaudio.js'
 // import { setupMobile, doMobileKeyDown } from './mobile.js'
 
 import { getFeatureVector } from './featurevector.js'
-import { restoreAutosave, enableAutosave, installUnloadFlush } from './autosave.js'
+import { restoreAutosave, enableAutosave, installUnloadFlush, pruneStoredAudio } from './autosave.js'
 import { saveEditorState, restoreEditorState } from './editorstate.js'
 import * as audioStore from './audiostore.js'
 
@@ -379,6 +379,10 @@ async function setup() {
 		root.setRenderMode(RENDER_MODE_EXPLO);
 		root.setSelected(false);
 		systemState.setGlobalCurrentDefaultRenderFlags(0);
+		// the document is back and nothing else is in memory yet, which is the
+		// one moment samples nothing refers to can be told apart from samples
+		// something is about to use
+		pruneStoredAudio(root);
 	} else if (getFeatureVector().hasstart) {
 		// feature vector is initialized by the webserver.
 		// if hasstart is true, it means the user has added a ":start"

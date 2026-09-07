@@ -284,6 +284,56 @@ function removeAllForSession(sessionId) {
 	}).catch(function() {});
 }
 
+/*
+Refcounting already deletes a wavetable's samples the moment the wavetable is
+really gone -- see cleanupOnMemoryFree. What it cannot do is survive the page:
+heap.free only runs while the tab is alive, so anything stored when a tab is
+closed (or crashes, or is killed) stays in the database forever with nothing
+left in memory to release it. makeCopy mints a fresh id, so ordinary work keeps
+producing records whose originals are only ever collected in-page.
+
+So this is the other half: on the way in, throw away everything this session
+stored that the document it just restored does not refer to. Nothing else is in
+memory at that point -- no undo history, no half-finished edits -- so anything
+not in the document is genuinely unreachable.
+
+Returns how many went, for the caller to say out loud.
+*/
+function pruneToReferenced(referencedIds) {
+	return openDb().then(function(db) {
+		if (!db) return 0;
+		return new Promise(function(resolve) {
+			let prefix = scopedKey('');
+			let range;
+			try {
+				range = IDBKeyRange.bound(prefix, prefix + '\uffff');
+			} catch (e) {
+				resolve(0);
+				return;
+			}
+			let tx = db.transaction(STORE, 'readwrite');
+			let store = tx.objectStore(STORE);
+			let keysReq = store.getAllKeys(range);
+			keysReq.onsuccess = function() {
+				let keys = keysReq.result || [];
+				let removed = 0;
+				for (let i = 0; i < keys.length; i++) {
+					let id = ('' + keys[i]).substring(prefix.length);
+					if (!referencedIds.has(id)) {
+						store.delete(keys[i]);
+						loaded.delete(id);
+						removed++;
+					}
+				}
+				tx.oncomplete = function() { resolve(removed); };
+				tx.onerror = function() { resolve(0); };
+				tx.onabort = function() { resolve(0); };
+			};
+			keysReq.onerror = function() { resolve(0); };
+		});
+	}).catch(function() { return 0; });
+}
+
 function remove(id) {
 	if (!id) return;
 	loaded.delete(id);
@@ -321,6 +371,7 @@ export {
 	entries,
 	putForSession,
 	removeAllForSession,
+	pruneToReferenced,
 	remove,
 	isUnavailable
 }
