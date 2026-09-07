@@ -49,8 +49,8 @@ function notifyMidiSetup(err) {
 }
 
 function onMIDISuccess(midiAccess) {
-	console.log('MIDI ready');
-	console.log(midiAccess);
+	// the object dump next to this was left over from working on it
+	console.log('vodka: midi ready');
 	midi = midiAccess;
 	notifyMidiSetup(null);
 }
@@ -129,8 +129,9 @@ function parseMidiMessage(msg) {
 }
 
 function respondToMidiMessage(id, msg) {
-	console.log('sending message to midi listeners');
-	console.log(msg);
+	// nothing is printed here: this runs for every message that arrives, and a
+	// keyboard sending clock or active sensing keeps sending them whether or
+	// not anyone is playing
 	for (let i = 0; i < inputListeners[id].length; i++) {
 		inputListeners[id][i](parseMidiMessage(msg));
 	}
