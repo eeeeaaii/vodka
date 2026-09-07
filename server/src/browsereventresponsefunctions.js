@@ -82,7 +82,7 @@ function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 		and it grows with the size of the document rather than with what
 		changed.
 		*/
-		renderNode.setSelectedByClick();
+		renderNode.setSelected();
 		if (insertAfterRemove && systemState.getGlobalSelectedNode() != oldSelectedNode) {
 			let wasIn = oldSelectedNode.getParent();
 			manipulator.removeNex(oldSelectedNode);

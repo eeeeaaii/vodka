@@ -854,30 +854,6 @@ class RenderNode {
 		}
 	}
 
-	/*
-	Selecting with the mouse puts the pip before the thing rather than wherever
-	the type of thing would usually put it.
-
-	Only for the mouse. Moving through a document with the arrow keys carries
-	the pip along at whatever position suits what you land on, and that is worth
-	keeping; a click is the case where you are picking something out and looking
-	at it, and it is the case that scrolls.
-
-	Before, not after: the view follows the pip, so landing after a begin
-	statement several screens tall scrolls to its bottom, and the bottom of one
-	large thing looks like the bottom of any other. Before, not inside: inside
-	would mean copying something and pasting it straight back put the copy
-	inside the original.
-
-	The root is the exception, having no before to be at.
-	*/
-	setSelectedByClick() {
-		this.setSelected();
-		if (!Utils.isRoot(this.nex)) {
-			this.setInsertionMode(INSERT_BEFORE);
-		}
-	}
-
 	// TODO: this is confusing because you might think that the boolean passed in tells it whether
 	// or not to make the thing selected.
 	setSelected(rerender) {
