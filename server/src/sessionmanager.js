@@ -28,6 +28,7 @@ both machines would be pointing at.
 
 import { systemState } from './systemstate.js'
 import * as audioStore from './audiostore.js'
+import { stopAutosave } from './autosave.js'
 
 const AUTOSAVE_PREFIX = 'vodka.autosave.';
 const NAMES_KEY = 'vodka.sessionnames';
@@ -119,6 +120,32 @@ function listSessions() {
     }
     r.sort(function(a, b) { return a.name.localeCompare(b.name); });
     return r;
+}
+
+/*
+Everything this browser is keeping about this session: the document, the name it
+was given, and the audio. There is no way to remove a session otherwise -- the
+list on the welcome screen only ever grew -- and the audio is what makes that
+matter, since a session's samples can run to hundreds of megabytes and go on
+counting against the origin's storage quota long after the session stopped being
+one you use.
+
+Autosave is stopped first. It writes on a timer and again as the page unloads,
+so a document deleted while it is still being saved comes straight back.
+*/
+function deleteSessionData(sessionId) {
+	stopAutosave();
+	try {
+		window.localStorage.removeItem(AUTOSAVE_PREFIX + sessionId);
+	} catch (e) {
+		// storage unreadable; the audio is still worth removing
+	}
+	let names = readNames();
+	if (names[sessionId]) {
+		delete names[sessionId];
+		writeNames(names);
+	}
+	return audioStore.removeAllForSession(sessionId);
 }
 
 function documentOf(sessionId) {
@@ -307,6 +334,7 @@ export {
 	FILE_EXTENSION,
 	FILE_VERSION,
 	listSessions,
+	deleteSessionData,
 	nameOf,
 	setName,
 	newSessionId,
