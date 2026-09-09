@@ -1,0 +1,54 @@
+/*
+This file is part of Vodka.
+
+Vodka is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Vodka is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+/*
+The state, then the call. What it has computed so far is drawn from a field
+rather than a child, so it is placed across the direction the call runs in --
+above a horizontal call, beside a vertical one -- and never has to compete with
+the call's own layout for a row or a column.
+*/
+
+.deferredcommandvalue {
+	display: none;
+}
+
+.deferredcommandvalue.exploded {
+	display: flex;
+	flex-direction: row;
+	align-items: stretch;
+	background-color: var(--value-background);
+	border-radius: 8px;
+	padding: 3px;
+}
+
+.deferredcommandvalue.exploded > .dcvglyph {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0px 5px 0px 5px;
+	margin: 2px;
+	border-radius: 4px;
+	font-family: "Courier";
+	font-size: 1.15em;
+	color: var(--info-text);
+	background-color: var(--unselected-border);
+}
+
+/* the call itself: the closure and then the arguments, no border */
+.deferredcommandvalue.exploded > .nex {
+	margin: 2px;
+}

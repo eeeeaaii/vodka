@@ -108,7 +108,13 @@ function isDocContainerType(n) {
 }
 
 function isDeferred(n) {
-	return isDeferredValue(n) || isDeferredCommand(n)
+	return isDeferredValue(n) || isDeferredCommand(n) || isDeferredCommandValue(n)
+}
+
+function isDeferredCommandValue(n) {
+	if (n instanceof RenderNode) n = n.getNex();
+	if (!n || !n.getTypeName) return false;
+	return n.getTypeName() == '-deferredcommandvalue-';
 }
 
 function isDeferredValue(n) {
@@ -375,5 +381,6 @@ export {
 	getCookie,
 	setCookie,
 	getQSVal,
-	figureOutWhatItCanBe
+	figureOutWhatItCanBe,
+	isDeferredCommandValue
 }
