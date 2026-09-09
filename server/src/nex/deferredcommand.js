@@ -32,6 +32,7 @@ import { executeRunInfo } from '../commandfunctions.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { ARGRESULT_LISTENING, ARGRESULT_SETTLED, ARGRESULT_FINISHED } from '../argevaluator.js'
 import { heap } from '../heap.js'
+import { constructDeferredCommandValue } from './deferredcommandvalue.js'
 import { constructFatalError } from './eerror.js'
 
 
@@ -108,39 +109,29 @@ class DeferredCommand extends Command {
 		super.copyFieldsTo(nex);
 	}
 
+	/*
+	Produces a deferred command value: the closure at the head, the arguments
+	after it, and whatever it computes kept in a field of its own.
+
+	It used to copy itself instead, and put the copy inside a deferred value as
+	that value's first child -- which is also where results go, so the first
+	result displaced the copy, freed it, and cleanupOnMemoryFree cancelled it.
+	The record has its own type and its own slot now, and this command stays
+	what it always was: the code you typed.
+	*/
 	evaluate(executionEnv) {
-		// we have to make a copy, we can't store state with code in a lambda etc.
-
-		// to copy, we follow the same algorithm as argContainer --
-		// we do a shallow copy but then children are not copied.
-		let copyOfSelf = this.makeCopy(true);
-		for (let i = 0; i < this.numChildren(); i++) {
-			copyOfSelf.appendChild(this.getChildAt(i));
+		let runInfo = this.createRunInfo(executionEnv);
+		let dcv = constructDeferredCommandValue();
+		dcv.appendChild(runInfo.closure);
+		for (let i = 0; i < runInfo.argContainer.numArgs(); i++) {
+			dcv.appendChild(runInfo.argContainer.getArgAt(i).getNex());
 		}
-
-		// it's a bit messy that runinfo is initialized when we evaluate.
-		// should this happen when activated?
-
-		let dv = constructDeferredValue();
-		copyOfSelf._runInfo = copyOfSelf.createRunInfo(executionEnv);
-
-		// make it so the arg container in the runinfo updates the actual
-		// children of the command copy so they can be rendered to the screen.
-		// this would change if I created a separate/different object whose
-		// purpose is to display to the user the in-process computation of the
-		// deferred command
-		copyOfSelf._runInfo.argContainer.makeUpdating(copyOfSelf);
-
-		copyOfSelf._returnedValue = dv;
-
-		dv.appendChild(copyOfSelf);
-		let afg = new DeferredCommandActivationFunctionGenerator(copyOfSelf, executionEnv);
-		dv.set(afg);
-		dv.activate();
-
-		// I'm returning dv/_returnedValue so I don't need to (and shouldn't) ref count it
-
-		return dv;
+		// so evaluated arguments show up in the call as they are worked out;
+		// offset by one because the closure is the first child
+		runInfo.argContainer.makeUpdating(dcv, 1);
+		dcv.setRunState(runInfo, executionEnv);
+		dcv.run();
+		return dcv;
 	}
 
 	activate(executionEnv) {

@@ -82,6 +82,9 @@ function createAsyncBuiltins() {
 	first result has nothing to give.
 	*/
 	function hasLatest(nex) {
+		if (Utils.isDeferredCommandValue(nex)) {
+			return nex.hasLatest();
+		}
 		// settled or finished; the state is the question, not whether it
 		// happens to be holding anything -- a deferred that finished with
 		// nothing has still finished, and nothing is what it produced
@@ -89,6 +92,9 @@ function createAsyncBuiltins() {
 	}
 
 	function latestOf(nex) {
+		if (Utils.isDeferredCommandValue(nex)) {
+			return nex.getLatest();
+		}
 		if (!Utils.isDeferredValue(nex)) {
 			return nex;
 		}

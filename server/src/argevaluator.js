@@ -205,6 +205,27 @@ class ArgEvaluator {
     let param = this.effectiveParams[i];
     let argnex = arg.getNex();
 
+    /*
+    A deferred command value is read the same way a settled deferred value is:
+    what it has computed so far is what gets passed in, and we stay listening
+    so that the next one comes here too.
+    */
+    if (Utils.isDeferredCommandValue(argnex)) {
+      if (!argnex.hasLatest()) {
+        argnex.addListener(listener);
+        return ARGRESULT_LISTENING;
+      }
+      argnex.addListener(listener);
+      let subargnex = argnex.getLatest();
+      this.checkType(subargnex, param, i);
+      arg.setSubstituteValue(subargnex);
+      if (argnex.isFinished()) {
+        arg.setProcessed(true);
+        return ARGRESULT_FINISHED;
+      }
+      return ARGRESULT_SETTLED;
+    }
+
     if (
       Utils.isDeferredValue(argnex) &&
       argnex.isSettled() &&
@@ -232,8 +253,16 @@ class ArgEvaluator {
           argnex
         );
       }
-      if (Utils.isDeferredValue(argnex)) {
+      if (Utils.isDeferredValue(argnex) || Utils.isDeferredCommandValue(argnex)) {
         argnex.addListener(listener);
+        if (Utils.isDeferredCommandValue(argnex) && argnex.hasLatest()) {
+          // it already has something; read it now rather than waiting for a
+          // notification that has already been sent
+          let subargnex = argnex.getLatest();
+          this.checkType(subargnex, param, i);
+          arg.setSubstituteValue(subargnex);
+          return argnex.isFinished() ? ARGRESULT_FINISHED : ARGRESULT_SETTLED;
+        }
         return ARGRESULT_LISTENING;
       }
     }
@@ -368,7 +397,8 @@ ArgEvaluator.ARG_VALIDATORS = {
   Command: (arg) => arg.getTypeName() == "-command-",
   Deferred: (arg) =>
     arg.getTypeName() == "-deferredcommand-" ||
-    arg.getTypeName() == "-deferredvalue-",
+    arg.getTypeName() == "-deferredvalue-" ||
+    arg.getTypeName() == "-deferredcommandvalue-",
   Doc: (arg) => arg.getTypeName() == "-doc-",
   EString: (arg) => arg.getTypeName() == "-string-",
   ESymbol: (arg) => arg.getTypeName() == "-symbol-",

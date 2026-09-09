@@ -301,6 +301,8 @@ class RenderNode {
 				return new EStringEditor(nex);
 			case '-deferredvalue-':
 				return false;
+			case '-deferredcommandvalue-':
+				return false;
 			case '-deferredcommand-':
 				// special case: we cannot edit finished or active deferreds.
 				if (nex.isActivated() || nex.isFinished()) {

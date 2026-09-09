@@ -101,9 +101,12 @@ class ArgContainer {
 		this.args = [];
 	}
 
-	makeUpdating(ref) {
+	// offset, because a deferred command value keeps the closure at its head,
+	// so its argument n is its child n+1
+	makeUpdating(ref, offset) {
+		let d = offset ? offset : 0;
 		for (let i = 0; i < this.args.length; i++) {
-			this.args[i].makeUpdating(ref, i);
+			this.args[i].makeUpdating(ref, i + d);
 		}
 	}
 
