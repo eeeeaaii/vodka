@@ -51,6 +51,12 @@ that lays itself out as a row still does.
 	grid-template-rows: auto auto;
 	justify-content: start;
 	align-items: start;
+	/*
+	Each thing as wide as itself. Without this a grid item fills its column, so
+	the value computed so far would be stretched to whatever the closure
+	beneath it happens to measure.
+	*/
+	justify-items: start;
 	padding: 0px;
 	border: 1px solid var(--org-border);
 	border-radius: 6px;
