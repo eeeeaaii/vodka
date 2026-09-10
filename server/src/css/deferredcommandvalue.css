@@ -99,6 +99,9 @@ the call gets bigger.
 	font-size: 1.15em;
 	color: var(--info-text);
 	background-color: var(--unselected-border);
+	/* the same gap a deferred value leaves between its indicator and its
+	   contents, so the two do not sit differently side by side */
+	margin: 0px 3px 0px 0px;
 }
 
 /*
@@ -135,6 +138,8 @@ across the direction the call runs in.
 	align-self: auto;
 	align-items: center;
 	justify-content: flex-start;
+	/* attached to the top, so the gap goes underneath it */
+	margin: 0px 0px 3px 0px;
 }
 
 .deferredcommandvalue.exploded.vdir > .dcvglyph + .nex.exploded {
