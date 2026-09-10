@@ -32,6 +32,8 @@ The state glyph is the only addition, and it sits outside the call.
 
 .deferredcommandvalue.exploded {
 	position: relative;
+	/* contains the floats inside it */
+	display: flow-root;
 	padding: 5px 5px 5px 24px;
 	border: 1px solid var(--org-border);
 	border-radius: 6px;
@@ -66,34 +68,34 @@ item, and so that the first child in the markup is the first child of the nex.
 
 /*
 The value computed so far is the first child, and it goes across the direction
-the call runs in: on its own line above a call that runs horizontally, and
-floated to the left of one that runs down. Either way it never has to share a
-line with the closure.
+the call runs in: on its own line above a call that runs horizontally, and to
+the left of one that runs down.
+
+Done by floating rather than by setting display, because a child's display
+belongs to the child. A deferred value is a flex row -- that is how its own
+glyph sits beside its contents -- and telling it to be an inline-block instead
+stacks it. Floating leaves a flex container a flex container.
 */
 .deferredcommandvalue.exploded > .nex.exploded {
-	display: inline-block;
-	vertical-align: top;
+	float: left;
 	margin: 2px 2px 2px 2px;
 }
 
 /*
-The glyph is written before the children -- renderInto runs before they are
-appended -- so the value computed so far is the first nex after it rather than
-the first child of anything.
+The closure is always the child after the result, so clearing it is what puts
+the call on the line beneath -- and leaves the result only as wide as itself,
+rather than a bar across the whole width.
 */
-.deferredcommandvalue.exploded > .dcvglyph + .nex.exploded {
-	display: block;
-	/* its own line, but only as wide as what it is showing */
-	width: max-content;
-	max-width: 100%;
+.deferredcommandvalue.exploded > .dcvglyph + .nex.exploded + .nex.exploded {
+	clear: left;
 }
 
+/* running down: the result to the left, the call stacked beside it */
 .deferredcommandvalue.exploded.vdir > .nex.exploded {
-	display: block;
+	float: none;
 }
 
 .deferredcommandvalue.exploded.vdir > .dcvglyph + .nex.exploded {
-	display: block;
 	float: left;
 }
 
