@@ -50,7 +50,7 @@ import { experiments } from '../globalappflags.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 import { executeRunInfo } from '../commandfunctions.js'
 import { evaluateNexSafely } from '../evaluator.js'
-import { ARGRESULT_SETTLED, ARGRESULT_FINISHED } from '../argevaluator.js'
+import { DCP_WAITING, DCP_READY_SETTLED, DCP_READY_FINISHED } from '../dcpolicy.js'
 
 // nothing yet: no value has been produced, so it has no latest
 const DCV_WAITING = 1;
@@ -70,6 +70,14 @@ class DeferredCommandValue extends NexContainer {
 
 		this._runInfo = null;
 		this._activationEnv = null;
+
+		/*
+		How this call works through its arguments. Set when the command is
+		evaluated and never changed after -- see dcpolicy.js. Not a nex, and
+		not a child: it is the rule being followed, not part of what is being
+		read.
+		*/
+		this._policy = null;
 	}
 
 	getTypeName() {
@@ -131,10 +139,15 @@ class DeferredCommandValue extends NexContainer {
 
 	// ---- the call
 
-	setRunState(runInfo, executionEnv) {
+	setRunState(runInfo, executionEnv, policy) {
 		this._runInfo = runInfo;
 		this._activationEnv = executionEnv;
+		this._policy = policy;
 		heap.addEnvReference(executionEnv);
+	}
+
+	getPolicy() {
+		return this._policy;
 	}
 
 	addListener(obj) {
@@ -165,9 +178,13 @@ class DeferredCommandValue extends NexContainer {
 		if (this.isCancelled() || this.isFinished() || !this._runInfo) {
 			return;
 		}
+		let ae = this._runInfo.argEvaluator;
+		if (!ae.prepared) {
+			ae.prepareToEvaluate();
+		}
 		let argResult = null;
 		try {
-			argResult = this._runInfo.argEvaluator.evaluatePotentiallyDeferredArgs(this);
+			argResult = this._policy.evaluateArgs(ae, this);
 		} catch (e) {
 			if (Utils.isFatalError(e)) {
 				this.produce(e, false);
@@ -175,8 +192,7 @@ class DeferredCommandValue extends NexContainer {
 			}
 			throw e;
 		}
-		if (argResult != ARGRESULT_SETTLED && argResult != ARGRESULT_FINISHED) {
-			// still waiting on something
+		if (argResult == DCP_WAITING) {
 			return;
 		}
 		let result = executeRunInfo(this._runInfo, this._activationEnv);
@@ -185,7 +201,7 @@ class DeferredCommandValue extends NexContainer {
 		the next event, and a handler reporting the same failure forever is no
 		use to anybody -- handle the error inside the handler to stay alive.
 		*/
-		let keepGoing = (argResult == ARGRESULT_SETTLED) && !Utils.isFatalError(result);
+		let keepGoing = (argResult == DCP_READY_SETTLED) && !Utils.isFatalError(result);
 		this.produce(result, keepGoing);
 	}
 
