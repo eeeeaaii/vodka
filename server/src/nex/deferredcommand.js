@@ -33,6 +33,7 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { ARGRESULT_LISTENING, ARGRESULT_SETTLED, ARGRESULT_FINISHED } from '../argevaluator.js'
 import { heap } from '../heap.js'
 import { constructDeferredCommandValue } from './deferredcommandvalue.js'
+import { constructNil } from './nil.js'
 import { constructFatalError } from './eerror.js'
 
 
@@ -122,13 +123,15 @@ class DeferredCommand extends Command {
 	evaluate(executionEnv) {
 		let runInfo = this.createRunInfo(executionEnv);
 		let dcv = constructDeferredCommandValue();
+		// nothing computed yet, then the call
+		dcv.appendChild(constructNil());
 		dcv.appendChild(runInfo.closure);
 		for (let i = 0; i < runInfo.argContainer.numArgs(); i++) {
 			dcv.appendChild(runInfo.argContainer.getArgAt(i).getNex());
 		}
 		// so evaluated arguments show up in the call as they are worked out;
-		// offset by one because the closure is the first child
-		runInfo.argContainer.makeUpdating(dcv, 1);
+		// offset by two, past the result and the closure
+		runInfo.argContainer.makeUpdating(dcv, 2);
 		dcv.setRunState(runInfo, executionEnv);
 		dcv.run();
 		return dcv;

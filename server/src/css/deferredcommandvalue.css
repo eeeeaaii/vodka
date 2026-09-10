@@ -26,30 +26,25 @@ The state glyph is the only addition, and it sits outside the call.
 
 .deferredcommandvalue {
 	height: auto;
-	display: flex;
-	flex-direction: row;
-	align-items: flex-start;
+	display: block;
 	padding: 0px;
 }
 
-.deferredcommandvalue.vdir {
-	flex-direction: column;
-}
-
 .deferredcommandvalue.exploded {
-	padding: 5px;
+	position: relative;
+	padding: 5px 5px 5px 24px;
 	border: 1px solid var(--org-border);
 	border-radius: 6px;
-}
-
-.deferredcommandvalue.exploded > .nex.exploded {
-	margin: 2px 2px 2px 2px;
 }
 
 .deferredcommandvalue.exploded.newselected {
 	border-color: var(--selected-border);
 }
 
+/*
+Out of the flow, so it can be as tall as the whole thing without being a flex
+item, and so that the first child in the markup is the first child of the nex.
+*/
 .dcvglyph {
 	display: none;
 }
@@ -58,9 +53,11 @@ The state glyph is the only addition, and it sits outside the call.
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	align-self: stretch;
-	padding: 0px 4px 0px 4px;
-	margin: 2px;
+	position: absolute;
+	left: 3px;
+	top: 3px;
+	bottom: 3px;
+	width: 16px;
 	font-family: "Courier";
 	font-size: 1.15em;
 	color: var(--info-text);
@@ -68,10 +65,44 @@ The state glyph is the only addition, and it sits outside the call.
 }
 
 /*
-The closure at the head is shown short: its name if it has one, its code if it
-does not. The rest of what a closure can tell you about itself -- the argument
-list, the doc string, which environment it came from -- is worth reading when
-you are looking at a closure, and is noise when you are looking at a call.
+The value computed so far is the first child, and it goes across the direction
+the call runs in: on its own line above a call that runs horizontally, and
+floated to the left of one that runs down. Either way it never has to share a
+line with the closure.
+*/
+.deferredcommandvalue.exploded > .nex.exploded {
+	display: inline-block;
+	vertical-align: top;
+	margin: 2px 2px 2px 2px;
+}
+
+/*
+The glyph is written before the children -- renderInto runs before they are
+appended -- so the value computed so far is the first nex after it rather than
+the first child of anything.
+*/
+.deferredcommandvalue.exploded > .dcvglyph + .nex.exploded {
+	display: block;
+	/* its own line, but only as wide as what it is showing */
+	width: max-content;
+	max-width: 100%;
+}
+
+.deferredcommandvalue.exploded.vdir > .nex.exploded {
+	display: block;
+}
+
+.deferredcommandvalue.exploded.vdir > .dcvglyph + .nex.exploded {
+	display: block;
+	float: left;
+}
+
+/*
+The closure at the head of the call is shown short: its name if it has one, its
+code if it does not. The rest of what a closure can tell you about itself -- the
+argument list, the doc string, which environment it came from -- is worth
+reading when you are looking at a closure, and is noise when you are looking at
+a call.
 */
 .deferredcommandvalue > .closure .closureline2,
 .deferredcommandvalue > .closure .closureline3,
