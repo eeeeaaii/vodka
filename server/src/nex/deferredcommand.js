@@ -34,6 +34,7 @@ import { ARGRESULT_LISTENING, ARGRESULT_SETTLED, ARGRESULT_FINISHED } from '../a
 import { heap } from '../heap.js'
 import { constructDeferredCommandValue } from './deferredcommandvalue.js'
 import { constructNil } from './nil.js'
+import { makeDCPolicy } from '../dcpolicy.js'
 import { constructFatalError } from './eerror.js'
 
 
@@ -138,7 +139,11 @@ class DeferredCommand extends Command {
 		// so evaluated arguments show up in the call as they are worked out;
 		// offset by two, past the result and the closure
 		runInfo.argContainer.makeUpdating(dcv, 2);
-		dcv.setRunState(runInfo, executionEnv);
+		/*
+		The rule for working through the arguments, chosen once from the tags on
+		the command and fixed for the life of the value.
+		*/
+		dcv.setRunState(runInfo, executionEnv, makeDCPolicy(runInfo.tags));
 		dcv.run();
 		return dcv;
 	}
