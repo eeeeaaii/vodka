@@ -93,9 +93,15 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 }
 
+/*
+At the top of the strip rather than the middle of it. The strip is as tall as
+whatever it is labelling, so a centred glyph drifts further from the thing it
+belongs to the taller that gets, and ends up looking like it is floating in a
+grey field of its own.
+*/
 .dvglyph {
   display: block;
-  align-self: center;
+  align-self: flex-start;
   height: 25px;	
 }
 
