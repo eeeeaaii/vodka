@@ -18,16 +18,20 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 /*
 Compiled code that either has not run yet or is going to run again.
 
-Its children are a call, written the way lisp writes one: the closure first,
-then the arguments. At least one of those arguments is a deferred value or
+Two special children and then a call: the value computed so far, the closure,
+and the arguments. At least one of those arguments is a deferred value or
 another deferred command value -- that is the whole reason this exists rather
 than a result, and when none are left it collapses into what it computed.
 
-What it has computed so far is a field rather than a child, so that the
-children stay a legal call and the first of them stays the thing being called.
-Ask for it with `latest`; evaluating this gives back this, because it is still
-in the middle of its work and saying otherwise would be a lie about whether
-more is coming.
+Nil in the first slot means nothing has been computed yet, so a call that
+returns nil never has a latest. That is a real consequence and an accepted one:
+in a language made of lists and atoms, nil is how absence is spelled, and
+keeping a flag beside the list to say otherwise would be inventing a second
+kind of emptiness.
+
+Ask for the value with `latest`; evaluating this gives back this, because it is
+still in the middle of its work and saying otherwise would be a lie about
+whether more is coming.
 
 This replaces a copy of the command being stashed inside the value it returned.
 That copy was a nex, so it was refcounted as a child, and it lived in the same
@@ -63,13 +67,6 @@ class DeferredCommandValue extends NexContainer {
 		this.listeners = [];
 		this.state = DCV_WAITING;
 
-		/*
-		The value computed so far. A field, not a child, so that the children
-		remain a call with the closure at its head. Fields are not refcounted
-		the way children are, so it is referenced by hand -- see setLatest.
-		*/
-		this.provisionalValue = null;
-
 		this._runInfo = null;
 		this._activationEnv = null;
 	}
@@ -81,19 +78,19 @@ class DeferredCommandValue extends NexContainer {
 	// ---- what it has computed so far
 
 	hasLatest() {
-		return this.provisionalValue != null;
+		return this.numChildren() > 0 && !Utils.isNil(this.getChildAt(0));
 	}
 
 	getLatest() {
-		return this.provisionalValue ? this.provisionalValue : constructNil();
+		return this.numChildren() > 0 ? this.getChildAt(0) : constructNil();
 	}
 
 	setLatest(v) {
-		if (this.provisionalValue == v) return;
-		let old = this.provisionalValue;
-		this.provisionalValue = v;
-		if (v) heap.addReference(v);
-		if (old) heap.removeReference(old);
+		if (this.numChildren() == 0) {
+			this.appendChild(v);
+		} else {
+			this.replaceChildAt(v, 0);
+		}
 		this.setDirtyForRendering(true);
 	}
 
@@ -129,7 +126,6 @@ class DeferredCommandValue extends NexContainer {
 		} else {
 			this.releaseRunState();
 		}
-		this.setLatest(null);
 	}
 
 	// ---- the call
@@ -229,7 +225,6 @@ class DeferredCommandValue extends NexContainer {
 		let r = constructDeferredCommandValue();
 		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
-		r.setLatest(this.provisionalValue);
 		r.state = this.state;
 		return r;
 	}
@@ -245,8 +240,7 @@ class DeferredCommandValue extends NexContainer {
 	answer, and the handler has to be armed again.
 	*/
 	toStringV2(ctx) {
-		let v = this.provisionalValue;
-		return v ? v.toStringV2(ctx) : '[nil]';
+		return this.numChildren() > 0 ? this.getChildAt(0).toStringV2(ctx) : '[nil]';
 	}
 
 	deserializePrivateData(data) { this.privateData = data; }
@@ -264,16 +258,17 @@ class DeferredCommandValue extends NexContainer {
 			return;
 		}
 		/*
-		The state, then what it has computed, then the call itself. The result
-		goes across the direction the call runs in -- above a horizontal call,
-		beside a vertical one -- so it never competes with the call's own
-		layout. The call is the children; everything else here is drawn from
-		fields, so it is built by hand rather than rendered as nexes.
+		The children are the value computed so far, the closure, and the
+		arguments -- so the result draws itself like anything else does, and
+		where it goes is a question for the stylesheet rather than for this.
+		The state glyph is the one thing here that is not a nex; it is put last
+		and taken out of the flow, so that the first child really is the first
+		child.
 		*/
 		let glyph = document.createElement('span');
 		glyph.classList.add('dcvglyph');
 		glyph.innerHTML = this.stateGlyph();
-		domNode.prepend(glyph);
+		domNode.appendChild(glyph);
 		if (renderFlags & RENDER_FLAG_EXPLODED) {
 			domNode.classList.add('exploded');
 		}
