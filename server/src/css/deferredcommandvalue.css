@@ -30,13 +30,31 @@ The state glyph is the only addition, and it sits outside the call.
 	padding: 0px;
 }
 
+/*
+A grid rather than a row, because three things have to be placed and only one
+of them is a list: the state, the value computed so far, and the call. Grid
+keeps all three in flow -- the state indicator is as tall as the whole thing
+because it spans every row, not because it was taken out of the layout and
+stretched by hand -- and it leaves each child's own display alone, so a nex
+that lays itself out as a row still does.
+*/
 .deferredcommandvalue.exploded {
-	position: relative;
-	/* contains the floats inside it */
-	display: flow-root;
-	padding: 5px 5px 5px 24px;
+	display: grid;
+	grid-auto-flow: column;
+	grid-template-columns: auto;
+	grid-auto-columns: auto;
+	/*
+	Named, because `1 / -1` counts lines in the explicit grid: with no rows
+	declared, the last line is the end of row one and the state indicator spans
+	only that, leaving the call to slide underneath it.
+	*/
+	grid-template-rows: auto auto;
+	justify-content: start;
+	align-items: start;
+	padding: 0px;
 	border: 1px solid var(--org-border);
 	border-radius: 6px;
+	overflow: hidden;
 }
 
 .deferredcommandvalue.exploded.newselected {
@@ -44,8 +62,9 @@ The state glyph is the only addition, and it sits outside the call.
 }
 
 /*
-Out of the flow, so it can be as tall as the whole thing without being a flex
-item, and so that the first child in the markup is the first child of the nex.
+Flush with the inside of the border on three sides, the way the waiting
+indicator on a plain deferred value is, and as tall as the whole thing because
+it spans every row rather than because it was positioned there.
 */
 .dcvglyph {
 	display: none;
@@ -55,11 +74,10 @@ item, and so that the first child in the markup is the first child of the nex.
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	position: absolute;
-	left: 3px;
-	top: 3px;
-	bottom: 3px;
-	width: 16px;
+	grid-column: 1;
+	grid-row: 1 / -1;
+	align-self: stretch;
+	padding: 0px 4px 0px 4px;
 	font-family: "Courier";
 	font-size: 1.15em;
 	color: var(--info-text);
@@ -68,35 +86,31 @@ item, and so that the first child in the markup is the first child of the nex.
 
 /*
 The value computed so far is the first child, and it goes across the direction
-the call runs in: on its own line above a call that runs horizontally, and to
-the left of one that runs down.
-
-Done by floating rather than by setting display, because a child's display
-belongs to the child. A deferred value is a flex row -- that is how its own
-glyph sits beside its contents -- and telling it to be an inline-block instead
-stacks it. Floating leaves a flex container a flex container.
+the call runs in: its own row above a call that runs horizontally, its own
+column to the left of one that runs down.
 */
 .deferredcommandvalue.exploded > .nex.exploded {
-	float: left;
+	grid-row: 2;
 	margin: 2px 2px 2px 2px;
 }
 
-/*
-The closure is always the child after the result, so clearing it is what puts
-the call on the line beneath -- and leaves the result only as wide as itself,
-rather than a bar across the whole width.
-*/
-.deferredcommandvalue.exploded > .dcvglyph + .nex.exploded + .nex.exploded {
-	clear: left;
+.deferredcommandvalue.exploded > .dcvglyph + .nex.exploded {
+	grid-column: 2;
+	grid-row: 1;
 }
 
-/* running down: the result to the left, the call stacked beside it */
+.deferredcommandvalue.exploded.vdir {
+	grid-auto-flow: row;
+}
+
 .deferredcommandvalue.exploded.vdir > .nex.exploded {
-	float: none;
+	grid-row: auto;
+	grid-column: 3;
 }
 
 .deferredcommandvalue.exploded.vdir > .dcvglyph + .nex.exploded {
-	float: left;
+	grid-column: 2;
+	grid-row: 1 / -1;
 }
 
 /*
