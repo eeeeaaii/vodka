@@ -192,6 +192,7 @@ class DeferredCommandValue extends NexContainer {
 		this.setLatest(value);
 		this.state = keepGoing ? DCV_SETTLED : DCV_FINISHED;
 		if (!keepGoing) {
+			this.dropTheCall();
 			this.releaseRunState();
 		}
 		this.setDirtyForRendering(true);
@@ -200,6 +201,23 @@ class DeferredCommandValue extends NexContainer {
 			this.doAlertAnimation();
 		}
 		this.notifyAllListeners();
+	}
+
+	/*
+	Nothing is going to run again, so the call goes and only the answer is
+	left. Dropped the ordinary way, one child at a time, so that whatever was
+	in there is released exactly as it would be if you chopped it out by hand
+	-- an argument that was itself a deferred value gets freed, and being freed
+	is what stops it.
+
+	What remains is a value with one child, which is a deferred value in all
+	but the shape of its border. That is the point: once there is nothing left
+	to run, there is nothing left to tell apart.
+	*/
+	dropTheCall() {
+		for (let i = this.numChildren() - 1; i >= 1; i--) {
+			this.removeChildAt(i);
+		}
 	}
 
 	// ---- nex boilerplate
