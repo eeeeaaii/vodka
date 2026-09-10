@@ -38,3 +38,42 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 .closureline5 {
 	font-size: .9em;
 }
+
+/*
+A closure shows its name, and that is all, until you select it.
+
+Everything a closure can tell you about itself -- the arguments it takes, what
+it is for, the code it is, the environment it came from -- is worth reading
+when you are looking at the closure and is noise when you are looking at
+something that merely contains one. A call whose head printed five lines of
+documentation buried the call.
+
+An unbound lambda has no name to show, so its short form is its code.
+*/
+.closureline2,
+.closureline3,
+.closureline5 {
+	display: none;
+}
+
+.namedclosure .closureline4 {
+	display: none;
+}
+
+.anonymousclosure .closureline1 {
+	display: none;
+}
+
+/* selected: all of it */
+.closure.selected .closureline2,
+.closure.selected .closureline3,
+.closure.selected .closureline5,
+.closure.selected.namedclosure .closureline4,
+.closure.selected.anonymousclosure .closureline1,
+.closure.newselected .closureline2,
+.closure.newselected .closureline3,
+.closure.newselected .closureline5,
+.closure.newselected.namedclosure .closureline4,
+.closure.newselected.anonymousclosure .closureline1 {
+	display: inline-block;
+}

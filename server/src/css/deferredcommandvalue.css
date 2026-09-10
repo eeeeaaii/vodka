@@ -151,24 +151,3 @@ across the direction the call runs in.
 	grid-column: 2;
 	grid-row: auto;
 }
-
-/*
-The closure at the head of the call is shown short: its name if it has one, its
-code if it does not. The rest of what a closure can tell you about itself -- the
-argument list, the doc string, which environment it came from -- is worth
-reading when you are looking at a closure, and is noise when you are looking at
-a call.
-*/
-.deferredcommandvalue > .closure .closureline2,
-.deferredcommandvalue > .closure .closureline3,
-.deferredcommandvalue > .closure .closureline5 {
-	display: none;
-}
-
-.deferredcommandvalue > .closure.namedclosure .closureline4 {
-	display: none;
-}
-
-.deferredcommandvalue > .closure.anonymousclosure .closureline1 {
-	display: none;
-}
