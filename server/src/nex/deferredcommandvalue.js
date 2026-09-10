@@ -330,15 +330,15 @@ class DeferredCommandValue extends NexContainer {
 	stateGlyph() {
 		switch (this.state) {
 			case DCV_CANCELLED:
-				return '<span class="dvglyph cancelledglyph">&#x2934;</span>';
+				return '<span class="dvglyph cancelledglyph">⤬</span>';
 			case DCV_FINISHED:
-				return '<span class="dvglyph finishedglyph">&#x2913;</span>';
+				return '<span class="dvglyph finishedglyph">⤓</span>';
 			case DCV_SETTLED:
-				return '<span class="dvglyph settledglyph">&#x293f;</span>';
+				return '<span class="dvglyph settledglyph">⬿</span>';
 			default:
 				return experiments.STATIC_PIPS
-						? '<span class="dvglyph waitingglyph">&#x21bb;</span>'
-						: '<span class="dvglyph waitingglyph dvspin">&#x21bb;</span>';
+						? '<span class="dvglyph waitingglyph">↻</span>'
+						: '<span class="dvglyph waitingglyph dvspin">↻</span>';
 		}
 	}
 }
