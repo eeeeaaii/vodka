@@ -49,6 +49,7 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { experiments } from '../globalappflags.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 import { executeRunInfo } from '../commandfunctions.js'
+import { evaluateNexSafely } from '../evaluator.js'
 import { ARGRESULT_SETTLED, ARGRESULT_FINISHED } from '../argevaluator.js'
 
 // nothing yet: no value has been produced, so it has no latest
@@ -222,9 +223,29 @@ class DeferredCommandValue extends NexContainer {
 
 	// ---- nex boilerplate
 
+	/*
+	A finished one is done, so it hands back what it computed, exactly as a
+	finished deferred value does -- evaluated on the way out, and carrying any
+	tags that were put on it, since those were describing the answer rather
+	than the waiting.
+
+	One that has not finished gives back itself. It is still in the middle of
+	its work, and answering with a value would say that nothing more is coming.
+	`latest` is how you look at what it has got to so far.
+	*/
 	evaluate(env) {
-		// still in the middle of its work; `latest` is how you look inside
-		return this;
+		if (!this.isFinished()) {
+			return this;
+		}
+		let result = this.numChildren() > 0
+				? evaluateNexSafely(this.getChildAt(0), env)
+				: constructNil();
+		// addTag rather than copyTagsTo, so evaluating twice does not stack up
+		// duplicates
+		for (let i = 0; i < this.tags.length; i++) {
+			result.addTag(this.tags[i].copy());
+		}
+		return result;
 	}
 
 	setMutable(v) {
