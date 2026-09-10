@@ -16,6 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import * as Utils from '../utils.js'
+import { DISPLAY_CONTEXT } from '../serializationcontext.js'
 
 import { ValueNex } from './valuenex.js'
 import { ArgEvaluator } from '../argevaluator.js'
@@ -109,6 +110,19 @@ class Closure extends ValueNex {
 		return this.escape(this.lambda.prettyPrint());
 	}
 
+	/*
+	The lambda written the way you would type it. A closure with no name has
+	nothing else short to show for itself, and prettyPrint is laid out for
+	reading a whole definition rather than for standing in for one.
+	*/
+	getLambdaCodeString() {
+		try {
+			return this.escape(this.lambda.toString('v2', DISPLAY_CONTEXT));
+		} catch (e) {
+			return this.getLambdaDebugString();
+		}
+	}
+
 	getLambdaArgString() {
 		let name = this.getLambda().getCanonicalName();
 		if (!name) {
@@ -190,6 +204,8 @@ class Closure extends ValueNex {
 			this.closureline('3', this.getDocString()) +
 			this.closureline('4', this.getLambdaDebugString()) +
 			this.closureline('5', this.getEnvironmentLine()) +
+			// only shown where a closure has to stand in for itself briefly
+			this.closureline('6', this.getLambdaCodeString()) +
 			'</div></div>';
 	}
 
@@ -202,11 +218,27 @@ class Closure extends ValueNex {
 		return this.getRenderedHTML();
 	}
 
+	/*
+	Whether this closure has a name to be known by. A bound one can be shown as
+	just its name; an unbound lambda has nothing to be called, so the only
+	honest short form is its code. Said in a class so that somewhere wanting an
+	abbreviated closure -- the head of a deferred command value, say -- can pick
+	between the two without knowing how a closure is put together.
+	*/
+	hasName() {
+		let n = this.getLambda().getCanonicalName();
+		if (!n) n = this.symbolBinding.get();
+		// an anonymous lambda still answers with something -- punctuation left
+		// over from how it prints -- so a name has to look like one
+		return !!(n && /[A-Za-z0-9]/.test(n));
+	}
+
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add(this.className);
 		domNode.classList.add('valuenex');
+		domNode.classList.add(this.hasName() ? 'namedclosure' : 'anonymousclosure');
 		domNode.innerHTML = this.getInnerHTMLForDisplay();
 	}
 

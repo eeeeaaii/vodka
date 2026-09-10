@@ -16,39 +16,87 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 /*
-The state, then the call. What it has computed so far is drawn from a field
-rather than a child, so it is placed across the direction the call runs in --
-above a horizontal call, beside a vertical one -- and never has to compete with
-the call's own layout for a row or a column.
+A call, laid out the way an org is: same border, same radius, same margin
+between children, and the same flip to a column when the nex is vertical. It is
+a list with a closure at the front, so it should not look like a different kind
+of thing from every other list.
+
+The state glyph is the only addition, and it sits outside the call.
 */
 
 .deferredcommandvalue {
-	display: none;
+	height: auto;
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	padding: 0px;
+}
+
+.deferredcommandvalue.vdir {
+	flex-direction: column;
 }
 
 .deferredcommandvalue.exploded {
-	display: flex;
-	flex-direction: row;
-	align-items: stretch;
-	background-color: var(--value-background);
-	border-radius: 8px;
-	padding: 3px;
+	padding: 5px;
+	border: 1px solid var(--org-border);
+	border-radius: 6px;
+}
+
+.deferredcommandvalue.exploded > .nex.exploded {
+	margin: 2px 2px 2px 2px;
+}
+
+.deferredcommandvalue.exploded.newselected {
+	border-color: var(--selected-border);
+}
+
+.dcvglyph {
+	display: none;
 }
 
 .deferredcommandvalue.exploded > .dcvglyph {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: 0px 5px 0px 5px;
+	align-self: stretch;
+	padding: 0px 4px 0px 4px;
 	margin: 2px;
-	border-radius: 4px;
 	font-family: "Courier";
 	font-size: 1.15em;
 	color: var(--info-text);
 	background-color: var(--unselected-border);
 }
 
-/* the call itself: the closure and then the arguments, no border */
-.deferredcommandvalue.exploded > .nex {
-	margin: 2px;
+/*
+The closure at the head is shown short: its name if it has one, its code if it
+does not. The rest of what a closure can tell you about itself -- the argument
+list, the doc string, which environment it came from -- is worth reading when
+you are looking at a closure, and is noise when you are looking at a call.
+*/
+.deferredcommandvalue > .closure .closureline2,
+.deferredcommandvalue > .closure .closureline3,
+.deferredcommandvalue > .closure .closureline5 {
+	display: none;
+}
+
+.deferredcommandvalue > .closure.namedclosure .closureline4 {
+	display: none;
+}
+
+.deferredcommandvalue > .closure.anonymousclosure .closureline1,
+.deferredcommandvalue > .closure.anonymousclosure .closureline4 {
+	display: none;
+}
+
+/*
+The lambda's own text, which only earns its place when there is no name to show
+instead. Hidden everywhere else, including on a closure being looked at
+directly, where all five of the other lines are worth reading.
+*/
+.closureline6 {
+	display: none;
+}
+
+.deferredcommandvalue > .closure.anonymousclosure .closureline6 {
+	display: block;
 }
