@@ -123,6 +123,12 @@ class DeferredCommand extends Command {
 	evaluate(executionEnv) {
 		let runInfo = this.createRunInfo(executionEnv);
 		let dcv = constructDeferredCommandValue();
+		/*
+		Tags on the command describe the call, so they belong on the value that
+		call became -- they already reach the builtin through the run info, but
+		without this they stop being visible the moment the command evaluates.
+		*/
+		this.copyTagsTo(dcv);
 		// nothing computed yet, then the call
 		dcv.appendChild(constructNil());
 		dcv.appendChild(runInfo.closure);
