@@ -283,12 +283,23 @@ class DeferredCommandValue extends NexContainer {
 		}
 	}
 
+	/*
+	The same glyphs a deferred value uses, in the same markup, so that the
+	waiting one spins the way that one does and all four look like one another
+	rather than like two unrelated indicators.
+	*/
 	stateGlyph() {
 		switch (this.state) {
-			case DCV_CANCELLED: return '&#x2934;';
-			case DCV_FINISHED: return '&#x2913;';
-			case DCV_SETTLED: return '&#x293f;';
-			default: return '&#x21bb;';
+			case DCV_CANCELLED:
+				return '<span class="dvglyph cancelledglyph">&#x2934;</span>';
+			case DCV_FINISHED:
+				return '<span class="dvglyph finishedglyph">&#x2913;</span>';
+			case DCV_SETTLED:
+				return '<span class="dvglyph settledglyph">&#x293f;</span>';
+			default:
+				return experiments.STATIC_PIPS
+						? '<span class="dvglyph waitingglyph">&#x21bb;</span>'
+						: '<span class="dvglyph waitingglyph dvspin">&#x21bb;</span>';
 		}
 	}
 }

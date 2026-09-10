@@ -67,6 +67,12 @@ that lays itself out as a row still does.
 	border-color: var(--selected-border);
 }
 
+/* the whole strip, not just the outline -- as a deferred value does it */
+.deferredcommandvalue.exploded.newselected > .dcvglyph,
+.deferredcommandvalue.exploded.selected > .dcvglyph {
+	background-color: var(--selected-border);
+}
+
 /*
 Flush with the inside of the border on three sides, the way the waiting
 indicator on a plain deferred value is, and as tall as the whole thing because
