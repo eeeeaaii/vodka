@@ -83,20 +83,6 @@ you are looking at a closure, and is noise when you are looking at a call.
 	display: none;
 }
 
-.deferredcommandvalue > .closure.anonymousclosure .closureline1,
-.deferredcommandvalue > .closure.anonymousclosure .closureline4 {
+.deferredcommandvalue > .closure.anonymousclosure .closureline1 {
 	display: none;
-}
-
-/*
-The lambda's own text, which only earns its place when there is no name to show
-instead. Hidden everywhere else, including on a closure being looked at
-directly, where all five of the other lines are worth reading.
-*/
-.closureline6 {
-	display: none;
-}
-
-.deferredcommandvalue > .closure.anonymousclosure .closureline6 {
-	display: block;
 }

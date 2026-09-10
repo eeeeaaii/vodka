@@ -16,7 +16,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import * as Utils from '../utils.js'
-import { DISPLAY_CONTEXT } from '../serializationcontext.js'
 
 import { ValueNex } from './valuenex.js'
 import { ArgEvaluator } from '../argevaluator.js'
@@ -110,19 +109,6 @@ class Closure extends ValueNex {
 		return this.escape(this.lambda.prettyPrint());
 	}
 
-	/*
-	The lambda written the way you would type it. A closure with no name has
-	nothing else short to show for itself, and prettyPrint is laid out for
-	reading a whole definition rather than for standing in for one.
-	*/
-	getLambdaCodeString() {
-		try {
-			return this.escape(this.lambda.toString('v2', DISPLAY_CONTEXT));
-		} catch (e) {
-			return this.getLambdaDebugString();
-		}
-	}
-
 	getLambdaArgString() {
 		let name = this.getLambda().getCanonicalName();
 		if (!name) {
@@ -204,8 +190,6 @@ class Closure extends ValueNex {
 			this.closureline('3', this.getDocString()) +
 			this.closureline('4', this.getLambdaDebugString()) +
 			this.closureline('5', this.getEnvironmentLine()) +
-			// only shown where a closure has to stand in for itself briefly
-			this.closureline('6', this.getLambdaCodeString()) +
 			'</div></div>';
 	}
 
