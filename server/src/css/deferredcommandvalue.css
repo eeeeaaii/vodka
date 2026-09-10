@@ -76,9 +76,14 @@ it spans every row rather than because it was positioned there.
 	display: none;
 }
 
+/*
+The glyph sits at the start of the strip's long axis: the top of a tall one,
+the left of a wide one. Centred, it drifts away from what it is labelling as
+the call gets bigger.
+*/
 .deferredcommandvalue.exploded > .dcvglyph {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: center;
 	grid-column: 1;
 	grid-row: 1 / -1;
@@ -122,6 +127,8 @@ across the direction the call runs in.
 	grid-row: 1;
 	justify-self: stretch;
 	align-self: auto;
+	align-items: center;
+	justify-content: flex-start;
 }
 
 .deferredcommandvalue.exploded.vdir > .dcvglyph + .nex.exploded {
