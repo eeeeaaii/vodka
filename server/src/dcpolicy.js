@@ -34,9 +34,17 @@ timebase is: there is no enum type, so the tag is the enum.
 
 	<`concurrent`>              start everything, run when nothing is
 	                            outstanding
-	<`sequential-by-position`>  one at a time, resuming at the next index
-	(none)                      one at a time, resuming after whichever
-	                            argument we were actually waiting on
+	<`sequential-by-position`>  one at a time, resuming at the index -- keeps
+	                            its place when an argument is deleted, loses it
+	                            when one is inserted earlier
+	(none)                      one at a time, resuming after whichever argument
+	                            we were actually waiting on -- keeps its place
+	                            when one is inserted earlier, loses it when the
+	                            awaited one is deleted
+
+Either way, arguments before the one being waited on are left alone, even if
+they are commands: they were dealt with on the way past and the call does not
+go back.
 
 The default is sequential, because `begin` is nothing but a call whose
 arguments must happen in order -- it does no sequencing of its own, it returns
@@ -169,11 +177,22 @@ class SequentialByIdPolicy extends DCPolicy {
 }
 
 /*
-One at a time, resuming at the next index rather than after the argument
-itself. The difference only shows when the call is edited while it waits:
-insert something before what we are waiting on and this one carries on from
-whatever is now in the slot after the old index, which may be the thing it was
-waiting on. Kept because there are calls where the position is the point.
+One at a time, resuming at the index rather than after the argument itself.
+
+Which of the two sequential rules you want depends on how the call is going to
+be edited while it waits, because they lose their place in opposite
+circumstances:
+
+	delete what is being waited on   by-id has nothing left to resume after
+	                                 and starts over; by-position still has
+	                                 the slot, holding whatever moved into it
+
+	insert something before it       by-id is unbothered, the mark is the
+	                                 argument itself wherever it has moved to;
+	                                 by-position is now pointing at something
+	                                 else entirely
+
+Neither is right in general, which is why both are here and the tag says which.
 */
 class SequentialByPositionPolicy extends DCPolicy {
 	constructor() {
