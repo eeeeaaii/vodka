@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { ValueNex } from './valuenex.js'
+import { ValueNex, startNumberDrag } from './valuenex.js'
 import { Editor } from '../editors.js'
 import { experiments } from '../globalappflags.js'
 import { heap } from '../heap.js'
@@ -133,9 +133,31 @@ class Integer extends ValueNex {
 		};
 	}
 
+	// whole numbers move by whole numbers
+	getStepAmount() {
+		return 1;
+	}
+
+	/*
+	Press and move to change it. Not while it is being edited, because the
+	pointer belongs to the text then.
+
+	Mutability is deliberately not consulted. A number read out of a file is
+	not mutable, and shift with an arrow steps it regardless -- dragging is the
+	same edit by a different gesture, and having one work where the other does
+	not would be arbitrary.
+	*/
+	startDragIfAllowed(event) {
+		if (this.isEditing) {
+			return;
+		}
+		startNumberDrag(this, event);
+	}
+
 	renderInto(renderNode, renderFlags, withEditor) {
 		super.renderInto(renderNode, renderFlags, withEditor);
 		let domNode = renderNode.getDomNode();
+		domNode.onmousedown = (event) => this.startDragIfAllowed(event);
 		if (this.isEditing) {
 			domNode.classList.add('editing');
 		} else {

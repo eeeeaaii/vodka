@@ -18,6 +18,70 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { experiments } from '../globalappflags.js'
 import { Nex } from './nex.js'
 import { heap, HeapString } from '../heap.js'
+import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
+
+/*
+Dragging a number to change it, the way a number box works in max and
+everything descended from one: press on it and move up or down, and it counts
+while you hold it. Nothing else in the editor works this way, but nothing else
+in the editor is a knob.
+
+A pixel is one step, so an integer counts by ones and a float by tenths -- the
+same amount shift and an arrow gives, so the two agree about what "a bit more"
+means. Holding shift while dragging goes ten times as fast, since a float at a
+tenth a pixel takes most of the screen to cross a range of ten.
+
+Listening on the document rather than the number: a drag that leaves the box is
+still that drag, and letting go anywhere has to end it. Anything that reaches
+this has already been selected by the click that started it, which is what you
+want -- you are working on the thing you are dragging.
+*/
+const DRAG_SHIFT_MULTIPLIER = 10;
+
+function roundToStep(v, step) {
+	let places = 0;
+	let s = String(step);
+	let dot = s.indexOf('.');
+	if (dot != -1) {
+		places = s.length - dot - 1;
+	}
+	return Number(v.toFixed(places));
+}
+
+function startNumberDrag(nex, event) {
+	let step = nex.getStepAmount ? nex.getStepAmount() : 1;
+	let startY = event.clientY;
+	let startValue = nex.getTypedValue();
+	if (isNaN(startValue)) {
+		startValue = 0;
+	}
+	let moved = false;
+
+	function onMove(e) {
+		// up is more, which is which way the number goes on screen
+		let dy = startY - e.clientY;
+		if (!moved && Math.abs(dy) < 2) {
+			// a press that has not gone anywhere yet is still just a click
+			return;
+		}
+		moved = true;
+		let amount = step * (e.shiftKey ? DRAG_SHIFT_MULTIPLIER : 1);
+		// rounded to the step, not to how fast we are going: dragging a float
+		// quickly still lands on tenths rather than on whole numbers
+		nex.setValue(String(roundToStep(startValue + dy * amount, step)));
+		eventQueueDispatcher.enqueueRenderOnlyDirty();
+		// or the browser selects text across the page as the pointer moves
+		e.preventDefault();
+	}
+
+	function onUp() {
+		document.removeEventListener('mousemove', onMove, true);
+		document.removeEventListener('mouseup', onUp, true);
+	}
+
+	document.addEventListener('mousemove', onMove, true);
+	document.addEventListener('mouseup', onUp, true);
+}
 
 class ValueNex extends Nex {
 	constructor(val, prefix, className) {
@@ -116,5 +180,6 @@ class ValueNex extends Nex {
 
 
 
-export { ValueNex }
+export {
+	startNumberDrag, ValueNex }
 
