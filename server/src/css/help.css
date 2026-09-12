@@ -265,18 +265,29 @@ position: fixed;
 }
 
 /* Small persistent nav, sitting to the left of the help button. */
+/*
+A bar of its own beside the help button, in the same colours, so the two read as
+one row of controls rather than as something floating next to something else.
+The gap is the only thing separating them.
+*/
 .statusnav {
 	position: fixed;
 	top: 0px;
-	right: 44px;
-	/* matches the help button's box: 3px margin + 2px border + 2px padding +
-	   9px Courier line, so the row centres against it */
+	/* clear of the help button, plus a 4px gap -- measured, since the button's
+	   width depends on its text */
+	right: 42px;
 	margin-top: 3px;
-	height: 17px;
+	margin-right: 3px;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
 	gap: 6px;
+	font-family: Courier;
+	font-size: 9px;
+	border: 2px solid var(--help-accent);
+	background-color: var(--help-accent);
+	color: var(--help-background);
+	padding: 2px 6px 2px 6px;
 	z-index: 1001;
 }
 
@@ -288,15 +299,13 @@ position: fixed;
 }
 
 .stopbutton {
-	color: var(--help-accent);
+	/* against the bar's own fill now, not the page */
+	color: var(--help-background);
 }
 
 /* reads as a label rather than something to press, unlike its neighbours */
 .bpmreadout {
 	cursor: default;
-	font-family: "Courier";
-	font-size: 11px;
-	color: var(--info-text);
 }
 
 .stopbutton svg {
@@ -307,7 +316,7 @@ position: fixed;
 	width: 4px;
 	height: 4px;
 	border-radius: 50%;
-	background-color: var(--help-accent);
+	background-color: var(--help-background);
 }
 
 
