@@ -17,7 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 
-import { ValueNex } from './valuenex.js'
+import { ValueNex, startNumberDrag } from './valuenex.js'
 import { Editor } from '../editors.js'
 import { heap } from '../heap.js'
 import { constructFatalError } from './eerror.js'
@@ -55,9 +55,26 @@ class Float extends ValueNex {
 		return super.toString(version);
 	}
 
+	/*
+	Press and move to change it. Not while it is being edited, because the
+	pointer belongs to the text then.
+
+	Mutability is deliberately not consulted. A number read out of a file is
+	not mutable, and shift with an arrow steps it regardless -- dragging is the
+	same edit by a different gesture, and having one work where the other does
+	not would be arbitrary.
+	*/
+	startDragIfAllowed(event) {
+		if (this.isEditing) {
+			return;
+		}
+		startNumberDrag(this, event);
+	}
+
 	renderInto(renderNode, renderFlags, withEditor) {
 		super.renderInto(renderNode, renderFlags, withEditor);
 		let domNode = renderNode.getDomNode();
+		domNode.onmousedown = (event) => this.startDragIfAllowed(event);
 		if (this.isEditing) {
 			domNode.classList.add('editing');
 		} else {
@@ -160,9 +177,24 @@ class Float extends ValueNex {
 		return 'standardDefault';
 	}
 
+	/*
+	The same stepping an integer has, because a number you want to nudge while
+	listening to it is more often a float than an integer -- a gain, a ratio, a
+	cutoff -- and it was the one kind of number you could not nudge.
+	*/
 	getEventTable(context) {
 		return {
+			'ShiftArrowUp': 'increment-value',
+			'ShiftArrowDown': 'decrement-value',
 		}
+	}
+
+	/*
+	A tenth. Stepping a float by one is the same as retyping it, and most of
+	what floats are used for here lives between zero and one.
+	*/
+	getStepAmount() {
+		return 0.1;
 	}
 
 	memUsed() {
