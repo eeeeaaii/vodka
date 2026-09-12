@@ -230,7 +230,23 @@ function saveNex(name, nex, callback) {
 	let payload = `save\t${name}\t${encodeContainer(docText, collector)}`;
 
 	sendToServer(payload, function(data) {
-		parseReturnPayload(data, callback);
+		parseReturnPayload(data, function(r) {
+			/*
+			The window says which file you are working on, and saving one under
+			a name makes it that file just as much as loading it does -- until
+			now only loading said so, which left the title naming whatever you
+			opened however long ago and whatever you have saved since.
+
+			Only when it worked. A save that failed has not made this that file,
+			and renaming the window would be a quiet lie about where the work
+			went.
+			*/
+			if (!Utils.isFatalError(r)) {
+				document.title = name;
+				systemState.setDefaultFileName(name);
+			}
+			callback(r);
+		});
 	}, function() {
 		callback(serverError());
 	});
