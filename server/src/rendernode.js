@@ -118,17 +118,81 @@ that re-centres itself on every keystroke is far worse than one that moves only
 when it has to. It also means a pip that is already visible causes no scrolling
 at all.
 
-Smoothly, because the jump is the problem rather than the scrolling. Selecting
+Animated, because the jump is the problem rather than the scrolling. Selecting
 something tall puts the pip after it, which can be a screen or more further
 down, and arriving there instantly leaves you with no idea which way the page
-went. Animating it is the difference between the view moving and the view
-changing. Someone who has asked for less motion gets the jump instead.
+went. By hand rather than with behavior: 'smooth', because that has no duration
+and the browser's is about twice as long as this wants to be. Someone who has
+asked for less motion gets the jump instead.
 
 A pip is made before it goes into the document, and a render can make one inside
 a subtree that is not attached yet, so this waits a frame. Several pips can be
 registered in that time and only the last attached one is live, which is the one
 worth scrolling to.
 */
+/*
+How long the view takes to catch up. The browser's own smooth scrolling is
+about twice this and is not adjustable, which is why this is done by hand: the
+point is to see which way the page went, and any longer than that is just
+waiting.
+*/
+const PIP_SCROLL_MS = 160;
+
+let pipScrollToken = 0;
+
+/*
+How far the window has to move for a rectangle to be on screen, in one
+direction. Nothing if it is already visible, which is what makes an ordinary
+keystroke cost no scrolling at all -- and only as far as the nearest edge
+otherwise, rather than centring it.
+
+When it does move it goes a little past what was strictly needed, so the pip
+comes to rest inside the window rather than against the edge of it -- it is a
+small thing to spot, and one sitting exactly on the boundary reads as being off
+the screen.
+
+The extra is on the moving, not on the deciding. A pip that is already visible
+still costs no scrolling at all however close to the edge it is, because moving
+the view on every keystroke would be worse than the problem being solved.
+*/
+const PIP_SCROLL_MARGIN = 24;
+
+function nearestDelta(near, far, viewLength) {
+	if (near < 0) return near - PIP_SCROLL_MARGIN;
+	if (far > viewLength) return far - viewLength + PIP_SCROLL_MARGIN;
+	return 0;
+}
+
+function scrollWindowTo(el) {
+	let rect = el.getBoundingClientRect();
+	let dy = nearestDelta(rect.top, rect.bottom, window.innerHeight);
+	let dx = nearestDelta(rect.left, rect.right, window.innerWidth);
+	if (dy == 0 && dx == 0) {
+		return;
+	}
+	let reduced = window.matchMedia
+			&& window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	if (reduced || !window.requestAnimationFrame) {
+		window.scrollBy(dx, dy);
+		return;
+	}
+	let startX = window.scrollX;
+	let startY = window.scrollY;
+	let startedAt = null;
+	// a newer scroll abandons this one rather than fighting it
+	let token = ++pipScrollToken;
+	function step(now) {
+		if (token != pipScrollToken) return;
+		if (startedAt === null) startedAt = now;
+		let t = Math.min(1, (now - startedAt) / PIP_SCROLL_MS);
+		// ease out: quickest at the start, so the direction reads immediately
+		let e = 1 - Math.pow(1 - t, 3);
+		window.scrollTo(startX + dx * e, startY + dy * e);
+		if (t < 1) window.requestAnimationFrame(step);
+	}
+	window.requestAnimationFrame(step);
+}
+
 let pendingPipScroll = false;
 
 function scrollPipIntoView() {
@@ -143,13 +207,7 @@ function scrollPipIntoView() {
 		if (!pip || !pip.scrollIntoView) {
 			return;
 		}
-		let smooth = !(window.matchMedia
-				&& window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-		pip.scrollIntoView({
-			block: 'nearest',
-			inline: 'nearest',
-			behavior: smooth ? 'smooth' : 'auto',
-		});
+		scrollWindowTo(pip);
 	});
 }
 

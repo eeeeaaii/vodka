@@ -121,11 +121,6 @@ class DeferredValue extends NexContainer {
 		return c ? c.toStringV2(ctx) : '[nil]';
 	}
 
-	// deferred values are containers but we don't let you insert things in the editor
-	canDoInsertInside() {
-		return false;
-	}
-
 	// rename this
 	/*
 	Some activation sources hold something that keeps running whether or not
