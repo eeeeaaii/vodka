@@ -29,9 +29,9 @@ const StatusNav = () => {
 
     return (
         <div className="statusnav">
-            {/* every length in beats is measured against this, and nothing else
-                on screen says what it is */}
-            <div className="statusnavitem bpmreadout" title="beats per minute">{bpm}</div>
+            {/* dot, then the stop button, then the tempo -- the two that come
+                and go are on the left, so the number does not move when they
+                appear */}
             {unsaved && <div className="unsaveddot" title="not saved yet"></div>}
             {playing &&
                 <div className="statusnavitem stopbutton" title="stop everything"
@@ -51,6 +51,7 @@ const StatusNav = () => {
                         <rect x="5" y="0" width="3" height="9" fill="currentColor"/>
                     </svg>
                 </div>}
+            <div className="statusnavitem bpmreadout" title="beats per minute">{bpm}</div>
         </div>
     );
 };
