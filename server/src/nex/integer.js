@@ -138,16 +138,18 @@ class Integer extends ValueNex {
 		return 1;
 	}
 
-	/*
-	Shift and move to change it. Not on a plain press, which has to stay a way
-	of selecting a number without disturbing it, and not while it is being
-	edited, when the pointer belongs to the text.
+	// there is nothing finer than one to offer, so modifiers mean nothing here
+	getDragStep(event) {
+		return 1;
+	}
 
-	Not on something immutable either, which is the same rule stepping follows:
-	a number that cannot be edited cannot be dragged.
+	/*
+	Press and move to change it. Not while it is being edited, when the pointer
+	belongs to the text, and not on something immutable, which is the same rule
+	stepping follows: a number that cannot be edited cannot be dragged.
 	*/
 	startDragIfAllowed(event) {
-		if (this.isEditing || !event.shiftKey || !this.isMutable()) {
+		if (this.isEditing || !this.isMutable()) {
 			return;
 		}
 		startNumberDrag(this, event);

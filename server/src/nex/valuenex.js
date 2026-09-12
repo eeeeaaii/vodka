@@ -26,14 +26,17 @@ everything descended from one: press on it and move up or down, and it counts
 while you hold it. Nothing else in the editor works this way, but nothing else
 in the editor is a knob.
 
-Held with shift, so that an ordinary press is still just a press: numbers sit in
-the middle of expressions you are reading and clicking one should not change it.
-Shift and an arrow steps a number too, which makes shift the key that means "and
-change it" for both gestures.
+A pixel is one step, and what a step is worth is the nex's business: an integer
+counts by ones no matter what is held, a float counts by ones plainly and by
+tenths, hundredths and thousandths as you add modifiers. The modifiers are read
+on every move rather than once at the start, so you can come down onto the
+digit you want in the middle of a drag without letting go.
 
-A pixel is one step, so an integer counts by ones and a float by tenths -- the
-same amount shift and an arrow gives, so the two agree about what "a bit more"
-means.
+Because the step can change mid-drag the value is accumulated move by move
+instead of computed from the total distance -- otherwise adding a modifier
+would re-scale everything you had already dragged. Rounding is to the finest
+step the drag has used, so tenths picked up along the way survive going back to
+ones.
 
 Listening on the document rather than the number: a drag that leaves the box is
 still that drag, and letting go anywhere has to end it. Anything that reaches
@@ -51,23 +54,31 @@ function roundToStep(v, step) {
 }
 
 function startNumberDrag(nex, event) {
-	let step = nex.getStepAmount ? nex.getStepAmount() : 1;
+	let lastY = event.clientY;
 	let startY = event.clientY;
-	let startValue = nex.getTypedValue();
-	if (isNaN(startValue)) {
-		startValue = 0;
+	let value = nex.getTypedValue();
+	if (isNaN(value)) {
+		value = 0;
 	}
+	// the finest step used so far, so the drag rounds to the smallest amount
+	// the user has actually asked for
+	let finest = null;
 	let moved = false;
 
 	function onMove(e) {
-		// up is more, which is which way the number goes on screen
-		let dy = startY - e.clientY;
-		if (!moved && Math.abs(dy) < 2) {
+		if (!moved && Math.abs(startY - e.clientY) < 2) {
 			// a press that has not gone anywhere yet is still just a click
 			return;
 		}
 		moved = true;
-		nex.setValue(String(roundToStep(startValue + dy * step, step)));
+		let step = nex.getDragStep(e);
+		if (finest === null || step < finest) {
+			finest = step;
+		}
+		// up is more, which is which way the number goes on screen
+		value += (lastY - e.clientY) * step;
+		lastY = e.clientY;
+		nex.setValue(String(roundToStep(value, finest)));
 		eventQueueDispatcher.enqueueRenderOnlyDirty();
 		// or the browser selects text across the page as the pointer moves
 		e.preventDefault();
@@ -76,10 +87,18 @@ function startNumberDrag(nex, event) {
 	function onUp() {
 		document.removeEventListener('mousemove', onMove, true);
 		document.removeEventListener('mouseup', onUp, true);
+		document.removeEventListener('contextmenu', onContextMenu, true);
+	}
+
+	// holding control to drag by hundredths is a right-click as far as a mac is
+	// concerned, and the menu would take the pointer away mid-drag
+	function onContextMenu(e) {
+		e.preventDefault();
 	}
 
 	document.addEventListener('mousemove', onMove, true);
 	document.addEventListener('mouseup', onUp, true);
+	document.addEventListener('contextmenu', onContextMenu, true);
 }
 
 class ValueNex extends Nex {
