@@ -56,15 +56,12 @@ class Float extends ValueNex {
 	}
 
 	/*
-	Shift and move to change it. Not on a plain press, which has to stay a way
-	of selecting a number without disturbing it, and not while it is being
-	edited, when the pointer belongs to the text.
-
-	Not on something immutable either, which is the same rule stepping follows:
-	a number that cannot be edited cannot be dragged.
+	Press and move to change it. Not while it is being edited, when the pointer
+	belongs to the text, and not on something immutable, which is the same rule
+	stepping follows: a number that cannot be edited cannot be dragged.
 	*/
 	startDragIfAllowed(event) {
-		if (this.isEditing || !event.shiftKey || !this.isMutable()) {
+		if (this.isEditing || !this.isMutable()) {
 			return;
 		}
 		startNumberDrag(this, event);
@@ -194,6 +191,25 @@ class Float extends ValueNex {
 	*/
 	getStepAmount() {
 		return 0.1;
+	}
+
+	/*
+	Dragging starts at whole numbers and each modifier you add moves one digit
+	to the right, so the keys you are holding say how far down the number you
+	are working. Shift is the one stepping with an arrow already uses, so it
+	means tenths in both places.
+	*/
+	getDragStep(event) {
+		// a mac turns control-press into a right-click, so accept command too
+		let fine = event.ctrlKey || event.metaKey;
+		if (event.shiftKey && fine) {
+			return 0.001;
+		} else if (fine) {
+			return 0.01;
+		} else if (event.shiftKey) {
+			return 0.1;
+		}
+		return 1;
 	}
 
 	memUsed() {
