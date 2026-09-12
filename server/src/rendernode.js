@@ -116,8 +116,13 @@ bottom or the right edge of it.
 'nearest' rather than centering: this runs on every selection change, and a view
 that re-centres itself on every keystroke is far worse than one that moves only
 when it has to. It also means a pip that is already visible causes no scrolling
-at all. No smooth behavior either -- by the time you look, the scrolling should
-be over.
+at all.
+
+Smoothly, because the jump is the problem rather than the scrolling. Selecting
+something tall puts the pip after it, which can be a screen or more further
+down, and arriving there instantly leaves you with no idea which way the page
+went. Animating it is the difference between the view moving and the view
+changing. Someone who has asked for less motion gets the jump instead.
 
 A pip is made before it goes into the document, and a render can make one inside
 a subtree that is not attached yet, so this waits a frame. Several pips can be
@@ -138,7 +143,13 @@ function scrollPipIntoView() {
 		if (!pip || !pip.scrollIntoView) {
 			return;
 		}
-		pip.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+		let smooth = !(window.matchMedia
+				&& window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+		pip.scrollIntoView({
+			block: 'nearest',
+			inline: 'nearest',
+			behavior: smooth ? 'smooth' : 'auto',
+		});
 	});
 }
 
