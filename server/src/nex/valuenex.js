@@ -26,18 +26,20 @@ everything descended from one: press on it and move up or down, and it counts
 while you hold it. Nothing else in the editor works this way, but nothing else
 in the editor is a knob.
 
+Held with shift, so that an ordinary press is still just a press: numbers sit in
+the middle of expressions you are reading and clicking one should not change it.
+Shift and an arrow steps a number too, which makes shift the key that means "and
+change it" for both gestures.
+
 A pixel is one step, so an integer counts by ones and a float by tenths -- the
 same amount shift and an arrow gives, so the two agree about what "a bit more"
-means. Holding shift while dragging goes ten times as fast, since a float at a
-tenth a pixel takes most of the screen to cross a range of ten.
+means.
 
 Listening on the document rather than the number: a drag that leaves the box is
 still that drag, and letting go anywhere has to end it. Anything that reaches
 this has already been selected by the click that started it, which is what you
 want -- you are working on the thing you are dragging.
 */
-const DRAG_SHIFT_MULTIPLIER = 10;
-
 function roundToStep(v, step) {
 	let places = 0;
 	let s = String(step);
@@ -65,10 +67,7 @@ function startNumberDrag(nex, event) {
 			return;
 		}
 		moved = true;
-		let amount = step * (e.shiftKey ? DRAG_SHIFT_MULTIPLIER : 1);
-		// rounded to the step, not to how fast we are going: dragging a float
-		// quickly still lands on tenths rather than on whole numbers
-		nex.setValue(String(roundToStep(startValue + dy * amount, step)));
+		nex.setValue(String(roundToStep(startValue + dy * step, step)));
 		eventQueueDispatcher.enqueueRenderOnlyDirty();
 		// or the browser selects text across the page as the pointer moves
 		e.preventDefault();

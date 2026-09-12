@@ -56,16 +56,15 @@ class Float extends ValueNex {
 	}
 
 	/*
-	Press and move to change it. Not while it is being edited, because the
-	pointer belongs to the text then.
+	Shift and move to change it. Not on a plain press, which has to stay a way
+	of selecting a number without disturbing it, and not while it is being
+	edited, when the pointer belongs to the text.
 
-	Mutability is deliberately not consulted. A number read out of a file is
-	not mutable, and shift with an arrow steps it regardless -- dragging is the
-	same edit by a different gesture, and having one work where the other does
-	not would be arbitrary.
+	Not on something immutable either, which is the same rule stepping follows:
+	a number that cannot be edited cannot be dragged.
 	*/
 	startDragIfAllowed(event) {
-		if (this.isEditing) {
+		if (this.isEditing || !event.shiftKey || !this.isMutable()) {
 			return;
 		}
 		startNumberDrag(this, event);

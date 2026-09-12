@@ -357,6 +357,10 @@ box that reads like that after three presses is useless.
 */
 function stepValue(s, direction) {
 	let nex = s.getNex();
+	// something you are not allowed to edit is not something to step
+	if (!nex.isMutable()) {
+		return;
+	}
 	let step = nex.getStepAmount ? nex.getStepAmount() : 1;
 	let n = nex.getTypedValue();
 	if (isNaN(n)) {
