@@ -52,7 +52,20 @@ class AuditionPlayer {
 		this.startOffsetSamples = startOffsetSamples ? startOffsetSamples : 0;
 		this.startedAt = ctx.currentTime;
 		this.source = getSourceFromBuffer(buffer, true /* loop */);
-		this.source.connect(channelMergerNode, 0, settings.AUDIO_AUDITION_CHANNEL);
+		/*
+		Both channels. A merger sends each of its inputs to the output channel
+		of the same number, so connecting once puts an audition in one ear and
+		not the other -- fine for a clip that was routed to a channel on
+		purpose, wrong for listening to a wave.
+
+		The second connection only if there is a second channel to make it on,
+		since an output can be mono.
+		*/
+		let ch = settings.AUDIO_AUDITION_CHANNEL;
+		this.source.connect(channelMergerNode, 0, ch);
+		if (ch + 1 < channelMergerNode.numberOfInputs) {
+			this.source.connect(channelMergerNode, 0, ch + 1);
+		}
 		this.source.start(ctx.currentTime, this.startOffsetSamples / SAMPLE_RATE);
 	}
 
@@ -314,7 +327,33 @@ function maybeLoadRecorderWorklet() {
 function maybeCreateAudioContext() {
 	if (ctx == null) {
 		let AudioContext = window.AudioContext || window.webkitAudioContext;
-		ctx = new AudioContext();
+		/*
+		Asked for at the rate everything else already assumes. SAMPLE_RATE is a
+		constant here and another one in wavetablefunctions.js, and every
+		wavetable ever saved holds samples at that rate and no record of it --
+		so the context has to be the thing that bends.
+
+		Letting the browser pick meant captured audio was wrong while generated
+		audio was right: a wave computed at 48000 a second and then declared to
+		be 48000 a second agrees with itself whatever the device is doing, but
+		audio arriving from a microphone or out of decodeAudioData arrives at
+		the context's rate, and got labelled 48000 regardless. Recording on a
+		44100 machine played back a semitone and a half sharp.
+
+		The browser resamples the device for us. If it refuses the rate
+		outright, fall back rather than have no audio at all -- the mismatch is
+		better than silence, and the console says so.
+		*/
+		try {
+			ctx = new AudioContext({ sampleRate: SAMPLE_RATE });
+		} catch (e) {
+			ctx = new AudioContext();
+		}
+		if (ctx.sampleRate != SAMPLE_RATE) {
+			console.log('vodka: asked for ' + SAMPLE_RATE + 'Hz audio but got '
+					+ ctx.sampleRate + 'Hz. Recorded and loaded audio will play back '
+					+ (SAMPLE_RATE / ctx.sampleRate).toFixed(3) + ' times too fast.');
+		}
 		ctx.destination.channelCount = ctx.destination.maxChannelCount;
 		channelMergerNode = ctx.createChannelMerger(ctx.destination.maxChannelCount);
 		channelMergerNode.connect(ctx.destination);
