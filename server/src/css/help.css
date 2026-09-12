@@ -291,6 +291,14 @@ position: fixed;
 	color: var(--help-accent);
 }
 
+/* reads as a label rather than something to press, unlike its neighbours */
+.bpmreadout {
+	cursor: default;
+	font-family: "Courier";
+	font-size: 11px;
+	color: var(--info-text);
+}
+
 .stopbutton svg {
 	display: block;
 }
