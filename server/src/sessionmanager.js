@@ -26,7 +26,7 @@ than a copy of it -- and if saving to a server ever comes back, that id is what
 both machines would be pointing at.
 */
 
-import { systemState } from './systemstate.js'
+import { systemState, PAGE_SEPARATOR } from './systemstate.js'
 import * as audioStore from './audiostore.js'
 import { stopAutosave } from './autosave.js'
 
@@ -111,12 +111,26 @@ function listSessions() {
     }
     let names = readNames();
     for (let id in names) ids[id] = true;
-    let current = systemState.getSessionId();
+    let current = systemState.getStorageId();
     if (current) ids[current] = true;
 
+    /*
+    A key can name a page of a session rather than a session, and a page is not
+    somewhere the server knows about -- so it is split back out here and handed
+    over separately, or the link built from it would ask for a session id that
+    does not exist.
+    */
     let r = [];
     for (let id in ids) {
-        r.push({ id: id, name: nameOf(id), isCurrent: id == current });
+        let at = id.indexOf(PAGE_SEPARATOR);
+        let sessionId = at == -1 ? id : id.substring(0, at);
+        let page = at == -1 ? null : id.substring(at + PAGE_SEPARATOR.length);
+        r.push({
+            id: sessionId,
+            page: page,
+            name: nameOf(id) + (page ? ' (page ' + page + ')' : ''),
+            isCurrent: id == current,
+        });
     }
     r.sort(function(a, b) { return a.name.localeCompare(b.name); });
     return r;

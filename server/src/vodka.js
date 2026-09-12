@@ -221,6 +221,19 @@ function setEmptyDocRoot() {
 
 function setOrCreateSessionId() {
 	let params = new URLSearchParams(window.location.search);
+	/*
+	Which page of browser storage this window is looking at. Only ever from the
+	url: two windows of the same browser share cookies, and telling them apart
+	is the whole point.
+	*/
+	if (params.has('page')) {
+		let page = params.get('page').trim();
+		// 1 is what you get without asking, so saying so changes nothing --
+		// and an empty or junk value is not a page
+		if (page && page != '1' && /^[a-zA-Z0-9_-]+$/.test(page)) {
+			systemState.setPageId(page);
+		}
+	}
 	let sessionId = null;
 	if (params.has('sessionId')) {
 		sessionId = params.get('sessionId');

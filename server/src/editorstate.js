@@ -39,7 +39,7 @@ const KEY_PREFIX = 'vodka.editorstate.';
 const FORMAT_VERSION = 1;
 
 function storageKey() {
-	let id = systemState.getSessionId();
+	let id = systemState.getStorageId();
 	return KEY_PREFIX + (id ? id : 'nosession');
 }
 
