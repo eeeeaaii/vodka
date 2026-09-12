@@ -47,7 +47,7 @@ const STORE = 'samples';
 // Records are namespaced by session id for the same reason the localStorage key
 // is: two sessions open in two tabs shouldn't see each other's audio.
 function scopedKey(hash) {
-	let id = systemState.getSessionId();
+	let id = systemState.getStorageId();
 	return (id ? id : 'nosession') + '/' + hash;
 }
 
@@ -278,7 +278,7 @@ function removeAllForSession(sessionId) {
 			}
 		});
 	}).then(function() {
-		if (sessionId == systemState.getSessionId()) {
+		if (sessionId == systemState.getStorageId()) {
 			loaded.clear();
 		}
 	}).catch(function() {});

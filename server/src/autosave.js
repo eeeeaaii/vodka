@@ -60,7 +60,7 @@ below must not treat it as one.
 let restoreWasComplete = false;
 
 function storageKey() {
-	let id = systemState.getSessionId();
+	let id = systemState.getStorageId();
 	return KEY_PREFIX + (id ? id : 'nosession');
 }
 
@@ -123,7 +123,7 @@ function saveNow(rootNode) {
 	}
 	let wrote = writeStorage(storageKey(), JSON.stringify({
 		version: FORMAT_VERSION,
-		sessionId: systemState.getSessionId() || null,
+		sessionId: systemState.getStorageId() || null,
 		docs: docs
 	}));
 	// A save that did not happen says nothing about what is still in use.

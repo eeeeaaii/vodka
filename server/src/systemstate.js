@@ -20,6 +20,13 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { RENDER_FLAG_NORMAL } from './globalconstants.js'
 
+/*
+Not a character anything else uses: a session id is an identifier or a uuid, so
+this cannot collide with one, and an old key can never be mistaken for a paged
+one.
+*/
+const PAGE_SEPARATOR = '::';
+
 class SystemState {
 	constructor() {
 		this.selectedNode = null;
@@ -67,6 +74,34 @@ class SystemState {
 
 	setSessionId(s) {
 		this.sessionId = s;
+	}
+
+	/*
+	A session id names two different things, and this is the one it names in
+	the browser.
+
+	The server bucket -- where `save` puts a file, what `load` reads -- is the
+	session id. The browser's own copy of things, the autosaved document and
+	the samples in indexeddb, is this. They are the same string unless a page
+	was asked for, which is what makes two windows able to hold different
+	documents while saving and loading the same files.
+
+	Without a page it is exactly the session id, so everything already in
+	storage is still found under the name it was written with.
+	*/
+	getStorageId() {
+		if (!this.pageId) {
+			return this.sessionId;
+		}
+		return this.sessionId + PAGE_SEPARATOR + this.pageId;
+	}
+
+	getPageId() {
+		return this.pageId ? this.pageId : null;
+	}
+
+	setPageId(p) {
+		this.pageId = p;
 	}
 
 	setIsMobile(val) {
@@ -171,4 +206,4 @@ function INDENT() {
 
 const systemState = new SystemState();
 
-export { systemState, INDENT }
+export { systemState, INDENT, PAGE_SEPARATOR }

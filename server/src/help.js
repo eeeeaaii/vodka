@@ -125,6 +125,11 @@ function buildURL(obj) {
 	if (!('sessionId' in obj)) {
 		obj.sessionId = systemState.getSessionId();
 	}
+	// a link from a paged window stays on that page, or following it would
+	// quietly move you to a different document
+	if (!('page' in obj) && systemState.getPageId()) {
+		obj.page = systemState.getPageId();
+	}
 
 	let r = `http://${getFeatureVector().hostname}`;
 	let first = true;
