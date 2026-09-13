@@ -36,7 +36,7 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { showManipulator } from '../wtmanip.js'
 import { Editor } from '../editors.js'
 import { doTutorial } from '../help.js'
-import { getAudioBufferFromData, startRecordingAudio, stopRecordingAudio } from '../webaudio.js'
+import { getAudioBufferFromData, stopRecordingAudio } from '../webaudio.js'
 import * as audioStore from '../audiostore.js'
 import { newShortId } from '../utils.js'
 import { systemState } from '../systemstate.js'
@@ -1098,10 +1098,19 @@ class Wavetable extends Nex {
 		topcontrols.classList.add('wavecontrols')
 		domNode.appendChild(topcontrols);
 		topcontrols.appendChild(this.createTimelabel())
+		/*
+		Stop, but no start. A button that begins recording sits among controls
+		you press all the time, so it gets pressed by accident, and the accident
+		is expensive: it starts overwriting the wave you were working on. There
+		are other ways in -- start-recording, tagged unlimited if you want more
+		than thirty seconds -- and those are deliberate in a way a button next
+		to the timebase label is not.
+
+		Stop stays, and only while recording. Whatever started it, this is how
+		you end it without having to go and write a command to do so.
+		*/
 		if (this.recording) {
 			topcontrols.appendChild(this.createStopRecordingLabel())
-		} else {
-			topcontrols.appendChild(this.createStartRecordingLabel())
 		}
 		topcontrols.appendChild(this.createSpacer())
 		if (this.isEditing) {
@@ -1165,22 +1174,6 @@ class Wavetable extends Nex {
 			return false;
 		}
 		return timelabel;
-	}
-
-	createStartRecordingLabel() {
-		let recordButtonLabel = document.createElement('div');
-		recordButtonLabel.classList.add('wavecontrol');
-		recordButtonLabel.innerText = '* rec';
-		recordButtonLabel.onmousedown = (event) => {
-			if (this.pressIsAGesture(event)) {
-				return true;
-			}
-			startRecordingAudio(this);
-			event.stopPropagation();
-			event.preventDefault();
-			return false;
-		}
-		return recordButtonLabel;
 	}
 
 	createStopRecordingLabel() {
