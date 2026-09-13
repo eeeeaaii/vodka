@@ -283,21 +283,9 @@ class DeferredValue extends NexContainer {
 
 				It did evaluate for a while, which made unwrapping run whatever
 				it unwrapped -- a deferred value that finished holding a command
-				would run that command on its way out. It also made the two ways
-				a deferred value gets unwrapped disagree: an argument to a
-				deferred command comes back through here when the wait ends and
-				would have been evaluated, while the same deferred value sitting
-				in a document and finishing is left alone.
-
-				A child that is itself a finished deferred value is unwrapped
-				too, because two wrappers are no more the answer than one.
+				would run that command on its way out.
 				*/
-				let c = this.getChildAt(0);
-				if (Utils.isDeferredValue(c) && c.isFinished()) {
-					result = c.evaluate(env);
-				} else {
-					result = c;
-				}
+				result = this.getChildAt(0);
 			} else {
 				result = new Nil();
 			}
