@@ -1,1 +1,3 @@
 RX5 DRM
+RX5
+ALM022 Squid Salmple Bank 15. Names from the official bank reference.

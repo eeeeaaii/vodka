@@ -1,1 +1,3 @@
 ALMSID-1
+DUFF ALM SID SAMPLES 1
+ALM022 Squid Salmple Bank 37. Names from the official bank reference.

@@ -1,1 +1,3 @@
 SL170BPM
+Breaks + GRM Tools Manipulation
+ALM022 Squid Salmple Bank 78. Names from the official bank reference.

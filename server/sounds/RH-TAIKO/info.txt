@@ -1,1 +1,3 @@
 RH-TAIKO
+Russells 'Haswell Taiko' samples
+ALM022 Squid Salmple Bank 65. Names from the official bank reference.

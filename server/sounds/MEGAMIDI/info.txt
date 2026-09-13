@@ -1,1 +1,3 @@
 MEGAMIDI
+General MIDI 2 Drums (Cues)
+ALM022 Squid Salmple Bank 71. Names from the official bank reference.

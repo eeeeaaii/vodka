@@ -1,1 +1,3 @@
 GenMID-2
+General Midi hits
+ALM022 Squid Salmple Bank 23. Names from the official bank reference.

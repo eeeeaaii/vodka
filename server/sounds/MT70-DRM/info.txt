@@ -1,1 +1,3 @@
 MT70-DRM
+MT70
+ALM022 Squid Salmple Bank 24. Names from the official bank reference.
