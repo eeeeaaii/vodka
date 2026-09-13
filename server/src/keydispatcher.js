@@ -299,6 +299,10 @@ class KeyDispatcher {
 			'AltShiftTab':          'force-insert-around',
 			'CtrlShiftTab':         'force-insert-around',
 			'ShiftEnter':           'evaluate-nex-and-keep',
+			// play again from wherever you are: walks up to the nearest play
+			// command and runs it, so you do not have to shift-tab out first
+			'MetaShiftKeyP':        'replay-nearest-play',
+			'CtrlShiftKeyP':        'replay-nearest-play',
 			'Enter':                'evaluate-nex',
 			'ShiftSpace':           'toggle-dir',
 			'ShiftBackspace':       'remove-selected-and-select-previous-sibling',
@@ -394,6 +398,10 @@ class KeyDispatcher {
 			'AltShiftTab':          'force-insert-around',
 			'CtrlShiftTab':         'force-insert-around',
 			'ShiftEnter':           'evaluate-nex-and-keep',
+			// play again from wherever you are: walks up to the nearest play
+			// command and runs it, so you do not have to shift-tab out first
+			'MetaShiftKeyP':        'replay-nearest-play',
+			'CtrlShiftKeyP':        'replay-nearest-play',
 			'Enter':                'evaluate-nex',
 			'ShiftSpace':           'toggle-dir',
 			'ShiftBackspace':       'remove-selected-and-select-previous-sibling',
@@ -471,6 +479,10 @@ class KeyDispatcher {
 	getMacNexGenericTable() {
 		return {
 			'ShiftTab':             'select-parent',
+			// play again from wherever you are: walks up to the nearest play
+			// command and runs it, so you do not have to shift-tab out first
+			'MetaShiftKeyP':        'replay-nearest-play',
+			'CtrlShiftKeyP':        'replay-nearest-play',
 			'Tab':                  'move-right-down',
 			'ArrowUp':              'move-left-up',
 			'ArrowDown':            'move-right-down',
@@ -556,6 +568,10 @@ class KeyDispatcher {
 	getPcNexGenericTable() {
 		return {
 			'ShiftTab':             'select-parent',
+			// play again from wherever you are: walks up to the nearest play
+			// command and runs it, so you do not have to shift-tab out first
+			'MetaShiftKeyP':        'replay-nearest-play',
+			'CtrlShiftKeyP':        'replay-nearest-play',
 			'Tab':                  'move-right-down',
 			'ArrowUp':              'move-left-up',
 			'ArrowDown':            'move-right-down',
