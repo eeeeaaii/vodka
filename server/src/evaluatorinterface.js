@@ -81,6 +81,43 @@ function evaluateAndKeep(s) {
 	eventQueueDispatcher.enqueueAlertAnimation(s);
 }
 
+/*
+A deferred value in the document has finished, so the wrapper comes out and what
+it holds takes its place, right where the wrapper was. This is what pressing
+enter on a finished one does; doing it on finish means the two ways a deferred
+value gets unwrapped -- as an argument to a deferred command, and as something
+sitting in a document -- agree with each other, which they did not before: an
+argument was collected for you and a document was left holding a wrapper.
+
+Every render node of it, because the same nex can be in the document more than
+once. One with no parent is not in a document -- an argument, or the root -- and
+is left alone.
+
+Selection follows the answer if it was on the wrapper, so the pip does not
+vanish out from under someone who was sitting on the thing they were waiting
+for.
+*/
+function unwrapFinishedDeferredInDocument(deferred) {
+	let nodes = deferred.getRenderNodes();
+	if (!nodes || nodes.length == 0) return;
+	// once, however many places it is rendered in -- what it holds is one nex
+	let result = evaluateNexSafely(deferred, BINDINGS);
+	if (!result || result == deferred) return;
+	// a copy of the list: replacing a node takes it out of the one we are walking
+	nodes = nodes.slice();
+	for (let i = 0; i < nodes.length; i++) {
+		let node = nodes[i];
+		let parent = node.getParent();
+		if (!parent) continue;
+		let wasSelected = node.isSelected();
+		let newNode = parent.replaceChildWith(node, new RenderNode(result));
+		if (wasSelected && newNode) {
+			newNode.setSelected();
+		}
+	}
+	eventQueueDispatcher.enqueueRenderOnlyDirty();
+}
+
 function evaluateAndCopy(s) {
 	let n = evaluateNexSafely(s.getNex(), BINDINGS);
 	if (n) {
@@ -98,5 +135,6 @@ export {
 	evaluateAndReplace,
 	evaluateAndCopy,
 	evaluateAndKeep,
+	unwrapFinishedDeferredInDocument,
 	evaluateAndReturn
 }
