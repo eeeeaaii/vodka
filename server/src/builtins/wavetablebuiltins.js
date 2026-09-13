@@ -625,7 +625,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Runs |wt1 through a single pole filter with a cutoff determined by |wt2, which can be a number or a wave. |wt2 runs 0 to 1 across the range of hearing, 0 being 20Hz and 1 being 20kHz, and it crosses that range by ear rather than by hertz -- half way is about 630Hz, not 10kHz -- so a wave used as |wt2 sweeps evenly. Tag a number with a timebase (hz, nn) to name a real frequency instead. Tag the command <low> or <high> to say which it is; it is <low> if you do not. One pole cannot resonate -- use doublepole for that."
+    "Runs |wt1 through a single pole filter with a cutoff determined by |wt2, which can be a number or a wave. |wt2 runs 0 to 1 across the range of hearing, 0 being 20Hz and 1 being 20kHz, and it crosses that range by ear rather than by hertz -- half way is about 630Hz, not 10kHz -- so a wave used as |wt2 sweeps evenly. Tag a number with a timebase (hz, nn) to name a real frequency instead. Tag the command <low> or <high> to say which it is; it is <low> if you do not. One pole cannot resonate, and no amount of feeding it back into itself will change that -- one pole can only turn the phase a quarter turn and a ring needs half a turn to sustain itself. Use doublepole when you want a filter that sings."
   );
 
   /*
