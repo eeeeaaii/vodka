@@ -107,7 +107,7 @@ function createFileBuiltins() {
 	/*
 	A listing is meant to be walked with dot syntax --
 
-		~(_bind @audio ~(_list-audio_)_)   then   @audio.sample.SB_003.Wobble_Tone
+		~(_bind @audio ~(_list-audio_)_)   then   @audio.sample.SB_003.Drop_Synth
 
 	-- and each step of that is a tag looked up by name. The folders arrive
 	tagged already; the files arrive as bare strings, so they get a tag here.
@@ -283,7 +283,7 @@ function createFileBuiltins() {
 		+ 'needs its library tag alongside it. A name from this listing is what '
 		+ 'load-audio takes. Names have no .wav on the end, and every library, '
 		+ 'folder and file is tagged with its own name, so a listing can be walked '
-		+ 'with dots: bind it to @audio and one sample is @audio.sample.SB-003.Wobble_Tone.'
+		+ 'with dots: bind it to @audio and one sample is @audio.sample.SB-003.Drop_Synth.'
 	);
 
 	Builtin.createBuiltin(

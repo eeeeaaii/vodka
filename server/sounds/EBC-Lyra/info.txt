@@ -1,1 +1,3 @@
 EBC-Lyra
+Ebcidic Sample Set
+ALM022 Squid Salmple Bank 67. Names from the official bank reference.

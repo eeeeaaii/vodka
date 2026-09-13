@@ -1,1 +1,3 @@
 EBC-CV1
+Ebcidic CV Sample Set 1
+ALM022 Squid Salmple Bank 83. Names from the official bank reference.
