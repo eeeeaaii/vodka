@@ -82,6 +82,14 @@ body.hidewavecontrols .wavetable.newselected {
 	padding: 0;
 }
 
+/* Tags sit above the wave and push it down exactly as the controls do, so they
+   go the same way and for the same reason: this mode is for looking at a stack
+   of waveforms next to each other, and everything that is not wave is in the
+   way of that. Only on a wavetable -- tags anywhere else are the point. */
+body.hidewavecontrols .wavetable > .tagholder {
+	display: none;
+}
+
 .wavecontrol {
 	background-color: var(--wave-control-background);
 	color: var(--wave-control-text);
