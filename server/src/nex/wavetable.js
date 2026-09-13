@@ -419,12 +419,22 @@ class Wavetable extends Nex {
 		this.setDirtyForRendering(true);
 	}
 
-	// this makes sure you don't set the window origin to be less than zero
-	// or large enough that empty space appears to the right of the sample
+	/*
+	This makes sure you don't set the window origin to be less than zero or
+	large enough that empty space appears to the right of the sample. The far
+	end is data.length - samplesInWindow: the window covers origin .. origin +
+	samplesInWindow, so that is the origin whose window ends exactly where the
+	wave does.
+
+	It used to be one less than that, which left the final sample one column
+	past the right edge and unreachable. A single sample sounds like nothing,
+	but zoomed in far enough one sample is a wide stripe, and it is the stripe
+	at the end of the wave.
+	*/
 	setWindowOriginSample(n) {
 		let samplesInWindow = this.windowWidth() / this.getPixelsPerSample();
 		let minOrigin = 0;
-		let maxOrigin = this.data.length - 1 - samplesInWindow;
+		let maxOrigin = this.data.length - samplesInWindow;
 		this.windowOriginSample = Math.max(minOrigin, Math.min(n, maxOrigin))
 	}
 
