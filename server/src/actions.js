@@ -132,16 +132,34 @@ function enqueueAndPerformAction(action) {
 		queueTop = nextPosition;
 	}
 	undosDeep = 0;
-	action.doAction();
-	// after doAction, which is where an action captures what it is holding
-	retainActionNexes(action);
+	/*
+	Both halves inside one heap action, because between them is the gap where a
+	deleted nex is held by nothing at all -- taken out of the document, not yet
+	taken hold of by undo. See heap.beginAction: inside, letting go of the last
+	reference stops a nex without freeing it, so what undo is about to ask for
+	is still there when it asks.
+	*/
+	heap.beginAction();
+	try {
+		action.doAction();
+		// after doAction, which is where an action captures what it is holding
+		retainActionNexes(action);
+	} finally {
+		heap.endAction();
+	}
 	scheduleAutosave(systemState.getRoot());
 }
 
 
 function redo() {
 	if (nextPosition != queueTop) {
-		actionStack[nextPosition].doAction();
+		// the same gap as in enqueueAndPerformAction: a redo deletes again
+		heap.beginAction();
+		try {
+			actionStack[nextPosition].doAction();
+		} finally {
+			heap.endAction();
+		}
 		nextPosition = advance(nextPosition);
 		undosDeep--;
 		scheduleAutosave(systemState.getRoot());
@@ -162,7 +180,12 @@ function undo() {
 	if (actionStack[pos] && actionStack[pos].canUndo()) {
 		nextPosition = pos;
 		undosDeep++;
-		actionStack[nextPosition].undoAction();
+		heap.beginAction();
+		try {
+			actionStack[nextPosition].undoAction();
+		} finally {
+			heap.endAction();
+		}
 		scheduleAutosave(systemState.getRoot());
 	} else {
 		console.log('cannot undo');
