@@ -24,6 +24,7 @@ import { RenderNode, INSERT_AFTER } from './rendernode.js'
 import { BINDINGS } from './environment.js'
 import { experiments } from './globalappflags.js'
 import { manipulator } from './manipulator.js'
+import { recordPerformedAction, UnwrapDeferredAction } from './actions.js'
 import { evaluateNexSafely } from './evaluator.js'
 
 
@@ -95,7 +96,8 @@ is left alone.
 
 Selection follows the answer if it was on the wrapper, so the pip does not
 vanish out from under someone who was sitting on the thing they were waiting
-for.
+for -- and because the selection moving is exactly what the undo stack has to
+know about, the whole thing goes on the stack as an action.
 */
 function unwrapFinishedDeferredInDocument(deferred) {
 	let nodes = deferred.getRenderNodes();
@@ -105,16 +107,28 @@ function unwrapFinishedDeferredInDocument(deferred) {
 	if (!result || result == deferred) return;
 	// a copy of the list: replacing a node takes it out of the one we are walking
 	nodes = nodes.slice();
+	let replacements = [];
 	for (let i = 0; i < nodes.length; i++) {
-		let node = nodes[i];
-		let parent = node.getParent();
+		let wrapperNode = nodes[i];
+		let parent = wrapperNode.getParent();
 		if (!parent) continue;
-		let wasSelected = node.isSelected();
-		let newNode = parent.replaceChildWith(node, new RenderNode(result));
-		if (wasSelected && newNode) {
-			newNode.setSelected();
+		let wasSelected = wrapperNode.isSelected();
+		let index = parent.getIndexOfChild(wrapperNode);
+		let answerNode = parent.replaceChildWith(wrapperNode, new RenderNode(result));
+		if (!answerNode) continue;
+		if (wasSelected) {
+			answerNode.setSelected();
 		}
+		replacements.push({
+			parent: parent,
+			index: index,
+			wrapperNode: wrapperNode,
+			answerNode: answerNode,
+			wasSelected: wasSelected
+		});
 	}
+	if (replacements.length == 0) return;
+	recordPerformedAction(new UnwrapDeferredAction(deferred, replacements));
 	eventQueueDispatcher.enqueueRenderOnlyDirty();
 }
 
