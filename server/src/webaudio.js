@@ -469,6 +469,24 @@ const CYCLE_LOOKAHEAD_SECONDS = 0.15;
 
 let cycleLoops = {};        // id -> { buffer, channel, lengthSeconds, node, endAfterCycle }
 let cyclePending = {};      // loops that join at the next boundary
+/*
+A break: everything stops, one sample plays alone, and whatever you start while
+it plays comes in when it ends.
+
+Queued rather than done, because the point of a break is where it lands. It
+waits for the boundary the same as anything else joining the cycle, so the
+music finishes the bar it is in.
+
+Once it has the floor the cycle is the break and nothing else, which is what
+makes the rest of it work without any new machinery: the cycle is as long as
+its longest member, so for one pass the cycle is exactly the break; anything
+started meanwhile waits for the next boundary, which is the end of the break,
+and then they all begin together from the top, in phase, the way they would
+after any other boundary. If nothing was started, the cycle has no members
+left, and a cycle with nothing in it stops.
+*/
+let pendingBreak = null;    // { buffers, channels } waiting for the next boundary
+let breakIds = [];          // what the break is playing on, while it plays
 let nextCycleLoopId = 1;
 let cycleTimer = null;
 let cycleRunning = false;
@@ -544,6 +562,15 @@ function retireUnownedClips() {
 // Starts every loop at the boundary and cuts it at the end of the cycle, so a
 // loop shorter than the cycle repeats inside it and is truncated.
 function startCycleAt(startTime) {
+	if (pendingBreak) {
+		beginBreak();
+	} else if (breakIds.length > 0) {
+		// it has had its one pass. Whatever was started while it played is
+		// waiting in cyclePending and is about to begin; if nothing was, there
+		// is nothing left and the cycle stops below.
+		endLoops(breakIds, false);
+		breakIds = [];
+	}
 	retireUnownedClips();
 	for (let id in cyclePending) {
 		cycleLoops[id] = cyclePending[id];
@@ -595,6 +622,59 @@ function startCycleAt(startTime) {
 	cycleTimer = window.setTimeout(function() {
 		startCycleAt(nextBoundary);
 	}, wakeIn > 0 ? wakeIn : 0);
+}
+
+/*
+Takes the floor. Everything playing stops here rather than at some later
+boundary -- a break that let the old loop finish underneath it would not be a
+break -- and the clips are ended, so the document shows what you can hear.
+
+The break is put straight into cycleLoops rather than into cyclePending,
+because it is starting now, at this boundary, not at the next one.
+*/
+function beginBreak() {
+	let ids = [];
+	for (let id in cycleLoops) ids.push(id);
+	for (let id in cyclePending) ids.push(id);
+	endLoops(ids, false);
+	while (playingClips.length > 0) {
+		playingClips[0].clip.end(false);
+		releaseClip(0);
+	}
+	breakIds = [];
+	// one wave fans out to every channel, two alternate, and so on -- the same
+	// rule play uses
+	let bufferIndex = 0;
+	for (let i = 0; i < pendingBreak.channels.length; i++) {
+		let buffer = pendingBreak.buffers[bufferIndex];
+		bufferIndex = (bufferIndex + 1) % pendingBreak.buffers.length;
+		let id = nextCycleLoopId++;
+		cycleLoops[id] = {
+			buffer: buffer,
+			channel: pendingBreak.channels[i],
+			lengthSeconds: buffer.length / SAMPLE_RATE,
+			node: null,
+			endAfterCycle: false
+		};
+		breakIds.push(id);
+	}
+	pendingBreak = null;
+}
+
+/*
+Queues a break for the next boundary. With nothing playing there is no boundary
+to wait for, so it starts one, and the break is simply a sample played once.
+*/
+function queueBreak(buffers, channels) {
+	maybeCreateAudioContext();
+	channels.forEach(checkChannelExists);
+	pendingBreak = { buffers: buffers, channels: channels };
+	if (!cycleRunning) {
+		cycleRunning = true;
+		whenAudioClockIsReady(function() {
+			startCycleAt(ctx.currentTime);
+		});
+	}
 }
 
 /*
@@ -851,6 +931,11 @@ function endAllLoops() {
 		cycleTimer = null;
 	}
 	cycleRunning = false;
+	// a break that was queued or playing is over too -- stopping everything
+	// means everything, and leaving either of these set would have the next
+	// cycle open by tidying up after a break that is long gone
+	pendingBreak = null;
+	breakIds = [];
 }
 
 /*
@@ -1011,5 +1096,5 @@ async function getFileAsBuffer(filepath, dir) {
 }
 
 
-export { getAudioBufferFromData, loadAudio, muteLoops, addLoop, getAudioChannelCount, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { getAudioBufferFromData, loadAudio, muteLoops, addLoop, queueBreak, getAudioChannelCount, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 

@@ -56,7 +56,7 @@ import {
   frequencyToNoteNum,
 } from "../wavetablefunctions.js";
 import { forEachSpectrum, hannWindow } from "../fft.js";
-import { loopPlay, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying, getAudioChannelCount } from "../webaudio.js";
+import { loopPlay, queueBreak, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying, getAudioChannelCount } from "../webaudio.js";
 import { constructClip } from "../nex/clip.js";
 import { Tag } from "../tag.js";
 import { ERROR_TYPE_INFO } from "../nex/eerror.js";
@@ -219,6 +219,35 @@ function createWavetableBuiltins() {
 
   // what it was called before it could do both
   Builtin.aliasBuiltin("loop-play", "play");
+
+  Builtin.createBuiltin(
+    "break",
+    ["wt_"],
+    function $break(env, executionEnvironment) {
+      let wt = env.lb("wt");
+
+      let buffers = [];
+      if (Utils.isNexContainer(wt)) {
+        for (let i = 0; i < wt.numChildren(); i++) {
+          buffers.push(wt.getChildAt(i).getCachedBuffer());
+        }
+      } else {
+        buffers.push(wt.getCachedBuffer());
+      }
+
+      /*
+      No second argument, unlike play. There is nothing for one to say: a break
+      is not a loop you keep a handle on and replace later, it happens once and
+      is over, so there is no clip to hand back and no clip to be given. The
+      channels are the ones play uses when it is not told otherwise.
+      */
+      let converted = toChannelIndexes([1, 2], "break");
+      if (converted.error) return converted.error;
+      queueBreak(buffers, converted.indexes);
+      return constructNil();
+    },
+    "Stops everything at the end of the current measure and plays wt| once, alone. Anything you start while it is playing begins the moment it ends, from the top, all together -- and if you start nothing, everything stops when the break does. Unlike play there is no clip to hand back, because a break happens once rather than going on until something lets go of it."
+  );
 
   Builtin.createBuiltin(
     "audio-channels",
