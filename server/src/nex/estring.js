@@ -336,5 +336,5 @@ stats: ${heap.stats()}`)
 	return heap.register(new EString(val, ch, t));
 }
 
-export { EString, constructEString, EStringEditor }
+export { EString, constructEString, EStringEditor, MODE_EXPANDED }
 

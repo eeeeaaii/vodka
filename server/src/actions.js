@@ -20,7 +20,10 @@ import { heap } from './heap.js';
 import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
 import { manipulator } from './manipulator.js';
 import { constructWarning } from './nex/eerror.js';
+// estring and eerror each declare this, with the same value; one of them will do
+import { MODE_EXPANDED } from './nex/estring.js';
 import { scheduleAutosave } from './autosave.js'
+import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 
 const levelsOfUndo = 50;
 
@@ -434,6 +437,86 @@ class ChangeSelectedNodeAction extends Action {
 		this.savedSelectedNode.setInsertionMode(this.savedInsertionMode);
 	}
 }
+
+/*
+Clicking a nex to select it, which is a change to where you are in the document
+just as much as arrowing onto it is, and so belongs on the undo stack next to
+ChangeSelectedNodeAction. It was the one way of moving the selection that left
+no trace, which is its own small surprise -- undo would step over the click and
+walk back to whatever you did before it.
+
+The click can also take something away: the pip is a nex, and moving off it
+removes it. That goes in here too, so undoing puts it back where it was rather
+than leaving a document that has quietly lost its insertion point.
+*/
+class ClickSelectAction extends Action {
+	constructor(nodeToSelect) {
+		super('click-select');
+		this.nodeToSelect = nodeToSelect;
+	}
+
+	canUndo() {
+		return true;
+	}
+
+	doAction() {
+		this.previouslySelected = systemState.getGlobalSelectedNode();
+		this.previousInsertionMode = this.previouslySelected.getInsertionMode();
+		this.removedInsertionPoint = null;
+		this.removedFrom = null;
+		this.removedIndex = -1;
+
+		let insertAfterRemove = false;
+		let previousNex = this.previouslySelected.getNex();
+		if ((previousNex.getTypeName() == '-estring-'
+				|| previousNex.getTypeName() == '-eerror-')
+				&& previousNex.getMode() == MODE_EXPANDED) {
+			previousNex.finishInput();
+		} else if (previousNex.getTypeName() == '-insertionpoint-') {
+			insertAfterRemove = true;
+		}
+
+		/*
+		setSelected already marks the node losing selection, the node gaining
+		it, and both their parents, and asks for a render of what is dirty.
+		Rendering the whole document on top of that is the cost of every click,
+		and it grows with the size of the document rather than with what
+		changed.
+		*/
+		this.nodeToSelect.setSelected();
+		if (insertAfterRemove
+				&& systemState.getGlobalSelectedNode() != this.previouslySelected) {
+			let wasIn = this.previouslySelected.getParent();
+			if (wasIn) {
+				this.removedInsertionPoint = this.previouslySelected;
+				this.removedFrom = wasIn;
+				this.removedIndex = wasIn.getIndexOfChild(this.previouslySelected);
+			}
+			manipulator.removeNex(this.previouslySelected);
+			if (wasIn) wasIn.setRenderNodeDirtyForRendering(true);
+		}
+		eventQueueDispatcher.enqueueRenderOnlyDirty();
+	}
+
+	undoAction() {
+		if (this.removedInsertionPoint && this.removedFrom) {
+			this.removedFrom.insertChildAt(this.removedInsertionPoint, this.removedIndex);
+		}
+		/*
+		Where you were may not be there any more -- something else deleted it,
+		or a deferred value finished and replaced it. Going back to a node that
+		is not in the document would put the pip nowhere, so the selection is
+		left where it is and only the rest of the undo happens.
+		*/
+		if (!this.previouslySelected.getParent()) {
+			return;
+		}
+		this.previouslySelected.setSelected();
+		this.previouslySelected.setInsertionMode(this.previousInsertionMode);
+		eventQueueDispatcher.enqueueRenderOnlyDirty();
+	}
+}
+
 
 /*
 Cut and paste change the document, so they belong on the undo stack like any
@@ -944,4 +1027,4 @@ function actionFactory(actionName, eventName) {
 
 
 
-export { actionFactory, enqueueAndPerformAction, MultiSelectAction, undo, redo }
+export { actionFactory, enqueueAndPerformAction, MultiSelectAction, ClickSelectAction, undo, redo }
