@@ -190,13 +190,19 @@ function convertSamplesToTimebase(timebase, samples) {
 	}
 }
 
+/*
+Short, because this goes in the wave's own time label, which sits in a row of
+controls the width of the wave and is read at a glance rather than parsed. The
+word it is short for is never in doubt: the label is a number and its unit, and
+tapping it cycles through the five.
+*/
 function getTimebaseSuffix(tb) {
 	switch(tb) {
 		case 'HZ': return 'hz';
-		case 'NOTE': return 'notenum';
-		case 'SECONDS': return 'secs';
-		case 'SAMPLES': return 'samps';
-		case 'BEATS': return 'beats';
+		case 'NOTE': return 'nn';
+		case 'SECONDS': return 'sec';
+		case 'SAMPLES': return 'samp';
+		case 'BEATS': return 'b';
 	}	
 }
 

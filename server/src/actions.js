@@ -693,10 +693,30 @@ class EvaluateAndReplaceAction extends Action {
 	}
 
 	doAction() {
-		this.nodeBeingEvaluated = systemState.getGlobalSelectedNode();
-		this.parentOfNodeBeingEvaluated = this.nodeBeingEvaluated.getParent();
-		this.index = this.parentOfNodeBeingEvaluated.getIndexOfChild(this.nodeBeingEvaluated);
-		this.savedInsertionMode = this.nodeBeingEvaluated.getInsertionMode();
+		if (this.nodeBeingEvaluated) {
+			/*
+			A redo, and the node to evaluate is already known. Reading the
+			selection again here would evaluate whatever happens to be selected
+			now, which is the same mistake the undo used to make, pointing the
+			other way. Selected first because what actually does the replacing
+			reads the selection rather than what it is handed.
+			*/
+			this.nodeBeingEvaluated.setSelected();
+			/*
+			The warning belongs to the undo, not to the document, so taking the
+			undo back takes it with it. Before evaluating, or removing it would
+			be working from indexes the evaluation has already moved.
+			*/
+			if (this.undoWarning && this.undoWarning.getParent()) {
+				manipulator.removeNex(this.undoWarning);
+			}
+			this.undoWarning = null;
+		} else {
+			this.nodeBeingEvaluated = systemState.getGlobalSelectedNode();
+			this.parentOfNodeBeingEvaluated = this.nodeBeingEvaluated.getParent();
+			this.index = this.parentOfNodeBeingEvaluated.getIndexOfChild(this.nodeBeingEvaluated);
+			this.savedInsertionMode = this.nodeBeingEvaluated.getInsertionMode();
+		}
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
 		/*
 		What the evaluation left behind, taken now, while the selection is
@@ -731,7 +751,7 @@ class EvaluateAndReplaceAction extends Action {
 		this.nodeBeingEvaluated.setInsertionMode(this.savedInsertionMode);
 
 		let ee = constructWarning("Warning: undoing code evaluation does not undo side effects.");
-		this.parentOfNodeBeingEvaluated.insertChildBefore(ee, this.nodeBeingEvaluated);
+		this.undoWarning = this.parentOfNodeBeingEvaluated.insertChildBefore(ee, this.nodeBeingEvaluated);
 	}
 }
 
@@ -746,14 +766,24 @@ class EvaluateInPlaceAction extends Action {
 	}
 
 	doAction() {
-		this.nodeBeingEvaluated = systemState.getGlobalSelectedNode();
-		this.parentOfNodeBeingEvaluated = this.nodeBeingEvaluated.getParent();
+		// the same rule as EvaluateAndReplaceAction: on a redo, evaluate the
+		// node this action is about rather than whatever is selected now
+		if (this.nodeBeingEvaluated) {
+			this.nodeBeingEvaluated.setSelected();
+			if (this.undoWarning && this.undoWarning.getParent()) {
+				manipulator.removeNex(this.undoWarning);
+			}
+			this.undoWarning = null;
+		} else {
+			this.nodeBeingEvaluated = systemState.getGlobalSelectedNode();
+			this.parentOfNodeBeingEvaluated = this.nodeBeingEvaluated.getParent();
+		}
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
 	}
 
 	undoAction() {
 		let ee = constructWarning("Warning: undoing code evaluation does not undo side effects.")
-		this.parentOfNodeBeingEvaluated.insertChildBefore(ee, this.nodeBeingEvaluated);
+		this.undoWarning = this.parentOfNodeBeingEvaluated.insertChildBefore(ee, this.nodeBeingEvaluated);
 	}
 }
 
