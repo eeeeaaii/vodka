@@ -328,7 +328,21 @@ class RenderNode {
 				// YOU HAVE TO SET THE CURRENT EDITOR TO NULL FIRST
 				// because replacing self triggers a forceClose via select/unselect
 				this.stopEditing();
-				this.replaceSelfInParentWith(e);
+				let parent = this.parentalfigure;
+				let index = this.indexinparentalfigure;
+				let errorNode = this.replaceSelfInParentWith(e);
+				/*
+				This swapped a nex out of the document and moved the selection
+				onto the error, neither of which is the change the key's own
+				action believes it made. It goes on the undo stack in its own
+				right, or undo walks back to an action describing a document
+				that is not this one.
+
+				Through the queue because actions cannot be reached from here
+				without a circular import, and because landing after the key's
+				action is the right order to undo them in.
+				*/
+				eventQueueDispatcher.enqueueEditorErrorAction(parent, index, this, errorNode);
 				return null;
 			} else {
 				throw e;
@@ -976,6 +990,7 @@ class RenderNode {
 		}
 		this.parentalfigure.replaceChildAt(newNode, this.indexinparentalfigure);
 		newNode.setSelected();
+		return newNode;
 	}
 
 

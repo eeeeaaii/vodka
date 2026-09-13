@@ -107,7 +107,13 @@ function releaseActionNexes(action) {
 	action.heldNexes = null;
 }
 
-function enqueueAndPerformAction(action) {
+/*
+Putting an action in the next slot, without running it. The two callers differ
+only in whether the work has happened yet: a key or a click hands over something
+still to do, while a deferred value finishing or an editor failing hands over
+something that already happened and only needs to be undoable.
+*/
+function pushActionSlot(action) {
 	// whatever was in this slot is falling out of the buffer
 	releaseActionNexes(actionStack[nextPosition]);
 	actionStack[nextPosition] = action;
@@ -135,6 +141,10 @@ function enqueueAndPerformAction(action) {
 		queueTop = nextPosition;
 	}
 	undosDeep = 0;
+}
+
+function enqueueAndPerformAction(action) {
+	pushActionSlot(action);
 	/*
 	Both halves inside one heap action, because between them is the gap where a
 	deleted nex is held by nothing at all -- taken out of the document, not yet
@@ -150,6 +160,22 @@ function enqueueAndPerformAction(action) {
 	} finally {
 		heap.endAction();
 	}
+	scheduleAutosave(systemState.getRoot());
+}
+
+/*
+Something changed the document that nobody asked for -- a deferred value
+finished and put its answer where it stood, an editor threw and left an error
+in place of what was being edited. Those are changes like any other, and an
+undo stack that does not know about them walks back to an action describing a
+document that no longer exists.
+
+Recorded rather than performed, because it has already happened. Redoing it
+runs doAction the ordinary way.
+*/
+function recordPerformedAction(action) {
+	pushActionSlot(action);
+	retainActionNexes(action);
 	scheduleAutosave(systemState.getRoot());
 }
 
@@ -439,6 +465,88 @@ class ChangeSelectedNodeAction extends Action {
 }
 
 /*
+A deferred value in the document finished, so the wrapper came out and the
+answer took its place. Nobody asked for it -- a timer went off, a server
+answered -- but it is a change to the document all the same, and one that moves
+the selection if the wrapper was where you were standing. On the stack like
+everything else, so undo has a complete account of how the document got here.
+
+Undoing puts the wrapper back, finished, holding the same answer. Which is
+honest: what the undo takes back is the collecting, not the waiting.
+*/
+class UnwrapDeferredAction extends Action {
+	constructor(deferred, replacements) {
+		super('unwrap-deferred');
+		this.deferred = deferred;
+		// {parent, index, wrapperNode, answerNode, wasSelected}, in the order
+		// they were replaced
+		this.replacements = replacements;
+	}
+
+	canUndo() {
+		return true;
+	}
+
+	doAction() {
+		// a redo: put the answers back where the wrappers are
+		for (let i = 0; i < this.replacements.length; i++) {
+			let r = this.replacements[i];
+			if (r.wrapperNode.getParent() != r.parent) continue;
+			r.parent.replaceChildWith(r.wrapperNode, r.answerNode);
+			if (r.wasSelected) {
+				r.answerNode.setSelected();
+			}
+		}
+	}
+
+	undoAction() {
+		for (let i = this.replacements.length - 1; i >= 0; i--) {
+			let r = this.replacements[i];
+			if (r.answerNode.getParent() != r.parent) continue;
+			r.parent.replaceChildWith(r.answerNode, r.wrapperNode);
+			if (r.wasSelected) {
+				r.wrapperNode.setSelected();
+			}
+		}
+	}
+}
+
+
+/*
+An editor threw while a key was being handled, and what was being edited was
+replaced with the error. That happens inside whatever action the key made, but
+it is not the change that action thinks it made, and it moves the selection
+onto the error. Recorded separately so the stack still describes the document.
+*/
+class EditorErrorAction extends Action {
+	constructor(parent, index, replacedNode, errorNode) {
+		super('editor-error');
+		this.parent = parent;
+		this.index = index;
+		this.replacedNode = replacedNode;
+		this.errorNode = errorNode;
+	}
+
+	canUndo() {
+		return true;
+	}
+
+	doAction() {
+		// a redo; the first time round the editor had already done it
+		if (this.replacedNode.getParent() != this.parent) return;
+		this.parent.replaceChildWith(this.replacedNode, this.errorNode);
+		this.errorNode.setSelected();
+	}
+
+	undoAction() {
+		if (this.errorNode.getParent() != this.parent) return;
+		this.parent.replaceChildWith(this.errorNode, this.replacedNode);
+		this.replacedNode.setSelected();
+	}
+}
+
+
+/*
 Clicking a nex to select it, which is a change to where you are in the document
 just as much as arrowing onto it is, and so belongs on the undo stack next to
 ChangeSelectedNodeAction. It was the one way of moving the selection that left
@@ -693,58 +801,39 @@ class EvaluateAndReplaceAction extends Action {
 	}
 
 	doAction() {
-		if (this.nodeBeingEvaluated) {
-			/*
-			A redo, and the node to evaluate is already known. Reading the
-			selection again here would evaluate whatever happens to be selected
-			now, which is the same mistake the undo used to make, pointing the
-			other way. Selected first because what actually does the replacing
-			reads the selection rather than what it is handed.
-			*/
-			this.nodeBeingEvaluated.setSelected();
-			/*
-			The warning belongs to the undo, not to the document, so taking the
-			undo back takes it with it. Before evaluating, or removing it would
-			be working from indexes the evaluation has already moved.
-			*/
-			if (this.undoWarning && this.undoWarning.getParent()) {
+		/*
+		The warning belongs to the undo, so taking the undo back takes it with
+		it -- otherwise every undo/redo cycle leaves another one behind. Having
+		one is also what says this is a redo rather than a first run. Removed
+		before anything else reads an index, since it sits in the document just
+		before the node being evaluated.
+		*/
+		if (this.undoWarning) {
+			if (this.undoWarning.getParent()) {
 				manipulator.removeNex(this.undoWarning);
 			}
 			this.undoWarning = null;
-		} else {
-			this.nodeBeingEvaluated = systemState.getGlobalSelectedNode();
-			this.parentOfNodeBeingEvaluated = this.nodeBeingEvaluated.getParent();
-			this.index = this.parentOfNodeBeingEvaluated.getIndexOfChild(this.nodeBeingEvaluated);
-			this.savedInsertionMode = this.nodeBeingEvaluated.getInsertionMode();
 		}
+		this.nodeBeingEvaluated = systemState.getGlobalSelectedNode();
+		this.parentOfNodeBeingEvaluated = this.nodeBeingEvaluated.getParent();
+		this.index = this.parentOfNodeBeingEvaluated.getIndexOfChild(this.nodeBeingEvaluated);
+		this.savedInsertionMode = this.nodeBeingEvaluated.getInsertionMode();
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
-		/*
-		What the evaluation left behind, taken now, while the selection is
-		still on it and it is certainly the right node.
-
-		This used to be read at undo time instead, and by then the selection
-		can be anywhere: evaluate something, select a package, undo, and the
-		undo deleted the package. It reached the right node often enough to
-		look fine because moving the selection with the keyboard is itself an
-		undoable action, so undo walked the selection back first -- but
-		clicking is not, so a click put it out of reach.
-		*/
-		this.evaluationResult = systemState.getGlobalSelectedNode();
 	}
 
+	/*
+	The selection says what to remove, and is trusted to, because every way the
+	selection moves is itself an action: arrowing, clicking, multi-selecting,
+	and the two things that change the document without being asked to -- a
+	deferred value finishing, an editor throwing. So by the time this runs, the
+	stack has walked the selection back onto what this evaluation produced.
+
+	That invariant is the whole design. Anything new that moves the selection
+	has to go on the stack too, or this reaches for the wrong node.
+	*/
 	undoAction() {
-		let evaluationResult = this.evaluationResult;
-		if (evaluationResult && !evaluationResult.getParent()) {
-			/*
-			Gone from the document since, which happens when a deferred value
-			finishes and puts what it holds where it stood. Whatever is in that
-			slot now is what this evaluation put there.
-			*/
-			evaluationResult = this.parentOfNodeBeingEvaluated.getChildAt(this.index);
-		}
-		if (evaluationResult) {
-			manipulator.removeAndSelectPreviousSibling(evaluationResult);
-		}
+		let evaluationResult = systemState.getGlobalSelectedNode();
+		manipulator.removeAndSelectPreviousSibling(evaluationResult);
 
 		this.parentOfNodeBeingEvaluated.insertChildAt(this.nodeBeingEvaluated, this.index);
 		this.nodeBeingEvaluated.setSelected();
@@ -766,18 +855,16 @@ class EvaluateInPlaceAction extends Action {
 	}
 
 	doAction() {
-		// the same rule as EvaluateAndReplaceAction: on a redo, evaluate the
-		// node this action is about rather than whatever is selected now
-		if (this.nodeBeingEvaluated) {
-			this.nodeBeingEvaluated.setSelected();
-			if (this.undoWarning && this.undoWarning.getParent()) {
+		// the warning is the undo's, not the document's -- see
+		// EvaluateAndReplaceAction
+		if (this.undoWarning) {
+			if (this.undoWarning.getParent()) {
 				manipulator.removeNex(this.undoWarning);
 			}
 			this.undoWarning = null;
-		} else {
-			this.nodeBeingEvaluated = systemState.getGlobalSelectedNode();
-			this.parentOfNodeBeingEvaluated = this.nodeBeingEvaluated.getParent();
 		}
+		this.nodeBeingEvaluated = systemState.getGlobalSelectedNode();
+		this.parentOfNodeBeingEvaluated = this.nodeBeingEvaluated.getParent();
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
 	}
 
@@ -1057,4 +1144,5 @@ function actionFactory(actionName, eventName) {
 
 
 
-export { actionFactory, enqueueAndPerformAction, MultiSelectAction, ClickSelectAction, undo, redo }
+export { actionFactory, enqueueAndPerformAction, recordPerformedAction, MultiSelectAction,
+		 ClickSelectAction, UnwrapDeferredAction, EditorErrorAction, undo, redo }
