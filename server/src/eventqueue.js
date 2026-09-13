@@ -46,6 +46,7 @@ import { respondToClickEvent } from './browsereventresponsefunctions.js'
 import { systemState } from './systemstate.js'
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import { experiments } from './globalappflags.js'
+import { unwrapFinishedDeferredInDocument } from './evaluatorinterface.js'
 
 const EVENT_DEBUG = false;
 
@@ -69,6 +70,7 @@ class EventQueue {
 		eventQueueDispatcher.createDelegate('enqueueDeferredFinish', this);
 		eventQueueDispatcher.createDelegate('enqueueDeferredSettle', this);
 		eventQueueDispatcher.createDelegate('enqueueRenotifyDeferredListeners', this);
+		eventQueueDispatcher.createDelegate('enqueueUnwrapFinishedDeferred', this);
 		eventQueueDispatcher.createDelegate('enqueueTopLevelRender', this);
 		eventQueueDispatcher.createDelegate('enqueueGC', this);
 	}
@@ -251,6 +253,36 @@ class EventQueue {
 			equals: null, // not needed when shouldDedupe = false
 			do: function doRenotifyDeferredListeners() {
 				this.deferred.notifyAllListeners();
+			}
+		};
+		this.queueSet[DEFERRED_PRIORITY].push(item);
+		this.setTimeoutForProcessingNextItem(item);
+	}
+
+	/*
+	A deferred value that is sitting in the document and has just finished. What
+	it holds is the answer, so the wrapper comes out and the answer takes its
+	place -- the same thing pressing enter on it would do, done for you, because
+	waiting is not something you should have to remember to collect.
+
+	Deferred rather than done inside finish(): finishing happens in the middle
+	of whatever produced the value, and rewriting the document underneath that
+	is how you get a parent rearranged while something is still walking it.
+
+	Not deduped on the deferred alone -- a deferred finishes once, so there is
+	never a second one of these for the same value.
+	*/
+	enqueueUnwrapFinishedDeferred(deferred) {
+		EVENT_DEBUG ? console.log('enqueueing: UnwrapFinishedDeferred'):null;
+		let item = {
+			action: "unwrapFinishedDeferred",
+			deferred: deferred,
+			shouldDedupe: true,
+			equals: function(other) {
+				return (other.action == this.action && other.deferred == this.deferred);
+			},
+			do: function doUnwrapFinishedDeferred() {
+				unwrapFinishedDeferredInDocument(this.deferred);
 			}
 		};
 		this.queueSet[DEFERRED_PRIORITY].push(item);
