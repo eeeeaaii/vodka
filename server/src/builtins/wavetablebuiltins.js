@@ -1777,8 +1777,9 @@ function createWavetableBuiltins() {
     "Clips the length of the wavetable, or pads the end of it with silence, depending on whether the passed-in length is greater or less than the length of the wavetable. Timebase tag (nn, secs, hz, b, samps) is on |len."
   );
 
-  // short enough to type mid-set
-  Builtin.aliasBuiltin("f", "fit to");
+  // short enough to type mid-set, and still says what it does -- a single f
+  // is a letter you would hit by accident
+  Builtin.aliasBuiltin("fit", "fit to");
 
   Builtin.createBuiltin(
     "delay",
