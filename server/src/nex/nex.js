@@ -53,6 +53,10 @@ class Nex {
 		this.undoReferences = 0;
 		this.memAllocated = false;
 		this.wasFreed = false;
+		// stopped doing whatever it does out in the world, which happens when
+		// the document lets go and not when the memory does: see
+		// heap.stopFunctioning
+		this.stoppedFunctioning = false;
 
 		this.selected = false;
 		this.keyfunnel = null;
@@ -128,6 +132,24 @@ class Nex {
 		return tagMem;
 	}
 
+	/*
+	The document has let go of this. Anything it was doing out in the world --
+	making a sound, recording one, waiting on a click -- stops here, because
+	from the document's point of view it is gone, and something you deleted
+	that carries on is a thing you cannot stop.
+
+	It is not freed yet, and may never be: undo is probably holding it so that
+	you can have it back. So nothing it would need in order to come back
+	intact may be released here. That is the other one.
+	*/
+	stopFunctioning() {
+		// might be used in some objs
+	}
+
+	/*
+	The last reference of any kind is gone and it is never coming back, so
+	whatever it was holding on to for the sake of coming back can go too.
+	*/
 	cleanupOnMemoryFree() {
 		// might be used in some objs
 	}

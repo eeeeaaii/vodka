@@ -1515,12 +1515,19 @@ class Wavetable extends Nex {
 		}
 	}
 
-	cleanupOnMemoryFree() {
+	// A deleted wavetable is not recording any more, whatever the undo buffer
+	// is doing with it. Otherwise it goes on filling up out of sight, and undo
+	// hands you back something still running.
+	stopFunctioning() {
 		if (this.recording) {
 			stopRecordingAudio(this);
 		}
-		// Refcounting means this is the moment the wavetable is really gone, so
-		// its samples go with it. Nothing has to be inferred from a document.
+	}
+
+	// Refcounting means this is the moment the wavetable is really gone, so its
+	// samples go with it. Not a moment sooner: undo is holding it precisely so
+	// that you can have it back, and back without its samples is no use.
+	cleanupOnMemoryFree() {
 		audioStore.remove(this.wavetableId);
 	}
 

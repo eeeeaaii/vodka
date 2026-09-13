@@ -129,12 +129,16 @@ class DeferredCommandValue extends NexContainer {
 	Deleting the record is the only thing that ends it. Nothing else frees it
 	any more: the answer has a slot of its own and never displaces it.
 	*/
-	cleanupOnMemoryFree() {
+	stopFunctioning() {
 		if (this.state != DCV_FINISHED && this.state != DCV_CANCELLED) {
 			this.cancel();
-		} else {
-			this.releaseRunState();
 		}
+	}
+
+	// cancel() has usually released this already; releaseRunState does not mind
+	// being asked twice, and a finished one was never cancelled at all
+	cleanupOnMemoryFree() {
+		this.releaseRunState();
 	}
 
 	// ---- the call

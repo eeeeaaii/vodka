@@ -161,7 +161,14 @@ class DeferredCommand extends Command {
 		if (this._cancelled) {
 			return;
 		}
-		if (this._returnedValue.wasFreed) {
+		/*
+		The value this was going to finish is out of the document, so there is
+		nothing left to finish into. stoppedFunctioning rather than wasFreed,
+		because undo holding the deleted value keeps it unfreed for as long as
+		fifty more deletions, and finishing into it during that time would put
+		an answer somewhere nobody can see.
+		*/
+		if (this._returnedValue.stoppedFunctioning || this._returnedValue.wasFreed) {
 			return;
 		}
 		let evaluationResult = null;
@@ -303,10 +310,13 @@ class DeferredCommand extends Command {
 		return r + super.memUsed();
 	}
 
-	cleanupOnMemoryFree() {
+	stopFunctioning() {
 		if (this._activated && !this._finished) {
 			this.cancel();
 		}
+	}
+
+	cleanupOnMemoryFree() {
 		// because we initialize runinfo at evaluation time not activation time,
 		// there is the possibility that even after canceling there will still be runinfo
 		if (this._runInfo) {

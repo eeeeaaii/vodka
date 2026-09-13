@@ -127,7 +127,9 @@ class DeferredValue extends NexContainer {
 	anyone is still listening -- a repeating timer, most obviously. Deleting the
 	deferred should stop it.
 	*/
-	cleanupOnMemoryFree() {
+	// Deleted means it has stopped waiting. A wait-for-click that is out of the
+	// document but still listening would fire into nothing.
+	stopFunctioning() {
 		if (this.activationFunctionGenerator && this.activationFunctionGenerator.stop) {
 			this.activationFunctionGenerator.stop();
 		}
