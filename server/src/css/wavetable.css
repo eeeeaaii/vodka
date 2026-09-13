@@ -70,23 +70,29 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	margin-bottom: 2px;
 }
 
-body.hidewavecontrols .wavecontrols {
+/*
+Collapsed mode packs the waveforms together so a stack of them can be compared
+by eye: everything that is not wave goes, which is the controls, the tags, and
+most of the box around them -- 3px of border and 2px of padding is 10px you are
+trying to see past.
+
+Except the one you are on. That one is left exactly as it looks with this mode
+switched off, because the moment you land on a wave you want to know how long it
+is and what it is tagged, and because a second appearance for a selected wave is
+one more thing to recognise for no reason. So every rule here says "not the
+selected one" rather than there being a set of rules that dress it back up.
+*/
+body.hidewavecontrols .wavetable:not(.newselected) .wavecontrols {
 	display: none;
 }
 
-/* 3px of border and 2px of padding is 10px of box that is not wave, which is
-   what you are trying to see past */
-body.hidewavecontrols .wavetable.exploded,
-body.hidewavecontrols .wavetable.newselected {
+body.hidewavecontrols .wavetable:not(.newselected) {
 	border-width: 1px;
 	padding: 0;
 }
 
-/* Tags sit above the wave and push it down exactly as the controls do, so they
-   go the same way and for the same reason: this mode is for looking at a stack
-   of waveforms next to each other, and everything that is not wave is in the
-   way of that. Only on a wavetable -- tags anywhere else are the point. */
-body.hidewavecontrols .wavetable > .tagholder {
+/* tags sit above the wave and push it down exactly as the controls do */
+body.hidewavecontrols .wavetable:not(.newselected) > .tagholder {
 	display: none;
 }
 
