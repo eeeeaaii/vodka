@@ -18,7 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import { systemState } from './systemstate.js'
 import { manipulator } from './manipulator.js'
-import { enqueueAndPerformAction, MultiSelectAction } from './actions.js'
+import { enqueueAndPerformAction, MultiSelectAction, ClickSelectAction } from './actions.js'
 
 // can return null if user clicks on some other thing
 function getParentNexOfDomElement(elt) {
@@ -64,31 +64,9 @@ function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 		if (systemState.getGlobalSelectedNode().getDomNode() == parentNexDomElt) {
 			return;
 		}
-		let insertAfterRemove = false;
-		let oldSelectedNode = systemState.getGlobalSelectedNode();
-		if ((systemState.getGlobalSelectedNode().getNex().getTypeName() == '-estring-'
-			|| systemState.getGlobalSelectedNode().getNex().getTypeName() == '-eerror-')
-				&& systemState.getGlobalSelectedNode().getNex().getMode() == MODE_EXPANDED) {
-			systemState.getGlobalSelectedNode().getNex().finishInput();
-		} else if (systemState.getGlobalSelectedNode().getNex().getTypeName() == '-insertionpoint-') {
-			insertAfterRemove = true;
-		}
-
 		browserEvent.stopPropagation();
-		/*
-		setSelected already marks the node losing selection, the node gaining
-		it, and both their parents, and asks for a render of what is dirty.
-		Rendering the whole document on top of that is the cost of every click,
-		and it grows with the size of the document rather than with what
-		changed.
-		*/
-		renderNode.setSelected();
-		if (insertAfterRemove && systemState.getGlobalSelectedNode() != oldSelectedNode) {
-			let wasIn = oldSelectedNode.getParent();
-			manipulator.removeNex(oldSelectedNode);
-			if (wasIn) wasIn.setRenderNodeDirtyForRendering(true);
-		}
-		eventQueueDispatcher.enqueueRenderOnlyDirty();
+		// on the undo stack, the same as moving the selection with the keyboard
+		enqueueAndPerformAction(new ClickSelectAction(renderNode));
 	}
 }
 
