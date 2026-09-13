@@ -615,11 +615,33 @@ class EvaluateAndReplaceAction extends Action {
 		this.index = this.parentOfNodeBeingEvaluated.getIndexOfChild(this.nodeBeingEvaluated);
 		this.savedInsertionMode = this.nodeBeingEvaluated.getInsertionMode();
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
+		/*
+		What the evaluation left behind, taken now, while the selection is
+		still on it and it is certainly the right node.
+
+		This used to be read at undo time instead, and by then the selection
+		can be anywhere: evaluate something, select a package, undo, and the
+		undo deleted the package. It reached the right node often enough to
+		look fine because moving the selection with the keyboard is itself an
+		undoable action, so undo walked the selection back first -- but
+		clicking is not, so a click put it out of reach.
+		*/
+		this.evaluationResult = systemState.getGlobalSelectedNode();
 	}
 
 	undoAction() {
-		let evaluationResult = systemState.getGlobalSelectedNode();
-		manipulator.removeAndSelectPreviousSibling(evaluationResult);
+		let evaluationResult = this.evaluationResult;
+		if (evaluationResult && !evaluationResult.getParent()) {
+			/*
+			Gone from the document since, which happens when a deferred value
+			finishes and puts what it holds where it stood. Whatever is in that
+			slot now is what this evaluation put there.
+			*/
+			evaluationResult = this.parentOfNodeBeingEvaluated.getChildAt(this.index);
+		}
+		if (evaluationResult) {
+			manipulator.removeAndSelectPreviousSibling(evaluationResult);
+		}
 
 		this.parentOfNodeBeingEvaluated.insertChildAt(this.nodeBeingEvaluated, this.index);
 		this.nodeBeingEvaluated.setSelected();
