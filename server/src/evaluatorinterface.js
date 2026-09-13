@@ -22,6 +22,7 @@ import { sHoldDeferred } from './syntheticroot.js'
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import { RenderNode, INSERT_AFTER } from './rendernode.js'
 import { BINDINGS } from './environment.js'
+import { systemState } from './systemstate.js'
 import { experiments } from './globalappflags.js'
 import { manipulator } from './manipulator.js'
 import { recordPerformedAction, UnwrapDeferredAction } from './actions.js'
@@ -129,7 +130,27 @@ function unwrapFinishedDeferredInDocument(deferred) {
 	}
 	if (replacements.length == 0) return;
 	recordPerformedAction(new UnwrapDeferredAction(deferred, replacements));
+	markPipDirty();
 	eventQueueDispatcher.enqueueRenderOnlyDirty();
+}
+
+/*
+The pip is drawn by the parent of whatever is selected, into the parent's own
+dom -- see doInsertionPip -- so a change anywhere under that parent has to mark
+the parent dirty or the pip is not put back and the document ends up with no
+insertion point at all until something else happens to render.
+
+Replacing a child marks the child's own parent, which is not necessarily the
+parent that draws the pip: a deferred value finishing deep inside a list leaves
+the selection, and the pip, somewhere else entirely.
+*/
+function markPipDirty() {
+	let selected = systemState.getGlobalSelectedNode();
+	if (!selected) return;
+	let parent = selected.getParent();
+	if (parent) {
+		parent.setRenderNodeDirtyForRendering(true);
+	}
 }
 
 function evaluateAndCopy(s) {
