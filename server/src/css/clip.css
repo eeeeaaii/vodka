@@ -53,6 +53,20 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 /*
+Something this clip plays goes past full scale. The infinity sign changes
+colour rather than anything being added, so a clipping clip is the same size
+and shape as any other and a row of them still lines up -- and so that noticing
+it costs a glance rather than a read.
+
+Orange, not red. It is worth knowing and it is not a failure: plenty of things
+are meant to be driven hard, and an alarm colour for every one of them is an
+alarm you learn to ignore.
+*/
+.clip.clipping .sysglyph {
+	color: var(--clip-clipping);
+}
+
+/*
 The mute button: a small square under the infinity sign, hollow when the clip
 can be heard and filled when it cannot. No label -- what it is is obvious once
 you have pressed it once, and a clip is read at a glance rather than studied.
