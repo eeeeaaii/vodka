@@ -154,12 +154,22 @@ function createWavetableBuiltins() {
       let wt = env.lb("wt");
 
       let buffers = [];
+      /*
+      Whether anything being played goes past full scale, asked of the waves
+      rather than worked out here: each one already knows the largest sample it
+      holds, from caching its buffer. So this is a comparison per wave, not a
+      pass over the audio.
+      */
+      let clipping = false;
       if (Utils.isNexContainer(wt)) {
         for (let i = 0; i < wt.numChildren(); i++) {
-          buffers.push(wt.getChildAt(i).getCachedBuffer());
+          let child = wt.getChildAt(i);
+          buffers.push(child.getCachedBuffer());
+          if (child.getAmp && child.getAmp() > 1) clipping = true;
         }
       } else {
         buffers.push(wt.getCachedBuffer());
+        if (wt.getAmp && wt.getAmp() > 1) clipping = true;
       }
 
       // Channels or a clip, never both: a replacement stays on the channels
@@ -209,6 +219,9 @@ function createWavetableBuiltins() {
       } else {
         clip = constructClip("audio loop", what, ids, endLoops, channelnumbers);
       }
+      // a replaced clip is playing something else now, so this is answered
+      // again rather than left as it was
+      clip.setClipping(clipping);
       // the audio system owns it while it plays, and how long that lasts is
       // decided by whether anything else owns it too
       clipStartedPlaying(clip, ids);

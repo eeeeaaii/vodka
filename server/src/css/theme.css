@@ -89,6 +89,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
   --wave-clipping: #cf728c;
   --wave-playhead: #0ec43f;
   --clip-glyph: #736b0d;
+  /* orange, not red: past full scale is worth looking at, not an alarm */
+  --clip-clipping: #c46a10;
   --clip-position: #8a8a8a;
   --contract-glyph: #736b0d;
   --closure-glyph: #736b0d;
@@ -183,6 +185,7 @@ waveform is teal so signal is never confused with structure.
   --wave-clipping: #ff6b5e;
   --wave-playhead: #4ade80;
   --clip-glyph: #7fbdb8;
+  --clip-clipping: #ffa033;
   --clip-position: #9aa0a6;
   --contract-glyph: #7fbdb8;
   --closure-glyph: #7fbdb8;

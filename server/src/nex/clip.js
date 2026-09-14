@@ -58,6 +58,16 @@ class Clip extends Nex {
 		*/
 		this.mutedByUser = false;
 		this.mutedByCollapse = false;
+		/*
+		Whether anything this clip plays goes past full scale. Coarse on
+		purpose: one flag for the whole clip, not where or how often, because
+		what you want to know while playing is whether to turn something down.
+
+		It costs nothing to know. A wavetable works out the largest sample it
+		holds when it caches its buffer, for the amplitude the drawing is
+		scaled to, so play only has to ask.
+		*/
+		this.clipping = false;
 		// nothing here is yours to type over
 		this.setMutable(false);
 	}
@@ -109,6 +119,14 @@ class Clip extends Nex {
 
 	getChannels() {
 		return this.channels;
+	}
+
+	setClipping(v) {
+		this.clipping = !!v;
+	}
+
+	isClipping() {
+		return this.clipping;
 	}
 
 	getPort() {
@@ -170,6 +188,7 @@ class Clip extends Nex {
 		// time. It is a picture of the clip, not another clip.
 		let r = new Clip(this.kind, this.what, this.ids.slice(), null, this.channels.slice(), this.port);
 		r.ended = this.ended;
+		r.clipping = this.clipping;
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -237,6 +256,13 @@ class Clip extends Nex {
 
 		if (this.isMuted()) {
 			domNode.classList.add('muted');
+		}
+		/*
+		Orange rather than red. Going past full scale is worth knowing about and
+		is not, on its own, a disaster -- it is a thing to look at, not an alarm.
+		*/
+		if (this.clipping) {
+			domNode.classList.add('clipping');
 		}
 
 		this.startPositionCounter();
