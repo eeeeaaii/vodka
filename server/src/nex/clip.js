@@ -248,6 +248,18 @@ class Clip extends Nex {
 		let glyphcol = document.createElement('div');
 		glyphcol.classList.add('sysglyphcol');
 		glyphcol.appendChild(glyph);
+		/*
+		Only when there is something to say. No outline waiting to be filled in:
+		an indicator that is there all the time is one more thing to read on
+		every clip, and this one is worth noticing precisely because it is not
+		usually there.
+		*/
+		if (this.clipping) {
+			let clipped = document.createElement('div');
+			clipped.classList.add('clipclipping');
+			clipped.setAttribute('title', 'louder than full scale');
+			glyphcol.appendChild(clipped);
+		}
 		glyphcol.appendChild(this.createMuteButton());
 
 		frame.appendChild(glyphcol);
@@ -257,20 +269,14 @@ class Clip extends Nex {
 		if (this.isMuted()) {
 			domNode.classList.add('muted');
 		}
-		/*
-		Orange rather than red. Going past full scale is worth knowing about and
-		is not, on its own, a disaster -- it is a thing to look at, not an alarm.
-		*/
-		if (this.clipping) {
-			domNode.classList.add('clipping');
-		}
-
 		this.startPositionCounter();
 	}
 
 	/*
-	A square under the infinity sign: hollow when the clip can be heard, filled
-	when it cannot.
+	A square at the bottom of the glyph column, with an m in it: hollow when the
+	clip can be heard, filled when it cannot. The letter is there because the
+	square alone said only that it was a button, not which one -- and there is
+	more than one small square on a clip now.
 
 	Only the button's own state is shown, because that is the only half you can
 	do anything about from here. A clip silenced by being collapsed is inside
@@ -283,6 +289,8 @@ class Clip extends Nex {
 	createMuteButton() {
 		let b = document.createElement('div');
 		b.classList.add('clipmute');
+		b.innerHTML = 'm';
+		b.setAttribute('title', 'mute');
 		if (this.mutedByUser) {
 			b.classList.add('on');
 		}

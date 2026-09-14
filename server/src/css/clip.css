@@ -52,19 +52,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	color: var(--clip-glyph);
 }
 
-/*
-Something this clip plays goes past full scale. The infinity sign changes
-colour rather than anything being added, so a clipping clip is the same size
-and shape as any other and a row of them still lines up -- and so that noticing
-it costs a glance rather than a read.
-
-Orange, not red. It is worth knowing and it is not a failure: plenty of things
-are meant to be driven hard, and an alarm colour for every one of them is an
-alarm you learn to ignore.
-*/
-.clip.clipping .sysglyph {
-	color: var(--clip-clipping);
-}
 
 /*
 The mute button: a small square under the infinity sign, hollow when the clip
@@ -78,15 +65,46 @@ you have pressed it once, and a clip is read at a glance rather than studied.
 }
 
 .clip .clipmute {
-	width: 9px;
-	height: 9px;
+	width: 11px;
+	height: 11px;
 	margin-top: 5px;
 	border: 1px solid var(--clip-glyph);
 	cursor: pointer;
+	/* the m, small enough to sit inside the square and upright because the rest
+	   of a clip is italic and a single leaning letter in a box reads badly */
+	font-family: monospace;
+	font-style: normal;
+	font-size: 8px;
+	line-height: 1;
+	color: var(--clip-glyph);
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .clip .clipmute.on {
 	background-color: var(--clip-glyph);
+	/* the square is filled now, so the letter is the hole in it */
+	color: var(--value-background);
+}
+
+/*
+Something this clip plays goes past full scale: a filled square above the mute
+button, the same size and shape so the column stays a column.
+
+Only drawn when it is true. There is no empty outline waiting to be filled in,
+because an indicator that is always there is one more thing to read on every
+clip, and this one is worth noticing precisely because it usually is not there.
+
+Orange, not red. It is worth knowing and it is not a failure: plenty of things
+are meant to be driven hard, and an alarm colour for every one of them is an
+alarm you learn to ignore.
+*/
+.clip .clipclipping {
+	width: 11px;
+	height: 11px;
+	margin-top: 5px;
+	background-color: var(--clip-clipping);
 }
 
 /* silent for either reason, including one you cannot see from here */
