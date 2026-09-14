@@ -338,6 +338,11 @@ class Wavetable extends Nex {
 
 	deleteMarker(i) {
 		this.markers.splice(i, 1);
+		// the sections are what you audition, and there is one fewer of them
+		// now -- every other thing that moves a marker recuts them, and this
+		// one did not, so the regions went on being the ones either side of a
+		// split that is no longer there
+		this.cacheSections();
 		this.renderOnlyThisNex();
 	}
 
