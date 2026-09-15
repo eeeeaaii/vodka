@@ -215,6 +215,19 @@ function numSamplesForNoteNum(n) {
 	return Math.round(getSampleRate() / fn);
 }
 
+/*
+The pitch a note number names, worked out from the same reference the rest of
+the timebase maths uses. The note table in the help reads this rather than
+keeping its own copy of the numbers, so the two cannot drift apart.
+*/
+function frequencyForNoteNum(n) {
+	return REFERENCE_NOTE_FREQ * Math.pow(1.059463094359, n - REFERENCE_NOTE);
+}
+
+function noteNumForA440() {
+	return REFERENCE_NOTE;
+}
+
 function frequencyToNoteNum(f) {
 	if (f <= 0) return 0;
 	return REFERENCE_NOTE + (Math.log(f / REFERENCE_NOTE_FREQ) / Math.log(1.059463094359));
@@ -286,6 +299,8 @@ export { getSampleRate,
 		 convertValueFromTag,
 		 getConstantSignalFromValue,
 		 getReferenceFrequency,
+		 frequencyForNoteNum,
+		 noteNumForA440,
 		 frequencyToNoteNum
 		}
 
