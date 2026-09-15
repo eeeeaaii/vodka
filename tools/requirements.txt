@@ -8,7 +8,7 @@
 # installed by homebrew refuses to let pip write into it (PEP 668,
 # "externally-managed-environment"), which is the first thing anyone hits.
 #
-# audio2vodka.py also needs gstreamer, which is not a python package and so
-# cannot live in here -- see tools/README.md.
+# audio2vodka.py also needs ffmpeg, which is not a python package and so cannot
+# live in here -- see tools/README.md.
 
 numpy
