@@ -487,6 +487,13 @@ left, and a cycle with nothing in it stops.
 */
 let pendingBreak = null;    // { buffers, channels } waiting for the next boundary
 let breakIds = [];          // what the break is playing on, while it plays
+/*
+Things to do at the moment the next cycle begins, which is the moment whatever
+is waiting to join it starts sounding. A tempo change belongs here: what makes
+it right is not when you asked for it but where it lands, and where it lands is
+the downbeat of the passage it is the tempo of.
+*/
+let doAtNextCycleStart = [];
 let nextCycleLoopId = 1;
 let cycleTimer = null;
 let cycleRunning = false;
@@ -616,12 +623,35 @@ function startCycleAt(startTime) {
 		loop.node = node;
 	}
 	cycleStartedAt = startTime;
+	/*
+	After the loops for this pass are scheduled, so that anything doing this is
+	taking effect alongside the sound rather than ahead of it, and cleared
+	first so that something added by one of them waits for the next cycle
+	rather than running twice in this one.
+	*/
+	if (doAtNextCycleStart.length > 0) {
+		let todo = doAtNextCycleStart;
+		doAtNextCycleStart = [];
+		for (let i = 0; i < todo.length; i++) {
+			todo[i]();
+		}
+	}
 	let nextBoundary = startTime + len;
 	cycleNextBoundaryTime = nextBoundary;
 	let wakeIn = (nextBoundary - CYCLE_LOOKAHEAD_SECONDS - ctx.currentTime) * 1000;
 	cycleTimer = window.setTimeout(function() {
 		startCycleAt(nextBoundary);
 	}, wakeIn > 0 ? wakeIn : 0);
+}
+
+/*
+Runs fn when the next cycle starts -- the same boundary at which anything
+queued right now begins to sound. With nothing playing there is no boundary to
+wait for and the caller is about to start one, so this still lands on the first
+beat of what it starts.
+*/
+function atNextCycleStart(fn) {
+	doAtNextCycleStart.push(fn);
 }
 
 /*
@@ -936,6 +966,8 @@ function endAllLoops() {
 	// cycle open by tidying up after a break that is long gone
 	pendingBreak = null;
 	breakIds = [];
+	// and anything that was waiting for a downbeat that is not going to come
+	doAtNextCycleStart = [];
 }
 
 /*
@@ -1096,5 +1128,5 @@ async function getFileAsBuffer(filepath, dir) {
 }
 
 
-export { getAudioBufferFromData, loadAudio, muteLoops, addLoop, queueBreak, getAudioChannelCount, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { getAudioBufferFromData, loadAudio, muteLoops, addLoop, queueBreak, atNextCycleStart, getAudioChannelCount, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 

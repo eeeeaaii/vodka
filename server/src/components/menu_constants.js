@@ -6,5 +6,6 @@ export const SOUND_API = 6;
 export const ABSTRACT_DATA_TYPES = 5;
 export const START_TUTORIAL = 3;
 export const CLOSE_HELP = 4;
+export const NOTE_REFERENCE = 7;
 
 export const WELCOME = 0;
