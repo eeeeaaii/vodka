@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'preact/hooks';
 import { isAnySoundPlaying, stopAllSound } from '../webaudio.js';
 import { anyMidiNotesSounding, midiPanic } from '../midifunctions.js';
+import { stopAllLoops, anyLoopsRunning } from '../builtins/asyncbuiltins.js';
 import { hasPendingSave } from '../autosave.js';
 
 // Neither playback nor the save debounce announces itself, so poll. Cheap --
@@ -15,7 +16,7 @@ const StatusNav = () => {
         const id = setInterval(() => {
             // a midi note left sounding is the same kind of problem as audio
             // still running, and more urgent -- nothing stops it on its own
-            setPlaying(isAnySoundPlaying() || anyMidiNotesSounding());
+            setPlaying(isAnySoundPlaying() || anyMidiNotesSounding() || anyLoopsRunning());
             setUnsaved(hasPendingSave());
         }, POLL_MS);
         return () => clearInterval(id);
@@ -25,8 +26,8 @@ const StatusNav = () => {
         <div className="statusnav">
             {unsaved && <div className="unsaveddot" title="not saved yet"></div>}
             {playing &&
-                <div className="statusnavitem stopbutton" title="stop all sound and midi notes"
-                     onClick={() => { stopAllSound(); midiPanic(); setPlaying(false); }}>
+                <div className="statusnavitem stopbutton" title="stop everything"
+                     onClick={() => { stopAllSound(); midiPanic(); stopAllLoops(); setPlaying(false); }}>
                     {/* currentColor so the icon follows the theme token on the parent */}
                     <svg viewBox="0 0 8 9" width="8" height="9" aria-hidden="true">
                         <rect x="0" y="0" width="3" height="9" fill="currentColor"/>
