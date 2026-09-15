@@ -27,6 +27,8 @@ class Contract extends NexContainer {
 
 		super()
 		this.impl = contractImpl;
+		// nothing here is yours to type over
+		this.setMutable(false);
 		// A contract has no private data of its own, but it still gets
 		// serialized like everything else, and '' is what "nothing" looks like
 		// to a serializer. null is not a string.
@@ -44,7 +46,7 @@ class Contract extends NexContainer {
 
 	toString(version, ctx) {
 		if (version == 'v2') {
-			return `[CONTRACT]`;
+			return this.toStringV2(ctx);
 		}
 		return super.toString(version);
 	}
@@ -53,8 +55,14 @@ class Contract extends NexContainer {
 		return this.standardListPrettyPrint(lvl, '[contract]', hdir);
 	}
 
+	/*
+	A contract is a runtime thing and is never written to a file: it names an
+	identity that only exists while this session is running, so reading one
+	back would name something that is not there. It saves as nil, the same as
+	a clip or an empty deferred.
+	*/
 	toStringV2(ctx) {
-		return `${this.toStringV2Literal()}${this.toStringV2PrivateDataSection(ctx)}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2', ctx)}${this.listEndV2()}`;
+		return '[nil]';
 	}
 
 	deserializePrivateData(data) {
