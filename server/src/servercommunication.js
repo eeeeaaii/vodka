@@ -184,8 +184,8 @@ function parseFileContents(data) {
 	if (!container) {
 		return parse(data);
 	}
-	systemState.setAudioSampleResolver(function(i) {
-		return container.samples[i];
+	systemState.setAudioSampleResolver(function(id) {
+		return container.samples[id];
 	});
 	try {
 		return parse(container.docText);

@@ -305,7 +305,34 @@ function convertV2StringToMath(val) {
 	}
 }
 
+
+/*
+A short random id, for naming something that has to be found again later --
+a wavetable's samples, wherever they are kept.
+
+Twelve base36 characters is about 62 bits. Not a uuid, which is 128 bits and 36
+characters; this only has to stay unique across the wavetables a person makes,
+including ones pasted in from elsewhere, and 62 bits is enormous next to that.
+Short enough to read in a saved file.
+*/
+function newShortId() {
+	let bytes = new Uint8Array(9);
+	if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+		crypto.getRandomValues(bytes);
+	} else {
+		for (let i = 0; i < bytes.length; i++) {
+			bytes[i] = Math.floor(Math.random() * 256);
+		}
+	}
+	let s = '';
+	for (let i = 0; i < bytes.length; i++) {
+		s += bytes[i].toString(36).padStart(2, '0');
+	}
+	return s.substring(0, 12);
+}
+
 export {
+	newShortId,
 	isError,
 	isFatalError,
 	isNonFatalError,

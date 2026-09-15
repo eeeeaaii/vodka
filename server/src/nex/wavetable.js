@@ -38,6 +38,7 @@ import { Editor } from '../editors.js'
 import { doTutorial } from '../help.js'
 import { getAudioBufferFromData, startRecordingAudio, stopRecordingAudio } from '../webaudio.js'
 import * as audioStore from '../audiostore.js'
+import { newShortId } from '../utils.js'
 import { systemState } from '../systemstate.js'
 
 
@@ -88,8 +89,16 @@ load.
 const FIELD_SEPARATOR = ';';
 const KEY_SEPARATOR = ':';
 const BREAKPOINTS_KEY = 'bp';
-const AUDIO_INDEX_KEY = 'aud';
-const AUDIO_REF_KEY = 'idb';
+
+/*
+Every wavetable has an id, and its samples are found by that id wherever they
+are kept -- in this file, or in indexeddb. One name, so a third place to keep
+them would not need a fourth way of naming them.
+
+It names the wavetable, not its contents: editing the samples keeps the id, so
+the stored copy is overwritten rather than orphaned.
+*/
+const WAVETABLE_ID_KEY = 'wid';
 
 /*
 Decodes samples stored directly in a document. Two formats have been written
@@ -160,8 +169,7 @@ class Wavetable extends Nex {
 		this.doingPan = false;
 		// where the line was before playback borrowed it
 		this.playbackStartSample = -1;
-		// invalidated by cacheValues; see getContentHash
-		this.cachedHash = null;
+		this.wavetableId = newShortId();
 		this.markers = [];
 		this.sectionBeingAuditioned = null;
 		this.recording = false;
@@ -404,22 +412,6 @@ class Wavetable extends Nex {
 		let absMin = Math.abs(mm.min);
 		this.setAmp(Math.max(absMin, mm.max));
 		this.cachedBuffer = getAudioBufferFromData(this.data);
-		// The audio changed, so anything derived from its exact contents is
-		// stale. This is the one place that knows that.
-		this.cachedHash = null;
-	}
-
-	/*
-	Hashing walks every byte, and serializing happens on every autosave, so the
-	result is kept until the audio changes rather than being recomputed from
-	scratch each time. Computed on demand rather than in cacheValues, so loading
-	a document full of audio does not hash all of it before anything is saved.
-	*/
-	getContentHash() {
-		if (!this.cachedHash) {
-			this.cachedHash = audioStore.hashSamples(this.data);
-		}
-		return this.cachedHash;
 	}
 
 	getMinMaxInDataRange(start, end) {
@@ -515,6 +507,7 @@ class Wavetable extends Nex {
 		for (let i = 0; i < this.markers.length; i++) {
 			nex.markers[i] = this.markers[i];
 		}
+		nex.wavetableId = newShortId();
 		nex.cacheSections();
 	}
 
@@ -564,16 +557,16 @@ class Wavetable extends Nex {
 		// Written by autosave. The lookup is synchronous because every record
 		// was read into memory during startup, before any document was built --
 		// see audiostore.js.
-		if (AUDIO_REF_KEY in fields) {
-			this.setSamplesOrSilence(audioStore.get(fields[AUDIO_REF_KEY]));
-			return;
-		}
-		// Samples from elsewhere in this same file. The resolver is only set
-		// while a container is being read -- see systemState.
-		if (AUDIO_INDEX_KEY in fields) {
+		if (WAVETABLE_ID_KEY in fields) {
+			this.wavetableId = fields[WAVETABLE_ID_KEY];
+			// A file being read brings its own samples; otherwise they are in
+			// indexeddb, read into memory at startup so this is synchronous.
 			let resolver = systemState.getAudioSampleResolver();
-			let i = Number(fields[AUDIO_INDEX_KEY]);
-			this.setSamplesOrSilence(resolver ? resolver(i) : null);
+			let samples = resolver ? resolver(this.wavetableId) : null;
+			if (!samples) {
+				samples = audioStore.get(this.wavetableId);
+			}
+			this.setSamplesOrSilence(samples);
 			return;
 		}
 		// The samples themselves, unkeyed. Every file saved before containers
@@ -628,28 +621,21 @@ class Wavetable extends Nex {
 
 	serializeSamples(ctx) {
 		if (ctx.isFile()) {
-			// Into the file's resource section; the document refers to it by
-			// index. Deduped on content, so the same sample used in twenty
-			// places is stored once.
-			return AUDIO_INDEX_KEY + KEY_SEPARATOR
-					+ ctx.audioCollector.add(this.data, this.getContentHash());
+			// into the file's own resource section, under this id
+			ctx.audioCollector.add(this.wavetableId, this.data);
+			return WAVETABLE_ID_KEY + KEY_SEPARATOR + this.wavetableId;
 		}
 		if (ctx.isBrowserStorage()) {
 			// Samples are far too large for localStorage -- roughly 250KB of
-			// base64 per second of audio, against a budget of about five
-			// megabytes for everything -- so they go to IndexedDB and the
-			// document gets a reference.
+			// base64 per second of audio, against about five megabytes for
+			// everything -- so they go to indexeddb and the document keeps only
+			// the id.
 			if (audioStore.isUnavailable()) {
-				// No IndexedDB: a private window, or blocked site data. Say
-				// nothing about the samples rather than writing out a silent
-				// buffer. A wavetable with no audio field comes back as silence
-				// anyway, and there is no reason to store a kilobyte of zeros to
-				// mean "there was nothing to store".
+				// no indexeddb: a private window, or blocked site data
 				return '';
 			}
-			let hash = this.getContentHash();
-			audioStore.put(hash, this.data);
-			return AUDIO_REF_KEY + KEY_SEPARATOR + hash;
+			audioStore.put(this.wavetableId, this.data);
+			return WAVETABLE_ID_KEY + KEY_SEPARATOR + this.wavetableId;
 		}
 		// Display: printing, a debug string, the text of an error message.
 		// Nothing that reads those wants a megabyte of base64, and there is
@@ -1460,6 +1446,9 @@ class Wavetable extends Nex {
 		if (this.recording) {
 			stopRecordingAudio(this);
 		}
+		// Refcounting means this is the moment the wavetable is really gone, so
+		// its samples go with it. Nothing has to be inferred from a document.
+		audioStore.remove(this.wavetableId);
 	}
 
 }
