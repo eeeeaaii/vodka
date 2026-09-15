@@ -571,6 +571,20 @@ function pauseLoops(ids, paused) {
 	return found;
 }
 
+// playing means in the cycle and not paused -- a clip whose loops have gone is
+// not playing either
+function loopsArePlaying(ids) {
+	for (let i = 0; i < ids.length; i++) {
+		let loop = cycleLoops[ids[i]] || cyclePending[ids[i]];
+		if (loop && !loop.paused) return true;
+	}
+	return false;
+}
+
+function togglePauseLoops(ids) {
+	return pauseLoops(ids, loopsArePlaying(ids));
+}
+
 function endLoops(ids, atCycleEnd) {
 	for (let i = 0; i < ids.length; i++) {
 		let id = ids[i];
@@ -719,5 +733,5 @@ async function getFileAsBuffer(filepath) {
 }
 
 
-export { getAudioBufferFromData, loadSample, addLoop, getLoopPositionSamples, clipStartedPlaying, pauseLoops, addCycleMember, replaceCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { getAudioBufferFromData, loadSample, addLoop, getLoopPositionSamples, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, replaceCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 
