@@ -165,7 +165,8 @@ class Wavetable extends Nex {
 		this.markers = [];
 		this.sectionBeingAuditioned = null;
 		this.recording = false;
-		this.blobs = [];
+		this.recordedChunks = null;
+		this.recordedLength = 0;
 		this.currentTimebase = null;
 		this.rightIsClipping = false;
 
@@ -202,30 +203,52 @@ class Wavetable extends Nex {
 		}
 	}
 
-	addBlob(blob) {
-		this.blobs.push(blob);
-	}
-
-	getBlobsAsOneBlob(blob) {
-		return new Blob(this.blobs);
-	}
-
-	resetBlobs() {
-		this.blobs = [];
-	}
-
 	isRecording() {
 		return this.recording;
 	}
 
 	startRecording() {
 		this.data = new Float32Array();
-		this.resetBlobs();
+		this.recordedChunks = [];
+		this.recordedLength = 0;
 		this.recording = true;
+		this.setDirtyForRendering(true);
+		eventQueueDispatcher.enqueueTopLevelRender();
+	}
+
+	/*
+	Samples as they arrive, while recording.
+
+	The blocks are kept as they come and joined into one buffer at each render
+	rather than growing a single array by copying it every time. cacheValues is
+	deliberately not called: it walks the whole buffer for the amplitude and
+	builds an AudioBuffer, neither of which is wanted several times a second,
+	and neither of which the waveform display needs. stopRecording does it once
+	at the end.
+	*/
+	appendRecordedData(block) {
+		this.recordedChunks.push(block);
+		this.recordedLength += block.length;
+		let joined = new Float32Array(this.recordedLength);
+		let at = 0;
+		for (let i = 0; i < this.recordedChunks.length; i++) {
+			joined.set(this.recordedChunks[i], at);
+			at += this.recordedChunks[i].length;
+		}
+		this.data = joined;
+		this.setDirtyForRendering(true);
+		eventQueueDispatcher.enqueueTopLevelRender();
 	}
 
 	stopRecording() {
 		this.recording = false;
+		this.recordedChunks = null;
+		if (this.data.length == 0) {
+			// nothing arrived; a wavetable cannot be zero samples long
+			this.data = new Float32Array(DEFAULT_SIZE);
+		}
+		// the amplitude and the playback buffer, once, now that it is over
+		this.cacheValues();
 		this.setDirtyForRendering(true);
 		eventQueueDispatcher.enqueueTopLevelRender();			
 	}
