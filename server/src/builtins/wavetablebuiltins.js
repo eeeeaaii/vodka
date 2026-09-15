@@ -313,7 +313,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Reverses wavetable |wt"
+    "Folds any part of |wt that goes outside -1 to 1 back inside, reflecting it off the limit as many times as it takes. Unlike clipping, what goes over is kept rather than flattened, which is what gives folding its sound."
   );
 
   Builtin.createBuiltin(
@@ -591,6 +591,48 @@ function createWavetableBuiltins() {
   );
 
   Builtin.createBuiltin(
+    "trianglewave",
+    ["nn#%?"],
+    function $trianglewave(env, executionEnvironment) {
+      let nn = env.lb("nn");
+      if (nn == UNBOUND) {
+        nn = constructInteger(getReferenceFrequency());
+        nn.addTag(
+          newTagOrThrowOOM("hz", "trianglewave wavetable builtin, timebase")
+        );
+        sAttach(nn);
+      }
+
+      let dur = convertTimeToSamples(nn);
+      let r = constructWavetable(dur);
+      let data = r.getData();
+
+      /*
+      Odd harmonics again, like a square, but falling off as 1/k squared rather
+      than 1/k, with every other one inverted. That much steeper fall-off is why
+      a triangle sounds so much softer than a square, and why sixteen partials
+      is already more than you can hear.
+      */
+      let numHarmonics = 16;
+      let freq = (1 / dur) * getSampleRate();
+      for (let i = 0; i < dur; i++) {
+        let omega = 2 * Math.PI * freq;
+        let time = (1 / getSampleRate()) * i;
+
+        let s = 0;
+        for (let k = 1; k <= numHarmonics; k += 2) {
+          let sign = ((k - 1) / 2) % 2 == 0 ? 1 : -1;
+          s += sign * (1 / (k * k)) * Math.sin(k * omega * time);
+        }
+        data[i] = s * (8 / (Math.PI * Math.PI));
+      }
+      r.init();
+      return r;
+    },
+    "Returns a wavetable containing one cycle of a triangle wave, built from its partials so that it does not alias, and running from -1 to 1. Length is given by |nn. Timebase tag (nn, secs, hz, b, samps) is on |nn."
+  );
+
+  Builtin.createBuiltin(
     "sawwave",
     ["nn#%?"],
     function $sawwave(env, executionEnvironment) {
@@ -607,14 +649,29 @@ function createWavetableBuiltins() {
       let r = constructWavetable(dur);
       let data = r.getData();
 
+      /*
+      Built out of partials, the same way squarewave is, rather than as a
+      straight line. A real saw has every harmonic falling off as 1/k, and
+      stopping at sixteen of them is what keeps it from aliasing into a mess at
+      high pitches. The ideal sharp-cornered version is what ramp already is.
+      */
+      let numHarmonics = 16;
+      let freq = (1 / dur) * getSampleRate();
       for (let i = 0; i < dur; i++) {
-        let d = i / dur;
-        data[i] = d;
+        let omega = 2 * Math.PI * freq;
+        let time = (1 / getSampleRate()) * i;
+
+        let s = 0;
+        for (let k = 1; k <= numHarmonics; k++) {
+          let sign = k % 2 == 1 ? 1 : -1;
+          s += sign * (1 / k) * Math.sin(k * omega * time);
+        }
+        data[i] = s * (2 / Math.PI);
       }
       r.init();
       return r;
     },
-    "Returns a wavetable containing one cycle of a saw wave. Length is given by |nn. Timebase tag (nn, secs, hz, b, samps) is on |nn."
+    "Returns a wavetable containing one cycle of a saw wave, built from its partials so that it does not alias, and running from -1 to 1. For the ideal straight-line version use ramp. Length is given by |nn. Timebase tag (nn, secs, hz, b, samps) is on |nn."
   );
 
   Builtin.createBuiltin(
@@ -643,6 +700,13 @@ function createWavetableBuiltins() {
     },
     "Returns a wavetable ramping from one to zero. Length is given by |len. Timebase tag (nn, secs, hz, b, samps) is on |len."
   );
+
+  /*
+  What max and pd call this. Note that theirs counts up and vodka's ramp counts
+  down, so a phasor here is upside down compared to the one those users have in
+  their fingers.
+  */
+  Builtin.aliasBuiltin("phasor", "ramp");
 
   Builtin.createBuiltin(
     "resample-to",
