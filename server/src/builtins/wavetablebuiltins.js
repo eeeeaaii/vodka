@@ -288,32 +288,134 @@ function createWavetableBuiltins() {
     "Turns |samples, an org of numbers, into a wavetable one sample long for each of them. The reverse of wave-to-samples."
   );
 
+  /*
+  A shape is a wave read as a lookup table rather than as a sound. Its length
+  spans an input of -1 to 1 and the value at each point is what comes out, so a
+  straight line changes nothing and any bend in it is a distortion. Every kind
+  of shaping is then one wave, which you can build with the wave math, draw by
+  hand, or record -- rather than a builtin apiece with its own loop.
+  */
+  const SHAPE_SAMPLES = 1024;
+
+  function constructShape(f) {
+    let r = constructWavetable(SHAPE_SAMPLES);
+    let data = r.getData();
+    for (let i = 0; i < SHAPE_SAMPLES; i++) {
+      data[i] = f((i / (SHAPE_SAMPLES - 1)) * 2 - 1);
+    }
+    r.init();
+    return r;
+  }
+
   Builtin.createBuiltin(
-    "wavefold",
-    ["wt_"],
-    function $reverse(env, executionEnvironment) {
+    "waveshape",
+    ["wt_", "shape_"],
+    function $waveshape(env, executionEnvironment) {
       let wt = env.lb("wt");
+      let shape = env.lb("shape");
+      let n = shape.getDuration();
+      if (n < 2) {
+        return constructFatalError("waveshape: that shape is too short to read. Sorry!");
+      }
 
       let dur = wt.getDuration();
       let r = constructWavetable(dur);
       let data = r.getData();
-
       for (let i = 0; i < dur; i++) {
-        let val = wt.valueAtSample(i);
-        while (val > 1 || val < -1) {
-          if (val > 1) {
-            val = 1 - (val - 1);
-          }
-          if (val < -1) {
-            val = -1 + -(val + 1); // this math makes sense to me
-          }
-        }
-        data[i] = val;
+        // anything past the limit reads the end of the shape, so a shape that
+        // levels off there clips and one that turns back around folds
+        let v = wt.valueAtSample(i);
+        if (v < -1) v = -1;
+        if (v > 1) v = 1;
+        data[i] = shape.interpolatedValueAtSample(((v + 1) / 2) * (n - 1));
       }
       r.init();
       return r;
     },
-    "Folds any part of |wt that goes outside -1 to 1 back inside, reflecting it off the limit as many times as it takes. Unlike clipping, what goes over is kept rather than flattened, which is what gives folding its sound."
+    "Passes every sample of wt| through |shape and returns the result. |shape is a wave read as a lookup rather than as a sound: its length stands for an input of -1 to 1, and the value it holds at each point is what comes out. A straight line leaves wt| alone. See wavefold-shape, soft-clip-shape and compress-shape for shapes to pass in, or make your own."
+  );
+
+  // reflect back off the limit, as many times as it takes
+  function foldInto(v) {
+    while (v > 1 || v < -1) {
+      if (v > 1) v = 1 - (v - 1);
+      if (v < -1) v = -1 + -(v + 1);
+    }
+    return v;
+  }
+
+  Builtin.createBuiltin(
+    "wavefold-shape",
+    ["folds#%?"],
+    function $wavefoldShape(env, executionEnvironment) {
+      let folds = env.lb("folds");
+      folds = folds == UNBOUND ? 2 : folds.getTypedValue();
+      if (folds < 1) {
+        return constructFatalError("wavefold-shape: folds must be at least 1. Sorry!");
+      }
+      /*
+      Folding used to mean driving a signal past the limit and reflecting what
+      went over. A shape cannot see past its own ends, so how hard it folds is
+      |folds instead of how hard you drove it -- which is the same control by a
+      different name, and it does not lose the part of the signal that a shape
+      would otherwise have to clip.
+      */
+      return constructShape(function (x) {
+        return foldInto(x * folds);
+      });
+    },
+    "A shape for waveshape that folds: anything heading past the limit turns back on itself instead of flattening, which is what gives folding its sound. |folds is how many times it turns back across the full range, 2 by default. 1 is a straight line and does nothing."
+  );
+
+  Builtin.createBuiltin(
+    "soft-clip-shape",
+    ["amount%?"],
+    function $softClipShape(env, executionEnvironment) {
+      let amount = env.lb("amount");
+      amount = amount == UNBOUND ? 3 : amount.getTypedValue();
+      if (amount <= 0) {
+        return constructFatalError("soft-clip-shape: amount must be more than 0. Sorry!");
+      }
+      // scaled so that the shape still reaches the limit at the limit, rather
+      // than everything simply getting quieter as you turn it up
+      let full = Math.tanh(amount);
+      return constructShape(function (x) {
+        return Math.tanh(amount * x) / full;
+      });
+    },
+    "A shape for waveshape that rounds off rather than chopping flat: the signal bends over gradually as it approaches the limit, the way tape and tubes do, instead of hitting a wall. |amount is how hard it bends, 3 by default; small numbers are nearly a straight line."
+  );
+
+  Builtin.createBuiltin(
+    "compress-shape",
+    ["threshold%?", "ratio%?"],
+    function $compressShape(env, executionEnvironment) {
+      let threshold = env.lb("threshold");
+      let ratio = env.lb("ratio");
+      threshold = threshold == UNBOUND ? 0.5 : threshold.getTypedValue();
+      ratio = ratio == UNBOUND ? 4 : ratio.getTypedValue();
+      if (threshold <= 0 || threshold >= 1) {
+        return constructFatalError("compress-shape: threshold must be between 0 and 1. Sorry!");
+      }
+      if (ratio < 1) {
+        return constructFatalError("compress-shape: ratio must be at least 1. Sorry!");
+      }
+      // makeup gain, so the quiet part comes up rather than the loud part
+      // simply going down
+      let ceiling = threshold + (1 - threshold) / ratio;
+      return constructShape(function (x) {
+        let sign = x < 0 ? -1 : 1;
+        let a = Math.abs(x);
+        let y = a <= threshold ? a : threshold + (a - threshold) / ratio;
+        return (sign * y) / ceiling;
+      });
+    },
+    /*
+    Worth knowing what this is not: a real compressor watches the signal over
+    time and has an attack and a release. A shape has no memory, so this is the
+    instantaneous part only -- the curve, without the timing.
+    */
+    "A shape for waveshape that pushes loud parts down and brings the rest up to meet them. Anything above |threshold is squashed by |ratio, and the whole thing is scaled so the limit is still the limit. Defaults are a threshold of 0.5 and a ratio of 4. Note this is the curve of a compressor and not the timing: it has no attack or release, so it acts on each sample by itself."
   );
 
   Builtin.createBuiltin(
@@ -700,13 +802,6 @@ function createWavetableBuiltins() {
     },
     "Returns a wavetable ramping from one to zero. Length is given by |len. Timebase tag (nn, secs, hz, b, samps) is on |len."
   );
-
-  /*
-  What max and pd call this. Note that theirs counts up and vodka's ramp counts
-  down, so a phasor here is upside down compared to the one those users have in
-  their fingers.
-  */
-  Builtin.aliasBuiltin("phasor", "ramp");
 
   Builtin.createBuiltin(
     "resample-to",
