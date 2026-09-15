@@ -169,11 +169,19 @@ function stopRecordingAudio(wt) {
 	wt.stopRecording();
 }
 
-function startRecordingAudio(wt) {
+function startRecordingAudio(wt, channel) {
 	maybeCreateAudioContext();	
+	if (!channel) channel = 0;
 	if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 		navigator.mediaDevices.getUserMedia({
-			audio:true
+			// Echo cancellation merges a stereo input to mono and duplicates it, so
+			// it must be off for channelCount: 2 to give two real channels.
+			audio: {
+				echoCancellation: false,
+				noiseSuppression: false,
+				autoGainControl: false,
+				channelCount: 2
+			}
 		}).then(function(stream) {
 			wt.startRecording();
 			mediaRecorder = new MediaRecorder(stream);
@@ -183,12 +191,27 @@ function startRecordingAudio(wt) {
 				let allblobs = wt.getBlobsAsOneBlob();
 				allblobs.arrayBuffer().then(function(ab) {
 					ctx.decodeAudioData(ab, function(buffer) {
-						// now have an audio buffer of the data
-						wt.setRecordedData(buffer.getChannelData(0));
+						// A wavetable holds one channel, so a stereo input is
+						// recorded one side at a time.
+						if (channel >= buffer.numberOfChannels) {
+							throw constructFatalError(
+									`cannot record channel ${channel}: this input has `
+									+ `${buffer.numberOfChannels} channel`
+									+ `${buffer.numberOfChannels == 1 ? '' : 's'}.`);
+						}
+						wt.setRecordedData(buffer.getChannelData(channel));
 					}, function(err) {
 						console.log('oh well');
 					})
 				})
+			}
+			// what the device actually gave us, which is not always what was asked
+			let track = stream.getAudioTracks()[0];
+			if (track) {
+				let st = track.getSettings();
+				console.log('vodka: recording from "' + track.label + '" -- '
+						+ (st.channelCount ? st.channelCount : '?') + ' channel(s) at '
+						+ (st.sampleRate ? st.sampleRate : '?') + 'Hz');
 			}
 			mediaRecorder.start(500);
 			window.setTimeout(function() {
