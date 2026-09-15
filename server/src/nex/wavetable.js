@@ -65,7 +65,8 @@ The sample references were already this shape, so nothing had to be invented
 for them -- "aud:0" and "idb:<hash>" are just the field that says where the
 samples are. Everything else is metadata alongside it.
 
-  bp   breakpoints, ascending sample offsets
+  bp   split points, ascending sample offsets (the key stays bp,
+       which is what already-saved files say)
   aud  index into this file's own sample list, meaningless outside it
   idb  content hash of the samples in IndexedDB, written by autosave
 
@@ -88,7 +89,7 @@ load.
 */
 const FIELD_SEPARATOR = ';';
 const KEY_SEPARATOR = ':';
-const BREAKPOINTS_KEY = 'bp';
+const SPLIT_POINTS_KEY = 'bp'; // the name on disk, kept so old files still read
 
 /*
 Every wavetable has an id, and its samples are found by that id wherever they
@@ -551,7 +552,7 @@ class Wavetable extends Nex {
 			}
 		}
 		this.deserializeSamples(fields, unkeyed);
-		this.restoreMarkers(fields[BREAKPOINTS_KEY]);
+		this.restoreMarkers(fields[SPLIT_POINTS_KEY]);
 	}
 
 	deserializeSamples(fields, unkeyed) {
@@ -608,7 +609,7 @@ class Wavetable extends Nex {
 	serializePrivateData(ctx) {
 		let fields = [];
 		if (this.markers.length > 0) {
-			fields.push(BREAKPOINTS_KEY + KEY_SEPARATOR + this.markers.join(','));
+			fields.push(SPLIT_POINTS_KEY + KEY_SEPARATOR + this.markers.join(','));
 		}
 		// last, and the only field that may arrive without a key. Empty when
 		// there was nowhere to put the samples, in which case no field is

@@ -107,8 +107,38 @@ class Heap {
     }
   }
 
+  /*
+  Undo is counted apart from everything else. It holds what you deleted so that
+  undoing gets it back intact -- a wavetable that came back silent would be no
+  use -- but it is not an owner in the sense anything else means by the word.
+  Nothing is using a deleted nex, and code that asks "does anyone still want
+  this" has to be able to get the answer no while undo is still holding it.
+
+  A clip is why this matters: deleting one has to stop it, and if undo counted
+  as ownership then a deleted clip would go on playing until it fell off the
+  end of the buffer fifty deletions later.
+
+  Being freed still waits for both to reach zero, which is the whole point of
+  undo holding it in the first place.
+  */
+  addUndoReference(obj) {
+    obj.undoReferences++;
+  }
+
+  removeUndoReference(obj) {
+    if (obj.undoReferences == 0) {
+      throw new Error(
+        "Tried to remove an undo reference when the number of undo references was zero."
+      );
+    }
+    obj.undoReferences--;
+    if (obj.undoReferences == 0 && obj.references == 0) {
+      this.free(obj);
+    }
+  }
+
   addReference(obj) {
-    if (obj.references == 0 && obj.wasFreed) {
+    if (obj.references == 0 && obj.undoReferences == 0 && obj.wasFreed) {
       console.log(
         "warning: an object had its references temporarily go to zero, " +
           "causing its memory to be freed, but then a reference " +
@@ -133,7 +163,7 @@ class Heap {
       );
     }
     obj.references--;
-    if (obj.references == 0) {
+    if (obj.references == 0 && obj.undoReferences == 0) {
       this.free(obj);
     }
   }

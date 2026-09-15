@@ -49,6 +49,8 @@ class Nex {
 		this.firstRenderNode = null;
 		this.rendernodes = [];
 		this.references = 0;
+		// counted apart from references: see heap.addUndoReference
+		this.undoReferences = 0;
 		this.memAllocated = false;
 		this.wasFreed = false;
 

@@ -21,7 +21,6 @@ import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js
 import { manipulator } from './manipulator.js';
 import { constructWarning } from './nex/eerror.js';
 import { scheduleAutosave } from './autosave.js'
-import * as Utils from './utils.js'
 
 const levelsOfUndo = 50;
 
@@ -69,10 +68,14 @@ function nexesHeldBy(action) {
 }
 
 /*
-Something in the undo buffer is still in use, whatever the document says. It has
-to be counted, or the heap frees things undo is still holding -- and being freed
-is no longer only bookkeeping: a wavetable forgets its samples when it goes, so
-an uncounted reference is a wavetable that comes back silent.
+Something in the undo buffer has to be counted, or the heap frees what undo is
+still holding -- and being freed is no longer only bookkeeping: a wavetable
+forgets its samples when it goes, so an uncounted reference is a wavetable that
+comes back silent.
+
+It is counted separately from real references, because holding what you deleted
+is not the same as using it. Anything asking whether a nex is still wanted has
+to be told no while undo is still holding it: see heap.addUndoReference.
 
 Falling off the end of the buffer is therefore the other moment something can
 become free, which is why the slot is released before it is written over. That
@@ -81,7 +84,7 @@ covers a discarded redo tail as well, since those slots are overwritten too.
 function retainActionNexes(action) {
 	let held = nexesHeldBy(action);
 	for (let i = 0; i < held.length; i++) {
-		heap.addReference(held[i]);
+		heap.addUndoReference(held[i]);
 	}
 	action.heldNexes = held;
 }
@@ -89,7 +92,7 @@ function retainActionNexes(action) {
 function releaseActionNexes(action) {
 	if (!action || !action.heldNexes) return;
 	for (let i = 0; i < action.heldNexes.length; i++) {
-		heap.removeReference(action.heldNexes[i]);
+		heap.removeUndoReference(action.heldNexes[i]);
 	}
 	action.heldNexes = null;
 }
@@ -424,22 +427,6 @@ class TriviallyUndoableKeyResponseFunctionAction extends Action {
 }
 
 
-/*
-Deleting is something you did; being freed is bookkeeping, and undo defers that
-by up to fifty more deletions. Anything that has to react the moment it leaves
-the document -- a clip, which has to stop making noise -- is told here rather
-than waiting for the heap to get round to it.
-*/
-function notifyDeletedFromDocument(nex) {
-	if (!nex) return;
-	if (nex.onDeletedFromDocument) nex.onDeletedFromDocument();
-	if (Utils.isNexContainer(nex)) {
-		for (let i = 0; i < nex.numChildren(); i++) {
-			notifyDeletedFromDocument(nex.getChildAt(i));
-		}
-	}
-}
-
 class DeleteNexAction extends Action {
 	constructor(actionName) {
 		super(actionName);
@@ -455,7 +442,6 @@ class DeleteNexAction extends Action {
 		this.index = this.parentOfNodeWeAreDeleting.getIndexOfChild(this.savedNodeToRestore);
 		this.savedInsertionMode = this.savedNodeToRestore.getInsertionMode();
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
-		notifyDeletedFromDocument(this.savedNodeToRestore.getNex());
 	}
 
 	undoAction() {

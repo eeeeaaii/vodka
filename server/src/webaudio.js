@@ -17,6 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { settings } from './globalappflags.js'
 import { constructFatalError } from './nex/eerror.js'
+import { heap } from './heap.js'
 
 
 /*
@@ -339,27 +340,6 @@ function checkChannelExists(channel) {
 		throw constructFatalError('Unknown audio channel number. Sorry!');
 	}
 }
-
-function oneshotPlay(bufferList, channelList) {
-	maybeCreateAudioContext();
-	channelList.forEach(checkChannelExists);
-
-	let bufferIndex = 0;
-
-	for (let i = 0; i < channelList.length; i++) {
-		let channel = channelList[i];
-		let buffer = bufferList[bufferIndex];
-
-		if (channelPlayers[channel]) {
-			channelPlayers[channel].abortPlay();
-		}
-		channelPlayers[channel] = new OneshotPlayer(buffer, channel);
-
-		bufferIndex = (bufferIndex + 1) % bufferList.length;
-	}
-}
-
-
 /*
 THE GLOBAL CYCLE
 
@@ -404,9 +384,58 @@ function anyLoopsPlaying() {
 	return false;
 }
 
+/*
+While a clip is playing, the audio system owns it. That is what decides how
+long it plays for: at every boundary each playing clip is asked whether anyone
+else still holds it, and one that nobody else holds has just played its last
+pass. Nothing can stop it, replace it or even name it any more, so there is
+nothing to schedule it for.
+
+That is where the one-shot comes from. Shift-enter throws the clip away, so the
+audio system is its only owner and it plays once. Press enter instead and the
+clip lands in the document, which holds it, so it loops. Delete it and the
+document lets go, and it stops at the end of the pass it is in rather than
+being cut off. None of those are special cases.
+
+A clip is spared on the pass that starts it, since the document has not taken
+hold of it yet when the first cycle is scheduled.
+*/
+let playingClips = [];
+
+function clipStartedPlaying(clip, ids) {
+	for (let i = 0; i < playingClips.length; i++) {
+		if (playingClips[i].clip == clip) {
+			playingClips[i].ids = ids;
+			return;
+		}
+	}
+	heap.addReference(clip);
+	playingClips.push({ clip: clip, ids: ids, passes: 0 });
+}
+
+function releaseClip(i) {
+	let clip = playingClips[i].clip;
+	playingClips.splice(i, 1);
+	heap.removeReference(clip);
+}
+
+function retireUnownedClips() {
+	for (let i = playingClips.length - 1; i >= 0; i--) {
+		let p = playingClips[i];
+		if (p.passes == 0) continue;
+		if (p.clip.references <= 1) {
+			// at the end of this pass, not now -- the pass it is in was
+			// scheduled to run to the boundary and should get there
+			p.clip.end(true);
+			releaseClip(i);
+		}
+	}
+}
+
 // Starts every loop at the boundary and cuts it at the end of the cycle, so a
 // loop shorter than the cycle repeats inside it and is truncated.
 function startCycleAt(startTime) {
+	retireUnownedClips();
 	for (let id in cyclePending) {
 		cycleLoops[id] = cyclePending[id];
 		delete cyclePending[id];
@@ -427,14 +456,18 @@ function startCycleAt(startTime) {
 		// A member that brings its own way of starting -- midi does, and
 		// schedules messages rather than making a sound.
 		if (loop.start) {
-			loop.start(startTime, len);
+			if (!loop.paused) loop.start(startTime, len);
 			continue;
 		}
+		if (loop.paused) continue;
 		let node = getSourceFromBuffer(loop.buffer, true);
 		node.connect(channelMergerNode, 0, loop.channel);
 		node.start(startTime);
 		node.stop(startTime + len);
 		loop.node = node;
+	}
+	for (let i = 0; i < playingClips.length; i++) {
+		playingClips[i].passes++;
 	}
 	let nextBoundary = startTime + len;
 	cycleNextBoundaryTime = nextBoundary;
@@ -514,6 +547,30 @@ function replaceCycleMember(id, member) {
 	return true;
 }
 
+/*
+A paused loop keeps its place in the cycle and its length, so it is still what
+the cycle is measured against and it comes back in phase rather than starting a
+new bar of its own. It simply is not scheduled while it is paused.
+*/
+function pauseLoops(ids, paused) {
+	let found = false;
+	for (let i = 0; i < ids.length; i++) {
+		let loop = cycleLoops[ids[i]] || cyclePending[ids[i]];
+		if (!loop) continue;
+		found = true;
+		loop.paused = paused;
+		if (paused) {
+			if (loop.stop) loop.stop();
+			if (loop.node) {
+				try { loop.node.stop(); } catch (e) {}
+				loop.node.disconnect();
+				loop.node = null;
+			}
+		}
+	}
+	return found;
+}
+
 function endLoops(ids, atCycleEnd) {
 	for (let i = 0; i < ids.length; i++) {
 		let id = ids[i];
@@ -538,6 +595,12 @@ function endAllLoops() {
 	for (let id in cycleLoops) ids.push(id);
 	for (let id in cyclePending) ids.push(id);
 	endLoops(ids, false);
+	// nothing is going to reach another boundary, so let go of the clips here
+	// rather than leaving the audio system owning them forever
+	while (playingClips.length > 0) {
+		playingClips[0].clip.end(false);
+		releaseClip(0);
+	}
 	if (cycleTimer) {
 		window.clearTimeout(cycleTimer);
 		cycleTimer = null;
@@ -656,5 +719,5 @@ async function getFileAsBuffer(filepath) {
 }
 
 
-export { getAudioBufferFromData, loadSample, addLoop, getLoopPositionSamples, addCycleMember, replaceCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { getAudioBufferFromData, loadSample, addLoop, getLoopPositionSamples, clipStartedPlaying, pauseLoops, addCycleMember, replaceCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 
