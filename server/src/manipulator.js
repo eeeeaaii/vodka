@@ -21,7 +21,7 @@ var CLIPBOARD = null;
 The clipboard is holding this, so it is still in use however little the document
 mentions it -- the same as the undo buffer. Refcounting has to know, because
 being freed is not only bookkeeping: a wavetable forgets its samples when it
-goes, and a resource handle ends the loop it names.
+goes, and a clip ends the loop it names.
 
 Cut is where it shows. It puts the nex on the clipboard and then removes it from
 the tree, which was the last reference, so the thing you were about to paste got
