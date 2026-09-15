@@ -16,6 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { settings } from './globalappflags.js'
+import { constructFatalError } from './nex/eerror.js'
 
 
 /*
@@ -231,8 +232,18 @@ function getSourceFromBuffer(buffer, loop) {
 }
 
 // this plays immediately
+// Connecting past the merger's last input throws IndexSizeError from inside the
+// web audio api, which says nothing about channels.
+function checkChannelExists(channel) {
+	let n = channelMergerNode.numberOfInputs;
+	if (!Number.isInteger(channel) || channel < 0 || channel >= n) {
+		throw constructFatalError('Unknown audio channel number. Sorry!');
+	}
+}
+
 function oneshotPlay(bufferList, channelList) {
 	maybeCreateAudioContext();
+	channelList.forEach(checkChannelExists);
 
 	let bufferIndex = 0;
 
@@ -251,6 +262,7 @@ function oneshotPlay(bufferList, channelList) {
 
 function loopPlay(bufferList, channelList) {
 	maybeCreateAudioContext();
+	channelList.forEach(checkChannelExists);
 	// if there is just one wave, fan it out to all the channels.
 	// if there are two, alternate...
 	// if there are three, you know.
@@ -291,6 +303,7 @@ function abortPlayback(channel) {
 
 function startAuditioningBuffer(buffer, nex, startOffsetSamples, sustained) {
 	maybeCreateAudioContext();
+	checkChannelExists(settings.AUDIO_AUDITION_CHANNEL);
 	auditioningPlayer = new AuditionPlayer(buffer, startOffsetSamples, sustained);
 	thingAuditioning = nex;
 }
