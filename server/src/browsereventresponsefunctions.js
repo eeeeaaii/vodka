@@ -66,6 +66,7 @@ function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 		}
 		browserEvent.stopPropagation();
 		// on the undo stack, the same as moving the selection with the keyboard
+		// (comment by Claude)
 		enqueueAndPerformAction(new ClickSelectAction(renderNode));
 	}
 }

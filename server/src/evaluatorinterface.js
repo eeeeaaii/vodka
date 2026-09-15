@@ -99,14 +99,18 @@ Selection follows the answer if it was on the wrapper, so the pip does not
 vanish out from under someone who was sitting on the thing they were waiting
 for -- and because the selection moving is exactly what the undo stack has to
 know about, the whole thing goes on the stack as an action.
+
+(comment by Claude)
 */
 function unwrapFinishedDeferredInDocument(deferred) {
 	let nodes = deferred.getRenderNodes();
 	if (!nodes || nodes.length == 0) return;
 	// once, however many places it is rendered in -- what it holds is one nex
+	// (comment by Claude)
 	let result = evaluateNexSafely(deferred, BINDINGS);
 	if (!result || result == deferred) return;
 	// a copy of the list: replacing a node takes it out of the one we are walking
+	// (comment by Claude)
 	nodes = nodes.slice();
 	let replacements = [];
 	for (let i = 0; i < nodes.length; i++) {
@@ -143,6 +147,8 @@ insertion point at all until something else happens to render.
 Replacing a child marks the child's own parent, which is not necessarily the
 parent that draws the pip: a deferred value finishing deep inside a list leaves
 the selection, and the pip, somewhere else entirely.
+
+(comment by Claude)
 */
 function markPipDirty() {
 	let selected = systemState.getGlobalSelectedNode();

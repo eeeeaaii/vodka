@@ -102,6 +102,8 @@ Synth.wav" and there is no reason to make them wrong -- that names exactly one
 file, and it is the file now called Drop_Synth.wav.
 
 Per segment, because the slashes are structure rather than part of any name.
+
+(comment by Claude)
 */
 function normalizeAudioName(fname) {
 	let ext = '';

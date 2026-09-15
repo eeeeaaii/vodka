@@ -40,16 +40,20 @@ body, html {
 
 	Scoped to the pane, so the help panel, the dialogs and the api reference
 	keep ordinary selectable text.
+
+	(comment by Claude)
 	*/
 	-webkit-user-select: none;
 	user-select: none;
 
 	/* a two finger swipe otherwise goes Back, and Back is the whole session */
+	/* (comment by Claude) */
 	overscroll-behavior-x: none;
 }
 
 /* a picture inside a document is part of the document, not something to peel
    off and drop somewhere else */
+/* (comment by Claude) */
 #codepane img {
 	-webkit-user-drag: none;
 	user-drag: none;
@@ -59,6 +63,7 @@ body, html {
 	/* never smaller than the viewport, but grows to fit a doc that overflows it,
 	   so the selected-root border surrounds the whole doc and not just the
 	   first screenful */
+	/* (comment by Claude) */
 	min-height: 100%;
 	min-width: 100%;
 	width: fit-content;

@@ -119,6 +119,8 @@ class Environment {
 	Nothing consulted a reference count for a decision until clips did, so the
 	leak had no visible effect: heap.free simply almost never ran. It is the
 	reason a clip passed as an argument could never be retired.
+
+	(comment by Claude)
 	*/
 	cleanUp() {
 		for (let name in this.symbols) {

@@ -81,6 +81,8 @@ class ParamParser {
   constant written here in the source, so one that does not lex is a mistake to
   be shouted about at startup; a lambda's is being typed by someone and is
   half-finished most of the time, so that one just says no for now.
+
+  (comment by Claude)
   */
   parseParam(s) {
     let lexed = lexParam(s);

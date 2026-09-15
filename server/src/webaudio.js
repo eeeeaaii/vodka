@@ -41,11 +41,13 @@ let auditioningPlayer = null;
 
 // A guardrail, not a real limit -- so a first recording cannot fill the disk
 // before anyone knows how to stop it. The `unlimited` tag lifts it.
+// (comment by Claude)
 const RECORDING_LIMIT_MS = 30000;
 
 class AuditionPlayer {
 	// sustained means the sound keeps going after the key comes back up. Holding
 	// enter to audition is momentary; toggling playback with space is not.
+	// (comment by Claude)
 	constructor(buffer, startOffsetSamples, sustained) {
 		this.buffer = buffer;
 		this.sustained = !!sustained;
@@ -75,6 +77,8 @@ class AuditionPlayer {
 	Read from ctx.currentTime rather than counted in frames: the audio clock is
 	the one the sound is actually playing on, so the line cannot drift away from
 	what you are hearing even if frames are dropped.
+
+	(comment by Claude)
 	*/
 	positionInSamples() {
 		if (!this.buffer.length) return 0;
@@ -199,6 +203,7 @@ function stopRecordingAudio(wt) {
 	recordingRig.node.disconnect();
 	recordingRig.silence.disconnect();
 	// let go of the microphone, or the browser keeps showing it as in use
+	// (comment by Claude)
 	recordingRig.stream.getTracks().forEach(function(t) { t.stop(); });
 	recordingRig = null;
 }
@@ -231,6 +236,7 @@ function startRecordingAudio(wt, channel, unlimited) {
 			// A worklet only runs while it is connected to the graph, and this
 			// one listens rather than making a sound, so it goes to a silent
 			// gain node.
+			// (comment by Claude)
 			let silence = ctx.createGain();
 			silence.gain.value = 0;
 			source.connect(node);
@@ -245,6 +251,7 @@ function startRecordingAudio(wt, channel, unlimited) {
 					let blk = batch[i];
 					// a wavetable holds one channel, so a stereo input is
 					// recorded one side at a time
+					// (comment by Claude)
 					wt.appendRecordedData(blk[channel] ? blk[channel] : blk[0]);
 				}
 			};
@@ -281,6 +288,8 @@ nothing is decoded and the waveform can grow as you record.
 The processor is a string loaded from a blob url. A worklet module has to be
 fetched by url, and keeping it in the bundle rather than as a separately served
 file means there is nothing to get out of step.
+
+(comment by Claude)
 */
 const RECORDER_WORKLET = `
 class VodkaRecorder extends AudioWorkletProcessor {
@@ -313,6 +322,7 @@ registerProcessor('vodka-recorder', VodkaRecorder);
 
 let recorderWorkletReady = null;
 // what is recording now, so stopRecordingAudio can end it
+// (comment by Claude)
 let recordingRig = null;
 
 function maybeLoadRecorderWorklet() {
@@ -360,6 +370,7 @@ function maybeCreateAudioContext() {
 	}
 	// a suspended context's clock does not advance, and everything in the cycle
 	// is scheduled against that clock
+	// (comment by Claude)
 	if (ctx.state == 'suspended') {
 		ctx.resume();
 	}
@@ -370,6 +381,7 @@ let warnedAboutMissingAudioClock = false;
 
 // getOutputTimestamp answers zeros until the context has produced output, so the
 // midi clock needs something playing whenever anything is in the cycle.
+// (comment by Claude)
 function startSilentKeepAlive() {
 	maybeCreateAudioContext();
 	if (silentKeepAlive) return;
@@ -393,6 +405,7 @@ function audioClockIsReady() {
 
 // The first cycle waits for a clock to exist rather than starting against a
 // context time of zero, which would put every midi message in the past.
+// (comment by Claude)
 function whenAudioClockIsReady(f) {
 	startSilentKeepAlive();
 	if (audioClockIsReady()) {
@@ -414,6 +427,7 @@ function getAudioBufferFromData(data) {
   maybeCreateAudioContext();
 	// createBuffer throws on nothing at all, and one silent frame sounds like
 	// what a wave with no samples should sound like
+	// (comment by Claude)
 	let frames = data.length > 0 ? data.length : 1;
 	let buffer = ctx.createBuffer(1, frames, SAMPLE_RATE);
 	let chan = buffer.getChannelData(0);
@@ -433,6 +447,7 @@ function getSourceFromBuffer(buffer, loop) {
 // this plays immediately
 // How many outputs the device has, which is what the merger was built with.
 // Asking opens an audio device if nothing has yet.
+// (comment by Claude)
 function getAudioChannelCount() {
 	maybeCreateAudioContext();
 	return channelMergerNode.numberOfInputs;
@@ -440,6 +455,7 @@ function getAudioChannelCount() {
 
 // Connecting past the merger's last input throws IndexSizeError from inside the
 // web audio api, which says nothing about channels.
+// (comment by Claude)
 function checkChannelExists(channel) {
 	let n = channelMergerNode.numberOfInputs;
 	if (!Number.isInteger(channel) || channel < 0 || channel >= n) {
@@ -462,9 +478,12 @@ each loop separately removable.
 
 The boundary is scheduled on ctx.currentTime, so it is exact. setTimeout is only
 used to wake up early enough to do the scheduling.
+
+(comment by Claude)
 */
 
 // how far ahead of a boundary we wake up to schedule it
+// (comment by Claude)
 const CYCLE_LOOKAHEAD_SECONDS = 0.15;
 
 let cycleLoops = {};        // id -> { buffer, channel, lengthSeconds, node, endAfterCycle }
@@ -484,6 +503,8 @@ started meanwhile waits for the next boundary, which is the end of the break,
 and then they all begin together from the top, in phase, the way they would
 after any other boundary. If nothing was started, the cycle has no members
 left, and a cycle with nothing in it stops.
+
+(comment by Claude)
 */
 let pendingBreak = null;    // { buffers, channels } waiting for the next boundary
 let breakIds = [];          // what the break is playing on, while it plays
@@ -492,6 +513,8 @@ Things to do at the moment the next cycle begins, which is the moment whatever
 is waiting to join it starts sounding. A tempo change belongs here: what makes
 it right is not when you asked for it but where it lands, and where it lands is
 the downbeat of the passage it is the tempo of.
+
+(comment by Claude)
 */
 let doAtNextCycleStart = [];
 let nextCycleLoopId = 1;
@@ -568,6 +591,7 @@ function retireUnownedClips() {
 
 // Starts every loop at the boundary and cuts it at the end of the cycle, so a
 // loop shorter than the cycle repeats inside it and is truncated.
+// (comment by Claude)
 function startCycleAt(startTime) {
 	if (pendingBreak) {
 		beginBreak();
@@ -575,6 +599,7 @@ function startCycleAt(startTime) {
 		// it has had its one pass. Whatever was started while it played is
 		// waiting in cyclePending and is about to begin; if nothing was, there
 		// is nothing left and the cycle stops below.
+		// (comment by Claude)
 		endLoops(breakIds, false);
 		breakIds = [];
 	}
@@ -594,6 +619,8 @@ function startCycleAt(startTime) {
 	a pass and can be retired when nobody else wants it. An empty clip makes
 	the cycle length zero and stops the cycle, and a clip that never counts a
 	pass is never retired.
+
+	(comment by Claude)
 	*/
 	for (let i = 0; i < playingClips.length; i++) {
 		playingClips[i].passes++;
@@ -608,6 +635,7 @@ function startCycleAt(startTime) {
 		let loop = cycleLoops[id];
 		// A member that brings its own way of starting -- midi does, and
 		// schedules messages rather than making a sound.
+		// (comment by Claude)
 		if (loop.start) {
 			if (!loop.paused && !loop.muted) loop.start(startTime, len);
 			continue;
@@ -628,6 +656,8 @@ function startCycleAt(startTime) {
 	taking effect alongside the sound rather than ahead of it, and cleared
 	first so that something added by one of them waits for the next cycle
 	rather than running twice in this one.
+
+	(comment by Claude)
 	*/
 	if (doAtNextCycleStart.length > 0) {
 		let todo = doAtNextCycleStart;
@@ -649,6 +679,8 @@ Runs fn when the next cycle starts -- the same boundary at which anything
 queued right now begins to sound. With nothing playing there is no boundary to
 wait for and the caller is about to start one, so this still lands on the first
 beat of what it starts.
+
+(comment by Claude)
 */
 function atNextCycleStart(fn) {
 	doAtNextCycleStart.push(fn);
@@ -661,6 +693,8 @@ break -- and the clips are ended, so the document shows what you can hear.
 
 The break is put straight into cycleLoops rather than into cyclePending,
 because it is starting now, at this boundary, not at the next one.
+
+(comment by Claude)
 */
 function beginBreak() {
 	let ids = [];
@@ -674,6 +708,7 @@ function beginBreak() {
 	breakIds = [];
 	// one wave fans out to every channel, two alternate, and so on -- the same
 	// rule play uses
+	// (comment by Claude)
 	let bufferIndex = 0;
 	for (let i = 0; i < pendingBreak.channels.length; i++) {
 		let buffer = pendingBreak.buffers[bufferIndex];
@@ -694,6 +729,8 @@ function beginBreak() {
 /*
 Queues a break for the next boundary. With nothing playing there is no boundary
 to wait for, so it starts one, and the break is simply a sample played once.
+
+(comment by Claude)
 */
 function queueBreak(buffers, channels) {
 	maybeCreateAudioContext();
@@ -712,6 +749,8 @@ Joins the cycle. Returns an id.
 
 The first loop starts immediately, since there is no cycle to wait for. Later
 ones wait for the boundary, which is what keeps everything in phase.
+
+(comment by Claude)
 */
 function addLoop(buffer, channel) {
 	maybeCreateAudioContext();
@@ -728,6 +767,8 @@ function addLoop(buffer, channel) {
 Anything with a length can join the cycle. An audio loop brings a buffer and a
 channel; a midi sequence brings start and stop functions instead, and schedules
 messages rather than making a sound.
+
+(comment by Claude)
 */
 function addCycleMember(loop) {
 	maybeCreateAudioContext();
@@ -742,6 +783,8 @@ function addCycleMember(loop) {
 	soon as the first arrived meant the second was already too late for it and
 	waited for the next boundary -- so a stereo pair played left only for its
 	first time round, then both from then on.
+
+	(comment by Claude)
 	*/
 	if (!cycleRunning) {
 		cycleRunning = true;
@@ -762,6 +805,8 @@ Whether a loop is still one of ours, which is not the same question as where it
 is. A loop waiting for the next boundary has no position yet but has not gone
 anywhere, and a clip that could not tell those apart would give up watching a
 loop that has not started.
+
+(comment by Claude)
 */
 function loopExists(id) {
 	return !!(cycleLoops[id] || cyclePending[id]);
@@ -921,6 +966,7 @@ function togglePauseLoops(ids) {
 
 // A member that keeps its own records -- midi does -- gets told when it leaves
 // the cycle, so nothing has to hold on to it after that.
+// (comment by Claude)
 function retireMember(loop) {
 	if (loop && loop.retired) loop.retired();
 }
@@ -964,9 +1010,11 @@ function endAllLoops() {
 	// a break that was queued or playing is over too -- stopping everything
 	// means everything, and leaving either of these set would have the next
 	// cycle open by tidying up after a break that is long gone
+	// (comment by Claude)
 	pendingBreak = null;
 	breakIds = [];
 	// and anything that was waiting for a downbeat that is not going to come
+	// (comment by Claude)
 	doAtNextCycleStart = [];
 }
 
@@ -978,10 +1026,13 @@ every time and nothing accumulates.
 
 Its contextTime is the frame reaching the output, not the frame being computed,
 so the output buffer delay is already in the answer.
+
+(comment by Claude)
 */
 function contextTimeToPerformanceTime(contextTime) {
 	let ts = ctx.getOutputTimestamp();
 	// A context that has not produced output answers with zeros, not with nothing.
+	// (comment by Claude)
 	if (ts && ts.contextTime != undefined && ts.performanceTime > 0) {
 		return ts.performanceTime + (contextTime - ts.contextTime) * 1000;
 	}
@@ -994,6 +1045,7 @@ function contextTimeToPerformanceTime(contextTime) {
 
 // When the next cycle begins, in ctx.currentTime, and how long a cycle is.
 // This is what midi aligns to.
+// (comment by Claude)
 function nextCycleBoundary() {
 	return { at: cycleNextBoundaryTime, lengthSeconds: cycleLengthSeconds() };
 }
@@ -1002,6 +1054,7 @@ function loopPlay(bufferList, channelList) {
 	maybeCreateAudioContext();
 	channelList.forEach(checkChannelExists);
 	// one wave fans out to every channel, two alternate, and so on
+	// (comment by Claude)
 	let bufferIndex = 0;
 	let ids = [];
 	for (let i = 0; i < channelList.length; i++) {
@@ -1062,6 +1115,7 @@ function startAuditioningBuffer(buffer, nex, startOffsetSamples, sustained) {
 
 // -1 when nothing is auditioning, so callers can tell "at the start" from "not
 // playing" without a second question.
+// (comment by Claude)
 function getAuditionPositionSamples() {
 	return auditioningPlayer ? auditioningPlayer.positionInSamples() : -1;
 }
@@ -1085,6 +1139,8 @@ Called on every keyup, which is what makes auditioning momentary -- you hold the
 key and the sound stops when you let go. A sustained audition (space toggling
 playback) has to survive that, so it is only stopped when force says so, which
 is what stop-all-sound and an explicit toggle pass.
+
+(comment by Claude)
 */
 function maybeKillSound(force) {
 	if (!thingAuditioning) return;

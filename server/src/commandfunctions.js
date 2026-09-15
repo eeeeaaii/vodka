@@ -186,6 +186,7 @@ function executeRunInfo(runInfo, executionEnv) {
 		// the way checkType does for parameters (argevaluator.js). Looking up the
 		// whole union as one key finds nothing and calls undefined as a function,
 		// which is a JS TypeError that escapes the evaluator entirely.
+		// (comment by Claude)
 		let allowedTypes = runInfo.expectedReturnType.type.split('|');
 		let typeChecksOut = false;
 		for (let i = 0; i < allowedTypes.length; i++) {

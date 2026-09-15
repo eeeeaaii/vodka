@@ -188,6 +188,7 @@ function makeInstanceAtom(instname, privatedata, taglist, nonmutable) {
 			// which is a zero-length buffer, which throws out of createBuffer
 			// before setPrivateData below ever gets to install the real data.
 			// Any saved wavetable failed to parse because of it.
+			// (comment by Claude)
 			t = constructWavetable();
 			break;
 		case 'surface':

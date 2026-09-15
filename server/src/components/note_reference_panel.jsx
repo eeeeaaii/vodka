@@ -13,16 +13,20 @@ it goes.
 
 Frequencies come from the engine's own function, so if the reference pitch ever
 moves this table moves with it.
+
+(comment by Claude)
 */
 
 const MIDI_A440 = 69;
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 // the offset between the two, asked rather than assumed
+// (comment by Claude)
 const NN_OFFSET = MIDI_A440 - noteNumForA440();
 
 function noteName(midi) {
     // scientific pitch notation, in which middle C is C4 and is midi 60
+    // (comment by Claude)
     return NOTE_NAMES[midi % 12] + (Math.floor(midi / 12) - 1);
 }
 
@@ -34,6 +38,7 @@ function formatHz(hz) {
 
 // C4, which is the one on the piano you count from and the one nobody can ever
 // remember the number of
+// (comment by Claude)
 const MIDDLE_C = 60;
 
 const Row = ({ midi }) => {

@@ -27,6 +27,8 @@ Everything waiting on midi access, not just the last thing that asked. There is
 one request however many things are waiting on it, and every one of them gets an
 answer -- an error if it failed, so that a deferred value waiting on midi
 finishes rather than sitting there forever.
+
+(comment by Claude)
 */
 var setupcbs = [];
 
@@ -62,6 +64,8 @@ function onMIDIFailure(msg) {
 	permission, and a browser that has already refused answers the second
 	request without putting anything in front of the user, so this cannot turn
 	into a run of prompts.
+
+	(comment by Claude)
 	*/
 	notifyMidiSetup('' + msg);
 }
@@ -142,6 +146,7 @@ function describePort(port) {
 	addToMap(m, port, 'id');
 	addToMap(m, port, 'manufacturer');
 	// already 'input' or 'output' -- MIDIPort.type in the spec
+	// (comment by Claude)
 	addToMap(m, port, 'type');
 	addToMap(m, port, 'name');
 	addToMap(m, port, 'version');
@@ -155,13 +160,16 @@ function describePort(port) {
 // so grouping is left to whoever can see the names.
 // Beat durations are shortened by this so a note off lands before the next note
 // on. Inaudible. Other timebases are left alone -- that length was asked for.
+// (comment by Claude)
 const MIDI_NOTE_GAP_MS = 5;
 
 // Opening is required always, not just after a refresh -- otherwise the same
 // code works or doesn't depending on how the session started.
+// (comment by Claude)
 const openedPorts = {};
 
 // (port, channel, note) currently sounding, so they can be turned off again
+// (comment by Claude)
 const soundingNotes = {};
 
 function noteKey(portId, channel, note) {
@@ -185,6 +193,7 @@ function midiOutputOrThrow(portId) {
 
 // channels are 1-16 here, as they are on every piece of hardware, and 0-15 on
 // the wire
+// (comment by Claude)
 function statusByte(kind, channel) {
 	return kind | ((channel - 1) & 0x0F);
 }
@@ -208,12 +217,14 @@ function sendMidiNoteOff(portId, channel, note, velocity) {
 // The off is scheduled by the browser, not by a timer of ours -- the event
 // queue is setTimeout-driven and too jittery to hold a sequence together. The
 // timer here only forgets the note; the message is already on its way.
+// (comment by Claude)
 function sendMidiNoteWithDuration(portId, channel, note, velocity, durationMs, isBeats) {
 	let ms = durationMs;
 	if (isBeats) {
 		ms = ms - MIDI_NOTE_GAP_MS;
 	}
 	// never schedule the off before the on
+	// (comment by Claude)
 	if (ms < 1) ms = 1;
 
 	let out = midiOutputOrThrow(portId);
@@ -239,14 +250,19 @@ what it contributes to the cycle length.
 Every message is handed to the browser with a timestamp, so the timing does not
 depend on when any of this javascript runs. The cycle boundary is in audio time
 and midi wants wall time, which is what contextTimeToPerformanceTime is for.
+
+(comment by Claude)
 */
 // kept so a clip can ask what its sequence last played
+// (comment by Claude)
 let midiMembers = {};
 
 /*
 Which port a midi builtin means when it is not told. In memory only: a port id
 belongs to this machine and this browsing session, so writing one into a saved
 document would name a port that may not be there next time.
+
+(comment by Claude)
 */
 let defaultMidiPort = null;
 
@@ -270,6 +286,8 @@ function addMidiSequence(portId, events, lengthSeconds) {
 What a midi clip shows instead of a position in samples: the note whose start
 has most recently gone past. Everything is scheduled ahead with a timestamp, so
 this is a question about the clock rather than about anything that has happened.
+
+(comment by Claude)
 */
 function getMidiLastNote(id) {
 	let member = midiMembers[id];
@@ -293,12 +311,15 @@ function makeMidiCycleMember(portId, events, lengthSeconds) {
 			// cycle before this one can still be sounding. Two cycles' worth is
 			// therefore everything that might need a note off, and keeping only
 			// that stops the list growing for as long as the loop runs.
+			// (comment by Claude)
 			/*
 			A sequence with no length would step the loop below by nothing at all
 			and never reach the end of the cycle. An empty clip has exactly that
 			length, and it only has to share the cycle with one real loop for the
 			cycle length to be greater than zero, so this is a hang rather than a
 			theoretical one.
+
+			(comment by Claude)
 			*/
 			if (!(lengthSeconds > 0)) {
 				return;
@@ -306,6 +327,7 @@ function makeMidiCycleMember(portId, events, lengthSeconds) {
 			let previous = member.thisCycle;
 			member.thisCycle = [];
 			// the sequence repeats within the cycle if the cycle is longer
+			// (comment by Claude)
 			for (let base = 0; base < cycleLen; base += lengthSeconds) {
 				for (let i = 0; i < events.length; i++) {
 					let e = events[i];
@@ -331,6 +353,7 @@ function makeMidiCycleMember(portId, events, lengthSeconds) {
 		stop: function() {
 			// messages already handed over cannot be recalled, so silence
 			// whatever this sequence could have left sounding
+			// (comment by Claude)
 			let seen = {};
 			for (let i = 0; i < member.scheduled.length; i++) {
 				let n = member.scheduled[i];
@@ -355,6 +378,7 @@ function anyMidiNotesSounding() {
 
 // All-notes-off per channel as well, for anything sent as raw data that we
 // never tracked.
+// (comment by Claude)
 function midiPanic() {
 	if (!midi) return;
 
@@ -367,6 +391,8 @@ function midiPanic() {
 
 	This drops what every sequence on the port had scheduled, which is why it
 	belongs to the stop button and not to any one clip stopping.
+
+	(comment by Claude)
 	*/
 	for (let entry of midi.outputs) {
 		let out = entry[1];
@@ -389,11 +415,14 @@ function midiPanic() {
 	send-midi-note records anything there -- a play-midi sequence records
 	nothing, so going by that list meant a running sequence got no all notes
 	off at all, which is exactly the case the stop button is for.
+
+	(comment by Claude)
 	*/
 	for (let entry of midi.outputs) {
 		let out = entry[1];
 		for (let channel = 1; channel <= 16; channel++) {
 			// cc 123, all notes off
+			// (comment by Claude)
 			out.send([statusByte(0xB0, channel), 123, 0]);
 		}
 	}
@@ -401,6 +430,7 @@ function midiPanic() {
 
 // A port org is saved with the document, so after a refresh it comes back as
 // just a name and an id. This asks for access again and opens that one port.
+// (comment by Claude)
 function openMidiPort(portId, incb) {
 	maybeSetupMidi(function(err) {
 		if (err) {

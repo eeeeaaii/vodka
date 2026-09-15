@@ -16,6 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 /* Both themes in one file so the theme is set before first paint. */
+/* (comment by Claude) */
 
 :root {
   --page-background: #ffffff;
@@ -90,6 +91,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
   --wave-playhead: #0ec43f;
   --clip-glyph: #736b0d;
   /* orange, not red: past full scale is worth looking at, not an alarm */
+  /* (comment by Claude) */
   --clip-clipping: #c46a10;
   --clip-position: #8a8a8a;
   --contract-glyph: #736b0d;
@@ -112,6 +114,8 @@ Dark is designed for a dark room and a projector rather than derived from the
 light theme. The ground is a cool near-black so warm accents carry; structure
 colours sit at one lightness so nesting reads by hue not brightness; and the
 waveform is teal so signal is never confused with structure.
+
+(comment by Claude)
 */
 :root[data-theme="dark"] {
   --page-background: #000000;

@@ -18,6 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 // The autocomplete key combination arrives under either spelling now that ctrl
 // is no longer rewritten to alt before dispatch. Editors compare against the
 // event name directly rather than going through a table, so they need this.
+// (comment by Claude)
 function isAutocompleteKeyCombo(text) {
 	return text == 'AltSpace' || text == 'CtrlSpace';
 }

@@ -45,6 +45,7 @@ class DeferredCommandActivationFunctionGenerator extends ActivationFunctionGener
 			// returns, so it's the only one that has to report back whether it
 			// did. Everything else finishes via the event queue, long after
 			// activate() is done.
+			// (comment by Claude)
 			return this.deferredCommand.activate(this.env);
 		}.bind(this);
 	}
@@ -195,6 +196,8 @@ class EveryActivationFunctionGenerator extends ActivationFunctionGenerator {
 	It is referenced from here and nowhere the document knows about, so without
 	saying so it can be deleted while the loop is still running: freed, its
 	lexical environment released, and then called every interval regardless.
+
+	(comment by Claude)
 	*/
 	constructor(intervalMs, onTick, held) {
 		super();
@@ -214,6 +217,7 @@ class EveryActivationFunctionGenerator extends ActivationFunctionGenerator {
 			// missed means the skipped ones are dropped rather than fired in a
 			// burst.
 			// The first one happens now, not an interval from now.
+			// (comment by Claude)
 			let expected = performance.now();
 			let tick = function() {
 				settleCallback(this.onTick());
@@ -236,6 +240,7 @@ class EveryActivationFunctionGenerator extends ActivationFunctionGenerator {
 		// stop can be reached more than once -- an error in the lambda, the stop
 		// button, the deferred being deleted -- and the reference is given up
 		// once
+		// (comment by Claude)
 		if (this.held) {
 			heap.removeReference(this.held);
 			this.held = null;

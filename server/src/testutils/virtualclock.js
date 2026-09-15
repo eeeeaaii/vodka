@@ -23,6 +23,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
  * Only wait-for-delay schedules through it, which is every animation in the
  * standard library. The event queue's own setTimeout(0) is a yield to the
  * browser rather than a duration and is not routed here.
+ *
+ * (comment by Claude)
  */
 class VodkaScheduler {
 	constructor() {
@@ -32,6 +34,7 @@ class VodkaScheduler {
 	}
 
 	/** Start capturing timers instead of passing them to the browser. */
+	/* (comment by Claude) */
 	install() {
 		this.installed = true;
 		this.pending = [];
@@ -42,6 +45,8 @@ class VodkaScheduler {
 	 * @param {function} fn
 	 * @param {number} ms
 	 * @return {number} id for clearTimeout
+	 *
+	 * (comment by Claude)
 	 */
 	setTimeout(fn, ms) {
 		if (!this.installed) {
@@ -53,6 +58,7 @@ class VodkaScheduler {
 	}
 
 	/** @param {number} id */
+	/* (comment by Claude) */
 	clearTimeout(id) {
 		if (!this.installed) {
 			window.clearTimeout(id);
@@ -62,6 +68,7 @@ class VodkaScheduler {
 	}
 
 	/** @return {number} */
+	/* (comment by Claude) */
 	pendingCount() {
 		return this.pending.length;
 	}
@@ -73,6 +80,8 @@ class VodkaScheduler {
 	 * a time.
 	 *
 	 * @return {number} how many fired
+	 *
+	 * (comment by Claude)
 	 */
 	fireAllPending() {
 		let due = this.pending.sort((a, b) => (a.at - b.at) || (a.id - b.id));

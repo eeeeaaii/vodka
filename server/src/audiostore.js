@@ -36,6 +36,8 @@ question -- "is this the same audio as before?" -- has an answer that doesn't
 depend on tracking which wavetable owns what. Two wavetables holding identical
 audio share one record, and a wavetable whose samples were edited writes a new
 one. Records nothing refers to any more are pruned after a save.
+
+(comment by Claude)
 */
 
 import { systemState } from './systemstate.js'
@@ -46,6 +48,7 @@ const STORE = 'samples';
 
 // Records are namespaced by session id for the same reason the localStorage key
 // is: two sessions open in two tabs shouldn't see each other's audio.
+// (comment by Claude)
 function scopedKey(hash) {
 	let id = systemState.getStorageId();
 	return (id ? id : 'nosession') + '/' + hash;
@@ -53,11 +56,13 @@ function scopedKey(hash) {
 
 // Everything read at startup. get() serves from here, so callers never see a
 // promise.
+// (comment by Claude)
 let loaded = new Map();
 
 // Set when IndexedDB is unavailable or refuses us -- a private window, blocked
 // site data, an old browser. Autosave then behaves as it did before: documents
 // round-trip, audio doesn't.
+// (comment by Claude)
 let unavailable = false;
 
 let dbPromise = null;
@@ -92,6 +97,8 @@ function openDb() {
 Reads every sample record for this session into memory. Call once, and await it
 before building the document -- that await is the only place the asynchrony
 exists, and it happens during startup where there is nothing to block.
+
+(comment by Claude)
 */
 function loadAll() {
 	return openDb().then(function(db) {
@@ -164,10 +171,12 @@ function loadAll() {
 }
 
 // Synchronous by design -- see the note at the top of the file.
+// (comment by Claude)
 function get(hash) {
 	let v = loaded.get(hash);
 	if (!v) return null;
 	// Stored as a plain ArrayBuffer; hand back the view the caller expects.
+	// (comment by Claude)
 	return new Float32Array(v);
 }
 
@@ -179,11 +188,14 @@ function has(hash) {
 Records the samples under their hash and writes them out in the background.
 Returns immediately; the in-memory copy is updated first, so a get() right
 after a put() works whether or not the write has landed.
+
+(comment by Claude)
 */
 function put(hash, float32array) {
 	if (unavailable) return;
 	if (loaded.has(hash)) {
 		// Same contents, already stored. Nothing to write.
+		// (comment by Claude)
 		return;
 	}
 	let buffer = float32array.buffer.slice(
@@ -207,16 +219,22 @@ a wavetable would leave its previous contents behind forever, and a long
 session would accumulate every intermediate state of every sound.
 
 Takes the set of hashes the document still mentions. Background, like put().
+
+(comment by Claude)
 */
 /*
 Forgets a wavetable's samples. Called when the wavetable itself is freed, which
 vodka knows the moment it happens -- heap.free calls cleanupOnMemoryFree as soon
 as the last reference drops. Nothing has to be inferred from what a document
 does or does not mention.
+
+(comment by Claude)
 */
 /*
 Every sample this session has, for handing a whole session to a file. The
 buffers are the stored ones, so callers must not write into them.
+
+(comment by Claude)
 */
 function entries() {
 	let r = [];
@@ -230,6 +248,8 @@ function entries() {
 Writes under a session that is not the one we are in, which is what importing a
 file and duplicating a session both need. Nothing is added to `loaded`, because
 that is this session's samples and these are not.
+
+(comment by Claude)
 */
 function putForSession(sessionId, hash, buffer) {
 	if (unavailable) return Promise.resolve(false);
@@ -242,6 +262,7 @@ function putForSession(sessionId, hash, buffer) {
 				// settle on commit, not on queueing the write -- the caller
 				// navigates as soon as this settles, and navigating aborts
 				// any transaction still uncommitted
+				// (comment by Claude)
 				tx.oncomplete = function() { resolve(true); };
 				tx.onabort = function() { resolve(false); };
 				tx.onerror = function() { resolve(false); };
@@ -357,6 +378,8 @@ bytes rather than the float values.
 
 Cost is a pass over the buffer, which at a 800ms save debounce is not something
 a person can notice.
+
+(comment by Claude)
 */
 
 function isUnavailable() {

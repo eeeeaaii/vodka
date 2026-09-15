@@ -27,6 +27,7 @@ import { SerializationContext, SERIALIZE_FILE } from './serializationcontext.js'
 import { systemState } from './systemstate.js'
 
 // polled by the test harness, which can't drive a request, only wait for it
+// (comment by Claude)
 let outstandingRequests = 0;
 
 function getOutstandingRequestCount() {
@@ -37,6 +38,7 @@ function sendToServer(payload, cb, errcb) {
 	let xhr = new XMLHttpRequest();
 	outstandingRequests++;
 	// onload and onerror can both land; only the first one counts
+	// (comment by Claude)
 	let settled = false;
 	let settle = function() {
 		if (settled) return false;
@@ -48,6 +50,7 @@ function sendToServer(payload, cb, errcb) {
 	// session goes on the request, not in a cookie -- cookies are shared
 	// between tabs, so two tabs in two sessions would write to whichever one
 	// loaded last
+	// (comment by Claude)
 	let sessionId = systemState.getSessionId();
 	xhr.open('POST', 'api?sessionId=' + encodeURIComponent(sessionId ? sessionId : ''))
 	xhr.send(payload);
@@ -69,6 +72,8 @@ function sendToServer(payload, cb, errcb) {
 Reading a file that ships with the app is a plain GET, so it works the same
 whether the vodka server is answering or a static host is. Only writes still
 need the api, and only the vodka server allows those.
+
+(comment by Claude)
 */
 function fetchShippedFile(name) {
 	return fetch('packages/' + encodeURIComponent(name)).then(function (r) {
@@ -80,6 +85,8 @@ function fetchShippedFile(name) {
 /*
 A live server reads its own directory, so a file added while you work shows up
 without a rebuild. A static host was given the list at build time.
+
+(comment by Claude)
 */
 function fetchIndex(which) {
 	return fetch(which + '/index.json').then(function (r) {
@@ -225,6 +232,7 @@ function saveNex(name, nex, callback) {
 	// The collector rides along with the walk: wavetables hand their samples to
 	// it as they're reached, and it's the walk finishing that tells us which
 	// samples the document actually refers to.
+	// (comment by Claude)
 	let collector = new AudioCollector();
 	let docText = 'v2:' + nex.toString('v2', new SerializationContext(SERIALIZE_FILE, collector));
 	let payload = `save\t${name}\t${encodeContainer(docText, collector)}`;
@@ -307,6 +315,8 @@ function serverError() {
 Everything that comes back from the server lands here: files, but also the small
 v2: replies to save and listfiles. Only a file can be a container, and decode()
 returns null for anything that isn't one, so the replies are untouched.
+
+(comment by Claude)
 */
 function parseFileContents(data) {
 	let container = decodeContainer(data);

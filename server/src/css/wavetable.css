@@ -40,12 +40,14 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 /* the playhead is positioned against this, so it has to be the canvas's box */
+/* (comment by Claude) */
 .waveviewport {
 	position: relative;
 	align-self: flex-start;
 }
 
 /* stacked exactly on the waveform canvas, and never in the way of a click */
+/* (comment by Claude) */
 .waveplayhead {
 	position: absolute;
 	top: 0;
@@ -59,6 +61,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 /* the waveform only -- the playhead layer on top of it has to stay
    transparent, and a bare `canvas` selector paints that one too */
+/* (comment by Claude) */
 .wavetable canvas.wavecanvas {
 	background-color: var(--wave-canvas-background, #ffffff);
 }
@@ -81,6 +84,8 @@ switched off, because the moment you land on a wave you want to know how long it
 is and what it is tagged, and because a second appearance for a selected wave is
 one more thing to recognise for no reason. So every rule here says "not the
 selected one" rather than there being a set of rules that dress it back up.
+
+(comment by Claude)
 */
 body.hidewavecontrols .wavetable:not(.newselected) .wavecontrols {
 	display: none;
@@ -92,6 +97,7 @@ body.hidewavecontrols .wavetable:not(.newselected) {
 }
 
 /* tags sit above the wave and push it down exactly as the controls do */
+/* (comment by Claude) */
 body.hidewavecontrols .wavetable:not(.newselected) > .tagholder {
 	display: none;
 }

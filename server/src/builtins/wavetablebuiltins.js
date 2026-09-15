@@ -128,6 +128,8 @@ function createWavetableBuiltins() {
   A clip is never written to a file, so an expression that held one holds a nil
   after a refresh. Saying so beats complaining about whatever a nil looks like
   to the argument that was expecting a clip.
+
+  (comment by Claude)
   */
   function goneClipError(who) {
     return constructFatalError(
@@ -135,6 +137,7 @@ function createWavetableBuiltins() {
   }
 
   // Channels are 1-based to the user, the way audio hardware numbers them.
+  // (comment by Claude)
   function toChannelIndexes(numbers, who) {
     let r = [];
     for (let i = 0; i < numbers.length; i++) {
@@ -150,6 +153,8 @@ function createWavetableBuiltins() {
   /*
   What play does, so that play-with-bpm can be play with one more thing rather
   than a second copy of it that drifts.
+
+  (comment by Claude)
   */
   function startPlaying(wt, arg, name) {
     let buffers = [];
@@ -158,6 +163,8 @@ function createWavetableBuiltins() {
     rather than worked out here: each one already knows the largest sample it
     holds, from caching its buffer. So this is a comparison per wave, not a
     pass over the audio.
+
+    (comment by Claude)
     */
     let clipping = false;
     if (Utils.isNexContainer(wt)) {
@@ -216,6 +223,7 @@ function createWavetableBuiltins() {
     }
     // a replaced clip is playing something else now, so this is answered
     // again rather than left as it was
+    // (comment by Claude)
     clip.setClipping(clipping);
     // the audio system owns it while it plays, and how long that lasts is
     // decided by whether anything else owns it too
@@ -254,6 +262,8 @@ function createWavetableBuiltins() {
 
       The same boundary the loop joins at, because it is the same event -- see
       atNextCycleStart.
+
+      (comment by Claude)
       */
       atNextCycleStart(function() {
         setBpm(bpm);
@@ -283,6 +293,8 @@ function createWavetableBuiltins() {
       is not a loop you keep a handle on and replace later, it happens once and
       is over, so there is no clip to hand back and no clip to be given. The
       channels are the ones play uses when it is not told otherwise.
+
+      (comment by Claude)
       */
       let converted = toChannelIndexes([1, 2], "break");
       if (converted.error) return converted.error;
@@ -302,6 +314,7 @@ function createWavetableBuiltins() {
         r.appendChild(constructInteger(i));
       }
       // one short row rather than a tall column
+      // (comment by Claude)
       r.setHorizontal();
       return r;
     },
@@ -315,6 +328,7 @@ function createWavetableBuiltins() {
       let wt = env.lb("wt");
       let channel = env.lb("channel");
       // 1-based to the user, the way audio hardware numbers channels
+      // (comment by Claude)
       let n = channel == UNBOUND ? 1 : channel.getTypedValue();
       if (n < 1) {
         return constructFatalError("start-recording: there is no channel " + n + ". Sorry!");
@@ -348,6 +362,7 @@ function createWavetableBuiltins() {
     function $abortPlayback(env, executionEnvironment) {
       let channel = env.lb("channel");
       // -1 is every channel, which is what no argument means
+      // (comment by Claude)
       let channelnumber = -1;
       if (channel != UNBOUND) {
         let converted = toChannelIndexes([channel.getTypedValue()], "abort-playback");
@@ -558,6 +573,8 @@ function createWavetableBuiltins() {
   often. Neither is a shape you could hand to waveshape: one is a staircase too
   fine to draw as a wave, and the other happens over time rather than sample by
   sample.
+
+  (comment by Claude)
   */
   Builtin.createBuiltin(
     "bitcrush",
@@ -574,6 +591,7 @@ function createWavetableBuiltins() {
         if (b < 1) b = 1;
         if (b > 32) b = 32;
         // half the levels either side of zero, so silence stays silent
+        // (comment by Claude)
         let half = Math.pow(2, b) / 2;
         data[i] = Math.round(wt.valueAtSample(i) * half) / half;
       }
@@ -594,6 +612,8 @@ function createWavetableBuiltins() {
       Held rather than resampled, because the aliasing is the whole point.
       resample-by interpolates, which is the right thing there and removes
       exactly the ringing that makes this sound like cheap hardware.
+
+      (comment by Claude)
       */
       let dur = Math.max(wt.getDuration(), longestWave(env.lb("hold")));
       let r = constructWavetable(dur);
@@ -692,6 +712,7 @@ function createWavetableBuiltins() {
         if (alpha < 0) alpha = 0;
         yk += alpha * (wt1val - yk);
         // one pole highpass is just whatever the lowpass did not keep
+        // (comment by Claude)
         data[i] = kind == "high" ? wt1val - yk : yk;
       }
       r.init();
@@ -705,6 +726,8 @@ function createWavetableBuiltins() {
   a timebase tag, so it keeps the scale singlepole has always used: 1 means
   20kHz. A plain number means the same thing. A number that carries a timebase
   tag means what it says, so %2000 hz is two thousand hertz.
+
+  (comment by Claude)
   */
   const CUTOFF_AT_ONE = 20000;
   const CUTOFF_AT_ZERO = 20;
@@ -807,12 +830,15 @@ function createWavetableBuiltins() {
   Two kinds at once is an error rather than a silent first-wins, because a
   <low> that was meant to replace a <high> and did not would be very hard to
   hear.
+
+  (comment by Claude)
   */
   function filterKindFromTags(commandTags, allowed) {
     let found = null;
     for (let i = 0; commandTags && i < commandTags.length; i++) {
       let s = commandTags[i].getTagString().trim().toLowerCase();
       // lowpass and low are the same word said two ways
+      // (comment by Claude)
       if (s.endsWith("pass")) s = s.substring(0, s.length - 4);
       if (allowed.indexOf(s) == -1) continue;
       if (found && found != s) return "conflict";
@@ -832,6 +858,8 @@ function createWavetableBuiltins() {
   Resonance runs 0 to 1 rather than being a Q, because 0 to 1 is what a knob
   does. It has to live inside the filter's own loop -- feeding a filter back
   into itself from outside cannot get you here.
+
+  (comment by Claude)
   */
   function resonanceToQ(r) {
     if (r < 0) r = 0;
@@ -841,6 +869,7 @@ function createWavetableBuiltins() {
 
   // the usual cookbook biquad, written into a reused array so a swept cutoff
   // does not allocate once per sample
+  // (comment by Claude)
   function biquadInto(c, kind, hz, q, gainDb, sampleRate) {
     let nyquist = sampleRate / 2;
     if (hz < 1) hz = 1;
@@ -852,6 +881,7 @@ function createWavetableBuiltins() {
     let alpha = sinw / (2 * q);
     // half of gainDb, because a peak or a shelf gets it on the way in and
     // again on the way out
+    // (comment by Claude)
     let A = Math.pow(10, gainDb / 40);
     let sqrtA2 = 2 * Math.sqrt(A) * alpha;
     let a0, a1, a2, b0, b1, b2;
@@ -966,6 +996,8 @@ function createWavetableBuiltins() {
       reads better than pairing up parallel lists of frequencies and gains.
       Unlike a filter this leaves everything outside the band alone, which is
       what makes it the thing you reach for when a sound is nearly right.
+
+      (comment by Claude)
       */
       let dur = Math.max(wt.getDuration(),
           longestWave(env.lb("freq"), env.lb("gain"), env.lb("q")));
@@ -1370,12 +1402,15 @@ function createWavetableBuiltins() {
   the best matching place within a short distance of it -- the place where the
   wave continues most like the piece before it did. That search is the whole
   trick, and it is why this sounds like the sound rather than like a stutter.
+
+  (comment by Claude)
   */
   const STRETCH_FRAME = 2048;
   const STRETCH_MAX_OUTPUT = 10000000;
 
   // the raw samples rather than valueAtSample, because this runs a few million
   // times and valueAtSample takes a modulus on every one of them
+  // (comment by Claude)
   function bestMatchOffset(src, dur, ideal, wanted, search, compare) {
     let best = ideal;
     let bestScore = -Infinity;
@@ -1395,6 +1430,7 @@ function createWavetableBuiltins() {
 
   // writes into whatever array it is handed, so pitch-shift can stretch into
   // scratch space rather than making a wavetable it is only going to throw away
+  // (comment by Claude)
   function stretchInto(wt, factor, data, outDur) {
     let dur = wt.getDuration();
 
@@ -1402,6 +1438,7 @@ function createWavetableBuiltins() {
     let hopOut = Math.floor(frame / 2);
     if (hopOut < 1) {
       // too short to cut into pieces at all
+      // (comment by Claude)
       for (let i = 0; i < outDur; i++) {
         data[i] = wt.valueAtSample(Math.floor(i / factor));
       }
@@ -1411,12 +1448,14 @@ function createWavetableBuiltins() {
     let search = Math.floor(hopOut / 2);
     // half a hop is enough to say whether two places line up, and the search
     // costs the length of this times the width of it on every frame
+    // (comment by Claude)
     let compare = Math.max(1, Math.floor(hopOut / 2));
     let src = wt.getData();
 
     let window = hannWindow(frame);
     // hann at half a frame sums to one, but not at the two ends, so the window
     // is added up as well and divided out
+    // (comment by Claude)
     let weight = new Float64Array(outDur);
     let wanted = new Float64Array(compare);
     let previousEnd = 0;
@@ -1450,6 +1489,8 @@ function createWavetableBuiltins() {
     properly. Where they do not -- the very ends -- the sum goes to nothing,
     and dividing by nothing turns the last few samples into a bang. Below half
     a window the sum is left alone, so the ends fade instead.
+
+    (comment by Claude)
     */
     for (let i = 0; i < outDur; i++) {
       data[i] /= weight[i] > 0.5 ? weight[i] : 0.5;
@@ -1474,6 +1515,7 @@ function createWavetableBuiltins() {
 
       // tagged with a timebase it is the length you want; untagged it is how
       // many times longer to make it
+      // (comment by Claude)
       let factor;
       if (explicitTimebase(amount)) {
         factor = convertTimeToSamples(amount) / dur;
@@ -1515,6 +1557,8 @@ function createWavetableBuiltins() {
       so what is left is the original length at a different pitch. Which is why
       this is a function rather than anything new: it is time-stretch and
       resample-by, one after the other.
+
+      (comment by Claude)
       */
       let ratio = Math.pow(2, semitones / 12);
       let longDur = stretchedLength(dur, ratio);
@@ -1674,6 +1718,7 @@ function createWavetableBuiltins() {
       }
       // it is possible to get here: resampling by more than the wave is long
       // leaves a fraction of a sample
+      // (comment by Claude)
       resultDuration = Math.round(resultDuration);
       if (resultDuration < 1) {
         return constructFatalError(
@@ -1851,6 +1896,7 @@ function createWavetableBuiltins() {
 
   // short enough to type mid-set, and still says what it does -- a single f
   // is a letter you would hit by accident
+  // (comment by Claude)
   Builtin.aliasBuiltin("fit", "fit to");
 
   Builtin.createBuiltin(
@@ -1978,10 +2024,13 @@ function createWavetableBuiltins() {
   of the wave, while these carry one running line, so the tail is exponential
   rather than counted, and the delay can move while the wave plays. A moving
   delay is what a flanger is.
+
+  (comment by Claude)
   */
 
   // per-sample delay in samples. A wave says it directly, since a wave has
   // nowhere to put a timebase tag -- build one with wave math to get a flanger.
+  // (comment by Claude)
   function lengthAt(nex) {
     if (nex.getTypeName() == "-wavetable-") {
       return function (i) {
@@ -2008,6 +2057,7 @@ function createWavetableBuiltins() {
 
   // how long the tail takes to fall to -60dB, capped so a feedback close to 1
   // cannot ask for a wave that never ends
+  // (comment by Claude)
   function decayTailSamples(g, delaySamples) {
     let a = Math.abs(g);
     if (a < 0.0001) return 0;
@@ -2020,6 +2070,8 @@ function createWavetableBuiltins() {
   looping forever, so the line is run over the wave a few times to charge it
   and only the last pass is kept. Each pass leaves the line at g^(dur/delay) of
   where it was, which is what says how many passes are enough.
+
+  (comment by Claude)
   */
   function chargePasses(g, delaySamples, dur) {
     let a = Math.abs(g);
@@ -2054,6 +2106,7 @@ function createWavetableBuiltins() {
     let write = 0;
     let passes = wrap ? chargePasses(g, maxDelay, dur) : 1;
     // the pass count is an upper bound; a line that has settled is done
+    // (comment by Claude)
     let previous = passes > 1 ? new Float64Array(outDur) : null;
 
     for (let p = 0; p < passes; p++) {
@@ -2063,6 +2116,7 @@ function createWavetableBuiltins() {
         if (d > maxDelay) d = maxDelay;
         // read between two samples, so a delay that moves glides rather than
         // stepping from one sample to the next
+        // (comment by Claude)
         let at = write - d;
         while (at < 0) at += line.length;
         let i0 = Math.floor(at);
@@ -2128,13 +2182,17 @@ function createWavetableBuiltins() {
   that already. This is for when you have no impulse response to hand, and for
   the things convolution cannot do -- a tail you can make longer or darker by
   changing a number.
+
+  (comment by Claude)
   */
   const REVERB_COMBS = [1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617];
   const REVERB_ALLPASSES = [556, 441, 341, 225];
   // the lengths above were chosen at this rate, so they are scaled from it
+  // (comment by Claude)
   const REVERB_TUNED_AT = 44100;
   // eight combs at that feedback multiply up, and this brings the wet signal
   // back to about the level it came in at
+  // (comment by Claude)
   const REVERB_INPUT_GAIN = 0.045;
 
   function zeroToOne(nex, dflt) {
@@ -2165,6 +2223,7 @@ function createWavetableBuiltins() {
       }
 
       // size is the tail length, damping is how fast the high end of it dies
+      // (comment by Claude)
       let feedback = 0.7 + 0.28 * size;
       let damp = 0.4 * damping;
       let longest = combLen[combLen.length - 1];
@@ -2201,6 +2260,7 @@ function createWavetableBuiltins() {
             let out = combBuf[k][combAt[k]];
             // one pole lowpass inside the loop, so each time round is duller
             // than the last -- which is what a room does
+            // (comment by Claude)
             combStore[k] = out * (1 - damp) + combStore[k] * damp;
             combBuf[k][combAt[k]] = input + combStore[k] * feedback;
             combAt[k] = (combAt[k] + 1) % combBuf[k].length;
@@ -2397,6 +2457,8 @@ function createWavetableBuiltins() {
       rather than in one go, so a loud bright moment counts for more than a
       quiet dark one, and so the answer does not depend on how long the wave
       happens to be.
+
+      (comment by Claude)
       */
       let sampleRate = getSampleRate();
       let num = 0;
@@ -2526,6 +2588,7 @@ function createWavetableBuiltins() {
 
       // tagged with a timebase it is the length to fill, untagged it is how
       // many times round
+      // (comment by Claude)
       let dur;
       if (reps == UNBOUND) {
         dur = wtdur;
@@ -2745,6 +2808,7 @@ function createWavetableBuiltins() {
       let ms = (convertTimeToSamples(len) / getSampleRate()) * 1000;
       // setTimeout drops anything after the decimal point, so a float here
       // would only be rounded later, somewhere less obvious.
+      // (comment by Claude)
       return constructInteger(Math.round(ms));
     },
     "Returns the length of |len in whole milliseconds, rounded. |len takes a timebase tag like any other length, so this is how a length in beats becomes a number that something outside the audio system can use."
@@ -2811,6 +2875,7 @@ function createWavetableBuiltins() {
         if (!(at >= 1 && at <= total - 1)) {
           // both numbers, because a tagged point converts to something the
           // caller never typed and reporting only that reads as nonsense
+          // (comment by Claude)
           return constructFatalError("set-split-points: " + each[i].getTypedValue()
               + " is sample " + at + ", which is not inside this "
               + total + " sample wave. Sorry!");

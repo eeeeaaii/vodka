@@ -273,6 +273,8 @@ class EventQueue {
 
 	Not deduped on the deferred alone -- a deferred finishes once, so there is
 	never a second one of these for the same value.
+
+	(comment by Claude)
 	*/
 	enqueueUnwrapFinishedDeferred(deferred) {
 		EVENT_DEBUG ? console.log('enqueueing: UnwrapFinishedDeferred'):null;
@@ -295,6 +297,8 @@ class EventQueue {
 	An editor threw mid-keystroke and what was being edited is now an error.
 	Already done by the time this runs -- recorded, not performed -- so that
 	the undo stack knows the document changed underneath the key's own action.
+
+	(comment by Claude)
 	*/
 	enqueueEditorErrorAction(parent, index, replacedNode, errorNode) {
 		EVENT_DEBUG ? console.log('enqueueing: EditorErrorAction'):null;

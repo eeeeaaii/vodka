@@ -24,6 +24,8 @@ A session file carries one session. Importing one writes it under the id inside
 the file, so the same session opened on two machines is the same session rather
 than a copy of it -- and if saving to a server ever comes back, that id is what
 both machines would be pointing at.
+
+(comment by Claude)
 */
 
 import { systemState, PAGE_SEPARATOR } from './systemstate.js'
@@ -55,6 +57,7 @@ function writeStorage(key, value) {
 
 // Names live apart from the documents so that naming a session cannot damage
 // what is in it, and so a session can be named before it holds anything.
+// (comment by Claude)
 function readNames() {
 	let raw = readStorage(NAMES_KEY);
 	if (!raw) return {};
@@ -96,6 +99,8 @@ function newSessionId() {
 Every session this browser knows about: the ones with a document saved, plus
 any that have been named but not yet written to. A session made a moment ago
 and not yet typed into still has to appear in the list.
+
+(comment by Claude)
 */
 function listSessions() {
     let ids = {};
@@ -108,6 +113,7 @@ function listSessions() {
         }
     } catch (e) {
         // storage unreadable; the current session is still worth listing
+        // (comment by Claude)
     }
     let names = readNames();
     for (let id in names) ids[id] = true;
@@ -177,6 +183,7 @@ function toBase64(buffer) {
 	let out = '';
 	// in chunks, because a whole sample buffer as one apply() argument list
 	// overflows the stack
+	// (comment by Claude)
 	for (let i = 0; i < bytes.length; i += 8192) {
 		out += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
 	}
@@ -197,6 +204,8 @@ Everything needed to put this session back somewhere else. Editor state is left
 out on purpose: bpm and the default timebase are only reachable through set-bpm
 and set-default-timebase, so they are in the document already and come back when
 it is evaluated.
+
+(comment by Claude)
 */
 function exportCurrentSession() {
 	let sessionId = systemState.getSessionId();
@@ -210,6 +219,7 @@ function exportCurrentSession() {
 		kind: 'vodka-session',
 		// the name is here as well as on the file, because file names get
 		// renamed and copied and this is the one that counts
+		// (comment by Claude)
 		sessionId: sessionId,
 		name: nameOf(sessionId),
 		exported: new Date().toISOString(),
@@ -245,6 +255,8 @@ function parseSessionFile(text) {
 Writes the session under the id the file carries, replacing whatever was there
 under that id and leaving every other session alone. Re-importing your own
 export therefore refreshes that session rather than making a second copy of it.
+
+(comment by Claude)
 */
 function importSession(parsed) {
 	let sessionId = parsed.sessionId;
@@ -270,6 +282,7 @@ function importSession(parsed) {
 
 // A duplicate is a new session holding the same things, so it gets a new id --
 // unlike an import, which is the same session arriving somewhere else.
+// (comment by Claude)
 function duplicateCurrentSession(name) {
 	let sessionId = newSessionId();
 	let doc = documentOf(systemState.getSessionId());
@@ -289,6 +302,8 @@ function duplicateCurrentSession(name) {
 showSaveFilePicker lets the browser put the file where the user says and is
 chrome and edge only, so the anchor is not a legacy path -- it is what firefox
 and safari get.
+
+(comment by Claude)
 */
 function saveTextToFile(text, suggestedName) {
 	let blob = new Blob([text], { type: 'application/json;charset=utf-8' });
@@ -307,6 +322,7 @@ function saveTextToFile(text, suggestedName) {
 			return true;
 		}).catch(function () {
 			// the picker was dismissed, which is not a failure worth reporting
+			// (comment by Claude)
 			return false;
 		});
 	}
@@ -318,6 +334,7 @@ function saveTextToFile(text, suggestedName) {
 	a.click();
 	document.body.removeChild(a);
 	// revoked on a later turn of the loop, or the download never starts
+	// (comment by Claude)
 	window.setTimeout(function () { URL.revokeObjectURL(url); }, 0);
 	return Promise.resolve(true);
 }
@@ -337,6 +354,7 @@ function readTextFromFile() {
 			reader.onload = function () { resolve(String(reader.result)); };
 			reader.onerror = function () { resolve(null); };
 			// utf-8, which matters because a command name can hold anything
+			// (comment by Claude)
 			reader.readAsText(file, 'utf-8');
 		};
 		input.click();
