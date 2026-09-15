@@ -1,0 +1,61 @@
+/*
+This file is part of Vodka.
+
+Vodka is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Vodka is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+/* follows contract.css -- both are things the system hands you rather than
+   things you type */
+
+.handle {
+	display: none;
+}
+
+.hglyph {
+	font-size: 20px;
+	font-family: Courier;
+	padding-right: 10px;
+	color: var(--handle-glyph);
+}
+
+.handle.exploded {
+	border-radius: 6px;
+	font-style: italic;
+	font-family: monospace;
+	color: var(--page-text);
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	font-size: 11px;
+	background-color: var(--value-background);
+	border: 1px solid var(--unselected-border);
+	padding-right: 6px;
+	padding-bottom: 6px;
+	padding-top: 6px;
+}
+
+.handle.exploded.newselected {
+	border: 3px solid var(--selected-border);
+}
+
+.handleframe {
+	display: flex;
+	flex-direction: row;
+	padding-bottom: 6px;
+}
+
+.hinnerspans {
+	flex-direction: column;
+	display: flex;
+}

@@ -359,29 +359,229 @@ function oneshotPlay(bufferList, channelList) {
 	}
 }
 
+
+/*
+THE GLOBAL CYCLE
+
+Every loop shares one cycle, whose length is the longest loop in it. Adding a
+loop waits for the current cycle to finish, then the cycle becomes as long as it
+needs to be and everything starts together.
+
+That is what `mix` already does, made to happen live rather than in advance:
+mixing a four beat wave with a six beat one gives six beats, with the short one
+playing through and then its first half again, because valueAtSample wraps. Here
+each loop is its own source node set to repeat, and all of them are cut and
+restarted at the cycle boundary, which comes to the same thing while leaving
+each loop separately removable.
+
+The boundary is scheduled on ctx.currentTime, so it is exact. setTimeout is only
+used to wake up early enough to do the scheduling.
+*/
+
+// how far ahead of a boundary we wake up to schedule it
+const CYCLE_LOOKAHEAD_SECONDS = 0.15;
+
+let cycleLoops = {};        // id -> { buffer, channel, lengthSeconds, node, endAfterCycle }
+let cyclePending = {};      // loops that join at the next boundary
+let nextCycleLoopId = 1;
+let cycleTimer = null;
+let cycleRunning = false;
+let cycleNextBoundaryTime = 0;
+
+function cycleLengthSeconds() {
+	let longest = 0;
+	for (let id in cycleLoops) {
+		if (cycleLoops[id].lengthSeconds > longest) {
+			longest = cycleLoops[id].lengthSeconds;
+		}
+	}
+	return longest;
+}
+
+function anyLoopsPlaying() {
+	for (let id in cycleLoops) return true;
+	for (let id in cyclePending) return true;
+	return false;
+}
+
+// Starts every loop at the boundary and cuts it at the end of the cycle, so a
+// loop shorter than the cycle repeats inside it and is truncated.
+function startCycleAt(startTime) {
+	for (let id in cyclePending) {
+		cycleLoops[id] = cyclePending[id];
+		delete cyclePending[id];
+	}
+	for (let id in cycleLoops) {
+		if (cycleLoops[id].endAfterCycle) {
+			delete cycleLoops[id];
+		}
+	}
+	let len = cycleLengthSeconds();
+	if (len <= 0) {
+		cycleRunning = false;
+		cycleTimer = null;
+		return;
+	}
+	for (let id in cycleLoops) {
+		let loop = cycleLoops[id];
+		// A member that brings its own way of starting -- midi does, and
+		// schedules messages rather than making a sound.
+		if (loop.start) {
+			loop.start(startTime, len);
+			continue;
+		}
+		let node = getSourceFromBuffer(loop.buffer, true);
+		node.connect(channelMergerNode, 0, loop.channel);
+		node.start(startTime);
+		node.stop(startTime + len);
+		loop.node = node;
+	}
+	let nextBoundary = startTime + len;
+	cycleNextBoundaryTime = nextBoundary;
+	let wakeIn = (nextBoundary - CYCLE_LOOKAHEAD_SECONDS - ctx.currentTime) * 1000;
+	cycleTimer = window.setTimeout(function() {
+		startCycleAt(nextBoundary);
+	}, wakeIn > 0 ? wakeIn : 0);
+}
+
+/*
+Joins the cycle. Returns an id.
+
+The first loop starts immediately, since there is no cycle to wait for. Later
+ones wait for the boundary, which is what keeps everything in phase.
+*/
+function addLoop(buffer, channel) {
+	maybeCreateAudioContext();
+	checkChannelExists(channel);
+	return addCycleMember({
+		buffer: buffer,
+		channel: channel,
+		lengthSeconds: buffer.length / SAMPLE_RATE,
+		node: null
+	});
+}
+
+/*
+Anything with a length can join the cycle. An audio loop brings a buffer and a
+channel; a midi sequence brings start and stop functions instead, and schedules
+messages rather than making a sound.
+*/
+function addCycleMember(loop) {
+	maybeCreateAudioContext();
+	let id = nextCycleLoopId++;
+	loop.endAfterCycle = false;
+	cyclePending[id] = loop;
+	/*
+	Starting is deferred by a microtask so that everything added in one go
+	starts together.
+
+	loop-play adds one loop per channel, one at a time. Starting the cycle as
+	soon as the first arrived meant the second was already too late for it and
+	waited for the next boundary -- so a stereo pair played left only for its
+	first time round, then both from then on.
+	*/
+	if (!cycleRunning) {
+		cycleRunning = true;
+		Promise.resolve().then(function() {
+			startCycleAt(ctx.currentTime);
+		});
+	}
+	return id;
+}
+
+/*
+Swaps what a running loop plays, keeping its place in the cycle. Nodes are
+rebuilt at every boundary anyway, so changing the buffer here is enough -- the
+next boundary picks it up, and the loop never leaves the cycle. If the new wave
+is a different length the cycle re-measures itself at that boundary too.
+*/
+function replaceLoop(id, buffer, channel) {
+	let loop = cycleLoops[id] || cyclePending[id];
+	if (!loop) return false;
+	loop.buffer = buffer;
+	loop.channel = channel;
+	loop.lengthSeconds = buffer.length / SAMPLE_RATE;
+	loop.endAfterCycle = false;
+	return true;
+}
+
+// Same idea for a member that brings its own start and stop, like midi.
+function replaceCycleMember(id, member) {
+	let existing = cycleLoops[id] || cyclePending[id];
+	if (!existing) return false;
+	if (existing.stop) existing.stop();
+	member.endAfterCycle = false;
+	if (cycleLoops[id]) cycleLoops[id] = member;
+	if (cyclePending[id]) cyclePending[id] = member;
+	return true;
+}
+
+function endLoops(ids, atCycleEnd) {
+	for (let i = 0; i < ids.length; i++) {
+		let id = ids[i];
+		let loop = cycleLoops[id] || cyclePending[id];
+		if (!loop) continue;
+		if (atCycleEnd) {
+			loop.endAfterCycle = true;
+		} else {
+			if (loop.stop) loop.stop();
+			if (loop.node) {
+				try { loop.node.stop(); } catch (e) {}
+				loop.node.disconnect();
+			}
+			delete cycleLoops[id];
+			delete cyclePending[id];
+		}
+	}
+}
+
+function endAllLoops() {
+	let ids = [];
+	for (let id in cycleLoops) ids.push(id);
+	for (let id in cyclePending) ids.push(id);
+	endLoops(ids, false);
+	if (cycleTimer) {
+		window.clearTimeout(cycleTimer);
+		cycleTimer = null;
+	}
+	cycleRunning = false;
+}
+
+/*
+Audio time to the wall clock time midi wants, read fresh each time. The two run
+off different oscillators and drift apart by tens of parts per million, but
+getOutputTimestamp pairs a reading of both, so converting per event re-anchors
+every time and nothing accumulates.
+
+Its contextTime is the frame reaching the output, not the frame being computed,
+so the output buffer delay is already in the answer.
+*/
+function contextTimeToPerformanceTime(contextTime) {
+	let ts = ctx.getOutputTimestamp();
+	if (ts && ts.contextTime != undefined && ts.performanceTime != undefined) {
+		return ts.performanceTime + (contextTime - ts.contextTime) * 1000;
+	}
+	// no timestamp available: fall back to the current time plus the gap
+	return performance.now() + (contextTime - ctx.currentTime) * 1000;
+}
+
+// When the next cycle begins, in ctx.currentTime, and how long a cycle is.
+// This is what midi aligns to.
+function nextCycleBoundary() {
+	return { at: cycleNextBoundaryTime, lengthSeconds: cycleLengthSeconds() };
+}
+
 function loopPlay(bufferList, channelList) {
 	maybeCreateAudioContext();
 	channelList.forEach(checkChannelExists);
-	// if there is just one wave, fan it out to all the channels.
-	// if there are two, alternate...
-	// if there are three, you know.
-
+	// one wave fans out to every channel, two alternate, and so on
 	let bufferIndex = 0;
-
+	let ids = [];
 	for (let i = 0; i < channelList.length; i++) {
-		let channelNum = channelList[i];
-		let buffer = bufferList[bufferIndex];
-
-		if (channelPlayers[channelNum]) {
-			if (channelPlayers[channelNum].canChangeLoopData()) {
-				channelPlayers[channelNum].changeLoopData(buffer);
-			}
-		} else {
-			channelPlayers[channelNum] = new LoopingPlayer(buffer, channelNum);
-		}
-
+		ids.push(addLoop(bufferList[bufferIndex], channelList[i]));
 		bufferIndex = (bufferIndex + 1) % bufferList.length;
 	}
+	return ids;
 }
 
 // we don't need to stop nicely at end of loop
@@ -422,6 +622,7 @@ function isAnySoundPlaying() {
 }
 
 function stopAllSound() {
+	endAllLoops();
 	maybeKillSound(true /* force -- this is the stop button, nothing survives it */);
 	abortPlayback(-1);
 }
@@ -457,5 +658,5 @@ async function getFileAsBuffer(filepath) {
 }
 
 
-export { getAudioBufferFromData, loadSample, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { getAudioBufferFromData, loadSample, addLoop, replaceLoop, addCycleMember, replaceCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, oneshotPlay, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 
