@@ -43,6 +43,7 @@ import { createTagBuiltins } from './builtins/tagbuiltins.js'
 import { createTestBuiltins } from './builtins/testbuiltins.js'
 import { createTypeConversionBuiltins } from './builtins/typeconversions.js'
 import { createWavetableBuiltins } from './builtins/wavetablebuiltins.js'
+import { createWaveMathBuiltins } from './builtins/wavemathbuiltins.js'
 import { createMidiBuiltins } from './builtins/midibuiltins.js'
 import { loadAndRun } from './servercommunication.js'
 import { RenderNode } from './rendernode.js'
@@ -150,6 +151,7 @@ function createBuiltins() {
 	setAPIDocCategory('File Builtins'); createFileBuiltins();
 	setAPIDocCategory('String Builtins'); createStringBuiltins();
 	setAPIDocCategory('Wavetable Builtins'); createWavetableBuiltins();
+	setAPIDocCategory('Wave Math Builtins'); createWaveMathBuiltins();
 	setAPIDocCategory('Midi Builtins'); createMidiBuiltins();
 	setAPIDocCategory('Surface Builtins'); createSurfaceBuiltins();
 	setAPIDocCategory('Make Builtins'); createMakeBuiltins();
