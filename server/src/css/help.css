@@ -34,15 +34,32 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	cursor: grab;
 }
 
-#uberhelpcontainer {
 /*
-	display: none;
+Fixed rather than absolute, so the panel stays where it is put however far down
+the document you have scrolled. The button that summons it is already fixed, so
+before this the two drifted apart: open the help after scrolling and the panel
+was somewhere up the page, out of sight.
+
+Held clear of the bottom of the window, and the panel inside it scrolls on its
+own -- a hundred and twenty eight rows of note numbers should move inside the
+panel rather than making the whole page taller.
 */
+#uberhelpcontainer {
     display: flex;
 	flex-direction: column;
-	position:absolute;
+	position: fixed;
+	top: 0;
+	left: 0;
 	z-index: 1000;
-	margin: 20px;	
+	margin: 20px;
+	max-height: calc(100vh - 40px);
+	/* the container is only a frame; what is in it takes its own clicks, and
+	   the document underneath keeps the rest */
+	pointer-events: none;
+}
+
+#uberhelpcontainer > * {
+	pointer-events: auto;
 }
 
 .helpmenupanel {
@@ -73,6 +90,17 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border: 1px solid var(--help-accent);
 	background-color: var(--help-background);
 	padding: 20px;
+	/*
+	Its own scrollbar, so a long panel scrolls inside the frame and the tabs
+	above it stay put.
+
+	A height of its own rather than shrinking to fit the container, because it
+	is not a child of the container -- the preact root and the app's own wrapper
+	sit in between, and flex shrinking does not reach through them. The number
+	is the 20px the container is inset by, twice, plus the row of tabs above.
+	*/
+	overflow-y: auto;
+	max-height: calc(100vh - 110px);
 }
 
 .infopanel .infotitle {
