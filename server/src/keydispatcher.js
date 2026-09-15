@@ -94,6 +94,7 @@ class KeyDispatcher {
 			enqueueAndPerformAction(actionFactory('cut'));
 		} else if (this.getClipboardCommand(eventName) == 'copy') {
 			// copy does not change the document, so there is nothing to undo
+			// (comment by Claude)
 			manipulator.doCopy();
 		} else if (this.getClipboardCommand(eventName) == 'paste') {
 			/*
@@ -209,6 +210,7 @@ class KeyDispatcher {
 	// that is the text editors consume when you type ('a', '~', '!'), and
 	// because e.key already has shift applied to printable characters. Named
 	// keys (Tab, Enter, the arrows) don't encode shift that way, so they say so.
+	// (comment by Claude)
 	getEventName(keycode, hasShift, hasCtrl, hasMeta, hasAlt, whichKey) {
 		if (!hasCtrl && !hasAlt && !hasMeta) {
 			if (keycode == ' ') {
@@ -229,6 +231,7 @@ class KeyDispatcher {
 
 	// cmd on a mac and ctrl everywhere else both drive this family. Handled here
 	// rather than in the tables because these don't go through actionFactory.
+	// (comment by Claude)
 	getClipboardCommand(eventName) {
 		switch(eventName) {
 			case 'CtrlKeyZ': case 'MetaKeyZ': return 'undo';
@@ -250,11 +253,13 @@ class KeyDispatcher {
 	//
 	// Shift-only names ('ShiftArrowUp') never took that path, and neither does a
 	// combination with no modifier to strip.
+	// (comment by Claude)
 	matchKeyCombo(sourceNode, eventName, keycode) {
 		if (!keycode || eventName == keycode) return eventName;
 		if (!/^(Ctrl|Alt|Meta)/.test(eventName)) return eventName;
 		let claimedBy = this.getClipboardCommand(eventName)
 			// editors match the autocomplete combination directly, not via a table
+			// (comment by Claude)
 			|| isAutocompleteKeyCombo(eventName)
 			|| this.getActionNameFromRegularTable(sourceNode, eventName)
 			|| this.getActionNameFromGenericTable(sourceNode, eventName);
@@ -278,6 +283,7 @@ class KeyDispatcher {
 	// Mac and pc currently list identical combinations, because the old code aliased
 	// every Ctrl name onto its Alt twin before lookup, so both already worked on
 	// both platforms. They are separate now so they can diverge on purpose.
+	// (comment by Claude)
 	getMacNexContainerGenericTable() {
 		return {
 			'ShiftTab':             'select-parent',
@@ -301,6 +307,7 @@ class KeyDispatcher {
 			'ShiftEnter':           'evaluate-nex-and-keep',
 			// play again from wherever you are: walks up to the nearest play
 			// command and runs it, so you do not have to shift-tab out first
+			// (comment by Claude)
 			'MetaShiftKeyP':        'replay-nearest-play',
 			'CtrlShiftKeyP':        'replay-nearest-play',
 			'Enter':                'evaluate-nex',
@@ -313,6 +320,7 @@ class KeyDispatcher {
 			// ctrl-enter reached start-main-editor through the old Ctrl->Alt
 			// rewrite. alt-enter did not: nothing produced 'AltEnter', so it fell
 			// through to 'Enter' and evaluated. Preserving that asymmetry.
+			// (comment by Claude)
 			'CtrlEnter':            'start-main-editor',
 			'CtrlShiftEnter':       'start-main-editor',
 			'AltBackspace':         'start-main-editor',
@@ -400,6 +408,7 @@ class KeyDispatcher {
 			'ShiftEnter':           'evaluate-nex-and-keep',
 			// play again from wherever you are: walks up to the nearest play
 			// command and runs it, so you do not have to shift-tab out first
+			// (comment by Claude)
 			'MetaShiftKeyP':        'replay-nearest-play',
 			'CtrlShiftKeyP':        'replay-nearest-play',
 			'Enter':                'evaluate-nex',
@@ -412,6 +421,7 @@ class KeyDispatcher {
 			// ctrl-enter reached start-main-editor through the old Ctrl->Alt
 			// rewrite. alt-enter did not: nothing produced 'AltEnter', so it fell
 			// through to 'Enter' and evaluated. Preserving that asymmetry.
+			// (comment by Claude)
 			'CtrlEnter':            'start-main-editor',
 			'CtrlShiftEnter':       'start-main-editor',
 			'AltBackspace':         'start-main-editor',
@@ -481,6 +491,7 @@ class KeyDispatcher {
 			'ShiftTab':             'select-parent',
 			// play again from wherever you are: walks up to the nearest play
 			// command and runs it, so you do not have to shift-tab out first
+			// (comment by Claude)
 			'MetaShiftKeyP':        'replay-nearest-play',
 			'CtrlShiftKeyP':        'replay-nearest-play',
 			'Tab':                  'move-right-down',
@@ -504,6 +515,7 @@ class KeyDispatcher {
 			// ctrl-enter reached start-main-editor through the old Ctrl->Alt
 			// rewrite. alt-enter did not: nothing produced 'AltEnter', so it fell
 			// through to 'Enter' and evaluated. Preserving that asymmetry.
+			// (comment by Claude)
 			'CtrlEnter':            'start-main-editor',
 			'CtrlShiftEnter':       'start-main-editor',
 			'AltBackspace':         'start-main-editor',
@@ -570,6 +582,7 @@ class KeyDispatcher {
 			'ShiftTab':             'select-parent',
 			// play again from wherever you are: walks up to the nearest play
 			// command and runs it, so you do not have to shift-tab out first
+			// (comment by Claude)
 			'MetaShiftKeyP':        'replay-nearest-play',
 			'CtrlShiftKeyP':        'replay-nearest-play',
 			'Tab':                  'move-right-down',
@@ -593,6 +606,7 @@ class KeyDispatcher {
 			// ctrl-enter reached start-main-editor through the old Ctrl->Alt
 			// rewrite. alt-enter did not: nothing produced 'AltEnter', so it fell
 			// through to 'Enter' and evaluated. Preserving that asymmetry.
+			// (comment by Claude)
 			'CtrlEnter':            'start-main-editor',
 			'CtrlShiftEnter':       'start-main-editor',
 			'AltBackspace':         'start-main-editor',

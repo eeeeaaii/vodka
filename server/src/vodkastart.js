@@ -1,6 +1,7 @@
 import { setup } from './vodka.js'
 
 // stamped by build.sh, so the console says which build this actually is
+// (comment by Claude)
 console.log('vodka build: '
 		+ (typeof __VODKA_BUILD__ != 'undefined' ? __VODKA_BUILD__ : 'unstamped dev build'));
 

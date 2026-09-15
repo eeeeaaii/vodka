@@ -136,6 +136,7 @@ class DeferredCommandValue extends NexContainer {
 
 	// cancel() has usually released this already; releaseRunState does not mind
 	// being asked twice, and a finished one was never cancelled at all
+	// (comment by Claude)
 	cleanupOnMemoryFree() {
 		this.releaseRunState();
 	}
@@ -226,6 +227,8 @@ class DeferredCommandValue extends NexContainer {
 		its place there -- the same rule a deferred value follows. A settled one
 		stays put: it is still armed and the next result has to have somewhere
 		to land.
+
+		(comment by Claude)
 		*/
 		if (!keepGoing) {
 			eventQueueDispatcher.enqueueUnwrapFinishedDeferred(this);
@@ -269,6 +272,8 @@ class DeferredCommandValue extends NexContainer {
 		Unwrapping, not evaluating -- the same rule a deferred value follows.
 		What it holds is already the answer, so it comes back as it is rather
 		than being run a second time.
+
+		(comment by Claude)
 		*/
 		let result = this.numChildren() > 0
 				? this.getChildAt(0)

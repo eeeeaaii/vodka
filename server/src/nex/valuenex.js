@@ -42,6 +42,8 @@ Listening on the document rather than the number: a drag that leaves the box is
 still that drag, and letting go anywhere has to end it. Anything that reaches
 this has already been selected by the click that started it, which is what you
 want -- you are working on the thing you are dragging.
+
+(comment by Claude)
 */
 function roundToStep(v, step) {
 	let places = 0;
@@ -62,6 +64,7 @@ function startNumberDrag(nex, event) {
 	}
 	// the finest step used so far, so the drag rounds to the smallest amount
 	// the user has actually asked for
+	// (comment by Claude)
 	let finest = null;
 	let moved = false;
 
@@ -92,6 +95,7 @@ function startNumberDrag(nex, event) {
 
 	// holding control to drag by hundredths is a right-click as far as a mac is
 	// concerned, and the menu would take the pointer away mid-drag
+	// (comment by Claude)
 	function onContextMenu(e) {
 		e.preventDefault();
 	}

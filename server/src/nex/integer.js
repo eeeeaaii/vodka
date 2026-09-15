@@ -139,6 +139,7 @@ class Integer extends ValueNex {
 	}
 
 	// there is nothing finer than one to offer, so modifiers mean nothing here
+	// (comment by Claude)
 	getDragStep(event) {
 		return 1;
 	}
@@ -147,6 +148,8 @@ class Integer extends ValueNex {
 	Press and move to change it. Not while it is being edited, when the pointer
 	belongs to the text, and not on something immutable, which is the same rule
 	stepping follows: a number that cannot be edited cannot be dragged.
+
+	(comment by Claude)
 	*/
 	startDragIfAllowed(event) {
 		if (this.isEditing || !this.isMutable()) {

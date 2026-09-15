@@ -59,6 +59,7 @@ class Heap {
     // 2 gigs max mem
     this.debug = false;
     // see beginAction
+    // (comment by Claude)
     this.actionDepth = 0;
     this.pendingFree = [];
   }
@@ -150,6 +151,7 @@ class Heap {
       this.requestMem(obj.memUsed());
       // it is not freed any more, and saying so is what lets it be freed again
       // later -- otherwise the flag above would refuse forever
+      // (comment by Claude)
       obj.wasFreed = false;
       obj.memAllocated = true;
     }
@@ -158,6 +160,8 @@ class Heap {
     Being stopped is not undone here: a recording that was cut short by a
     delete does not resume when you undo the delete, because the seconds it
     would have recorded did not happen. What comes back is what it had.
+
+    (comment by Claude)
     */
     if (obj.references == 0) {
       obj.stoppedFunctioning = false;
@@ -178,6 +182,8 @@ class Heap {
   freed then, by which time undo has taken what it wants.
 
   Counted rather than a flag, because actions nest.
+
+  (comment by Claude)
   */
   beginAction() {
     this.actionDepth++;
@@ -192,6 +198,7 @@ class Heap {
     for (let i = 0; i < pending.length; i++) {
       let obj = pending[i];
       // anything undo took hold of during the action is no longer at zero
+      // (comment by Claude)
       if (obj.references == 0 && obj.undoReferences == 0) {
         this.free(obj);
       }
@@ -207,6 +214,8 @@ class Heap {
   Guarded, because the two moments collapse into one whenever nothing was
   holding it for undo, and because an action performs its delete before the
   undo buffer takes hold -- so a nex can be let go of twice in a row.
+
+  (comment by Claude)
   */
   stopFunctioning(obj) {
     if (obj.stoppedFunctioning) {
@@ -226,6 +235,8 @@ class Heap {
   hold of what was deleted. For that moment nothing at all holds the nex, so it
   is freed there and then, and freed again later when the action falls out of
   the buffer.
+
+  (comment by Claude)
   */
   free(obj) {
     if (obj.wasFreed) {
@@ -233,6 +244,7 @@ class Heap {
     }
     // usually already done, by whatever removed the last document reference.
     // Not always: something can be freed having never been in a document.
+    // (comment by Claude)
     this.stopFunctioning(obj);
     this.freeMem(obj.memUsed());
     obj.cleanupOnMemoryFree();
@@ -251,13 +263,16 @@ class Heap {
       return;
     }
     // out of the document, so it stops -- whoever ends up holding it
+    // (comment by Claude)
     this.stopFunctioning(obj);
     if (obj.undoReferences > 0) {
       // undo is holding it, so it keeps everything it would need to come back
+      // (comment by Claude)
       return;
     }
     if (this.actionDepth > 0) {
       // undo may be about to take hold: decide once the action has finished
+      // (comment by Claude)
       this.pendingFree.push(obj);
       return;
     }

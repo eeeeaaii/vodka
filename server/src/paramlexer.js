@@ -37,9 +37,12 @@ leading backslash before they get here.
 Every character has to be claimed by a rule. Anything left over is a spec that
 does not mean what it looks like, and the caller is told rather than being
 handed a type that silently matches nothing.
+
+(comment by Claude)
 */
 
 // longest first, so a two character token is never mistaken for its first half
+// (comment by Claude)
 const TYPE_TOKENS = [
 	['()', 'NexContainer'],
 	['!', 'Bool'],
@@ -58,6 +61,7 @@ const TYPE_TOKENS = [
 ];
 
 // may hold an underscore, may not end in one
+// (comment by Claude)
 const NAME_RE = /^[a-zA-Z0-9_-]*[a-zA-Z0-9-]/;
 
 function lexParam(spec) {
@@ -105,6 +109,7 @@ function lexParam(spec) {
 	for (;;) {
 		if (rest.startsWith(',')) {
 			// kept because parseParam has always understood it, though nothing uses it
+			// (comment by Claude)
 			out.skipactivate = true;
 			take('skipactivate', ',');
 			continue;

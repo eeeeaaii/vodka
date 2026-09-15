@@ -12,6 +12,7 @@ function docs() {
 }
 
 // Category names are author-written strings, so make a DOM-safe id out of them.
+// (comment by Claude)
 function categoryId(category) {
     return 'apicat-' + category.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 }
@@ -20,6 +21,7 @@ const TOP_ID = 'apinav-top';
 
 // The reference is long and the panel isn't its own scroll container, so jumps
 // have to go through the document. No smooth behavior -- these are jumps.
+// (comment by Claude)
 function jumpToId(id) {
     const el = document.getElementById(id);
     if (el) {
@@ -90,7 +92,6 @@ for each that one list means scrolling past all of one to reach the other.
 */
 const SOUND_CATEGORIES = [
     'Wavetable Builtins',
-    'Wave Math Builtins',
     'Midi Builtins',
 ];
 
@@ -98,10 +99,33 @@ function isSound(category) {
     return SOUND_CATEGORIES.indexOf(category) != -1;
 }
 
+/*
+Arithmetic belongs in both references. + is a base builtin and always was; it
+also takes a wave, and somebody reading the sound reference to find out what
+they can do to a wave should not have to already know that.
+
+So the sound reference carries the arithmetic that accepts a wave -- the same
+entries, not a copy of them, filtered to the ones marked as taking one.
+*/
+const MATH = 'Math Builtins';
+
+function soundGroups(all) {
+    let groups = all.filter((group) => isSound(group.category));
+    let math = all.find((group) => group.category == MATH);
+    if (math) {
+        let onWaves = math.items.filter((item) => item.worksOnWaves);
+        if (onWaves.length > 0) {
+            groups = groups.concat([{ category: MATH, items: onWaves }]);
+        }
+    }
+    return groups;
+}
+
 const ApiReferencePanel = ({sound}) => {
     // an unrecognised category is not sound, so one added later shows up in
     // the base api rather than in neither
-    const groups = docs().filter((group) => isSound(group.category) == !!sound);
+    const all = docs();
+    const groups = sound ? soundGroups(all) : all.filter((group) => !isSound(group.category));
     return (
         <div className="infopanel" id={sound ? 'soundapireference' : 'baseapireference'}>
             <SectionNav groups={groups} />

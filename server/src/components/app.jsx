@@ -91,6 +91,7 @@ const App = () => {
     // Which tab the top menu should show as selected. The panel constants and
     // the menu constants are separate enumerations, so map explicitly rather
     // than relying on them happening to line up.
+    // (comment by Claude)
     const selectedMenuChoice = () => {
         switch(panel) {
             case BASE_API_PANEL:            return BASE_API;
@@ -132,6 +133,7 @@ const App = () => {
                 via NO_SPLASH, and what someone who turned the button off asked
                 for. The status nav is help chrome too, and a dot that appears
                 in every screenshot is a dot in every golden. */}
+            {/* (comment by Claude) */}
             {uiState != HIDDEN && <StatusNav/>}
             {
                 (() => {

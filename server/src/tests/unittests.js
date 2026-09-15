@@ -25,6 +25,7 @@ eventQueue.initialize();
 // had no visible callers and esbuild stripped every one of them out -- the
 // tests all died with "TEST_<name> is not defined" against a bundle that
 // genuinely didn't contain them. Referencing them here keeps them alive.
+// (comment by Claude)
 function getTests() {
 	return {
 		'eventqueue_events_alertanimation': TEST_eventqueue_events_alertanimation,

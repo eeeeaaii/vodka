@@ -35,6 +35,8 @@ Two things worth knowing about what gets stored:
 
 Storage is keyed by session id, so two tabs on different sessions don't collide.
 Two tabs on the *same* session share one slot and the last writer wins.
+
+(comment by Claude)
 */
 
 import { systemState } from './systemstate.js'
@@ -66,6 +68,7 @@ function storageKey() {
 
 // Storage can throw rather than merely be empty: private windows, blocked site
 // data, quota. Every access goes through these two.
+// (comment by Claude)
 function readStorage(key) {
 	try {
 		return window.localStorage.getItem(key);
@@ -82,6 +85,7 @@ function writeStorage(key, value) {
 	} catch (e) {
 		// QuotaExceededError is the interesting one -- most likely a document
 		// large enough that we should stop trying rather than retry every edit.
+		// (comment by Claude)
 		console.log('vodka: autosave failed (' + e.name + '), disabling for this session.');
 		disabled = true;
 		/*
@@ -89,6 +93,8 @@ function writeStorage(key, value) {
 		of the document, so from here on nothing is being kept and reloading
 		loses whatever comes next. Once per session, because `disabled` means
 		we never come back through here.
+
+		(comment by Claude)
 		*/
 		try {
 			window.alert('Vodka has stopped saving this session in the browser ('
@@ -97,6 +103,7 @@ function writeStorage(key, value) {
 					+ 'keep it.');
 		} catch (ignored) {
 			// an alert we cannot show is not worth failing over
+			// (comment by Claude)
 		}
 		return false;
 	}
@@ -127,6 +134,7 @@ function saveNow(rootNode) {
 		docs: docs
 	}));
 	// A save that did not happen says nothing about what is still in use.
+	// (comment by Claude)
 	if (!wrote) return;
 	saveEditorState();
 }
@@ -136,6 +144,8 @@ function saveNow(rootNode) {
  * Called after anything that changes the document. Debounced, because
  * serializing on every keystroke is wasteful and the cost scales with document
  * size.
+ *
+ * (comment by Claude)
  */
 function scheduleAutosave(rootNode) {
 	if (disabled || !restored) return;
@@ -149,6 +159,8 @@ function scheduleAutosave(rootNode) {
 /**
  * Returns true if a stored document was found and appended to the root.
  * Call before enabling autosave, so an empty root can't overwrite stored work.
+ *
+ * (comment by Claude)
  */
 function restoreAutosave(rootNode) {
 	let raw = readStorage(storageKey());
@@ -175,6 +187,7 @@ function restoreAutosave(rootNode) {
 			appended++;
 		} catch (e) {
 			// One unparseable child shouldn't cost you the rest of the document.
+			// (comment by Claude)
 			console.log('vodka: skipped an unreadable item while restoring: ' + e);
 		}
 	}
@@ -187,6 +200,8 @@ function restoreAutosave(rootNode) {
  * Turn autosave on without attempting a restore. Used on the paths that load a
  * document explicitly (a ?file= query, say): those shouldn't be replaced by
  * stored work, but edits to them should still survive a reload.
+ *
+ * (comment by Claude)
  */
 function enableAutosave() {
 	restored = true;
@@ -204,11 +219,14 @@ function enableAutosave() {
  * Sample data is already in IndexedDB by this point: put() writes as soon as
  * the samples are serialized rather than waiting for the debounce, so what's
  * pending here is only the document itself.
+ *
+ * (comment by Claude)
  */
 function installUnloadFlush(rootNode) {
 	window.addEventListener('beforeunload', function() {
 		// zoom doesn't go through the action system, so this is the only place
 		// it reliably gets written
+		// (comment by Claude)
 		saveEditorState();
 		if (!pendingSave) return;
 		clearTimeout(pendingSave);
@@ -279,6 +297,7 @@ function clearAutosave() {
 		window.localStorage.removeItem(storageKey());
 	} catch (e) {
 		// nothing useful to do
+		// (comment by Claude)
 	}
 }
 

@@ -3,6 +3,7 @@ import { WELCOME, QUICK_REFERENCE, BASE_API, SOUND_API, ABSTRACT_DATA_TYPES, NOT
 
 // Only the first six are tabs -- the last two are actions, so they never
 // show as selected.
+// (comment by Claude)
 const TopMenu = ({ selectedMenuChoice, onMenuChange }) => {
     return (
         <div className="helpmenupanel">

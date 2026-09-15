@@ -32,6 +32,8 @@ loop: which channels it is on, how to end it. Deleting a clip stops it.
 Passing a clip back to play replaces what it names rather than starting
 something alongside it, which is what lets an expression be re-evaluated in
 place. A clip is not a generic handle: it names a loop and nothing else.
+
+(comment by Claude)
 */
 class Clip extends Nex {
 	constructor(kind, what, ids, ender, channels, port) {
@@ -43,6 +45,7 @@ class Clip extends Nex {
 		this.ids = ids ? ids : [];
 		// a replacement stays where the loop already is: channels for audio,
 		// a port for midi
+		// (comment by Claude)
 		this.channels = channels ? channels : [];
 		this.port = port ? port : null;
 		this.ender = ender ? ender : null;
@@ -66,6 +69,8 @@ class Clip extends Nex {
 		It costs nothing to know. A wavetable works out the largest sample it
 		holds when it caches its buffer, for the amplitude the drawing is
 		scaled to, so play only has to ask.
+
+		(comment by Claude)
 		*/
 		this.clipping = false;
 		// nothing here is yours to type over
@@ -158,6 +163,7 @@ class Clip extends Nex {
 	}
 
 	// true if there was anything left to end
+	// (comment by Claude)
 	end(atCycleEnd) {
 		if (this.ended || !this.ender) return false;
 		this.ended = true;
@@ -178,6 +184,8 @@ class Clip extends Nex {
 	one left holding it and does not schedule another pass. So a deleted clip
 	finishes what it is playing rather than being cut off, which is the same
 	rule that makes a thrown-away clip play once.
+
+	(comment by Claude)
 	*/
 	stopFunctioning() {
 		this.end(false);
@@ -253,6 +261,8 @@ class Clip extends Nex {
 		an indicator that is there all the time is one more thing to read on
 		every clip, and this one is worth noticing precisely because it is not
 		usually there.
+
+		(comment by Claude)
 		*/
 		if (this.clipping) {
 			let clipped = document.createElement('div');
@@ -285,6 +295,8 @@ class Clip extends Nex {
 	mousedown rather than click, and the event stops here: the same press would
 	otherwise go on to select the nex, which is what every other press on it
 	does.
+
+	(comment by Claude)
 	*/
 	createMuteButton() {
 		let b = document.createElement('div');
@@ -315,6 +327,8 @@ class Clip extends Nex {
 	An audio clip counts samples, because that is what it is playing. A midi
 	clip has no position of its own -- it sends messages and the sound is made
 	somewhere else -- so it shows the last note it played instead.
+
+	(comment by Claude)
 	*/
 	startPositionCounter() {
 		if (this.posFrame) return;
@@ -337,6 +351,7 @@ class Clip extends Nex {
 			// rather than spin for the rest of the session. Having no position
 			// is not that: a loop waiting for the boundary is still ours, and a
 			// midi loop has no note to show until its first one goes past.
+			// (comment by Claude)
 			if (!alive && ++quiet > 60) {
 				this.posFrame = null;
 				return;

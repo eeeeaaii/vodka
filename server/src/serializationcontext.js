@@ -24,22 +24,28 @@ the samples go in the file's own resource section, and hopeless in localStorage,
 which holds about five megabytes in total, so autosave puts them in IndexedDB
 and writes a reference. A surface will have the same problem when its drawing is
 made to persist at all.
+
+(comment by Claude)
 */
 
 // A file. Bulk data goes in the file's resource section; the document refers to
 // it by index.
+// (comment by Claude)
 const SERIALIZE_FILE = 1;
 
 // localStorage. Bulk data goes to IndexedDB, or nowhere if IndexedDB is not
 // available, and the document refers to it by content hash.
+// (comment by Claude)
 const SERIALIZE_BROWSER_STORAGE = 2;
 
 // Anything else -- printing, debugging, an error message. Bulk data is left out
 // entirely, because nothing that reads this wants a megabyte of base64.
+// (comment by Claude)
 const SERIALIZE_DISPLAY = 3;
 
 class SerializationContext {
 	// audioCollector is only meaningful for SERIALIZE_FILE
+	// (comment by Claude)
 	constructor(mode, audioCollector) {
 		this.mode = mode;
 		this.audioCollector = audioCollector ? audioCollector : null;
@@ -56,6 +62,7 @@ class SerializationContext {
 
 // Shared, because it carries nothing and every caller that doesn't say what it
 // wants means this one.
+// (comment by Claude)
 const DISPLAY_CONTEXT = new SerializationContext(SERIALIZE_DISPLAY);
 
 export {

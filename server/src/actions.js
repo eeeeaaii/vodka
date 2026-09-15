@@ -22,6 +22,7 @@ import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js
 import { manipulator } from './manipulator.js';
 import { constructWarning } from './nex/eerror.js';
 // estring and eerror each declare this, with the same value; one of them will do
+// (comment by Claude)
 import { MODE_EXPANDED } from './nex/estring.js';
 import { scheduleAutosave } from './autosave.js'
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
@@ -39,6 +40,8 @@ How far back undo has walked. Needed because the ring cannot say on its own:
 once the buffer is full, nextPosition and queueBottom are the same slot whether
 there are fifty things to undo or none, and undo walked straight past the
 bottom and undid already-undone actions a second time.
+
+(comment by Claude)
 */
 let undosDeep = 0;
 
@@ -62,6 +65,8 @@ Its saved state is on its own fields, as render nodes or as nexes, so they are
 found by looking rather than by every action having to declare them. Children
 are refcounted through their parent, so holding the top of a detached subtree
 holds all of it.
+
+(comment by Claude)
 */
 function nexesHeldBy(action) {
 	let r = [];
@@ -91,6 +96,8 @@ to be told no while undo is still holding it: see heap.addUndoReference.
 Falling off the end of the buffer is therefore the other moment something can
 become free, which is why the slot is released before it is written over. That
 covers a discarded redo tail as well, since those slots are overwritten too.
+
+(comment by Claude)
 */
 function retainActionNexes(action) {
 	let held = nexesHeldBy(action);
@@ -113,9 +120,12 @@ Putting an action in the next slot, without running it. The two callers differ
 only in whether the work has happened yet: a key or a click hands over something
 still to do, while a deferred value finishing or an editor failing hands over
 something that already happened and only needs to be undoable.
+
+(comment by Claude)
 */
 function pushActionSlot(action) {
 	// whatever was in this slot is falling out of the buffer
+	// (comment by Claude)
 	releaseActionNexes(actionStack[nextPosition]);
 	actionStack[nextPosition] = action;
 	if (nextPosition == queueTop) {
@@ -132,6 +142,8 @@ function pushActionSlot(action) {
 		describe a document that no longer exists, and redo would replay them
 		onto this one -- the comment above claimed overwriting the slot covered
 		it, but only this one slot is overwritten, not the rest of the tail.
+
+		(comment by Claude)
 		*/
 		nextPosition = advance(nextPosition);
 		for (let p = nextPosition; p != queueTop; p = advance(p)) {
@@ -152,11 +164,14 @@ function enqueueAndPerformAction(action) {
 	taken hold of by undo. See heap.beginAction: inside, letting go of the last
 	reference stops a nex without freeing it, so what undo is about to ask for
 	is still there when it asks.
+
+	(comment by Claude)
 	*/
 	heap.beginAction();
 	try {
 		action.doAction();
 		// after doAction, which is where an action captures what it is holding
+		// (comment by Claude)
 		retainActionNexes(action);
 	} finally {
 		heap.endAction();
@@ -173,6 +188,8 @@ document that no longer exists.
 
 Recorded rather than performed, because it has already happened. Redoing it
 runs doAction the ordinary way.
+
+(comment by Claude)
 */
 function recordPerformedAction(action) {
 	pushActionSlot(action);
@@ -184,6 +201,7 @@ function recordPerformedAction(action) {
 function redo() {
 	if (nextPosition != queueTop) {
 		// the same gap as in enqueueAndPerformAction: a redo deletes again
+		// (comment by Claude)
 		heap.beginAction();
 		try {
 			actionStack[nextPosition].doAction();
@@ -202,6 +220,7 @@ function undo() {
 	// nothing recorded yet, or undo has already reached the oldest thing the
 	// buffer still holds. Without this, the first ctrl-z of a session reads an
 	// empty slot and throws.
+	// (comment by Claude)
 	if (undosDeep >= numItemsInQueue) {
 		console.log('cannot undo');
 		return;
@@ -474,6 +493,8 @@ everything else, so undo has a complete account of how the document got here.
 
 Undoing puts the wrapper back, finished, holding the same answer. Which is
 honest: what the undo takes back is the collecting, not the waiting.
+
+(comment by Claude)
 */
 class UnwrapDeferredAction extends Action {
 	constructor(deferred, replacements) {
@@ -481,6 +502,7 @@ class UnwrapDeferredAction extends Action {
 		this.deferred = deferred;
 		// {parent, index, wrapperNode, answerNode, wasSelected}, in the order
 		// they were replaced
+		// (comment by Claude)
 		this.replacements = replacements;
 	}
 
@@ -490,6 +512,7 @@ class UnwrapDeferredAction extends Action {
 
 	doAction() {
 		// a redo: put the answers back where the wrappers are
+		// (comment by Claude)
 		for (let i = 0; i < this.replacements.length; i++) {
 			let r = this.replacements[i];
 			if (r.wrapperNode.getParent() != r.parent) continue;
@@ -518,6 +541,8 @@ An editor threw while a key was being handled, and what was being edited was
 replaced with the error. That happens inside whatever action the key made, but
 it is not the change that action thinks it made, and it moves the selection
 onto the error. Recorded separately so the stack still describes the document.
+
+(comment by Claude)
 */
 class EditorErrorAction extends Action {
 	constructor(parent, index, replacedNode, errorNode) {
@@ -534,6 +559,7 @@ class EditorErrorAction extends Action {
 
 	doAction() {
 		// a redo; the first time round the editor had already done it
+		// (comment by Claude)
 		if (this.replacedNode.getParent() != this.parent) return;
 		this.parent.replaceChildWith(this.replacedNode, this.errorNode);
 		this.errorNode.setSelected();
@@ -557,6 +583,8 @@ walk back to whatever you did before it.
 The click can also take something away: the pip is a nex, and moving off it
 removes it. That goes in here too, so undoing puts it back where it was rather
 than leaving a document that has quietly lost its insertion point.
+
+(comment by Claude)
 */
 class ClickSelectAction extends Action {
 	constructor(nodeToSelect) {
@@ -591,6 +619,8 @@ class ClickSelectAction extends Action {
 		Rendering the whole document on top of that is the cost of every click,
 		and it grows with the size of the document rather than with what
 		changed.
+
+		(comment by Claude)
 		*/
 		this.nodeToSelect.setSelected();
 		if (insertAfterRemove
@@ -616,6 +646,8 @@ class ClickSelectAction extends Action {
 		or a deferred value finished and replaced it. Going back to a node that
 		is not in the document would put the pip nowhere, so the selection is
 		left where it is and only the rest of the undo happens.
+
+		(comment by Claude)
 		*/
 		if (!this.previouslySelected.getParent()) {
 			return;
@@ -632,6 +664,8 @@ Cut and paste change the document, so they belong on the undo stack like any
 other change. Without that, undo after a paste reaches back to whatever action
 came before it and undoes that instead, against a document it no longer
 describes.
+
+(comment by Claude)
 */
 class CutAction extends Action {
 	constructor(actionName) {
@@ -748,6 +782,7 @@ class MultiSelectAction extends Action {
 		this.plan = plan;
 		// nexesHeldBy only sees fields on the action itself, so the parent has
 		// to be one or the undo buffer will not be holding it
+		// (comment by Claude)
 		this.enclosingParent = plan.parent ? plan.parent : null;
 	}
 
@@ -808,6 +843,8 @@ class EvaluateAndReplaceAction extends Action {
 		one is also what says this is a redo rather than a first run. Removed
 		before anything else reads an index, since it sits in the document just
 		before the node being evaluated.
+
+		(comment by Claude)
 		*/
 		if (this.undoWarning) {
 			if (this.undoWarning.getParent()) {
@@ -831,6 +868,8 @@ class EvaluateAndReplaceAction extends Action {
 
 	That invariant is the whole design. Anything new that moves the selection
 	has to go on the stack too, or this reaches for the wrong node.
+
+	(comment by Claude)
 	*/
 	undoAction() {
 		let evaluationResult = systemState.getGlobalSelectedNode();
@@ -858,6 +897,7 @@ class EvaluateInPlaceAction extends Action {
 	doAction() {
 		// the warning is the undo's, not the document's -- see
 		// EvaluateAndReplaceAction
+		// (comment by Claude)
 		if (this.undoWarning) {
 			if (this.undoWarning.getParent()) {
 				manipulator.removeNex(this.undoWarning);
@@ -895,6 +935,8 @@ selection to decide where to put an error.
 Undoing does nothing, the way undoing an audition does nothing -- the sound has
 been made and there is no taking it back. A redo does not play it again, for
 the same reason auditioning does not.
+
+(comment by Claude)
 */
 class ReplayNearestPlayAction extends Action {
 	constructor(actionName) {
@@ -915,6 +957,7 @@ class ReplayNearestPlayAction extends Action {
 		for (let node = systemState.getGlobalSelectedNode(); node; node = node.getParent()) {
 			let nex = node.getNex();
 			// getCommandName is on Command, and a deferred command is one
+			// (comment by Claude)
 			if (nex && nex.getCommandName && nex.getCommandName() == 'play') {
 				playNode = node;
 				break;
@@ -922,15 +965,18 @@ class ReplayNearestPlayAction extends Action {
 		}
 		if (!playNode) {
 			// nothing above you plays anything, so there is nothing to repeat
+			// (comment by Claude)
 			Utils.beep();
 			return;
 		}
 		// the same thing shift-enter does: run it and keep the code
+		// (comment by Claude)
 		KeyResponseFunctions['evaluate-nex-and-keep'](playNode);
 	}
 
 	undoAction() {
 		// no op
+		// (comment by Claude)
 	}
 }
 

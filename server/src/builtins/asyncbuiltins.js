@@ -49,6 +49,7 @@ import {
 
 
 // running `do every` loops, so the stop button can end them
+// (comment by Claude)
 const runningLoops = {};
 let nextLoopId = 1;
 
@@ -284,6 +285,7 @@ function createAsyncBuiltins() {
 
 			let dv = constructDeferredValue();
 			// a deferred renders and serializes through its first child
+			// (comment by Claude)
 			dv.appendChild(intervalnex);
 			dv.set(afg);
 			dv.activate();

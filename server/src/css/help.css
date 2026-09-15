@@ -43,6 +43,8 @@ was somewhere up the page, out of sight.
 Held clear of the bottom of the window, and the panel inside it scrolls on its
 own -- a hundred and twenty eight rows of note numbers should move inside the
 panel rather than making the whole page taller.
+
+(comment by Claude)
 */
 #uberhelpcontainer {
     display: flex;
@@ -55,6 +57,7 @@ panel rather than making the whole page taller.
 	max-height: calc(100vh - 40px);
 	/* the container is only a frame; what is in it takes its own clicks, and
 	   the document underneath keeps the rest */
+	/* (comment by Claude) */
 	pointer-events: none;
 }
 
@@ -98,6 +101,8 @@ panel rather than making the whole page taller.
 	is not a child of the container -- the preact root and the app's own wrapper
 	sit in between, and flex shrinking does not reach through them. The number
 	is the 20px the container is inset by, twice, plus the row of tabs above.
+
+	(comment by Claude)
 	*/
 	overflow-y: auto;
 	max-height: calc(100vh - 110px);
@@ -242,6 +247,7 @@ position: fixed;
    these elements and .helpbutton wins on background, so this has to come after
    it in the file to take effect. Selected reads as "continuous with the panel
    below it": panel-colored fill instead of the dark olive. */
+/* (comment by Claude) */
 .helpmenuitemselected {
 	background-color: var(--help-background);
 	color: var(--help-accent);
@@ -249,6 +255,7 @@ position: fixed;
 }
 
 /* Section jump-links at the top of the full API reference. */
+/* (comment by Claude) */
 .infopanel .apinav {
 	display: flex;
 	flex-direction: row;
@@ -293,6 +300,7 @@ position: fixed;
 }
 
 /* Small persistent nav, sitting to the left of the help button. */
+/* (comment by Claude) */
 /*
 A bar of its own beside the help button, in the same colours, so the two read as
 one row of controls rather than as something floating next to something else.
@@ -363,6 +371,7 @@ The gap is the only thing separating them.
 }
 
 /* new session dialog */
+/* (comment by Claude) */
 
 .dialogscrim {
 	position: fixed;
@@ -420,6 +429,8 @@ The gap is the only thing separating them.
 The note number table. Tabular numerals and a fixed column width so the digits
 line up down the page -- a reference is read by running your eye down a column,
 and ragged numbers make that impossible.
+
+(comment by Claude)
 */
 .infopanel table.noteref {
 	border-collapse: collapse;
@@ -449,11 +460,13 @@ and ragged numbers make that impossible.
 }
 
 /* every C, so an octave is easy to find without counting rows */
+/* (comment by Claude) */
 .infopanel table.noteref tbody tr:nth-child(12n + 1) td {
 	border-top: 1px solid var(--unselected-border);
 }
 
 /* middle C, called out because it is the row everybody looks for */
+/* (comment by Claude) */
 .infopanel table.noteref tr.noterefmiddle td {
 	font-weight: bold;
 }

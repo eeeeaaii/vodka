@@ -21,6 +21,8 @@ autosave.js handles. Wavetable zoom is the reason this exists: it isn't part of
 any nex, so it was lost on every reload.
 
 Stored under its own key so a change here can't corrupt the document.
+
+(comment by Claude)
 */
 
 import { systemState } from './systemstate.js'
@@ -64,6 +66,7 @@ function saveEditorState() {
 		window.localStorage.setItem(storageKey(), JSON.stringify(currentState()));
 	} catch (e) {
 		// nothing useful to do; the document save reports quota problems already
+		// (comment by Claude)
 	}
 }
 
@@ -86,6 +89,7 @@ function restoreEditorState() {
 	let w = stored.wavetable;
 	// checked rather than trusted: a zero or negative zoom divides by itself in
 	// windowWidth and takes the renderer down with it
+	// (comment by Claude)
 	if (isPositiveNumber(w.pixelsPerSample)) {
 		setGlobalPixelsPerSample(w.pixelsPerSample);
 	}

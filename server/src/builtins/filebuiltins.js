@@ -61,6 +61,7 @@ import {
 // A listing entry is audio if it's a string ending in .wav. Anything else in a
 // bank folder (info.txt, a nested directory) is not something load-audio
 // can use.
+// (comment by Claude)
 function isWavFile(nex) {
 	if (!nex || Utils.isNexContainer(nex)) {
 		return false;
@@ -116,6 +117,8 @@ function createFileBuiltins() {
 	one step of a walk from the next, so a tag ending in .wav could never be
 	reached, and once every name in the library is a wav the extension was only
 	ever four characters of noise. load-audio puts it back.
+
+	(comment by Claude)
 	*/
 	function nameAudioFile(file) {
 		let full = file.getFullTypedValue();

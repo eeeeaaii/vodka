@@ -21,6 +21,9 @@ import { constructWavetable } from '../nex/wavetable.js'
 import { constructInteger } from '../nex/integer.js'
 import { constructFloat } from '../nex/float.js'
 import { UNBOUND } from '../environment.js'
+import { constructBool } from '../nex/bool.js'
+import { constructFatalError } from '../nex/eerror.js'
+import { markWorksOnWaves } from '../documentation.js'
 
 /*
 The wave versions of the math builtins. Each one is the ordinary function
@@ -119,13 +122,43 @@ function argsFrom(lst) {
 	return r;
 }
 
+/*
+Every one of these is registered under its ordinary name -- +, sin, modulo --
+and the w-prefixed name is kept as an alias. There is no such thing as wave
+arithmetic separate from arithmetic: a wave is a thing you can add, and having
+two families of operator meant remembering which one you were holding.
+
+What a wave does to the result is decided per operation rather than by a rule.
+Giving a wave to something makes the answer a wave, and everything else follows
+the number version exactly: dividing two whole numbers still floors, comparing
+two numbers still gives you a bool rather than a 1.
+*/
+function registerAsBoth(name, waveName) {
+	Builtin.aliasBuiltin(waveName, name);
+	markWorksOnWaves(name);
+}
+
+/*
+Scalars go one way and waves the other. Without this a comparison of two
+numbers would come back as 1 or 0 rather than as a bool, and if would stop
+taking it.
+*/
+function scalarOrWave(nexes, sampleFn, scalarFn, wantsFloat) {
+	for (let i = 0; i < nexes.length; i++) {
+		if (isWave(nexes[i])) {
+			return applyOverSamples(nexes, sampleFn, wantsFloat);
+		}
+	}
+	return scalarFn(nexes);
+}
+
 function createWaveMathBuiltins() {
 
 	// f folds left across the arguments, so w- and w/ subtract and divide in
 	// the order you wrote them.
 	// identity is what you get for no arguments at all, the way + with nothing
 	// to add is 0
-	function variadic(name, f, identity, wantsFloat, docs) {
+	function variadic(name, waveName, f, identity, wantsFloat, docs) {
 		Builtin.createBuiltin(
 			name,
 			[ 'args#%_...' ],
@@ -143,49 +176,66 @@ function createWaveMathBuiltins() {
 			docs,
 			true /* is infix */
 		);
+		registerAsBoth(name, waveName);
 	}
 
-	function unary(name, f, docs) {
+	// wantsFloat because a function of one number nearly always gives a
+	// fraction -- but not always, and abs of a whole number is a whole number
+	function unary(name, waveName, f, docs, wantsFloat) {
 		Builtin.createBuiltin(
 			name,
 			[ 'wt#%_' ],
 			function(env, executionEnvironment) {
 				return applyOverSamples([ env.lb('wt') ], function(v) {
 					return f(v[0]);
-				}, true /* a function of one number nearly always gives a fraction */);
+				}, wantsFloat === undefined ? true : wantsFloat);
 			},
 			docs
 		);
+		registerAsBoth(name, waveName);
 	}
 
-	function binary(name, f, wantsFloat, docs) {
+	function binary(name, waveName, f, wantsFloat, docs, scalarFn) {
 		Builtin.createBuiltin(
 			name,
 			[ 'lhs#%_', 'rhs#%_' ],
 			function(env, executionEnvironment) {
-				return applyOverSamples([ env.lb('lhs'), env.lb('rhs') ], function(v) {
-					return f(v[0], v[1]);
-				}, wantsFloat);
+				let nexes = [ env.lb('lhs'), env.lb('rhs') ];
+				let sample = function(v) { return f(v[0], v[1]); };
+				if (!scalarFn) {
+					return applyOverSamples(nexes, sample, wantsFloat);
+				}
+				return scalarOrWave(nexes, sample, scalarFn, wantsFloat);
 			},
 			docs,
 			true /* is infix */
 		);
+		registerAsBoth(name, waveName);
 	}
 
-	// 1 where it holds and 0 where it does not, so a comparison is something
-	// you can multiply by.
-	function comparison(name, f, docs) {
-		binary(name, function(a, b) { return f(a, b) ? 1 : 0; }, false, docs);
+	/*
+	Two numbers give a bool, the way comparing numbers always has -- if takes
+	one of those and would not know what to do with a 1.
+
+	Bring a wave into it and there is no bool that could describe the answer,
+	so it is 1 where the comparison holds and 0 where it does not: a wave you
+	can multiply by, which is what makes it useful for gating.
+	*/
+	function comparison(name, waveName, f, docs) {
+		binary(name, waveName, function(a, b) { return f(a, b) ? 1 : 0; }, false, docs,
+			function(nexes) {
+				return constructBool(f(nexes[0].getTypedValue(), nexes[1].getTypedValue()));
+			});
 	}
 
-	variadic('w+', function(a, b) { return a + b; }, 0, false,
-		'Adds numbers and waves sample by sample. Shorter waves loop. With no waves at all you get a number.');
-	variadic('w*', function(a, b) { return a * b; }, 1, false,
-		'Multiplies numbers and waves sample by sample. Shorter waves loop. This is how you change volume and how you apply an envelope.');
+	variadic('+', 'w+', function(a, b) { return a + b; }, 0, false,
+		'Adds the arguments. Numbers give a number; bring a wave into it and you get a wave, added sample by sample, with shorter waves looping.');
+	variadic('*', 'w*', function(a, b) { return a * b; }, 1, false,
+		'Multiplies the arguments. Numbers give a number; bring a wave into it and you get a wave, multiplied sample by sample, with shorter waves looping. On waves this is how you change volume and how you apply an envelope.');
 
 	// one argument negates, the same as the number version
 	Builtin.createBuiltin(
-		'w-',
+		'-',
 		[ 'min#%_', 'sub#%_?' ],
 		function(env, executionEnvironment) {
 			let a = env.lb('min');
@@ -195,49 +245,71 @@ function createWaveMathBuiltins() {
 			}
 			return applyOverSamples([ a, b ], function(v) { return v[0] - v[1]; }, false);
 		},
-		'Subtracts |sub from |min sample by sample, or negates |min if |sub is left out. Shorter waves loop.',
+		'Subtracts |sub from |min, or negates |min if |sub is left out. Numbers give a number; bring a wave into it and you get a wave, subtracted sample by sample, with shorter waves looping.',
 		true /* is infix */
 	);
+	registerAsBoth('-', 'w-');
 
-	binary('w/', function(a, b) { return a / b; }, true,
-		'Divides |lhs by |rhs sample by sample. Shorter waves loop.');
+	/*
+	Two whole numbers still give a whole number, and dividing by zero is still
+	an error -- that is the number version and it does not change because the
+	same name can now take a wave. Sample by sample there is no zero to check
+	for and nothing sensible to do about one, so a wave divides the way
+	javascript divides.
+	*/
+	binary('/', 'w/', function(a, b) { return a / b; }, true,
+		'Divides |lhs by |rhs. Two whole numbers give a whole number, rounded down; a float anywhere gives a float. Bring a wave into it and you get a wave, divided sample by sample, with shorter waves looping.',
+		function(nexes) {
+			let a = nexes[0];
+			let b = nexes[1];
+			if (b.getTypedValue() == 0) {
+				return constructFatalError('divide: cannot divide by zero, Sorry!');
+			}
+			let result = a.getTypedValue() / b.getTypedValue();
+			if (Utils.isFloat(a) || Utils.isFloat(b)) {
+				return constructFloat(result);
+			}
+			return constructInteger(Math.floor(result));
+		});
 
-	comparison('w<', function(a, b) { return a < b; },
+	comparison('<', 'w<', function(a, b) { return a < b; },
 		'1 where |lhs is less than |rhs and 0 where it is not, sample by sample. Turns a ramp into a pulse.');
-	comparison('w>', function(a, b) { return a > b; },
+	comparison('>', 'w>', function(a, b) { return a > b; },
 		'1 where |lhs is greater than |rhs and 0 where it is not, sample by sample.');
-	comparison('w<=', function(a, b) { return a <= b; },
+	comparison('<=', 'w<=', function(a, b) { return a <= b; },
 		'1 where |lhs is less than or equal to |rhs and 0 where it is not, sample by sample.');
-	comparison('w>=', function(a, b) { return a >= b; },
+	comparison('>=', 'w>=', function(a, b) { return a >= b; },
 		'1 where |lhs is greater than or equal to |rhs and 0 where it is not, sample by sample.');
-	comparison('w=', function(a, b) { return a == b; },
+	comparison('=', 'w=', function(a, b) { return a == b; },
 		'1 where |lhs equals |rhs and 0 where it does not, sample by sample.');
-	comparison('w<>', function(a, b) { return a != b; },
+	comparison('<>', 'w<>', function(a, b) { return a != b; },
 		'1 where |lhs differs from |rhs and 0 where it does not, sample by sample.');
 
-	unary('wsin', Math.sin, 'The sine of every sample, in radians.');
-	unary('wcos', Math.cos, 'The cosine of every sample, in radians.');
-	unary('wtan', Math.tan, 'The tangent of every sample, in radians.');
-	unary('wasin', Math.asin, 'The arcsine of every sample, in radians.');
-	unary('wacos', Math.acos, 'The arccosine of every sample, in radians.');
-	unary('watan', Math.atan, 'The arctangent of every sample, in radians.');
-	unary('wexp', Math.exp, 'e raised to the power of every sample.');
-	unary('wlog-e', Math.log, 'The natural logarithm of every sample.');
-	unary('wlog-10', Math.log10, 'The base 10 logarithm of every sample.');
-	unary('wlog-2', Math.log2, 'The base 2 logarithm of every sample.');
-	unary('wsquare-root', Math.sqrt, 'The square root of every sample.');
-	unary('wfloor', Math.floor, 'Every sample rounded down.');
-	unary('wceiling', Math.ceil, 'Every sample rounded up.');
-	unary('wround', Math.round, 'Every sample rounded to the nearest whole number.');
-	unary('wabs', Math.abs, 'The absolute value of every sample, so anything below zero is flipped above it.');
+	unary('sin', 'wsin', Math.sin, 'The sine of every sample, in radians.');
+	unary('cos', 'wcos', Math.cos, 'The cosine of every sample, in radians.');
+	unary('tan', 'wtan', Math.tan, 'The tangent of every sample, in radians.');
+	unary('asin', 'wasin', Math.asin, 'The arcsine of every sample, in radians.');
+	unary('acos', 'wacos', Math.acos, 'The arccosine of every sample, in radians.');
+	unary('atan', 'watan', Math.atan, 'The arctangent of every sample, in radians.');
+	unary('exp', 'wexp', Math.exp, 'e raised to the power of every sample.');
+	unary('log-e', 'wlog-e', Math.log, 'The natural logarithm of every sample.');
+	unary('log-10', 'wlog-10', Math.log10, 'The base 10 logarithm of every sample.');
+	unary('log-2', 'wlog-2', Math.log2, 'The base 2 logarithm of every sample.');
+	unary('square-root', 'wsquare-root', Math.sqrt, 'The square root of every sample.');
+	unary('floor', 'wfloor', Math.floor, 'Every sample rounded down.');
+	unary('ceiling', 'wceiling', Math.ceil, 'Every sample rounded up.');
+	unary('round', 'wround', Math.round, 'Every sample rounded to the nearest whole number.');
+	unary('abs', 'wabs', Math.abs,
+		'The absolute value of |wt, so anything below zero is flipped above it. A whole number gives a whole number; a wave gives a wave.',
+		false /* whole number in, whole number out, the way the number version has always behaved */);
 
-	binary('watan2', Math.atan2, true,
+	binary('atan2', 'watan2', Math.atan2, true,
 		'The arctangent of |lhs over |rhs, sample by sample, in radians.');
-	binary('wpower', Math.pow, true,
+	binary('power', 'wpower', Math.pow, true,
 		'|lhs raised to the power of |rhs, sample by sample.');
-	binary('wnth-root', function(a, b) { return Math.pow(a, 1 / b); }, true,
+	binary('nth-root', 'wnth-root', function(a, b) { return Math.pow(a, 1 / b); }, true,
 		'The |rhs-th root of |lhs, sample by sample.');
-	binary('wmodulo', function(a, b) { return a % b; }, false,
+	binary('modulo', 'wmodulo', function(a, b) { return a % b; }, false,
 		'The remainder of |lhs divided by |rhs, sample by sample.');
 
 	/*

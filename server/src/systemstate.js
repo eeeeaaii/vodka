@@ -59,6 +59,8 @@ class SystemState {
 	time, which is what stops a document that mentions one outside a load -- pasted
 	from somewhere, or read by something that predates containers -- from picking
 	up whatever happens to be loaded.
+
+	(comment by Claude)
 	*/
 	setAudioSampleResolver(fn) {
 		this.audioSampleResolver = fn;

@@ -30,12 +30,35 @@ let docorder = [];
 // stored on the doc item, because aliasBuiltin() runs after the builtin it
 // aliases has already been documented, and not necessarily in the same
 // category block.
+// (comment by Claude)
 let aliases = {};
 
+/*
+Declaring the same category twice appends to it rather than starting it over.
+Math is documented from two files -- the plain operations and the ones that also
+work on waves -- and they belong under one heading, not two.
+*/
 function setAPIDocCategory(str) {
 	apiDocCategory = str;
-	docs[apiDocCategory] = [];
-	docorder.push(str);
+	if (!docs[apiDocCategory]) {
+		docs[apiDocCategory] = [];
+		docorder.push(str);
+	}
+}
+
+/*
+Builtins that take a wave wherever they take a number. Kept as a set of names
+rather than a flag on the doc item, because what marks them is the helper that
+registers them, which runs after documentBuiltin has already been called.
+
+The sound reference uses it to show exactly the arithmetic you can point at a
+wave, without repeating the entries or moving them out of the base reference,
+where + and sin also belong.
+*/
+let worksOnWaves = {};
+
+function markWorksOnWaves(name) {
+	worksOnWaves[name] = true;
 }
 
 function documentBuiltin(name, params, info) {
@@ -81,6 +104,7 @@ function parseInfoString(info) {
 
 // Returns the whole API reference as data, in the order the categories were
 // declared: [ { category, items: [ { name, params, aliases, infoPieces } ] } ]
+// (comment by Claude)
 function getDocs() {
 	return docorder.map(function(category) {
 		return {
@@ -90,6 +114,7 @@ function getDocs() {
 					name: item.name,
 					params: item.params,
 					aliases: aliases[item.name] ? aliases[item.name].slice() : [],
+					worksOnWaves: !!worksOnWaves[item.name],
 					infoPieces: parseInfoString(item.info)
 				};
 			})
@@ -97,4 +122,4 @@ function getDocs() {
 	});
 }
 
-export { setAPIDocCategory, documentBuiltin, documentAlias, getDocs }
+export { setAPIDocCategory, documentBuiltin, documentAlias, markWorksOnWaves, getDocs }
