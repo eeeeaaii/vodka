@@ -82,6 +82,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
   --wave-playhead: #0ec43f;
   --clip-glyph: #736b0d;
   --clip-position: #8a8a8a;
+  --contract-glyph: #736b0d;
+  --closure-glyph: #736b0d;
   --wave-canvas-background: #ffffff;
   --wave-endcap-1: #ffffff;
   --wave-endcap-2: #dddddd;
@@ -166,6 +168,8 @@ waveform is teal so signal is never confused with structure.
   --wave-playhead: #4ade80;
   --clip-glyph: #7fbdb8;
   --clip-position: #9aa0a6;
+  --contract-glyph: #7fbdb8;
+  --closure-glyph: #7fbdb8;
   --wave-canvas-background: #0a0a0a;
   --wave-endcap-1: #0a0a0a;
   --wave-endcap-2: #141414;

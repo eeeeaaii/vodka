@@ -115,10 +115,10 @@ class Contract extends NexContainer {
 		domNode.classList.add('contract');
 
 		let frame = document.createElement('div');
-		frame.classList.add('contractframe');
+		frame.classList.add('sysframe');
 
 		let glyph = document.createElement('div');
-		glyph.classList.add('cglyph');
+		glyph.classList.add('sysglyph');
 		if (this.numChildren() > 0) {
 			glyph.innerHTML = '&#8225;'; // double dagger
 		} else {
@@ -126,7 +126,7 @@ class Contract extends NexContainer {
 		}
 
 		let innerspans = document.createElement('div');
-		innerspans.classList.add('cinnerspans')
+		innerspans.classList.add('sysinnerspans')
 
 		let innerspan = document.createElement("div");
 		innerspan.classList.add('innerspan');

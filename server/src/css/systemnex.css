@@ -15,26 +15,27 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+/*
+Contracts, clips and closures are all things the system hands you rather than
+things you type, and they are drawn the same way so you can tell at a glance
+which is which: a glyph naming the kind, and beside it the lines that say what
+this particular one is.
+*/
 
+.sysframe {
+	display: flex;
+	flex-direction: row;
+	padding-bottom: 6px;
+}
 
+.sysglyph {
+	font-size: 20px;
+	font-family: Courier;
+	margin-left: 6px;
+	padding-right: 8px;
+}
 
-.closure.exploded {
+.sysinnerspans {
+	display: flex;
 	flex-direction: column;
-	align-items: flex-start;
-	max-width: 400px;
-	padding-left: 4px;
-}
-
-.closure .sysglyph {
-	font-weight: bold;
-	color: var(--closure-glyph);
-}
-
-.closureline1 {
-	font-weight: bold;
-}
-
-.closureline4,
-.closureline5 {
-	font-size: .9em;
 }

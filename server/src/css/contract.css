@@ -20,13 +20,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	display: none;
 }
 
-.cglyph {
-	font-size: 20px;
-	font-family: Courier;
-	padding-right: 10px;
-
-}
-
 .contract.exploded {
 	border-radius: 6px;	
 	font-style: italic;
@@ -40,6 +33,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	background-color: var(--value-background);
 	border: 1px solid var(--unselected-border);
 	padding-right: 6px;
+	padding-left: 4px;
 	padding-bottom: 6px;
 	padding-top: 6px;
 }
@@ -53,19 +47,10 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	margin-left: 27px;
 }
 
-.contractframe {
-	display: flex;
-	flex-direction: row;
-	padding-bottom: 6px;
-}
-
-.cinnerspans {
-	flex-direction: column;
-	display: flex;
-
-}
-
-
 .contract.exploded.newselected {
 	border: 3px solid var(--selected-border);
+}
+
+.contract .sysglyph {
+	color: var(--contract-glyph);
 }

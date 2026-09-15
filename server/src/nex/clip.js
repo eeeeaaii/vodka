@@ -141,14 +141,14 @@ class Clip extends Nex {
 		domNode.classList.add('clip');
 
 		let frame = document.createElement('div');
-		frame.classList.add('clipframe');
+		frame.classList.add('sysframe');
 
 		let glyph = document.createElement('div');
-		glyph.classList.add('cglyph');
+		glyph.classList.add('sysglyph');
 		glyph.innerHTML = '&#8734;'; // it goes round until you stop it
 
 		let innerspans = document.createElement('div');
-		innerspans.classList.add('cinnerspans');
+		innerspans.classList.add('sysinnerspans');
 
 		let line1 = document.createElement('div');
 		line1.classList.add('innerspan');
