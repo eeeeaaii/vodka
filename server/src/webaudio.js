@@ -189,8 +189,6 @@ function startRecordingAudio(wt, channel, unlimited) {
 		return;
 	}
 	navigator.mediaDevices.getUserMedia({
-		// Echo cancellation merges a stereo input to mono and duplicates it, so it
-		// must be off for channelCount: 2 to give two real channels.
 		audio: {
 			echoCancellation: false,
 			noiseSuppression: false,
