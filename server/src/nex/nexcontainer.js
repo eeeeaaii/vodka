@@ -62,13 +62,20 @@ class NexContainer extends Nex {
 	}
 
 	getChildTagged(tag) {
-		for (let i = 0; i < this.numChildren(); i++) {
-			let c = this.getChildAt(i);
-			if (c.hasTag(tag)) {
-				return c;
+		for (let p = this.firstChildNex; p != null; p = p.next) {
+			if (p.n.hasTag(tag)) {
+				return p.n;
 			}
 		}
 		return null;
+	}
+
+	getChildArray() {
+		let r = [];
+		this.doForEachChild(function(c) {
+			r.push(c);
+		});
+		return r;
 	}
 
 	getChildrenForStepEval() {

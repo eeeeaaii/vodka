@@ -32,6 +32,10 @@ class Separator extends Letter {
 		return r;
 	}
 
+	rendersInsertionClasses() {
+		return true;
+	}
+
 	getTypeName() {
 		return '-separator-';
 	}

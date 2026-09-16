@@ -69,6 +69,10 @@ let experiments = {
 	// stop being lenient
 	'V2_INSERTION_LENIENT_DOC_FORMAT': false,
 
+	// a dirty nex redraws itself and puts its children back, rather than
+	// rebuilding every one of them
+	'SHALLOW_DIRTY_RENDER': true,
+
 	// runtime in webasm
 	'ASM_RUNTIME': false,
 	// See note above about changing testharness.js when adding new flags.

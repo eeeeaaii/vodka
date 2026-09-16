@@ -39,6 +39,10 @@ class Letter extends Nex {
 		}
 	}
 
+	rendersInsertionClasses() {
+		return true;
+	}
+
 	getTypeName() {
 		return '-letter-';
 	}
