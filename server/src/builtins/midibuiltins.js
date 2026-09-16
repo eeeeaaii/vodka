@@ -461,7 +461,7 @@ function createMidiBuiltins() {
 			}
 			return n;
 		},
-		'Sends a midi note to the port |port, or to the one set by set-default-port if you do not name one. |note is an org holding an integer tagged note, note-on or note-off. A note tagged |note may also carry a float tagged duration, which takes a timebase tag like any other length. Duration defaults to one beat, velocity to 127 and channel to 1.'
+		'Sends |note to |port, or to the default port. |note is an org with an integer tagged note, note-on or note-off, and may carry a duration. Defaults: one beat, velocity 127, channel 1.'
 	);
 
 	Builtin.aliasBuiltin('send-midi-note on', 'send-midi-note');
