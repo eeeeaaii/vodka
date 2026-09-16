@@ -1,1 +1,1 @@
-v2:@setup-midi
+v2:;(|@setup-midi *"begin"(|*"let"(_@ports ?{2||listing midi ports}_) ~(_bind @maudio ~(_car ~(|filter @ports &"port"(|~(_jslog @port_) ~(|and ~(_equal $"M-Audio" @port.manufacturer_) ~(_equal $"output" @port.type_)|)|)|)_)_)|) (_$<`id`>"5293F8CAC098B93C78B45746BECBD0C203168A64ED4D9D5A69C02FDF4D4F7EEF" $<`manufacturer`>"M-Audio" $<`type`>"output" $<`name`>"M-Track MIDI 1" $<`version`>"ALSA library version 1.2.4" $<`state`>"connected" $<`connection`>"closed"_) ?{2||opening midi port} ;(|#;<`note`>45 #;<`duration`>1|) [nil]|)

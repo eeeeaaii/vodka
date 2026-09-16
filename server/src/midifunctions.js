@@ -272,6 +272,16 @@ function makeMidiCycleMember(portId, events, lengthSeconds) {
 			// cycle before this one can still be sounding. Two cycles' worth is
 			// therefore everything that might need a note off, and keeping only
 			// that stops the list growing for as long as the loop runs.
+			/*
+			A sequence with no length would step the loop below by nothing at all
+			and never reach the end of the cycle. An empty clip has exactly that
+			length, and it only has to share the cycle with one real loop for the
+			cycle length to be greater than zero, so this is a hang rather than a
+			theoretical one.
+			*/
+			if (!(lengthSeconds > 0)) {
+				return;
+			}
 			let previous = member.thisCycle;
 			member.thisCycle = [];
 			// the sequence repeats within the cycle if the cycle is longer
