@@ -52,7 +52,18 @@ class DeferredValue extends NexContainer {
 			return;
 		}
 		this.listeners.push(obj);
-		if (this._finished) {
+		/*
+		A listener that arrives after the value has already finished still has
+		to be told, or it waits for a notification that has already been sent.
+		This is not a rare case: a deferred command whose body returns without
+		waiting finishes inside its own evaluate, so whatever is evaluating it
+		as an argument only gets to listen afterwards.
+
+		(This tested this._finished, which is a field on DeferredCommand and
+		not on this class, so it was always undefined and the renotify never
+		happened.)
+		*/
+		if (this.isFinished()) {
 			eventQueueDispatcher.enqueueRenotifyDeferredListeners(this);
 		}
 	}
