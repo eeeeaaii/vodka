@@ -43,6 +43,7 @@ import {
   getBpm,
   nexToTimebase,
   timebaseFromTags,
+  timebaseForTagString,
   convertSamplesToTimebase,
   getReferenceFrequency,
   setDefaultTimebase,
@@ -461,10 +462,15 @@ function createWavetableBuiltins() {
 
   Builtin.createBuiltin(
     "singlepole",
-    ["wt1_", "wt2#%_"],
+    ["wt1_", "wt2#%_", "type$?"],
     function $singlepole(env, executionEnvironment) {
       let wt1 = env.lb("wt1");
       let wt2 = env.lb("wt2");
+      let kind = filterKind(env.lb("type"), ["low", "high"]);
+      if (!kind) {
+        return constructFatalError(
+            "singlepole: type must be low or high. Sorry!");
+      }
 
       if (!(wt2.getTypeName() == "-wavetable-")) {
         wt2 = getConstantSignalFromValue(
@@ -489,12 +495,161 @@ function createWavetableBuiltins() {
         let tau = 1 / cutoff;
         let alpha = timeconstant / tau;
         yk += alpha * (wt1val - yk);
-        data[i] = yk;
+        // one pole highpass is just whatever the lowpass did not keep
+        data[i] = kind == "high" ? wt1val - yk : yk;
       }
       r.init();
       return r;
     },
-    "Runs |wt1 through a single pole filter with a cutoff determined by |wt2. If an integer or float is passed in for wt2, it is converted to a constant signal. A value of 1 corresponds to a filter cutoff frequency of 20kHz."
+    "Runs |wt1 through a single pole filter with a cutoff determined by |wt2. If an integer or float is passed in for wt2, it is converted to a constant signal. A value of 1 corresponds to a filter cutoff frequency of 20kHz. |type is low or high, and defaults to low. One pole cannot resonate -- use doublepole for that."
+  );
+
+  /*
+  A cutoff can be a wave so that it can be swept, and a wave has nowhere to put
+  a timebase tag, so it keeps the scale singlepole has always used: 1 means
+  20kHz. A plain number means the same thing. A number that carries a timebase
+  tag means what it says, so %2000 hz is two thousand hertz.
+  */
+  const CUTOFF_AT_ONE = 20000;
+
+  function explicitTimebase(nex) {
+    for (let i = 0; i < nex.numTags(); i++) {
+      let t = timebaseForTagString(nex.getTag(i).getTagString());
+      if (t) return t;
+    }
+    return null;
+  }
+
+  function frequencyAt(nex) {
+    if (nex.getTypeName() == "-wavetable-") {
+      return function (i) {
+        return nex.valueAtSample(i) * CUTOFF_AT_ONE;
+      };
+    }
+    let hz;
+    if (explicitTimebase(nex)) {
+      let samples = convertTimeToSamples(nex);
+      hz = samples > 0 ? getSampleRate() / samples : 0;
+    } else {
+      hz = nex.getTypedValue() * CUTOFF_AT_ONE;
+    }
+    return function (i) {
+      return hz;
+    };
+  }
+
+  function amountAt(nex, dflt) {
+    if (nex == UNBOUND) {
+      return function (i) {
+        return dflt;
+      };
+    }
+    if (nex.getTypeName() == "-wavetable-") {
+      return function (i) {
+        return nex.valueAtSample(i);
+      };
+    }
+    let v = nex.getTypedValue();
+    return function (i) {
+      return v;
+    };
+  }
+
+  function filterKind(nex, allowed) {
+    if (nex == UNBOUND) return allowed[0];
+    let s = nex.getFullTypedValue().trim().toLowerCase();
+    if (s.endsWith("pass")) s = s.substring(0, s.length - 4);
+    return allowed.indexOf(s) == -1 ? null : s;
+  }
+
+  /*
+  Resonance runs 0 to 1 rather than being a Q, because 0 to 1 is what a knob
+  does. It has to live inside the filter's own loop -- feeding a filter back
+  into itself from outside cannot get you here.
+  */
+  function resonanceToQ(r) {
+    if (r < 0) r = 0;
+    if (r > 1) r = 1;
+    return 0.707 / (1 - 0.98 * r);
+  }
+
+  // the usual cookbook biquad, written into a reused array so a swept cutoff
+  // does not allocate once per sample
+  function biquadInto(c, kind, hz, q, sampleRate) {
+    let nyquist = sampleRate / 2;
+    if (hz < 1) hz = 1;
+    if (hz > nyquist * 0.99) hz = nyquist * 0.99;
+    if (q < 0.01) q = 0.01;
+    let w0 = (2 * Math.PI * hz) / sampleRate;
+    let cosw = Math.cos(w0);
+    let sinw = Math.sin(w0);
+    let alpha = sinw / (2 * q);
+    let a0, a1, a2, b0, b1, b2;
+    a0 = 1 + alpha;
+    a1 = -2 * cosw;
+    a2 = 1 - alpha;
+    switch (kind) {
+      case "low":
+        b0 = (1 - cosw) / 2;
+        b1 = 1 - cosw;
+        b2 = (1 - cosw) / 2;
+        break;
+      case "high":
+        b0 = (1 + cosw) / 2;
+        b1 = -(1 + cosw);
+        b2 = (1 + cosw) / 2;
+        break;
+      case "band":
+        b0 = alpha;
+        b1 = 0;
+        b2 = -alpha;
+        break;
+      case "notch":
+        b0 = 1;
+        b1 = -2 * cosw;
+        b2 = 1;
+        break;
+    }
+    c[0] = b0 / a0;
+    c[1] = b1 / a0;
+    c[2] = b2 / a0;
+    c[3] = a1 / a0;
+    c[4] = a2 / a0;
+  }
+
+  Builtin.createBuiltin(
+    "doublepole",
+    ["wt_", "cutoff#%_", "type$?", "resonance#%_?"],
+    function $doublepole(env, executionEnvironment) {
+      let wt = env.lb("wt");
+      let kind = filterKind(env.lb("type"), ["low", "high", "band", "notch"]);
+      if (!kind) {
+        return constructFatalError(
+            "doublepole: type must be low, high, band or notch. Sorry!");
+      }
+      let cutoff = frequencyAt(env.lb("cutoff"));
+      let resonance = amountAt(env.lb("resonance"), 0);
+
+      let dur = wt.getDuration();
+      let r = constructWavetable(dur);
+      let data = r.getData();
+      let sampleRate = getSampleRate();
+      let c = [0, 0, 0, 0, 0];
+      let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+      for (let i = 0; i < dur; i++) {
+        biquadInto(c, kind, cutoff(i), resonanceToQ(resonance(i)), sampleRate);
+        let x = wt.valueAtSample(i);
+        let y = c[0] * x + c[1] * x1 + c[2] * x2 - c[3] * y1 - c[4] * y2;
+        x2 = x1;
+        x1 = x;
+        y2 = y1;
+        y1 = y;
+        data[i] = y;
+      }
+      r.init();
+      return r;
+    },
+    "Runs wt| through a two pole filter. |type is low, high, band or notch, and defaults to low. |cutoff is a fraction of 20kHz, so 0.05 is 1kHz, or a number tagged with a timebase (hz, nn) to name a real frequency. |resonance runs 0 to 1 and is what makes a sweep sound like a filter rather than a tone control -- it lives inside the filter's loop, which is why you cannot get it by feeding a filter back into itself. Both |cutoff and |resonance can be waves, so both can move while the sound plays."
   );
 
   Builtin.createBuiltin(
