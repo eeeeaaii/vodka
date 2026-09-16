@@ -93,7 +93,7 @@ function createMidiBuiltins() {
 			dv.activate();
 			return dv;
 		},
-		'Lists every midi port, in both directions. The |type of each says whether it is an input or an output.'
+		'Returns a list of available midi port objects. One of these needs to be passed into any midi builtin that requires a port.'
 	);
 
 
@@ -167,7 +167,7 @@ function createMidiBuiltins() {
 			dv.activate();
 			return dv;
 		},
-		'Reconnects the midi port |port and returns it with its state as it is now. A port remembered from a previous session is only its name and id until this is called; list-midi-ports does the same thing for every port at once.'
+		'Opens midi port |port, where |port is an org returned by list-midi-ports. Web audio has no notion of devices, so a device will list its inputs as a port and its outputs as a different port.'
 	);
 
 	Builtin.createBuiltin(
@@ -395,7 +395,7 @@ function createMidiBuiltins() {
 			sendMidiData(port.id, bytes);
 			return data;
 		},
-		'Sends |data, an org of integers, to the midi port |port exactly as given, or to the one set by set-default-port if you do not name one. For anything the note builtin does not cover -- control changes, program changes, clock, sysex.'
+		'Sends |data as bytes, where each integer is a single byte, to the midi port |port, which should be the org returned by list-midi-ports.'
 	);
 
 	Builtin.aliasBuiltin('send-midi-data on', 'send-midi-data');
