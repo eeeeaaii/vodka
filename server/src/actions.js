@@ -529,6 +529,9 @@ class MultiSelectAction extends Action {
 	constructor(plan) {
 		super('multi-select');
 		this.plan = plan;
+		// nexesHeldBy only sees fields on the action itself, so the parent has
+		// to be one or the undo buffer will not be holding it
+		this.enclosingParent = plan.parent ? plan.parent : null;
 	}
 
 	canUndo() {

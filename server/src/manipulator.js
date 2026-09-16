@@ -1478,6 +1478,25 @@ class Manipulator {
 			}
 		}
 		if (!common) return null;
+
+		/*
+		Two children of the same parent have that parent in common, but taking
+		it would select everything under it. What is wanted is the two of them
+		and whatever lies between, so they get enclosed instead.
+		*/
+		let sharedParent = a.getParent();
+		if (sharedParent && sharedParent == b.getParent()) {
+			let ai = sharedParent.getIndexOfChild(a);
+			let bi = sharedParent.getIndexOfChild(b);
+			if (ai < 0 || bi < 0) return null;
+			return {
+				kind: 'enclose',
+				parent: sharedParent,
+				from: Math.min(ai, bi),
+				to: Math.max(ai, bi)
+			};
+		}
+
 		if (common != root) {
 			return { kind: 'select', node: common };
 		}
@@ -1487,8 +1506,10 @@ class Manipulator {
 		if (!r1 || !r2 || r1 == r2) return null;
 		let i1 = root.getIndexOfChild(r1);
 		let i2 = root.getIndexOfChild(r2);
+		if (i1 < 0 || i2 < 0) return null;
 		return {
 			kind: 'enclose',
+			parent: root,
 			from: Math.min(i1, i2),
 			to: Math.max(i1, i2)
 		};
@@ -1500,10 +1521,10 @@ class Manipulator {
 			plan.node.setSelected();
 			return null;
 		}
-		let root = systemState.getRoot();
-		let taken = this._takeChildren(root, plan.from, plan.to);
+		let parent = plan.parent;
+		let taken = this._takeChildren(parent, plan.from, plan.to);
 		let org = new RenderNode(constructOrg());
-		root.insertChildAt(org, plan.from);
+		parent.insertChildAt(org, plan.from);
 		this._putChildren(org, taken, 0);
 		org.setSelected();
 		return org;
@@ -1511,7 +1532,7 @@ class Manipulator {
 
 	unapplyMultiSelect(plan, org) {
 		if (plan.kind == 'select' || !org) return;
-		let root = systemState.getRoot();
+		let root = plan.parent;
 		let at = root.getIndexOfChild(org);
 		/*
 		getIndexOfChild answers -100 when the child is not there, not -1, so

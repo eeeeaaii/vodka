@@ -74,10 +74,12 @@ body.hidewavecontrols .wavecontrols {
 	display: none;
 }
 
-/* with the controls gone there is nothing marking where a wave starts and
-   stops, and where it stops is the thing being looked at */
-body.hidewavecontrols .waveviewport {
-	border: 1px solid var(--unselected-border);
+/* 3px of border and 2px of padding is 10px of box that is not wave, which is
+   what you are trying to see past */
+body.hidewavecontrols .wavetable.exploded,
+body.hidewavecontrols .wavetable.newselected {
+	border-width: 1px;
+	padding: 0;
 }
 
 .wavecontrol {
