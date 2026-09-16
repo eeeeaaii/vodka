@@ -52,15 +52,8 @@ class Clip extends Nex {
 		this.ended = false;
 		this.posFrame = null;
 		this.posSpan = null;
-		/*
-		Two reasons a clip can be silent, kept apart because they are not each
-		other's business. The button is something you asked for; the collapse
-		one is bookkeeping that follows whether the nex is hidden. Uncollapsing
-		must not unmute something you muted on purpose, and pressing the button
-		twice inside a collapsed nex must not make it audible.
-		*/
+		// silence you asked for, with the button -- the only thing that mutes a clip
 		this.mutedByUser = false;
-		this.mutedByCollapse = false;
 		/*
 		Whether anything this clip plays goes past full scale. Coarse on
 		purpose: one flag for the whole clip, not where or how often, because
@@ -82,7 +75,7 @@ class Clip extends Nex {
 	}
 
 	isMuted() {
-		return this.mutedByUser || this.mutedByCollapse;
+		return this.mutedByUser;
 	}
 
 	isMutedByUser() {
@@ -96,13 +89,6 @@ class Clip extends Nex {
 		this.applyMute(true /* immediately */);
 	}
 
-	// being covered up means at the end of the pass -- what is sounding gets to
-	// finish, and the next time round does not start
-	setMutedByCollapse(v) {
-		if (this.mutedByCollapse == !!v) return;
-		this.mutedByCollapse = !!v;
-		this.applyMute(false /* at the cycle end */);
-	}
 
 	toggleMutedByUser() {
 		this.setMutedByUser(!this.mutedByUser);

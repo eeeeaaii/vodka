@@ -62,41 +62,6 @@ const INSERT_AROUND = 4;
 
 const MAX_SIBLING_COUNT = 1000;
 
-/*
-A collapsed nex is hidden, and something you cannot see should not still be
-making noise. So every clip inside one goes quiet for as long as it is covered,
-and comes back when it is uncovered.
-
-Worked out from the tree each time rather than tracked as it changes: collapses
-nest, and a clip inside two of them has to stay quiet until both are open,
-which is a counting problem if you record it as it happens and no problem at
-all if you just look. The tree is small and collapsing is something a person
-does by hand.
-
-Only the collapse half of muting is touched here. A clip you muted with its own
-button stays muted when it is uncovered, which is the point of their being two
-things.
-
-Duck typed rather than importing Clip, which would be a cycle.
-*/
-function updateCollapseMutes() {
-	let root = systemState.getRoot();
-	if (!root) {
-		return;
-	}
-	let walk = function(node, hidden) {
-		let hiddenHere = hidden || node.getCollapsed();
-		let nex = node.getNex();
-		if (nex.setMutedByCollapse) {
-			nex.setMutedByCollapse(hiddenHere);
-		}
-		for (let i = 0; i < node.childnodes.length; i++) {
-			walk(node.childnodes[i], hiddenHere);
-		}
-	};
-	walk(root, false);
-}
-
 // there is one selection, so there is at most one insertion pip. Tracking
 // it lets selection changes move it without re-rendering anything.
 // (comment by Claude)
@@ -462,7 +427,6 @@ class RenderNode {
 	toggleCollapsed(v) {
 		this.isCollapsed = !this.isCollapsed;
 		this.setRenderNodeDirtyForRendering(true);
-		updateCollapseMutes();
 	}
 
 	getCollapsed() {
