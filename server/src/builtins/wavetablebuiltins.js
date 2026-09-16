@@ -1127,22 +1127,19 @@ function createWavetableBuiltins() {
     return best;
   }
 
-  function timeStretched(wt, factor) {
+  // writes into whatever array it is handed, so pitch-shift can stretch into
+  // scratch space rather than making a wavetable it is only going to throw away
+  function stretchInto(wt, factor, data, outDur) {
     let dur = wt.getDuration();
-    let outDur = Math.round(dur * factor);
-    if (outDur < 1) outDur = 1;
 
     let frame = Math.min(STRETCH_FRAME, dur);
     let hopOut = Math.floor(frame / 2);
     if (hopOut < 1) {
       // too short to cut into pieces at all
-      let r = constructWavetable(outDur);
-      let data = r.getData();
       for (let i = 0; i < outDur; i++) {
         data[i] = wt.valueAtSample(Math.floor(i / factor));
       }
-      r.init();
-      return r;
+      return;
     }
     let hopIn = hopOut / factor;
     let search = Math.floor(hopOut / 2);
@@ -1152,8 +1149,6 @@ function createWavetableBuiltins() {
     let src = wt.getData();
 
     let window = hannWindow(frame);
-    let r = constructWavetable(outDur);
-    let data = r.getData();
     // hann at half a frame sums to one, but not at the two ends, so the window
     // is added up as well and divided out
     let weight = new Float64Array(outDur);
@@ -1193,8 +1188,11 @@ function createWavetableBuiltins() {
     for (let i = 0; i < outDur; i++) {
       data[i] /= weight[i] > 0.5 ? weight[i] : 0.5;
     }
-    r.init();
-    return r;
+  }
+
+  function stretchedLength(dur, factor) {
+    let outDur = Math.round(dur * factor);
+    return outDur < 1 ? 1 : outDur;
   }
 
   Builtin.createBuiltin(
@@ -1219,12 +1217,63 @@ function createWavetableBuiltins() {
       if (!(factor > 0)) {
         return constructFatalError("time-stretch: length must be more than zero. Sorry!");
       }
-      if (Math.round(dur * factor) > STRETCH_MAX_OUTPUT) {
+      let outDur = stretchedLength(dur, factor);
+      if (outDur > STRETCH_MAX_OUTPUT) {
         return constructFatalError("time-stretch: that would be too long to hold. Sorry!");
       }
-      return timeStretched(wt, factor);
+      let r = constructWavetable(outDur);
+      stretchInto(wt, factor, r.getData(), outDur);
+      r.init();
+      return r;
     },
     "Makes wt| |amount times longer without changing its pitch, which is not what resample-by does -- that changes both together. Tag |amount with a timebase (nn, secs, hz, b, samps) and it is the length you want rather than a multiple of the one you have. Works by laying overlapping pieces of the sound back down at a different spacing, choosing each piece from the place it fits best, so a long stretch of anything rhythmic will eventually sound like it is smearing rather than slowing."
+  );
+
+  Builtin.createBuiltin(
+    "pitch-shift",
+    ["wt_", "semitones#%"],
+    function $pitchShift(env, executionEnvironment) {
+      let wt = env.lb("wt");
+      let semitones = env.lb("semitones").getTypedValue();
+      let dur = wt.getDuration();
+      if (dur < 2) {
+        return constructFatalError("pitch-shift: nothing to shift. Sorry!");
+      }
+      if (semitones < -48 || semitones > 48) {
+        return constructFatalError("pitch-shift: that is more than four octaves. Sorry!");
+      }
+
+      /*
+      Stretch it, then play the stretched copy back that many times as fast.
+      The speed change moves the pitch and undoes the stretch at the same time,
+      so what is left is the original length at a different pitch. Which is why
+      this is a function rather than anything new: it is time-stretch and
+      resample-by, one after the other.
+      */
+      let ratio = Math.pow(2, semitones / 12);
+      let longDur = stretchedLength(dur, ratio);
+      if (longDur > STRETCH_MAX_OUTPUT) {
+        return constructFatalError("pitch-shift: that would be too long to hold. Sorry!");
+      }
+      let stretched = new Float64Array(longDur);
+      stretchInto(wt, ratio, stretched, longDur);
+
+      let r = constructWavetable(dur);
+      let data = r.getData();
+      let last = longDur - 1;
+      for (let i = 0; i < dur; i++) {
+        let at = i * ratio;
+        if (at > last) at = last;
+        let i0 = Math.floor(at);
+        let frac = at - i0;
+        let a = stretched[i0];
+        let b = i0 + 1 <= last ? stretched[i0 + 1] : a;
+        data[i] = a + (b - a) * frac;
+      }
+      r.init();
+      return r;
+    },
+    "Moves wt| up or down by |semitones without changing how long it is. Negative goes down, and it does not have to be a whole number -- 0.5 is a quarter tone, and small amounts against the original are how you thicken a sound. This is time-stretch followed by resample-by: stretching makes it longer, playing the stretched copy back faster puts the length back and takes the pitch with it. Anything beyond a few semitones will start to sound like it, which is what pitch shifting is."
   );
 
   Builtin.createBuiltin(
