@@ -114,7 +114,7 @@ function createAsyncBuiltins() {
 			}
 			return latestOf(nex);
 		},
-		'The value |nex has produced so far. A deferred value that has settled or finished gives what it holds; anything that is not deferred is its own latest value. Something still waiting for its first result has no latest, and asking is an error -- use has-latest to find out first. Note this is not the same as evaluating |nex, which hands back the deferred value itself until it has finished for good.'
+		'The value |nex has produced so far. A deferred value gives what it holds; anything else is its own latest. Asking before it has produced anything is an error -- use has-latest first.'
 	);
 
 	Builtin.createBuiltin(
