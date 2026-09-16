@@ -146,6 +146,27 @@ function parseInlineSamples(data) {
 
 const DEFAULT_SIZE = 256;
 
+/*
+Zooming while not editing sets the global scale that every non-editing
+wavetable draws at, so all of them have to repaint together or the document
+shows waves at unrelated scales.
+*/
+function renderAllWavetables() {
+	let root = systemState.getRoot();
+	if (!root) return;
+	dirtyWavetablesUnder(root);
+	eventQueueDispatcher.enqueueRenderOnlyDirty();
+}
+
+function dirtyWavetablesUnder(renderNode) {
+	if (renderNode.getNex() instanceof Wavetable) {
+		renderNode.setRenderNodeDirtyForRendering(true);
+	}
+	for (let i = 0; i < renderNode.numChildren(); i++) {
+		dirtyWavetablesUnder(renderNode.getChildAt(i));
+	}
+}
+
 class Wavetable extends Nex {
 	constructor(initSize) {
 		super();
@@ -322,6 +343,7 @@ class Wavetable extends Nex {
 			this.localPixelsPerSample = val;
 		} else {
 			setGlobalPixelsPerSample(val);
+			renderAllWavetables();
 		}
 	}
 
@@ -338,6 +360,7 @@ class Wavetable extends Nex {
 			this.localHeightPixelsFullScale = val;
 		} else {
 			setGlobalHeightPixelsFullScale(val);
+			renderAllWavetables();
 		}
 	}
 
