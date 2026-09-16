@@ -56,6 +56,16 @@ import {
   frequencyToNoteNum,
 } from "../wavetablefunctions.js";
 import { fft, nextPowerOfTwo, forEachSpectrum, hannWindow } from "../fft.js";
+import {
+  foldInto,
+  cutoffToHz,
+  resonanceToQ,
+  biquadInto,
+  bestMatchOffset,
+  stretchInto,
+  decayTailSamples,
+  chargePasses,
+} from "../wavetablefunctions.js";
 import { loopPlay, queueBreak, atNextCycleStart, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying, getAudioChannelCount } from "../webaudio.js";
 import { constructClip } from "../nex/clip.js";
 import { Tag } from "../tag.js";
@@ -484,14 +494,6 @@ function createWavetableBuiltins() {
     "Passes every sample of wt| through |shape and returns the result. |shape is a wave read as a lookup rather than as a sound: its length stands for an input of -1 to 1, and the value it holds at each point is what comes out. A straight line leaves wt| alone. See transfer-wavefold, transfer-clipping and transfer-compress for shapes to pass in, or make your own."
   );
 
-  // reflect back off the limit, as many times as it takes
-  function foldInto(v) {
-    while (v > 1 || v < -1) {
-      if (v > 1) v = 1 - (v - 1);
-      if (v < -1) v = -1 + -(v + 1);
-    }
-    return v;
-  }
 
   Builtin.createBuiltin(
     "transfer-wavefold",
@@ -721,16 +723,6 @@ function createWavetableBuiltins() {
     "Runs |wt1 through a single pole filter with a cutoff determined by |wt2, which can be a number or a wave. |wt2 runs 0 to 1 across the range of hearing, 0 being 20Hz and 1 being 20kHz, and it crosses that range by ear rather than by hertz -- half way is about 630Hz, not 10kHz -- so a wave used as |wt2 sweeps evenly. Tag a number with a timebase (hz, nn) to name a real frequency instead. Tag the command <low> or <high> to say which it is; it is <low> if you do not. One pole cannot resonate, and no amount of feeding it back into itself will change that -- one pole can only turn the phase a quarter turn and a ring needs half a turn to sustain itself. Use doublepole when you want a filter that sings."
   );
 
-  /*
-  A cutoff can be a wave so that it can be swept, and a wave has nowhere to put
-  a timebase tag, so it keeps the scale singlepole has always used: 1 means
-  20kHz. A plain number means the same thing. A number that carries a timebase
-  tag means what it says, so %2000 hz is two thousand hertz.
-
-  (comment by Claude)
-  */
-  const CUTOFF_AT_ONE = 20000;
-  const CUTOFF_AT_ZERO = 20;
 
   /*
   Cutoff runs 0 to 1 across the range of hearing, and crosses it the way hearing
@@ -749,9 +741,7 @@ function createWavetableBuiltins() {
   concerned. Below zero -- a wave used as a sweep swings both ways -- it keeps
   going down and biquadInto floors it.
   */
-  function cutoffToHz(v) {
-    return CUTOFF_AT_ZERO * Math.pow(CUTOFF_AT_ONE / CUTOFF_AT_ZERO, v);
-  }
+
 
   function explicitTimebase(nex) {
     for (let i = 0; i < nex.numTags(); i++) {
@@ -861,85 +851,7 @@ function createWavetableBuiltins() {
 
   (comment by Claude)
   */
-  function resonanceToQ(r) {
-    if (r < 0) r = 0;
-    if (r > 1) r = 1;
-    return 0.707 / (1 - 0.98 * r);
-  }
 
-  // the usual cookbook biquad, written into a reused array so a swept cutoff
-  // does not allocate once per sample
-  // (comment by Claude)
-  function biquadInto(c, kind, hz, q, gainDb, sampleRate) {
-    let nyquist = sampleRate / 2;
-    if (hz < 1) hz = 1;
-    if (hz > nyquist * 0.99) hz = nyquist * 0.99;
-    if (q < 0.01) q = 0.01;
-    let w0 = (2 * Math.PI * hz) / sampleRate;
-    let cosw = Math.cos(w0);
-    let sinw = Math.sin(w0);
-    let alpha = sinw / (2 * q);
-    // half of gainDb, because a peak or a shelf gets it on the way in and
-    // again on the way out
-    // (comment by Claude)
-    let A = Math.pow(10, gainDb / 40);
-    let sqrtA2 = 2 * Math.sqrt(A) * alpha;
-    let a0, a1, a2, b0, b1, b2;
-    a0 = 1 + alpha;
-    a1 = -2 * cosw;
-    a2 = 1 - alpha;
-    switch (kind) {
-      case "low":
-        b0 = (1 - cosw) / 2;
-        b1 = 1 - cosw;
-        b2 = (1 - cosw) / 2;
-        break;
-      case "high":
-        b0 = (1 + cosw) / 2;
-        b1 = -(1 + cosw);
-        b2 = (1 + cosw) / 2;
-        break;
-      case "band":
-        b0 = alpha;
-        b1 = 0;
-        b2 = -alpha;
-        break;
-      case "notch":
-        b0 = 1;
-        b1 = -2 * cosw;
-        b2 = 1;
-        break;
-      case "peak":
-        b0 = 1 + alpha * A;
-        b1 = -2 * cosw;
-        b2 = 1 - alpha * A;
-        a0 = 1 + alpha / A;
-        a1 = -2 * cosw;
-        a2 = 1 - alpha / A;
-        break;
-      case "lowshelf":
-        b0 = A * (A + 1 - (A - 1) * cosw + sqrtA2);
-        b1 = 2 * A * (A - 1 - (A + 1) * cosw);
-        b2 = A * (A + 1 - (A - 1) * cosw - sqrtA2);
-        a0 = A + 1 + (A - 1) * cosw + sqrtA2;
-        a1 = -2 * (A - 1 + (A + 1) * cosw);
-        a2 = A + 1 + (A - 1) * cosw - sqrtA2;
-        break;
-      case "highshelf":
-        b0 = A * (A + 1 + (A - 1) * cosw + sqrtA2);
-        b1 = -2 * A * (A - 1 + (A + 1) * cosw);
-        b2 = A * (A + 1 + (A - 1) * cosw - sqrtA2);
-        a0 = A + 1 - (A - 1) * cosw + sqrtA2;
-        a1 = 2 * (A - 1 - (A + 1) * cosw);
-        a2 = A + 1 - (A - 1) * cosw - sqrtA2;
-        break;
-    }
-    c[0] = b0 / a0;
-    c[1] = b1 / a0;
-    c[2] = b2 / a0;
-    c[3] = a1 / a0;
-    c[4] = a2 / a0;
-  }
 
   Builtin.createBuiltin(
     "doublepole",
@@ -1405,97 +1317,8 @@ function createWavetableBuiltins() {
 
   (comment by Claude)
   */
-  const STRETCH_FRAME = 2048;
   const STRETCH_MAX_OUTPUT = 10000000;
 
-  // the raw samples rather than valueAtSample, because this runs a few million
-  // times and valueAtSample takes a modulus on every one of them
-  // (comment by Claude)
-  function bestMatchOffset(src, dur, ideal, wanted, search, compare) {
-    let best = ideal;
-    let bestScore = -Infinity;
-    for (let k = ideal - search; k <= ideal + search; k++) {
-      if (k < 0 || k + compare >= dur) continue;
-      let score = 0;
-      for (let i = 0; i < compare; i++) {
-        score += src[k + i] * wanted[i];
-      }
-      if (score > bestScore) {
-        bestScore = score;
-        best = k;
-      }
-    }
-    return best;
-  }
-
-  // writes into whatever array it is handed, so pitch-shift can stretch into
-  // scratch space rather than making a wavetable it is only going to throw away
-  // (comment by Claude)
-  function stretchInto(wt, factor, data, outDur) {
-    let dur = wt.getDuration();
-
-    let frame = Math.min(STRETCH_FRAME, dur);
-    let hopOut = Math.floor(frame / 2);
-    if (hopOut < 1) {
-      // too short to cut into pieces at all
-      // (comment by Claude)
-      for (let i = 0; i < outDur; i++) {
-        data[i] = wt.valueAtSample(Math.floor(i / factor));
-      }
-      return;
-    }
-    let hopIn = hopOut / factor;
-    let search = Math.floor(hopOut / 2);
-    // half a hop is enough to say whether two places line up, and the search
-    // costs the length of this times the width of it on every frame
-    // (comment by Claude)
-    let compare = Math.max(1, Math.floor(hopOut / 2));
-    let src = wt.getData();
-
-    let window = hannWindow(frame);
-    // hann at half a frame sums to one, but not at the two ends, so the window
-    // is added up as well and divided out
-    // (comment by Claude)
-    let weight = new Float64Array(outDur);
-    let wanted = new Float64Array(compare);
-    let previousEnd = 0;
-
-    for (let m = 0; ; m++) {
-      let outAt = m * hopOut;
-      if (outAt >= outDur) break;
-      let ideal = Math.round(m * hopIn);
-      let from = ideal;
-      if (m > 0) {
-        for (let i = 0; i < compare; i++) {
-          let at = previousEnd + i;
-          wanted[i] = at < dur ? src[at] : 0;
-        }
-        from = bestMatchOffset(src, dur, ideal, wanted, search, compare);
-      }
-      if (from < 0) from = 0;
-      if (from > dur - 1) from = dur - 1;
-      for (let i = 0; i < frame; i++) {
-        let o = outAt + i;
-        if (o >= outDur) break;
-        let at = from + i;
-        if (at >= dur) break;
-        data[o] += src[at] * window[i];
-        weight[o] += window[i];
-      }
-      previousEnd = from + hopOut;
-    }
-    /*
-    Dividing by the window sum puts the level right where the windows overlap
-    properly. Where they do not -- the very ends -- the sum goes to nothing,
-    and dividing by nothing turns the last few samples into a bang. Below half
-    a window the sum is left alone, so the ends fade instead.
-
-    (comment by Claude)
-    */
-    for (let i = 0; i < outDur; i++) {
-      data[i] /= weight[i] > 0.5 ? weight[i] : 0.5;
-    }
-  }
 
   function stretchedLength(dur, factor) {
     let outDur = Math.round(dur * factor);
@@ -2055,15 +1878,6 @@ function createWavetableBuiltins() {
     return Math.ceil(most);
   }
 
-  // how long the tail takes to fall to -60dB, capped so a feedback close to 1
-  // cannot ask for a wave that never ends
-  // (comment by Claude)
-  function decayTailSamples(g, delaySamples) {
-    let a = Math.abs(g);
-    if (a < 0.0001) return 0;
-    let repeats = Math.ceil(Math.log(0.001) / Math.log(a));
-    return Math.min(repeats * delaySamples, Math.round(10 * getSampleRate()));
-  }
 
   /*
   Wrapped, the answer wanted is what you would hear if the wave had been
@@ -2073,13 +1887,7 @@ function createWavetableBuiltins() {
 
   (comment by Claude)
   */
-  function chargePasses(g, delaySamples, dur) {
-    let a = Math.abs(g);
-    if (a < 0.0001 || delaySamples < 1) return 1;
-    let perPass = Math.pow(a, dur / delaySamples);
-    if (perPass < 0.001) return 2;
-    return Math.min(1 + Math.ceil(Math.log(0.001) / Math.log(perPass)), 256);
-  }
+
 
   function runDelayLine(name, env, commandTags, isAllpass) {
     let wt = env.lb("wt");
