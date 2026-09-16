@@ -22,7 +22,13 @@ import { addCycleMember, contextTimeToPerformanceTime } from './webaudio.js'
 
 
 var midi = null;
-var setupcb = null;
+/*
+Everything waiting on midi access, not just the last thing that asked. There is
+one request however many things are waiting on it, and every one of them gets an
+answer -- an error if it failed, so that a deferred value waiting on midi
+finishes rather than sitting there forever.
+*/
+var setupcbs = [];
 
 const inputListeners = {};
 const inputsBeingListenedTo = {};
@@ -34,26 +40,40 @@ function playWavetableOnMidiInput(wt, midiInput) {
 	
 }
 
+function notifyMidiSetup(err) {
+	let waiting = setupcbs;
+	setupcbs = [];
+	for (let i = 0; i < waiting.length; i++) {
+		waiting[i](err);
+	}
+}
+
 function onMIDISuccess(midiAccess) {
 	console.log('MIDI ready');
 	console.log(midiAccess);
 	midi = midiAccess;
-	if (setupcb) {
-		setupcb();
-	}
+	notifyMidiSetup(null);
 }
 
 function onMIDIFailure(msg) {
 	console.log("failed to do midi " + msg);
-	midi = "i failed";
+	/*
+	A failure is not remembered. Asking again is how you recover after granting
+	permission, and a browser that has already refused answers the second
+	request without putting anything in front of the user, so this cannot turn
+	into a run of prompts.
+	*/
+	notifyMidiSetup('' + msg);
 }
 
 function maybeSetupMidi(cb) {
-	if (!midi) {
-		setupcb = cb;
+	if (midi) {
+		cb(null);
+		return;
+	}
+	setupcbs.push(cb);
+	if (setupcbs.length == 1) {
 		navigator.requestMIDIAccess().then( onMIDISuccess, onMIDIFailure );
-	} else {
-		cb();
 	}
 }
 
@@ -381,7 +401,11 @@ function midiPanic() {
 // A port org is saved with the document, so after a refresh it comes back as
 // just a name and an id. This asks for access again and opens that one port.
 function openMidiPort(portId, incb) {
-	let cb = function() {
+	maybeSetupMidi(function(err) {
+		if (err) {
+			incb(null, err);
+			return;
+		}
 		let port = midi.outputs.get(portId);
 		if (!port) {
 			port = midi.inputs.get(portId);
@@ -393,12 +417,15 @@ function openMidiPort(portId, incb) {
 		port.open();
 		openedPorts[portId] = true;
 		incb(describePort(port));
-	}
-	maybeSetupMidi(cb);
+	});
 }
 
 function getMidiPorts(incb) {
-	let cb = function() {
+	maybeSetupMidi(function(err) {
+		if (err) {
+			incb(null, err);
+			return;
+		}
 		let r = [];
 		for (let entry of midi.inputs) {
 			r.push(describePort(entry[1]));
@@ -407,8 +434,7 @@ function getMidiPorts(incb) {
 			r.push(describePort(entry[1]));
 		}
 		incb(r);
-	}
-	maybeSetupMidi(cb);
+	});
 }
 
 
