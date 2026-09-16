@@ -223,7 +223,7 @@ function createMidiBuiltins() {
 
 	Builtin.createBuiltin(
 		'play-midi',
-		[ 'seq()', 'portorclip?' ],
+		[ 'seq()', 'portorclip()μ?' ],
 		function $playMidi(env, executionEnvironment) {
 			let list = env.lb('seq');
 

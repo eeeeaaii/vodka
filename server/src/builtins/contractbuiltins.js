@@ -33,7 +33,7 @@ function createContractBuiltins() {
 
 	Builtin.createBuiltin(
 		'sign for',
-		[ 'contractк', 'tag$' ],
+		[ 'contractκ', 'tag$' ],
 		function $signFor(env, executionEnvironment) {
 			// TODO: type check
 			let tagname = env.lb('tag');
