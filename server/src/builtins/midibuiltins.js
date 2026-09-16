@@ -237,6 +237,11 @@ function createMidiBuiltins() {
 			let arg = env.lb('portorclip');
 			let clip = null;
 			let portNex = UNBOUND;
+			if (Utils.isNil(arg)) {
+				// a clip is never saved, so a refresh leaves a nil behind
+				return constructFatalError(
+						'play-midi: that clip is gone, a refresh does not keep them. Sorry!');
+			}
 			if (arg != UNBOUND) {
 				if (Utils.isClip(arg)) {
 					if (arg.getKind() != 'midi loop') {

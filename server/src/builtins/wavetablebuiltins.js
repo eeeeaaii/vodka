@@ -89,6 +89,7 @@ function createWavetableBuiltins() {
     ["clip"],
     function $togglePlayback(env, executionEnvironment) {
       let clip = env.lb("clip");
+      if (Utils.isNil(clip)) return goneClipError("toggle-playback");
       if (!Utils.isClip(clip)) {
         return constructFatalError("toggle-playback: not a clip. Sorry!");
       }
@@ -111,6 +112,7 @@ function createWavetableBuiltins() {
     ["clip"],
     function $isPlaying(env, executionEnvironment) {
       let clip = env.lb("clip");
+      if (Utils.isNil(clip)) return goneClipError("is-playing");
       if (!Utils.isClip(clip)) {
         return constructFatalError("is-playing: not a clip. Sorry!");
       }
@@ -118,6 +120,16 @@ function createWavetableBuiltins() {
     },
     "True if |clip is making sound: still in the cycle, and not silenced by toggle-playback."
   );
+
+  /*
+  A clip is never written to a file, so an expression that held one holds a nil
+  after a refresh. Saying so beats complaining about whatever a nil looks like
+  to the argument that was expecting a clip.
+  */
+  function goneClipError(who) {
+    return constructFatalError(
+        who + ": that clip is gone, a refresh does not keep them. Sorry!");
+  }
 
   // Channels are 1-based to the user, the way audio hardware numbers them.
   function toChannelIndexes(numbers, who) {
@@ -164,6 +176,7 @@ function createWavetableBuiltins() {
         // heard. Nothing here has to know how a loop is put together.
         endLoops(clip.getIds(), true /* at the cycle end */);
       } else if (arg != UNBOUND) {
+        if (Utils.isNil(arg)) return goneClipError("play");
         channelnumbers = [];
         if (Utils.isNexContainer(arg)) {
           for (let i = 0; i < arg.numChildren(); i++) {
