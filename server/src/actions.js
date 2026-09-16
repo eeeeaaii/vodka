@@ -412,6 +412,66 @@ class ChangeSelectedNodeAction extends Action {
 	}
 }
 
+/*
+Cut and paste change the document, so they belong on the undo stack like any
+other change. Without that, undo after a paste reaches back to whatever action
+came before it and undoes that instead, against a document it no longer
+describes.
+*/
+class CutAction extends Action {
+	constructor(actionName) {
+		super(actionName);
+	}
+
+	canUndo() {
+		return !!this.parentOfCutNode;
+	}
+
+	doAction() {
+		let node = systemState.getGlobalSelectedNode();
+		let parent = node.getParent();
+		let index = parent ? parent.getIndexOfChild(node) : -1;
+		let insertionMode = node.getInsertionMode();
+		if (!manipulator.doCut()) {
+			return;
+		}
+		this.cutNode = node;
+		this.parentOfCutNode = parent;
+		this.index = index;
+		this.savedInsertionMode = insertionMode;
+	}
+
+	undoAction() {
+		if (!this.parentOfCutNode || this.index < 0) return;
+		this.parentOfCutNode.insertChildAt(this.cutNode, this.index);
+		this.cutNode.setSelected();
+		this.cutNode.setInsertionMode(this.savedInsertionMode);
+	}
+}
+
+class PasteAction extends Action {
+	constructor(actionName) {
+		super(actionName);
+	}
+
+	canUndo() {
+		return !!this.pastedNode;
+	}
+
+	doAction() {
+		this.selectedBefore = systemState.getGlobalSelectedNode();
+		this.insertionModeBefore = this.selectedBefore.getInsertionMode();
+		this.pastedNode = manipulator.doPaste();
+	}
+
+	undoAction() {
+		if (!this.pastedNode) return;
+		manipulator.removeNex(this.pastedNode);
+		this.selectedBefore.setSelected();
+		this.selectedBefore.setInsertionMode(this.insertionModeBefore);
+	}
+}
+
 class LegacyKeyResponseFunctionAction extends Action {
 	constructor(actionName) {
 		super(actionName);
@@ -779,6 +839,11 @@ function actionFactory(actionName, eventName) {
 			return new LineBreakAction(actionName);
 
 		// Legacy ones below, these can't be undone
+
+		case 'cut':
+			return new CutAction(actionName);
+		case 'paste':
+			return new PasteAction(actionName);
 
 		case 'unroll':
 			return new UnrollAction(actionName);

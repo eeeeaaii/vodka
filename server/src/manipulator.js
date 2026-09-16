@@ -1840,7 +1840,9 @@ class Manipulator {
 		}
 		let x = systemState.getGlobalSelectedNode();
 		this.selectPreviousSibling() || this.selectParent();		
-		this.removeNex(x);
+		// false when it was not in the tree to begin with, which undo has to
+		// know about or it will put back something that never left
+		return this.removeNex(x);
 	}
 
 	// used in keydispatcher.js
@@ -1917,6 +1919,7 @@ class Manipulator {
 	}
 
 	// used in keydispatcher.js
+	// returns the node it pasted, so it can be taken out again
 	doPaste() {
 		let s = systemState.getGlobalSelectedNode();
 		try {
@@ -1936,7 +1939,8 @@ class Manipulator {
 					this.insertAsFirstChild(newNex);
 					this.selected().setInsertionMode(CLIPBOARD_INSERTION_MODE);
 					break;
-			}			
+			}
+			return this.selected();
 		} catch (e) {
 			if (Utils.isFatalError(e)) {
 				Utils.beep();
