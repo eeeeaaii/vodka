@@ -37,6 +37,36 @@ import { sAttach } from '../syntheticroot.js'
 /**
  * Nex that represents a command (a {@link NexContainer} that can be executed/run)
  */
+/*
+Collapsing an argument takes it out of the call. Not evaluated, not counted, not
+passed: the command runs as though it had not been written, so what is left has
+to satisfy the parameters on its own.
+
+That makes collapsing a way of trying something -- take an argument out, run it,
+put it back -- without cutting anything out of the document and having to
+remember where it went. It is the editing equivalent of commenting a line out,
+and the pip stays where it was.
+
+Done here, where the argument list is built, rather than in the evaluator,
+because an argument that is not in the list is invisible to everything
+downstream: arity, optional parameters and variadics all see the call the way it
+now reads, with no special case for a hole in the middle.
+
+Collapsing is a property of a rendered node rather than of a nex -- the same nex
+can be shown in more than one place -- so this asks whether any of the places it
+is shown is collapsed. A nex with no render nodes at all is not in the document
+and cannot have been collapsed by anybody.
+*/
+function isCollapsed(nex) {
+	let nodes = nex.getRenderNodes();
+	for (let i = 0; i < nodes.length; i++) {
+		if (nodes[i].getCollapsed && nodes[i].getCollapsed()) {
+			return true;
+		}
+	}
+	return false;
+}
+
 class Command extends NexContainer {
 	constructor(val) {
 		// memory ok
@@ -327,7 +357,11 @@ class Command extends NexContainer {
 		let argContainer = new ArgContainer(this);
 		let start = skipFirstArg ? 1 : 0;
 		for (let i = start; i < this.numChildren(); i++) {
-			argContainer.addArg(new Arg(this.getChildAt(i)));
+			let child = this.getChildAt(i);
+			if (isCollapsed(child)) {
+				continue;
+			}
+			argContainer.addArg(new Arg(child));
 		}
 
 		let argEvaluator = closure.getArgEvaluator(cmdname, argContainer, executionEnv);
