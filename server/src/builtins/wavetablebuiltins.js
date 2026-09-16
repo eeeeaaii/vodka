@@ -55,7 +55,7 @@ import {
   getConstantSignalFromValue,
   frequencyToNoteNum,
 } from "../wavetablefunctions.js";
-import { forEachSpectrum, hannWindow } from "../fft.js";
+import { fft, nextPowerOfTwo, forEachSpectrum, hannWindow } from "../fft.js";
 import { loopPlay, queueBreak, atNextCycleStart, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying, getAudioChannelCount } from "../webaudio.js";
 import { constructClip } from "../nex/clip.js";
 import { Tag } from "../tag.js";
@@ -2929,66 +2929,139 @@ function createWavetableBuiltins() {
   );
 
   /*
-  Trims a wave back to between its outermost zero crossings, so that the end
-  runs back into the beginning without a step in it.
+  The whole transform, handed over rather than kept inside the one builtin that
+  needed it. brightness is one thing you can do with a spectrum; there are many
+  others, and which of them are worth having is not a question this file should
+  be answering on anyone's behalf.
 
-  A wave that is going to loop has to start and finish at about the same value,
-  and the reliable place to find two such points is where it crosses zero.
-  Anything before the first crossing and from the last crossing on is cut away;
-  what is left starts at roughly nothing and ends just short of roughly nothing.
+  Magnitude and phase rather than real and imaginary, because magnitude is what
+  nearly every use of this wants and phase is what the rest want -- and the two
+  together lose nothing, so an inverse can be built on top of this later without
+  changing what it gives back.
 
-  Two separate crossings or it does nothing. A wave that never changes sign has
-  none, and one that changes sign once has the same crossing at both ends --
-  neither gives anything to cut to, and shortening a wave to zero or to a single
-  polarity would be worse than leaving it as it was.
+  One spectrum for the whole wave, zero filled up to the next power of two. Not
+  a spectrogram: a wave is already the thing you slide a window along, so
+  whoever wants frames can cut them with split and call this on each.
 
-  A crossing is counted at the first sample of the new polarity, which is the
-  sample to cut on -- a copy starting there starts from roughly nothing. A run
-  of zeros is not a change of sign by itself, so silence in the middle of a wave
-  does not read as two crossings.
+  Tag the command <hann> to window the wave first. Worth doing for anything that
+  is not already a whole number of cycles -- without it the join between the end
+  of the wave and the start of the next imaginary repeat is a step, and a step
+  smears across every bin.
   */
   Builtin.createBuiltin(
-    "zeroclip",
+    "fft",
     ["wt_"],
-    function $zeroclip(env, executionEnvironment) {
+    function $fft(env, executionEnvironment, commandTags) {
       let wt = env.lb("wt");
-      let total = wt.getDuration();
+      let dur = wt.getDuration();
+      if (dur < 1) {
+        return constructFatalError("fft: there is nothing in this wave. Sorry!");
+      }
+      let n = nextPowerOfTwo(dur);
+      let re = new Float64Array(n);
+      let im = new Float64Array(n);
+      let window = hasCommandTag(commandTags, "hann") ? hannWindow(dur) : null;
+      for (let i = 0; i < n; i++) {
+        let v = i < dur ? wt.valueAtSample(i) : 0;
+        re[i] = window && i < dur ? v * window[i] : v;
+        im[i] = 0;
+      }
+      fft(re, im);
 
-      let first = -1;
-      let last = -1;
+      // the second half of the spectrum mirrors the first, so it says nothing
+      // the first half has not already said
+      let bins = n / 2 + 1;
+      let magnitude = constructWavetable(bins);
+      let phase = constructWavetable(bins);
+      let md = magnitude.getData();
+      let pd = phase.getData();
+      for (let b = 0; b < bins; b++) {
+        md[b] = Math.sqrt(re[b] * re[b] + im[b] * im[b]);
+        pd[b] = Math.atan2(im[b], re[b]);
+      }
+      magnitude.init();
+      phase.init();
+      magnitude.addTag(newTagOrThrowOOM("magnitude", "fft builtin"));
+      phase.addTag(newTagOrThrowOOM("phase", "fft builtin"));
+
+      let r = constructOrg();
+      r.appendChild(magnitude);
+      r.appendChild(phase);
+      return r;
+    },
+    "The frequency spectrum of wt|, as an org holding two waves: one tagged magnitude, saying how much of each frequency is there, and one tagged phase, saying where in its cycle each one is. Bind the result and reach them with dots, as in @spectrum.magnitude. There is one value per bin, and bin |b is at b times the sample rate over the length the transform ran at -- that length is wt| zero filled up to the next power of two, so a wave of 1000 samples is transformed at 1024. Tag the command <hann> to window the wave first, which is worth doing for anything that is not a whole number of cycles. For frames rather than one spectrum, cut the wave with split and call this on each piece."
+  );
+
+  /*
+  Splitting a wave anywhere but a zero crossing leaves a step at the join, and a
+  step is a click. So the split points get moved to the nearest place the wave
+  passes through zero, which is the place a cut is inaudible.
+
+  A crossing is the first sample of a new polarity, which is the sample to cut
+  on: a copy starting there starts from roughly nothing. A run of zeros is not a
+  change of sign by itself, so silence in the middle of a wave does not read as
+  two crossings.
+
+  Two split points can land on the same crossing, and then there is one split
+  point where there were two. That is the honest answer rather than a problem to
+  solve: they were close enough together to want the same cut, and keeping both
+  would mean keeping one of them off a crossing, which is what this is for.
+
+  A wave with no crossings at all -- silence, or something that never leaves one
+  side of zero -- is handed back as it came. There is nowhere better to put its
+  split points than where they already are.
+  */
+  Builtin.createBuiltin(
+    "snap-split-points",
+    ["wt_"],
+    function $snapSplitPoints(env, executionEnvironment) {
+      let wt = env.lb("wt");
+      let r = wt.makeCopy();
+      if (r.markers.length == 0) return r;
+
+      let total = r.getDuration();
+      let crossings = [];
       let lastSign = 0;
       for (let i = 0; i < total; i++) {
-        let v = wt.valueAtSample(i);
+        let v = r.valueAtSample(i);
         let sign = v > 0 ? 1 : (v < 0 ? -1 : 0);
         if (sign == 0) continue;
         if (lastSign != 0 && sign != lastSign) {
-          if (first == -1) first = i;
-          last = i;
+          crossings.push(i);
         }
         lastSign = sign;
       }
+      if (crossings.length == 0) return r;
 
-      let from = 0;
-      let dur = total;
-      if (first != -1 && last > first) {
-        from = first;
-        dur = last - first;
+      /*
+      Crossings come out in order and the markers are already sorted, so this
+      walks forward across both rather than starting the search over for every
+      marker -- otherwise a wave with a lot of splits in it is every marker
+      against every crossing.
+      */
+      let moved = [];
+      let at = 0;
+      for (let m = 0; m < r.markers.length; m++) {
+        let mark = r.markers[m];
+        while (at + 1 < crossings.length && crossings[at + 1] <= mark) {
+          at++;
+        }
+        let best = crossings[at];
+        if (at + 1 < crossings.length
+            && Math.abs(crossings[at + 1] - mark) < Math.abs(mark - best)) {
+          best = crossings[at + 1];
+        }
+        // two that snapped to the same crossing are one split point now
+        if (moved.length == 0 || moved[moved.length - 1] != best) {
+          moved.push(best);
+        }
       }
 
-      let r = constructWavetable(dur);
-      let data = r.getData();
-      for (let i = 0; i < dur; i++) {
-        data[i] = wt.valueAtSample(from + i);
-      }
-      r.init();
+      r.markers = moved;
+      r.cacheSections();
       return r;
     },
-    "Cuts wt| back to the stretch between its first and last zero crossings, "
-      + "which is what makes it loop without a click: it then begins and ends at "
-      + "about the same value instead of stopping wherever it happened to stop. "
-      + "A wave with fewer than two separate crossings comes back unchanged, "
-      + "since there is nothing to cut to. Split points are not carried over, "
-      + "because the wave they were measured against is no longer this one."
+    "Returns a copy of wt| with every split point moved to the nearest place the wave crosses zero, which is where a cut does not click. Two split points that land on the same crossing become one. A wave with no crossings in it comes back unchanged."
   );
 
   Builtin.createBuiltin(
