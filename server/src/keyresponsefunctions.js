@@ -554,6 +554,12 @@ const KeyResponseFunctions = {
 		s.toggleCollapsed();
 	},
 
+	// the control strip is wider than a short wave, so a wave's box cannot show
+	// its real length while the strip is there
+	'toggle-wave-controls': function(s) {
+		document.body.classList.toggle('hidewavecontrols');
+	},
+
 	// I hate commas
 	'':''
 }
