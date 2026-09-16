@@ -23,6 +23,8 @@ It is the same client bundle the vodka server serves; what differs is the three
 files written here. config.json says there is no saving and no live directory
 listing, and the two index.json files are the directory listings a static host
 cannot produce for itself.
+
+(comment by Claude)
 */
 
 const fs = require('fs');
@@ -60,6 +62,7 @@ function main() {
 	fs.mkdirSync(out, { recursive: true });
 
 	// the app itself
+	// (comment by Claude)
 	copyDir(path.join(SERVER_DIR, 'dist'), path.join(out, 'dist'));
 	copyDir(path.join(SERVER_DIR, 'src', 'css'), path.join(out, 'css'));
 	copyDir(path.join(SERVER_DIR, 'packages'), path.join(out, 'packages'));
@@ -68,6 +71,7 @@ function main() {
 
 	// host.html is served as / by the vodka server, and index.html is what a
 	// static host looks for
+	// (comment by Claude)
 	fs.copyFileSync(path.join(SERVER_DIR, 'src', 'host.html'),
 			path.join(out, 'index.html'));
 
