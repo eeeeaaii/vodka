@@ -238,7 +238,7 @@ function createWavetableBuiltins() {
       let r = startPlaying(env.lb("wt"), env.lb("channelsorclip"), "play");
       return r.error ? r.error : r.clip;
     },
-    "Starts playing wt| at the next measure start, and returns a clip naming it. It plays for as long as something holds that clip: keep the clip and it loops, throw it away and it plays once, delete it and it stops at the end of the pass it is in. |channelsorclip is either the channels to play on, or a clip returned by an earlier play -- given a clip, the loop it names is replaced at the next measure start, staying on the channels it is already on, and you get the same clip back. Channels are numbered from 1, the way audio hardware numbers them, and if you do not say, the sound plays on channels 1 and 2 -- passing nil says nothing, the same as leaving it out. If it and/or |wt are lists, Vodka will do its best to match up sounds with channels."
+    "Plays a loop. Returns a clip. Replaces |clip if passed in."
   );
 
   // what it was called before it could do both
@@ -2159,7 +2159,7 @@ function createWavetableBuiltins() {
     function $comb(env, executionEnvironment, commandTags) {
       return runDelayLine("comb", env, commandTags, false);
     },
-    "Adds wt| to a copy of itself |time later, over and over, each copy quieter than the last by |feedback (0 to 1, default 0.5). Short times ring at one pitch, long ones are an echo. |time can be a wave rather than a number, and a delay that moves is a flanger -- a wave here is read as a number of samples directly, since a wave has nowhere to put a timebase tag. Tag the command with wrap to keep the original length and have the tail come round to the beginning, which for a wave you are going to loop sounds like it has been looping all along; without it the wave gets longer to make room for the tail. Timebase tag (nn, secs, hz, b, samps) is on |time."
+    "Apply comb filter with |time and |feedback."
   );
 
   Builtin.createBuiltin(
@@ -2168,7 +2168,7 @@ function createWavetableBuiltins() {
     function $allpass(env, executionEnvironment, commandTags) {
       return runDelayLine("allpass", env, commandTags, true);
     },
-    "Delays some frequencies more than others while leaving every one of them at the same level, so on its own it sounds like nothing. That is what it is for: chains of these are how a reverb turns a handful of echoes into something that sounds like a room, and one against the dry sound is a phaser. |amount is 0 to 1, default 0.5. Takes the same |time and the same wrap tag as comb."
+    "Apply allpass filter with |time and |amount."
   );
 
   /*
@@ -2279,7 +2279,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Puts wt| in a room. |size is how big the room is, |mix how much of it you hear against the dry sound, and |damping how quickly the bright part of the tail dies away -- all three run 0 to 1, and default to a half, a third and a half. The wave gets longer to make room for the tail; to fit it back into a loop, pass the result to wrap. convolve gives you a more faithful room if you have an impulse response for one; this is for when you do not, and for a tail you want to change by changing a number."
+    "Apply comb-filter style reverb with |size, |mix, and |damping."
   );
 
   /*
@@ -2434,7 +2434,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Follows how loud wt| is as it goes, rising over |attack and falling over |release, and returns that as a wave. This is the shape of the sound rather than the sound: multiply another wave by it and that wave takes on this one's dynamics. Rising fast and falling slow is what makes it read as an envelope rather than as a rectified copy -- the defaults are 5 milliseconds and 50. Timebase tag (nn, secs, hz, b, samps) is on |attack and |release."
+    "Returns the envelope of the sound. Attack and release govern how closely the envelope follows the waveform."
   );
 
   Builtin.aliasBuiltin("rms", "volume");
