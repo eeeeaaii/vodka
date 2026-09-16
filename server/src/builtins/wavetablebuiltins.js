@@ -1425,6 +1425,152 @@ function createWavetableBuiltins() {
   );
 
   /*
+  comb and allpass are both one delay line fed back on itself, differing only
+  in what comes out of it. Doing that in a single pass is why they are builtins
+  rather than delay and feedback stuck together: feedback makes n whole copies
+  of the wave, while these carry one running line, so the tail is exponential
+  rather than counted, and the delay can move while the wave plays. A moving
+  delay is what a flanger is.
+  */
+
+  // per-sample delay in samples. A wave says it directly, since a wave has
+  // nowhere to put a timebase tag -- build one with wave math to get a flanger.
+  function delayAt(nex) {
+    if (nex.getTypeName() == "-wavetable-") {
+      return function (i) {
+        return nex.valueAtSample(i);
+      };
+    }
+    let d = convertTimeToSamples(nex);
+    return function (i) {
+      return d;
+    };
+  }
+
+  function longestDelay(nex) {
+    if (nex.getTypeName() != "-wavetable-") {
+      return convertTimeToSamples(nex);
+    }
+    let most = 1;
+    for (let i = 0; i < nex.getDuration(); i++) {
+      let v = nex.valueAtSample(i);
+      if (v > most) most = v;
+    }
+    return Math.ceil(most);
+  }
+
+  // how long the tail takes to fall to -60dB, capped so a feedback close to 1
+  // cannot ask for a wave that never ends
+  function decayTailSamples(g, delaySamples) {
+    let a = Math.abs(g);
+    if (a < 0.0001) return 0;
+    let repeats = Math.ceil(Math.log(0.001) / Math.log(a));
+    return Math.min(repeats * delaySamples, Math.round(10 * getSampleRate()));
+  }
+
+  /*
+  Wrapped, the answer wanted is what you would hear if the wave had been
+  looping forever, so the line is run over the wave a few times to charge it
+  and only the last pass is kept. Each pass leaves the line at g^(dur/delay) of
+  where it was, which is what says how many passes are enough.
+  */
+  function chargePasses(g, delaySamples, dur) {
+    let a = Math.abs(g);
+    if (a < 0.0001 || delaySamples < 1) return 1;
+    let perPass = Math.pow(a, dur / delaySamples);
+    if (perPass < 0.001) return 2;
+    return Math.min(1 + Math.ceil(Math.log(0.001) / Math.log(perPass)), 256);
+  }
+
+  function runDelayLine(name, env, commandTags, isAllpass) {
+    let wt = env.lb("wt");
+    let timenex = env.lb("time");
+    let gnex = env.lb(isAllpass ? "amount" : "feedback");
+
+    let maxDelay = longestDelay(timenex);
+    if (!(maxDelay >= 1)) {
+      return constructFatalError(name + ": delay time must be at least 1 sample. Sorry!");
+    }
+    let g = gnex == UNBOUND ? 0.5 : gnex.getTypedValue();
+    if (g > 0.99) g = 0.99;
+    if (g < -0.99) g = -0.99;
+    let delayAtSample = delayAt(timenex);
+
+    let dur = wt.getDuration();
+    let wrap = hasCommandTag(commandTags, "wrap");
+    let outDur = wrap ? dur : dur + decayTailSamples(g, maxDelay);
+    if (outDur < 1) outDur = dur;
+
+    let r = constructWavetable(outDur);
+    let data = r.getData();
+    let line = new Float64Array(maxDelay + 2);
+    let write = 0;
+    let passes = wrap ? chargePasses(g, maxDelay, dur) : 1;
+    // the pass count is an upper bound; a line that has settled is done
+    let previous = passes > 1 ? new Float64Array(outDur) : null;
+
+    for (let p = 0; p < passes; p++) {
+      for (let i = 0; i < outDur; i++) {
+        let d = delayAtSample(i % dur);
+        if (d < 1) d = 1;
+        if (d > maxDelay) d = maxDelay;
+        // read between two samples, so a delay that moves glides rather than
+        // stepping from one sample to the next
+        let at = write - d;
+        while (at < 0) at += line.length;
+        let i0 = Math.floor(at);
+        let frac = at - i0;
+        let a = line[i0 % line.length];
+        let b = line[(i0 + 1) % line.length];
+        let delayed = a + (b - a) * frac;
+
+        let x = i < dur ? wt.valueAtSample(i) : 0;
+        let y;
+        if (isAllpass) {
+          let v = x + g * delayed;
+          y = delayed - g * v;
+          line[write] = v;
+        } else {
+          y = x + g * delayed;
+          line[write] = y;
+        }
+        write = (write + 1) % line.length;
+        data[i] = y;
+      }
+      if (!previous) break;
+      let worst = 0;
+      if (p > 0) {
+        for (let i = 0; i < outDur; i++) {
+          let diff = Math.abs(data[i] - previous[i]);
+          if (diff > worst) worst = diff;
+        }
+        if (worst < 0.00001) break;
+      }
+      previous.set(data);
+    }
+    r.init();
+    return r;
+  }
+
+  Builtin.createBuiltin(
+    "comb",
+    ["wt_", "time#%_", "feedback#%?"],
+    function $comb(env, executionEnvironment, commandTags) {
+      return runDelayLine("comb", env, commandTags, false);
+    },
+    "Adds wt| to a copy of itself |time later, over and over, each copy quieter than the last by |feedback (0 to 1, default 0.5). Short times ring at one pitch, long ones are an echo. |time can be a wave rather than a number, and a delay that moves is a flanger -- a wave here is read as a number of samples directly, since a wave has nowhere to put a timebase tag. Tag the command with wrap to keep the original length and have the tail come round to the beginning, which for a wave you are going to loop sounds like it has been looping all along; without it the wave gets longer to make room for the tail. Timebase tag (nn, secs, hz, b, samps) is on |time."
+  );
+
+  Builtin.createBuiltin(
+    "allpass",
+    ["wt_", "time#%_", "amount#%?"],
+    function $allpass(env, executionEnvironment, commandTags) {
+      return runDelayLine("allpass", env, commandTags, true);
+    },
+    "Delays some frequencies more than others while leaving every one of them at the same level, so on its own it sounds like nothing. That is what it is for: chains of these are how a reverb turns a handful of echoes into something that sounds like a room, and one against the dry sound is a phaser. |amount is 0 to 1, default 0.5. Takes the same |time and the same wrap tag as comb."
+  );
+
+  /*
   Measured over a window that slides along the wave, so what comes back is a
   wave itself: how loud the sound is as it goes, rather than one number for the
   whole thing. Ask without a window and you get the one number instead, since
