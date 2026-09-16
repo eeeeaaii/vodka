@@ -442,6 +442,7 @@ function startCycleAt(startTime) {
 	}
 	for (let id in cycleLoops) {
 		if (cycleLoops[id].endAfterCycle) {
+			retireMember(cycleLoops[id]);
 			delete cycleLoops[id];
 		}
 	}
@@ -508,7 +509,7 @@ function addCycleMember(loop) {
 	Starting is deferred by a microtask so that everything added in one go
 	starts together.
 
-	loop-play adds one loop per channel, one at a time. Starting the cycle as
+	play adds one loop per channel, one at a time. Starting the cycle as
 	soon as the first arrived meant the second was already too late for it and
 	waited for the next boundary -- so a stereo pair played left only for its
 	first time round, then both from then on.
@@ -527,6 +528,16 @@ Where a running loop is, for the counter on a clip. Reckoned the same way the
 audition player does it, and like that one it is a readout rather than anything
 to synchronise against. -1 when the loop is not running.
 */
+/*
+Whether a loop is still one of ours, which is not the same question as where it
+is. A loop waiting for the next boundary has no position yet but has not gone
+anywhere, and a clip that could not tell those apart would give up watching a
+loop that has not started.
+*/
+function loopExists(id) {
+	return !!(cycleLoops[id] || cyclePending[id]);
+}
+
 function getLoopPositionSamples(id) {
 	if (!ctx) return -1;
 	let loop = cycleLoops[id];
@@ -534,17 +545,6 @@ function getLoopPositionSamples(id) {
 	let elapsed = ctx.currentTime - (cycleNextBoundaryTime - cycleLengthSeconds());
 	if (elapsed < 0) return -1;
 	return Math.floor((elapsed * SAMPLE_RATE) % (loop.lengthSeconds * SAMPLE_RATE));
-}
-
-// Same idea for a member that brings its own start and stop, like midi.
-function replaceCycleMember(id, member) {
-	let existing = cycleLoops[id] || cyclePending[id];
-	if (!existing) return false;
-	if (existing.stop) existing.stop();
-	member.endAfterCycle = false;
-	if (cycleLoops[id]) cycleLoops[id] = member;
-	if (cyclePending[id]) cyclePending[id] = member;
-	return true;
 }
 
 /*
@@ -585,6 +585,12 @@ function togglePauseLoops(ids) {
 	return pauseLoops(ids, loopsArePlaying(ids));
 }
 
+// A member that keeps its own records -- midi does -- gets told when it leaves
+// the cycle, so nothing has to hold on to it after that.
+function retireMember(loop) {
+	if (loop && loop.retired) loop.retired();
+}
+
 function endLoops(ids, atCycleEnd) {
 	for (let i = 0; i < ids.length; i++) {
 		let id = ids[i];
@@ -598,6 +604,7 @@ function endLoops(ids, atCycleEnd) {
 				try { loop.node.stop(); } catch (e) {}
 				loop.node.disconnect();
 			}
+			retireMember(loop);
 			delete cycleLoops[id];
 			delete cyclePending[id];
 		}
@@ -733,5 +740,5 @@ async function getFileAsBuffer(filepath) {
 }
 
 
-export { getAudioBufferFromData, loadSample, addLoop, getLoopPositionSamples, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, replaceCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { getAudioBufferFromData, loadSample, addLoop, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 
