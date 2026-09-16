@@ -1440,10 +1440,12 @@ function createWavetableBuiltins() {
           `resample-by: result wavetable too long! Must be less than ${maxdur} samples.`
         );
       }
-      if (resultDuration <= 0) {
-        // is it possible to get here?
+      // it is possible to get here: resampling by more than the wave is long
+      // leaves a fraction of a sample
+      resultDuration = Math.round(resultDuration);
+      if (resultDuration < 1) {
         return constructFatalError(
-          `resample-by: result wavetable too short (would be zero-length).`
+          "resample-by: that leaves less than one sample. Sorry!"
         );
       }
 
