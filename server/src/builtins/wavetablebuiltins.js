@@ -1620,6 +1620,61 @@ function createWavetableBuiltins() {
   );
 
   Builtin.createBuiltin(
+    "find-nearest-zero-crossing",
+    ["wt_", "at#%"],
+    function $findNearestZeroCrossing(env, executionEnvironment, commandTags) {
+      let wt = env.lb("wt");
+      let total = wt.getDuration();
+      if (total < 2) {
+        return constructFatalError(
+            "find-nearest-zero-crossing: this wave is too short to have one. Sorry!");
+      }
+      let from = slicePointToSamples(env.lb("at"), null, total);
+      if (from < 0) from = 0;
+      if (from > total - 1) from = total - 1;
+
+      /*
+      A crossing is reported at the first sample of the new polarity, which is
+      the sample you want to cut on: a copy starting there starts from roughly
+      nothing. A run of zeros is not a sign change by itself, so silence in the
+      middle of a wave gives one crossing rather than two.
+      */
+      let best = -1;
+      let bestDist = 0;
+      let lastSign = 0;
+      for (let i = 0; i < total; i++) {
+        let v = wt.valueAtSample(i);
+        let sign = v > 0 ? 1 : (v < 0 ? -1 : 0);
+        if (sign == 0) continue;
+        if (lastSign != 0 && sign != lastSign) {
+          let dist = Math.abs(i - from);
+          if (best == -1 || dist < bestDist) {
+            best = i;
+            bestDist = dist;
+          }
+          // everything after this one is farther away than this one
+          if (i >= from) break;
+        }
+        lastSign = sign;
+      }
+      if (best == -1) {
+        return constructFatalError(
+            "find-nearest-zero-crossing: this wave never crosses zero. Sorry!");
+      }
+
+      if (hasCommandTag(commandTags, "of-total")) {
+        return constructFloat(best / total);
+      }
+      let timebase = timebaseFromTags(commandTags);
+      if (!timebase || timebase == "SAMPLES") {
+        return constructInteger(best);
+      }
+      return constructFloat(convertSamplesToTimebase(timebase, best));
+    },
+    "The point in wt| nearest to |at where the wave changes sign. Cutting or looping there instead of at |at is what keeps a splice from clicking. |at is a length, so it can be tagged with a timebase (nn, secs, hz, b, samps) or with of-total to read it as a fraction of this wave. The answer comes back in samples unless you tag the command with a timebase or with of-total."
+  );
+
+  Builtin.createBuiltin(
     "get-bpm",
     [],
     function $getBpm(env, executionEnvironment) {
