@@ -16,7 +16,7 @@ import {
 } from '../help';
 
 
-import { WELCOME, QUICK_REFERENCE, ABSTRACT_DATA_TYPES, FULL_API_REFERENCE, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
+import { WELCOME, QUICK_REFERENCE, ABSTRACT_DATA_TYPES, BASE_API, SOUND_API, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
 
 const MINIMIZED = 0;
 const SHOWING_PANELS = 1;
@@ -27,7 +27,8 @@ const HIDDEN = 3;
 
 const WELCOME_PANEL = 0;
 const BASIC_USAGE_PANEL = 1;
-const API_REFERENCE_PANEL = 2;
+const BASE_API_PANEL = 2;
+const SOUND_API_PANEL = 6;
 const ABSTRACT_DATA_TYPES_PANEL = 3;
 
 function initialUiState() {
@@ -40,7 +41,8 @@ function initialUiState() {
 
 const App = () => {
     let [ uiState, setUiState ] = useState(initialUiState);
-    let [ panel, setPanel ] = useState(WELCOME_PANEL);
+    // opens on the quick reference, since welcome is no longer a tab
+    let [ panel, setPanel ] = useState(BASIC_USAGE_PANEL);
 
     // While the help panel is up, keystrokes belong to the panel, not to the
     // editor underneath it -- otherwise typing scrolls/inserts nexes behind
@@ -65,8 +67,11 @@ const App = () => {
             case ABSTRACT_DATA_TYPES:
                 setPanel(ABSTRACT_DATA_TYPES_PANEL);
                 break;
-            case FULL_API_REFERENCE:
-                setPanel(API_REFERENCE_PANEL);
+            case BASE_API:
+                setPanel(BASE_API_PANEL);
+                break;
+            case SOUND_API:
+                setPanel(SOUND_API_PANEL);
                 break;
             case START_TUTORIAL:
                 setUiState(SHOWING_TUTORIAL);
@@ -83,25 +88,28 @@ const App = () => {
     // than relying on them happening to line up.
     const selectedMenuChoice = () => {
         switch(panel) {
-            case API_REFERENCE_PANEL: return FULL_API_REFERENCE;
-            case ABSTRACT_DATA_TYPES_PANEL:       return ABSTRACT_DATA_TYPES;
-            case BASIC_USAGE_PANEL:   return QUICK_REFERENCE;
-            case WELCOME_PANEL:
-            default:                  return WELCOME;
+            case BASE_API_PANEL:            return BASE_API;
+            case SOUND_API_PANEL:           return SOUND_API;
+            case ABSTRACT_DATA_TYPES_PANEL: return ABSTRACT_DATA_TYPES;
+            case WELCOME_PANEL:             return WELCOME;
+            case BASIC_USAGE_PANEL:
+            default:                        return QUICK_REFERENCE;
         }
     }
 
     const displayPanel = () => {
         switch(panel) {
-            case API_REFERENCE_PANEL:
+            case BASE_API_PANEL:
                 return <ApiReferencePanel/>;
+            case SOUND_API_PANEL:
+                return <ApiReferencePanel sound={true}/>;
             case ABSTRACT_DATA_TYPES_PANEL:
                 return <AbstractDataTypesPanel/>;
-            case BASIC_USAGE_PANEL:
-                return <BasicUsagePanel/>;
             case WELCOME_PANEL:
-            default:
                 return <WelcomePanel/>;
+            case BASIC_USAGE_PANEL:
+            default:
+                return <BasicUsagePanel/>;
         }
     }
 
