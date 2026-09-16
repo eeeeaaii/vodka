@@ -163,6 +163,7 @@ function exportCurrentSession() {
 	let samples = audioStore.entries().map(function (e) {
 		return { hash: e.hash, samples: toBase64(e.buffer) };
 	});
+	console.log('vodka export: ' + samples.length + ' sample buffer(s) in the file');
 	return {
 		version: FILE_VERSION,
 		kind: 'vodka-session',
@@ -218,7 +219,12 @@ function importSession(parsed) {
 		writes.push(audioStore.putForSession(
 				sessionId, samples[i].hash, fromBase64(samples[i].samples)));
 	}
-	return Promise.all(writes).then(function () { return sessionId; });
+	return Promise.all(writes).then(function (results) {
+		let landed = results.filter(function (ok) { return ok; }).length;
+		console.log('vodka import: ' + landed + ' of ' + samples.length
+				+ ' sample buffer(s) committed');
+		return sessionId;
+	});
 }
 
 // A duplicate is a new session holding the same things, so it gets a new id --

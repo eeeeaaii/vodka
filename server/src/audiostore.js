@@ -199,14 +199,21 @@ function putForSession(sessionId, hash, buffer) {
 	if (unavailable) return Promise.resolve(false);
 	return openDb().then(function(db) {
 		if (!db) return false;
-		try {
-			let tx = db.transaction(STORE, 'readwrite');
-			tx.objectStore(STORE).put(buffer, sessionId + '/' + hash);
-			return true;
-		} catch (e) {
-			unavailable = true;
-			return false;
-		}
+		return new Promise(function(resolve) {
+			try {
+				let tx = db.transaction(STORE, 'readwrite');
+				tx.objectStore(STORE).put(buffer, sessionId + '/' + hash);
+				// settle on commit, not on queueing the write -- the caller
+				// navigates as soon as this settles, and navigating aborts
+				// any transaction still uncommitted
+				tx.oncomplete = function() { resolve(true); };
+				tx.onabort = function() { resolve(false); };
+				tx.onerror = function() { resolve(false); };
+			} catch (e) {
+				unavailable = true;
+				resolve(false);
+			}
+		});
 	});
 }
 

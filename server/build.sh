@@ -86,8 +86,11 @@ echo "vodka build: writing bundle to server/dist/"
 rm -rf dist
 mkdir -p dist
 
+BUILD_STAMP="$(git rev-parse --short HEAD 2>/dev/null || echo unknown) built $(date '+%Y-%m-%d %H:%M:%S')"
+
 npx esbuild src/vodkastart.js \
 	--bundle \
+	--define:__VODKA_BUILD__="\"$BUILD_STAMP\"" \
 	--splitting \
 	--format=esm \
 	--outdir=dist \
