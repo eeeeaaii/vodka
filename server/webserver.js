@@ -77,6 +77,34 @@ async function processRequest(req, resp) {
 
 	let sessionIdFromCookie = getSessionIdFromCookie(req);
 
+	/*
+	Told to the client rather than compiled into it, so one bundle works both
+	ways: served from here it can save, dropped on a static host it cannot.
+	The static build ships these same three files, which is why the client has
+	no idea which kind of server it is talking to.
+	*/
+	if (parsedUrl.pathname == '/config.json') {
+		sendResponse(resp, 200, 'application/json', JSON.stringify({
+			canSave: writesAllowed(),
+			// a live server can look in the directory, so a file added while
+			// you work shows up without a rebuild
+			liveIndex: true,
+		}), 'config');
+		return;
+	}
+	if (parsedUrl.pathname == '/packages/index.json'
+			|| parsedUrl.pathname == '/sounds/index.json') {
+		let dir = parsedUrl.pathname == '/packages/index.json' ? './packages' : './sounds';
+		let names = [];
+		try {
+			names = fs.readdirSync(dir);
+		} catch (e) {
+			names = [];
+		}
+		sendResponse(resp, 200, 'application/json', JSON.stringify(names), 'index');
+		return;
+	}
+
 	if (isApi) {
 		// the cookie is the fallback for older clients; the session the tab is
 		// actually in comes on the request
@@ -239,6 +267,10 @@ async function serviceRequestForRegularFile(sessionId, path, resp) {
 	// uh
 	let isSessionDownload = false;
 	if (path.indexOf('/sounds') == 0) {
+		path = "." + path;
+	} else if (path.indexOf('/packages/') == 0) {
+		// the shipped library, read the same way a static host would serve it,
+		// so the client has one way of reading a file that ships with the app
 		path = "." + path;
 	} else if (path.indexOf('/dist/') == 0) {
 		// the bundled client, written by build.sh

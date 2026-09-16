@@ -46,6 +46,8 @@ import { createWavetableBuiltins } from './builtins/wavetablebuiltins.js'
 import { createWaveMathBuiltins } from './builtins/wavemathbuiltins.js'
 import { createMidiBuiltins } from './builtins/midibuiltins.js'
 import { loadAndRun } from './servercommunication.js'
+import { newSessionId } from './sessionmanager.js'
+import { loadDeploymentConfig } from './deployment.js'
 import { RenderNode } from './rendernode.js'
 import { Root } from './nex/root.js'
 import { Command } from './nex/command.js'
@@ -216,6 +218,25 @@ function setOrCreateSessionId() {
 	} else {
 		sessionId = Utils.getCookie('sessionId');
 	}
+	/*
+	Nothing else is going to make one. A static host has no server to mint an id
+	and redirect, and the vodka server no longer needs to either -- a session
+	only exists in the browser, so the browser is the right place to name it.
+
+	Put into the address bar without navigating, so the url is still the way
+	back to this session.
+	*/
+	if (!sessionId) {
+		sessionId = newSessionId();
+		Utils.setCookie('sessionId', sessionId);
+		try {
+			let url = new URL(window.location.href);
+			url.searchParams.set('sessionId', sessionId);
+			window.history.replaceState(null, '', url.toString());
+		} catch (e) {
+			// an address bar we cannot rewrite is not worth failing over
+		}
+	}
 	systemState.setSessionId(sessionId);
 }
 
@@ -270,6 +291,8 @@ function installTestHooks() {
 // lookup and nothing downstream knows storage was involved. Nothing waits on
 // setup()'s return; vodkastart.js calls it at module top level.
 async function setup() {
+	// before anything asks whether it can save or how to list a directory
+	await loadDeploymentConfig();
 	setAppFlags();
 	suppressAnimationsIfRequested();
 	installTestHooks();

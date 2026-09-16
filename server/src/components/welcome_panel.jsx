@@ -88,14 +88,14 @@ const WelcomePanel = () => {
                 change computers, change browsers,
                 etc. To export this session to a file that you can import to another browser, <a href="#" onClick={doExport}>click here</a>.
                 To import a session you saved to a file previously, <a href="#" onClick={doImport}>click here</a>.
-                You bookmark <a id="sessionlink" href={buildURL({ "sessionId": sessionId })}>this link</a>
+                Bookmark <a id="sessionlink" href={buildURL({ "sessionId": sessionId })}>this link</a>
                 &nbsp;to come directly back to this session.</p>
             {message && <p className="infoline sessionmessage">{message}</p>}
             <p className="infoline">
                 To create a new session, <a href="#" onClick={askForNewSession}>click here</a>. To make a duplicate of this session, <a href="#" onClick={askForDuplicate}>click here</a>. Saving and loading files is disabled
                 on the web. If you clone the vodka repo and run a local server, you can save files
                 within your session.</p>
-            <p className="infoline">To switch to {oppositeTheme} theme, click <a id="switchthemelink" href={buildURL({ "theme": oppositeTheme })}>here</a></p>
+            <p className="infoline">To switch to {oppositeTheme} theme, click <a id="switchthemelink" href={buildURL({ "theme": oppositeTheme })}>here</a>.</p>
             <p className="infospacer"></p>
             <p className="infoline">Vodka is in beta and is a part-time side project.
                 I will <b>do my best</b> to make sure your session data is preserved across product
