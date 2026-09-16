@@ -367,7 +367,7 @@ function createMidiBuiltins() {
 			clipStartedPlaying(clip, [ id ]);
 			return clip;
 		},
-		'Plays a list of midi notes in a loop, joining the global cycle at its next boundary, and returns a clip naming it. Each note is what send-midi-note takes, and may carry a float tagged time saying where in the sequence it falls. Without a time it starts where the entry before it ended, so a list of notes carrying nothing but durations plays one after another. An entry with a duration and no note number is a rest: it takes up its time and sounds nothing, and a rest at the end is how you put space before the sequence repeats. An empty list gives you an empty clip, which sounds nothing and holds its place until you pass it back in |portorclip with something to play. The loop plays for as long as something holds the clip: keep the clip and it loops, throw it away and it plays once, delete it and it stops at the end of the pass it is in. |portorclip is either the port to play on, or a clip from an earlier play-midi -- given a clip, what it is playing is replaced at the next boundary, staying on the port it is already on, and you get the same clip back. Given neither, it plays on the port set by set-default-port.'
+		'Plays a midi sequence on |port. Returns a clip. Replaces |clip if passed in.'
 	);
 
 	Builtin.aliasBuiltin('loop-midi on', 'play-midi');
