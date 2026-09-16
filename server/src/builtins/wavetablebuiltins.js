@@ -1197,16 +1197,115 @@ function createWavetableBuiltins() {
     "Calls the function |f on |wt to produce an output, then calls |f on that output, then calls |f on the output of that, and so on, |n times, attenuating the output by |attenuation each time before passing it back into |f. The output of this function is the sum of all the outputs. This mimics analog feedback, but note that the |n parameter is a hard limit on the number of times the function is fed back into itself. Tag the command with wrap to have anything that runs past the end come back round to the beginning rather than being cut off, which is what you want for a wave you are going to loop."
   );
 
-  Builtin.createBuiltin(
-    "amplitude",
-    ["wt_"],
-    function $amplitude(env, executionEnvironment) {
-      let wt = env.lb("wt");
-      let val = wt.getAmp();
-      return constructFloat(val);
-    },
-    "Gets the amplitude of a signal (max of absolute value, not RMS)"
-  );
+  /*
+  Measured over a window that slides along the wave, so what comes back is a
+  wave itself: how loud the sound is as it goes, rather than one number for the
+  whole thing. Ask without a window and you get the one number instead, since
+  that is the whole wave in a single window.
+
+  The window is centred on the sample it reports, not trailing behind it. A
+  meter has to be causal because it cannot see the future; this is reading a
+  recording, where the future is right there, and centring means the measurement
+  lines up with the sound that caused it. At the ends the window is simply
+  shorter.
+
+  Both are computed by sliding rather than by re-reading the window at every
+  sample: a second of window on a minute of audio is otherwise billions of
+  operations.
+  */
+  function windowedMeasure(wt, windowSamples, wantRms) {
+    let dur = wt.getDuration();
+    let r = constructWavetable(dur);
+    let data = r.getData();
+    let half = Math.floor(windowSamples / 2);
+
+    let lo = 0;
+    let hi = -1;
+    let sumOfSquares = 0;
+    // indices, biggest first, so the front is the loudest sample still in the
+    // window -- anything smaller that arrived earlier can never be the answer
+    let biggest = [];
+    let front = 0;
+
+    for (let i = 0; i < dur; i++) {
+      let wantLo = Math.max(0, i - half);
+      let wantHi = Math.min(dur - 1, i - half + windowSamples - 1);
+
+      while (hi < wantHi) {
+        hi++;
+        let v = wt.valueAtSample(hi);
+        if (wantRms) {
+          sumOfSquares += v * v;
+        } else {
+          let a = Math.abs(v);
+          while (biggest.length > front
+              && Math.abs(wt.valueAtSample(biggest[biggest.length - 1])) <= a) {
+            biggest.pop();
+          }
+          biggest.push(hi);
+        }
+      }
+      while (lo < wantLo) {
+        if (wantRms) {
+          let v = wt.valueAtSample(lo);
+          sumOfSquares -= v * v;
+        } else if (biggest[front] == lo) {
+          front++;
+        }
+        lo++;
+      }
+
+      if (wantRms) {
+        data[i] = Math.sqrt(sumOfSquares / (hi - lo + 1));
+      } else {
+        data[i] = Math.abs(wt.valueAtSample(biggest[front]));
+      }
+    }
+    r.init();
+    return r;
+  }
+
+  function wholeWaveMeasure(wt, wantRms) {
+    let dur = wt.getDuration();
+    if (dur == 0) return constructFloat(0);
+    if (!wantRms) return constructFloat(wt.getAmp());
+    let sumOfSquares = 0;
+    for (let i = 0; i < dur; i++) {
+      let v = wt.valueAtSample(i);
+      sumOfSquares += v * v;
+    }
+    return constructFloat(Math.sqrt(sumOfSquares / dur));
+  }
+
+  function measureBuiltin(name, wantRms, docs) {
+    Builtin.createBuiltin(
+      name,
+      ["wt_", "window#%?"],
+      function (env, executionEnvironment) {
+        let wt = env.lb("wt");
+        let window = env.lb("window");
+        if (window == UNBOUND) {
+          return wholeWaveMeasure(wt, wantRms);
+        }
+        let windowSamples = convertTimeToSamples(window);
+        if (windowSamples < 1) {
+          return constructFatalError(name + ": window is shorter than one sample. Sorry!");
+        }
+        return windowedMeasure(wt, windowSamples, wantRms);
+      },
+      docs
+    );
+  }
+
+  measureBuiltin("volume", true,
+      "How loud wt| is over |window, as a wave you can look at or multiply by. This is rms, which follows what you hear rather than what the single loudest sample happens to be -- a kick and a hi-hat with the same peak are nowhere near the same volume. Leave |window out to get one number for the whole wave. Timebase tag (nn, secs, hz, b, samps) is on |window.");
+
+  measureBuiltin("peak-of", false,
+      "The loudest sample in wt| within |window, as a wave. Leave |window out to get one number for the whole wave, which is what amplitude has always done. Use volume instead if you want what you hear rather than what the meter hits. Timebase tag (nn, secs, hz, b, samps) is on |window.");
+
+  Builtin.aliasBuiltin("rms", "volume");
+  // what this was called when it could only measure the whole wave
+  Builtin.aliasBuiltin("amplitude", "peak-of");
 
   Builtin.createBuiltin(
     "duration",
