@@ -110,6 +110,11 @@ async function processRequest(req, resp) {
 
 
 	} else if (query.copy) {
+		if (!writesAllowed()) {
+			sendResponse(resp, 403, 'text/html',
+					'this vodka does not keep files, so there is nothing to copy.', 'ERROR');
+			return;
+		}
 		let sessionId = query.sessionId || sessionIdFromCookie;
 		let readonly = (query.type == 'readonly');
 		if (!sessionId) {
@@ -339,6 +344,18 @@ async function loadWebEnv() {
 			? setLocalWebEnv()
 			: setRemoteWebEnv();
 	
+	/*
+	Remote is the default, and a missing or unreadable webenv.txt stays remote.
+	A server that has lost its configuration should refuse to keep files rather
+	than start keeping them, so the safe answer is the one you get by accident.
+
+	Local has to be asked for: runserver.sh sets VODKA_WEBENV, and webenv.txt
+	still works for anyone who was already using it.
+	*/
+	if (process.env.VODKA_WEBENV) {
+		setWebEnv(process.env.VODKA_WEBENV.trim());
+		return;
+	}
 	try {
 		const data = await fsPromises.readFile('webenv.txt');
 		setWebEnv(String(data).trim());
@@ -408,7 +425,9 @@ async function serviceApiRequest(sessionId, resp, data) {
 		arg = data.substr(i + 1);
 	}
 	let respData = `v2:?"unknown api method. Sorry!"`;
-	if (opcode == 'save') {
+	if ((opcode == 'save' || opcode == 'saveraw') && !writesAllowed()) {
+		respData = `v2:?"this vodka does not keep files, your work is in this browser. Sorry!"`;
+	} else if (opcode == 'save') {
 		respData = await serviceApiSaveRequest(arg, sessionId);
 	} else if (opcode == 'load') {
 		respData = await serviceApiLoadRequestUserSession(arg, sessionId, true /*fallback to user session*/);
@@ -443,6 +462,21 @@ isGeneratedSessionId only looks at the prefix, so a generated id needs checking
 too -- the prefix says where the directory lives, not that the rest of the name
 is safe.
 */
+/*
+Nothing a visitor makes is kept on a hosted vodka. Documents and samples live in
+the browser, which is where they already live between reloads, and the server
+serves the app and the shipped libraries and nothing else.
+
+This is decided here rather than by leaving the save button out of the page: the
+api is a post anyone can make by hand, so hiding the button would be a promise
+about the client rather than a property of the server.
+
+Run it on your own machine and it saves as it always has.
+*/
+function writesAllowed() {
+	return webenv_vars.isLocal;
+}
+
 function isLegalSessionId(sessionId) {
 	return typeof sessionId === 'string' && /^[a-zA-Z0-9_-]+$/.test(sessionId);
 }
