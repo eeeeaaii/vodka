@@ -21,6 +21,12 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
   --page-background: #ffffff;
   --page-text: #000000;
 
+  --dialog-scrim: rgba(0, 0, 0, 0.35);
+  --dialog-background: #ffffff;
+  --dialog-text: #000000;
+  --dialog-border: #aaaaaa;
+  --dialog-input-background: #f4f4f4;
+
   --selected-border: #ff7777;
   --unselected-border: #aaaaaa;
   --value-background: #e8e8e8;
@@ -106,6 +112,12 @@ waveform is teal so signal is never confused with structure.
 :root[data-theme="dark"] {
   --page-background: #000000;
   --page-text: #dfe3ea;
+
+  --dialog-scrim: rgba(0, 0, 0, 0.6);
+  --dialog-background: #1c1d21;
+  --dialog-text: #dfe3ea;
+  --dialog-border: #54565e;
+  --dialog-input-background: #292929;
 
   --selected-border: #cc3d3d;
   --unselected-border: #54565e;

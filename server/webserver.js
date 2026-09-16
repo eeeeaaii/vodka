@@ -153,9 +153,20 @@ async function processRequest(req, resp) {
 		return;
 
 	} else if (query.sessionId) {
-		let exists = await checkIfSessionExists(query.sessionId);
-		if (!exists) {
-			sendResponse(resp, 401, 'text/html', "unknown session id specified in query string", 'ERROR');
+		/*
+		A hosted vodka keeps nothing, so it has no session directories to check
+		against and no opinion about which sessions exist -- the browser holds
+		them. Insisting on a directory here would mean a session made in the
+		browser could not be opened.
+		*/
+		if (writesAllowed()) {
+			let exists = await checkIfSessionExists(query.sessionId);
+			if (!exists) {
+				sendResponse(resp, 401, 'text/html', "unknown session id specified in query string", 'ERROR');
+				return;
+			}
+		} else if (!isLegalSessionId(query.sessionId)) {
+			sendResponse(resp, 400, 'text/html', "bad session id", 'ERROR');
 			return;
 		}
 		await serviceRequestForRegularFile(query.sessionId, path, resp);

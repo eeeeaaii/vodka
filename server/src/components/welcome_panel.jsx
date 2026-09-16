@@ -1,54 +1,115 @@
+import { useState } from 'preact/hooks';
 import { systemState } from '../systemstate.js';
 import { buildURL } from '../help';
-
+import NewSessionDialog from './new_session_dialog';
+import {
+    listSessions,
+    newSessionId,
+    setName,
+    exportCurrentSession,
+    fileNameForCurrentSession,
+    parseSessionFile,
+    importSession,
+    duplicateCurrentSession,
+    saveTextToFile,
+    readTextFromFile,
+} from '../sessionmanager.js';
 
 const WelcomePanel = () => {
     const sessionId = systemState.getSessionId();
     const oppositeTheme = (window.CSS_THEME == 'dark' ? 'light' : 'dark');
 
+    // {title, id} while a name is being asked for, null the rest of the time
+    const [dialog, setDialog] = useState(null);
+    const [message, setMessage] = useState(null);
+    const sessions = listSessions();
+
+    const goTo = (id) => { window.location.href = buildURL({ 'sessionId': id }); };
+
+    const askForNewSession = (e) => {
+        e.preventDefault();
+        setDialog({ title: 'New session', id: newSessionId(), kind: 'new' });
+    };
+
+    const askForDuplicate = (e) => {
+        e.preventDefault();
+        setDialog({ title: 'Duplicate session', id: newSessionId(), kind: 'duplicate' });
+    };
+
+    const onCreate = (name) => {
+        let d = dialog;
+        setDialog(null);
+        if (d.kind == 'duplicate') {
+            duplicateCurrentSession(name).then(goTo);
+            return;
+        }
+        setName(d.id, name);
+        goTo(d.id);
+    };
+
+    const doExport = (e) => {
+        e.preventDefault();
+        let text = JSON.stringify(exportCurrentSession(), null, 1);
+        saveTextToFile(text, fileNameForCurrentSession());
+    };
+
+    const doImport = (e) => {
+        e.preventDefault();
+        readTextFromFile().then((text) => {
+            if (!text) return;
+            let r = parseSessionFile(text);
+            if (r.error) { setMessage(r.error); return; }
+            importSession(r.session).then(goTo);
+        });
+    };
+
     return (
-
         <div className="infopanel">
-        <p className="infotitle">Vodka</p>
-        <p className="infosubheader">Release 0.4.2</p>
-        <p className="infoline"><a href="https://github.com/eeeeaaii/vodka/blob/main/CHANGES.md">Release Notes</a></p>
-        <p className="infospacer"></p>
-        <p className="infoline">Vodka is a creative coding environment for music and text.</p>
-        <p className="infospacer"></p>
-        <p className="infoline">More info about Vodka can be found at:</p>
-        <p className="infoline"><a href="https://github.com/eeeeaaii/vodka">Github</a></p>
-        <p className="infospacer"></p>
-        <p className="infoline">There are also help pages and a tutorial/walkthrough accessible by the links above.</p>
-        <p className="infospacer"></p>
-        <p className="infoline">Your session ID is <span id="sessionid">{sessionId}</span>.</p>
-        <p className="infoline">All data you save via the (_save_) and (_save-file_) builtins is sandboxed to this session.</p>
-        <p className="infoline">You can access this session again with <a id="sessionlink" href={buildURL({ "sessionId": sessionId })}>this link</a>.</p>
-        <p className="infoline">You can leave this session and start a whole new session with <a id="newsessionlink" href={buildURL({ "sessionId": null, "new": 1 })}>this link</a>, or by deleting the sessionId from the address bar.</p>
-        <p className="infoline">You can create an exact copy of this session (with all the same saved files) with <a id="copysessionlink" href={buildURL({ "sessionId": null, "copy": 1 })}>this link</a>.</p>
-        <p className="infoline">You can create a read-only copy of this session (e.g. for sharing on social media) with <a id="sharesessionlink" href={buildURL({ "sessionId": null, "copy": 1, "type": "readonly" })}>this link</a>.</p>
-        <p className="infoline">To have a file load and be evaluated in normal mode at startup when a session link is visited, name the file "start-doc".</p>
-        <p className="infoline">To switch to {oppositeTheme} theme, click <a id="switchthemelink" href={buildURL({ "theme": oppositeTheme })}>here</a></p>
-
-
-        <p className="infospacer"></p>
-        <p className="infoline">Vodka is in alpha and is under active development. I will <b>do my best</b> to preserve your data as much as I can. However:</p>
-        <p className="infoline">- Sessions and sandbox contents may need to be deleted at any time without notice.</p>
-        <p className="infoline">- Long term persistence of session contents is not guaranteed.</p>
-        <p className="infoline">- Uptime or availability is not guaranteed.</p>
-        <p className="infoline">- Sessions are not backed up in any way.</p>
-        <p className="infoline">In addition, in the absence of problems, I may still periodically go through and delete old, inactive sessions. In other words, if you make something you like, it's probably prudent to capture it in some other way besides storing it here.</p>
-        <p className="infospacer"></p>
-        <p className="infoline">Abusive, harmful or illegal content of any kind is not allowed on this server.</p>
-        <p className="infoline">The site admin (eeeeaaii) is the sole arbiter of what is allowed.</p>
-        <p className="infoline">Disallowed content will be deleted immediately.</p>
-        <p className="infospacer"></p>
-        <p className="infoline">Vodka is created by <a href="https://twitter.com/eeeeaaii">Jason Scherer (eeeeaaii)</a></p>
-        <p className="infoline">You retain all copyright to any creative works you make with Vodka.</p>
-        <p className="infoline">Changes to the Vodka framework itself are protected by <a href="https://www.gnu.org/licenses/">the GPL</a>.</p>
-        <p className="infoline">If you have questions or want to report a problem, join <a href="https://groups.google.com/g/vodka-users">vodka-users@googlegroups.com</a> and send an email.</p>
-        <p className="infospacer"></p>
-    </div>
-);
+            <p className="infotitle">Vodka</p>
+            <p className="infosubheader">Release 0.5</p>
+            <p className="infospacer"></p>
+            <p className="infoline">Vodka is a creative coding environment for music and text.</p>
+            <p className="infospacer"></p>
+            <p className="infoline">More info about Vodka can be found at:</p>
+            <p className="infoline"><a href="https://github.com/eeeeaaii/vodka">Github</a></p>
+            <p className="infospacer"></p>
+            <p className="infoline">There are also help pages and a tutorial/walkthrough accessible by the links above.</p>
+            <p className="infospacer"></p>
+            <p className="infoline">The current session ID is <span id="sessionid">{sessionId}</span>.</p>
+            <p className="infoline">Other sessions available on this machine:</p>
+            <ul className="sessionlist">
+                {sessions.filter((s) => !s.isCurrent).map((s) => (
+                    <li key={s.id}><a href={buildURL({ 'sessionId': s.id })}>{s.name}</a></li>
+                ))}
+                {sessions.filter((s) => !s.isCurrent).length == 0 &&
+                    <li className="sessionlistempty">none yet</li>}
+            </ul>
+            <p className="infoline">Your session is scoped only to this browser and will be gone if you delete local data,
+                change computers, change browsers,
+                etc. To export this session to a file that you can import to another browser, <a href="#" onClick={doExport}>click here</a>.
+                To import a session you saved to a file previously, <a href="#" onClick={doImport}>click here</a>.
+                You bookmark <a id="sessionlink" href={buildURL({ "sessionId": sessionId })}>this link</a>
+                &nbsp;to come directly back to this session.</p>
+            {message && <p className="infoline sessionmessage">{message}</p>}
+            <p className="infoline">
+                To create a new session, <a href="#" onClick={askForNewSession}>click here</a>. To make a duplicate of this session, <a href="#" onClick={askForDuplicate}>click here</a>. Saving and loading files is disabled
+                on the web. If you clone the vodka repo and run a local server, you can save files
+                within your session.</p>
+            <p className="infoline">To switch to {oppositeTheme} theme, click <a id="switchthemelink" href={buildURL({ "theme": oppositeTheme })}>here</a></p>
+            <p className="infospacer"></p>
+            <p className="infoline">Vodka is in beta and is a part-time side project.
+                I will <b>do my best</b> to make sure your session data is preserved across product
+                updates, but there are no guarantees.</p>
+            <p className="infospacer"></p>
+            <p className="infoline">Vodka is created by <a href="https://instagram.com/eeeeaaii">Jason Scherer (eeeeaaii)</a></p>
+            <p className="infoline">You retain all copyright to any creative works you make with Vodka.</p>
+            <p className="infoline">Changes to the Vodka framework itself are protected by <a href="https://www.gnu.org/licenses/">the GPL</a>.</p>
+            <p className="infoline">If you have questions or want to report a problem, feel free to file an issue on github and assign it to me.</p>
+            <p className="infospacer"></p>
+            {dialog && <NewSessionDialog sessionId={dialog.id} title={dialog.title}
+                onCreate={onCreate} onCancel={() => setDialog(null)} />}
+        </div>
+    );
 };
 
 export default WelcomePanel;

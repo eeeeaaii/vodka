@@ -178,6 +178,38 @@ vodka knows the moment it happens -- heap.free calls cleanupOnMemoryFree as soon
 as the last reference drops. Nothing has to be inferred from what a document
 does or does not mention.
 */
+/*
+Every sample this session has, for handing a whole session to a file. The
+buffers are the stored ones, so callers must not write into them.
+*/
+function entries() {
+	let r = [];
+	loaded.forEach(function(buffer, hash) {
+		r.push({ hash: hash, buffer: buffer });
+	});
+	return r;
+}
+
+/*
+Writes under a session that is not the one we are in, which is what importing a
+file and duplicating a session both need. Nothing is added to `loaded`, because
+that is this session's samples and these are not.
+*/
+function putForSession(sessionId, hash, buffer) {
+	if (unavailable) return Promise.resolve(false);
+	return openDb().then(function(db) {
+		if (!db) return false;
+		try {
+			let tx = db.transaction(STORE, 'readwrite');
+			tx.objectStore(STORE).put(buffer, sessionId + '/' + hash);
+			return true;
+		} catch (e) {
+			unavailable = true;
+			return false;
+		}
+	});
+}
+
 function remove(id) {
 	if (!id) return;
 	loaded.delete(id);
@@ -212,6 +244,8 @@ export {
 	get,
 	has,
 	put,
+	entries,
+	putForSession,
 	remove,
 	isUnavailable
 }
