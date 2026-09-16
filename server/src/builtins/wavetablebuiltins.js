@@ -49,7 +49,9 @@ import {
   getDefaultTimebase,
   getSampleRate,
   getConstantSignalFromValue,
+  frequencyToNoteNum,
 } from "../wavetablefunctions.js";
+import { forEachSpectrum } from "../fft.js";
 import { loopPlay, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying } from "../webaudio.js";
 import { constructClip } from "../nex/clip.js";
 import { Tag } from "../tag.js";
@@ -1355,6 +1357,51 @@ function createWavetableBuiltins() {
   Builtin.aliasBuiltin("rms", "volume");
   // what this was called when it could only measure the whole wave
   Builtin.aliasBuiltin("amplitude", "peak-of");
+
+  Builtin.createBuiltin(
+    "brightness",
+    ["wt_"],
+    function $brightness(env, executionEnvironment, commandTags) {
+      let wt = env.lb("wt");
+      if (wt.getDuration() < 2) {
+        return constructFatalError(
+            "brightness: this wave is too short to measure. Sorry!");
+      }
+
+      /*
+      The centre of gravity of the spectrum, which is the one number that
+      tracks what an ear calls bright. Measured frame by frame and pooled
+      rather than in one go, so a loud bright moment counts for more than a
+      quiet dark one, and so the answer does not depend on how long the wave
+      happens to be.
+      */
+      let sampleRate = getSampleRate();
+      let num = 0;
+      let den = 0;
+      forEachSpectrum(wt, 2048, 1024, function (mags, n) {
+        for (let b = 0; b < mags.length; b++) {
+          num += ((b * sampleRate) / n) * mags[b];
+          den += mags[b];
+        }
+      });
+      if (den == 0) {
+        return constructFatalError("brightness: this wave is silent. Sorry!");
+      }
+      let hz = num / den;
+
+      let timebase = timebaseFromTags(commandTags);
+      if (!timebase || timebase == "HZ") {
+        return constructFloat(hz);
+      }
+      if (timebase == "NOTE") {
+        return constructFloat(frequencyToNoteNum(hz));
+      }
+      return constructFloat(convertSamplesToTimebase(timebase, sampleRate / hz));
+    },
+    "How bright wt| sounds, as one frequency in hz: the centre of gravity of its spectrum. Useful for sorting a pile of samples dark to bright, or for picking the dullest hit out of a folder. It says nothing about pitch -- a bright bass note reads higher than a dull high one. Tag the command with a timebase (nn, secs, hz, b, samps) to get the answer in that instead."
+  );
+
+  Builtin.aliasBuiltin("centroid-of", "brightness");
 
   Builtin.createBuiltin(
     "duration",
