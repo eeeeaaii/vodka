@@ -1303,6 +1303,55 @@ function createWavetableBuiltins() {
   measureBuiltin("peak-of", false,
       "The loudest sample in wt| within |window, as a wave. Leave |window out to get one number for the whole wave, which is what amplitude has always done. Use volume instead if you want what you hear rather than what the meter hits. Timebase tag (nn, secs, hz, b, samps) is on |window.");
 
+  Builtin.createBuiltin(
+    "envelope-of",
+    ["wt_", "attack#%?", "release#%?"],
+    function $envelopeOf(env, executionEnvironment) {
+      let wt = env.lb("wt");
+      let attack = env.lb("attack");
+      let release = env.lb("release");
+
+      let attackSamples = attack == UNBOUND
+          ? Math.round(0.005 * getSampleRate())
+          : convertTimeToSamples(attack);
+      let releaseSamples = release == UNBOUND
+          ? Math.round(0.05 * getSampleRate())
+          : convertTimeToSamples(release);
+      if (attackSamples < 0 || releaseSamples < 0) {
+        return constructFatalError("envelope-of: attack and release cannot be negative. Sorry!");
+      }
+
+      /*
+      Unlike volume and peak-of, this one runs forwards only and never looks
+      ahead. That is not an oversight: the whole point of an envelope follower
+      is that it rises and falls at different rates, and quick-to-rise
+      slow-to-fall only means anything if it is moving through the sound in
+      order.
+
+      The coefficient is how much of the old value survives one sample. Over
+      the given number of samples that leaves 1/e of the distance still to
+      travel, which is what makes attack and release read as times rather than
+      as arbitrary numbers.
+      */
+      let attackKeep = attackSamples < 1 ? 0 : Math.exp(-1 / attackSamples);
+      let releaseKeep = releaseSamples < 1 ? 0 : Math.exp(-1 / releaseSamples);
+
+      let dur = wt.getDuration();
+      let r = constructWavetable(dur);
+      let data = r.getData();
+      let level = 0;
+      for (let i = 0; i < dur; i++) {
+        let v = Math.abs(wt.valueAtSample(i));
+        let keep = v > level ? attackKeep : releaseKeep;
+        level = keep * level + (1 - keep) * v;
+        data[i] = level;
+      }
+      r.init();
+      return r;
+    },
+    "Follows how loud wt| is as it goes, rising over |attack and falling over |release, and returns that as a wave. This is the shape of the sound rather than the sound: multiply another wave by it and that wave takes on this one's dynamics. Rising fast and falling slow is what makes it read as an envelope rather than as a rectified copy -- the defaults are 5 milliseconds and 50. Timebase tag (nn, secs, hz, b, samps) is on |attack and |release."
+  );
+
   Builtin.aliasBuiltin("rms", "volume");
   // what this was called when it could only measure the whole wave
   Builtin.aliasBuiltin("amplitude", "peak-of");
