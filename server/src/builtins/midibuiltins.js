@@ -132,7 +132,7 @@ function createMidiBuiltins() {
 			dv.activate();
 			return dv;
 		},
-		'Reconnects the midi port |port and returns it with its state as it is now. A port remembered from a previous session is only its name and id until this is called; list-midi-ports does the same thing for every port at once.'
+		'Opens midi port |port, where |port is an org returned by list-midi-ports. Web audio has no notion of devices, so a device will list its inputs as a port and its outputs as a different port.'
 	);
 
 	Builtin.createBuiltin(
@@ -310,7 +310,7 @@ function createMidiBuiltins() {
 			clipStartedPlaying(clip, [ id ]);
 			return clip;
 		},
-		'Plays a list of midi notes in a loop, joining the global cycle at its next boundary, and returns a clip naming it. Each note is what send-midi-note takes, and may carry a float tagged time saying where in the sequence it falls. Without a time it starts where the entry before it ended, so a list of notes carrying nothing but durations plays one after another. An entry with a duration and no note number is a rest: it takes up its time and sounds nothing, and a rest at the end is how you put space before the sequence repeats. An empty list gives you an empty clip, which sounds nothing and holds its place until you pass it back in |portorclip with something to play. The loop plays for as long as something holds the clip: keep the clip and it loops, throw it away and it plays once, delete it and it stops at the end of the pass it is in. |portorclip is either the port to play on, or a clip from an earlier play-midi -- given a clip, what it is playing is replaced at the next boundary, staying on the port it is already on, and you get the same clip back. Given neither, it plays on the port set by set-default-port.'
+		'Plays a midi sequence on |port. Returns a clip. Replaces |clip if passed in.'
 	);
 
 	Builtin.aliasBuiltin('loop-midi on', 'play-midi');
@@ -338,7 +338,7 @@ function createMidiBuiltins() {
 			sendMidiData(port.id, bytes);
 			return data;
 		},
-		'Sends |data, an org of integers, to the midi port |port exactly as given, or to the one set by set-default-port if you do not name one. For anything the note builtin does not cover -- control changes, program changes, clock, sysex.'
+		'Sends |data as bytes, where each integer is a single byte, to the midi port |port, which should be the org returned by list-midi-ports.'
 	);
 
 	Builtin.aliasBuiltin('send-midi-data on', 'send-midi-data');
@@ -401,7 +401,7 @@ function createMidiBuiltins() {
 			}
 			return n;
 		},
-		'Sends a midi note to the port |port, or to the one set by set-default-port if you do not name one. |note is an org holding an integer tagged note, note-on or note-off. A note tagged |note may also carry a float tagged duration, which takes a timebase tag like any other length. Duration defaults to one beat, velocity to 127 and channel to 1.'
+		'Sends |note to |port, or to the default port. |note is an org with an integer tagged note, note-on or note-off, and may carry a duration. Defaults: one beat, velocity 127, channel 1.'
 	);
 
 	Builtin.aliasBuiltin('send-midi-note on', 'send-midi-note');

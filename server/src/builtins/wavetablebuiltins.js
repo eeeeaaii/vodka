@@ -174,7 +174,7 @@ function createWavetableBuiltins() {
       clipStartedPlaying(clip, ids);
       return clip;
     },
-    "Starts playing wt| at the next measure start, and returns a clip naming it. It plays for as long as something holds that clip: keep the clip and it loops, throw it away and it plays once, delete it and it stops at the end of the pass it is in. |channelsorclip is either the channels to play on, or a clip returned by an earlier play -- given a clip, the loop it names is replaced at the next measure start, staying on the channels it is already on, and you get the same clip back. If it is not provided, the sound is played on the first 2 channels. If it and/or |wt are lists, Vodka will do its best to match up sounds with channels."
+    "Plays a loop. Returns a clip. Replaces |clip if passed in."
   );
 
   // what it was called before it could do both
@@ -193,7 +193,7 @@ function createWavetableBuiltins() {
       r.setHorizontal();
       return r;
     },
-    "Every audio output this device has, as an org of channel numbers, which is exactly what play takes -- so play a wave across all of them by passing this straight in. Two things worth knowing: asking is what opens the audio device if nothing has made a sound yet, and the answer is fixed when that happens, so plugging in a different interface does not change it until you reload."
+    "Returns every audio output this device has, as an org of channel numbers counting from 1, which is what play takes. Asking opens the audio device, and the answer is fixed until you reload."
   );
 
   Builtin.createBuiltin(
@@ -351,7 +351,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Passes every sample of wt| through |shape and returns the result. |shape is a wave read as a lookup rather than as a sound: its length stands for an input of -1 to 1, and the value it holds at each point is what comes out. A straight line leaves wt| alone. See wavefold-shape, soft-clip-shape and compress-shape for shapes to pass in, or make your own."
+    "Passes every sample of wt| through |shape. |shape is a wave read as a lookup: its length stands for an input of -1 to 1. See transfer-wavefold, transfer-clipping and transfer-compress."
   );
 
   // reflect back off the limit, as many times as it takes
@@ -465,7 +465,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Rounds every sample in wt| to one of a smaller number of levels, the way an old sampler with |bits bits to spend would have measured it. Fewer bits is more crunch: 8 is a drum machine, 4 is a toy, 1 is a square wave of whatever went in. Defaults to 8, and takes a wave rather than a number if you want it to change while the sound plays. This is how finely each sample is measured -- sample-reduce is how often."
+    "Rounds every sample in wt| to one of |bits levels, default 8. Fewer bits is more crunch. |bits may be a wave. This is how finely each sample is measured -- sample-reduce is how often."
   );
 
   Builtin.createBuiltin(
@@ -497,7 +497,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Holds each sample of wt| for |hold samples before looking at the next one, which is what a sound played back at a lower rate does. |hold tagged hz says the rate to drop to rather than the number of samples to hold, so 8000 hz is eight kilohertz whatever the wave was recorded at. Takes a wave rather than a number to make it move. Held rather than resampled on purpose: the aliasing is the sound, and resample-by interpolates it away. This is how often the sound is measured -- bitcrush is how finely."
+    "Holds each sample of wt| for |hold samples before taking the next. Tag |hold with hz to give a rate instead. |hold may be a wave. This is how often the sound is measured -- bitcrush is how finely."
   );
 
   Builtin.createBuiltin(
@@ -580,7 +580,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Runs |wt1 through a single pole filter with a cutoff determined by |wt2. If an integer or float is passed in for wt2, it is converted to a constant signal. A value of 1 corresponds to a filter cutoff frequency of 20kHz. |type is low or high, and defaults to low. One pole cannot resonate -- use doublepole for that."
+    "Runs |wt1 through a one pole filter with cutoff |wt2, a number or a wave. |wt2 is 0 to 1 across the range of hearing, by ear rather than by hertz; tag it hz or nn for a real frequency. Tag the command <low> or <high>, default <low>. Cannot resonate -- use doublepole for that."
   );
 
   /*
@@ -798,7 +798,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "One band of parametric eq on wt|: lifts or drops a region around |freq by |gain decibels and leaves the rest alone. |q is how wide that region is, higher being narrower, and defaults to 1. |type is peak, lowshelf or highshelf, and defaults to peak -- a shelf moves everything below or above |freq instead of a band around it. |freq is a fraction of 20kHz, so 0.05 is 1kHz, or a number tagged with a timebase (hz, nn). Chain calls to build up a whole eq. All three of |freq, |gain and |q can be waves, so a band can move."
+    "One band of parametric eq on wt|: lifts or drops |gain decibels around |freq. |q is the width, higher is narrower, default 1. Tag the command <peak>, <lowshelf> or <highshelf>, default <peak>. |freq is a fraction of 20kHz, or tag it hz or nn. All three may be waves."
   );
 
   Builtin.createBuiltin(
@@ -833,7 +833,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Convolves |wt with |ir. If |ir is an impulse response, this should give a reverb effect. Otherwise this will create a hybrid sound that shares some characteristics of both sounds. Warning: this function is very slow, you may have to wait a while."
+    "Convolves |wt with |ir. With an impulse response this gives reverb; with anything else, a hybrid of the two. Slow."
   );
 
   Builtin.createBuiltin(
@@ -1242,7 +1242,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Makes wt| |amount times longer without changing its pitch, which is not what resample-by does -- that changes both together. Tag |amount with a timebase (nn, secs, hz, b, samps) and it is the length you want rather than a multiple of the one you have. Works by laying overlapping pieces of the sound back down at a different spacing, choosing each piece from the place it fits best, so a long stretch of anything rhythmic will eventually sound like it is smearing rather than slowing."
+    "Makes wt| |amount times longer without changing its pitch. Tag |amount with a timebase to give the length you want instead of a multiple."
   );
 
   Builtin.createBuiltin(
@@ -1289,7 +1289,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Moves wt| up or down by |semitones without changing how long it is. Negative goes down, and it does not have to be a whole number -- 0.5 is a quarter tone, and small amounts against the original are how you thicken a sound. This is time-stretch followed by resample-by: stretching makes it longer, playing the stretched copy back faster puts the length back and takes the pitch with it. Anything beyond a few semitones will start to sound like it, which is what pitch shifting is."
+    "Moves wt| by |semitones without changing its length. Negative goes down, and it need not be a whole number."
   );
 
   Builtin.createBuiltin(
@@ -1635,7 +1635,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Outputs a delayed copy of |wt, the beginning padded with silence and the wave made longer by |time to fit the tail. Tag the command with wrap to keep the original length instead and let the tail come back round to the beginning, which is what you want for a wave you are going to loop. Combine with feedback to get a classic delay sound. Timebase tag (nn, secs, hz, b, samps) is on |time."
+    "Outputs a delayed copy of |wt, padded with silence at the front and lengthened by |time. Tag the command wrap to keep the original length and bring the tail round to the beginning. Timebase tag is on |time."
   );
 
   Builtin.createBuiltin(
@@ -1683,7 +1683,7 @@ function createWavetableBuiltins() {
       output.init();
       return output;
     },
-    "Calls the function |f on |wt to produce an output, then calls |f on that output, then calls |f on the output of that, and so on, |n times, attenuating the output by |attenuation each time before passing it back into |f. The output of this function is the sum of all the outputs. This mimics analog feedback, but note that the |n parameter is a hard limit on the number of times the function is fed back into itself. Tag the command with wrap to have anything that runs past the end come back round to the beginning rather than being cut off, which is what you want for a wave you are going to loop."
+    "Calls |f on |wt, then on that output, and so on |n times, attenuating by |attenuation each round, and sums the results. Tag the command wrap to hold the result at the length of |wt."
   );
 
   /*
@@ -1820,7 +1820,7 @@ function createWavetableBuiltins() {
     function $comb(env, executionEnvironment, commandTags) {
       return runDelayLine("comb", env, commandTags, false);
     },
-    "Adds wt| to a copy of itself |time later, over and over, each copy quieter than the last by |feedback (0 to 1, default 0.5). Short times ring at one pitch, long ones are an echo. |time can be a wave rather than a number, and a delay that moves is a flanger -- a wave here is read as a number of samples directly, since a wave has nowhere to put a timebase tag. Tag the command with wrap to keep the original length and have the tail come round to the beginning, which for a wave you are going to loop sounds like it has been looping all along; without it the wave gets longer to make room for the tail. Timebase tag (nn, secs, hz, b, samps) is on |time."
+    "Apply comb filter with |time and |feedback."
   );
 
   Builtin.createBuiltin(
@@ -1829,7 +1829,7 @@ function createWavetableBuiltins() {
     function $allpass(env, executionEnvironment, commandTags) {
       return runDelayLine("allpass", env, commandTags, true);
     },
-    "Delays some frequencies more than others while leaving every one of them at the same level, so on its own it sounds like nothing. That is what it is for: chains of these are how a reverb turns a handful of echoes into something that sounds like a room, and one against the dry sound is a phaser. |amount is 0 to 1, default 0.5. Takes the same |time and the same wrap tag as comb."
+    "Apply allpass filter with |time and |amount."
   );
 
   /*
@@ -1948,7 +1948,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Puts wt| in a room. |size is how big the room is, |mix how much of it you hear against the dry sound, and |damping how quickly the bright part of the tail dies away -- all three run 0 to 1, and default to a half, a third and a half. Tag the command with wrap to keep the original length and have the tail come round to the beginning, which for a wave you are going to loop sounds like it has been playing in the room all along; without it the wave gets longer to make room for the tail. convolve gives you a more faithful room if you have an impulse response for one; this is for when you do not, and for a tail you want to change by changing a number."
+    "Apply comb-filter style reverb with |size, |mix, and |damping."
   );
 
   /*
@@ -2150,7 +2150,7 @@ function createWavetableBuiltins() {
       }
       return constructFloat(convertSamplesToTimebase(timebase, sampleRate / hz));
     },
-    "How bright wt| sounds, as one frequency in hz: the centre of gravity of its spectrum. Useful for sorting a pile of samples dark to bright, or for picking the dullest hit out of a folder. It says nothing about pitch -- a bright bass note reads higher than a dull high one. Tag the command with a timebase (nn, secs, hz, b, samps) to get the answer in that instead."
+    "How bright wt| sounds, as one frequency in hz -- the centre of gravity of its spectrum. Says nothing about pitch. Tag the command with a timebase to get another unit."
   );
 
   Builtin.aliasBuiltin("centroid-of", "brightness");
@@ -2388,7 +2388,7 @@ function createWavetableBuiltins() {
       r.cacheSections();
       return r;
     },
-    "Returns a copy of wt| with split points at |points, the same ones you get by pressing v while editing a wave. |points is one number or a list of them, and n of them give n+1 slices. They are lengths, so they can be tagged with a timebase, and additionally with of-total to read them as a fraction of this wave -- 0.5 of-total is halfway along. A tag on the list applies to every point in it."
+    "Returns a copy of wt| with split points at |points, one number or a list; n points give n+1 slices. Untagged they are read in the default timebase; tag with a timebase, or with of-total for a fraction of the wave. A tag on the list applies to every point."
   );
 
   Builtin.createBuiltin(

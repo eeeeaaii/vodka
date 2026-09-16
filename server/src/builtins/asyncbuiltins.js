@@ -233,7 +233,7 @@ function createAsyncBuiltins() {
 			runningLoops[id] = afg;
 			return dv;
 		},
-		'Returns a deferred value that settles every |interval milliseconds with whatever |f returned. The first one happens straight away. |f is passed the number of times it has run, starting at zero, which it can take as an argument or ignore. Stops if |f returns a fatal error, when the deferred value is deleted, or when the stop button is pressed.'
+		'Returns a deferred value that settles every |interval milliseconds with whatever |f returned. |f is passed the iteration number.'
 	);
 
 	Builtin.createBuiltin(
