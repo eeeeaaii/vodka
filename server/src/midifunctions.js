@@ -222,6 +222,21 @@ and midi wants wall time, which is what contextTimeToPerformanceTime is for.
 // kept so a clip can ask what its sequence last played
 let midiMembers = {};
 
+/*
+Which port a midi builtin means when it is not told. In memory only: a port id
+belongs to this machine and this browsing session, so writing one into a saved
+document would name a port that may not be there next time.
+*/
+let defaultMidiPort = null;
+
+function setDefaultMidiPort(portId) {
+	defaultMidiPort = portId;
+}
+
+function getDefaultMidiPort() {
+	return defaultMidiPort;
+}
+
 function addMidiSequence(portId, events, lengthSeconds) {
 	let member = makeMidiCycleMember(portId, events, lengthSeconds);
 	let id = addCycleMember(member);
@@ -365,5 +380,6 @@ function getMidiPorts(incb) {
 }
 
 
-export { getMidiPorts, openMidiPort, isPortOpen, addMidiListener, addMidiSequence, getMidiLastNote, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
+export { getMidiPorts, openMidiPort, isPortOpen, addMidiListener, addMidiSequence, getMidiLastNote,
+		 setDefaultMidiPort, getDefaultMidiPort, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
 		 sendMidiNoteWithDuration, anyMidiNotesSounding, midiPanic }

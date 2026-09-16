@@ -33,15 +33,17 @@ something alongside it, which is what lets an expression be re-evaluated in
 place. A clip is not a generic handle: it names a loop and nothing else.
 */
 class Clip extends Nex {
-	constructor(kind, what, ids, ender, channels) {
+	constructor(kind, what, ids, ender, channels, port) {
 		super();
 		// audio or midi, so whatever is handed one can tell whether it is the
 		// sort it knows how to replace
 		this.kind = kind ? kind : 'clip';
 		this.what = what ? what : this.kind;
 		this.ids = ids ? ids : [];
-		// a replacement stays where the loop already is
+		// a replacement stays where the loop already is: channels for audio,
+		// a port for midi
 		this.channels = channels ? channels : [];
+		this.port = port ? port : null;
 		this.ender = ender ? ender : null;
 		this.ended = false;
 		this.posFrame = null;
@@ -64,6 +66,10 @@ class Clip extends Nex {
 
 	getChannels() {
 		return this.channels;
+	}
+
+	getPort() {
+		return this.port;
 	}
 
 	/*
@@ -109,7 +115,7 @@ class Clip extends Nex {
 	makeCopy(shallow) {
 		// A copy names the same loop but must not be able to stop it a second
 		// time. It is a picture of the clip, not another clip.
-		let r = new Clip(this.kind, this.what, this.ids.slice(), null, this.channels.slice());
+		let r = new Clip(this.kind, this.what, this.ids.slice(), null, this.channels.slice(), this.port);
 		r.ended = this.ended;
 		this.copyFieldsTo(r);
 		return r;
@@ -234,8 +240,8 @@ class Clip extends Nex {
 	}
 }
 
-function constructClip(kind, what, ids, ender, channels) {
-	let r = new Clip(kind, what, ids, ender, channels);
+function constructClip(kind, what, ids, ender, channels, port) {
+	let r = new Clip(kind, what, ids, ender, channels, port);
 	heap.requestMem(r.memUsed());
 	return r;
 }
