@@ -53,7 +53,7 @@ import {
   frequencyToNoteNum,
 } from "../wavetablefunctions.js";
 import { forEachSpectrum, hannWindow } from "../fft.js";
-import { loopPlay, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying } from "../webaudio.js";
+import { loopPlay, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying, getAudioChannelCount } from "../webaudio.js";
 import { constructClip } from "../nex/clip.js";
 import { Tag } from "../tag.js";
 import { ERROR_TYPE_INFO } from "../nex/eerror.js";
@@ -179,6 +179,22 @@ function createWavetableBuiltins() {
 
   // what it was called before it could do both
   Builtin.aliasBuiltin("loop-play", "play");
+
+  Builtin.createBuiltin(
+    "audio-channels",
+    [],
+    function $audioChannels(env, executionEnvironment) {
+      let n = getAudioChannelCount();
+      let r = constructOrg();
+      for (let i = 0; i < n; i++) {
+        r.appendChild(constructInteger(i));
+      }
+      // one short row rather than a tall column
+      r.setHorizontal();
+      return r;
+    },
+    "Every audio output this device has, as an org of channel numbers, which is exactly what play takes -- so play a wave across all of them by passing this straight in. Two things worth knowing: asking is what opens the audio device if nothing has made a sound yet, and the answer is fixed when that happens, so plugging in a different interface does not change it until you reload."
+  );
 
   Builtin.createBuiltin(
     "start-recording",

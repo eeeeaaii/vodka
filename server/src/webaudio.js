@@ -332,6 +332,13 @@ function getSourceFromBuffer(buffer, loop) {
 }
 
 // this plays immediately
+// How many outputs the device has, which is what the merger was built with.
+// Asking opens an audio device if nothing has yet.
+function getAudioChannelCount() {
+	maybeCreateAudioContext();
+	return channelMergerNode.numberOfInputs;
+}
+
 // Connecting past the merger's last input throws IndexSizeError from inside the
 // web audio api, which says nothing about channels.
 function checkChannelExists(channel) {
@@ -746,5 +753,5 @@ async function getFileAsBuffer(filepath) {
 }
 
 
-export { getAudioBufferFromData, loadSample, addLoop, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { getAudioBufferFromData, loadSample, addLoop, getAudioChannelCount, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
 
