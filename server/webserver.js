@@ -45,6 +45,7 @@ const webenv_vars = {}
 const ERROR = "Rather than a beep<br>Or a rude error message,<br>These words: \"File not found.\"";
  
 // generated sessions live in sessions/, named ones in namedsessions/
+// (comment by Claude)
 const GENERATED_SESSION_PREFIX = 'vs-';
 
 function isGeneratedSessionId(sessionId) {
@@ -74,11 +75,14 @@ async function processRequest(req, resp) {
 	let query = parsedUrl.query;
 	let path = parsedUrl.path;
 	// only the page itself gets redirected; assets must be served where asked
+	// (comment by Claude)
 	let isPageLoad = (parsedUrl.pathname == '/');
 	// pathname, not path: an api request now carries a query string
+	// (comment by Claude)
 	let isApi = (parsedUrl.pathname == '/api');
 
 	// keep whatever else was on the url -- flags, runfile, theme
+	// (comment by Claude)
 	function urlWithSession(sessionId) {
 		let params = new URLSearchParams(parsedUrl.query);
 		params.set('sessionId', sessionId);
@@ -92,12 +96,15 @@ async function processRequest(req, resp) {
 	ways: served from here it can save, dropped on a static host it cannot.
 	The static build ships these same three files, which is why the client has
 	no idea which kind of server it is talking to.
+
+	(comment by Claude)
 	*/
 	if (parsedUrl.pathname == '/config.json') {
 		sendResponse(resp, 200, 'application/json', JSON.stringify({
 			canSave: writesAllowed(),
 			// a live server can look in the directory, so a file added while
 			// you work shows up without a rebuild
+			// (comment by Claude)
 			liveIndex: true,
 		}), 'config');
 		return;
@@ -128,6 +135,7 @@ async function processRequest(req, resp) {
 	if (isApi) {
 		// the cookie is the fallback for older clients; the session the tab is
 		// actually in comes on the request
+		// (comment by Claude)
 		let apiSessionId = query.sessionId || sessionIdFromCookie;
 		if (!apiSessionId) {
 			sendResponse(resp, 401, 'text/html', "no session id on API request.", 'ERROR');
@@ -147,6 +155,7 @@ async function processRequest(req, resp) {
 		})
 	} else if (query.new) {
 		// named sessions are made with tools/createnamedsession.js
+		// (comment by Claude)
 		let sessionId = await createNewUUIDSession(resp);
 		if (!sessionId) {
 			sendResponse(resp, 401, 'text/html', 'could not create session');
@@ -206,6 +215,8 @@ async function processRequest(req, resp) {
 		against and no opinion about which sessions exist -- the browser holds
 		them. Insisting on a directory here would mean a session made in the
 		browser could not be opened.
+
+		(comment by Claude)
 		*/
 		if (writesAllowed()) {
 			let exists = await checkIfSessionExists(query.sessionId);
@@ -224,6 +235,7 @@ async function processRequest(req, resp) {
 		// assets only. A page load with no session in the URL gets a new
 		// session, so that opening a tab never lands you in an existing one --
 		// the URL is the only way back to a session.
+		// (comment by Claude)
 		let sessionId = sessionIdFromCookie;
 		let exists = await checkIfSessionExists(sessionId);
 		if (!exists) {
@@ -291,6 +303,7 @@ async function serviceRequestForRegularFile(sessionId, path, resp) {
 	} else if (path.indexOf('/packages/') == 0) {
 		// the shipped library, read the same way a static host would serve it,
 		// so the client has one way of reading a file that ships with the app
+		// (comment by Claude)
 		path = "." + path;
 	} else if (path.indexOf('/dist/') == 0) {
 		// the bundled client, written by build.sh
@@ -414,6 +427,8 @@ async function loadWebEnv() {
 
 	Local has to be asked for: runserver.sh sets VODKA_WEBENV, and webenv.txt
 	still works for anyone who was already using it.
+
+	(comment by Claude)
 	*/
 	if (process.env.VODKA_WEBENV) {
 		setWebEnv(process.env.VODKA_WEBENV.trim());
@@ -524,6 +539,8 @@ has always been checked; this is the other half of the path.
 isGeneratedSessionId only looks at the prefix, so a generated id needs checking
 too -- the prefix says where the directory lives, not that the rest of the name
 is safe.
+
+(comment by Claude)
 */
 /*
 Nothing a visitor makes is kept on a hosted vodka. Documents and samples live in
@@ -535,6 +552,8 @@ api is a post anyone can make by hand, so hiding the button would be a promise
 about the client rather than a property of the server.
 
 Run it on your own machine and it saves as it always has.
+
+(comment by Claude)
 */
 function writesAllowed() {
 	return webenv_vars.isLocal;

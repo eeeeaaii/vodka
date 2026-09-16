@@ -50,9 +50,11 @@ var step = false;
 var paused = false; // start paused erm...
 
 // only elapses when a test is already broken
+// (comment by Claude)
 const IO_TIMEOUT_MS = 10000;
 
 // kept in step with runtests.sh, which clears it before each run
+// (comment by Claude)
 const TEST_SESSION_ID = 'vodka-tests';
 
 async function drain(page) {
@@ -61,6 +63,7 @@ async function drain(page) {
 
 // needed because of a bug with puppeteer where a cold browser can screenshot
 // before the first frame is composited
+// (comment by Claude)
 async function waitForPaint(page) {
 	await page.evaluate(function() {
 		return new Promise(function(resolve) {
@@ -86,6 +89,7 @@ async function waitForOutstandingRequests(page) {
 		});
 		// a response that has arrived but hasn't been drained reads as zero
 		// requests in flight, and draining it can start the next one
+		// (comment by Claude)
 		if (pending.requests == 0 && pending.queued == 0) return;
 		if (Date.now() - start > IO_TIMEOUT_MS) {
 			console.log('TIMED OUT with ' + pending.requests + ' request(s) in flight and '
@@ -101,6 +105,7 @@ async function waitForOutstandingRequests(page) {
 
 // a 'pause' in a test was always just a guess at how long to sleep, so ignore
 // the duration and settle everything instead
+// (comment by Claude)
 async function settle(page) {
 	await drain(page);
 	await fireAllTimersUntilNoneLeft(page);
@@ -222,10 +227,12 @@ function doFlagOverrides(flags) {
 	}
 
 	// after the copy, so a per-test flag can't turn them off
+	// (comment by Claude)
 	rflags['TEST_NO_ANIMATIONS'] = true;
 	rflags['TEST_MANUAL_EVENT_QUEUE'] = true;
 	rflags['TEST_VIRTUAL_CLOCK'] = true;
 	// one session for all tests, so the server stops minting one per test
+	// (comment by Claude)
 	rflags['sessionId'] = TEST_SESSION_ID;
 
 	return rflags;
@@ -258,6 +265,7 @@ function runTestImpl(testinput, method, legacy, flags) {
 		// The harness only ever loads our own app from localhost, so running
 		// without the sandbox is an acceptable trade here. Set VODKA_TEST_SANDBOX=1
 		// to opt back in on machines that don't need this.
+		// (comment by Claude)
 		let launchArgs = process.env.VODKA_TEST_SANDBOX
 				? []
 				: ['--no-sandbox', '--disable-setuid-sandbox'];
@@ -284,6 +292,7 @@ function runTestImpl(testinput, method, legacy, flags) {
 			})
 		}
 		// setup() is async, so network idle doesn't mean the app is ready
+		// (comment by Claude)
 		await page.waitForFunction(function() { return !!window.__vodkaReady; });
 		await drain(page);
 		if (method == 'direct' || method == 'direct-legacy') {

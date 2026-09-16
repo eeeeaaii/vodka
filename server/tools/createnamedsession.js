@@ -22,12 +22,15 @@ which let anyone claim any name.
   node tools/createnamedsession.js <name>
 
 Run from the server directory.
+
+(comment by Claude)
 */
 
 const fs = require('fs');
 const path = require('path');
 
 // kept in step with webserver.js
+// (comment by Claude)
 const GENERATED_SESSION_PREFIX = 'vs-';
 
 const RESERVED = ['packages', 'samples'];
@@ -66,6 +69,7 @@ function main() {
 
 	// Hyphens are legal inside a name, so an option typo like --dry-run would
 	// otherwise pass validation and create a directory named after the flag.
+	// (comment by Claude)
 	if (name.indexOf('-') === 0) {
 		fail(`"${name}" starts with a hyphen. If you meant an option, the only`
 				+ ` one is --help.`);
@@ -85,6 +89,7 @@ function main() {
 	}
 
 	// relative, same as the server resolves them
+	// (comment by Claude)
 	let dir = path.join('./namedsessions', name);
 
 	if (!fs.existsSync('./namedsessions')) {

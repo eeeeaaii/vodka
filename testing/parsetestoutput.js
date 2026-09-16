@@ -23,6 +23,7 @@ var path = require("path")
 // Goldens live under goldens/<platform>/ so the two platforms' sets can
 // coexist; see platform.sh. The per-test html sits in the test directory, so
 // the link from it is relative to that.
+// (comment by Claude)
 const PLATFORM = (process.platform == 'darwin') ? 'mac' : 'linux';
 
 function tpath(output_suffix) {
