@@ -31,8 +31,10 @@ import { constructEError } from "../nex/eerror.js";
 import { GenericActivationFunctionGenerator } from "../asyncfunctions.js";
 
 import { UNBOUND } from "../environment.js";
+import { readAudioTags, splitLibraryFromPath, DEFAULT_LIBRARY } from "../audiolibraries.js";
+
 import {
-  loadSample,
+  loadAudio,
   startRecordingAudio,
   stopRecordingAudio,
 } from "../webaudio.js";
@@ -146,7 +148,7 @@ function createWavetableBuiltins() {
 
   Builtin.createBuiltin(
     "play",
-    ["wt_", "channelsorclip#%()μ?"],
+    ["wt_", "channelsorclip#%()μ∅?"],
     function $loopPlay(env, executionEnvironment) {
       let wt = env.lb("wt");
 
@@ -166,6 +168,16 @@ function createWavetableBuiltins() {
       let channelnumbers = [1, 2];
       let clip = null;
 
+      /*
+      A nil second argument is handled before it gets here -- an optional
+      parameter given nil is bound as though it were not given at all -- so
+      arg is UNBOUND in that case and the defaults below apply.
+
+      The cost is a diagnostic that used to be here: a clip deleted since it
+      was made also evaluates to nil, and that was reported rather than quietly
+      becoming "play on the default channels". Both arrive as the same value,
+      so only one of them can be served.
+      */
       if (arg != UNBOUND && Utils.isClip(arg)) {
         if (arg.getKind() != "audio loop") {
           return constructFatalError("play: that is not an audio clip. Sorry!");
@@ -176,7 +188,6 @@ function createWavetableBuiltins() {
         // heard. Nothing here has to know how a loop is put together.
         endLoops(clip.getIds(), true /* at the cycle end */);
       } else if (arg != UNBOUND) {
-        if (Utils.isNil(arg)) return goneClipError("play");
         channelnumbers = [];
         if (Utils.isNexContainer(arg)) {
           for (let i = 0; i < arg.numChildren(); i++) {
@@ -202,7 +213,7 @@ function createWavetableBuiltins() {
       clipStartedPlaying(clip, ids);
       return clip;
     },
-    "Starts playing wt| at the next measure start, and returns a clip naming it. It plays for as long as something holds that clip: keep the clip and it loops, throw it away and it plays once, delete it and it stops at the end of the pass it is in. |channelsorclip is either the channels to play on, or a clip returned by an earlier play -- given a clip, the loop it names is replaced at the next measure start, staying on the channels it is already on, and you get the same clip back. Channels are numbered from 1, the way audio hardware numbers them, and if you do not say, the sound plays on channels 1 and 2. If it and/or |wt are lists, Vodka will do its best to match up sounds with channels."
+    "Starts playing wt| at the next measure start, and returns a clip naming it. It plays for as long as something holds that clip: keep the clip and it loops, throw it away and it plays once, delete it and it stops at the end of the pass it is in. |channelsorclip is either the channels to play on, or a clip returned by an earlier play -- given a clip, the loop it names is replaced at the next measure start, staying on the channels it is already on, and you get the same clip back. Channels are numbered from 1, the way audio hardware numbers them, and if you do not say, the sound plays on channels 1 and 2 -- passing nil says nothing, the same as leaving it out. If it and/or |wt are lists, Vodka will do its best to match up sounds with channels."
   );
 
   // what it was called before it could do both
@@ -382,7 +393,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Passes every sample of wt| through |shape and returns the result. |shape is a wave read as a lookup rather than as a sound: its length stands for an input of -1 to 1, and the value it holds at each point is what comes out. A straight line leaves wt| alone. See wavefold-shape, soft-clip-shape and compress-shape for shapes to pass in, or make your own."
+    "Passes every sample of wt| through |shape and returns the result. |shape is a wave read as a lookup rather than as a sound: its length stands for an input of -1 to 1, and the value it holds at each point is what comes out. A straight line leaves wt| alone. See transfer-wavefold, transfer-clipping and transfer-compress for shapes to pass in, or make your own."
   );
 
   // reflect back off the limit, as many times as it takes
@@ -395,13 +406,13 @@ function createWavetableBuiltins() {
   }
 
   Builtin.createBuiltin(
-    "wavefold-shape",
+    "transfer-wavefold",
     ["folds#%?"],
-    function $wavefoldShape(env, executionEnvironment) {
+    function $transferWavefold(env, executionEnvironment) {
       let folds = env.lb("folds");
       folds = folds == UNBOUND ? 2 : folds.getTypedValue();
       if (folds < 1) {
-        return constructFatalError("wavefold-shape: folds must be at least 1. Sorry!");
+        return constructFatalError("transfer-wavefold: folds must be at least 1. Sorry!");
       }
       /*
       Folding used to mean driving a signal past the limit and reflecting what
@@ -418,13 +429,13 @@ function createWavetableBuiltins() {
   );
 
   Builtin.createBuiltin(
-    "soft-clip-shape",
+    "transfer-clipping",
     ["amount%?"],
-    function $softClipShape(env, executionEnvironment) {
+    function $transferClipping(env, executionEnvironment) {
       let amount = env.lb("amount");
       amount = amount == UNBOUND ? 3 : amount.getTypedValue();
       if (amount <= 0) {
-        return constructFatalError("soft-clip-shape: amount must be more than 0. Sorry!");
+        return constructFatalError("transfer-clipping: amount must be more than 0. Sorry!");
       }
       // scaled so that the shape still reaches the limit at the limit, rather
       // than everything simply getting quieter as you turn it up
@@ -437,18 +448,18 @@ function createWavetableBuiltins() {
   );
 
   Builtin.createBuiltin(
-    "compress-shape",
+    "transfer-compress",
     ["threshold%?", "ratio%?"],
-    function $compressShape(env, executionEnvironment) {
+    function $transferCompress(env, executionEnvironment) {
       let threshold = env.lb("threshold");
       let ratio = env.lb("ratio");
       threshold = threshold == UNBOUND ? 0.5 : threshold.getTypedValue();
       ratio = ratio == UNBOUND ? 4 : ratio.getTypedValue();
       if (threshold <= 0 || threshold >= 1) {
-        return constructFatalError("compress-shape: threshold must be between 0 and 1. Sorry!");
+        return constructFatalError("transfer-compress: threshold must be between 0 and 1. Sorry!");
       }
       if (ratio < 1) {
-        return constructFatalError("compress-shape: ratio must be at least 1. Sorry!");
+        return constructFatalError("transfer-compress: ratio must be at least 1. Sorry!");
       }
       // makeup gain, so the quiet part comes up rather than the loud part
       // simply going down
@@ -482,7 +493,7 @@ function createWavetableBuiltins() {
       let wt = env.lb("wt");
       let bits = amountAt(env.lb("bits"), 8);
 
-      let dur = wt.getDuration();
+      let dur = Math.max(wt.getDuration(), longestWave(env.lb("bits")));
       let r = constructWavetable(dur);
       let data = r.getData();
       for (let i = 0; i < dur; i++) {
@@ -511,7 +522,7 @@ function createWavetableBuiltins() {
       resample-by interpolates, which is the right thing there and removes
       exactly the ringing that makes this sound like cheap hardware.
       */
-      let dur = wt.getDuration();
+      let dur = Math.max(wt.getDuration(), longestWave(env.lb("hold")));
       let r = constructWavetable(dur);
       let data = r.getData();
       let held = 0;
@@ -582,28 +593,31 @@ function createWavetableBuiltins() {
             "singlepole: type must be low or high. Sorry!");
       }
 
-      if (!(wt2.getTypeName() == "-wavetable-")) {
-        wt2 = getConstantSignalFromValue(
-          wt2.getTypedValue(),
-          wt1.getDuration()
-        );
-        sAttach(wt2);
-      }
+      /*
+      Read the same way doublepole reads its cutoff: by ear rather than by
+      hertz, so a wave used as |wt2 sweeps evenly instead of crossing
+      everything audible in its last few percent. It also brings the timebase
+      tags with it, so a cutoff can be named in hz or as a note.
+      */
+      let cutoffAt = frequencyAt(wt2);
 
-      let dur = Math.max(wt1.getDuration(), wt2.getDuration());
+      let dur = Math.max(wt1.getDuration(), longestWave(wt2));
       let r = constructWavetable(dur);
       let data = r.getData();
       let yk = wt1.valueAtSample(0);
 
-      let cutoffAtOne = 20000;
-      let timeconstant = 1 / getSampleRate();
-
       for (let i = 0; i < dur; i++) {
         let wt1val = wt1.valueAtSample(i);
-        let wt2val = wt2.valueAtSample(i);
-        let cutoff = wt2val * cutoffAtOne;
-        let tau = 1 / cutoff;
-        let alpha = timeconstant / tau;
+        let cutoff = cutoffAt(i);
+        /*
+        How far towards the input each sample moves. Past one it overshoots and
+        rings, and there was nothing stopping that before: cutoff came straight
+        off the control wave, so a wave that went negative -- which any wave
+        used as a sweep does -- made alpha negative and the filter ran away.
+        */
+        let alpha = cutoff / getSampleRate();
+        if (alpha > 1) alpha = 1;
+        if (alpha < 0) alpha = 0;
         yk += alpha * (wt1val - yk);
         // one pole highpass is just whatever the lowpass did not keep
         data[i] = kind == "high" ? wt1val - yk : yk;
@@ -611,7 +625,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Runs |wt1 through a single pole filter with a cutoff determined by |wt2. If an integer or float is passed in for wt2, it is converted to a constant signal. A value of 1 corresponds to a filter cutoff frequency of 20kHz. |type is low or high, and defaults to low. One pole cannot resonate -- use doublepole for that."
+    "Runs |wt1 through a single pole filter with a cutoff determined by |wt2, which can be a number or a wave. |wt2 runs 0 to 1 across the range of hearing, 0 being 20Hz and 1 being 20kHz, and it crosses that range by ear rather than by hertz -- half way is about 630Hz, not 10kHz -- so a wave used as |wt2 sweeps evenly. Tag a number with a timebase (hz, nn) to name a real frequency instead. |type is low or high, and defaults to low. One pole cannot resonate -- use doublepole for that."
   );
 
   /*
@@ -621,6 +635,28 @@ function createWavetableBuiltins() {
   tag means what it says, so %2000 hz is two thousand hertz.
   */
   const CUTOFF_AT_ONE = 20000;
+  const CUTOFF_AT_ZERO = 20;
+
+  /*
+  Cutoff runs 0 to 1 across the range of hearing, and crosses it the way hearing
+  does: an equal step in the number is an equal musical interval, not an equal
+  number of hertz.
+
+  Linear was no good for the thing cutoff is most wanted for. Twenty thousand
+  hertz spread evenly over 0 to 1 puts everything below a kilohertz -- which is
+  to say nearly everything you can hear as pitch -- in the bottom twentieth of
+  the number, so a ramp through a filter sat wide open for most of its length
+  and then crossed the entire audible range in its last few percent. It did not
+  sound like a sweep because it was not one.
+
+  Twenty hertz at zero rather than nought, because nought has no logarithm and
+  because a filter at twenty hertz is already shut as far as hearing is
+  concerned. Below zero -- a wave used as a sweep swings both ways -- it keeps
+  going down and biquadInto floors it.
+  */
+  function cutoffToHz(v) {
+    return CUTOFF_AT_ZERO * Math.pow(CUTOFF_AT_ONE / CUTOFF_AT_ZERO, v);
+  }
 
   function explicitTimebase(nex) {
     for (let i = 0; i < nex.numTags(); i++) {
@@ -633,19 +669,42 @@ function createWavetableBuiltins() {
   function frequencyAt(nex) {
     if (nex.getTypeName() == "-wavetable-") {
       return function (i) {
-        return nex.valueAtSample(i) * CUTOFF_AT_ONE;
+        return cutoffToHz(nex.valueAtSample(i));
       };
     }
     let hz;
     if (explicitTimebase(nex)) {
+      // a tagged number names a real frequency and is taken at its word
       let samples = convertTimeToSamples(nex);
       hz = samples > 0 ? getSampleRate() / samples : 0;
     } else {
-      hz = nex.getTypedValue() * CUTOFF_AT_ONE;
+      hz = cutoffToHz(nex.getTypedValue());
     }
     return function (i) {
       return hz;
     };
+  }
+
+  /*
+  The longest of the arguments, counting only the ones that are waves.
+
+  A modulator shorter than the sound loops to fill it, which valueAtSample does
+  by itself; the part that has to be decided here is how long the result is. It
+  is the longest thing that went in, so a modulator longer than the sound makes
+  the sound loop rather than being cut off at the sound's length -- which is
+  what slew and singlepole already do, and what everything taking a wave for a
+  parameter should do.
+  */
+  function longestWave() {
+    let n = 0;
+    for (let i = 0; i < arguments.length; i++) {
+      let x = arguments[i];
+      if (x && x != UNBOUND && x.getTypeName
+          && x.getTypeName() == "-wavetable-" && x.getDuration() > n) {
+        n = x.getDuration();
+      }
+    }
+    return n;
   }
 
   function amountAt(nex, dflt) {
@@ -768,7 +827,8 @@ function createWavetableBuiltins() {
       let cutoff = frequencyAt(env.lb("cutoff"));
       let resonance = amountAt(env.lb("resonance"), 0);
 
-      let dur = wt.getDuration();
+      let dur = Math.max(wt.getDuration(),
+          longestWave(env.lb("cutoff"), env.lb("resonance")));
       let r = constructWavetable(dur);
       let data = r.getData();
       let sampleRate = getSampleRate();
@@ -787,7 +847,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Runs wt| through a two pole filter. |type is low, high, band or notch, and defaults to low. |cutoff is a fraction of 20kHz, so 0.05 is 1kHz, or a number tagged with a timebase (hz, nn) to name a real frequency. |resonance runs 0 to 1 and is what makes a sweep sound like a filter rather than a tone control -- it lives inside the filter's loop, which is why you cannot get it by feeding a filter back into itself. Both |cutoff and |resonance can be waves, so both can move while the sound plays."
+    "Runs wt| through a two pole filter. |type is low, high, band or notch, and defaults to low. |cutoff runs 0 to 1 across the range of hearing, 0 being 20Hz and 1 being 20kHz, and it crosses that range by ear rather than by hertz -- half way is about 630Hz, not 10kHz -- so a wave used as |cutoff sweeps evenly. Tag a number with a timebase (hz, nn) to name a real frequency instead. |resonance runs 0 to 1 and is what makes a sweep sound like a filter rather than a tone control -- it lives inside the filter's loop, which is why you cannot get it by feeding a filter back into itself. Both |cutoff and |resonance can be waves, so both can move while the sound plays."
   );
 
   Builtin.createBuiltin(
@@ -810,7 +870,8 @@ function createWavetableBuiltins() {
       Unlike a filter this leaves everything outside the band alone, which is
       what makes it the thing you reach for when a sound is nearly right.
       */
-      let dur = wt.getDuration();
+      let dur = Math.max(wt.getDuration(),
+          longestWave(env.lb("freq"), env.lb("gain"), env.lb("q")));
       let r = constructWavetable(dur);
       let data = r.getData();
       let sampleRate = getSampleRate();
@@ -909,9 +970,70 @@ function createWavetableBuiltins() {
     "Slows down rate of change of |wt1 to a maximum value per sample given by |wt2. If wt1 is a signal residing between -1 and 1, values of wt2 that are between 0 and 1 will yield best results."
   );
 
-  // fix this, example situation where it breaks:
-  // take a normal ramp (2 beats) and pass it through a function that takes the value to the 5th power
-  // the function will return, but some async bullshit will continue and some numbers will keep incrementing in the js console, not sure what is happening
+  /*
+  Two waves and a third one saying, sample by sample, how far between them to
+  be. The two sources are read with valueAtSample, which wraps, so a pair of
+  single-cycle waves against a control that is seconds long is the ordinary
+  case and not a special one: the waves cycle underneath while the control
+  sweeps across, which is the wavetable sweep you actually want.
+
+  That also decides the length. It is the longest of the three rather than the
+  longest of the two sources, because a control shorter than the output would
+  wrap and sweep repeatedly, which is a thing you would have to ask for rather
+  than something to hand someone who passed a one-shot envelope.
+
+  |amt is read as -1 to 1, the range a wave already lives in, so any wave can
+  drive this without being converted first. An envelope that runs 0 to 1 is
+  the thing that needs converting, and it converts in one step:
+
+      ~(_offset %-1 ~(_gain %2 ~(_ramp _)_)_)
+  */
+  Builtin.createBuiltin(
+    "morph",
+    ["wt1_", "wt2_", "amt#%_"],
+    function $morph(env, executionEnvironment) {
+      let wt1 = env.lb("wt1");
+      let wt2 = env.lb("wt2");
+      let amt = env.lb("amt");
+
+      let dur = Math.max(wt1.getDuration(), wt2.getDuration());
+      if (amt.getTypeName() == "-wavetable-") {
+        dur = Math.max(dur, amt.getDuration());
+      } else {
+        amt = getConstantSignalFromValue(amt.getTypedValue(), dur);
+        sAttach(amt);
+      }
+      if (dur <= 0) {
+        return constructFatalError("morph: nothing to morph, a wave has no length");
+      }
+
+      let r = constructWavetable(dur);
+      let data = r.getData();
+      for (let i = 0; i < dur; i++) {
+        let t = (amt.valueAtSample(i) + 1) / 2;
+        // past the ends there is nothing to interpolate toward, so it holds
+        // rather than extrapolating into whatever is louder than the sources
+        if (t < 0) {
+          t = 0;
+        } else if (t > 1) {
+          t = 1;
+        }
+        data[i] = wt1.valueAtSample(i) * (1 - t) + wt2.valueAtSample(i) * t;
+      }
+      r.init();
+      return r;
+    },
+    "Interpolates between |wt1 and |wt2, with |amt saying where between the "
+      + "two to be at each sample: -1 is all |wt1, 1 is all |wt2, 0 is halfway. "
+      + "|amt is usually a third wavetable, which is what makes this a sweep "
+      + "rather than a fixed mix, but a plain number works for a fixed mix. "
+      + "That is the range a wave already lives in, so any wave can drive this "
+      + "as is; an envelope running 0 to 1 wants (offset -1 (gain 2 |env)) "
+      + "first. Values outside -1 to 1 are held at the ends. The result is as "
+      + "long as the longest of the three, and the shorter waves cycle to fill "
+      + "it, so two single-cycle waves against a long |amt sweep from one to "
+      + "the other."
+  );
 
   Builtin.createBuiltin(
     "noise",
@@ -1680,15 +1802,38 @@ function createWavetableBuiltins() {
       // as with delay: round to the beginning rather than off the end
       let wrap = hasCommandTag(commandTags, "wrap");
       let attenuation = env.lb("attenuation").getTypedValue();
+      /*
+      |n is required, and it is the thing that keeps this bounded. Letting it be
+      left out and running until the tail went quiet read better -- it is what a
+      real feedback loop does -- but an attenuation just under one does not trip
+      any guard and still takes hundreds of rounds, and since f usually makes
+      the signal longer every time, the work and the memory go up with the
+      square of the count. A number you have to type is a worse instrument and
+      a much better fuse.
+      */
       let n = env.lb("n").getTypedValue();
 
       let dur = wt.getDuration();
       let wtData = wt.getData();
-      let output = constructWavetable(dur);
-      let outData = output.getData();
 
+      /*
+      Summed into a buffer of its own rather than straight into the result,
+      because how long the result is is not known until the rounds have been
+      run. Each round is whatever f made of the one before, and f is usually
+      something like a delay, so the signal gets longer every time round.
+
+      It used to write into a result fixed at the length of |wt, which threw
+      away every part of every round that landed past the end. A delay of a
+      fraction of a beat fed back forty times is nothing but tail, so what came
+      back was the dry sound and very little else.
+
+      Tagged wrap the length is held at |wt and the tail comes round to the
+      beginning instead, which is the same choice delay offers, and the reason
+      to want it is the same: a wave that has to stay loopable.
+      */
+      let acc = new Float64Array(dur);
       for (let i = 0; i < dur; i++) {
-        outData[i] = wtData[i];
+        acc[i] = wtData[i];
       }
 
       let fedBackSignal = wt;
@@ -1697,26 +1842,35 @@ function createWavetableBuiltins() {
           systemState.getSCF().makeCommandWithClosureOneArg(f, fedBackSignal)
         );
         let fedBackData = fedBackSignal.getData();
-        for (let j = 0; j < fedBackSignal.getDuration(); j++) {
+        let len = fedBackSignal.getDuration();
+        for (let j = 0; j < len; j++) {
           fedBackData[j] = fedBackData[j] * attenuation;
         }
         if (wrap) {
-          for (let j = 0; j < fedBackSignal.getDuration(); j++) {
-            outData[j % dur] += fedBackData[j];
+          for (let j = 0; j < len; j++) {
+            acc[j % dur] += fedBackData[j];
           }
-        } else {
-          for (let j = 0; j < dur; j++) {
-            if (j < fedBackSignal.getDuration()) {
-              outData[j] += fedBackData[j];
-            }
-          }
+          continue;
+        }
+        if (len > acc.length) {
+          let bigger = new Float64Array(len);
+          bigger.set(acc);
+          acc = bigger;
+        }
+        for (let j = 0; j < len; j++) {
+          acc[j] += fedBackData[j];
         }
       }
 
+      let output = constructWavetable(acc.length);
+      let outData = output.getData();
+      for (let i = 0; i < acc.length; i++) {
+        outData[i] = acc[i];
+      }
       output.init();
       return output;
     },
-    "Calls the function |f on |wt to produce an output, then calls |f on that output, then calls |f on the output of that, and so on, |n times, attenuating the output by |attenuation each time before passing it back into |f. The output of this function is the sum of all the outputs. This mimics analog feedback, but note that the |n parameter is a hard limit on the number of times the function is fed back into itself. Tag the command with wrap to have anything that runs past the end come back round to the beginning rather than being cut off, which is what you want for a wave you are going to loop."
+    "Calls the function |f on |wt to produce an output, then calls |f on that output, then calls |f on the output of that, and so on, |n times, attenuating the output by |attenuation each time before passing it back into |f. The output of this function is the sum of all the outputs. This mimics analog feedback, but note that the |n parameter is a hard limit on the number of times the function is fed back into itself. The result grows to hold whatever the rounds produced, so a delay fed back is as long as its own tail; tag the command with wrap to hold it at the length of |wt and have the tail come round to the beginning instead, which is what you want for a wave you are going to loop."
   );
 
   /*
@@ -1918,8 +2072,7 @@ function createWavetableBuiltins() {
       let longest = combLen[combLen.length - 1];
 
       let dur = wt.getDuration();
-      let wrap = hasCommandTag(commandTags, "wrap");
-      let outDur = wrap ? dur : dur + decayTailSamples(feedback, longest);
+      let outDur = dur + decayTailSamples(feedback, longest);
       if (outDur < 1) outDur = dur;
 
       let r = constructWavetable(outDur);
@@ -1940,10 +2093,7 @@ function createWavetableBuiltins() {
         apAt.push(0);
       }
 
-      let passes = wrap ? chargePasses(feedback, longest, dur) : 1;
-      let previous = passes > 1 ? new Float64Array(outDur) : null;
-
-      for (let p = 0; p < passes; p++) {
+      {
         for (let i = 0; i < outDur; i++) {
           let dry = i < dur ? wt.valueAtSample(i) : 0;
           let input = dry * REVERB_INPUT_GAIN;
@@ -1967,21 +2117,11 @@ function createWavetableBuiltins() {
 
           data[i] = dry * (1 - mix) + wet * mix;
         }
-        if (!previous) break;
-        if (p > 0) {
-          let worst = 0;
-          for (let i = 0; i < outDur; i++) {
-            let diff = Math.abs(data[i] - previous[i]);
-            if (diff > worst) worst = diff;
-          }
-          if (worst < 0.00001) break;
-        }
-        previous.set(data);
       }
       r.init();
       return r;
     },
-    "Puts wt| in a room. |size is how big the room is, |mix how much of it you hear against the dry sound, and |damping how quickly the bright part of the tail dies away -- all three run 0 to 1, and default to a half, a third and a half. Tag the command with wrap to keep the original length and have the tail come round to the beginning, which for a wave you are going to loop sounds like it has been playing in the room all along; without it the wave gets longer to make room for the tail. convolve gives you a more faithful room if you have an impulse response for one; this is for when you do not, and for a tail you want to change by changing a number."
+    "Puts wt| in a room. |size is how big the room is, |mix how much of it you hear against the dry sound, and |damping how quickly the bright part of the tail dies away -- all three run 0 to 1, and default to a half, a third and a half. The wave gets longer to make room for the tail; to fit it back into a loop, pass the result to wrap. convolve gives you a more faithful room if you have an impulse response for one; this is for when you do not, and for a tail you want to change by changing a number."
   );
 
   /*
@@ -2222,6 +2362,60 @@ function createWavetableBuiltins() {
   );
 
   Builtin.createBuiltin(
+    "wrap",
+    ["wt_", "len#%", "times#∅?"],
+    function $wrap(env, executionEnvironment) {
+      let wt = env.lb("wt");
+      let dur = convertTimeToSamples(env.lb("len"));
+      if (!(dur >= 1)) {
+        return constructFatalError("wrap: length must be at least one sample. Sorry!");
+      }
+
+      /*
+      Everything past |len comes back round to the start and is added to what
+      is already there, and if what comes back is longer than |len it comes
+      round again, and again -- the sample at i lands at i modulo |len however
+      many times round that is.
+
+      A wave shorter than |len is not shortened: the result is always |len
+      long, so this is the thing to reach for when a sound has to fit a loop
+      whether it is too long or too short.
+      */
+      let times = env.lb("times");
+      let stopAt = wt.getDuration();
+      if (times != UNBOUND) {
+        let n = Math.floor(times.getTypedValue());
+        if (!(n >= 0)) {
+          n = 0;
+        }
+        // n wraps means the original plus n more times round, and anything
+        // past that is dropped rather than folded in
+        let limit = dur * (n + 1);
+        if (limit < stopAt) {
+          stopAt = limit;
+        }
+      }
+
+      let r = constructWavetable(dur);
+      let data = r.getData();
+      for (let i = 0; i < stopAt; i++) {
+        data[i % dur] += wt.valueAtSample(i);
+      }
+      r.init();
+      return r;
+    },
+    "Folds wt| into a wave |len long: everything past |len comes back round to "
+      + "the beginning and is added to what is there, as many times round as it "
+      + "takes. Give |times to stop after that many times round, dropping the "
+      + "rest -- 0 keeps only the first |len and throws the tail away. The "
+      + "result is always |len long, so a wave shorter than |len comes back "
+      + "padded rather than cut. This is how you fit a sound that rings on -- a "
+      + "reverb or a delay tail -- into a loop, so that the tail is heard at "
+      + "the start of the next pass instead of being cut off or making the loop "
+      + "longer every time."
+  );
+
+  Builtin.createBuiltin(
     "repeat",
     ["wt_", "reps#%?"],
     function $repeat(env, executionEnvironment) {
@@ -2263,84 +2457,163 @@ function createWavetableBuiltins() {
   Builtin.createBuiltin(
     "seq",
     ["wtlst()#%_..."],
+    /*
+    Laid out on a timeline rather than glued end to end, which is the same
+    thing when nothing overlaps and the point when something does.
+
+    A wave goes down at the current position and the position moves on by the
+    length of that wave. A number says how far the position moves instead --
+    the thing before it only gets that long before the next one starts. Make it
+    shorter than the wave and the next thing begins before this one has
+    finished, which is how four notes that ring on for a bar each get played a
+    beat apart and heard over each other. Overlaps are summed.
+
+    A number before anything has been laid down moves the position with nothing
+    under it, which is silence.
+
+    Nesting is flattened, so a wave and its length can be written together as a
+    pair and it means exactly the same as writing them next to each other. The
+    flat form is the one to prefer; the pair only reads better when a list is
+    being built somewhere else and handed over whole.
+
+    A number used to become a constant signal one sample long, which was not
+    useful to anybody and is what a number now means instead.
+    */
     function $chain(env, executionEnvironment) {
       let wtlst = env.lb("wtlst");
 
-      let waves = [];
-      for (let i = 0; i < wtlst.numChildren(); i++) {
-        let c = wtlst.getChildAt(i);
+      let pieces = [];
+      let at = 0;
+      // how far the position was moved by the last thing laid down, which is
+      // what a length replaces
+      let pending = 0;
+      let extent = 0;
+
+      function take(c) {
         if (c.getTypeName() == "-wavetable-") {
-          waves.push(c);
-        } else if (c.isNexContainer()) {
-          for (let j = 0; j < c.numChildren(); j++) {
-            let c2 = c.getChildAt(j);
-            if (c2.getTypeName() == "-wavetable-") {
-              waves.push(c2);
-            } else {
-              waves.push(getConstantSignalFromValue(c2.getTypedValue()));
-            }
-          }
-        } else if (Utils.isInteger(c) || Utils.isFloat(c)) {
-          waves.push(getConstantSignalFromValue(c.getTypedValue()));
-        } else {
-          return constructFatalError(
-            `seq: invalid type - must be wavetable, integer, or float. Got ${c.getTypeName()}`
-          );
+          pieces.push({ wave: c, at: at });
+          let n = c.getDuration();
+          if (at + n > extent) extent = at + n;
+          at += n;
+          pending = n;
+          return null;
         }
+        if (Utils.isInteger(c) || Utils.isFloat(c)) {
+          let n = convertTimeToSamples(c);
+          if (!(n >= 0)) {
+            return constructFatalError(
+                "seq: a length saying how long something gets before the next "
+                + "one starts cannot be negative. Sorry!");
+          }
+          at = at - pending + n;
+          pending = n;
+          return null;
+        }
+        if (c.isNexContainer && c.isNexContainer()) {
+          for (let j = 0; j < c.numChildren(); j++) {
+            let e = take(c.getChildAt(j));
+            if (e) return e;
+          }
+          return null;
+        }
+        return constructFatalError(
+          `seq: invalid type - must be wavetable, integer, or float. Got ${c.getTypeName()}`
+        );
       }
 
-      let dur = 0;
-      for (let i = 0; i < waves.length; i++) {
-        let c = waves[i];
-        dur += c.getDuration();
+      for (let i = 0; i < wtlst.numChildren(); i++) {
+        let e = take(wtlst.getChildAt(i));
+        if (e) return e;
       }
 
+      let dur = at > extent ? at : extent;
       let r = constructWavetable(dur);
       let data = r.getData();
 
-      let k = 0;
-      for (let i = 0; i < waves.length; i++) {
-        let c = waves[i];
-        for (let j = 0; j < c.getDuration(); j++, k++) {
-          data[k] = c.valueAtSample(j);
+      for (let i = 0; i < pieces.length; i++) {
+        let wave = pieces[i].wave;
+        let start = pieces[i].at;
+        let n = wave.getDuration();
+        for (let j = 0; j < n; j++) {
+          data[start + j] += wave.valueAtSample(j);
         }
       }
       r.init();
       return r;
     },
-    "Sequences a list of wavetables into a single wavetable by concatenating them. If a list is passed in, the list must contain integers, floats, or wavetables only."
+    "Lays wavetables out one after another into a single wavetable. A wave follows the one before it. A number says how long the thing before it gets before the next one starts, which need not be its own length: make it shorter and the next thing begins before this one has finished, which is how you overlap notes that ring on. Overlapping parts are summed. A number before any wave is silence. Lengths take a timebase tag (nn, secs, hz, b, samps) like any other length. Lists are flattened, so a wave and its length can be written as a pair and it means the same as writing them next to each other. The result holds everything, so a tail is never cut off."
   );
 
   Builtin.createBuiltin(
-    "load-sample",
+    "load-audio",
     ["fname$"],
-    function $loadSample(env, executionEnvironment) {
+    function $loadAudio(env, executionEnvironment, commandTags) {
+      let want = readAudioTags(commandTags);
+      if (want.error) {
+        return constructFatalError(`load-audio: ${want.error}`);
+      }
+      if (want.folders.length > 1) {
+        return constructFatalError(
+            `load-audio: tagged with ${want.folders.length} folders, `
+            + `it can only load out of one`);
+      }
       let fname = env.lb("fname").getFullTypedValue();
+
+      /*
+      A name from list-audio starts with its library -- wave/metallic/x.wav --
+      so most of the time nothing else has to be said and the name alone is
+      enough. A name without one falls back to the tag, and then to the default
+      library, which is what makes a folder tag plus a bare filename work.
+      */
+      let split = splitLibraryFromPath(fname);
+      if (split && want.library && split.library != want.library) {
+        return constructFatalError(
+            `load-audio: the name says ${split.library} and the tag says `
+            + `${want.library}. Sorry!`);
+      }
+      let library = split ? split.library
+          : (want.library ? want.library : DEFAULT_LIBRARY);
+      if (split) {
+        fname = split.path;
+      }
+      /*
+      list-audio hands back folder-prefixed names, so the usual thing already
+      says which folder it is in. A folder tag is for the other way round --
+      map load-audio over one folder's listing, or type a bare filename -- so
+      it only fills in a prefix that isn't there.
+      */
+      if (want.folders.length == 1 && fname.indexOf("/") == -1) {
+        fname = want.folders[0] + "/" + fname;
+      }
+
 
       let deferredValue = constructDeferredValue();
       deferredValue.set(
-        new GenericActivationFunctionGenerator("load-sample", function (
+        new GenericActivationFunctionGenerator("load-audio", function (
           callback,
           deferredValue
         ) {
-          loadSample(fname, function (sampledata) {
+          loadAudio(fname, library, function (sampledata) {
             let r = constructWavetable(sampledata.length);
             r.initWith(sampledata);
             callback(r);
+          }, function (message) {
+            callback(constructFatalError(`load-audio: ${message}`));
           });
         })
       );
-      let loadingMessage = constructEError(`loading sample`);
+      let loadingMessage = constructEError(`loading ${library} ${fname}`);
       loadingMessage.setErrorType(ERROR_TYPE_INFO);
       deferredValue.appendChild(loadingMessage);
       deferredValue.activate();
       return deferredValue;
-
-      // let r = constructWavetable();
-      // r.loadFromFile(fname);
-      // return r;
     },
-    "Loads a sample file from disk."
+    "Loads an audio file as a wavetable. |fname is a name as it appears in "
+      + "list-audio, which begins with the library it is in -- "
+      + "wave/metallic/AKWF_0309.wav -- so nothing else is needed. A name with "
+      + "no library on the front is looked for in the library the command is "
+      + "tagged with, or in the sample library if it is not tagged; tag it with "
+      + "a folder name as well and that folder is prefixed onto a bare filename."
   );
 
   Builtin.createBuiltin(
@@ -2397,13 +2670,13 @@ function createWavetableBuiltins() {
       timebase = explicitTimebase(list);
     }
     /*
-    No tag means a sample offset. Going through the default timebase read a
-    plain 0.5 as half a beat, and made split-points-of impossible to feed back
-    in -- that hands back sample offsets, and they were being read as beats.
+    Untagged goes through the default timebase, the same as every other length
+    in the system. This used to read an untagged point as a sample offset so
+    that split-points-of could be fed straight back in, but a builtin where a
+    plain 8 means something different than it does everywhere else is a worse
+    trade than the round trip is worth. split-points-of tags what it hands back
+    instead, so the round trip still works and now says what its numbers are.
     */
-    if (!timebase) {
-      return Math.round(point.getTypedValue());
-    }
     return convertTimeToSamples(point, timebase);
   }
 
@@ -2446,7 +2719,7 @@ function createWavetableBuiltins() {
       r.cacheSections();
       return r;
     },
-    "Returns a copy of wt| with split points at |points, the same ones you get by pressing v while editing a wave. |points is one number or a list of them, and n of them give n+1 slices. Untagged they are sample offsets, which is what split-points-of hands back, so its output can go straight back in. Tag one with a timebase (nn, secs, hz, b, samps) to give it as a length instead, or with of-total to read it as a fraction of this wave -- 0.5 of-total is halfway along. A tag on the list applies to every point in it."
+    "Returns a copy of wt| with split points at |points, the same ones you get by pressing v while editing a wave. |points is one number or a list of them, and n of them give n+1 slices. Untagged they are read in the default timebase, like any other length; tag one with a timebase (nn, secs, hz, b, samps) to say which, or with of-total to read it as a fraction of this wave -- 0.5 of-total is halfway along. A tag on the list applies to every point in it, so a list of beats only needs tagging once. split-points-of tags what it returns, so its output can go straight back in."
   );
 
   Builtin.createBuiltin(
@@ -2466,69 +2739,82 @@ function createWavetableBuiltins() {
         if (ofTotal) {
           r.appendChild(constructFloat(total == 0 ? 0 : at / total));
         } else if (!timebase || timebase == "SAMPLES") {
-          r.appendChild(constructInteger(at));
+          // tagged, because set-split-points reads an untagged number as the
+          // default timebase -- an untagged sample offset would come back in
+          // as that many beats
+          let n = constructInteger(at);
+          n.addTag(newTagOrThrowOOM("samps", "split-points-of, sample offset"));
+          r.appendChild(n);
         } else {
           r.appendChild(constructFloat(convertSamplesToTimebase(timebase, at)));
         }
       }
       return r;
     },
-    "The split points in wt|, as an org of sample offsets. Tag the command with a timebase (nn, secs, hz, b, samps) to get them in that, or with of-total to get each one as a fraction of the whole wave."
+    "The split points in wt|, as an org of sample offsets tagged samps -- tagged so they can be handed straight back to set-split-points, which would otherwise read them in the default timebase. Tag the command with a timebase (nn, secs, hz, b, samps) to get them in that instead, or with of-total to get each one as a fraction of the whole wave."
   );
 
+  /*
+  Trims a wave back to between its outermost zero crossings, so that the end
+  runs back into the beginning without a step in it.
+
+  A wave that is going to loop has to start and finish at about the same value,
+  and the reliable place to find two such points is where it crosses zero.
+  Anything before the first crossing and from the last crossing on is cut away;
+  what is left starts at roughly nothing and ends just short of roughly nothing.
+
+  Two separate crossings or it does nothing. A wave that never changes sign has
+  none, and one that changes sign once has the same crossing at both ends --
+  neither gives anything to cut to, and shortening a wave to zero or to a single
+  polarity would be worse than leaving it as it was.
+
+  A crossing is counted at the first sample of the new polarity, which is the
+  sample to cut on -- a copy starting there starts from roughly nothing. A run
+  of zeros is not a change of sign by itself, so silence in the middle of a wave
+  does not read as two crossings.
+  */
   Builtin.createBuiltin(
-    "find-nearest-zero-crossing",
-    ["wt_", "at#%"],
-    function $findNearestZeroCrossing(env, executionEnvironment, commandTags) {
+    "zeroclip",
+    ["wt_"],
+    function $zeroclip(env, executionEnvironment) {
       let wt = env.lb("wt");
       let total = wt.getDuration();
-      if (total < 2) {
-        return constructFatalError(
-            "find-nearest-zero-crossing: this wave is too short to have one. Sorry!");
-      }
-      let from = slicePointToSamples(env.lb("at"), null, total);
-      if (from < 0) from = 0;
-      if (from > total - 1) from = total - 1;
 
-      /*
-      A crossing is reported at the first sample of the new polarity, which is
-      the sample you want to cut on: a copy starting there starts from roughly
-      nothing. A run of zeros is not a sign change by itself, so silence in the
-      middle of a wave gives one crossing rather than two.
-      */
-      let best = -1;
-      let bestDist = 0;
+      let first = -1;
+      let last = -1;
       let lastSign = 0;
       for (let i = 0; i < total; i++) {
         let v = wt.valueAtSample(i);
         let sign = v > 0 ? 1 : (v < 0 ? -1 : 0);
         if (sign == 0) continue;
         if (lastSign != 0 && sign != lastSign) {
-          let dist = Math.abs(i - from);
-          if (best == -1 || dist < bestDist) {
-            best = i;
-            bestDist = dist;
-          }
-          // everything after this one is farther away than this one
-          if (i >= from) break;
+          if (first == -1) first = i;
+          last = i;
         }
         lastSign = sign;
       }
-      if (best == -1) {
-        return constructFatalError(
-            "find-nearest-zero-crossing: this wave never crosses zero. Sorry!");
+
+      let from = 0;
+      let dur = total;
+      if (first != -1 && last > first) {
+        from = first;
+        dur = last - first;
       }
 
-      if (hasCommandTag(commandTags, "of-total")) {
-        return constructFloat(best / total);
+      let r = constructWavetable(dur);
+      let data = r.getData();
+      for (let i = 0; i < dur; i++) {
+        data[i] = wt.valueAtSample(from + i);
       }
-      let timebase = timebaseFromTags(commandTags);
-      if (!timebase || timebase == "SAMPLES") {
-        return constructInteger(best);
-      }
-      return constructFloat(convertSamplesToTimebase(timebase, best));
+      r.init();
+      return r;
     },
-    "The point in wt| nearest to |at where the wave changes sign. Cutting or looping there instead of at |at is what keeps a splice from clicking. |at is a length, so it can be tagged with a timebase (nn, secs, hz, b, samps) or with of-total to read it as a fraction of this wave. The answer comes back in samples unless you tag the command with a timebase or with of-total."
+    "Cuts wt| back to the stretch between its first and last zero crossings, "
+      + "which is what makes it loop without a click: it then begins and ends at "
+      + "about the same value instead of stopping wherever it happened to stop. "
+      + "A wave with fewer than two separate crossings comes back unchanged, "
+      + "since there is nothing to cut to. Split points are not carried over, "
+      + "because the wave they were measured against is no longer this one."
   );
 
   Builtin.createBuiltin(

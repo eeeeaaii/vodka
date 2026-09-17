@@ -28,6 +28,7 @@ import { getFFGen } from '../gc.js'
 import { experiments } from '../globalappflags.js'
 import { heap } from '../heap.js'
 import { constructFatalError } from './eerror.js'
+import { evaluateNexSafely } from '../evaluator.js'
 
 const DVSTATE_CANCELLED = 0;
 const DVSTATE_NEW = 1;
@@ -169,6 +170,26 @@ class DeferredValue extends NexContainer {
 				this.replaceChildAt(value, 0);
 			}
 		}
+		/*
+		An error ends it. A settle would normally leave the deferred live and
+		able to fire again -- a click handler waiting for the next click, a
+		timer for the next tick -- but a source that has just produced an error
+		will produce it again on the next event, and a handler that reports the
+		same failure forever is no use to anybody. So an error expires it: the
+		state goes to finished rather than settled, which makes any later result
+		be refused up at the top of this method, and the activation source is
+		stopped so nothing stays scheduled.
+
+		The recourse is to handle the error inside the handler. One that lets an
+		error out is done.
+		*/
+		let held = this.getChildAt(0);
+		if (Utils.isFatalError(held)) {
+			justSettling = false;
+			if (this.activationFunctionGenerator && this.activationFunctionGenerator.stop) {
+				this.activationFunctionGenerator.stop();
+			}
+		}
 		this.state = justSettling ? DVSTATE_SETTLED : DVSTATE_FINISHED;
 		if (!experiments.DISABLE_ALERT_ANIMATIONS) {
 			this.doAlertAnimation();
@@ -247,16 +268,33 @@ class DeferredValue extends NexContainer {
 			return this;
 		}
 		if (this.isFinished()) {
+			let result;
 			if (this.numChildren() > 0) {
-				let c = this.getChildAt(0);
-				if (Utils.isDeferredValue(c) && c.isFinished()) {
-					return c.evaluate(env);
-				} else {
-					return c;
-				}
+				/*
+				What a finished deferred value holds is the answer, so hand back
+				the answer rather than the wrapper -- and evaluate it on the way
+				out, the way an org evaluates what is in it. This used to return
+				the child untouched unless it happened to be another finished
+				deferred value; evaluating covers that case and every other one
+				besides. Safely, because embedding an error is right here for
+				the same reason it is right in an org: this is not a function
+				call, and there is no caller to throw to.
+				*/
+				result = evaluateNexSafely(this.getChildAt(0), env);
 			} else {
-				return new Nil();
+				result = new Nil();
 			}
+			/*
+			Tags on the deferred value were put there to describe the answer --
+			nobody tags the waiting itself -- so they have to come along or they
+			are lost the moment the wrapper goes away. addTag rather than
+			copyTagsTo so that evaluating the same deferred value twice does not
+			stack up duplicates.
+			*/
+			for (let i = 0; i < this.tags.length; i++) {
+				result.addTag(this.tags[i].copy());
+			}
+			return result;
 		}
 		// if just settled, but not finished, return this.
 		return this;

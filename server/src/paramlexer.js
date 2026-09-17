@@ -54,6 +54,7 @@ const TYPE_TOKENS = [
 	['&', 'Closure'],
 	['κ', 'Contract'],
 	['μ', 'Clip'],
+	['∅', 'Nil'],
 ];
 
 // may hold an underscore, may not end in one

@@ -102,6 +102,25 @@ the stored copy is overwritten rather than orphaned.
 const WAVETABLE_ID_KEY = 'wid';
 
 /*
+A wavetable can be zoomed down vertically until there is nothing to see and,
+worse, nothing to take hold of -- and the gesture for zooming back up is a drag
+on the wavetable itself, so getting there means being stuck there. Hence a
+floor.
+
+One floor, not two. Flooring the box and the scale separately meant that
+between the two the wave went on shrinking inside a box that had already
+stopped, and the drawing drifted out of the space it was drawn in. The scale
+floor is worked out from the box floor instead, so they arrive together: at the
+bottom the samples stop shrinking at the same moment the box does, and
+windowHeight needs no clamp of its own because it can no longer go under.
+
+A wave counts as at least full scale (windowHeight uses max(amp, 1)), so half
+the smallest box is the smallest scale that can fill it.
+*/
+const MIN_WINDOW_HEIGHT_PIXELS = 7;
+const MIN_HEIGHT_PIXELS_FULL_SCALE = MIN_WINDOW_HEIGHT_PIXELS / 2;
+
+/*
 Decodes samples stored directly in a document. Two formats have been written
 over the years: base64 of the raw Float32 bytes, and before that a list of
 decimal numbers separated by commas. Telling them apart is unambiguous because
@@ -356,6 +375,9 @@ class Wavetable extends Nex {
 	}
 
 	setHeightPixelsFullScale(val) {
+		if (!(val >= MIN_HEIGHT_PIXELS_FULL_SCALE)) {
+			val = MIN_HEIGHT_PIXELS_FULL_SCALE;
+		}
 		if (this.localHeightPixelsFullScale > -1) {
 			this.localHeightPixelsFullScale = val;
 		} else {
@@ -381,7 +403,10 @@ class Wavetable extends Nex {
 
 	windowHeight() {
 		let maxamp = Math.max(this.amp, 1);
-		// we just don't want a window larger than 1000 pixels, it'll crash things
+		// we just don't want a window larger than 1000 pixels, it'll crash things.
+		// No floor here: the scale cannot go below what fills the smallest box,
+		// so this cannot come out under it, and a floor here would be the thing
+		// that let the box and the wave disagree.
 		return Math.min(2 * maxamp * this.getHeightPixelsFullScale(), 1000);
 	}
 
@@ -999,6 +1024,22 @@ class Wavetable extends Nex {
 		this.setupMouseDragHandler(renderNode, startfunction, movefunction, endfunction);
 	}
 
+	/*
+	A press with a modifier held is a zoom or a pan, not a press of whatever it
+	landed on. The controls along the top of a wavetable would otherwise eat it,
+	and that matters more than it sounds: the way out of a wave zoomed so flat
+	you cannot see it is to zoom it back up, and if the only place that gesture
+	works is the waveform itself, there is nothing left to take hold of. Letting
+	a modified press through means the whole wavetable is a handle, controls
+	included.
+
+	Unmodified presses still belong to the control, so the buttons and the time
+	label go on working the way they did.
+	*/
+	pressIsAGesture(event) {
+		return event.shiftKey || event.ctrlKey || event.metaKey;
+	}
+
 	setupMouseDragHandler(renderNode, startf, movef, endf) {
 		let body = null;
 		let t = this;
@@ -1114,6 +1155,9 @@ class Wavetable extends Nex {
 		let suffix = getTimebaseSuffix(this.getCurrentTimebase());
 		timelabel.innerText = '' + n + ' ' + suffix;
 		timelabel.onmousedown = (event) => {
+			if (this.pressIsAGesture(event)) {
+				return true;
+			}
 			this.advanceToNextTimebase();
 			this.renderOnlyThisNex();
 			event.stopPropagation();
@@ -1128,6 +1172,9 @@ class Wavetable extends Nex {
 		recordButtonLabel.classList.add('wavecontrol');
 		recordButtonLabel.innerText = '* rec';
 		recordButtonLabel.onmousedown = (event) => {
+			if (this.pressIsAGesture(event)) {
+				return true;
+			}
 			startRecordingAudio(this);
 			event.stopPropagation();
 			event.preventDefault();
@@ -1141,6 +1188,9 @@ class Wavetable extends Nex {
 		recordButtonLabel.classList.add('wavecontrol');
 		recordButtonLabel.innerText = '[] stop';
 		recordButtonLabel.onmousedown = (event) => {
+			if (this.pressIsAGesture(event)) {
+				return true;
+			}
 			stopRecordingAudio(this);
 			event.stopPropagation();
 			event.preventDefault();
@@ -1162,6 +1212,9 @@ class Wavetable extends Nex {
 		addMarkerButton.classList.add('wavecontrol');
 		addMarkerButton.innerText = 'v';
 		addMarkerButton.onmousedown = (event) => {
+			if (this.pressIsAGesture(event)) {
+				return true;
+			}
 			this.addMarker();
 			event.stopPropagation();
 			event.preventDefault();
@@ -1182,6 +1235,9 @@ class Wavetable extends Nex {
 		markerNum.classList.add('wavecontrol');
 		markerNum.innerText = this.getMarkerName(n);
 		markerNum.onmousedown = (event) => {
+			if (this.pressIsAGesture(event)) {
+				return true;
+			}
 			this.deleteMarker(n);
 			event.stopPropagation();
 			event.preventDefault();

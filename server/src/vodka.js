@@ -86,6 +86,8 @@ import * as audioStore from './audiostore.js'
 
 let root = null;
 
+
+
 // used by emscripten
 var Module = {}
 
@@ -95,6 +97,14 @@ function dumpPerf() {
 
 function startPerf() {
 	perfmon.activate();
+}
+
+/*
+Run from the queue rather than straight out of the keyup handler, so that a
+release is acted on after the presses that came before it. See enqueueKillSound.
+*/
+function doKillSound() {
+	maybeKillSound();
 }
 
 function doRealKeyInput(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
@@ -349,7 +359,7 @@ async function setup() {
 	}
 	document.onkeyup = function(e) {
 		possiblyRecordAction(e, 'up');
-		maybeKillSound();
+		eventQueueDispatcher.enqueueKillSound();
 		return true;
 	}
 	document.onkeydown = function(e) {
@@ -397,6 +407,7 @@ export {
 	topLevelRender,
 	nodeLevelRender,
 	doRealKeyInput,
+	doKillSound,
 	doKeyInput,
 	renderOnlyDirty,
 	replSetup
