@@ -186,7 +186,7 @@ void setChooseAlgorithmString()
     }
     else
     {
-        strcpy( menuAlgorithmName+3, algorithmNames[sel] );
+        snprintf( menuAlgorithmName+3, sizeof( menuAlgorithmName ) - 3, "%s", algorithmNames[sel] );
     }
     
     setMenuString( menuAlgorithmName );
