@@ -95,8 +95,41 @@ function splitLibraryFromPath(fname) {
 	return { library: LIBRARIES[head], path: fname.substring(at + 1) };
 }
 
+/*
+The same rule the rename tool applies to the library on disk, applied to a name
+on its way in. Documents written before the rename ask for "SB-003/Wobble
+Tone.wav" and there is no reason to make them wrong -- that names exactly one
+file, and it is the file now called Wobble_Tone.wav.
+
+Per segment, because the slashes are structure rather than part of any name.
+*/
+function normalizeAudioName(fname) {
+	let ext = '';
+	if (fname.toLowerCase().endsWith('.wav')) {
+		ext = fname.substring(fname.length - 4);
+		fname = fname.substring(0, fname.length - 4);
+	}
+	let parts = fname.split('/').map(function(part) {
+		return part.replace(/[()]/g, ' ')
+				.replace(/[^A-Za-z0-9_-]/g, '_')
+				.replace(/_+/g, '_')
+				.replace(/^_|_$/g, '');
+	});
+	return parts.join('/') + ext;
+}
+
+/*
+list-audio hands back names with no extension on them, and a name typed by hand
+may well have one. Both say the same file, and the file on disk has the
+extension, so this is where it goes back on.
+*/
+function withWavExtension(fname) {
+	return fname.toLowerCase().endsWith('.wav') ? fname : fname + '.wav';
+}
+
 function libraryNames() {
 	return ['sample', 'wave'];
 }
 
-export { readAudioTags, splitLibraryFromPath, libraryNames, DEFAULT_LIBRARY }
+export { readAudioTags, splitLibraryFromPath, libraryNames, normalizeAudioName,
+		withWavExtension, DEFAULT_LIBRARY }

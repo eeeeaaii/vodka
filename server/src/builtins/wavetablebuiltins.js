@@ -31,7 +31,8 @@ import { constructEError } from "../nex/eerror.js";
 import { GenericActivationFunctionGenerator } from "../asyncfunctions.js";
 
 import { UNBOUND } from "../environment.js";
-import { readAudioTags, splitLibraryFromPath, DEFAULT_LIBRARY } from "../audiolibraries.js";
+import { readAudioTags, splitLibraryFromPath, normalizeAudioName,
+    withWavExtension, DEFAULT_LIBRARY } from "../audiolibraries.js";
 
 import {
   loadAudio,
@@ -2585,6 +2586,14 @@ function createWavetableBuiltins() {
       if (want.folders.length == 1 && fname.indexOf("/") == -1) {
         fname = want.folders[0] + "/" + fname;
       }
+      /*
+      Names in a listing carry no extension and every folder and file in the
+      library is named so it can be typed after a dot. A name that came from
+      somewhere else -- typed by hand, or saved in a document written before
+      the library was renamed -- is put in the same shape here rather than
+      simply failing to be found.
+      */
+      fname = withWavExtension(normalizeAudioName(fname));
 
 
       let deferredValue = constructDeferredValue();
@@ -2610,10 +2619,13 @@ function createWavetableBuiltins() {
     },
     "Loads an audio file as a wavetable. |fname is a name as it appears in "
       + "list-audio, which begins with the library it is in -- "
-      + "wave/metallic/AKWF_0309.wav -- so nothing else is needed. A name with "
-      + "no library on the front is looked for in the library the command is "
-      + "tagged with, or in the sample library if it is not tagged; tag it with "
-      + "a folder name as well and that folder is prefixed onto a bare filename."
+      + "wave/metallic/AKWF_0309 -- so nothing else is needed. A .wav on the "
+      + "end is allowed but not wanted, and neither is the exact punctuation: "
+      + "a name written the way the file used to be called, with spaces in it, "
+      + "finds the same file. A name with no library on the front is looked for "
+      + "in the library the command is tagged with, or in the sample library if "
+      + "it is not tagged; tag it with a folder name as well and that folder is "
+      + "prefixed onto a bare filename."
   );
 
   Builtin.createBuiltin(
