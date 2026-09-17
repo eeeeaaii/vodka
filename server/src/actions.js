@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import * as Utils from './utils.js'
 import { systemState } from './systemstate.js'
 import { heap } from './heap.js';
 import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
@@ -876,6 +877,65 @@ class EvaluateInPlaceAction extends Action {
 
 
 /*
+Play again, from wherever you are standing.
+
+Working on a wave means being somewhere deep inside the expression that plays
+it, and hearing the change means getting back out to the play command and
+running it: shift-tab until the whole thing is selected, then shift-enter. This
+is that, in one key. It walks up from the selection and runs the first play
+command it meets, starting with the selected nex itself, so that pressing it
+while already on the play command does the obvious thing.
+
+The selection does not move. Playing is something you do to the document, not
+somewhere you go in it, and being thrown out to the top every time you wanted
+to hear the change would undo the reason for having the shortcut. Nothing needs
+selecting anyway: what runs the code takes the node, and only looks at the
+selection to decide where to put an error.
+
+Undoing does nothing, the way undoing an audition does nothing -- the sound has
+been made and there is no taking it back. A redo does not play it again, for
+the same reason auditioning does not.
+*/
+class ReplayNearestPlayAction extends Action {
+	constructor(actionName) {
+		super(actionName);
+		this.hasBeenDone = false;
+	}
+
+	canUndo() {
+		return true;
+	}
+
+	doAction() {
+		if (this.hasBeenDone) {
+			return;
+		}
+		this.hasBeenDone = true;
+		let playNode = null;
+		for (let node = systemState.getGlobalSelectedNode(); node; node = node.getParent()) {
+			let nex = node.getNex();
+			// getCommandName is on Command, and a deferred command is one
+			if (nex && nex.getCommandName && nex.getCommandName() == 'play') {
+				playNode = node;
+				break;
+			}
+		}
+		if (!playNode) {
+			// nothing above you plays anything, so there is nothing to repeat
+			Utils.beep();
+			return;
+		}
+		// the same thing shift-enter does: run it and keep the code
+		KeyResponseFunctions['evaluate-nex-and-keep'](playNode);
+	}
+
+	undoAction() {
+		// no op
+	}
+}
+
+
+/*
 Stepping a number with shift and an arrow.
 
 The undo saves the value it started from rather than stepping back by the same
@@ -1097,6 +1157,9 @@ function actionFactory(actionName, eventName) {
 
 		case 'evaluate-nex-and-keep':
 			return new EvaluateInPlaceAction(actionName);
+
+		case 'replay-nearest-play':
+			return new ReplayNearestPlayAction(actionName);
 
 		case 'wrap-in-command':
 		case 'wrap-in-doc':
