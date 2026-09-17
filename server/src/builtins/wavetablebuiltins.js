@@ -584,14 +584,13 @@ function createWavetableBuiltins() {
 
   Builtin.createBuiltin(
     "singlepole",
-    ["wt1_", "wt2#%_", "type$?"],
-    function $singlepole(env, executionEnvironment) {
+    ["wt1_", "wt2#%_"],
+    function $singlepole(env, executionEnvironment, commandTags) {
       let wt1 = env.lb("wt1");
       let wt2 = env.lb("wt2");
-      let kind = filterKind(env.lb("type"), ["low", "high"]);
-      if (!kind) {
-        return constructFatalError(
-            "singlepole: type must be low or high. Sorry!");
+      let kind = filterKindFromTags(commandTags, ["low", "high"]);
+      if (kind == "conflict") {
+        return filterKindError("singlepole", ["low", "high"]);
       }
 
       /*
@@ -626,7 +625,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Runs |wt1 through a single pole filter with a cutoff determined by |wt2, which can be a number or a wave. |wt2 runs 0 to 1 across the range of hearing, 0 being 20Hz and 1 being 20kHz, and it crosses that range by ear rather than by hertz -- half way is about 630Hz, not 10kHz -- so a wave used as |wt2 sweeps evenly. Tag a number with a timebase (hz, nn) to name a real frequency instead. |type is low or high, and defaults to low. One pole cannot resonate -- use doublepole for that."
+    "Runs |wt1 through a single pole filter with a cutoff determined by |wt2, which can be a number or a wave. |wt2 runs 0 to 1 across the range of hearing, 0 being 20Hz and 1 being 20kHz, and it crosses that range by ear rather than by hertz -- half way is about 630Hz, not 10kHz -- so a wave used as |wt2 sweeps evenly. Tag a number with a timebase (hz, nn) to name a real frequency instead. Tag the command <low> or <high> to say which it is; it is <low> if you do not. One pole cannot resonate, and no amount of feeding it back into itself will change that -- one pole can only turn the phase a quarter turn and a ring needs half a turn to sustain itself. Use doublepole when you want a filter that sings."
   );
 
   /*
@@ -725,11 +724,36 @@ function createWavetableBuiltins() {
     };
   }
 
-  function filterKind(nex, allowed) {
-    if (nex == UNBOUND) return allowed[0];
-    let s = nex.getFullTypedValue().trim().toLowerCase();
-    if (s.endsWith("pass")) s = s.substring(0, s.length - 4);
-    return allowed.indexOf(s) == -1 ? null : s;
+  /*
+  Which filter it is, taken from a tag on the command rather than an argument:
+  <low>doublepole, not doublepole with "low" on the end. Naming the kind is not
+  the same act as handing it a cutoff -- the kind is which command you meant,
+  and it never moves while a sound plays, so it does not belong among the
+  things that can be waves.
+
+  No tag means the first allowed kind, which is the one you nearly always want.
+  Two kinds at once is an error rather than a silent first-wins, because a
+  <low> that was meant to replace a <high> and did not would be very hard to
+  hear.
+  */
+  function filterKindFromTags(commandTags, allowed) {
+    let found = null;
+    for (let i = 0; commandTags && i < commandTags.length; i++) {
+      let s = commandTags[i].getTagString().trim().toLowerCase();
+      // lowpass and low are the same word said two ways
+      if (s.endsWith("pass")) s = s.substring(0, s.length - 4);
+      if (allowed.indexOf(s) == -1) continue;
+      if (found && found != s) return "conflict";
+      found = s;
+    }
+    return found ? found : allowed[0];
+  }
+
+  function filterKindError(name, allowed) {
+    return constructFatalError(
+        name + ": tag the command with one of "
+        + allowed.map(k => "<" + k + ">").join(", ")
+        + " to say which kind of filter it is. Sorry!");
   }
 
   /*
@@ -817,13 +841,13 @@ function createWavetableBuiltins() {
 
   Builtin.createBuiltin(
     "doublepole",
-    ["wt_", "cutoff#%_", "type$?", "resonance#%_?"],
-    function $doublepole(env, executionEnvironment) {
+    ["wt_", "cutoff#%_", "resonance#%_?"],
+    function $doublepole(env, executionEnvironment, commandTags) {
       let wt = env.lb("wt");
-      let kind = filterKind(env.lb("type"), ["low", "high", "band", "notch"]);
-      if (!kind) {
-        return constructFatalError(
-            "doublepole: type must be low, high, band or notch. Sorry!");
+      const KINDS = ["low", "high", "band", "notch"];
+      let kind = filterKindFromTags(commandTags, KINDS);
+      if (kind == "conflict") {
+        return filterKindError("doublepole", KINDS);
       }
       let cutoff = frequencyAt(env.lb("cutoff"));
       let resonance = amountAt(env.lb("resonance"), 0);
@@ -848,18 +872,18 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Runs wt| through a two pole filter. |type is low, high, band or notch, and defaults to low. |cutoff runs 0 to 1 across the range of hearing, 0 being 20Hz and 1 being 20kHz, and it crosses that range by ear rather than by hertz -- half way is about 630Hz, not 10kHz -- so a wave used as |cutoff sweeps evenly. Tag a number with a timebase (hz, nn) to name a real frequency instead. |resonance runs 0 to 1 and is what makes a sweep sound like a filter rather than a tone control -- it lives inside the filter's loop, which is why you cannot get it by feeding a filter back into itself. Both |cutoff and |resonance can be waves, so both can move while the sound plays."
+    "Runs wt| through a two pole filter. Tag the command <low>, <high>, <band> or <notch> to say which it is; it is <low> if you do not. |cutoff runs 0 to 1 across the range of hearing, 0 being 20Hz and 1 being 20kHz, and it crosses that range by ear rather than by hertz -- half way is about 630Hz, not 10kHz -- so a wave used as |cutoff sweeps evenly. Tag a number with a timebase (hz, nn) to name a real frequency instead. |resonance runs 0 to 1 and is what makes a sweep sound like a filter rather than a tone control -- it lives inside the filter's loop, which is why you cannot get it by feeding a filter back into itself. Both |cutoff and |resonance can be waves, so both can move while the sound plays."
   );
 
   Builtin.createBuiltin(
     "param-eq",
-    ["wt_", "freq#%_", "gain#%_", "q#%_?", "type$?"],
-    function $paramEq(env, executionEnvironment) {
+    ["wt_", "freq#%_", "gain#%_", "q#%_?"],
+    function $paramEq(env, executionEnvironment, commandTags) {
       let wt = env.lb("wt");
-      let kind = filterKind(env.lb("type"), ["peak", "lowshelf", "highshelf"]);
-      if (!kind) {
-        return constructFatalError(
-            "param-eq: type must be peak, lowshelf or highshelf. Sorry!");
+      const KINDS = ["peak", "lowshelf", "highshelf"];
+      let kind = filterKindFromTags(commandTags, KINDS);
+      if (kind == "conflict") {
+        return filterKindError("param-eq", KINDS);
       }
       let freq = frequencyAt(env.lb("freq"));
       let gain = amountAt(env.lb("gain"), 0);
@@ -891,7 +915,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "One band of parametric eq on wt|: lifts or drops a region around |freq by |gain decibels and leaves the rest alone. |q is how wide that region is, higher being narrower, and defaults to 1. |type is peak, lowshelf or highshelf, and defaults to peak -- a shelf moves everything below or above |freq instead of a band around it. |freq is a fraction of 20kHz, so 0.05 is 1kHz, or a number tagged with a timebase (hz, nn). Chain calls to build up a whole eq. All three of |freq, |gain and |q can be waves, so a band can move."
+    "One band of parametric eq on wt|: lifts or drops a region around |freq by |gain decibels and leaves the rest alone. |q is how wide that region is, higher being narrower, and defaults to 1. Tag the command <peak>, <lowshelf> or <highshelf> to say which it is; it is <peak> if you do not -- a shelf moves everything below or above |freq instead of a band around it. |freq is a fraction of 20kHz, so 0.05 is 1kHz, or a number tagged with a timebase (hz, nn). Chain calls to build up a whole eq. All three of |freq, |gain and |q can be waves, so a band can move."
   );
 
   Builtin.createBuiltin(
