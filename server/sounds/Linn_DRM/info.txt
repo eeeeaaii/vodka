@@ -1,1 +1,3 @@
 Linn DRM
+Linn Drum
+ALM022 Squid Salmple Bank 18. Names from the official bank reference.

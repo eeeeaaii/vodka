@@ -1,1 +1,3 @@
 CR78 VR
+CR78 processed
+ALM022 Squid Salmple Bank 9. Names from the official bank reference.
