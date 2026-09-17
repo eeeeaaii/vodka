@@ -47,6 +47,7 @@ import { systemState } from './systemstate.js'
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import { experiments } from './globalappflags.js'
 import { unwrapFinishedDeferredInDocument } from './evaluatorinterface.js'
+import { recordPerformedAction, EditorErrorAction } from './actions.js'
 
 const EVENT_DEBUG = false;
 
@@ -71,6 +72,7 @@ class EventQueue {
 		eventQueueDispatcher.createDelegate('enqueueDeferredSettle', this);
 		eventQueueDispatcher.createDelegate('enqueueRenotifyDeferredListeners', this);
 		eventQueueDispatcher.createDelegate('enqueueUnwrapFinishedDeferred', this);
+		eventQueueDispatcher.createDelegate('enqueueEditorErrorAction', this);
 		eventQueueDispatcher.createDelegate('enqueueTopLevelRender', this);
 		eventQueueDispatcher.createDelegate('enqueueGC', this);
 	}
@@ -286,6 +288,26 @@ class EventQueue {
 			}
 		};
 		this.queueSet[DEFERRED_PRIORITY].push(item);
+		this.setTimeoutForProcessingNextItem(item);
+	}
+
+	/*
+	An editor threw mid-keystroke and what was being edited is now an error.
+	Already done by the time this runs -- recorded, not performed -- so that
+	the undo stack knows the document changed underneath the key's own action.
+	*/
+	enqueueEditorErrorAction(parent, index, replacedNode, errorNode) {
+		EVENT_DEBUG ? console.log('enqueueing: EditorErrorAction'):null;
+		let item = {
+			action: "editorErrorAction",
+			shouldDedupe: false,
+			equals: null,
+			do: function doEditorErrorAction() {
+				recordPerformedAction(
+						new EditorErrorAction(parent, index, replacedNode, errorNode));
+			}
+		};
+		this.queueSet[USER_EVENT_PRIORITY].push(item);
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
