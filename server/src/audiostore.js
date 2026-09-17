@@ -106,21 +106,57 @@ function loadAll() {
 				return;
 			}
 			let store = tx.objectStore(STORE);
-			let req = store.openCursor();
 			let prefix = scopedKey('');
-			req.onsuccess = function() {
-				let cursor = req.result;
-				if (!cursor) {
-					resolve();
-					return;
+			/*
+			Only this session's records. Keys are '<session>/<hash>', so every
+			one of them sorts inside this range and nothing else does.
+
+			This used to open a cursor over the whole store and check the prefix
+			as each record went by. Every record in the database, from every
+			session that ever existed, cost a separate task and a full read of
+			its samples -- and startup waits for this before it builds the
+			document, so a new session with no audio of its own still sat
+			through everyone else's. getAll asks for the range in one go, so it
+			is two requests rather than one per record.
+			*/
+			let range;
+			try {
+				range = IDBKeyRange.bound(prefix, prefix + '\uffff');
+			} catch (e) {
+				resolve();
+				return;
+			}
+			if (!store.getAll || !store.getAllKeys) {
+				// older browser: a cursor, but at least only over the range
+				let req = store.openCursor(range);
+				req.onsuccess = function() {
+					let cursor = req.result;
+					if (!cursor) {
+						resolve();
+						return;
+					}
+					loaded.set(('' + cursor.key).substring(prefix.length), cursor.value);
+					cursor.continue();
+				};
+				req.onerror = function() { resolve(); };
+				return;
+			}
+			let keysReq = store.getAllKeys(range);
+			let valsReq = store.getAll(range);
+			let done = 0;
+			function bothDone() {
+				if (++done < 2) return;
+				let keys = keysReq.result || [];
+				let vals = valsReq.result || [];
+				for (let i = 0; i < keys.length && i < vals.length; i++) {
+					loaded.set(('' + keys[i]).substring(prefix.length), vals[i]);
 				}
-				let k = '' + cursor.key;
-				if (k.indexOf(prefix) == 0) {
-					loaded.set(k.substring(prefix.length), cursor.value);
-				}
-				cursor.continue();
-			};
-			req.onerror = function() { resolve(); };
+				resolve();
+			}
+			keysReq.onsuccess = bothDone;
+			valsReq.onsuccess = bothDone;
+			keysReq.onerror = function() { resolve(); };
+			valsReq.onerror = function() { resolve(); };
 		});
 	}).catch(function() {
 		unavailable = true;
@@ -217,6 +253,87 @@ function putForSession(sessionId, hash, buffer) {
 	});
 }
 
+/*
+Everything this session ever stored, gone in one go. Deleting a session means
+deleting its audio too, and the audio is the part that is measured in gigabytes.
+
+A key range rather than a list of ids, because the point is to catch records
+this session wrote that nothing in the document refers to any more -- those are
+exactly the ones no caller could name.
+*/
+function removeAllForSession(sessionId) {
+	return openDb().then(function(db) {
+		if (!db) return;
+		return new Promise(function(resolve) {
+			try {
+				let prefix = sessionId + '/';
+				let range = IDBKeyRange.bound(prefix, prefix + '\uffff');
+				let tx = db.transaction(STORE, 'readwrite');
+				tx.objectStore(STORE).delete(range);
+				tx.oncomplete = function() { resolve(); };
+				tx.onerror = function() { resolve(); };
+				tx.onabort = function() { resolve(); };
+			} catch (e) {
+				resolve();
+			}
+		});
+	}).then(function() {
+		if (sessionId == systemState.getSessionId()) {
+			loaded.clear();
+		}
+	}).catch(function() {});
+}
+
+/*
+Refcounting already deletes a wavetable's samples the moment the wavetable is
+really gone -- see cleanupOnMemoryFree. What it cannot do is survive the page:
+heap.free only runs while the tab is alive, so anything stored when a tab is
+closed (or crashes, or is killed) stays in the database forever with nothing
+left in memory to release it. makeCopy mints a fresh id, so ordinary work keeps
+producing records whose originals are only ever collected in-page.
+
+So this is the other half: on the way in, throw away everything this session
+stored that the document it just restored does not refer to. Nothing else is in
+memory at that point -- no undo history, no half-finished edits -- so anything
+not in the document is genuinely unreachable.
+
+Returns how many went, for the caller to say out loud.
+*/
+function pruneToReferenced(referencedIds) {
+	return openDb().then(function(db) {
+		if (!db) return 0;
+		return new Promise(function(resolve) {
+			let prefix = scopedKey('');
+			let range;
+			try {
+				range = IDBKeyRange.bound(prefix, prefix + '\uffff');
+			} catch (e) {
+				resolve(0);
+				return;
+			}
+			let tx = db.transaction(STORE, 'readwrite');
+			let store = tx.objectStore(STORE);
+			let keysReq = store.getAllKeys(range);
+			keysReq.onsuccess = function() {
+				let keys = keysReq.result || [];
+				let removed = 0;
+				for (let i = 0; i < keys.length; i++) {
+					let id = ('' + keys[i]).substring(prefix.length);
+					if (!referencedIds.has(id)) {
+						store.delete(keys[i]);
+						loaded.delete(id);
+						removed++;
+					}
+				}
+				tx.oncomplete = function() { resolve(removed); };
+				tx.onerror = function() { resolve(0); };
+				tx.onabort = function() { resolve(0); };
+			};
+			keysReq.onerror = function() { resolve(0); };
+		});
+	}).catch(function() { return 0; });
+}
+
 function remove(id) {
 	if (!id) return;
 	loaded.delete(id);
@@ -253,6 +370,8 @@ export {
 	put,
 	entries,
 	putForSession,
+	removeAllForSession,
+	pruneToReferenced,
 	remove,
 	isUnavailable
 }
