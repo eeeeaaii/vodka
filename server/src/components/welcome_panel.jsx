@@ -100,7 +100,11 @@ const WelcomePanel = () => {
             <p className="infoline">Other sessions available on this machine:</p>
             <ul className="sessionlist">
                 {sessions.filter((s) => !s.isCurrent).map((s) => (
-                    <li key={s.id}><a href={buildURL({ 'sessionId': s.id })}>{s.name}</a></li>
+                    <li key={s.id + (s.page ? '::' + s.page : '')}>
+                        {/* page explicitly, because buildURL otherwise carries
+                            over whichever page this window is on */}
+                        <a href={buildURL({ 'sessionId': s.id, 'page': s.page })}>{s.name}</a>
+                    </li>
                 ))}
                 {sessions.filter((s) => !s.isCurrent).length == 0 &&
                     <li className="sessionlistempty">none yet</li>}
