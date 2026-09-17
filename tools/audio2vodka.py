@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
-"""Turn an mp3 or wav into a vodka save file containing wavetables.
+"""Turn an audio or video file into a vodka save file containing wavetables.
 
     audio2vodka.py drums.mp3                 one wavetable, channels merged
     audio2vodka.py --stereo drums.mp3        an org holding two wavetables
     audio2vodka.py --seconds 4 long.wav      just the first four seconds
+    audio2vodka.py clip.mp4                  the sound out of a video
 
-Decoding is done by gstreamer, so anything gstreamer can read works, not only
-mp3 and wav. Everything is resampled to 48kHz because that is the rate vodka
-plays wavetables back at (SAMPLE_RATE in webaudio.js); a 44.1kHz file left
-alone would come out slightly sharp.
+Decoding is done by ffmpeg, so anything ffmpeg can read works -- which is very
+nearly everything, including video files, whose picture is discarded and whose
+soundtrack comes through like any other input. Everything is resampled to 48kHz
+because that is the rate vodka plays wavetables back at (SAMPLE_RATE in
+webaudio.js); a 44.1kHz file left alone would come out slightly sharp.
 
 Merging is not an average. The peak of the whole file is measured across both
 channels first, the channels are summed, and the sum is scaled back down so its
@@ -42,12 +44,17 @@ def decode(path, seconds=None):
     raw.close()
     # Always decoded as stereo. A mono source arrives as two identical
     # channels, which the merge below collapses back to exactly the original.
-    caps = (f'audio/x-raw,format=F32LE,rate={SAMPLE_RATE},'
-            f'channels=2,layout=interleaved')
-    cmd = ['gst-launch-1.0', '-q',
-           'filesrc', f'location={path}', '!', 'decodebin', '!',
-           'audioconvert', '!', 'audioresample', '!', caps, '!',
-           'filesink', f'location={raw.name}']
+    cmd = ['ffmpeg', '-v', 'error', '-nostdin',
+           '-i', path,
+           # a video file is a perfectly good source of sound; the picture is
+           # simply not what we came for, and saying so up front means the
+           # decoder never has to deal with it
+           '-vn',
+           # float samples, stereo, at the rate vodka plays back at, raw with
+           # no header -- the shape numpy reads below
+           '-f', 'f32le', '-acodec', 'pcm_f32le',
+           '-ac', '2', '-ar', str(SAMPLE_RATE),
+           '-y', raw.name]
     try:
         r = subprocess.run(cmd, capture_output=True, text=True)
         if r.returncode != 0:
@@ -122,7 +129,7 @@ def main():
             formatter_class=argparse.RawDescriptionHelpFormatter,
             epilog='Copy the result into a session directory to load it:\n'
                    '  server/sessions/<id>/  or  server/namedsessions/<name>/')
-    p.add_argument('input', help='an mp3, wav, or anything gstreamer decodes')
+    p.add_argument('input', help='an mp3, wav, mp4, or anything else ffmpeg decodes')
     p.add_argument('-o', '--output',
                    help='output filename (default: the input name, no suffix)')
     g = p.add_mutually_exclusive_group()

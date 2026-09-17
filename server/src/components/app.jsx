@@ -8,6 +8,7 @@ import WelcomePanel from './welcome_panel';
 import AccessButton from './access_button';
 import StatusNav from './status_nav';
 import Tutorial from './tutorial';
+import NoteReferencePanel from './note_reference_panel';
 
 import { systemState } from '../systemstate.js';
 import {
@@ -16,7 +17,7 @@ import {
 } from '../help';
 
 
-import { WELCOME, QUICK_REFERENCE, ABSTRACT_DATA_TYPES, BASE_API, SOUND_API, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
+import { WELCOME, QUICK_REFERENCE, ABSTRACT_DATA_TYPES, BASE_API, SOUND_API, NOTE_REFERENCE, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
 
 const MINIMIZED = 0;
 const SHOWING_PANELS = 1;
@@ -30,6 +31,7 @@ const BASIC_USAGE_PANEL = 1;
 const BASE_API_PANEL = 2;
 const SOUND_API_PANEL = 6;
 const ABSTRACT_DATA_TYPES_PANEL = 3;
+const NOTE_REFERENCE_PANEL = 4;
 
 function initialUiState() {
     switch (getInitialHelpState()) {
@@ -73,6 +75,9 @@ const App = () => {
             case SOUND_API:
                 setPanel(SOUND_API_PANEL);
                 break;
+            case NOTE_REFERENCE:
+                setPanel(NOTE_REFERENCE_PANEL);
+                break;
             case START_TUTORIAL:
                 setUiState(SHOWING_TUTORIAL);
                 break;
@@ -91,6 +96,7 @@ const App = () => {
             case BASE_API_PANEL:            return BASE_API;
             case SOUND_API_PANEL:           return SOUND_API;
             case ABSTRACT_DATA_TYPES_PANEL: return ABSTRACT_DATA_TYPES;
+            case NOTE_REFERENCE_PANEL:      return NOTE_REFERENCE;
             case WELCOME_PANEL:             return WELCOME;
             case BASIC_USAGE_PANEL:
             default:                        return QUICK_REFERENCE;
@@ -105,6 +111,8 @@ const App = () => {
                 return <ApiReferencePanel sound={true}/>;
             case ABSTRACT_DATA_TYPES_PANEL:
                 return <AbstractDataTypesPanel/>;
+            case NOTE_REFERENCE_PANEL:
+                return <NoteReferencePanel/>;
             case WELCOME_PANEL:
                 return <WelcomePanel/>;
             case BASIC_USAGE_PANEL:

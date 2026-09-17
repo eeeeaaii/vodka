@@ -1,7 +1,7 @@
 import MenuButton from './menubutton.jsx'
-import { WELCOME, QUICK_REFERENCE, BASE_API, SOUND_API, ABSTRACT_DATA_TYPES, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
+import { WELCOME, QUICK_REFERENCE, BASE_API, SOUND_API, ABSTRACT_DATA_TYPES, NOTE_REFERENCE, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
 
-// Only the first five are tabs -- the last two are actions, so they never
+// Only the first six are tabs -- the last two are actions, so they never
 // show as selected.
 const TopMenu = ({ selectedMenuChoice, onMenuChange }) => {
     return (
@@ -31,6 +31,11 @@ const TopMenu = ({ selectedMenuChoice, onMenuChange }) => {
                 text="Abstract Data Types"
                 selected={selectedMenuChoice == ABSTRACT_DATA_TYPES}
                 onMenuButtonClick={() => onMenuChange(ABSTRACT_DATA_TYPES)} />
+            <MenuButton
+                key="NOTE_REFERENCE"
+                text="Note Numbers"
+                selected={selectedMenuChoice == NOTE_REFERENCE}
+                onMenuButtonClick={() => onMenuChange(NOTE_REFERENCE)} />
             <MenuButton
                 key="START_TUTORIAL"
                 text="Start Tutorial"

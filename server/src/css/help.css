@@ -34,15 +34,32 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	cursor: grab;
 }
 
-#uberhelpcontainer {
 /*
-	display: none;
+Fixed rather than absolute, so the panel stays where it is put however far down
+the document you have scrolled. The button that summons it is already fixed, so
+before this the two drifted apart: open the help after scrolling and the panel
+was somewhere up the page, out of sight.
+
+Held clear of the bottom of the window, and the panel inside it scrolls on its
+own -- a hundred and twenty eight rows of note numbers should move inside the
+panel rather than making the whole page taller.
 */
+#uberhelpcontainer {
     display: flex;
 	flex-direction: column;
-	position:absolute;
+	position: fixed;
+	top: 0;
+	left: 0;
 	z-index: 1000;
-	margin: 20px;	
+	margin: 20px;
+	max-height: calc(100vh - 40px);
+	/* the container is only a frame; what is in it takes its own clicks, and
+	   the document underneath keeps the rest */
+	pointer-events: none;
+}
+
+#uberhelpcontainer > * {
+	pointer-events: auto;
 }
 
 .helpmenupanel {
@@ -73,6 +90,17 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border: 1px solid var(--help-accent);
 	background-color: var(--help-background);
 	padding: 20px;
+	/*
+	Its own scrollbar, so a long panel scrolls inside the frame and the tabs
+	above it stay put.
+
+	A height of its own rather than shrinking to fit the container, because it
+	is not a child of the container -- the preact root and the app's own wrapper
+	sit in between, and flex shrinking does not reach through them. The number
+	is the 20px the container is inset by, twice, plus the row of tabs above.
+	*/
+	overflow-y: auto;
+	max-height: calc(100vh - 110px);
 }
 
 .infopanel .infotitle {
@@ -386,4 +414,53 @@ The gap is the only thing separating them.
 	border-radius: 3px;
 	padding: 4px 12px;
 	cursor: pointer;
+}
+
+/*
+The note number table. Tabular numerals and a fixed column width so the digits
+line up down the page -- a reference is read by running your eye down a column,
+and ragged numbers make that impossible.
+*/
+.infopanel table.noteref {
+	border-collapse: collapse;
+	font-family: monospace;
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+	margin-top: 4px;
+}
+
+.infopanel table.noteref th {
+	text-align: left;
+	font-weight: normal;
+	opacity: 0.6;
+	padding: 2px 14px 4px 0;
+	position: sticky;
+	top: 0;
+	background-color: var(--help-background, inherit);
+}
+
+.infopanel table.noteref td {
+	padding: 1px 14px 1px 0;
+}
+
+.infopanel table.noteref .noterefnum,
+.infopanel table.noteref .noterefhz {
+	text-align: right;
+}
+
+/* every C, so an octave is easy to find without counting rows */
+.infopanel table.noteref tbody tr:nth-child(12n + 1) td {
+	border-top: 1px solid var(--unselected-border);
+}
+
+/* middle C, called out because it is the row everybody looks for */
+.infopanel table.noteref tr.noterefmiddle td {
+	font-weight: bold;
+}
+
+.infopanel table.noteref .noterefnote {
+	font-style: italic;
+	opacity: 0.75;
+	font-weight: normal;
+	padding-left: 2px;
 }

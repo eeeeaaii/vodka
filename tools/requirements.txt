@@ -1,0 +1,14 @@
+# Python packages the tools in this directory need.
+#
+#   python3 -m venv .venv-audio
+#   .venv-audio/bin/pip install -r tools/requirements.txt
+#   .venv-audio/bin/python tools/audio2vodka.py drums.mp3
+#
+# A virtual environment rather than a plain pip install, because a python
+# installed by homebrew refuses to let pip write into it (PEP 668,
+# "externally-managed-environment"), which is the first thing anyone hits.
+#
+# audio2vodka.py also needs ffmpeg, which is not a python package and so cannot
+# live in here -- see tools/README.md.
+
+numpy

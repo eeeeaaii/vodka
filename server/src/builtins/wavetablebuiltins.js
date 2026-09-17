@@ -56,7 +56,7 @@ import {
   frequencyToNoteNum,
 } from "../wavetablefunctions.js";
 import { forEachSpectrum, hannWindow } from "../fft.js";
-import { loopPlay, queueBreak, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying, getAudioChannelCount } from "../webaudio.js";
+import { loopPlay, queueBreak, atNextCycleStart, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying, getAudioChannelCount } from "../webaudio.js";
 import { constructClip } from "../nex/clip.js";
 import { Tag } from "../tag.js";
 import { ERROR_TYPE_INFO } from "../nex/eerror.js";
@@ -147,91 +147,121 @@ function createWavetableBuiltins() {
     return { indexes: r };
   }
 
+  /*
+  What play does, so that play-with-bpm can be play with one more thing rather
+  than a second copy of it that drifts.
+  */
+  function startPlaying(wt, arg, name) {
+    let buffers = [];
+    /*
+    Whether anything being played goes past full scale, asked of the waves
+    rather than worked out here: each one already knows the largest sample it
+    holds, from caching its buffer. So this is a comparison per wave, not a
+    pass over the audio.
+    */
+    let clipping = false;
+    if (Utils.isNexContainer(wt)) {
+      for (let i = 0; i < wt.numChildren(); i++) {
+        let child = wt.getChildAt(i);
+        buffers.push(child.getCachedBuffer());
+        if (child.getAmp && child.getAmp() > 1) clipping = true;
+      }
+    } else {
+      buffers.push(wt.getCachedBuffer());
+      if (wt.getAmp && wt.getAmp() > 1) clipping = true;
+    }
+
+    let channelnumbers = [1, 2];
+    let clip = null;
+
+    /*
+    A nil second argument is handled before it gets here -- an optional
+    parameter given nil is bound as though it were not given at all -- so
+    arg is UNBOUND in that case and the defaults below apply.
+
+    The cost is a diagnostic that used to be here: a clip deleted since it
+    was made also evaluates to nil, and that was reported rather than quietly
+    becoming "play on the default channels". Both arrive as the same value,
+    so only one of them can be served.
+    */
+    if (arg != UNBOUND && Utils.isClip(arg)) {
+      if (arg.getKind() != "audio loop") {
+        return { error: constructFatalError(name + ": that is not an audio clip. Sorry!") };
+      }
+      clip = arg;
+      channelnumbers = clip.getChannels();
+      // Out at the boundary and back in at the same one, so the swap is not
+      // heard. Nothing here has to know how a loop is put together.
+      endLoops(clip.getIds(), true /* at the cycle end */);
+    } else if (arg != UNBOUND) {
+      channelnumbers = [];
+      if (Utils.isNexContainer(arg)) {
+        for (let i = 0; i < arg.numChildren(); i++) {
+          channelnumbers.push(arg.getChildAt(i).getTypedValue());
+        }
+      } else {
+        channelnumbers.push(arg.getTypedValue());
+      }
+    }
+
+    let converted = toChannelIndexes(channelnumbers, name);
+    if (converted.error) return { error: converted.error };
+    let ids = loopPlay(buffers, converted.indexes);
+    let what =
+        "channel" + (channelnumbers.length == 1 ? " " : "s ") + channelnumbers.join(", ");
+    if (clip) {
+      clip.setIds(ids, what);
+    } else {
+      clip = constructClip("audio loop", what, ids, endLoops, channelnumbers);
+    }
+    // a replaced clip is playing something else now, so this is answered
+    // again rather than left as it was
+    clip.setClipping(clipping);
+    // the audio system owns it while it plays, and how long that lasts is
+    // decided by whether anything else owns it too
+    clipStartedPlaying(clip, ids);
+    return { clip: clip };
+  }
+
   Builtin.createBuiltin(
     "play",
     ["wt_", "channelsorclip#%()μ∅?"],
     function $loopPlay(env, executionEnvironment) {
-      let wt = env.lb("wt");
-
-      let buffers = [];
-      /*
-      Whether anything being played goes past full scale, asked of the waves
-      rather than worked out here: each one already knows the largest sample it
-      holds, from caching its buffer. So this is a comparison per wave, not a
-      pass over the audio.
-      */
-      let clipping = false;
-      if (Utils.isNexContainer(wt)) {
-        for (let i = 0; i < wt.numChildren(); i++) {
-          let child = wt.getChildAt(i);
-          buffers.push(child.getCachedBuffer());
-          if (child.getAmp && child.getAmp() > 1) clipping = true;
-        }
-      } else {
-        buffers.push(wt.getCachedBuffer());
-        if (wt.getAmp && wt.getAmp() > 1) clipping = true;
-      }
-
-      // Channels or a clip, never both: a replacement stays on the channels
-      // the clip is already playing on, so there is nothing for channels to say.
-      let arg = env.lb("channelsorclip");
-
-      let channelnumbers = [1, 2];
-      let clip = null;
-
-      /*
-      A nil second argument is handled before it gets here -- an optional
-      parameter given nil is bound as though it were not given at all -- so
-      arg is UNBOUND in that case and the defaults below apply.
-
-      The cost is a diagnostic that used to be here: a clip deleted since it
-      was made also evaluates to nil, and that was reported rather than quietly
-      becoming "play on the default channels". Both arrive as the same value,
-      so only one of them can be served.
-      */
-      if (arg != UNBOUND && Utils.isClip(arg)) {
-        if (arg.getKind() != "audio loop") {
-          return constructFatalError("play: that is not an audio clip. Sorry!");
-        }
-        clip = arg;
-        channelnumbers = clip.getChannels();
-        // Out at the boundary and back in at the same one, so the swap is not
-        // heard. Nothing here has to know how a loop is put together.
-        endLoops(clip.getIds(), true /* at the cycle end */);
-      } else if (arg != UNBOUND) {
-        channelnumbers = [];
-        if (Utils.isNexContainer(arg)) {
-          for (let i = 0; i < arg.numChildren(); i++) {
-            channelnumbers.push(arg.getChildAt(i).getTypedValue());
-          }
-        } else {
-          channelnumbers.push(arg.getTypedValue());
-        }
-      }
-
-      let converted = toChannelIndexes(channelnumbers, "play");
-      if (converted.error) return converted.error;
-      let ids = loopPlay(buffers, converted.indexes);
-      let what =
-          "channel" + (channelnumbers.length == 1 ? " " : "s ") + channelnumbers.join(", ");
-      if (clip) {
-        clip.setIds(ids, what);
-      } else {
-        clip = constructClip("audio loop", what, ids, endLoops, channelnumbers);
-      }
-      // a replaced clip is playing something else now, so this is answered
-      // again rather than left as it was
-      clip.setClipping(clipping);
-      // the audio system owns it while it plays, and how long that lasts is
-      // decided by whether anything else owns it too
-      clipStartedPlaying(clip, ids);
-      return clip;
+      let r = startPlaying(env.lb("wt"), env.lb("channelsorclip"), "play");
+      return r.error ? r.error : r.clip;
     },
     "Starts playing wt| at the next measure start, and returns a clip naming it. It plays for as long as something holds that clip: keep the clip and it loops, throw it away and it plays once, delete it and it stops at the end of the pass it is in. |channelsorclip is either the channels to play on, or a clip returned by an earlier play -- given a clip, the loop it names is replaced at the next measure start, staying on the channels it is already on, and you get the same clip back. Channels are numbered from 1, the way audio hardware numbers them, and if you do not say, the sound plays on channels 1 and 2 -- passing nil says nothing, the same as leaving it out. If it and/or |wt are lists, Vodka will do its best to match up sounds with channels."
   );
 
   // what it was called before it could do both
   Builtin.aliasBuiltin("loop-play", "play");
+
+  Builtin.createBuiltin(
+    "play-with-bpm",
+    ["bpm#%", "wt_", "channelsorclip#%()μ∅?"],
+    function $playWithBpm(env, executionEnvironment) {
+      let bpm = env.lb("bpm").getTypedValue();
+      if (!(bpm > 0)) {
+        return constructFatalError("play-with-bpm: bpm must be more than zero. Sorry!");
+      }
+      let r = startPlaying(env.lb("wt"), env.lb("channelsorclip"), "play-with-bpm");
+      if (r.error) return r.error;
+      /*
+      The tempo changes when this starts sounding, not now. Going from a fast
+      passage to a slow one, the moment that matters is the downbeat of the
+      slow one: set the tempo when you ask and everything between here and
+      there is measured against a tempo that is not playing yet.
+
+      The same boundary the loop joins at, because it is the same event -- see
+      atNextCycleStart.
+      */
+      atNextCycleStart(function() {
+        setBpm(bpm);
+      });
+      return r.clip;
+    },
+    "Exactly what play does, and sets the tempo to |bpm at the moment the loop it starts begins to sound rather than straight away. That is the difference that matters going from one tempo to another: the change belongs on the downbeat of the passage it is the tempo of, not on the beat you happened to ask on. |wt and |channelsorclip are play's arguments and mean the same things."
+  );
 
   Builtin.createBuiltin(
     "break",
