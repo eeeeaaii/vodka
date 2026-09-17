@@ -57,6 +57,8 @@ import {
 } from "../wavetablefunctions.js";
 import { fft, nextPowerOfTwo, forEachSpectrum, hannWindow } from "../fft.js";
 import {
+  applyFormants,
+  vowelNames,
   cutIntoGrains,
   foldInto,
   cutoffToHz,
@@ -2799,6 +2801,47 @@ function createWavetableBuiltins() {
       return r;
     },
     "The frequency spectrum of wt|, as an org of two waves tagged magnitude and phase, reachable with dots as in @spectrum.magnitude. One value per bin; the transform runs at wt| zero filled to the next power of two. Tag the command <hann> to window first."
+  );
+
+  /*
+  Shapes a sound the way a mouth does. Which vowel comes from a tag on the
+  command, the same way a filter's type does, because it is which filter this is
+  rather than a number you would sweep.
+
+  Anything with harmonics to shape works; a buzzy waveform works best, which is
+  what a voice is starting from. Silence and sine waves have nothing at the
+  formant frequencies for it to bring out.
+  */
+  Builtin.createBuiltin(
+    "formant",
+    ["wt_", "strength#%?"],
+    function $formant(env, executionEnvironment, commandTags) {
+      let wt = env.lb("wt");
+      let strength = env.lb("strength");
+      let vowels = vowelNames();
+
+      let vowel = null;
+      for (let i = 0; commandTags && i < commandTags.length; i++) {
+        let t = commandTags[i].getTagString().trim().toLowerCase();
+        if (vowels.indexOf(t) == -1) continue;
+        if (vowel && vowel != t) {
+          return constructFatalError(
+              "formant: tag the command with one vowel, not two. Sorry!");
+        }
+        vowel = t;
+      }
+      if (!vowel) vowel = vowels[0];
+
+      let amount = strength == UNBOUND ? 1 : strength.getTypedValue();
+      if (!(amount > 0)) {
+        return constructFatalError("formant: strength must be more than zero. Sorry!");
+      }
+      if (wt.getDuration() == 0) {
+        return constructFatalError("formant: there is nothing in this wave. Sorry!");
+      }
+      return applyFormants(wt, vowel, amount, getSampleRate());
+    },
+    "Shapes wt| into a vowel. Tag the command <a>, <e>, <i>, <o> or <u> to say which, default <a>. |strength narrows the formants, default 1; higher is more vocal."
   );
 
   /*
