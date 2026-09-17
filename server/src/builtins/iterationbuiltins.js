@@ -29,6 +29,33 @@ import { sEval } from '../syntheticroot.js'
 import { systemState } from '../systemstate.js'
 
 
+/*
+JavaScript hands a map callback the index along with the element; vodka did not,
+so the only way to know where you were in a list was to build the indices
+separately and look each element up by hand.
+
+The index is only passed to a function that declared somewhere to put it. One
+that takes a single parameter is called exactly the way it always was, so
+nothing already written changes behaviour -- a variadic one included, which
+would otherwise quietly start collecting an extra element it never asked for.
+
+(comment by Claude)
+*/
+function takesAnIndex(closure) {
+	let lambda = closure.getLambda();
+	if (!lambda || !lambda.getParams) return false;
+	let params = lambda.getParams();
+	return !!params && params.length >= 2;
+}
+
+function callOnItem(closure, item, i, executionEnvironment, errmsg) {
+	let scf = systemState.getSCF();
+	let cmd = takesAnIndex(closure)
+		? scf.makeCommandWithClosureTwoArgs(closure, scf.makeQuote(item), scf.makeQuote(constructInteger(i)))
+		: scf.makeCommandWithClosureOneArg(closure, scf.makeQuote(item));
+	return sEval(cmd, executionEnvironment, errmsg, true /* throw errors */);
+}
+
 function createIterationBuiltins() {
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  
@@ -44,10 +71,8 @@ function createIterationBuiltins() {
 			let i = 0;
 			try {
 				list.doForEachChild(function(item) {
-					let result = sEval(systemState.getSCF().makeCommandWithClosureOneArg(closure, systemState.getSCF(). makeQuote(item)),
-									   executionEnvironment,
-									   `filter: error returned from item ${i+1}`,
-									   true /* throw errors */);
+					let result = callOnItem(closure, item, i, executionEnvironment,
+									   `filter: error returned from item ${i+1}`);
 					if (!Utils.isBool(result)) {
 						throw constructFatalError('filter-with: filter function must return boolean.');
 					}
@@ -65,7 +90,7 @@ function createIterationBuiltins() {
 			}
 			return resultList;
 		},
-		'Returns a new list containing only the elements of |list for which |func calls true when it is called on that element.'
+		'Returns a new list containing only the elements of |list for which |func calls true when it is called on that element. If |func takes a second argument, it is given the index of the element.'
 	);
 
 	Builtin.aliasBuiltin('filter with', 'filter');
@@ -86,10 +111,8 @@ function createIterationBuiltins() {
 			let i = 0;
 			try {
 				list.doForEachChild(function(item) {
-					let result = sEval(systemState.getSCF().makeCommandWithClosureOneArg(closure, systemState.getSCF(). makeQuote(item)),
-									   executionEnvironment,
-									   `map: error returned from item ${i+1}`,
-									   true /* throw errors */);
+					let result = callOnItem(closure, item, i, executionEnvironment,
+									   `map: error returned from item ${i+1}`);
 					appendIterator = resultList.fastAppendChildAfter(result, appendIterator);
 					i++;
 				});
@@ -102,7 +125,7 @@ function createIterationBuiltins() {
 			}
 			return resultList;
 		},
-		'Goes through all the elements in |list and replaces each one with the result of calling |func on that element.'
+		'Goes through all the elements in |list and replaces each one with the result of calling |func on that element. If |func takes a second argument, it is given the index of the element.'
 	);
 
 	Builtin.aliasBuiltin('map with', 'map');
@@ -156,10 +179,8 @@ function createIterationBuiltins() {
 			let i = 0;
 			try {
 				list.doForEachChild(function(item) {
-					result = sEval(systemState.getSCF().makeCommandWithClosureOneArg(closure, systemState.getSCF(). makeQuote(item)),
-									   executionEnvironment,
-									   `loop-over: error returned when processing input ${i+1}`,
-									   true /* throw errors */);
+					result = callOnItem(closure, item, i, executionEnvironment,
+									   `loop-over: error returned when processing input ${i+1}`);
 					i++;
 				});
 			} catch (e) {
@@ -171,7 +192,7 @@ function createIterationBuiltins() {
 			}
 			return result ? result : constructNil();
 		},
-		'Loops over a list, evaluating a function on each member, and returning the last result.'
+		'Loops over a list, evaluating a function on each member, and returning the last result. If the function takes a second argument, it is given the index of the member.'
 	);
 
 	Builtin.createBuiltin(
