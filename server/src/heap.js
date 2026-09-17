@@ -58,6 +58,9 @@ class Heap {
     this.usedSpace = 0;
     // 2 gigs max mem
     this.debug = false;
+    // see beginAction
+    this.actionDepth = 0;
+    this.pendingFree = [];
   }
 
   availableMemory() {
@@ -150,14 +153,74 @@ class Heap {
       obj.wasFreed = false;
       obj.memAllocated = true;
     }
+    /*
+    Back in the document, so it can be stopped again the next time it leaves.
+    Being stopped is not undone here: a recording that was cut short by a
+    delete does not resume when you undo the delete, because the seconds it
+    would have recorded did not happen. What comes back is what it had.
+    */
+    if (obj.references == 0) {
+      obj.stoppedFunctioning = false;
+    }
     obj.references++;
+  }
+
+  /*
+  An action is one moment, not the several that carrying it out takes. In the
+  middle of a delete there is a gap where the nex has been taken out of the
+  document and the undo buffer has not yet taken hold of it -- an action only
+  says what it is holding once it has run -- and in that gap nothing holds it
+  at all. Freeing it there throws away what undo was about to ask for: a
+  wavetable that comes back from an undo with no samples in it.
+
+  So while an action is running, letting go of the last reference stops the nex
+  but does not free it. Whatever is still at zero when the action finishes is
+  freed then, by which time undo has taken what it wants.
+
+  Counted rather than a flag, because actions nest.
+  */
+  beginAction() {
+    this.actionDepth++;
+  }
+
+  endAction() {
+    if (--this.actionDepth > 0) {
+      return;
+    }
+    let pending = this.pendingFree;
+    this.pendingFree = [];
+    for (let i = 0; i < pending.length; i++) {
+      let obj = pending[i];
+      // anything undo took hold of during the action is no longer at zero
+      if (obj.references == 0 && obj.undoReferences == 0) {
+        this.free(obj);
+      }
+    }
+  }
+
+  /*
+  The document has let go. Separate from being freed because the two happen at
+  different moments and want opposite things: a deleted clip has to stop making
+  noise right now, and a deleted wavetable has to keep its samples until undo
+  is finished with it.
+
+  Guarded, because the two moments collapse into one whenever nothing was
+  holding it for undo, and because an action performs its delete before the
+  undo buffer takes hold -- so a nex can be let go of twice in a row.
+  */
+  stopFunctioning(obj) {
+    if (obj.stoppedFunctioning) {
+      return;
+    }
+    obj.stoppedFunctioning = true;
+    obj.stopFunctioning();
   }
 
   /*
   Freeing twice takes the memory off twice, which walks usedSpace down to
   negative and makes freeMem throw, and runs cleanupOnMemoryFree twice -- a
-  clip ended again, a wavetable told to drop samples it has already dropped, an
-  environment's reference removed a second time.
+  wavetable told to drop samples it has already dropped, an environment's
+  reference removed a second time.
 
   It happens because an action performs its delete before the undo buffer takes
   hold of what was deleted. For that moment nothing at all holds the nex, so it
@@ -168,6 +231,9 @@ class Heap {
     if (obj.wasFreed) {
       return;
     }
+    // usually already done, by whatever removed the last document reference.
+    // Not always: something can be freed having never been in a document.
+    this.stopFunctioning(obj);
     this.freeMem(obj.memUsed());
     obj.cleanupOnMemoryFree();
     obj.memAllocated = false;
@@ -181,9 +247,21 @@ class Heap {
       );
     }
     obj.references--;
-    if (obj.references == 0 && obj.undoReferences == 0) {
-      this.free(obj);
+    if (obj.references != 0) {
+      return;
     }
+    // out of the document, so it stops -- whoever ends up holding it
+    this.stopFunctioning(obj);
+    if (obj.undoReferences > 0) {
+      // undo is holding it, so it keeps everything it would need to come back
+      return;
+    }
+    if (this.actionDepth > 0) {
+      // undo may be about to take hold: decide once the action has finished
+      this.pendingFree.push(obj);
+      return;
+    }
+    this.free(obj);
   }
 
   stats() {
