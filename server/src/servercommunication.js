@@ -115,12 +115,56 @@ function listFiles(callback) {
 	});
 }
 
-function listAudio(callback) {
-	if (!hasLiveIndex()) {
-		listFromIndex('sounds', callback);
+/*
+A static host cannot list a directory, so the audio index was written at build
+time. It is not a flat list of names like the package index: it maps each bank
+(or category) to the wav files in it, which is the shape the list builtins
+want, and the same shape the server produces when it reads the directory.
+*/
+function audioIndexToOrgPayload(index, library) {
+	let s = 'v2:(|';
+	for (let bank in index) {
+		s += ' (|<`' + bank + '`>';
+		let files = index[bank];
+		for (let i = 0; i < files.length; i++) {
+			// the library goes in front, the same as the server writes it, so
+			// a name from a listing says where it lives wherever it came from
+			s += ' $"' + library + '/' + bank + '/' + files[i] + '"';
+		}
+		s += '|)';
+	}
+	s += '|)';
+	return s;
+}
+
+function listAudioFromIndex(which, library, callback) {
+	fetchIndex(which).then(function (index) {
+		parseReturnPayload(audioIndexToOrgPayload(index, library), callback);
+	}).catch(function () {
+		callback(serverError());
+	});
+}
+
+/*
+Which library, not which directory -- the server maps the name to a path so a
+client can't ask for one that isn't a library. The static index lives under a
+directory name, though, so that mapping is here too.
+*/
+const LIBRARY_DIRS = {
+	sample: 'sounds',
+	wave: 'waves',
+};
+
+function listAudio(library, callback) {
+	if (!LIBRARY_DIRS[library]) {
+		callback(constructFatalError(`no audio library called ${library}`));
 		return;
 	}
-	let payload = `listaudio`;
+	if (!hasLiveIndex()) {
+		listAudioFromIndex(LIBRARY_DIRS[library], library, callback);
+		return;
+	}
+	let payload = `listaudio\t${library}`;
 
 	sendToServer(payload, function(data) {
 		parseReturnPayload(data, callback);
@@ -207,7 +251,7 @@ function importNex(name, callback) {
 
 	sendToServer(payload, function(data) {
 		parseReturnPayload(data, function(nex) {
-			callback(evaluatePackage(nex));
+			callback(evaluateImportedFile(nex));
 		})
 	}, function() {
 		callback(serverError());
@@ -311,15 +355,17 @@ ${e && e.message}
 ${(e && e.stack) ? e.stack : ''}`);
 }
 
-function evaluatePackage(nex) {
-	if (!(nex.getTypeName() == '-command-'
-				&& (nex.getCommandName() == 'package'
-				|| nex.getCommandName() == 'template'))) {
-		let r = constructFatalError('Can only import packages or templates, see file contents')
-		return r;
-	}
-	let result = evaluateNexSafely(nex, BINDINGS);
-	return result;
+/*
+import evaluates whatever the file holds.
+
+It used to insist the file be a command named package or template and refuse
+everything else, which ruled out importing a file that is a list of binds, or a
+single expression you want run. Nothing downstream needed the guarantee -- the
+package builtin is what makes a package, and it makes one whether import or
+anything else is what evaluated it.
+*/
+function evaluateImportedFile(nex) {
+	return evaluateNexSafely(nex, BINDINGS);
 }
 
 // This util is meant to be used from functions like

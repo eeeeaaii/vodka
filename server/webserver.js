@@ -25,6 +25,16 @@ const { v4: uuidv4 } = require('uuid');
 
 const hostname = '127.0.0.1';
 const port = Number(process.env.VODKA_PORT) || 3000;
+
+/*
+The two audio libraries, and the only two directory names the client can ask
+for. list-audio sends a library name, so it maps through here rather than
+being pasted into a path.
+*/
+const AUDIO_LIBRARIES = {
+	sample: './sounds/',
+	wave: './waves/',
+};
 const endpoint_hostname = 'localhost:' + port;
 
 const writeprotectionfile = 'WRITE_PROTECTED_SESSION.9999999999';
@@ -92,16 +102,26 @@ async function processRequest(req, resp) {
 		}), 'config');
 		return;
 	}
-	if (parsedUrl.pathname == '/packages/index.json'
-			|| parsedUrl.pathname == '/sounds/index.json') {
-		let dir = parsedUrl.pathname == '/packages/index.json' ? './packages' : './sounds';
+	if (parsedUrl.pathname == '/packages/index.json') {
 		let names = [];
 		try {
-			names = fs.readdirSync(dir);
+			names = fs.readdirSync('./packages');
 		} catch (e) {
 			names = [];
 		}
 		sendResponse(resp, 200, 'application/json', JSON.stringify(names), 'index');
+		return;
+	}
+	/*
+	The audio libraries are two levels deep -- a bank (or category) holding wav
+	files -- so their index is a map, not a flat list. Same shape makestatic.js
+	writes, so the client reads a live server and a static host the same way.
+	*/
+	if (parsedUrl.pathname == '/sounds/index.json'
+			|| parsedUrl.pathname == '/waves/index.json') {
+		let dir = '.' + parsedUrl.pathname.substring(0, parsedUrl.pathname.lastIndexOf('/'));
+		sendResponse(resp, 200, 'application/json',
+				JSON.stringify(audioIndex(dir)), 'index');
 		return;
 	}
 
@@ -266,7 +286,7 @@ async function serviceRequestForRegularFile(sessionId, path, resp) {
 	}
 	// uh
 	let isSessionDownload = false;
-	if (path.indexOf('/sounds') == 0) {
+	if (path.indexOf('/sounds') == 0 || path.indexOf('/waves') == 0) {
 		path = "." + path;
 	} else if (path.indexOf('/packages/') == 0) {
 		// the shipped library, read the same way a static host would serve it,
@@ -483,7 +503,7 @@ async function serviceApiRequest(sessionId, resp, data) {
 	} else if (opcode == 'listfiles') {
 		respData = await serviceApiListFilesRequest(sessionId, false /*standard*/);
 	} else if (opcode == 'listaudio') {
-		respData = await serviceApiListAudioRequest(sessionId, false /*standard*/);
+		respData = await serviceApiListAudioDirRequest(arg);
 	} else if (opcode == 'liststandardfunctionfiles') {
 		respData = await serviceApiListFilesRequest(sessionId, true /*standard*/);
 	}
@@ -642,14 +662,20 @@ async function getDirectoryForListFilesRequest(path) {
 }
 */
 
-async function getDirectoryForListFilesRequest(path, tag) {
+/*
+pathPrefix goes in front of every name, so an audio listing can hand back
+wave/metallic/x.wav rather than metallic/x.wav -- one string that says which
+library as well as which file, which is all load-audio needs. Empty for a
+plain file listing.
+*/
+async function getDirectoryForListFilesRequest(path, tag, pathPrefix) {
 	try {
 		const dir = await fsPromises.opendir(path);
 		let s = '(|';
-		let prefix = '';
+		let prefix = pathPrefix ? pathPrefix : '';
 		if (tag) {
 			s += '<`' + tag + '`>';
-			prefix = tag + '/';
+			prefix = prefix + tag + '/';
 		}
 		let first = true;
 		for await (const dirent of dir) {
@@ -658,7 +684,8 @@ async function getDirectoryForListFilesRequest(path, tag) {
 			}
 			let filename = dirent.name;
 			if (dirent.isDirectory()) {
-				let subdir = await getDirectoryForListFilesRequest(path + filename + '/', filename);
+				let subdir = await getDirectoryForListFilesRequest(
+						path + filename + '/', filename, pathPrefix);
 				s += subdir;
 			} else {
 	 			if (filename == writeprotectionfile) {
@@ -678,13 +705,51 @@ async function getDirectoryForListFilesRequest(path, tag) {
 	}
 }
 
-async function serviceApiListAudioRequest(sessionId, standard) {
-	let path = "./sounds/";
-	let s = await getDirectoryForListFilesRequest(path);
+/*
+One entry per bank, listing the wav files in it. Anything else in there (the
+info.txt naming the machine, a license file) is not something load-audio
+can use, so it does not go in the index.
+*/
+function audioIndex(dir) {
+	let index = {};
+	let banks = [];
+	try {
+		banks = fs.readdirSync(dir, { withFileTypes: true });
+	} catch (e) {
+		return index;
+	}
+	for (let i = 0; i < banks.length; i++) {
+		if (!banks[i].isDirectory()) continue;
+		let name = banks[i].name;
+		let files = [];
+		try {
+			files = fs.readdirSync(dir + '/' + name);
+		} catch (e) {
+			continue;
+		}
+		index[name] = files.filter(function(f) {
+			return f.toLowerCase().endsWith('.wav');
+		});
+	}
+	return index;
+}
+
+/*
+The sample library and the wavetable library are separate directories, but
+they list the same way: banks (or categories) come back as tagged orgs holding
+the wav files inside them. Which one you get is the only thing the client
+picks, and it picks by name from AUDIO_LIBRARIES -- the name is going into a
+path, so it is never taken as given.
+*/
+async function serviceApiListAudioDirRequest(which) {
+	if (!AUDIO_LIBRARIES[which]) {
+		return `v2:?"no audio library called ${which}. Sorry!"`;
+	}
+	let s = await getDirectoryForListFilesRequest(AUDIO_LIBRARIES[which], null, which + '/');
 	if (s) {
 		return 'v2:' + s;
 	} else {
-		return `v2:?"could not get audio file listing. Sorry!"`;
+		return `v2:?"could not get ${which} file listing. Sorry!"`;
 	}
 }
 

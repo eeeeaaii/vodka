@@ -21,11 +21,12 @@ import { Builtin } from '../nex/builtin.js'
 import { Command } from '../nex/command.js'
 import { Lambda } from '../nex/lambda.js'
 import { constructEError } from '../nex/eerror.js'
+import { constructFatalError, newTagOrThrowOOM } from '../nex/eerror.js'
 import { constructEString } from '../nex/estring.js'
 import { Nil } from '../nex/nil.js'
 import { wrapError } from '../evaluator.js'
 import { DeferredValue, constructDeferredValue } from '../nex/deferredvalue.js'
-import { Org } from '../nex/org.js'
+import { Org, constructOrg } from '../nex/org.js'
 import { ESymbol } from '../nex/esymbol.js'
 import { ERROR_TYPE_INFO } from '../nex/eerror.js'
 import { evaluateNexSafely } from '../evaluator.js'
@@ -40,6 +41,7 @@ import {
 	RENDER_MODE_INHERIT,
 } from '../globalconstants.js'
 import { sAttach } from '../syntheticroot.js'
+import { readAudioTags, libraryNames } from '../audiolibraries.js'
 
 
 
@@ -57,7 +59,8 @@ import {
 
 
 // A listing entry is audio if it's a string ending in .wav. Anything else in a
-// bank folder (info.txt, a nested directory) is not something load-sample can use.
+// bank folder (info.txt, a nested directory) is not something load-audio
+// can use.
 function isWavFile(nex) {
 	if (!nex || Utils.isNexContainer(nex)) {
 		return false;
@@ -94,54 +97,166 @@ function createFileBuiltins() {
 		'Lists all user files available in current session.'
 	);	
 
+	/*
+	The directory listing is generic: subdirectories come back as tagged orgs,
+	loose files as plain strings. For audio we only care about the folders, and
+	a stray file (the README, say) breaks callers that expect every item to be
+	taggable. So drop non-containers, and flip each folder horizontal -- one
+	very tall column per folder reads badly.
+	*/
+	function tidyAudioListing(files) {
+		if (!files.numChildren) {
+			return files;
+		}
+		for (let i = files.numChildren() - 1; i >= 0; i--) {
+			let dir = files.getChildAt(i);
+			if (!Utils.isNexContainer(dir)) {
+				files.removeChildAt(i);
+				continue;
+			}
+			// Each folder also holds an info.txt naming the machine the samples
+			// came from. Keep only the audio, so a caller can map load-audio
+			// over a folder directly.
+			for (let j = dir.numChildren() - 1; j >= 0; j--) {
+				if (!isWavFile(dir.getChildAt(j))) {
+					dir.removeChildAt(j);
+				}
+			}
+			if (dir.setHorizontal) {
+				dir.setHorizontal();
+			}
+		}
+		return files;
+	}
+
+	function folderName(dir) {
+		return dir.numTags() > 0 ? dir.getTag(0).getTagString() : '';
+	}
+
+	// A folder tag narrows the listing to that folder. The listing is what
+	// knows which folders exist, so this is also where a tag that names no
+	// folder gets caught, and it says what the real names are rather than just
+	// that the one you gave is wrong.
+	function keepOnlyFolders(files, wanted) {
+		let found = [];
+		for (let i = files.numChildren() - 1; i >= 0; i--) {
+			let name = folderName(files.getChildAt(i));
+			if (wanted.indexOf(name) == -1) {
+				files.removeChildAt(i);
+			} else {
+				found.push(name);
+			}
+		}
+		let missing = wanted.filter(w => found.indexOf(w) == -1);
+		return missing;
+	}
+
+	function allFolderNames(files) {
+		let names = [];
+		for (let i = 0; i < files.numChildren(); i++) {
+			names.push(folderName(files.getChildAt(i)));
+		}
+		names.sort();
+		return names;
+	}
+
+	/*
+	One library. Narrowed to particular folders if any were named, which is
+	also where a tag that names no folder is caught.
+	*/
+	function listOneLibrary(library, folders, callback) {
+		listAudio(library, function(files) {
+			if (Utils.isFatalError(files)) {
+				callback(files);
+				return;
+			}
+			tidyAudioListing(files);
+			if (folders.length > 0) {
+				let names = allFolderNames(files);
+				let missing = keepOnlyFolders(files, folders);
+				if (missing.length > 0) {
+					callback(constructFatalError(
+							`list-audio: the ${library} library has no `
+							+ `folder called ${missing.join(' or ')}. It has: `
+							+ names.join(', ')));
+					return;
+				}
+			}
+			callback(files);
+		})
+	}
+
+	/*
+	No library tag means all of them, as one org holding an org per library,
+	each tagged with its name. The tag is not decoration: it is the tag you
+	need on load-audio to get anything out of that half of the listing.
+
+	The requests go out together and are assembled in a fixed order, so the
+	listing does not come back in whichever order the network answered.
+	*/
+	function listAllLibraries(callback) {
+		let names = libraryNames();
+		let results = {};
+		let waitingFor = names.length;
+		let failure = null;
+		names.forEach(function(name) {
+			listAudio(name, function(files) {
+				if (Utils.isFatalError(files)) {
+					failure = files;
+				} else {
+					results[name] = tidyAudioListing(files);
+				}
+				if (--waitingFor > 0) {
+					return;
+				}
+				if (failure) {
+					callback(failure);
+					return;
+				}
+				let all = constructOrg();
+				names.forEach(function(name) {
+					let library = results[name];
+					library.addTag(newTagOrThrowOOM(name, 'list-audio library name'));
+					all.appendChild(library);
+				});
+				callback(all);
+			})
+		});
+	}
+
 	Builtin.createBuiltin(
 		'list-audio',
 		[ ],
-		function $listAudio(env, executionEnvironment) {
+		function $listAudio(env, executionEnvironment, commandTags) {
+			let want = readAudioTags(commandTags);
+			if (want.error) {
+				return constructFatalError(`list-audio: ${want.error}`);
+			}
 			let deferredValue = constructDeferredValue();
 			deferredValue.set(new GenericActivationFunctionGenerator(
 				'list-audio', 
 				function(callback, deferredValue) {
-					listAudio(function(files) {
-						// The directory listing is generic: subdirectories come back
-						// as tagged orgs, loose files as plain strings. For audio we
-						// only care about the banks, and a stray file (the README,
-						// say) breaks callers that expect every item to be taggable.
-						// So drop non-containers, and flip each bank horizontal --
-						// one very tall column per bank reads badly.
-						if (files.numChildren) {
-							for (let i = files.numChildren() - 1; i >= 0; i--) {
-								let dir = files.getChildAt(i);
-								if (!Utils.isNexContainer(dir)) {
-									files.removeChildAt(i);
-									continue;
-								}
-								// Each bank also holds an info.txt naming the machine
-								// the samples came from. Keep only the audio, so a
-								// caller can map load-sample over a bank directly.
-								for (let j = dir.numChildren() - 1; j >= 0; j--) {
-									if (!isWavFile(dir.getChildAt(j))) {
-										dir.removeChildAt(j);
-									}
-								}
-								if (dir.setHorizontal) {
-									dir.setHorizontal();
-								}
-							}
-						}
-						callback(files);
-					})
+					if (want.library) {
+						listOneLibrary(want.library, want.folders, callback);
+					} else {
+						listAllLibraries(callback);
+					}
 				}
 			));
-			let loadingMessage = constructEError(`listing audio`);
+			let loadingMessage = constructEError(
+					`listing ${want.library ? want.library : 'all'} audio`);
 			loadingMessage.setErrorType(ERROR_TYPE_INFO);
 			deferredValue.appendChild(loadingMessage)
 			deferredValue.activate();
 			return deferredValue;
 		},
-		'Lists available audio (wav) files.'
-	);	
-
+		'Lists the audio libraries: one org per folder, holding the wav files in '
+		+ 'it. With no tag you get every library, each as its own org tagged with '
+		+ 'its name; tag the command sample or wave to get just that one, and '
+		+ 'additionally with a folder name to get just that folder -- a folder tag '
+		+ 'needs its library tag alongside it. A name from this listing is what '
+		+ 'load-audio takes, along with the tag of the library it came from.'
+	);
 
 	Builtin.createBuiltin(
 		'list-standard-function-files',

@@ -44,6 +44,16 @@ function copyDir(from, to) {
 	}
 }
 
+function audioIndex(dir) {
+	const index = {};
+	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+		if (!entry.isDirectory()) continue;
+		index[entry.name] = fs.readdirSync(path.join(dir, entry.name))
+				.filter(f => f.toLowerCase().endsWith('.wav'));
+	}
+	return index;
+}
+
 function main() {
 	const out = path.resolve(OUT);
 	fs.rmSync(out, { recursive: true, force: true });
@@ -54,6 +64,7 @@ function main() {
 	copyDir(path.join(SERVER_DIR, 'src', 'css'), path.join(out, 'css'));
 	copyDir(path.join(SERVER_DIR, 'packages'), path.join(out, 'packages'));
 	copyDir(path.join(SERVER_DIR, 'sounds'), path.join(out, 'sounds'));
+	copyDir(path.join(SERVER_DIR, 'waves'), path.join(out, 'waves'));
 
 	// host.html is served as / by the vodka server, and index.html is what a
 	// static host looks for
@@ -65,11 +76,22 @@ function main() {
 		liveIndex: false,
 	}, null, 1) + '\n');
 
-	for (const dir of ['packages', 'sounds']) {
-		const names = fs.readdirSync(path.join(SERVER_DIR, dir));
+	const packages = fs.readdirSync(path.join(SERVER_DIR, 'packages'));
+	fs.writeFileSync(path.join(out, 'packages', 'index.json'),
+			JSON.stringify(packages, null, 1) + '\n');
+	console.log('makestatic: packages/index.json lists ' + packages.length + ' entries');
+
+	// the audio libraries are a bank (or category) holding wav files, so their
+	// index is a map, which is what list-audio reads
+	for (const dir of ['sounds', 'waves']) {
+		const index = audioIndex(path.join(SERVER_DIR, dir));
 		fs.writeFileSync(path.join(out, dir, 'index.json'),
-				JSON.stringify(names, null, 1) + '\n');
-		console.log('makestatic: ' + dir + '/index.json lists ' + names.length + ' entries');
+				JSON.stringify(index, null, 1) + '\n');
+		const banks = Object.keys(index);
+		let count = 0;
+		for (const bank of banks) count += index[bank].length;
+		console.log('makestatic: ' + dir + '/index.json lists ' + count
+				+ ' wav files in ' + banks.length + ' folders');
 	}
 
 	console.log('makestatic: wrote ' + out);
