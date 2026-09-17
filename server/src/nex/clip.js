@@ -58,6 +58,16 @@ class Clip extends Nex {
 		*/
 		this.mutedByUser = false;
 		this.mutedByCollapse = false;
+		/*
+		Whether anything this clip plays goes past full scale. Coarse on
+		purpose: one flag for the whole clip, not where or how often, because
+		what you want to know while playing is whether to turn something down.
+
+		It costs nothing to know. A wavetable works out the largest sample it
+		holds when it caches its buffer, for the amplitude the drawing is
+		scaled to, so play only has to ask.
+		*/
+		this.clipping = false;
 		// nothing here is yours to type over
 		this.setMutable(false);
 	}
@@ -109,6 +119,14 @@ class Clip extends Nex {
 
 	getChannels() {
 		return this.channels;
+	}
+
+	setClipping(v) {
+		this.clipping = !!v;
+	}
+
+	isClipping() {
+		return this.clipping;
 	}
 
 	getPort() {
@@ -170,6 +188,7 @@ class Clip extends Nex {
 		// time. It is a picture of the clip, not another clip.
 		let r = new Clip(this.kind, this.what, this.ids.slice(), null, this.channels.slice(), this.port);
 		r.ended = this.ended;
+		r.clipping = this.clipping;
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -229,6 +248,18 @@ class Clip extends Nex {
 		let glyphcol = document.createElement('div');
 		glyphcol.classList.add('sysglyphcol');
 		glyphcol.appendChild(glyph);
+		/*
+		Only when there is something to say. No outline waiting to be filled in:
+		an indicator that is there all the time is one more thing to read on
+		every clip, and this one is worth noticing precisely because it is not
+		usually there.
+		*/
+		if (this.clipping) {
+			let clipped = document.createElement('div');
+			clipped.classList.add('clipclipping');
+			clipped.setAttribute('title', 'louder than full scale');
+			glyphcol.appendChild(clipped);
+		}
 		glyphcol.appendChild(this.createMuteButton());
 
 		frame.appendChild(glyphcol);
@@ -238,13 +269,14 @@ class Clip extends Nex {
 		if (this.isMuted()) {
 			domNode.classList.add('muted');
 		}
-
 		this.startPositionCounter();
 	}
 
 	/*
-	A square under the infinity sign: hollow when the clip can be heard, filled
-	when it cannot.
+	A square at the bottom of the glyph column, with an m in it: hollow when the
+	clip can be heard, filled when it cannot. The letter is there because the
+	square alone said only that it was a button, not which one -- and there is
+	more than one small square on a clip now.
 
 	Only the button's own state is shown, because that is the only half you can
 	do anything about from here. A clip silenced by being collapsed is inside
@@ -257,6 +289,8 @@ class Clip extends Nex {
 	createMuteButton() {
 		let b = document.createElement('div');
 		b.classList.add('clipmute');
+		b.innerHTML = 'm';
+		b.setAttribute('title', 'mute');
 		if (this.mutedByUser) {
 			b.classList.add('on');
 		}
