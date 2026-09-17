@@ -54,6 +54,7 @@ import {
   getSampleRate,
   getConstantSignalFromValue,
   frequencyToNoteNum,
+  hasCommandTag,
 } from "../wavetablefunctions.js";
 import { fft, nextPowerOfTwo, forEachSpectrum, hannWindow } from "../fft.js";
 import {
@@ -2631,13 +2632,6 @@ function createWavetableBuiltins() {
   of-total is halfway along whatever you passed in. A tag on the list applies
   to every point in it, so you do not have to tag them one at a time.
   */
-  function hasCommandTag(commandTags, name) {
-    for (let i = 0; commandTags && i < commandTags.length; i++) {
-      if (commandTags[i].getTagString() == name) return true;
-    }
-    return false;
-  }
-
   function hasTagNamed(nex, name) {
     for (let i = 0; i < nex.numTags(); i++) {
       if (nex.getTag(i).getTagString() == name) return true;

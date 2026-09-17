@@ -103,6 +103,20 @@ function timebaseForTagString(t) {
 	return null;
 }
 
+/*
+Tags written on the command itself rather than on one of its arguments, as in
+~(_<`nocycle`>+ @a @b_). Lives here because both the wavetable builtins and the
+wave math builtins ask the same question of them.
+
+(comment by Claude)
+*/
+function hasCommandTag(commandTags, name) {
+	for (let i = 0; commandTags && i < commandTags.length; i++) {
+		if (commandTags[i].getTagString() == name) return true;
+	}
+	return false;
+}
+
 // tags on a command rather than on one of its arguments
 function timebaseFromTags(tags) {
 	for (let i = 0; tags && i < tags.length; i++) {
@@ -639,8 +653,9 @@ export { applyFormants,
 		 getReferenceFrequency,
 		 frequencyForNoteNum,
 		 noteNumForA440,
-		 frequencyToNoteNum
-		}
+		 frequencyToNoteNum,
+		 hasCommandTag
+}
 
 
 

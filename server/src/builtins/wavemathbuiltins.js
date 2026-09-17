@@ -24,6 +24,7 @@ import { UNBOUND } from '../environment.js'
 import { constructBool } from '../nex/bool.js'
 import { constructFatalError } from '../nex/eerror.js'
 import { markWorksOnWaves } from '../documentation.js'
+import { hasCommandTag } from '../wavetablefunctions.js'
 
 /*
 The wave versions of the math builtins. Each one is the ordinary function
@@ -57,12 +58,32 @@ function longestOf(nexes) {
 	return dur;
 }
 
-function sampleGetters(nexes) {
+/*
+A wave shorter than the longest one has to answer for samples it does not have.
+By default it cycles -- a one bar drum part under a four bar line plays four
+times, which is nearly always what was meant, and padding with silence is how
+you ask for it to stop.
+
+Tagged nocycle it reads as silence past its end instead, for the times you want
+the shorter one to happen once.
+
+Not called nowrap: wrap already means something else on a wave, which is the
+tail of a delay coming back round to the beginning rather than the whole wave
+repeating to fill a length.
+
+(comment by Claude)
+*/
+function sampleGetters(nexes, nocycle) {
 	let r = [];
 	for (let i = 0; i < nexes.length; i++) {
 		let n = nexes[i];
 		if (isWave(n)) {
-			r.push(function(t) { return n.valueAtSample(t); });
+			if (nocycle) {
+				let dur = n.getDuration();
+				r.push(function(t) { return t < dur ? n.valueAtSample(t) : 0; });
+			} else {
+				r.push(function(t) { return n.valueAtSample(t); });
+			}
 		} else {
 			let v = n.getTypedValue();
 			r.push(function(t) { return v; });
@@ -78,9 +99,9 @@ is. wantsFloat says whether the number case has to come back as a float even
 when every argument was an integer -- true of everything that can produce a
 fraction, false of the comparisons and of + - and *.
 */
-function applyOverSamples(nexes, f, wantsFloat) {
+function applyOverSamples(nexes, f, wantsFloat, nocycle) {
 	let dur = longestOf(nexes);
-	let getters = sampleGetters(nexes);
+	let getters = sampleGetters(nexes, nocycle);
 
 	if (dur == 0) {
 		let vals = [];
@@ -143,10 +164,10 @@ Scalars go one way and waves the other. Without this a comparison of two
 numbers would come back as 1 or 0 rather than as a bool, and if would stop
 taking it.
 */
-function scalarOrWave(nexes, sampleFn, scalarFn, wantsFloat) {
+function scalarOrWave(nexes, sampleFn, scalarFn, wantsFloat, nocycle) {
 	for (let i = 0; i < nexes.length; i++) {
 		if (isWave(nexes[i])) {
-			return applyOverSamples(nexes, sampleFn, wantsFloat);
+			return applyOverSamples(nexes, sampleFn, wantsFloat, nocycle);
 		}
 	}
 	return scalarFn(nexes);
@@ -162,7 +183,7 @@ function createWaveMathBuiltins() {
 		Builtin.createBuiltin(
 			name,
 			[ 'args#%_...' ],
-			function(env, executionEnvironment) {
+			function(env, executionEnvironment, commandTags) {
 				let args = argsFrom(env.lb('args'));
 				if (args.length == 0) return constructInteger(identity);
 				return applyOverSamples(args, function(v) {
@@ -171,7 +192,7 @@ function createWaveMathBuiltins() {
 						acc = f(acc, v[i]);
 					}
 					return acc;
-				}, wantsFloat);
+				}, wantsFloat, hasCommandTag(commandTags, 'nocycle'));
 			},
 			docs,
 			true /* is infix */
@@ -199,13 +220,14 @@ function createWaveMathBuiltins() {
 		Builtin.createBuiltin(
 			name,
 			[ 'lhs#%_', 'rhs#%_' ],
-			function(env, executionEnvironment) {
+			function(env, executionEnvironment, commandTags) {
 				let nexes = [ env.lb('lhs'), env.lb('rhs') ];
 				let sample = function(v) { return f(v[0], v[1]); };
+				let nocycle = hasCommandTag(commandTags, 'nocycle');
 				if (!scalarFn) {
-					return applyOverSamples(nexes, sample, wantsFloat);
+					return applyOverSamples(nexes, sample, wantsFloat, nocycle);
 				}
-				return scalarOrWave(nexes, sample, scalarFn, wantsFloat);
+				return scalarOrWave(nexes, sample, scalarFn, wantsFloat, nocycle);
 			},
 			docs,
 			true /* is infix */
@@ -229,9 +251,9 @@ function createWaveMathBuiltins() {
 	}
 
 	variadic('+', 'w+', function(a, b) { return a + b; }, 0, false,
-		'Adds the arguments. Numbers give a number; bring a wave into it and you get a wave, added sample by sample, with shorter waves looping.');
+		'Adds the arguments. Numbers give a number; bring a wave into it and you get a wave, added sample by sample, with shorter waves cycling. Tag the command nocycle to read a shorter wave as silence past its end instead.');
 	variadic('*', 'w*', function(a, b) { return a * b; }, 1, false,
-		'Multiplies the arguments. Numbers give a number; bring a wave into it and you get a wave, multiplied sample by sample, with shorter waves looping. On waves this is how you change volume and how you apply an envelope.');
+		'Multiplies the arguments. Numbers give a number; bring a wave into it and you get a wave, multiplied sample by sample, with shorter waves looping. On waves this is how you change volume and how you apply an envelope. Tag the command nocycle to read a shorter wave as silence past its end instead.');
 
 	// one argument negates, the same as the number version
 	Builtin.createBuiltin(
@@ -245,7 +267,7 @@ function createWaveMathBuiltins() {
 			}
 			return applyOverSamples([ a, b ], function(v) { return v[0] - v[1]; }, false);
 		},
-		'Subtracts |sub from |min, or negates |min if |sub is left out. Numbers give a number; bring a wave into it and you get a wave, subtracted sample by sample, with shorter waves looping.',
+		'Subtracts |sub from |min, or negates |min if |sub is left out. Numbers give a number; bring a wave into it and you get a wave, subtracted sample by sample, with shorter waves cycling. Tag the command nocycle to read a shorter wave as silence past its end instead.',
 		true /* is infix */
 	);
 	registerAsBoth('-', 'w-');
@@ -258,7 +280,7 @@ function createWaveMathBuiltins() {
 	javascript divides.
 	*/
 	binary('/', 'w/', function(a, b) { return a / b; }, true,
-		'Divides |lhs by |rhs. Two whole numbers give a whole number, rounded down; a float anywhere gives a float. Bring a wave into it and you get a wave, divided sample by sample, with shorter waves looping.',
+		'Divides |lhs by |rhs. Two whole numbers give a whole number, rounded down; a float anywhere gives a float. Bring a wave into it and you get a wave, divided sample by sample, with shorter waves cycling. Tag the command nocycle to read a shorter wave as silence past its end instead.',
 		function(nexes) {
 			let a = nexes[0];
 			let b = nexes[1];
