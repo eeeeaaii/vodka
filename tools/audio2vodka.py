@@ -21,15 +21,19 @@ scaling back to the original peak halves it again.
 Output is the container format -- the document, then the samples it refers to,
 in one file. Pass --inline to get samples written into the document instead,
 which is what vodka wrote before containers and what older builds can read.
+
+(comment by Claude)
 """
 
 import argparse, base64, os, re, subprocess, sys, tempfile
 import numpy as np
 
 # what vodka plays wavetables back at -- see SAMPLE_RATE in webaudio.js
+# (comment by Claude)
 SAMPLE_RATE = 48000
 
 # server/webserver.js rejects a save whose filename is not this shape
+# (comment by Claude)
 LEGAL_FILENAME = re.compile(r'^[a-zA-Z0-9_.-]+$')
 
 CONTAINER_MAGIC = 'VODKAC1'
@@ -37,6 +41,7 @@ CONTAINER_MAGIC = 'VODKAC1'
 
 def decode(path, seconds=None):
     """Returns an (n, 2) float32 array at SAMPLE_RATE. Raises on failure."""
+    # (comment by Claude)
     if not os.path.isfile(path):
         raise SystemExit(f'audio2vodka: no such file: {path}')
 
@@ -44,14 +49,17 @@ def decode(path, seconds=None):
     raw.close()
     # Always decoded as stereo. A mono source arrives as two identical
     # channels, which the merge below collapses back to exactly the original.
+    # (comment by Claude)
     cmd = ['ffmpeg', '-v', 'error', '-nostdin',
            '-i', path,
            # a video file is a perfectly good source of sound; the picture is
            # simply not what we came for, and saying so up front means the
            # decoder never has to deal with it
+           # (comment by Claude)
            '-vn',
            # float samples, stereo, at the rate vodka plays back at, raw with
            # no header -- the shape numpy reads below
+           # (comment by Claude)
            '-f', 'f32le', '-acodec', 'pcm_f32le',
            '-ac', '2', '-ar', str(SAMPLE_RATE),
            '-y', raw.name]
@@ -67,6 +75,7 @@ def decode(path, seconds=None):
     if data.size == 0:
         raise SystemExit(f'audio2vodka: {path} decoded to no audio at all')
     # a torn final frame would break the reshape
+    # (comment by Claude)
     data = data[:(data.size // 2) * 2]
     stereo = data.reshape(-1, 2)
     if seconds is not None:
@@ -76,11 +85,13 @@ def decode(path, seconds=None):
 
 def merge(left, right):
     """Sum the channels, then scale the sum back to the original peak."""
+    # (comment by Claude)
     peak = float(max(np.abs(left).max(), np.abs(right).max()))
     summed = left + right
     summed_peak = float(np.abs(summed).max())
     # Silence, or two channels exactly out of phase. Nothing to scale to, and
     # scaling would divide by zero.
+    # (comment by Claude)
     if summed_peak == 0.0 or peak == 0.0:
         return summed
     return summed * (peak / summed_peak)
@@ -96,11 +107,13 @@ def wavetable(private_data):
 
 def org(children):
     # (| ... |) is a vertical org, which is the direction a new one has
+    # (comment by Claude)
     return '(|' + ' '.join(children) + '|)'
 
 
 def build(channels, inline):
     """channels is a list of sample arrays. Returns the file's text."""
+    # (comment by Claude)
     if inline:
         nexes = [wavetable(to_base64(c)) for c in channels]
         doc = 'v2:' + (nexes[0] if len(nexes) == 1 else org(nexes))
@@ -108,6 +121,7 @@ def build(channels, inline):
 
     # Identical channels are stored once and referred to twice, which is what
     # the app's collector does when it walks a document.
+    # (comment by Claude)
     encoded, refs = [], []
     seen = {}
     for c in channels:
