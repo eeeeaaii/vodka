@@ -17,7 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 
-import { ValueNex } from './valuenex.js'
+import { ValueNex, startNumberDrag } from './valuenex.js'
 import { Editor } from '../editors.js'
 import { heap } from '../heap.js'
 import { constructFatalError } from './eerror.js'
@@ -55,9 +55,22 @@ class Float extends ValueNex {
 		return super.toString(version);
 	}
 
+	/*
+	Press and move to change it. Not while it is being edited, when the pointer
+	belongs to the text, and not on something immutable, which is the same rule
+	stepping follows: a number that cannot be edited cannot be dragged.
+	*/
+	startDragIfAllowed(event) {
+		if (this.isEditing || !this.isMutable()) {
+			return;
+		}
+		startNumberDrag(this, event);
+	}
+
 	renderInto(renderNode, renderFlags, withEditor) {
 		super.renderInto(renderNode, renderFlags, withEditor);
 		let domNode = renderNode.getDomNode();
+		domNode.onmousedown = (event) => this.startDragIfAllowed(event);
 		if (this.isEditing) {
 			domNode.classList.add('editing');
 		} else {
@@ -160,9 +173,43 @@ class Float extends ValueNex {
 		return 'standardDefault';
 	}
 
+	/*
+	The same stepping an integer has, because a number you want to nudge while
+	listening to it is more often a float than an integer -- a gain, a ratio, a
+	cutoff -- and it was the one kind of number you could not nudge.
+	*/
 	getEventTable(context) {
 		return {
+			'ShiftArrowUp': 'increment-value',
+			'ShiftArrowDown': 'decrement-value',
 		}
+	}
+
+	/*
+	A tenth. Stepping a float by one is the same as retyping it, and most of
+	what floats are used for here lives between zero and one.
+	*/
+	getStepAmount() {
+		return 0.1;
+	}
+
+	/*
+	Dragging starts at whole numbers and each modifier you add moves one digit
+	to the right, so the keys you are holding say how far down the number you
+	are working. Shift is the one stepping with an arrow already uses, so it
+	means tenths in both places.
+	*/
+	getDragStep(event) {
+		// a mac turns control-press into a right-click, so accept command too
+		let fine = event.ctrlKey || event.metaKey;
+		if (event.shiftKey && fine) {
+			return 0.001;
+		} else if (fine) {
+			return 0.01;
+		} else if (event.shiftKey) {
+			return 0.1;
+		}
+		return 1;
 	}
 
 	memUsed() {

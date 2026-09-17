@@ -180,7 +180,17 @@ function createMathBuiltins() {
 				|| Utils.isFloat(b)) {
 			return constructFloat(result);
 		} else {
-			return constructInteger(result);
+			/*
+			Whole numbers in, whole number out. Without the floor this built an
+			integer out of whatever the division came to -- one divided by
+			sixty-four made an integer holding 0.015625, which is not an integer
+			and is wrong for everything downstream that believes the type.
+
+			Floor rather than truncate, so it goes the same way either side of
+			zero: minus one over sixty-four is minus one, not nothing. Divide a
+			float by anything, or anything by a float, and you get the fraction.
+			*/
+			return constructInteger(Math.floor(result));
 		}
 	}
 

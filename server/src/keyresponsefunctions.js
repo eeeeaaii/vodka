@@ -347,13 +347,36 @@ const DefaultHandlers = {
 	}
 }
 
-function stepValue(s, delta) {
+/*
+How far one press moves it is the nex's business: a whole number steps by one, a
+float by a tenth. Stepping a float by one would be the same as retyping it.
+
+Rounded to the number of decimal places the step has, because 0.1 added to
+itself in binary floating point arrives at 0.30000000000000004, and a number
+box that reads like that after three presses is useless.
+*/
+function stepValue(s, direction) {
 	let nex = s.getNex();
+	// something you are not allowed to edit is not something to step
+	if (!nex.isMutable()) {
+		return;
+	}
+	let step = nex.getStepAmount ? nex.getStepAmount() : 1;
 	let n = nex.getTypedValue();
 	if (isNaN(n)) {
 		n = 0;
 	}
-	nex.setValue(String(n + delta));
+	nex.setValue(String(roundToStep(n + direction * step, step)));
+}
+
+function roundToStep(v, step) {
+	let places = 0;
+	let s = String(step);
+	let dot = s.indexOf('.');
+	if (dot != -1) {
+		places = s.length - dot - 1;
+	}
+	return Number(v.toFixed(places));
 }
 
 const KeyResponseFunctions = {

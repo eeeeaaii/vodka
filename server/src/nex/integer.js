@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { ValueNex } from './valuenex.js'
+import { ValueNex, startNumberDrag } from './valuenex.js'
 import { Editor } from '../editors.js'
 import { experiments } from '../globalappflags.js'
 import { heap } from '../heap.js'
@@ -133,9 +133,32 @@ class Integer extends ValueNex {
 		};
 	}
 
+	// whole numbers move by whole numbers
+	getStepAmount() {
+		return 1;
+	}
+
+	// there is nothing finer than one to offer, so modifiers mean nothing here
+	getDragStep(event) {
+		return 1;
+	}
+
+	/*
+	Press and move to change it. Not while it is being edited, when the pointer
+	belongs to the text, and not on something immutable, which is the same rule
+	stepping follows: a number that cannot be edited cannot be dragged.
+	*/
+	startDragIfAllowed(event) {
+		if (this.isEditing || !this.isMutable()) {
+			return;
+		}
+		startNumberDrag(this, event);
+	}
+
 	renderInto(renderNode, renderFlags, withEditor) {
 		super.renderInto(renderNode, renderFlags, withEditor);
 		let domNode = renderNode.getDomNode();
+		domNode.onmousedown = (event) => this.startDragIfAllowed(event);
 		if (this.isEditing) {
 			domNode.classList.add('editing');
 		} else {
