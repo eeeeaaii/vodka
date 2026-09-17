@@ -17,6 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 /* follows contract.css -- both are things the system hands you rather than
    things you type */
+/* (comment by Claude) */
 
 .clip {
 	display: none;
@@ -72,6 +73,7 @@ you have pressed it once, and a clip is read at a glance rather than studied.
 	cursor: pointer;
 	/* the m, small enough to sit inside the square and upright because the rest
 	   of a clip is italic and a single leaning letter in a box reads badly */
+	/* (comment by Claude) */
 	font-family: monospace;
 	font-style: normal;
 	font-size: 8px;
@@ -85,6 +87,7 @@ you have pressed it once, and a clip is read at a glance rather than studied.
 .clip .clipmute.on {
 	background-color: var(--clip-glyph);
 	/* the square is filled now, so the letter is the hole in it */
+	/* (comment by Claude) */
 	color: var(--value-background);
 }
 
@@ -99,6 +102,8 @@ clip, and this one is worth noticing precisely because it usually is not there.
 Orange, not red. It is worth knowing and it is not a failure: plenty of things
 are meant to be driven hard, and an alarm colour for every one of them is an
 alarm you learn to ignore.
+
+(comment by Claude)
 */
 .clip .clipclipping {
 	width: 11px;

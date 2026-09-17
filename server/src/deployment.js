@@ -24,6 +24,8 @@ time.
 The client is told rather than built twice, so the same dist/ works either way
 and the deployment decides. A missing config.json means a static host that was
 given only the bundle, which is the safe reading: no saving.
+
+(comment by Claude)
 */
 
 let config = {
@@ -44,6 +46,7 @@ function canSave() {
 
 // A live server can read its own directory, so a file you add while working
 // shows up without a rebuild. A static host has to be told at build time.
+// (comment by Claude)
 function hasLiveIndex() {
 	return !!config.liveIndex;
 }

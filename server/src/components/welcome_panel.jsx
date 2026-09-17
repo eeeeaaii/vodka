@@ -21,6 +21,7 @@ const WelcomePanel = () => {
     const oppositeTheme = (window.CSS_THEME == 'dark' ? 'light' : 'dark');
 
     // {title, id} while a name is being asked for, null the rest of the time
+    // (comment by Claude)
     const [dialog, setDialog] = useState(null);
     const [message, setMessage] = useState(null);
     // deleting is not undoable and there is no copy anywhere else, so it asks

@@ -322,6 +322,8 @@ Twelve base36 characters is about 62 bits. Not a uuid, which is 128 bits and 36
 characters; this only has to stay unique across the wavetables a person makes,
 including ones pasted in from elsewhere, and 62 bits is enormous next to that.
 Short enough to read in a saved file.
+
+(comment by Claude)
 */
 function newShortId() {
 	let bytes = new Uint8Array(9);

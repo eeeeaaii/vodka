@@ -88,6 +88,8 @@ Every tag is checked, not just the first. A value can carry more than one -- a
 midi note's duration is tagged `duration` as well as with its timebase -- and
 which came first should not decide whether the timebase is seen. Anything with
 a single tag behaves exactly as before.
+
+(comment by Claude)
 */
 // null for a tag that does not name a timebase, so callers can tell a tag they
 // understand from one meant for something else
@@ -122,6 +124,7 @@ function setDefaultTimebase(input) {
 }
 
 // takes the constant directly, for restoring saved state
+// (comment by Claude)
 function setDefaultTimebaseValue(t) {
 	DEFAULT_TIMEBASE = t;
 }
@@ -195,6 +198,8 @@ Short, because this goes in the wave's own time label, which sits in a row of
 controls the width of the wave and is read at a glance rather than parsed. The
 word it is short for is never in doubt: the label is a number and its unit, and
 tapping it cycles through the five.
+
+(comment by Claude)
 */
 function getTimebaseSuffix(tb) {
 	switch(tb) {
@@ -219,6 +224,8 @@ function numSamplesForNoteNum(n) {
 The pitch a note number names, worked out from the same reference the rest of
 the timebase maths uses. The note table in the help reads this rather than
 keeping its own copy of the numbers, so the two cannot drift apart.
+
+(comment by Claude)
 */
 function frequencyForNoteNum(n) {
 	return REFERENCE_NOTE_FREQ * Math.pow(1.059463094359, n - REFERENCE_NOTE);

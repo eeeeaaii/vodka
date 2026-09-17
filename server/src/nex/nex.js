@@ -56,6 +56,7 @@ class Nex {
 		// stopped doing whatever it does out in the world, which happens when
 		// the document lets go and not when the memory does: see
 		// heap.stopFunctioning
+		// (comment by Claude)
 		this.stoppedFunctioning = false;
 
 		this.selected = false;
@@ -141,6 +142,8 @@ class Nex {
 	It is not freed yet, and may never be: undo is probably holding it so that
 	you can have it back. So nothing it would need in order to come back
 	intact may be released here. That is the other one.
+
+	(comment by Claude)
 	*/
 	stopFunctioning() {
 		// might be used in some objs
@@ -149,6 +152,8 @@ class Nex {
 	/*
 	The last reference of any kind is gone and it is never coming back, so
 	whatever it was holding on to for the sake of coming back can go too.
+
+	(comment by Claude)
 	*/
 	cleanupOnMemoryFree() {
 		// might be used in some objs
@@ -180,6 +185,7 @@ class Nex {
 	setOnNextRenderCallback(callback) {
 		this.onNextRenderCallback = callback;
 		// the callback fires from this nex's next render, so there has to be one
+		// (comment by Claude)
 		this.renderOnlyThisNex();
 	}
 
@@ -214,6 +220,7 @@ class Nex {
 	toStringV2PrivateDataSection(ctx) {
 		// Everything that doesn't say what it is serializing for means display:
 		// pretty printing, debug strings, the text in an error message.
+		// (comment by Claude)
 		if (!ctx) ctx = DISPLAY_CONTEXT;
 		let v = this.serializePrivateData(ctx);
 		// Loose equality against '' does not catch null -- null is only ever
@@ -221,6 +228,7 @@ class Nex {
 		// private data" used to reach indexOf below and throw, taking the whole
 		// operation with it. Nothing to serialize is nothing to serialize,
 		// however it was spelled.
+		// (comment by Claude)
 		if (!v) {
 			return '';
 		}

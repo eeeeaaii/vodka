@@ -19,6 +19,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 Not exposed as a builtin -- there are open questions about what a user-facing
 fft should hand back. This is here so builtins that need a spectrum internally
 can have one.
+
+(comment by Claude)
 */
 
 function nextPowerOfTwo(n) {
@@ -28,6 +30,7 @@ function nextPowerOfTwo(n) {
 }
 
 // in place, radix-2, length must be a power of two
+// (comment by Claude)
 function fft(re, im) {
 	let n = re.length;
 	for (let i = 1, j = 0; i < n; i++) {
@@ -76,6 +79,8 @@ Walks a wave in overlapping frames and hands each one's magnitude spectrum to
 the callback, along with how many bins are real. Frames past the end of the
 wave are zero filled rather than skipped, so a wave shorter than one frame
 still gets looked at.
+
+(comment by Claude)
 */
 function forEachSpectrum(wt, frameSize, hop, callback) {
 	let dur = wt.getDuration();
@@ -84,6 +89,8 @@ function forEachSpectrum(wt, frameSize, hop, callback) {
 	over the frame. Windowing it over the frame would cut it off part way up
 	the window's own ramp, and that truncation smears across the whole
 	spectrum -- a short sine comes back reading as noise.
+
+	(comment by Claude)
 	*/
 	let span = Math.min(frameSize, dur);
 	let n = nextPowerOfTwo(span);

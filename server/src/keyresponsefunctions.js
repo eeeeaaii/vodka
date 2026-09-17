@@ -358,6 +358,7 @@ box that reads like that after three presses is useless.
 function stepValue(s, direction) {
 	let nex = s.getNex();
 	// something you are not allowed to edit is not something to step
+	// (comment by Claude)
 	if (!nex.isMutable()) {
 		return;
 	}
@@ -601,6 +602,7 @@ const KeyResponseFunctions = {
 
 	// the control strip is wider than a short wave, so a wave's box cannot show
 	// its real length while the strip is there
+	// (comment by Claude)
 	'toggle-wave-controls': function(s) {
 		document.body.classList.toggle('hidewavecontrols');
 	},

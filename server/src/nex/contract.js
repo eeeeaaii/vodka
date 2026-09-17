@@ -32,6 +32,7 @@ class Contract extends NexContainer {
 		// A contract has no private data of its own, but it still gets
 		// serialized like everything else, and '' is what "nothing" looks like
 		// to a serializer. null is not a string.
+		// (comment by Claude)
 		this.privateData = '';
 		this.contractTags = [];
 	}

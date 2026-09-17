@@ -164,7 +164,12 @@ function createBuiltins() {
 	setAPIDocCategory('File Builtins'); createFileBuiltins();
 	setAPIDocCategory('String Builtins'); createStringBuiltins();
 	setAPIDocCategory('Wavetable Builtins'); createWavetableBuiltins();
-	setAPIDocCategory('Wave Math Builtins'); createWaveMathBuiltins();
+	/*
+	Under Math, not a category of its own: these are the math builtins, and the
+	only thing that separates them from the ones above is that they also take a
+	wave. Declaring the category twice appends to it.
+	*/
+	setAPIDocCategory('Math Builtins'); createWaveMathBuiltins();
 	setAPIDocCategory('Midi Builtins'); createMidiBuiltins();
 	setAPIDocCategory('Surface Builtins'); createSurfaceBuiltins();
 	setAPIDocCategory('Make Builtins'); createMakeBuiltins();
@@ -249,6 +254,8 @@ function setOrCreateSessionId() {
 
 	Put into the address bar without navigating, so the url is still the way
 	back to this session.
+
+	(comment by Claude)
 	*/
 	if (!sessionId) {
 		sessionId = newSessionId();
@@ -259,6 +266,7 @@ function setOrCreateSessionId() {
 			window.history.replaceState(null, '', url.toString());
 		} catch (e) {
 			// an address bar we cannot rewrite is not worth failing over
+			// (comment by Claude)
 		}
 	}
 	systemState.setSessionId(sessionId);
@@ -314,8 +322,10 @@ function installTestHooks() {
 // asynchrony -- after it, wavetables get their samples from a synchronous
 // lookup and nothing downstream knows storage was involved. Nothing waits on
 // setup()'s return; vodkastart.js calls it at module top level.
+// (comment by Claude)
 async function setup() {
 	// before anything asks whether it can save or how to list a directory
+	// (comment by Claude)
 	await loadDeploymentConfig();
 	setAppFlags();
 	suppressAnimationsIfRequested();
@@ -325,6 +335,7 @@ async function setup() {
 	setOrCreateSessionId();
 
 	// after the session id, because records are namespaced by it
+	// (comment by Claude)
 	await audioStore.loadAll();
 	restoreEditorState();
 
@@ -391,6 +402,7 @@ async function setup() {
 	} else if (restoreAutosave(root)) {
 		// Picked up where the last page load left off. An explicitly requested
 		// file still wins over this, which is why it sits below those two.
+		// (comment by Claude)
 		root.setRenderMode(RENDER_MODE_EXPLO);
 		root.setSelected(false);
 		systemState.setGlobalCurrentDefaultRenderFlags(0);
@@ -409,12 +421,14 @@ async function setup() {
 	// Safe on every path: restoreAutosave() has already run (and enabled saving)
 	// wherever a restore was attempted, so this only matters for the branches
 	// that loaded a document explicitly.
+	// (comment by Claude)
 	enableAutosave();
 	installUnloadFlush(root);
 	eventQueueDispatcher.enqueueRenderOnlyDirty()
 	// setup() is async now, so "the page has loaded" no longer means "the app
 	// is ready". Anything driving the app from outside -- the test harness --
 	// has to wait for this rather than for the network to go idle.
+	// (comment by Claude)
 	window.__vodkaReady = true;
 }
 

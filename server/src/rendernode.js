@@ -99,6 +99,7 @@ function updateCollapseMutes() {
 
 // there is one selection, so there is at most one insertion pip. Tracking
 // it lets selection changes move it without re-rendering anything.
+// (comment by Claude)
 let liveInsertionPips = [];
 
 function registerInsertionPip(el) {
@@ -341,6 +342,8 @@ class RenderNode {
 				Through the queue because actions cannot be reached from here
 				without a circular import, and because landing after the key's
 				action is the right order to undo them in.
+
+				(comment by Claude)
 				*/
 				eventQueueDispatcher.enqueueEditorErrorAction(parent, index, this, errorNode);
 				return null;
@@ -418,6 +421,7 @@ class RenderNode {
 		this.setCurrentEditor(editor);
 		this.getCurrentEditor().startEditing();
 		// the node's own chrome changes too, not just the parent's pips
+		// (comment by Claude)
 		this.setRenderNodeDirtyForRendering(true);
 		let p = this.getParent();
 		let toSetDirty = p ? p : this;
@@ -607,6 +611,8 @@ class RenderNode {
 
 				Exploded mode is the exception -- children are drawn a different
 				way, so every one of them has to be done again.
+
+				(comment by Claude)
 				*/
 				let explodedChanged =
 						this.isCurrentlyExploded != !!(useFlags & RENDER_FLAG_EXPLODED);
@@ -657,6 +663,7 @@ class RenderNode {
 			}
 			// getChildAt walks the child list from the head every call, so
 			// snapshot the children once instead of paying c squared
+			// (comment by Claude)
 			let childNexes = this.getNex().getChildArray();
 			let i = 0;
 			for (i = 0; i < this.childnodes.length; i++) {
@@ -845,6 +852,7 @@ class RenderNode {
 		if (oldMode == INSERT_AROUND || mode == INSERT_AROUND) {
 			// the square wraps the child's dom node, so wrapping and
 			// unwrapping is the parent's render to do
+			// (comment by Claude)
 			this.setRenderNodeDirtyForRendering(true);
 			let p = this.getParent();
 			if (p) {
@@ -855,6 +863,7 @@ class RenderNode {
 		}
 		if (this.nex.rendersInsertionClasses()) {
 			// letters, words and lines show the mode as a class on themselves
+			// (comment by Claude)
 			this.setRenderNodeDirtyForRendering(true);
 			eventQueueDispatcher.enqueueRenderOnlyDirty()
 		}
@@ -870,6 +879,7 @@ class RenderNode {
 			if (!p || !p.isCurrentlyExploded) return;
 			if (this.domNode.parentNode != p.getDomNode()) {
 				// not where a pip can go next to it -- let a render sort it out
+				// (comment by Claude)
 				p.setRenderNodeDirtyForRendering(true);
 				eventQueueDispatcher.enqueueRenderOnlyDirty()
 				return;

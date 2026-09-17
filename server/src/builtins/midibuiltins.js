@@ -67,6 +67,7 @@ function createMidiBuiltins() {
 					getMidiPorts(function(devs, err) {
 						// an error rather than nothing, so anything waiting on
 						// this gets to carry on rather than waiting forever
+						// (comment by Claude)
 						if (err) {
 							callback(constructFatalError(
 									'list-midi-ports: no midi access in this browser. Sorry!'));
@@ -88,6 +89,7 @@ function createMidiBuiltins() {
 			dv.appendChild(waitmessage)
 			// without this the activation function never runs: the deferred sits
 			// showing its wait message forever, never having asked for anything
+			// (comment by Claude)
 			dv.activate();
 			return dv;
 		},
@@ -108,6 +110,7 @@ function createMidiBuiltins() {
 			return { id: id };
 		}
 		// play-midi takes this argument untyped, so it can be handed anything
+		// (comment by Claude)
 		if (!Utils.isNexContainer(port)) {
 			return { error: constructFatalError(who + ': that is not a midi port. Sorry!') };
 		}
@@ -188,6 +191,8 @@ function createMidiBuiltins() {
 	Without a time it starts where the entry before it ended, so a list of notes
 	carrying nothing but durations plays one after another. Without a note number
 	it is a rest: it takes up its duration and sounds nothing.
+
+	(comment by Claude)
 	*/
 	function readSequenceEntry(n, atSeconds) {
 		let kind = null;
@@ -202,6 +207,8 @@ function createMidiBuiltins() {
 		A rest is a duration with no note number. Something with neither is still an
 		error rather than a rest of the default length, so that a mistyped note tag
 		says so instead of quietly turning into silence.
+
+		(comment by Claude)
 		*/
 		if (kind == null && !durnex) {
 			return { error: 'play-midi: an entry needs a note number or a duration. Sorry!' };
@@ -215,12 +222,14 @@ function createMidiBuiltins() {
 
 		// a time of its own overrides where the entry before it left off, and the
 		// entries after it then follow from here
+		// (comment by Claude)
 		let timenex = n.getChildTagged(newTagOrThrowOOM('time', 'play midi, time'));
 		if (timenex) {
 			atSeconds = convertTimeToSamples(timenex) / getSampleRate();
 		}
 
 		// velocity and channel already have defaults, so a duration has one too
+		// (comment by Claude)
 		let durTimebase = durnex ? nexToTimebase(durnex) : 'BEATS';
 		let durSamples = durnex
 				? convertTimeToSamples(durnex)
@@ -244,6 +253,7 @@ function createMidiBuiltins() {
 				atSeconds: atSeconds,
 				durationSeconds: durationSeconds,
 				// only beats are shortened; anything else asked for that length
+				// (comment by Claude)
 				shortenable: durTimebase == 'BEATS',
 				note: notenum,
 				velocity: velocity,
@@ -265,12 +275,15 @@ function createMidiBuiltins() {
 			is already playing on, so there is nothing left for a port to say.
 			Optional arguments bind by position and not by type, so two of them
 			would put a clip where the port belongs.
+
+			(comment by Claude)
 			*/
 			let arg = env.lb('portorclip');
 			let clip = null;
 			let portNex = UNBOUND;
 			if (Utils.isNil(arg)) {
 				// a clip is never saved, so a refresh leaves a nil behind
+				// (comment by Claude)
 				return constructFatalError(
 						'play-midi: that clip is gone, a refresh does not keep them. Sorry!');
 			}
@@ -288,6 +301,7 @@ function createMidiBuiltins() {
 			if (clip) {
 				portId = clip.getPort();
 				// a copy of a clip does not remember its port
+				// (comment by Claude)
 				if (!portId) {
 					let found = portIdOrError(UNBOUND, 'play-midi');
 					if (found.error) return found.error;
@@ -302,6 +316,7 @@ function createMidiBuiltins() {
 			let events = [];
 			// where the next entry starts if it does not say, and how long the
 			// sequence has got to so far
+			// (comment by Claude)
 			let cursorSeconds = 0;
 			let nominalEnd = 0;
 			let n = list.numChildren();
@@ -314,6 +329,7 @@ function createMidiBuiltins() {
 				let e = readSequenceEntry(c, cursorSeconds);
 				if (e.error) return constructFatalError(e.error);
 				// a rest has no event, but it still takes up its time
+				// (comment by Claude)
 				if (e.event) events.push(e.event);
 				cursorSeconds = e.endsAtSeconds;
 				if (e.endsAtSeconds > nominalEnd) nominalEnd = e.endsAtSeconds;
@@ -322,9 +338,11 @@ function createMidiBuiltins() {
 			// shortening a note to keep it clear of the next one is a note off
 			// sent early, not a shorter sequence. A rest at the end counts, which
 			// is how you put space before the repeat.
+			// (comment by Claude)
 			let lengthSeconds = nominalEnd;
 
 			// the clip already says it is midi, so this says what is in it
+			// (comment by Claude)
 			let what = events.length == 0
 					? 'empty'
 					: events.length + ' note' + (events.length == 1 ? '' : 's');
@@ -333,6 +351,7 @@ function createMidiBuiltins() {
 				// Out at the boundary and back in at the same one, the way an
 				// audio loop is replaced. Stopping the old sequence now instead
 				// would send its note offs early and cut a note that is sounding.
+				// (comment by Claude)
 				endLoops(clip.getIds(), true /* at the cycle end */);
 			}
 
@@ -344,6 +363,7 @@ function createMidiBuiltins() {
 			}
 			// the midi system owns it while it plays, and how long that lasts is
 			// decided by whether anything else owns it too
+			// (comment by Claude)
 			clipStartedPlaying(clip, [ id ]);
 			return clip;
 		},
@@ -383,6 +403,7 @@ function createMidiBuiltins() {
 	// The tag on the int picks the message, like a timebase tag picks a unit.
 	// No converting note-off to note-on-at-zero: note off velocity is release
 	// velocity on some devices, so they aren't interchangeable.
+	// (comment by Claude)
 	Builtin.createBuiltin(
 		'send-midi-note',
 		[ 'note()', 'port()?' ],
@@ -416,6 +437,7 @@ function createMidiBuiltins() {
 			}
 
 			// 1-16, the way hardware shows them
+			// (comment by Claude)
 			let channel = taggedInt(n, 'channel', 'send-midi-note');
 			if (channel == null) channel = 1;
 			if (channel < 1 || channel > 16) {
@@ -428,6 +450,7 @@ function createMidiBuiltins() {
 				sendMidiNoteOff(port.id, channel, notenum, velocity);
 			} else {
 				// no duration means one beat, the way no velocity means 127
+				// (comment by Claude)
 				let dur = n.getChildTagged(newTagOrThrowOOM('duration', 'send-midi-note, duration'));
 				let timebase = dur ? nexToTimebase(dur) : 'BEATS';
 				let samples = dur
@@ -454,6 +477,7 @@ function createMidiBuiltins() {
 			}
 			// now that both directions are listed, an output can be passed here
 			// by mistake, and listening to one just never fires
+			// (comment by Claude)
 			let type = midiport.getChildTagged(newTagOrThrowOOM('type', 'wait for midi builtin, type'));
 			if (type && type.getFullTypedValue() != 'input') {
 				return constructFatalError('wait-for-midi: that is an output port. Sorry!');

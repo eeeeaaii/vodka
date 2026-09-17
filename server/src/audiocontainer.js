@@ -37,6 +37,8 @@ A document with no audio in it is written with no container at all. The common
 case stays byte-for-byte what earlier versions wrote, and files written before
 containers existed still load, because decode() passes anything without the
 magic straight through.
+
+(comment by Claude)
 */
 
 const CONTAINER_MAGIC = 'VODKAC1';
@@ -44,6 +46,7 @@ const CONTAINER_MAGIC = 'VODKAC1';
 // String.fromCharCode is applied to slices rather than the whole array: a few
 // seconds of audio is a few hundred thousand samples, which is well past the
 // argument-count limit.
+// (comment by Claude)
 const CHUNK = 0x8000;
 
 class AudioCollector {
@@ -55,6 +58,7 @@ class AudioCollector {
 
 	add(id, float32array) {
 		// the same wavetable reached twice is still one wavetable
+		// (comment by Claude)
 		if (this.seen[id]) return;
 		this.seen[id] = true;
 		this.ids.push(id);
@@ -88,6 +92,7 @@ function fromBase64(str) {
 	}
 	// A Float32Array needs whole samples. A truncated file would otherwise throw
 	// here and take the whole load down with it.
+	// (comment by Claude)
 	if (bytes.length % 4 != 0) {
 		return null;
 	}
@@ -118,6 +123,8 @@ Callers treat null as "parse this as-is".
 A container that doesn't decode also comes back as null rather than throwing.
 That gets it parsed as a document, which fails with a parse error the user can
 see, instead of an exception on the way in.
+
+(comment by Claude)
 */
 function decode(fileText) {
 	if (typeof fileText != 'string') return null;
@@ -128,6 +135,7 @@ function decode(fileText) {
 
 	let fields = fileText.substring(0, nl).split(' ');
 	// the document length, then one id:length per wavetable
+	// (comment by Claude)
 	let docLen = Number(fields[1]);
 	if (!Number.isInteger(docLen) || docLen < 0) return null;
 	let ids = [];

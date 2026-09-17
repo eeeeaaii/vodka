@@ -26,6 +26,8 @@ goes, and a clip ends the loop it names.
 Cut is where it shows. It puts the nex on the clipboard and then removes it from
 the tree, which was the last reference, so the thing you were about to paste got
 freed on its way to the clipboard.
+
+(comment by Claude)
 */
 function setClipboard(nex) {
 	if (CLIPBOARD) {
@@ -825,6 +827,7 @@ class Manipulator {
 		// No siblings and no parent means it was not in the tree, which undo can
 		// reach by removing something that has already been removed. Nothing
 		// left to select, but nothing to crash over either.
+		// (comment by Claude)
 	}
 
 	removeAndSelectPreviousSiblingIfEmpty(s) {
@@ -1506,6 +1509,8 @@ class Manipulator {
 		Two children of the same parent have that parent in common, but taking
 		it would select everything under it. What is wanted is the two of them
 		and whatever lies between, so they get enclosed instead.
+
+		(comment by Claude)
 		*/
 		let sharedParent = a.getParent();
 		if (sharedParent && sharedParent == b.getParent()) {
@@ -1566,6 +1571,8 @@ class Manipulator {
 		a clip was ended.
 
 		Anything negative, so a different sentinel cannot bring this back.
+
+		(comment by Claude)
 		*/
 		if (at < 0) return;
 		let taken = this._takeChildren(org, 0, org.numChildren() - 1);
@@ -1603,6 +1610,8 @@ class Manipulator {
 	instead. insertChildAt refuses an index outside the parent rather than
 	saying so, so giving it up regardless would free a child that never landed
 	anywhere -- which is destroying it, not moving it.
+
+	(comment by Claude)
 	*/
 	_putChildren(parent, taken, at) {
 		for (let i = 0; i < taken.length; i++) {
@@ -1915,12 +1924,14 @@ class Manipulator {
 		this.selectPreviousSibling() || this.selectParent();		
 		// false when it was not in the tree to begin with, which undo has to
 		// know about or it will put back something that never left
+		// (comment by Claude)
 		return this.removeNex(x);
 	}
 
 	// used in keydispatcher.js
 	// Commands that already save the thing they contain. ctrl-s inside one of
 	// these should use it rather than wrapping it in a second save.
+	// (comment by Claude)
 	isSaveCommand(p) {
 		if (!Utils.isCommand(p)) {
 			return false;
@@ -1993,6 +2004,7 @@ class Manipulator {
 
 	// used in keydispatcher.js
 	// returns the node it pasted, so it can be taken out again
+	// (comment by Claude)
 	doPaste(systemClipboardText) {
 		let s = systemState.getGlobalSelectedNode();
 		try {

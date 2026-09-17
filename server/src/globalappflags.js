@@ -71,6 +71,7 @@ let experiments = {
 
 	// a dirty nex redraws itself and puts its children back, rather than
 	// rebuilding every one of them
+	// (comment by Claude)
 	'SHALLOW_DIRTY_RENDER': true,
 
 	// runtime in webasm
@@ -91,6 +92,7 @@ let experiments = {
 	'STATIC_PIPS': false,
 
 	// all three are for tests only
+	// (comment by Claude)
 	'TEST_NO_ANIMATIONS': false,
 	'TEST_MANUAL_EVENT_QUEUE': false,
 	'TEST_VIRTUAL_CLOCK': false,
@@ -164,6 +166,7 @@ function setAppFlags() {
 
 // Injected rather than done per-animation: letterblink is applied by raw CSS
 // with no JS gate.
+// (comment by Claude)
 function suppressAnimationsIfRequested() {
 	if (!experiments.TEST_NO_ANIMATIONS) return;
 	let style = document.createElement('style');

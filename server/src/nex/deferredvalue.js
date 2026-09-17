@@ -62,6 +62,8 @@ class DeferredValue extends NexContainer {
 		(This tested this._finished, which is a field on DeferredCommand and
 		not on this class, so it was always undefined and the renotify never
 		happened.)
+
+		(comment by Claude)
 		*/
 		if (this.isFinished()) {
 			eventQueueDispatcher.enqueueRenotifyDeferredListeners(this);
@@ -116,6 +118,7 @@ class DeferredValue extends NexContainer {
 		// It can have no contained value at all -- `wait` with no argument makes
 		// one, and so does anything still waiting for its first result. Nothing
 		// is nil.
+		// (comment by Claude)
 		let c = this.getChildAt(0);
 		return c ? c.toStringV2(ctx) : '[nil]';
 	}
@@ -125,9 +128,12 @@ class DeferredValue extends NexContainer {
 	Some activation sources hold something that keeps running whether or not
 	anyone is still listening -- a repeating timer, most obviously. Deleting the
 	deferred should stop it.
+
+	(comment by Claude)
 	*/
 	// Deleted means it has stopped waiting. A wait-for-click that is out of the
 	// document but still listening would fire into nothing.
+	// (comment by Claude)
 	stopFunctioning() {
 		if (this.activationFunctionGenerator && this.activationFunctionGenerator.stop) {
 			this.activationFunctionGenerator.stop();
@@ -197,6 +203,8 @@ class DeferredValue extends NexContainer {
 		produce another value, and there would be nothing left to produce it
 		with once the wrapper is gone. Listeners first, so anything waiting on
 		it hears before the document changes underneath.
+
+		(comment by Claude)
 		*/
 		if (!justSettling) {
 			eventQueueDispatcher.enqueueUnwrapFinishedDeferred(this);
@@ -219,6 +227,7 @@ class DeferredValue extends NexContainer {
 		let finishCallback = ((value) => this.startFinish(value));
 		let settleCallback = ((value) => this.startSettle(value));
 		// TODO: remove the didNotWait check once #292 is fixed
+		// (comment by Claude)
 		let didNotWait = this.activationFunctionGenerator.getFunction(finishCallback, settleCallback, this)();
 		if (!didNotWait) {
 			this.state = DVSTATE_ACTIVATED;
@@ -284,6 +293,8 @@ class DeferredValue extends NexContainer {
 				It did evaluate for a while, which made unwrapping run whatever
 				it unwrapped -- a deferred value that finished holding a command
 				would run that command on its way out.
+
+				(comment by Claude)
 				*/
 				result = this.getChildAt(0);
 			} else {
@@ -296,6 +307,8 @@ class DeferredValue extends NexContainer {
 			copyTagsTo so that evaluating the same deferred value twice does not
 			stack up duplicates, which matters more now that result is the child
 			itself rather than a fresh copy of it.
+
+			(comment by Claude)
 			*/
 			for (let i = 0; i < this.tags.length; i++) {
 				result.addTag(this.tags[i].copy());

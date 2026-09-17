@@ -153,10 +153,12 @@ class DeferredCommand extends Command {
 		this._activationEnv = executionEnv;
 		this._activated = true;
 		// TODO: remove return once #292 is fixed
+		// (comment by Claude)
 		return this.tryToFinish();
 	}
 
 	// returns true if it finished without waiting -- TODO: remove once #292 is fixed
+	// (comment by Claude)
 	tryToFinish() {
 		if (this._cancelled) {
 			return;
@@ -167,6 +169,8 @@ class DeferredCommand extends Command {
 		because undo holding the deleted value keeps it unfreed for as long as
 		fifty more deletions, and finishing into it during that time would put
 		an answer somewhere nobody can see.
+
+		(comment by Claude)
 		*/
 		if (this._returnedValue.stoppedFunctioning || this._returnedValue.wasFreed) {
 			return;

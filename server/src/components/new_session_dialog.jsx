@@ -3,6 +3,8 @@ import { useState } from 'preact/hooks';
 /*
 The name box starts as the id, so a session always has something to be listed
 under and naming it is a choice rather than a chore.
+
+(comment by Claude)
 */
 const NewSessionDialog = ({ sessionId, title, onCreate, onCancel }) => {
     const [name, setName] = useState(sessionId);

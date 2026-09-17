@@ -20,6 +20,7 @@ const StatusNav = () => {
         const id = setInterval(() => {
             // a midi note left sounding is the same kind of problem as audio
             // still running, and more urgent -- nothing stops it on its own
+            // (comment by Claude)
             setPlaying(isAnySoundPlaying() || anyMidiNotesSounding() || anyLoopsRunning() || anyLoopsPlaying());
             setUnsaved(hasPendingSave());
             setDisplayedBpm(getBpm());
@@ -40,12 +41,14 @@ const StatusNav = () => {
                          // already been handed, and those are the ones that
                          // would otherwise keep sounding after everything else
                          // has stopped
+                         // (comment by Claude)
                          midiPanic();
                          stopAllSound();
                          stopAllLoops();
                          setPlaying(false);
                      }}>
                     {/* currentColor so the icon follows the theme token on the parent */}
+                    {/* (comment by Claude) */}
                     <svg viewBox="0 0 8 9" width="8" height="9" aria-hidden="true">
                         <rect x="0" y="0" width="3" height="9" fill="currentColor"/>
                         <rect x="5" y="0" width="3" height="9" fill="currentColor"/>
