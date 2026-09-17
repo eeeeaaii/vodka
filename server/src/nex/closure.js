@@ -202,11 +202,27 @@ class Closure extends ValueNex {
 		return this.getRenderedHTML();
 	}
 
+	/*
+	Whether this closure has a name to be known by. A bound one can be shown as
+	just its name; an unbound lambda has nothing to be called, so the only
+	honest short form is its code. Said in a class so that somewhere wanting an
+	abbreviated closure -- the head of a deferred command value, say -- can pick
+	between the two without knowing how a closure is put together.
+	*/
+	hasName() {
+		let n = this.getLambda().getCanonicalName();
+		if (!n) n = this.symbolBinding.get();
+		// an anonymous lambda still answers with something -- punctuation left
+		// over from how it prints -- so a name has to look like one
+		return !!(n && /[A-Za-z0-9]/.test(n));
+	}
+
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add(this.className);
 		domNode.classList.add('valuenex');
+		domNode.classList.add(this.hasName() ? 'namedclosure' : 'anonymousclosure');
 		domNode.innerHTML = this.getInnerHTMLForDisplay();
 	}
 

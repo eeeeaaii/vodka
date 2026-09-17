@@ -68,6 +68,63 @@ function anyLoopsRunning() {
 
 function createAsyncBuiltins() {
 
+	/*
+	The value a deferred thing has produced so far, which is not the same
+	question as what it evaluates to. Evaluating a deferred value hands back the
+	deferred value itself until it has finished for good -- it is still in the
+	middle of its work, and saying otherwise would be a lie about whether more
+	is coming. Asking for the latest is the explicit way to look at what it has
+	got to so far, whether or not it is done.
+
+	Anything that is not deferred has a latest: itself. The question is whether
+	a value exists yet, not what kind of thing is being asked, so a number is
+	trivially its own most recent value and only something still waiting for its
+	first result has nothing to give.
+	*/
+	function hasLatest(nex) {
+		if (Utils.isDeferredCommandValue(nex)) {
+			return nex.hasLatest();
+		}
+		// settled or finished; the state is the question, not whether it
+		// happens to be holding anything -- a deferred that finished with
+		// nothing has still finished, and nothing is what it produced
+		return Utils.isDeferredValue(nex) ? nex.isSettled() : true;
+	}
+
+	function latestOf(nex) {
+		if (Utils.isDeferredCommandValue(nex)) {
+			return nex.getLatest();
+		}
+		if (!Utils.isDeferredValue(nex)) {
+			return nex;
+		}
+		// the same answer evaluating a finished one gives
+		return nex.numChildren() > 0 ? nex.getChildAt(0) : constructNil();
+	}
+
+	Builtin.createBuiltin(
+		'latest',
+		[ 'nex' ],
+		function $latest(env, executionEnvironment) {
+			let nex = env.lb('nex');
+			if (!hasLatest(nex)) {
+				return constructFatalError(
+						'latest: that has not produced a value yet. Sorry!');
+			}
+			return latestOf(nex);
+		},
+		'The value |nex has produced so far. A deferred value that has settled or finished gives what it holds; anything that is not deferred is its own latest value. Something still waiting for its first result has no latest, and asking is an error -- use has-latest to find out first. Note this is not the same as evaluating |nex, which hands back the deferred value itself until it has finished for good.'
+	);
+
+	Builtin.createBuiltin(
+		'has-latest',
+		[ 'nex' ],
+		function $hasLatest(env, executionEnvironment) {
+			return constructBool(hasLatest(env.lb('nex')));
+		},
+		'Whether |nex has produced a value yet, which is what says whether latest can be asked. True for anything that is not deferred, and for a deferred value that has settled or finished. False only while something is still waiting for its first result.'
+	);
+
 	Builtin.createBuiltin(
 		'cancel-deferred',
 		[ 'def*?' ],

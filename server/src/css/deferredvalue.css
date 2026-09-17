@@ -60,7 +60,13 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	font-size: 1.15em;
 	color: var(--info-text);
 	background-color: var(--unselected-border);
-	margin: 3px 3px 3px 3px;
+	/*
+	Flush with the inside of the border on three sides. It is not a thing
+	sitting in the box, it is the edge of the box saying what state this is in,
+	so a gap around it reads as though it were another value in there. Only the
+	right margin stays, to hold it off what it is labelling.
+	*/
+	margin: 0px 3px 0px 0px;
 }
 
 
@@ -87,9 +93,15 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 }
 
+/*
+At the top of the strip rather than the middle of it. The strip is as tall as
+whatever it is labelling, so a centred glyph drifts further from the thing it
+belongs to the taller that gets, and ends up looking like it is floating in a
+grey field of its own.
+*/
 .dvglyph {
   display: block;
-  align-self: center;
+  align-self: flex-start;
   height: 25px;	
 }
 

@@ -1,0 +1,153 @@
+/*
+This file is part of Vodka.
+
+Vodka is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Vodka is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+/*
+A call, laid out the way an org is: same border, same radius, same margin
+between children, and the same flip to a column when the nex is vertical. It is
+a list with a closure at the front, so it should not look like a different kind
+of thing from every other list.
+
+The state glyph is the only addition, and it sits outside the call.
+*/
+
+.deferredcommandvalue {
+	height: auto;
+	display: block;
+	padding: 0px;
+}
+
+/*
+A grid rather than a row, because three things have to be placed and only one
+of them is a list: the state, the value computed so far, and the call. Grid
+keeps all three in flow -- the state indicator is as tall as the whole thing
+because it spans every row, not because it was taken out of the layout and
+stretched by hand -- and it leaves each child's own display alone, so a nex
+that lays itself out as a row still does.
+*/
+.deferredcommandvalue.exploded {
+	display: grid;
+	grid-auto-flow: column;
+	grid-template-columns: auto;
+	grid-auto-columns: auto;
+	/*
+	Named, because `1 / -1` counts lines in the explicit grid: with no rows
+	declared, the last line is the end of row one and the state indicator spans
+	only that, leaving the call to slide underneath it.
+	*/
+	grid-template-rows: auto auto;
+	justify-content: start;
+	align-items: start;
+	/*
+	Each thing as wide as itself. Without this a grid item fills its column, so
+	the value computed so far would be stretched to whatever the closure
+	beneath it happens to measure.
+	*/
+	justify-items: start;
+	padding: 0px;
+	border: 1px solid var(--org-border);
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.deferredcommandvalue.exploded.newselected {
+	border-color: var(--selected-border);
+}
+
+/* the whole strip, not just the outline -- as a deferred value does it */
+.deferredcommandvalue.exploded.newselected > .dcvglyph,
+.deferredcommandvalue.exploded.selected > .dcvglyph {
+	background-color: var(--selected-border);
+}
+
+/*
+Flush with the inside of the border on three sides, the way the waiting
+indicator on a plain deferred value is, and as tall as the whole thing because
+it spans every row rather than because it was positioned there.
+*/
+.dcvglyph {
+	display: none;
+}
+
+/*
+The glyph sits at the start of the strip's long axis: the top of a tall one,
+the left of a wide one. Centred, it drifts away from what it is labelling as
+the call gets bigger.
+*/
+.deferredcommandvalue.exploded > .dcvglyph {
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	grid-column: 1;
+	grid-row: 1 / -1;
+	align-self: stretch;
+	padding: 0px 4px 0px 4px;
+	font-family: "Courier";
+	font-size: 1.15em;
+	color: var(--info-text);
+	background-color: var(--unselected-border);
+	/* the same gap a deferred value leaves between its indicator and its
+	   contents, so the two do not sit differently side by side */
+	margin: 0px 3px 0px 0px;
+}
+
+/*
+The value computed so far is the first child, and it goes across the direction
+the call runs in: its own row above a call that runs horizontally, its own
+column to the left of one that runs down.
+*/
+.deferredcommandvalue.exploded > .nex.exploded {
+	grid-row: 2;
+	margin: 2px 2px 2px 2px;
+}
+
+.deferredcommandvalue.exploded > .dcvglyph + .nex.exploded {
+	grid-column: 2;
+	grid-row: 1;
+}
+
+/*
+Running down, the state indicator attaches to the top instead of the side, the
+way the name of a command does -- what it is attached to turns with the list.
+The value computed so far then goes to the left of the call, which is still
+across the direction the call runs in.
+*/
+.deferredcommandvalue.exploded.vdir {
+	grid-auto-flow: row;
+	grid-template-columns: auto auto;
+	grid-template-rows: auto;
+}
+
+.deferredcommandvalue.exploded.vdir > .dcvglyph {
+	grid-column: 1 / -1;
+	grid-row: 1;
+	justify-self: stretch;
+	align-self: auto;
+	align-items: center;
+	justify-content: flex-start;
+	/* attached to the top, so the gap goes underneath it */
+	margin: 0px 0px 3px 0px;
+}
+
+.deferredcommandvalue.exploded.vdir > .dcvglyph + .nex.exploded {
+	grid-column: 1;
+	grid-row: 2;
+}
+
+.deferredcommandvalue.exploded.vdir > .nex.exploded {
+	grid-column: 2;
+	grid-row: auto;
+}
