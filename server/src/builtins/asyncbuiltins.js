@@ -114,7 +114,7 @@ function createAsyncBuiltins() {
 			}
 			return latestOf(nex);
 		},
-		'The value |nex has produced so far. A deferred value that has settled or finished gives what it holds; anything that is not deferred is its own latest value. Something still waiting for its first result has no latest, and asking is an error -- use has-latest to find out first. Note this is not the same as evaluating |nex, which hands back the deferred value itself until it has finished for good.'
+		'The value |nex has produced so far. A deferred value gives what it holds; anything else is its own latest. Asking before it has produced anything is an error -- use has-latest first.'
 	);
 
 	Builtin.createBuiltin(
@@ -292,7 +292,7 @@ function createAsyncBuiltins() {
 			runningLoops[id] = afg;
 			return dv;
 		},
-		'Returns a deferred value that settles every |interval milliseconds with whatever |f returned. The first one happens straight away. |f is passed the number of times it has run, starting at zero, which it can take as an argument or ignore. Stops if |f returns a fatal error, when the deferred value is deleted, or when the stop button is pressed.'
+		'Returns a deferred value that settles every |interval milliseconds with whatever |f returned. |f is passed the iteration number.'
 	);
 
 	Builtin.createBuiltin(
