@@ -49,7 +49,6 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { experiments } from '../globalappflags.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 import { executeRunInfo } from '../commandfunctions.js'
-import { evaluateNexSafely } from '../evaluator.js'
 import { DCP_WAITING, DCP_READY_SETTLED, DCP_READY_FINISHED } from '../dcpolicy.js'
 
 // nothing yet: no value has been produced, so it has no latest
@@ -222,6 +221,15 @@ class DeferredCommandValue extends NexContainer {
 			this.doAlertAnimation();
 		}
 		this.notifyAllListeners();
+		/*
+		Finished for good, so if this is sitting in a document the answer takes
+		its place there -- the same rule a deferred value follows. A settled one
+		stays put: it is still armed and the next result has to have somewhere
+		to land.
+		*/
+		if (!keepGoing) {
+			eventQueueDispatcher.enqueueUnwrapFinishedDeferred(this);
+		}
 	}
 
 	/*
@@ -257,8 +265,13 @@ class DeferredCommandValue extends NexContainer {
 		if (!this.isFinished()) {
 			return this;
 		}
+		/*
+		Unwrapping, not evaluating -- the same rule a deferred value follows.
+		What it holds is already the answer, so it comes back as it is rather
+		than being run a second time.
+		*/
 		let result = this.numChildren() > 0
-				? evaluateNexSafely(this.getChildAt(0), env)
+				? this.getChildAt(0)
 				: constructNil();
 		// addTag rather than copyTagsTo, so evaluating twice does not stack up
 		// duplicates

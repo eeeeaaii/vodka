@@ -28,7 +28,6 @@ import { getFFGen } from '../gc.js'
 import { experiments } from '../globalappflags.js'
 import { heap } from '../heap.js'
 import { constructFatalError } from './eerror.js'
-import { evaluateNexSafely } from '../evaluator.js'
 
 const DVSTATE_CANCELLED = 0;
 const DVSTATE_NEW = 1;
@@ -192,6 +191,16 @@ class DeferredValue extends NexContainer {
 			this.doAlertAnimation();
 		}
 		this.notifyAllListeners();
+		/*
+		Finished for good, so if this is sitting in a document the answer takes
+		its place there. Only on finish: a settled one is still live and may
+		produce another value, and there would be nothing left to produce it
+		with once the wrapper is gone. Listeners first, so anything waiting on
+		it hears before the document changes underneath.
+		*/
+		if (!justSettling) {
+			eventQueueDispatcher.enqueueUnwrapFinishedDeferred(this);
+		}
 	}
 
 	finishWithRepeat(value) {
@@ -268,16 +277,15 @@ class DeferredValue extends NexContainer {
 			let result;
 			if (this.numChildren() > 0) {
 				/*
-				What a finished deferred value holds is the answer, so hand back
-				the answer rather than the wrapper -- and evaluate it on the way
-				out, the way an org evaluates what is in it. This used to return
-				the child untouched unless it happened to be another finished
-				deferred value; evaluating covers that case and every other one
-				besides. Safely, because embedding an error is right here for
-				the same reason it is right in an org: this is not a function
-				call, and there is no caller to throw to.
+				Unwrapping, not evaluating: what a finished deferred value holds
+				is already the answer, so it is handed back exactly as it is.
+				This is car of the deferred value, not eval of it.
+
+				It did evaluate for a while, which made unwrapping run whatever
+				it unwrapped -- a deferred value that finished holding a command
+				would run that command on its way out.
 				*/
-				result = evaluateNexSafely(this.getChildAt(0), env);
+				result = this.getChildAt(0);
 			} else {
 				result = new Nil();
 			}
@@ -286,7 +294,8 @@ class DeferredValue extends NexContainer {
 			nobody tags the waiting itself -- so they have to come along or they
 			are lost the moment the wrapper goes away. addTag rather than
 			copyTagsTo so that evaluating the same deferred value twice does not
-			stack up duplicates.
+			stack up duplicates, which matters more now that result is the child
+			itself rather than a fresh copy of it.
 			*/
 			for (let i = 0; i < this.tags.length; i++) {
 				result.addTag(this.tags[i].copy());
