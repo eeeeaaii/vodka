@@ -57,6 +57,7 @@ import {
 } from "../wavetablefunctions.js";
 import { fft, nextPowerOfTwo, forEachSpectrum, hannWindow } from "../fft.js";
 import {
+  cutIntoGrains,
   foldInto,
   cutoffToHz,
   resonanceToQ,
@@ -2798,6 +2799,56 @@ function createWavetableBuiltins() {
       return r;
     },
     "The frequency spectrum of wt|, as an org of two waves tagged magnitude and phase, reachable with dots as in @spectrum.magnitude. One value per bin; the transform runs at wt| zero filled to the next power of two. Tag the command <hann> to window first."
+  );
+
+  /*
+  Granular synthesis works on grains rather than on samples, and this is the
+  cutting-up half of it: hand it a wave and get back the grains, as waves, to do
+  what you like with. Reverse them, shuffle them, drop every other one, stretch
+  the gaps, play them back in a different order -- none of which this has an
+  opinion about.
+
+  An org rather than a single wave, because grains are a collection and the
+  point is to treat them individually. seq puts them back together.
+  */
+  Builtin.createBuiltin(
+    "grains-of",
+    ["wt_", "size#%?", "hop#%?"],
+    function $grainsOf(env, executionEnvironment, commandTags) {
+      let wt = env.lb("wt");
+      let size = env.lb("size");
+      let hop = env.lb("hop");
+
+      // 50 milliseconds is around where a grain stops being heard as a click
+      // and starts being heard as a sound with a pitch
+      let sizeSamples = size == UNBOUND
+          ? Math.round(0.05 * getSampleRate())
+          : convertTimeToSamples(size);
+      // half a grain, so each one is covered twice and a windowed set sums
+      // back to roughly what went in
+      let hopSamples = hop == UNBOUND
+          ? Math.max(1, Math.round(sizeSamples / 2))
+          : convertTimeToSamples(hop);
+
+      if (sizeSamples < 1) {
+        return constructFatalError("grains-of: a grain must be at least one sample. Sorry!");
+      }
+      if (hopSamples < 1) {
+        return constructFatalError("grains-of: hop must be at least one sample. Sorry!");
+      }
+      if (sizeSamples > wt.getDuration()) {
+        return constructFatalError("grains-of: the grain is longer than the wave. Sorry!");
+      }
+
+      let grains = cutIntoGrains(wt, sizeSamples, hopSamples,
+          hasCommandTag(commandTags, "hann"));
+      let r = constructOrg();
+      for (let i = 0; i < grains.length; i++) {
+        r.appendChild(grains[i]);
+      }
+      return r;
+    },
+    "Cuts wt| into grains and returns them as an org of waves. |size is how long each grain is, default 50ms, and |hop how far along the next one starts, default half of |size, so smaller overlaps and larger leaves gaps. Both take a timebase tag. Tag the command <hann> to fade each grain in and out."
   );
 
   /*

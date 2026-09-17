@@ -509,7 +509,46 @@ function chargePasses(g, delaySamples, dur) {
   return Math.min(1 + Math.ceil(Math.log(0.001) / Math.log(perPass)), 256);
 }
 
-export { foldInto,
+/*
+Cutting a wave into grains: short overlapping pieces that granular synthesis
+treats as the unit of sound instead of the sample.
+
+|size is how long each grain is and |hop is how far along the next one starts,
+so hop smaller than size overlaps them and hop larger than size leaves gaps.
+Both are in samples here; the builtin does the timebase conversion.
+
+Grains are cut while a whole one still fits, so the last few samples of a wave
+may not appear in any grain. Cutting a short final grain instead would give
+something that sounds different from every other grain in the collection, which
+is worse than losing a few milliseconds off the end.
+
+A window is worth applying and is the caller's decision. Without one each grain
+starts and stops at whatever value the wave happened to be at, and a hard edge
+is a click; with one every grain fades in and out and they sum back into
+something smooth.
+*/
+function cutIntoGrains(wt, sizeSamples, hopSamples, windowed) {
+	let dur = wt.getDuration();
+	let grains = [];
+	if (sizeSamples < 1 || hopSamples < 1) {
+		return grains;
+	}
+	let window = windowed ? hannWindow(sizeSamples) : null;
+	for (let start = 0; start + sizeSamples <= dur; start += hopSamples) {
+		let g = constructWavetable(sizeSamples);
+		let data = g.getData();
+		for (let i = 0; i < sizeSamples; i++) {
+			let v = wt.valueAtSample(start + i);
+			data[i] = window ? v * window[i] : v;
+		}
+		g.init();
+		grains.push(g);
+	}
+	return grains;
+}
+
+export { cutIntoGrains,
+		 foldInto,
 		 cutoffToHz,
 		 resonanceToQ,
 		 biquadInto,
