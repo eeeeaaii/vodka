@@ -48,6 +48,7 @@ import { createMidiBuiltins } from './builtins/midibuiltins.js'
 import { loadAndRun } from './servercommunication.js'
 import { newSessionId } from './sessionmanager.js'
 import { loadDeploymentConfig } from './deployment.js'
+import { installMouseDefaults } from './mousedefaults.js'
 import { RenderNode } from './rendernode.js'
 import { Root } from './nex/root.js'
 import { Command } from './nex/command.js'
@@ -318,6 +319,7 @@ async function setup() {
 	await loadDeploymentConfig();
 	setAppFlags();
 	suppressAnimationsIfRequested();
+	installMouseDefaults();
 	installTestHooks();
 	// do session id before doing help
 	setOrCreateSessionId();

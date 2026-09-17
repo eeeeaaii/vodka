@@ -31,6 +31,28 @@ body, html {
 #codepane {
 	height: 100%;
 	width: 100%;
+
+	/*
+	No sweeping a highlight across a document. A nex is not a run of text you
+	can pick a piece out of -- selecting is what the pip does, copying is a
+	key -- so the browser's idea of a selection is only ever in the way. See
+	mousedefaults.js, which stops the rest of it.
+
+	Scoped to the pane, so the help panel, the dialogs and the api reference
+	keep ordinary selectable text.
+	*/
+	-webkit-user-select: none;
+	user-select: none;
+
+	/* a two finger swipe otherwise goes Back, and Back is the whole session */
+	overscroll-behavior-x: none;
+}
+
+/* a picture inside a document is part of the document, not something to peel
+   off and drop somewhere else */
+#codepane img {
+	-webkit-user-drag: none;
+	user-drag: none;
 }
 
 #vodkaroot {
