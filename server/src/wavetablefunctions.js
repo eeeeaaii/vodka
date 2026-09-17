@@ -547,7 +547,69 @@ function cutIntoGrains(wt, sizeSamples, hopSamples, windowed) {
 	return grains;
 }
 
-export { cutIntoGrains,
+/*
+Vowels, as the resonances that make one. A voice is a buzz from the vocal folds
+shaped by the tube above them, and the tube's resonances -- formants -- are what
+the ear reads as a vowel rather than as a pitch. Three of them is enough to be
+recognisable; the first two carry nearly all of it.
+
+Each row is one formant: centre frequency in hertz, bandwidth in hertz, and how
+loud it is relative to the first in decibels. These are the usual measured
+values for a male voice, which is where every table of these comes from.
+
+Bandwidth rather than Q because that is how formants are measured and published,
+and because it is the honest unit: a formant is a bump of a certain width in
+hertz, and its Q depends on where it sits.
+*/
+const VOWEL_FORMANTS = {
+	a: [[730, 80, 0], [1090, 90, -6], [2440, 120, -13]],
+	e: [[530, 70, 0], [1840, 100, -12], [2480, 120, -22]],
+	i: [[270, 60, 0], [2290, 90, -24], [3010, 100, -32]],
+	o: [[570, 70, 0], [840, 80, -8], [2410, 100, -15]],
+	u: [[300, 50, 0], [870, 70, -14], [2240, 110, -20]],
+};
+
+function vowelNames() {
+	return Object.keys(VOWEL_FORMANTS);
+}
+
+/*
+Runs the wave through one bandpass per formant and adds the results up. In
+parallel rather than in series: formants are separate resonances of the same
+tube, all of them present at once, and chaining them would leave only what they
+all pass, which is nothing.
+
+|strength scales how far each formant's bandwidth is squeezed. At 1 they are the
+published widths; higher is narrower and more vocal, to the point of sounding
+like it is being sung through a tube.
+*/
+function applyFormants(wt, vowel, strength, sampleRate) {
+	let rows = VOWEL_FORMANTS[vowel];
+	let dur = wt.getDuration();
+	let r = constructWavetable(dur);
+	let data = r.getData();
+	let c = [0, 0, 0, 0, 0];
+	for (let f = 0; f < rows.length; f++) {
+		let hz = rows[f][0];
+		let bw = rows[f][1] / strength;
+		let amp = Math.pow(10, rows[f][2] / 20);
+		biquadInto(c, "band", hz, hz / bw, 0, sampleRate);
+		let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+		for (let i = 0; i < dur; i++) {
+			let x = wt.valueAtSample(i);
+			let y = c[0] * x + c[1] * x1 + c[2] * x2 - c[3] * y1 - c[4] * y2;
+			x2 = x1; x1 = x;
+			y2 = y1; y1 = y;
+			data[i] += y * amp;
+		}
+	}
+	r.init();
+	return r;
+}
+
+export { applyFormants,
+		 vowelNames,
+		 cutIntoGrains,
 		 foldInto,
 		 cutoffToHz,
 		 resonanceToQ,
