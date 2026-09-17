@@ -38,6 +38,27 @@ function setClipboard(nex) {
 }
 var CLIPBOARD_INSERTION_MODE = null;
 
+/*
+The system clipboard is the only thing two browser windows share, so it is the
+only way a nex can travel between them. What goes on it is the same v2 text a
+document is saved as, prefix and all, which is what makes it parseable coming
+back -- and also what makes pasting into a terminal show you something real.
+
+Remembering exactly what this window last put there is what tells the two
+clipboards apart later. If the system clipboard no longer holds that string,
+something else wrote it after we did, and that something is newer than
+whatever this window is still holding in memory.
+
+Audio does not travel. Samples serialize as a reference into this browser's own
+storage, so a wavetable arrives in the other window without its audio; that is
+a known limit rather than a thing to fix here.
+*/
+var LAST_TEXT_PUT_ON_SYSTEM_CLIPBOARD = null;
+
+function nexToClipboardText(nex) {
+	return 'v2:' + nex.toString('v2', new SerializationContext(SERIALIZE_BROWSER_STORAGE));
+}
+
 import * as Utils from './utils.js'
 import { systemState } from './systemstate.js'
 import { heap } from './heap.js'
@@ -45,6 +66,8 @@ import { RenderNode } from './rendernode.js'
 import { Nex } from './nex/nex.js' 
 import { Root } from './nex/root.js' 
 import { ContextType } from './contexttype.js'
+import { parse } from './nexparser2.js'
+import { SerializationContext, SERIALIZE_BROWSER_STORAGE } from './serializationcontext.js'
 
 import { constructFatalError } from './nex/eerror.js'
 
@@ -1847,9 +1870,38 @@ class Manipulator {
 	copyTextToSystemClipboard(txt) {
 		navigator.permissions.query({name: "clipboard-write"}).then(result => {
 			if (result.state == "granted" || result.state == "prompt") {
-				navigator.clipboard.writeText(txt);
+				navigator.clipboard.writeText(txt).then(function() {
+					// only once it is actually there -- a write that was
+					// refused must not make us think we own the clipboard
+					LAST_TEXT_PUT_ON_SYSTEM_CLIPBOARD = txt;
+				}, function() {});
 			}
 		});		
+	}
+
+	/*
+	Reading the system clipboard is asynchronous and may ask the user for
+	permission, and pasting has to stay synchronous so that it can be undone as
+	one step. So the read happens first, off the keystroke, and the answer is
+	handed to the paste as an argument. Anything that goes wrong -- no
+	permission, no clipboard api, a browser that refuses -- calls back with
+	null, and paste falls back to what this window has in memory, which is what
+	it has always done.
+	*/
+	readSystemClipboard(callback) {
+		if (!navigator.clipboard || !navigator.clipboard.readText) {
+			callback(null);
+			return;
+		}
+		try {
+			navigator.clipboard.readText().then(function(text) {
+				callback(text);
+			}, function() {
+				callback(null);
+			});
+		} catch (e) {
+			callback(null);
+		}
 	}
 
 	// used in keydispatcher.js
@@ -1857,7 +1909,7 @@ class Manipulator {
 		setClipboard(systemState.getGlobalSelectedNode().getNex());
 		CLIPBOARD_INSERTION_MODE = systemState.getGlobalSelectedNode().getInsertionMode();
 		if (!isRecordingTest()) {
-			this.copyTextToSystemClipboard(CLIPBOARD.prettyPrint());
+			this.copyTextToSystemClipboard(nexToClipboardText(CLIPBOARD));
 		}
 		let x = systemState.getGlobalSelectedNode();
 		this.selectPreviousSibling() || this.selectParent();		
@@ -1921,7 +1973,7 @@ class Manipulator {
 			setClipboard(systemState.getGlobalSelectedNode().getNex().makeCopy());
 			CLIPBOARD_INSERTION_MODE = systemState.getGlobalSelectedNode().getInsertionMode();
 			if (!isRecordingTest()) {
-				this.copyTextToSystemClipboard(CLIPBOARD.prettyPrint());
+				this.copyTextToSystemClipboard(nexToClipboardText(CLIPBOARD));
 			}
 		} catch (e) {
 			if (Utils.isFatalError(e)) {
@@ -1941,25 +1993,55 @@ class Manipulator {
 
 	// used in keydispatcher.js
 	// returns the node it pasted, so it can be taken out again
-	doPaste() {
+	doPaste(systemClipboardText) {
 		let s = systemState.getGlobalSelectedNode();
 		try {
-			let newNex = CLIPBOARD.makeCopy();
+			/*
+			Whatever is on the system clipboard wins if this window did not put
+			it there, because the only way it got there is that something wrote
+			it after we did. Text that is not v2, or that does not parse, is
+			somebody else's clipboard contents and is left alone.
+			*/
+			let newNex = null;
+			let insertionMode = CLIPBOARD_INSERTION_MODE;
+			if (systemClipboardText
+					&& systemClipboardText != LAST_TEXT_PUT_ON_SYSTEM_CLIPBOARD
+					&& systemClipboardText.indexOf('v2:') == 0) {
+				try {
+					newNex = parse(systemClipboardText);
+					/*
+					It came from another window, so this window's record of
+					where the pip was when the copy happened says nothing about
+					it. Carry on with the mode the paste is landing in, so that
+					pasting twice in a row chains the same way -- leaving it
+					unset made the next paste match no case at all and silently
+					do nothing.
+					*/
+					insertionMode = s.getInsertionMode();
+				} catch (e) {
+					newNex = null;
+				}
+			}
+			if (!newNex) {
+				// nothing copied here and nothing usable out there
+				if (!CLIPBOARD) return null;
+				newNex = CLIPBOARD.makeCopy();
+			}
 			newNex.setMutableRecursive(true);
 			switch(s.getInsertionMode()) {
 				case INSERT_AFTER:
 					this.insertAfterSelectedAndSelect(newNex);
-					this.selected().setInsertionMode(CLIPBOARD_INSERTION_MODE);
 					break;
 				case INSERT_BEFORE:
 				case INSERT_AROUND:
 					this.insertBeforeSelectedAndSelect(newNex);
-					this.selected().setInsertionMode(CLIPBOARD_INSERTION_MODE);
 					break;
 				case INSERT_INSIDE:
 					this.insertAsFirstChild(newNex);
-					this.selected().setInsertionMode(CLIPBOARD_INSERTION_MODE);
 					break;
+			}
+			if (insertionMode !== null) {
+				this.selected().setInsertionMode(insertionMode);
 			}
 			return this.selected();
 		} catch (e) {

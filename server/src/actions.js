@@ -461,7 +461,9 @@ class PasteAction extends Action {
 	doAction() {
 		this.selectedBefore = systemState.getGlobalSelectedNode();
 		this.insertionModeBefore = this.selectedBefore.getInsertionMode();
-		this.pastedNode = manipulator.doPaste();
+		// read off the keystroke before this action was made, because reading
+		// the system clipboard is asynchronous and this is not
+		this.pastedNode = manipulator.doPaste(this.systemClipboardText);
 	}
 
 	undoAction() {
