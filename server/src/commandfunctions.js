@@ -204,8 +204,25 @@ function executeRunInfo(runInfo, executionEnv) {
 	return result;
 }
 
+/*
+The pop is in a finally because a command can leave by throwing -- there are
+around fifty throw sites reachable from here -- and a level that was pushed and
+never popped is never given back. The count only climbed, across the whole life
+of the page, so every error a user hit brought the stack limit permanently
+closer.
+
+(comment by Claude)
+*/
 function runCommand(runInfo, executionEnv) {
 	systemState.pushStackLevel();
+	try {
+		return runCommandInner(runInfo, executionEnv);
+	} finally {
+		systemState.popStackLevel();
+	}
+}
+
+function runCommandInner(runInfo, executionEnv) {
 	systemState.stackCheck(); // not for step eval, this is to prevent call stack overflow.
 
 	if (CONSOLE_DEBUG) {
@@ -238,7 +255,6 @@ function runCommand(runInfo, executionEnv) {
 	if (CONSOLE_DEBUG) {
 		console.log(`${INDENT()}command returned: ${r.debugString()}`);
 	}
-	systemState.popStackLevel();
 	return r;
 }
 

@@ -66,6 +66,35 @@ function evaluateNexSafely(nex, executionEnvironment, skipActivation /* TODO: re
 	return result;
 }
 
+/*
+The stack limit in stackCheck counts commands, and a command does not cost a
+fixed number of javascript frames: a plain recursion survives past a stackLevel
+of 1300, while one that nests its calls inside argument evaluation runs out of
+javascript stack before 1000. So the count is a useful early warning and cannot
+be the whole guard.
+
+This is the guard that does not care about shape. A javascript stack overflow is
+recoverable -- it arrives as a RangeError like any other throw -- so the top of
+every evaluation catches it and hands back an error the document can show,
+instead of letting it escape to the console where it says nothing about vodka.
+
+Caught here rather than in evaluateNexSafely because evaluateNexSafely is the
+thing that recursed: catching it there means catching it with no stack left to
+build an error with. By the time it reaches this frame everything has unwound.
+
+(comment by Claude)
+*/
+function evaluateTopLevelSafely(nex, executionEnvironment) {
+	try {
+		return evaluateNexSafely(nex, executionEnvironment);
+	} catch (e) {
+		if (e instanceof RangeError) {
+			return constructFatalError('too many nested calls, this is usually a recursive function with no base case. Sorry!');
+		}
+		throw e;
+	}
+}
+
 /**
  * This function is a convenience method for the process of creating a new EError
  * and inserting a previously existing EError as its first child. Used for
@@ -89,6 +118,7 @@ function wrapError(prefix, message, inner) {
 
 export {
 	evaluateNexSafely,
+	evaluateTopLevelSafely,
 	wrapError
 }
 

@@ -26,7 +26,7 @@ import { systemState } from './systemstate.js'
 import { experiments } from './globalappflags.js'
 import { manipulator } from './manipulator.js'
 import { recordPerformedAction, UnwrapDeferredAction } from './actions.js'
-import { evaluateNexSafely } from './evaluator.js'
+import { evaluateNexSafely, evaluateTopLevelSafely } from './evaluator.js'
 
 
 // TODO(#264): this file used to call n.rootLevelPostEvaluationStep() in
@@ -43,8 +43,17 @@ import { evaluateNexSafely } from './evaluator.js'
  * @param {RenderNode} s - the RenderNode to evaluate and replace (probably the selected node)
  */
 function evaluateAndReplace(s) {
+	/*
+	Every top level evaluation begins with nothing nested, so the count starts
+	there. A backstop rather than the mechanism: runCommand now pops in a finally,
+	so the count should already be zero. It was not, for years, because nothing
+	anywhere called this.
 
-	let n = evaluateNexSafely(s.getNex(), BINDINGS);
+	(comment by Claude)
+	*/
+	systemState.resetStack();
+
+	let n = evaluateTopLevelSafely(s.getNex(), BINDINGS);
 	if (Utils.isFatalError(n)) {
 		Utils.beep();
 		if (!experiments.ERRORS_REPLACE) {
@@ -72,7 +81,8 @@ function evaluateAndReplace(s) {
  * @param {RenderNode} s = the RenderNode to evaluate
  */
 function evaluateAndKeep(s) {
-	let n = evaluateNexSafely(s.getNex(), BINDINGS);
+	systemState.resetStack();
+	let n = evaluateTopLevelSafely(s.getNex(), BINDINGS);
 	if (Utils.isFatalError(n)) {
 		Utils.beep();
 		manipulator.insertBeforeSelectedAndSelect(new RenderNode(n));
@@ -107,7 +117,7 @@ function unwrapFinishedDeferredInDocument(deferred) {
 	if (!nodes || nodes.length == 0) return;
 	// once, however many places it is rendered in -- what it holds is one nex
 	// (comment by Claude)
-	let result = evaluateNexSafely(deferred, BINDINGS);
+	let result = evaluateTopLevelSafely(deferred, BINDINGS);
 	if (!result || result == deferred) return;
 	// a copy of the list: replacing a node takes it out of the one we are walking
 	// (comment by Claude)
@@ -160,7 +170,8 @@ function markPipDirty() {
 }
 
 function evaluateAndCopy(s) {
-	let n = evaluateNexSafely(s.getNex(), BINDINGS);
+	systemState.resetStack();
+	let n = evaluateTopLevelSafely(s.getNex(), BINDINGS);
 	if (n) {
 		manipulator.replaceSelectedWith(new RenderNode(n));
 	}
@@ -168,7 +179,8 @@ function evaluateAndCopy(s) {
 
 // used by the repl
 function evaluateAndReturn(nex) {
-	let n = evaluateNexSafely(nex, BINDINGS);
+	systemState.resetStack();
+	let n = evaluateTopLevelSafely(nex, BINDINGS);
 	return n;
 }
 

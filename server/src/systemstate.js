@@ -20,6 +20,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { RENDER_FLAG_NORMAL } from './globalconstants.js'
 
+const MAX_STACK_DEPTH = 10000;
+
 /*
 Not a character anything else uses: a session id is an identifier or a uuid, so
 this cannot collide with one, and an old key can never be mistaken for a paged
@@ -190,9 +192,31 @@ class SystemState {
 		return this.defaultFileName;
 	}
 
+	/*
+	How many nested commands a vodka program is allowed before it is stopped.
+
+	A far outer bound, not the real guard. Counting commands cannot be made to
+	predict the javascript stack, because a command does not cost a fixed number
+	of js frames: measured in chrome, a plain recursion is still running at a
+	stackLevel of 1300, while one that nests its calls inside argument
+	evaluation is already out of js stack below 1000. Any limit low enough to
+	catch the second rejects the first, which works today.
+
+	So the guard that actually catches a runaway recursion is
+	evaluateTopLevelSafely, which turns the js stack overflow itself into an
+	error the document can show. This is only here to stop something absurd
+	before it gets that far.
+
+	The message carries the prefix evaluateNexSafely looks for, because a plain
+	Error is rethrown -- only a vodka EError or this prefix comes back as
+	something the document can show, which is why this check produced nothing
+	visible even on the rare occasion it might have fired.
+
+	(comment by Claude)
+	*/
 	stackCheck() {
-		if (this.stackLevel > 10000) {
-			throw new Error('stack overflow');
+		if (this.stackLevel > MAX_STACK_DEPTH) {
+			throw new Error('CONVERT TO EERROR:too many nested calls, this is usually a recursive function with no base case. Sorry!');
 		}
 	}
 }
