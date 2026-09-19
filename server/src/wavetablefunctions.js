@@ -527,14 +527,6 @@ function decayTailSamples(g, delaySamples) {
   return Math.min(repeats * delaySamples, Math.round(10 * getSampleRate()));
 }
 
-function chargePasses(g, delaySamples, dur) {
-  let a = Math.abs(g);
-  if (a < 0.0001 || delaySamples < 1) return 1;
-  let perPass = Math.pow(a, dur / delaySamples);
-  if (perPass < 0.001) return 2;
-  return Math.min(1 + Math.ceil(Math.log(0.001) / Math.log(perPass)), 256);
-}
-
 /*
 Cutting a wave into grains: short overlapping pieces that granular synthesis
 treats as the unit of sound instead of the sample.
@@ -643,7 +635,6 @@ export { applyFormants,
 		 bestMatchOffset,
 		 stretchInto,
 		 decayTailSamples,
-		 chargePasses,
 		 getSampleRate,
 		 convertTimeToSamples,
 		 convertSamplesToTimebase,

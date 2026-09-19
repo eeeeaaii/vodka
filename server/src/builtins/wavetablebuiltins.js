@@ -69,7 +69,6 @@ import {
   bestMatchOffset,
   stretchInto,
   decayTailSamples,
-  chargePasses,
 } from "../wavetablefunctions.js";
 import { loopPlay, queueBreak, atNextCycleStart, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying, getAudioChannelCount } from "../webaudio.js";
 import { constructClip } from "../nex/clip.js";
@@ -1885,16 +1884,53 @@ function createWavetableBuiltins() {
 
 
   /*
-  Wrapped, the answer wanted is what you would hear if the wave had been
-  looping forever, so the line is run over the wave a few times to charge it
-  and only the last pass is kept. Each pass leaves the line at g^(dur/delay) of
-  where it was, which is what says how many passes are enough.
+  Feedback is allowed to be a wave, the same way the delay time is. A wave in
+  the range a feedback value already lives in -- roughly minus one to one -- is
+  what any oscillator or envelope already produces, so unlike the delay time
+  there is nothing to scale first.
+
+  A moving feedback stops the allpass being an allpass: flat magnitude is a
+  property of a system that is not changing, and this one is. That is the point
+  rather than a defect -- it is how the sweep in a phaser gets its depth -- but
+  it does mean the guarantee only holds while amount is a number.
 
   (comment by Claude)
   */
+  const MAX_FEEDBACK = 0.99;
 
+  function clampGain(v) {
+    if (v > MAX_FEEDBACK) return MAX_FEEDBACK;
+    if (v < -MAX_FEEDBACK) return -MAX_FEEDBACK;
+    return v;
+  }
 
-  function runDelayLine(name, env, commandTags, isAllpass) {
+  function gainAt(nex) {
+    if (nex == UNBOUND) {
+      return function (i) { return 0.5; };
+    }
+    if (nex.getTypeName() == "-wavetable-") {
+      return function (i) { return clampGain(nex.valueAtSample(i)); };
+    }
+    let g = clampGain(nex.getTypedValue());
+    return function (i) { return g; };
+  }
+
+  // the tail is however long the loudest the feedback ever gets takes to decay
+  // (comment by Claude)
+  function largestGain(nex) {
+    if (nex == UNBOUND) return 0.5;
+    if (nex.getTypeName() != "-wavetable-") {
+      return Math.abs(clampGain(nex.getTypedValue()));
+    }
+    let most = 0;
+    for (let i = 0; i < nex.getDuration(); i++) {
+      let v = Math.abs(clampGain(nex.valueAtSample(i)));
+      if (v > most) most = v;
+    }
+    return most;
+  }
+
+  function runDelayLine(name, env, isAllpass) {
     let wt = env.lb("wt");
     let timenex = env.lb("time");
     let gnex = env.lb(isAllpass ? "amount" : "feedback");
@@ -1903,64 +1939,47 @@ function createWavetableBuiltins() {
     if (!(maxDelay >= 1)) {
       return constructFatalError(name + ": delay time must be at least 1 sample. Sorry!");
     }
-    let g = gnex == UNBOUND ? 0.5 : gnex.getTypedValue();
-    if (g > 0.99) g = 0.99;
-    if (g < -0.99) g = -0.99;
     let delayAtSample = lengthAt(timenex);
+    let gainAtSample = gainAt(gnex);
 
     let dur = wt.getDuration();
-    let wrap = hasCommandTag(commandTags, "wrap");
-    let outDur = wrap ? dur : dur + decayTailSamples(g, maxDelay);
+    let outDur = dur + decayTailSamples(largestGain(gnex), maxDelay);
     if (outDur < 1) outDur = dur;
 
     let r = constructWavetable(outDur);
     let data = r.getData();
     let line = new Float64Array(maxDelay + 2);
     let write = 0;
-    let passes = wrap ? chargePasses(g, maxDelay, dur) : 1;
-    // the pass count is an upper bound; a line that has settled is done
-    // (comment by Claude)
-    let previous = passes > 1 ? new Float64Array(outDur) : null;
 
-    for (let p = 0; p < passes; p++) {
-      for (let i = 0; i < outDur; i++) {
-        let d = delayAtSample(i % dur);
-        if (d < 1) d = 1;
-        if (d > maxDelay) d = maxDelay;
-        // read between two samples, so a delay that moves glides rather than
-        // stepping from one sample to the next
-        // (comment by Claude)
-        let at = write - d;
-        while (at < 0) at += line.length;
-        let i0 = Math.floor(at);
-        let frac = at - i0;
-        let a = line[i0 % line.length];
-        let b = line[(i0 + 1) % line.length];
-        let delayed = a + (b - a) * frac;
+    for (let i = 0; i < outDur; i++) {
+      let at = i % dur;
+      let d = delayAtSample(at);
+      if (d < 1) d = 1;
+      if (d > maxDelay) d = maxDelay;
+      let g = gainAtSample(at);
+      // read between two samples, so a delay that moves glides rather than
+      // stepping from one sample to the next
+      // (comment by Claude)
+      let readAt = write - d;
+      while (readAt < 0) readAt += line.length;
+      let i0 = Math.floor(readAt);
+      let frac = readAt - i0;
+      let lo = line[i0 % line.length];
+      let hi = line[(i0 + 1) % line.length];
+      let delayed = lo + (hi - lo) * frac;
 
-        let x = i < dur ? wt.valueAtSample(i) : 0;
-        let y;
-        if (isAllpass) {
-          let v = x + g * delayed;
-          y = delayed - g * v;
-          line[write] = v;
-        } else {
-          y = x + g * delayed;
-          line[write] = y;
-        }
-        write = (write + 1) % line.length;
-        data[i] = y;
+      let x = i < dur ? wt.valueAtSample(i) : 0;
+      let y;
+      if (isAllpass) {
+        let v = x + g * delayed;
+        y = delayed - g * v;
+        line[write] = v;
+      } else {
+        y = x + g * delayed;
+        line[write] = y;
       }
-      if (!previous) break;
-      let worst = 0;
-      if (p > 0) {
-        for (let i = 0; i < outDur; i++) {
-          let diff = Math.abs(data[i] - previous[i]);
-          if (diff > worst) worst = diff;
-        }
-        if (worst < 0.00001) break;
-      }
-      previous.set(data);
+      write = (write + 1) % line.length;
+      data[i] = y;
     }
     r.init();
     return r;
@@ -1968,20 +1987,20 @@ function createWavetableBuiltins() {
 
   Builtin.createBuiltin(
     "comb",
-    ["wt_", "time#%_", "feedback#%?"],
-    function $comb(env, executionEnvironment, commandTags) {
-      return runDelayLine("comb", env, commandTags, false);
+    ["wt_", "time#%_", "feedback#%_?"],
+    function $comb(env, executionEnvironment) {
+      return runDelayLine("comb", env, false);
     },
-    "Apply comb filter with |time and |feedback."
+    "Feeds wt| back into itself |time later, |feedback of it each pass, default 0.5 and negative allowed. Both can be waves; |time is in samples when it is one, and carries a timebase tag when it is a number."
   );
 
   Builtin.createBuiltin(
     "allpass",
-    ["wt_", "time#%_", "amount#%?"],
-    function $allpass(env, executionEnvironment, commandTags) {
-      return runDelayLine("allpass", env, commandTags, true);
+    ["wt_", "time#%_", "amount#%_?"],
+    function $allpass(env, executionEnvironment) {
+      return runDelayLine("allpass", env, true);
     },
-    "Apply allpass filter with |time and |amount."
+    "Delays each frequency in wt| by a different amount without changing how loud any of them are. |amount, default 0.5, sets how far apart; both it and |time can be waves."
   );
 
   /*
