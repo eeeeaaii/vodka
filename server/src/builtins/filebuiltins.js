@@ -95,7 +95,7 @@ function createFileBuiltins() {
 			deferredValue.activate();
 			return deferredValue;
 		},
-		'Lists all user files available in current session.'
+		'The files in this session.'
 	);	
 
 	/*
@@ -279,14 +279,7 @@ function createFileBuiltins() {
 			deferredValue.activate();
 			return deferredValue;
 		},
-		'Lists the audio libraries: one org per folder, holding the audio files in '
-		+ 'it. With no tag you get every library, each as its own org tagged with '
-		+ 'its name; tag the command sample or wave to get just that one, and '
-		+ 'additionally with a folder name to get just that folder -- a folder tag '
-		+ 'needs its library tag alongside it. A name from this listing is what '
-		+ 'load-audio takes. Names have no .wav on the end, and every library, '
-		+ 'folder and file is tagged with its own name, so a listing can be walked '
-		+ 'with dots: bind it to @audio and one sample is @audio.sample.SB-003.Drop_Synth.'
+		'The audio libraries, one org per folder. Tag the command sample or wave for just that library, and a folder name alongside it for just that folder. A name from this listing is what load-audio takes.'
 	);
 
 	Builtin.createBuiltin(
@@ -309,7 +302,7 @@ function createFileBuiltins() {
 			def.activate();
 			return def;
 		},
-		'Lists the standard library function files available to all users.'
+		'The standard library files.'
 	);	
 
 	// - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  - -  	
@@ -338,7 +331,7 @@ function createFileBuiltins() {
 			def.activate();
 			return def;
 		},
-		'loads the file |name as a nex/object (parsing it)'
+		'Loads and parses the file |name.'
 	);
 	
 	Builtin.createBuiltin(
@@ -365,7 +358,7 @@ function createFileBuiltins() {
 			def.activate();
 			return def;
 		},
-		'Loads raw bytes from the file |name into a string, and returns it.'
+		'The raw bytes of the file |name, as a string.'
 	);
 
 
@@ -398,7 +391,7 @@ function createFileBuiltins() {
 			return def;			
 
 		},
-		'saves |val in the file |name (|val is evaluated).'
+		'Evaluates |val and saves the result in the file |name.'
 	);
 
 	Builtin.createBuiltin(
@@ -429,7 +422,7 @@ function createFileBuiltins() {
 			def.activate();
 			return def;			
 		},
-		'Saves |val in the file |name (without evaluating |val).'
+		'Saves |val in the file |name without evaluating it.'
 	);
 
 
@@ -460,7 +453,7 @@ function createFileBuiltins() {
 			def.activate();
 			return def;
 		},
-		'Saves the raw bytes of string |val in the file |name.'
+		'Saves the bytes of |val in the file |name.'
 	);
 
 
@@ -488,7 +481,7 @@ function createFileBuiltins() {
 			def.activate();
 			return def;
 		},
-		'Imports the package in file |name, loading the file and binding the package contents into memory.'
+		'Loads the file |name and binds what the package in it defines.'
 	);
 
 
@@ -587,7 +580,7 @@ function createFileBuiltins() {
 			r.activate();
 			return r;
 		},
-		'Defines a package. All args in |block are evaluated, and any bindings are bound with |name as their package scope identifier.'
+		'Defines a package. |block is evaluated, and anything it binds is scoped under |name.'
 	);
 
 	Builtin.createBuiltin(
@@ -600,7 +593,7 @@ function createFileBuiltins() {
 			nodes.forEach(node => setRenderMode(RENDER_MODE_NORM));
 			return nex;
 		},
-		'Sets the mode hint for nex so that it will render as normal by default.'
+		'Makes |nex draw as normal by default.'
 	);	
 
 	Builtin.createBuiltin(
@@ -613,7 +606,7 @@ function createFileBuiltins() {
 			nodes.forEach(node => setRenderMode(RENDER_MODE_EXPLO));
 			return nex;
 		},
-		'Sets the mode hint for nex so that it will render as exploded by default.'
+		'Makes |nex draw as exploded by default.'
 	);	
 
 }

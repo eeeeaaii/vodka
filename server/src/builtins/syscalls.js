@@ -48,7 +48,7 @@ function createSyscalls() {
 			let org = convertJSMapToOrg(settings);
 			return org;
 		},
-		"Gets an org containing all Vodka global settings."
+		"Every global setting, as an org."
 	);
 
 	Builtin.createBuiltin(
@@ -73,7 +73,7 @@ function createSyscalls() {
 			let org = convertJSMapToOrg(settings);
 			return org;
 		},
-		"Changes the value of a setting."
+		"Sets |name to |value."
 	);
 
 	Builtin.createBuiltin(
@@ -83,7 +83,7 @@ function createSyscalls() {
 			let s = getExperimentsAsString();
 			return constructEString(s);
 		},
-		"Gets a snippet of code that represents the active experiment flags that should be saved with new tests (for internal use)."
+		"The active experiment flags, as code to save with a new test. Internal."
 	);
 
 	Builtin.createBuiltin(
@@ -95,7 +95,7 @@ function createSyscalls() {
 			webFontManager.loadFont(name);
 			return constructNil();
 		},
-		'Loads a Google web font with the passed-in name (see fonts.google.com for options)'
+		'Loads the Google web font |name. See fonts.google.com.'
 	);
 
 
@@ -107,7 +107,7 @@ function createSyscalls() {
 			systemState.setMouseFunnelActive(false);
 			return constructNil();
 		},
-		'Disconnects the event funnel (used to disable IDE features).'
+		'Disconnects the event funnel, which turns off the editor.'
 	);
 
 
@@ -120,7 +120,7 @@ function createSyscalls() {
 			let t = window.performance.now();
 			return constructFloat(t);
 		},
-		'Get the date and time.'
+		'The current date and time.'
 	);
 
 	Builtin.createBuiltin(
@@ -131,7 +131,7 @@ function createSyscalls() {
 			n.renderOnlyThisNex();
 			return n;
 		},
-		'Force |nex to be rerendered (redrawn on the screen).'
+		'Redraws |nex now.'
 	);
 
 	Builtin.createBuiltin(
@@ -143,7 +143,7 @@ function createSyscalls() {
 			n.setCurrentStyle(s);
 			return n;
 		},
-		'Apply the css style |style to |nex, overwriting whatever styling it already has.'
+		'Gives |nex the css style |style, replacing any it had.'
 	);
 
 	Builtin.createBuiltin(
@@ -155,7 +155,7 @@ function createSyscalls() {
 			n.setPfont(pf);
 			return n;
 		},
-		'Applies a parametric font style called |pfont to |nex.'
+		'Gives |nex the parametric font |pfont.'
 	);
 
 	
@@ -169,7 +169,7 @@ function createSyscalls() {
 			let s = n.getCurrentStyle();
 			return constructEString(s);
 		},
-		'Return whatever css style overrides |nex currently has.'
+		'The css style overrides on |nex.'
 	);
 
 	Builtin.aliasBuiltin('get-style-from', 'get-css-style-from');
@@ -188,7 +188,7 @@ function createSyscalls() {
 			let h = rn.getDomNode().getBoundingClientRect().height;
 			return constructFloat(h);
 		},
-		'Returns the pixel height for the nex. If the nex is not visible on the screen this returns zero. If the nex appears in multiple places on the screen, and the sizes are different for some reason (e.g. one is in normal mode, the other is exploded) it will return the size of the first one.'
+		'How tall |nex is on screen, in pixels, or 0 if it is not drawn. Drawn in more than one place, it is the first one.'
 	);
 
 
@@ -206,7 +206,7 @@ function createSyscalls() {
 			let h = rn.getDomNode().getBoundingClientRect().width;
 			return constructFloat(h);
 		},
-		'Returns the pixel width for the nex. If the nex is not visible on the screen this returns zero. If the nex appears in multiple places on the screen, and the sizes are different for some reason (e.g. one is in normal mode, the other is exploded) it will return the size of the first one.'
+		'How wide |nex is on screen, in pixels, or 0 if it is not drawn. Drawn in more than one place, it is the first one.'
 	);
 
 	Builtin.createBuiltin(
@@ -217,7 +217,7 @@ function createSyscalls() {
 			console.log(nex.debugString());
 			return nex;
 		},
-		'Logs the |nex to the browser Javascript console.'
+		'Writes |nex to the javascript console.'
 
 	);
 
@@ -259,7 +259,7 @@ function createSyscalls() {
 				return constructEString('' + result);
 			}
 		},
-		'Runs arbitrary Javascript code |expr.'
+		'Runs the javascript in |expr.'
 	);
 }
 

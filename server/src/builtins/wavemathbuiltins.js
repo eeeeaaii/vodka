@@ -251,9 +251,9 @@ function createWaveMathBuiltins() {
 	}
 
 	variadic('+', 'w+', function(a, b) { return a + b; }, 0, false,
-		'Adds the arguments. Numbers give a number; bring a wave into it and you get a wave, added sample by sample, with shorter waves cycling. Tag the command nocycle to read a shorter wave as silence past its end instead.');
+		'Adds the arguments. A wave anywhere gives a wave, added sample by sample, shorter ones cycling to fill. Tag the command nocycle to read a short wave as silence past its end.');
 	variadic('*', 'w*', function(a, b) { return a * b; }, 1, false,
-		'Multiplies the arguments. Numbers give a number; bring a wave into it and you get a wave, multiplied sample by sample, with shorter waves looping. On waves this is how you change volume and how you apply an envelope. Tag the command nocycle to read a shorter wave as silence past its end instead.');
+		'Multiplies the arguments. A wave anywhere gives a wave, multiplied sample by sample, shorter ones cycling to fill. On waves this is volume, and this is how an envelope is applied. Tag the command nocycle to read a short wave as silence past its end.');
 
 	// one argument negates, the same as the number version
 	Builtin.createBuiltin(
@@ -267,7 +267,7 @@ function createWaveMathBuiltins() {
 			}
 			return applyOverSamples([ a, b ], function(v) { return v[0] - v[1]; }, false);
 		},
-		'Subtracts |sub from |min, or negates |min if |sub is left out. Numbers give a number; bring a wave into it and you get a wave, subtracted sample by sample, with shorter waves cycling. Tag the command nocycle to read a shorter wave as silence past its end instead.',
+		'Subtracts |sub from |min, or negates |min if |sub is left out. A wave anywhere gives a wave, subtracted sample by sample, shorter ones cycling to fill. Tag the command nocycle to read a short wave as silence past its end.',
 		true /* is infix */
 	);
 	registerAsBoth('-', 'w-');
@@ -280,7 +280,7 @@ function createWaveMathBuiltins() {
 	javascript divides.
 	*/
 	binary('/', 'w/', function(a, b) { return a / b; }, true,
-		'Divides |lhs by |rhs. Two whole numbers give a whole number, rounded down; a float anywhere gives a float. Bring a wave into it and you get a wave, divided sample by sample, with shorter waves cycling. Tag the command nocycle to read a shorter wave as silence past its end instead.',
+		'Divides |lhs by |rhs. Two whole numbers give a whole number, rounded down; a float anywhere gives a float. A wave anywhere gives a wave, shorter ones cycling to fill. Tag the command nocycle to read a short wave as silence past its end.',
 		function(nexes) {
 			let a = nexes[0];
 			let b = nexes[1];
