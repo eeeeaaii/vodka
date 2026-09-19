@@ -755,8 +755,23 @@ function createWavetableBuiltins() {
     return null;
   }
 
+  /*
+  A tagged wave names real frequencies, the same way a tagged number does. An
+  untagged one keeps the minus one to one mapping, because that is the useful
+  thing to hand a filter from an oscillator and it is what the untagged number
+  case already means.
+
+  (comment by Claude)
+  */
   function frequencyAt(nex) {
     if (nex.getTypeName() == "-wavetable-") {
+      let timebase = explicitTimebase(nex);
+      if (timebase) {
+        return function (i) {
+          let samples = convertTimeToSamples(nex.valueAtSample(i), timebase);
+          return samples > 0 ? getSampleRate() / samples : 0;
+        };
+      }
       return function (i) {
         return cutoffToHz(nex.valueAtSample(i));
       };
@@ -1858,10 +1873,24 @@ function createWavetableBuiltins() {
   // per-sample delay in samples. A wave says it directly, since a wave has
   // nowhere to put a timebase tag -- build one with wave math to get a flanger.
   // (comment by Claude)
+  /*
+  A wave used as a length means what a number does, tag and all: the timebase is
+  read off the wave once and every sample value goes through it. Before this a
+  wave was always read as raw samples however it was tagged, so the same value
+  named two different lengths depending on which one you handed over.
+
+  Values are not rescaled to fit a range. A wavetable holds whatever is put in
+  it, so a delay sweeping between a thousand and five thousand samples is a wave
+  whose values are a thousand to five thousand -- not a sine that gets secretly
+  stretched to reach them.
+
+  (comment by Claude)
+  */
   function lengthAt(nex) {
     if (nex.getTypeName() == "-wavetable-") {
+      let timebase = nexToTimebase(nex);
       return function (i) {
-        return nex.valueAtSample(i);
+        return convertTimeToSamples(nex.valueAtSample(i), timebase);
       };
     }
     let d = convertTimeToSamples(nex);
@@ -1874,9 +1903,10 @@ function createWavetableBuiltins() {
     if (nex.getTypeName() != "-wavetable-") {
       return convertTimeToSamples(nex);
     }
+    let timebase = nexToTimebase(nex);
     let most = 1;
     for (let i = 0; i < nex.getDuration(); i++) {
-      let v = nex.valueAtSample(i);
+      let v = convertTimeToSamples(nex.valueAtSample(i), timebase);
       if (v > most) most = v;
     }
     return Math.ceil(most);
@@ -1897,6 +1927,7 @@ function createWavetableBuiltins() {
   (comment by Claude)
   */
   const MAX_FEEDBACK = 0.99;
+  const MAX_DELAY_SECONDS = 10;
 
   function clampGain(v) {
     if (v > MAX_FEEDBACK) return MAX_FEEDBACK;
@@ -1938,6 +1969,13 @@ function createWavetableBuiltins() {
     let maxDelay = longestDelay(timenex);
     if (!(maxDelay >= 1)) {
       return constructFatalError(name + ": delay time must be at least 1 sample. Sorry!");
+    }
+    // the line is allocated at the longest delay asked for, and a wave of big
+    // numbers through a timebase reaches very large very quickly
+    // (comment by Claude)
+    if (maxDelay > MAX_DELAY_SECONDS * getSampleRate()) {
+      return constructFatalError(
+          name + ": delay time is longer than " + MAX_DELAY_SECONDS + " seconds. Sorry!");
     }
     let delayAtSample = lengthAt(timenex);
     let gainAtSample = gainAt(gnex);
