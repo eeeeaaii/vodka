@@ -2302,35 +2302,40 @@ function createWavetableBuiltins() {
   Builtin.aliasBuiltin("centroid-of", "brightness");
 
   /*
-  What note a sound is, or -1 when it is not a note.
+  What note a sound is.
 
-  -1 rather than an error because "this is not pitched" is an ordinary answer
-  here, not a failure: a drum hit, a noise sweep and a silence are all things you
-  might reasonably hand this, and a program that asks about a hundred samples
-  wants to carry on rather than stop at the first cymbal.
+  Both numbers, because they answer different questions. The note is what you
+  want to play it back or to compare it with another sample; the frequency is
+  what you want to tune to it, and the difference between them is how far out of
+  tune the thing is -- which rounding to a note throws away.
 
-  Rounded to the nearest whole note. The detector knows the pitch far more
-  precisely than that, but what comes back is a note number, and a fractional one
-  would only invite being used as though it were a cents measurement.
+  -1 for both when there is no pitch, rather than an error: a drum hit, a noise
+  sweep and a silence are all things you might reasonably hand this, and a
+  program asking about a hundred samples wants to carry on past the first cymbal.
 
   (comment by Claude)
   */
   Builtin.createBuiltin(
-    "note-of",
+    "detect-pitch",
     ["wt_"],
-    function $noteOf(env, executionEnvironment) {
+    function $detectPitch(env, executionEnvironment) {
       let wt = env.lb("wt");
       let hz = detectPitchHz(wt.getData(), wt.getDuration(), getSampleRate());
-      if (hz <= 0) {
-        return constructInteger(-1);
-      }
-      let note = Math.round(frequencyToNoteNum(hz));
+      let note = (hz > 0) ? Math.round(frequencyToNoteNum(hz)) : -1;
       if (note < 0 || note > 127) {
-        return constructInteger(-1);
+        hz = -1;
+        note = -1;
       }
-      return constructInteger(note);
+      let r = constructOrg();
+      let f = constructFloat(hz);
+      f.addTag(newTagOrThrowOOM("frequency", "detect-pitch"));
+      r.appendChild(f);
+      let n = constructInteger(note);
+      n.addTag(newTagOrThrowOOM("note", "detect-pitch"));
+      r.appendChild(n);
+      return r;
     },
-    "The note number of the pitch in wt|, or -1 if it has no pitch. Same numbering as play-midi, so A440 is 69."
+    "The pitch of wt|, as an org with the frequency in hz and the closest note number. Both are -1 if it has no pitch."
   );
 
   Builtin.createBuiltin(
