@@ -1,15 +1,11 @@
-import { frequencyForNoteNum, noteNumForA440 } from '../wavetablefunctions.js';
+import { frequencyForNoteNum } from '../wavetablefunctions.js';
 
 /*
-Two numbering systems meet in vodka and they are twelve apart, which is exactly
-the sort of thing you want a table for rather than a paragraph.
+One number, one pitch. The nn timebase and midi agree: A440 is 69 in both, and
+what send-midi-note is given is what nn names.
 
-A midi note number is what send-midi-note and play-midi take, 0 to 127, and puts
-A440 at 69. Vodka's own nn timebase -- the tag you put on a length to say "make
-this many samples of that pitch" -- puts A440 at 57. So the same number means
-two different pitches depending on which one you are talking to, an octave
-apart, and both columns are here so you never have to remember which way round
-it goes.
+They used to be twelve apart, and this table had a column for each. Documents
+written then mean a pitch an octave lower than they used to.
 
 Frequencies come from the engine's own function, so if the reference pitch ever
 moves this table moves with it.
@@ -17,12 +13,7 @@ moves this table moves with it.
 (comment by Claude)
 */
 
-const MIDI_A440 = 69;
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-
-// the offset between the two, asked rather than assumed
-// (comment by Claude)
-const NN_OFFSET = MIDI_A440 - noteNumForA440();
 
 function noteName(midi) {
     // scientific pitch notation, in which middle C is C4 and is midi 60
@@ -42,14 +33,12 @@ function formatHz(hz) {
 const MIDDLE_C = 60;
 
 const Row = ({ midi }) => {
-    let nn = midi - NN_OFFSET;
-    let hz = frequencyForNoteNum(nn);
+    let hz = frequencyForNoteNum(midi);
     let middle = (midi == MIDDLE_C);
     return (
         <tr className={middle ? 'noterefmiddle' : ''}>
             <td className="noterefname">{noteName(midi)}</td>
             <td className="noterefnum">{midi}</td>
-            <td className="noterefnum">{nn}</td>
             <td className="noterefhz">{formatHz(hz)}</td>
             <td className="noterefnote">{middle ? 'middle C' : ''}</td>
         </tr>
@@ -71,11 +60,11 @@ const NoteReferencePanel = () => {
                 <span className="infohotkey">play-midi</span>take, 0 to 127.
             </p>
             <p className="infolinemargin">
-                <span className="infohotkey">nn</span>is vodka's own note
-                timebase -- the tag you put on a length, as in
-                <span className="infohotkey">#57&lt;nn&gt;</span>-- and it sits
-                an octave below the midi number for the same pitch. A440 is midi
-                69 and nn 57.
+                <span className="infohotkey">nn</span>is the same number, used as
+                a timebase -- the tag you put on a length, as in
+                <span className="infohotkey">#69&lt;nn&gt;</span>for A440. It used
+                to sit an octave below midi; documents saved before that changed
+                sound an octave low until twelve is added to their note numbers.
             </p>
             <p className="infospacer"></p>
 
@@ -83,8 +72,7 @@ const NoteReferencePanel = () => {
                 <thead>
                     <tr>
                         <th>note</th>
-                        <th>midi</th>
-                        <th>nn</th>
+                        <th>number</th>
                         <th>Hz</th>
                         <th></th>
                     </tr>

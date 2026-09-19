@@ -47,8 +47,20 @@ let SAMPLE_RATE = 48000.0;
 let BPM = 120;
 let DEFAULT_TIMEBASE = 'BEATS';
 
-// our reference note will be A-440 (A4)
-let REFERENCE_NOTE = 57;
+/*
+A440 is note 69, which is what midi calls it and therefore what send-midi-note
+and play-midi take. The nn timebase used to put A440 at 57 instead, so the same
+number named two different pitches an octave apart depending on which part of
+vodka you were talking to. One number, one pitch, now.
+
+Saved documents written before this change mean a pitch an octave lower than
+they used to, because a note number in a file is absolute. Anything tagged nn
+or note, and any bare number passed to something that tags it, wants twelve
+adding to it.
+
+(comment by Claude)
+*/
+let REFERENCE_NOTE = 69;
 let REFERENCE_NOTE_FREQ = 440;
 
 function getSampleRate() {
