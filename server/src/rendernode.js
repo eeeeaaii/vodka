@@ -695,8 +695,18 @@ class RenderNode {
 				}
 			}
 		}
-		// always render tags, even for collapsed containers.
-		if (this.nex.hasTags()) {
+		/*
+		Tags render even on a container whose children are hidden -- they say
+		what the thing is, which is the most useful thing to know about
+		something you cannot see inside of.
+
+		A commented out nex is the exception. It is meant to read as absent, and
+		the mark that collapsed it is itself a tag, so rendering tags here would
+		draw the very thing that switched it off.
+
+		(comment by Claude)
+		*/
+		if (this.nex.hasTags() && !(this.getCollapsed() && (useFlags & RENDER_FLAG_EXPLODED))) {
 			let tagHolder = this.nex.getTagHolder(this.domNode);
 			this.nex.renderTags(tagHolder, useFlags, this.getCurrentEditor());
 		}

@@ -25,7 +25,7 @@ import { constructFatalError, throwOOM } from './eerror.js'
 import { Closure } from './closure.js'
 import { ContextType } from '../contexttype.js'
 import { evaluateNexSafely } from '../evaluator.js'
-import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED, CONSOLE_DEBUG } from '../globalconstants.js'
+import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED, RENDER_FLAG_COLLAPSED, CONSOLE_DEBUG } from '../globalconstants.js'
 import { Editor, isAutocompleteKeyCombo } from '../editors.js'
 import { experiments } from '../globalappflags.js'
 import { doTutorial } from '../help.js'
@@ -556,11 +556,27 @@ class Command extends NexContainer {
 		return null;
 	}
 
-	getInitialCodespanContents(renderNode) {
+	/*
+	A commented out command is drawn the way any other command is, but with
+	nothing written in it: no name and -- see renderNode.render -- no tags. What
+	is left is the shape of a command with the collapsed mark in it, which says
+	"there is a command here and it is switched off" without also saying which
+	one loudly enough to read as live code.
+
+	The name is what makes a command look like it is doing something, so the
+	name is the thing to drop. Everything else about the box stays, so it still
+	occupies the space it will occupy again when it is switched back on.
+
+	(comment by Claude)
+	*/
+	getInitialCodespanContents(renderNode, renderFlags) {
 		let lefttilde = '<span class="tilde glyphleft">&#8766;</span>';
 		let faintlefttilde = '<span class="tilde glyphleft faint">&#8766;</span>';
 		let faintleftdot = '<span class="tilde glyphleft faint">·</span>';
 		let codespanHtml = (this.isEditing ? lefttilde : faintleftdot);
+		if ((renderFlags & RENDER_FLAG_COLLAPSED) && (renderFlags & RENDER_FLAG_EXPLODED)) {
+			return codespanHtml;
+		}
 		let gclosure = this.getClosureForGhost();
 		let operatorInfix = (gclosure &&
 				Utils.isClosure(gclosure) &&
@@ -583,7 +599,7 @@ class Command extends NexContainer {
 		let domNode = renderNode.getDomNode();
 		let codespan = null;
 		let ghostDiv = this.getGhostDiv(renderNode);
-		let codespanHtml = this.getInitialCodespanContents(renderNode);
+		let codespanHtml = this.getInitialCodespanContents(renderNode, renderFlags);
 		if (!(renderFlags & RENDER_FLAG_SHALLOW) && codespanHtml != '' || ghostDiv) {
 			codespan = document.createElement("span");
 			codespan.classList.add('codespan');
