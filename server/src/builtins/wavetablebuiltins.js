@@ -57,6 +57,7 @@ import {
   hasCommandTag,
 } from "../wavetablefunctions.js";
 import { fft, nextPowerOfTwo, forEachSpectrum, hannWindow } from "../fft.js";
+import { detectPitchHz } from "../pitch.js";
 import {
   applyFormants,
   vowelNames,
@@ -2299,6 +2300,38 @@ function createWavetableBuiltins() {
   );
 
   Builtin.aliasBuiltin("centroid-of", "brightness");
+
+  /*
+  What note a sound is, or -1 when it is not a note.
+
+  -1 rather than an error because "this is not pitched" is an ordinary answer
+  here, not a failure: a drum hit, a noise sweep and a silence are all things you
+  might reasonably hand this, and a program that asks about a hundred samples
+  wants to carry on rather than stop at the first cymbal.
+
+  Rounded to the nearest whole note. The detector knows the pitch far more
+  precisely than that, but what comes back is a note number, and a fractional one
+  would only invite being used as though it were a cents measurement.
+
+  (comment by Claude)
+  */
+  Builtin.createBuiltin(
+    "note-of",
+    ["wt_"],
+    function $noteOf(env, executionEnvironment) {
+      let wt = env.lb("wt");
+      let hz = detectPitchHz(wt.getData(), wt.getDuration(), getSampleRate());
+      if (hz <= 0) {
+        return constructInteger(-1);
+      }
+      let note = Math.round(frequencyToNoteNum(hz));
+      if (note < 0 || note > 127) {
+        return constructInteger(-1);
+      }
+      return constructInteger(note);
+    },
+    "The note number of the pitch in wt|, or -1 if it has no pitch. Same numbering as play-midi, so A440 is 69."
+  );
 
   Builtin.createBuiltin(
     "duration",
