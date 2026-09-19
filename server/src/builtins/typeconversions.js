@@ -44,7 +44,7 @@ function createTypeConversionBuiltins() {
 			let n = env.lb('nex');
 			return n.getLambda();
 		},
-		'Returns the lambda expression that is used by the passed-in closure to execute code. Warning: modifying this lambda will change the code of the closure.'
+		'The lambda a closure runs. It is the closure\'s own code, not a copy, so changing it changes the closure.'
 		)
 
 	Builtin.createBuiltin(
@@ -58,7 +58,7 @@ function createTypeConversionBuiltins() {
 			}
 			return newresult;
 		},
-		'If evaluating |nex results in a fatal error, this converts the fatal error into the "previously fatal" error type, which doesn\'t trigger error cascading.'
+		'Evaluates |nex. A fatal error becomes a previously-fatal one, which does not cascade.'
 	);
 
 	Builtin.createBuiltin(
@@ -103,7 +103,7 @@ function createTypeConversionBuiltins() {
 				return constructFatalError(`to-float: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
 			}
 		},
-		'Converts |nex to a float, or returns an error if this is impossible.'
+		'Converts |nex to a float, or an error if it cannot.'
 	);
 
 	Builtin.createBuiltin(
@@ -148,7 +148,7 @@ function createTypeConversionBuiltins() {
 				return constructFatalError(`to-integer: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
 			}
 		},
-		'Converts |nex to an integer, or returns an error if this is impossible.'
+		'Converts |nex to an integer, or an error if it cannot.'
 
 	);
 
@@ -183,7 +183,7 @@ function createTypeConversionBuiltins() {
 
 			}
 		},
-		'Converts |nex to a string, or returns an error if this is impossible.'
+		'Converts |nex to a string, or an error if it cannot.'
 
 	);
 
@@ -221,7 +221,7 @@ function createTypeConversionBuiltins() {
 				return constructFatalError(`to-word: conversion of type ${v.getTypeName()} is unimplemented. Sorry!`);
 			}
 		},
-		'Converts |nex to a word, or returns an error if this is impossible.'
+		'Converts |nex to a word, or an error if it cannot.'
 	);
 
 }

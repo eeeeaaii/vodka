@@ -43,7 +43,7 @@ function createContractBuiltins() {
 			c.addContractTag(tag);
 			return c;
 		},
-		'Declares that anything tagged with |tag must satisfy |contract.'
+		'Requires anything tagged |tag to satisfy |contract.'
 	);
 
 
@@ -56,7 +56,7 @@ function createContractBuiltins() {
 			let cnex = constructContract(contractImpl);
 			return cnex;
 		},
-		'Returns a contract that is satisfied if something is tagged with |tag.'
+		'A contract satisfied by anything tagged |tag.'
 	);
 
 
@@ -69,7 +69,7 @@ function createContractBuiltins() {
 			let cnex = constructContract(contractImpl);
 			return cnex;
 		},
-		'Returns a contract that is only satisfied for the specific passed-in object |nex.'
+		'A contract satisfied only by |nex itself.'
 	);
 
 
@@ -81,7 +81,7 @@ function createContractBuiltins() {
 			let contractImpl = new TypeContract(nex.getTypeName());
 			return constructContract(contractImpl);
 		},
-		'Returns a contract that is only satisified if an object has the same type as |nex.'
+		'A contract satisfied by anything of the same type as |nex.'
 	);
 
 	// Builtin.createBuiltin(

@@ -36,7 +36,7 @@ function createStringBuiltins() {
 			}
 			return constructEString(r);
 		},
-		'Concatenates the passed-in strings and returns the result.'
+		'The arguments joined into one string.'
 	);
 	// this alias makes tests pass
 	Builtin.aliasBuiltin('string-cat', 'string-concatenate');
@@ -53,7 +53,7 @@ function createStringBuiltins() {
 			let c = s.charAt(n);
 			return constructEString(c);
 		},
-		'Returns the character in |str at index position |pos.'
+		'The character of |str at |pos, counting from 0.'
 	);
 
 	Builtin.createBuiltin(
@@ -65,7 +65,7 @@ function createStringBuiltins() {
 			let i = s.indexOf(tofind);
 			return constructInteger(i);
 		},
-		'Returns the index position of |tofind in |str.'
+		'Where |tofind first appears in |str, counting from 0.'
 	);
 
 
@@ -81,7 +81,7 @@ function createStringBuiltins() {
 			}
 			return constructEString(r);
 		},
-		'Joins the string elements of |strs into a single string on the separator |on.'
+		'The strings in |strs joined with |on between them.'
 	);
 
 
@@ -93,7 +93,7 @@ function createStringBuiltins() {
 			let len = s.length;
 			return constructInteger(len);
 		},
-		'Returns the length of (number of characters in) |str'
+		'How many characters |str has.'
 	);
 
 
@@ -110,7 +110,7 @@ function createStringBuiltins() {
 			}
 			return r;
 		},
-		'Turns a string into a list of strings of one-letter each, one for each letter in |str.'
+		'|str as a list of one-character strings.'
 	);
 
 
@@ -128,7 +128,7 @@ function createStringBuiltins() {
 			}
 			return lst;
 		},
-		'Splits |str into separate strings on the separator |on.'
+		'|str cut into pieces wherever |on appears.'
 	);
 
 
@@ -142,7 +142,7 @@ function createStringBuiltins() {
 			let s = str.substr(start, len);
 			return constructEString(s);
 		},
-		'Retrieves a substring of |str starting at |start that is |len characters long'
+		'The |len characters of |str starting at |start.'
 	);
 
 
@@ -153,7 +153,7 @@ function createStringBuiltins() {
 			let str = env.lb('str').getFullTypedValue();
 			return constructBool(str == '');
 		},
-		'Returns true if |str is the empty string.'
+		'True if |str has no characters.'
 	);
 }
 

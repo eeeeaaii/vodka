@@ -93,7 +93,7 @@ function createMidiBuiltins() {
 			dv.activate();
 			return dv;
 		},
-		'Returns a list of available midi port objects. One of these needs to be passed into any midi builtin that requires a port.'
+		'The available midi ports. Every midi builtin that takes a port takes one of these.'
 	);
 
 
@@ -167,7 +167,7 @@ function createMidiBuiltins() {
 			dv.activate();
 			return dv;
 		},
-		'Opens midi port |port, where |port is an org returned by list-midi-ports. Web audio has no notion of devices, so a device will list its inputs as a port and its outputs as a different port.'
+		'Opens |port, an org from list-midi-ports. A device lists its inputs and its outputs as separate ports.'
 	);
 
 	Builtin.createBuiltin(
@@ -180,7 +180,7 @@ function createMidiBuiltins() {
 			setDefaultMidiPort(found.id);
 			return port;
 		},
-		'Sets the midi port that send-midi-note, send-midi-data and play-midi use when they are not given one, and hands |port back so it can be set and used in the same breath. Lasts for this session only: a port id belongs to this machine, so saving one into a document would name a port that may not be there next time.'
+		'Makes |port the one the midi builtins use when given none, and returns it. This session only: a port id names a device on this machine, so saving one would be meaningless elsewhere.'
 	);
 
 
@@ -395,7 +395,7 @@ function createMidiBuiltins() {
 			sendMidiData(port.id, bytes);
 			return data;
 		},
-		'Sends |data as bytes, where each integer is a single byte, to the midi port |port, which should be the org returned by list-midi-ports.'
+		'Sends |data to |port, one byte per integer.'
 	);
 
 	Builtin.aliasBuiltin('send-midi-data on', 'send-midi-data');
@@ -499,7 +499,7 @@ function createMidiBuiltins() {
 			dv.activate();
 			return dv;
 		},
-		'Returns a deferred value that updates any time a midi event is received on |midiport.'
+		'A deferred value that settles on every midi event from |midiport.'
 	);
 	
 }

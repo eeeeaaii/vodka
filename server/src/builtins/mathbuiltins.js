@@ -161,7 +161,7 @@ function createMathBuiltins() {
 			let n = Math.random();
 			return constructFloat(n);
 		},
-		'Returns a random number between 0 and 1.'
+		'A random float, 0 to 1.'
 	);
 
 

@@ -37,7 +37,7 @@ function createLogicBuiltins() {
 		function $and(env, executionEnvironment) {
 			return constructBool(env.lb('val1').getTypedValue() && env.lb('val2').getTypedValue());		
 		},
-		'Returns true if both |val1 and |val2 evaluate to boolean true.',
+		'True if |val1 and |val2 are both true.',
 		true /* infix */
 	)
 
@@ -58,7 +58,7 @@ function createLogicBuiltins() {
 			}
 			return constructNil();
 		},
-		'Returns the first argument that does not evaluate to nil, ignoring the rest.'
+		'The first argument that is not nil. The rest are not evaluated.'
 	)
 
 	Builtin.aliasBuiltin('case', 'first-non-nil');
@@ -89,7 +89,7 @@ function createLogicBuiltins() {
 				return iffalseresult;
 			}
 		},
-		'Evalutes |cond, and if it is true, return |iftrue, otherwise return |iffalse. If |iffalse is not provided, a Nil is returned if |cond is false.'
+		'Evaluates |cond, then returns |iftrue or |iffalse. Only the branch taken is evaluated. Without |iffalse, a false |cond gives nil.'
 	)
 	Builtin.aliasBuiltin('if', 'if then else');
 
@@ -100,7 +100,7 @@ function createLogicBuiltins() {
 		function $not(env, executionEnvironment) {
 			return constructBool(!env.lb('val').getTypedValue());
 		},
-		'Evalutes to true if |val evaluates to false, or false if |val evaluates to true.'
+		'True if |val is false, false if it is true.'
 	)
 
 
@@ -110,7 +110,7 @@ function createLogicBuiltins() {
 		function $or(env, executionEnvironment) {
 			return constructBool(env.lb('val1').getTypedValue() || env.lb('val2').getTypedValue());
 		},
-		'Evaluates to true if either or both of |val1 or |val2 evaluate to true.',
+		'True if |val1 or |val2 is true, or both.',
 		true /* infix */
 	)
 

@@ -55,7 +55,7 @@ function createEnvironmentBuiltins() {
 			}
 			return name;
 		},
-		'Binds a new global variable named |name to |nex.'
+		'Binds |name to |nex globally.'
 	);
 	Builtin.aliasBuiltin('bind to', 'bind');
 
@@ -76,7 +76,7 @@ function createEnvironmentBuiltins() {
 			}
 			return r;
 		},
-		'Returns a list of all globally bound variables that match the search string |search, or all if |search is omitted.'
+		'The global bindings matching |search, or all of them if |search is left out.'
 	);
 
 
@@ -96,7 +96,7 @@ function createEnvironmentBuiltins() {
 			}
 			return r;
 		},
-		'Returns a list of standard Vodka builtin function names that match |search, or all of them if |search arg is not provided.'
+		'The builtin names matching |search, or all of them if |search is left out.'
 	);
 
 
@@ -119,7 +119,7 @@ function createEnvironmentBuiltins() {
 				}
 			}
 		},
-		'Returns true if the symbol |name is bound in the global environment.'
+		'True if |name has a global binding.'
 	);
 
 
@@ -168,7 +168,7 @@ function createEnvironmentBuiltins() {
 			rhs.setLexicalEnvironment(executionEnvironment);
 			return rhs;
 		},
-		'Replaces the lexical environment of |closure with the lexical environment that exists at the call site of this call to unclose.'
+		'Gives |closure the lexical environment of the call site instead of the one it captured.'
 	);	
 
 
@@ -183,7 +183,7 @@ function createEnvironmentBuiltins() {
 			executionEnvironment.usePackage(packageName);
 			return constructNil();
 		},
-		'Makes it so bindings in the package |name can be dereferenced without the package identifier. Stays in effect for the remainder of the current scope.'
+		'Lets the bindings in package |name be named without the package prefix, for the rest of the scope.'
 	);	
 
 
@@ -215,7 +215,7 @@ function createEnvironmentBuiltins() {
 			}
 			return result;
 		},
-		'makes it so bindings in the packages in |namelist can be dereferenced without the package identifier when evaluating the rest of the arguments.'
+		'Lets the bindings in the packages in |namelist be named without the package prefix, while the remaining arguments are evaluated.'
 	);	
 
 
@@ -240,7 +240,7 @@ function createEnvironmentBuiltins() {
 			}
 			return doLevel(lexenv);
 		},
-		'Returns the memory environment of |closure, in the form of a list containing all bound symbols along with their values.'
+		'The bindings |closure can see, as a list of symbols and values.'
 	);
 
 
@@ -251,7 +251,7 @@ function createEnvironmentBuiltins() {
 			let nex = env.lb('nex');
 			return constructEString('' + nex.getID());
 		},
-		'Returns the in-memory ID of |nex as a string.'
+		'The in-memory id of |nex, as a string.'
 	);
 
 

@@ -41,7 +41,7 @@ function createSurfaceBuiltins() {
 			let r = constructSurface(w, h);
 			return r;
 		},
-		'Creates a 2d drawing surface with the given width and height.'
+		'A drawing surface |w by |h pixels.'
 	);
 
 	Builtin.createBuiltin(
@@ -66,7 +66,7 @@ function createSurfaceBuiltins() {
 
 			return surf;
 		},
-		'Fills the surface background with a color.'
+		'Fills |surface with |color.'
 	);
 
 	Builtin.createBuiltin(
@@ -91,7 +91,7 @@ function createSurfaceBuiltins() {
 
 			return surf;
 		},
-		'Draws a line on the surface.'
+		'Draws a line on |surface.'
 	);
 
 	Builtin.createBuiltin(
@@ -116,7 +116,7 @@ function createSurfaceBuiltins() {
 
 			return surf;
 		},
-		'Draws a rectangle on the surface.'
+		'Draws a rectangle on |surface.'
 	);
 
 	Builtin.createBuiltin(
@@ -139,7 +139,7 @@ function createSurfaceBuiltins() {
 
 			return surf;
 		},
-		'Draws a dot on the surface.'
+		'Draws a dot of |color on |surf at |x, |y.'
 	);
 
 	Builtin.createBuiltin(
@@ -161,7 +161,7 @@ function createSurfaceBuiltins() {
 
 			return r;
 		},
-		'Draws a dot on the surface.'
+		'The color of |surf at |x, |y, as an org of red, green, blue and alpha, each 0 to 255.'
 	);
 
 
@@ -174,7 +174,7 @@ function createSurfaceBuiltins() {
 			surf.copyFromClipboard();
 			return surf;
 		},
-		'Copys the contents of the image clipboard into the surface.'
+		'Copies the image clipboard into |surface.'
 	);
 }
 

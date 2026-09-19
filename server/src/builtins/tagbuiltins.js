@@ -43,7 +43,7 @@ function createTagBuiltins() {
 			nex.addTag(newTagOrThrowOOM(tagname, 'add-tag builtin'));
 			return nex;
 		},
-		'Adds the tag |tag to |nex.'
+		'Adds the tag |tag to |nex and returns |nex.'
 	);
 
 
@@ -60,7 +60,7 @@ function createTagBuiltins() {
 				return constructBool(false);
 			}
 		},
-		'Returns true if |nex has a tag equal to |tag.'
+		'True if |nex carries the tag |tag.'
 	);
 
 }

@@ -90,7 +90,7 @@ function createIterationBuiltins() {
 			}
 			return resultList;
 		},
-		'Returns a new list containing only the elements of |list for which |func calls true when it is called on that element. If |func takes a second argument, it is given the index of the element.'
+		'The elements of |list for which |func returns true. A |func of two arguments also gets the index.'
 	);
 
 	Builtin.aliasBuiltin('filter with', 'filter');
@@ -125,7 +125,7 @@ function createIterationBuiltins() {
 			}
 			return resultList;
 		},
-		'Goes through all the elements in |list and replaces each one with the result of calling |func on that element. If |func takes a second argument, it is given the index of the element.'
+		'|list with each element replaced by |func of that element. A |func of two arguments also gets the index.'
 	);
 
 	Builtin.aliasBuiltin('map with', 'map');
@@ -159,7 +159,7 @@ function createIterationBuiltins() {
 			}
 			return p;
 		},
-		'Progressively updates a value, starting with |startvalue, by calling |func on each element in |list, passing in 1. the list element and 2. the progressively updated value, returning the final updated value.'
+		'Folds |list into one value. |func is called with each element and the value so far, starting from |startvalue.'
 	);
 
 	Builtin.aliasBuiltin('reduce with', 'reduce');
@@ -192,7 +192,7 @@ function createIterationBuiltins() {
 			}
 			return result ? result : constructNil();
 		},
-		'Loops over a list, evaluating a function on each member, and returning the last result. If the function takes a second argument, it is given the index of the member.'
+		'Calls |func on each element of |list and returns the last result. A |func of two arguments also gets the index.'
 	);
 
 	Builtin.createBuiltin(
@@ -225,7 +225,7 @@ function createIterationBuiltins() {
 			}
 			return result;
 		},
-		`Returns a list containing all the integers from 0 to n`
+		`The integers from |startorstop up to but not including |stop, stepping by |inc. Given one argument it counts from 0.`
 	)
 
 
@@ -278,7 +278,7 @@ function createIterationBuiltins() {
 			}
 			return bodyresult ? bodyresult : constructNil();
 		},
-		`Classic "for loop". First |start is evaluated, then |test. If |test returns true, |body and |inc are evaluated, and then we go back to |test.`
+		`Evaluates |start, then repeats |body and |inc for as long as |test is true.`
 	)
 
 	Builtin.aliasBuiltin('starting-with while do then-with', 'for-loop');

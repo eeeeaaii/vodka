@@ -114,7 +114,7 @@ function createAsyncBuiltins() {
 			}
 			return latestOf(nex);
 		},
-		'The value |nex has produced so far. A deferred value gives what it holds; anything else is its own latest. Asking before it has produced anything is an error -- use has-latest first.'
+		'The value |nex has produced so far. A deferred value gives what it holds; anything else gives itself. It is an error to ask before there is one, so ask has-latest first.'
 	);
 
 	Builtin.createBuiltin(
@@ -123,7 +123,7 @@ function createAsyncBuiltins() {
 		function $hasLatest(env, executionEnvironment) {
 			return constructBool(hasLatest(env.lb('nex')));
 		},
-		'Whether |nex has produced a value yet, which is what says whether latest can be asked. True for anything that is not deferred, and for a deferred value that has settled or finished. False only while something is still waiting for its first result.'
+		'True if |nex has produced a value, and so whether latest can be asked. Anything not deferred always has one.'
 	);
 
 	Builtin.createBuiltin(
@@ -139,7 +139,7 @@ function createAsyncBuiltins() {
 				return def;
 			}
 		},
-		'Cancels the optional deferred argument |def (it will never complete), or, if no arguments are provided, cancels all unfinished deferreds known by the system.'
+		'Cancels |def, which then never completes. Given no argument, cancels every unfinished deferred.'
 	);
 
 	Builtin.createBuiltin(
@@ -156,7 +156,7 @@ function createAsyncBuiltins() {
 			dv.startSettle(result);
 			return dv;
 		},
-		'Settles the deferred value.'
+		'Settles |dv with |nex. A settled value can settle again.'
 	);
 
 	Builtin.createBuiltin(
@@ -173,7 +173,7 @@ function createAsyncBuiltins() {
 			dv.startFinish(result);
 			return dv;
 		},
-		'Finishes the deferred value.'
+		'Finishes |dv with |nex. A finished value produces nothing more.'
 	);
 
 	Builtin.createBuiltin(
@@ -185,7 +185,7 @@ function createAsyncBuiltins() {
 			let r = constructBool(isF);
 			return r;
 		},
-		'Returns true if the deferred value is finished.'
+		'True if |dv has finished.'
 	);
 
 	Builtin.createBuiltin(
@@ -207,7 +207,7 @@ function createAsyncBuiltins() {
 			}
 			return thing;
 		},
-		'If the argument evaluates to a fatal error, this function reports that error in an obvious place at the root level so the user can see it. Useful for situations where a process is computing asynchronously and may or may not return an error.'
+		'Puts |nex at the top of the document if it is a fatal error. An error from something computing in the background has nowhere else to appear.'
 	);
 
 	Builtin.createBuiltin(
@@ -220,7 +220,7 @@ function createAsyncBuiltins() {
 			dv.activate();
 			return dv;
 		},
-		'Returns a deferred value that finishes immediately.'
+		'A deferred value that is already finished.'
 	);
 
 	Builtin.createBuiltin(
@@ -237,7 +237,7 @@ function createAsyncBuiltins() {
 			}
 			return dv;
 		},
-		'Returns a deferred value that waits forever until manually settled or finished. If passed in, |nex will be the initial contents of the deferred value.'
+		'A deferred value that waits until something settles or finishes it. |nex is its initial contents.'
 	);
 	Builtin.aliasBuiltin('wait-forever', 'wait');
 
@@ -255,7 +255,7 @@ function createAsyncBuiltins() {
 			dv.activate();
 			return dv;
 		},
-		'Returns a deferred value that settles every time |nex is clicked on.'
+		'A deferred value that settles each time |nex is clicked.'
 	);
 
 
@@ -292,7 +292,7 @@ function createAsyncBuiltins() {
 			runningLoops[id] = afg;
 			return dv;
 		},
-		'Returns a deferred value that settles every |interval milliseconds with whatever |f returned. |f is passed the iteration number.'
+		'A deferred value that settles every |interval milliseconds with the result of |f. |f is given the iteration number.'
 	);
 
 	Builtin.createBuiltin(
@@ -308,7 +308,7 @@ function createAsyncBuiltins() {
 			dv.activate();
 			return dv;
 		},
-		'Returns a deferred value that waits for |time milliseconds, then finishes.'
+		'A deferred value that finishes after |time milliseconds.'
 	);
 
 	Builtin.createBuiltin(
@@ -323,7 +323,7 @@ function createAsyncBuiltins() {
 			dv.activate();
 			return dv;
 		},
-		'Returns a deferred value that settles when contents of |nex are changed.'
+		'A deferred value that settles whenever the contents of |nex change.'
 	);
 
 	Builtin.createBuiltin(
@@ -338,7 +338,7 @@ function createAsyncBuiltins() {
 			dv.activate();
 			return dv;
 		},
-		'Returns a deferred value that finishes the next time |nex is rendered to the screen.'
+		'A deferred value that finishes the next time |nex is drawn.'
 	);
 }
 
