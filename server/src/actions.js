@@ -157,19 +157,26 @@ function pushActionSlot(action) {
 }
 
 function enqueueAndPerformAction(action) {
-	pushActionSlot(action);
 	/*
-	Both halves inside one heap action, because between them is the gap where a
-	deleted nex is held by nothing at all -- taken out of the document, not yet
-	taken hold of by undo. See heap.beginAction: inside, letting go of the last
-	reference stops a nex without freeing it, so what undo is about to ask for
-	is still there when it asks.
+	All of it inside one heap action, because between taking a nex out of the
+	document and undo taking hold of it there is a gap where nothing holds it at
+	all. See heap.beginAction: inside, letting go of the last reference stops a
+	nex without freeing it, so what undo is about to ask for is still there when
+	it asks.
+
+	The slot is claimed after doAction rather than before, so that an action
+	which did nothing never takes one. That also means a doAction that throws
+	leaves no entry behind, which is what you want: there is nothing to undo.
 
 	(comment by Claude)
 	*/
 	heap.beginAction();
 	try {
 		action.doAction();
+		if (!action.didSomething()) {
+			return;
+		}
+		pushActionSlot(action);
 		// after doAction, which is where an action captures what it is holding
 		// (comment by Claude)
 		retainActionNexes(action);
@@ -241,6 +248,19 @@ function undo() {
 	}
 }
 
+/*
+An action that turns out to have changed nothing must not go on the stack.
+Pressing undo and watching nothing happen is worse than not being able to undo:
+the entry is spent, the selection does not move, and the change actually being
+reached for is one press further back than it looks.
+
+Asked after doAction rather than before, because whether a keystroke does
+anything is usually only known once it has been tried -- an arrow at the end of
+a list, a click on what is already selected, a character the default handler
+has no use for.
+
+(comment by Claude)
+*/
 class Action {
 	constructor(actionName) {
 		this.actionName = actionName;
@@ -249,6 +269,10 @@ class Action {
 	canUndo() { };
 	doAction() { };
 	undoAction() { };
+
+	didSomething() {
+		return true;
+	}
 }
 
 
@@ -265,6 +289,10 @@ class NoOpAction extends Action {
 
 	canUndo() {
 		return true;
+	}
+
+	didSomething() {
+		return false;
 	}
 
 	doAction() {
@@ -413,15 +441,29 @@ class InsertNewChildNodeAction extends Action {
 	doAction() {
 		this.savedSelectedNode = systemState.getGlobalSelectedNode();
 		this.savedInsertionMode = systemState.getGlobalSelectedNode().getInsertionMode();
+		this.insertedBefore = manipulator.getMostRecentInsertedRenderNode();
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
-		this.newNode = manipulator.getMostRecentInsertedRenderNode();
+		/*
+		getMostRecentInsertedRenderNode is the last one inserted by anybody, not
+		by this call. Without comparing, a keystroke that inserted nothing takes
+		the node some earlier keystroke inserted, and undoing removes that one --
+		the wrong nex, not merely a wasted entry.
 
-		if (this.editorDataSavedForRedo) {
+		(comment by Claude)
+		*/
+		let insertedNow = manipulator.getMostRecentInsertedRenderNode();
+		this.newNode = (insertedNow && insertedNow != this.insertedBefore) ? insertedNow : null;
+
+		if (this.newNode && this.editorDataSavedForRedo) {
 			let fakeEditor = this.newNode.getEditorForType(this.newNode.nex);
 			if (fakeEditor) {
 				fakeEditor.setStateForUndo(this.editorDataSavedForRedo);
 			}
 		}
+	}
+
+	didSomething() {
+		return !!this.newNode;
 	}
 
 	undoAction() {
@@ -476,6 +518,14 @@ class ChangeSelectedNodeAction extends Action {
 		this.savedSelectedNode = systemState.getGlobalSelectedNode();
 		this.savedInsertionMode = systemState.getGlobalSelectedNode().getInsertionMode();
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
+	}
+
+	// an arrow at the end of a list moves nothing, and undoing that is invisible
+	// (comment by Claude)
+	didSomething() {
+		let now = systemState.getGlobalSelectedNode();
+		return now != this.savedSelectedNode
+				|| now.getInsertionMode() != this.savedInsertionMode;
 	}
 
 	undoAction() {
@@ -599,6 +649,7 @@ class ClickSelectAction extends Action {
 	doAction() {
 		this.previouslySelected = systemState.getGlobalSelectedNode();
 		this.previousInsertionMode = this.previouslySelected.getInsertionMode();
+		this.finishedInput = false;
 		this.removedInsertionPoint = null;
 		this.removedFrom = null;
 		this.removedIndex = -1;
@@ -608,6 +659,7 @@ class ClickSelectAction extends Action {
 		if ((previousNex.getTypeName() == '-estring-'
 				|| previousNex.getTypeName() == '-eerror-')
 				&& previousNex.getMode() == MODE_EXPANDED) {
+			this.finishedInput = true;
 			previousNex.finishInput();
 		} else if (previousNex.getTypeName() == '-insertionpoint-') {
 			insertAfterRemove = true;
@@ -635,6 +687,15 @@ class ClickSelectAction extends Action {
 			if (wasIn) wasIn.setRenderNodeDirtyForRendering(true);
 		}
 		eventQueueDispatcher.enqueueRenderOnlyDirty();
+	}
+
+	// clicking what is already selected changes nothing, unless the click also
+	// closed an editor or took an insertion point out
+	// (comment by Claude)
+	didSomething() {
+		return this.nodeToSelect != this.previouslySelected
+				|| this.removedInsertionPoint != null
+				|| this.finishedInput;
 	}
 
 	undoAction() {
@@ -759,6 +820,10 @@ class TriviallyUndoableKeyResponseFunctionAction extends Action {
 			this.hasBeenDone = true;
 			KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
 		}
+	}
+
+	didSomething() {
+		return false;
 	}
 
 	undoAction() {
@@ -1086,6 +1151,13 @@ class DefaultHandlerAction extends Action {
 				}
 			}
 		}
+	}
+
+	// undoAction below does nothing at all without a newNode, so without one
+	// there is nothing to keep an entry for
+	// (comment by Claude)
+	didSomething() {
+		return !!this.newNode;
 	}
 
 	undoAction() {
