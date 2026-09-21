@@ -1380,16 +1380,22 @@ function createWavetableBuiltins() {
       if (dur < 2) {
         return constructFatalError("pitch-shift: nothing to shift. Sorry!");
       }
-      if (semitones < -48 || semitones > 48) {
-        return constructFatalError("pitch-shift: that is more than four octaves. Sorry!");
-      }
-
       /*
       Stretch it, then play the stretched copy back that many times as fast.
       The speed change moves the pitch and undoes the stretch at the same time,
       so what is left is the original length at a different pitch. Which is why
       this is a function rather than anything new: it is time-stretch and
       resample-by, one after the other.
+
+      (comment by Claude)
+      */
+      /*
+      No limit on |semitones beyond what the machine imposes. Shifting up
+      stretches first, so a large enough shift asks for a buffer that will not
+      fit, and that is the check below. Shifting down stretches to something
+      shorter, so there is nothing to run out of: far enough down and every
+      sample reads from the same place, which is a constant, which is what
+      shifting a sound below the rate it was recorded at should give.
 
       (comment by Claude)
       */
