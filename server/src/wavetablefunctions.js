@@ -579,6 +579,23 @@ Bandwidth rather than Q because that is how formants are measured and published,
 and because it is the honest unit: a formant is a bump of a certain width in
 hertz, and its Q depends on where it sits.
 */
+/*
+The order to walk them in, which is not the order they are written in.
+
+Vowels sit on a plane -- how open the mouth is against how far forward the
+tongue is, which is to say F1 against F2 -- and the five here sit around the
+edge of it. Walking that edge is a vowel gliding into the next one. Walking
+them alphabetically is not: a to e to i climbs F2 from 1090 to 2290, and then
+o drops it to 840 in one step, straight across the middle of the space. It
+lurches, because the alphabet is not a shape.
+
+Along the edge the journey is 1864 rather than 3048, and no single step is
+more than half the size of that one.
+
+(comment by Claude)
+*/
+const VOWEL_SWEEP = ['i', 'e', 'a', 'o', 'u'];
+
 const VOWEL_FORMANTS = {
 	a: [[730, 80, 0], [1090, 90, -6], [2440, 120, -13]],
 	e: [[530, 70, 0], [1840, 100, -12], [2480, 120, -22]],
@@ -613,7 +630,7 @@ how they are measured and how they should be crossed.
 (comment by Claude)
 */
 function formantRowsAt(position, rows) {
-	let names = Object.keys(VOWEL_FORMANTS);
+	let names = VOWEL_SWEEP;
 	let last = names.length - 1;
 	let at = position * last;
 	if (!(at > 0)) at = 0;
@@ -632,9 +649,8 @@ function formantRowsAt(position, rows) {
 }
 
 function vowelPosition(vowel) {
-	let names = Object.keys(VOWEL_FORMANTS);
-	let i = names.indexOf(vowel);
-	return i <= 0 ? 0 : i / (names.length - 1);
+	let i = VOWEL_SWEEP.indexOf(vowel);
+	return i <= 0 ? 0 : i / (VOWEL_SWEEP.length - 1);
 }
 
 /*

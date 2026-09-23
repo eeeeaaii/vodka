@@ -2928,7 +2928,7 @@ function createWavetableBuiltins() {
       let dur = Math.max(wt.getDuration(), longestWave(vowelNex, strengthNex));
       return applyFormants(wt, position, strength, getSampleRate(), dur, moving);
     },
-    "Shapes |wt into a vowel. |vowel runs 0 to 1 from a through to u, blending the ones between, and the command tag a, e, i, o or u says where it sits by default. |strength narrows the formants, default 1. Both may be waves."
+    "Shapes |wt into a vowel. |vowel runs 0 to 1 through i, e, a, o, u, blending the ones between, which is the order they glide in. The command tag a, e, i, o or u says where it sits by default. |strength narrows the formants, default 1. Both may be waves."
   );
 
 
