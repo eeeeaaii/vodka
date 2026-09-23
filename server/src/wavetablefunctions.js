@@ -601,19 +601,76 @@ all pass, which is nothing.
 published widths; higher is narrower and more vocal, to the point of sounding
 like it is being sung through a tube.
 */
-function applyFormants(wt, vowel, strength, sampleRate) {
-	let rows = VOWEL_FORMANTS[vowel];
-	let dur = wt.getDuration();
+/*
+Where a vowel sits along the run from a to u. The order is the one the table is
+written in, and sweeping it is the point: a vowel filter you cannot move is a
+tone colour, and one you can move is a voice.
+
+Whole numbers land on a vowel exactly. In between, the two either side are
+blended -- frequencies and bandwidths straight, loudness in decibels, which is
+how they are measured and how they should be crossed.
+
+(comment by Claude)
+*/
+function formantRowsAt(position, rows) {
+	let names = Object.keys(VOWEL_FORMANTS);
+	let last = names.length - 1;
+	let at = position * last;
+	if (!(at > 0)) at = 0;
+	if (at > last) at = last;
+	let lo = Math.floor(at);
+	let hi = lo < last ? lo + 1 : lo;
+	let t = at - lo;
+	let a = VOWEL_FORMANTS[names[lo]];
+	let b = VOWEL_FORMANTS[names[hi]];
+	for (let f = 0; f < a.length; f++) {
+		rows[f][0] = a[f][0] + (b[f][0] - a[f][0]) * t;
+		rows[f][1] = a[f][1] + (b[f][1] - a[f][1]) * t;
+		rows[f][2] = a[f][2] + (b[f][2] - a[f][2]) * t;
+	}
+	return rows;
+}
+
+function vowelPosition(vowel) {
+	let names = Object.keys(VOWEL_FORMANTS);
+	let i = names.indexOf(vowel);
+	return i <= 0 ? 0 : i / (names.length - 1);
+}
+
+/*
+positionAt and strengthAt are read once per sample, so either may be a wave.
+When neither is, the coefficients are worked out once per formant rather than
+once per sample, which is what the filter used to do and is a great deal
+cheaper.
+
+(comment by Claude)
+*/
+function applyFormants(wt, positionAt, strengthAt, sampleRate, dur, moving) {
 	let r = constructWavetable(dur);
 	let data = r.getData();
 	let c = [0, 0, 0, 0, 0];
-	for (let f = 0; f < rows.length; f++) {
-		let hz = rows[f][0];
-		let bw = rows[f][1] / strength;
-		let amp = Math.pow(10, rows[f][2] / 20);
-		biquadInto(c, "band", hz, hz / bw, 0, sampleRate);
+	let rows = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+	let count = VOWEL_FORMANTS[Object.keys(VOWEL_FORMANTS)[0]].length;
+	for (let f = 0; f < count; f++) {
 		let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+		let amp = 1;
+		if (!moving) {
+			formantRowsAt(positionAt(0), rows);
+			let hz = rows[f][0];
+			let bw = rows[f][1] / strengthAt(0);
+			amp = Math.pow(10, rows[f][2] / 20);
+			biquadInto(c, "band", hz, hz / bw, 0, sampleRate);
+		}
 		for (let i = 0; i < dur; i++) {
+			if (moving) {
+				formantRowsAt(positionAt(i), rows);
+				let hz = rows[f][0];
+				let st = strengthAt(i);
+				if (!(st > 0)) st = 0.0001;
+				let bw = rows[f][1] / st;
+				amp = Math.pow(10, rows[f][2] / 20);
+				biquadInto(c, "band", hz, hz / bw, 0, sampleRate);
+			}
 			let x = wt.valueAtSample(i);
 			let y = c[0] * x + c[1] * x1 + c[2] * x2 - c[3] * y1 - c[4] * y2;
 			x2 = x1; x1 = x;
@@ -627,6 +684,7 @@ function applyFormants(wt, vowel, strength, sampleRate) {
 
 export { applyFormants,
 		 vowelNames,
+		 vowelPosition,
 		 cutIntoGrains,
 		 foldInto,
 		 cutoffToHz,

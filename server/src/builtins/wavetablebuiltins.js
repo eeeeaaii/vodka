@@ -61,6 +61,7 @@ import { detectPitchHz } from "../pitch.js";
 import {
   applyFormants,
   vowelNames,
+  vowelPosition,
   cutIntoGrains,
   foldInto,
   cutoffToHz,
@@ -2884,10 +2885,9 @@ function createWavetableBuiltins() {
   */
   Builtin.createBuiltin(
     "formant",
-    ["wt_", "strength#%?"],
+    ["wt_", "vowel#%_?", "strength#%_?"],
     function $formant(env, executionEnvironment, commandTags) {
       let wt = env.lb("wt");
-      let strength = env.lb("strength");
       let vowels = vowelNames();
 
       let vowel = null;
@@ -2900,19 +2900,37 @@ function createWavetableBuiltins() {
         }
         vowel = t;
       }
-      if (!vowel) vowel = vowels[0];
 
-      let amount = strength == UNBOUND ? 1 : strength.getTypedValue();
-      if (!(amount > 0)) {
-        return constructFatalError("formant: strength must be more than zero. Sorry!");
-      }
       if (wt.getDuration() == 0) {
         return constructFatalError("formant: there is nothing in this wave. Sorry!");
       }
-      return applyFormants(wt, vowel, amount, getSampleRate());
+
+      /*
+      The tag names a vowel and |vowel names a place between them, so the tag
+      is what |vowel defaults to. Giving both is not a conflict: the tag says
+      where to sit and the argument says where to go.
+
+      (comment by Claude)
+      */
+      let vowelNex = env.lb("vowel");
+      let strengthNex = env.lb("strength");
+      let position = amountAt(vowelNex, vowelPosition(vowel ? vowel : vowels[0]));
+      let strength = amountAt(strengthNex, 1);
+
+      if (strengthNex != UNBOUND
+          && strengthNex.getTypeName() != "-wavetable-"
+          && !(strengthNex.getTypedValue() > 0)) {
+        return constructFatalError("formant: strength must be more than zero. Sorry!");
+      }
+
+      let moving = (vowelNex != UNBOUND && vowelNex.getTypeName() == "-wavetable-")
+          || (strengthNex != UNBOUND && strengthNex.getTypeName() == "-wavetable-");
+      let dur = Math.max(wt.getDuration(), longestWave(vowelNex, strengthNex));
+      return applyFormants(wt, position, strength, getSampleRate(), dur, moving);
     },
-    "Shapes |wt into a vowel. Tag the command a, e, i, o or u; a by default. |strength narrows the formants, default 1."
+    "Shapes |wt into a vowel. |vowel runs 0 to 1 from a through to u, blending the ones between, and the command tag a, e, i, o or u says where it sits by default. |strength narrows the formants, default 1. Both may be waves."
   );
+
 
   /*
   Granular synthesis works on grains rather than on samples, and this is the
