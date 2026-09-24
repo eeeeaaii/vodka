@@ -99,13 +99,22 @@ body, html {
 	position:relative;
 }
 
-.collapsed-icon {
-	padding: 2px 5px 2px 5px;
+/*
+A collapsed nex is a box with a backslash in it, and size is what says which
+kind it is. A container keeps its own outline and the colour runs all the way
+out to it; a leaf has no outline of its own, so the box is the whole of it.
+
+(comment by Claude)
+*/
+.nex.collapsed.exploded {
+	background-color: var(--collapsed-background);
+	color: var(--collapsed-text);
 	font-family: Courier;
 	font-size: 10px;
-	background-color: orange;
-	color: white;
-	margin: 2px;
+}
+
+.collapsed-mark {
+	padding: 2px 5px 2px 5px;
 }
 
 .root {

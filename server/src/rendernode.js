@@ -658,7 +658,7 @@ class RenderNode {
 		}
 		// if we are in normal mode we ignore collapse bit and render normally.
 		if (this.getCollapsed() && (useFlags & RENDER_FLAG_EXPLODED)) {
-			this.drawCollapsedIcon();
+			this.drawCollapsed();
 		} else if (this.getNex().isNexContainer() && !(useFlags & RENDER_FLAG_SHALLOW)) {
 			if ((useFlags & RENDER_FLAG_EXPLODED) && this.insertionMode == INSERT_INSIDE) {
 				this.doInsertionPip(this);
@@ -763,11 +763,28 @@ class RenderNode {
 		this.nex.renderAfterChild(i, this, useFlags, this.getCurrentEditor());
 	}
 
-	drawCollapsedIcon() {
-		let icon = document.createElement('div');
-		icon.classList.add('collapsed-icon');
-		icon.innerText = '\\';
-		this.domNode.appendChild(icon);
+	/*
+	Collapsed, a nex is a box with a backslash in it and nothing else. Whatever
+	it said is not being said while it is switched off, so it does not say it.
+
+	A leaf and a container both look like this, and size is what tells them
+	apart: a container keeps its own outline and the colour runs all the way to
+	it, while a leaf has no outline of its own and the box is the whole of it.
+	Before this a collapsed container drew a small box inside itself, which read
+	as "something in here is switched off" rather than "this is".
+
+	(comment by Claude)
+	*/
+	drawCollapsed() {
+		// whatever renderInto just drew is not wanted; fast removal, not innerHTML
+		while (this.domNode.firstChild) {
+			this.domNode.removeChild(this.domNode.lastChild);
+		}
+		this.domNode.classList.add('collapsed');
+		let mark = document.createElement('div');
+		mark.classList.add('collapsed-mark');
+		mark.innerText = '\\';
+		this.domNode.appendChild(mark);
 	}
 
 	// this method is called on the parent of the selected node for insertion modes of
