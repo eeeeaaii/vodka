@@ -640,9 +640,8 @@ function startCycleAt(startTime) {
 			if (!loop.paused && !loop.muted) loop.start(startTime, len);
 			continue;
 		}
-		// Muting is not pausing. Pausing is something you asked for and can
-		// undo with the same gesture; muting can also come from the nex being
-		// collapsed, and un-pausing must not undo that.
+		// Muting is not pausing. A loop can be both, and comes back only when
+		// neither says so, so un-pausing must not undo a mute.
 		if (loop.paused || loop.muted) continue;
 		let node = getSourceFromBuffer(loop.buffer, true);
 		node.connect(channelMergerNode, 0, loop.channel);
@@ -852,15 +851,9 @@ Silences the loops a clip owns without taking them out of the cycle, so they
 come back in phase. Independent of pausing on purpose: a clip can be both, and
 stops being silent only when neither says so.
 
-atCycleEnd is the difference between the two ways of asking. Pressing the
-button on a clip means now, and cuts the sound off where it is. Muting because
-the nex was collapsed means at the end of the pass: the flag is set and the
-note already sounding is left to finish, and the next time round the boundary
-simply does not start one, because startCycleAt skips a muted loop. Nothing has
-to be scheduled for later -- not starting is what happens by default.
-
-Unmuting always waits for the boundary, the same as unpausing: a loop that
-started again in the middle of a bar would be out of time with everything else.
+Muting cuts the sound off where it is. Unmuting waits for the loop to come back
+round to its own beginning, the same as unpausing: a loop that started again in
+the middle of a bar would be out of time with everything else.
 */
 /*
 When a loop next comes back round to its own beginning.
@@ -889,7 +882,7 @@ function nextOwnBoundary(loop, after) {
 	return cycleStartedAt + n * len;
 }
 
-function muteLoops(ids, muted, atCycleEnd) {
+function muteLoops(ids, muted) {
 	let found = false;
 	for (let i = 0; i < ids.length; i++) {
 		let loop = cycleLoops[ids[i]] || cyclePending[ids[i]];
@@ -898,36 +891,15 @@ function muteLoops(ids, muted, atCycleEnd) {
 		let was = loop.muted;
 		loop.muted = muted;
 
-		/*
-		Not skipped when the flag was already set, because the two kinds of
-		muting differ in urgency as well as in fact: a clip left to finish its
-		pass and then muted with the button has to be cut off now, and it is
-		already flagged muted when that happens.
-		*/
-		if (muted && !atCycleEnd) {
+		// Not skipped when the flag was already set: asking again still has to
+		// cut off whatever is sounding.
+		// (comment by Claude)
+		if (muted) {
 			if (loop.stop) loop.stop();
 			if (loop.node) {
 				try { loop.node.stop(); } catch (e) {}
 				loop.node.disconnect();
 				loop.node = null;
-			}
-			continue;
-		}
-		if (muted) {
-			// already on its way out; asking again must not move the time
-			if (was) continue;
-			/*
-			Stop where this loop comes round again rather than where the cycle
-			does. Calling stop a second time replaces the time the first call
-			asked for, so the node that was going to run to the end of the
-			cycle is simply told to finish sooner; if its own boundary is later
-			than the cycle's there is nothing to change.
-			*/
-			if (loop.node) {
-				let at = nextOwnBoundary(loop, ctx.currentTime);
-				if (at < cycleNextBoundaryTime) {
-					try { loop.node.stop(at); } catch (e) {}
-				}
 			}
 			continue;
 		}

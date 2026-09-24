@@ -52,8 +52,8 @@ class Clip extends Nex {
 		this.ended = false;
 		this.posFrame = null;
 		this.posSpan = null;
-		// silence you asked for, with the button -- the only thing that mutes a clip
-		this.mutedByUser = false;
+		// silence, asked for with the button
+		this.muted = false;
 		/*
 		Whether anything this clip plays goes past full scale. Coarse on
 		purpose: one flag for the whole clip, not where or how often, because
@@ -75,29 +75,21 @@ class Clip extends Nex {
 	}
 
 	isMuted() {
-		return this.mutedByUser;
-	}
-
-	isMutedByUser() {
-		return this.mutedByUser;
+		return this.muted;
 	}
 
 	// pressing the button means now
-	setMutedByUser(v) {
-		if (this.mutedByUser == !!v) return;
-		this.mutedByUser = !!v;
-		this.applyMute(true /* immediately */);
-	}
-
-
-	toggleMutedByUser() {
-		this.setMutedByUser(!this.mutedByUser);
-	}
-
-	applyMute(immediately) {
-		muteLoops(this.ids, this.isMuted(), !immediately);
+	setMuted(v) {
+		if (this.muted == !!v) return;
+		this.muted = !!v;
+		muteLoops(this.ids, this.muted);
 		this.setDirtyForRendering(true);
 		eventQueueDispatcher.enqueueRenderOnlyDirty();
+	}
+
+
+	toggleMuted() {
+		this.setMuted(!this.muted);
 	}
 
 	getKind() {
@@ -140,10 +132,8 @@ class Clip extends Nex {
 		this.ended = false;
 		// the clip is the same clip, so a muted one stays muted across a
 		// replacement rather than coming back audible
-		// these loops have not started, so there is nothing playing to let
-		// finish and no difference between the two kinds of muting
-		if (this.isMuted()) {
-			muteLoops(this.ids, true, false /* immediately */);
+		if (this.muted) {
+			muteLoops(this.ids, true);
 		}
 		this.setDirtyForRendering(true);
 	}
@@ -274,10 +264,6 @@ class Clip extends Nex {
 	square alone said only that it was a button, not which one -- and there is
 	more than one small square on a clip now.
 
-	Only the button's own state is shown, because that is the only half you can
-	do anything about from here. A clip silenced by being collapsed is inside
-	something you cannot see anyway.
-
 	mousedown rather than click, and the event stops here: the same press would
 	otherwise go on to select the nex, which is what every other press on it
 	does.
@@ -289,11 +275,11 @@ class Clip extends Nex {
 		b.classList.add('clipmute');
 		b.innerHTML = 'm';
 		b.setAttribute('title', 'mute');
-		if (this.mutedByUser) {
+		if (this.muted) {
 			b.classList.add('on');
 		}
 		b.onmousedown = (event) => {
-			this.toggleMutedByUser();
+			this.toggleMuted();
 			event.stopPropagation();
 			event.preventDefault();
 			return false;
