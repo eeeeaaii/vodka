@@ -54,6 +54,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
   --string-submit-focus-text: #000000;
 
   --tag-background: #6e6e6e;
+  /* mute is the one tag about the sound rather than the nex */
+  --tag-mute-background: #b0202a;
   --tag-editor-background: #dddddd;
   --tag-editor-text: #414141;
 
@@ -153,6 +155,7 @@ waveform is teal so signal is never confused with structure.
   --string-submit-focus-text: #ffffff;
 
   --tag-background: #d0f2f1;
+  --tag-mute-background: #ff5a5a;
   --tag-editor-background: #1a1a1a;
   --tag-editor-text: #f2f4f8;
 

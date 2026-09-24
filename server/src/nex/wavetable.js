@@ -208,6 +208,9 @@ class Wavetable extends Nex {
 
 		this.sections = [];
 		this.cachedBuffer = null;
+		this.mutedCached = null;
+		this.silentData = null;
+		this.silentBuffer = null;
 		this.localPixelsPerSample = -1;
 		this.localHeightPixelsFullScale = -1;
 		this.centerSample = -1;
@@ -362,12 +365,53 @@ class Wavetable extends Nex {
 		this.renderOnlyThisNex();
 	}
 
+	/*
+	A wave tagged mute reads as silence wherever its samples are read, and keeps
+	its length. Silenced here rather than at the speaker, so a muted wave laid
+	into a seq still takes up the time it always did, and anything built out of
+	it is silent too. Mute is a property of the sound, not of the playing of it.
+
+	The samples are still there. Taking the tag off brings them back.
+
+	Remembered rather than asked, because valueAtSample is the innermost loop of
+	every builtin here and walking a tag list per sample is not affordable.
+	tagsChanged drops the answer.
+
+	(comment by Claude)
+	*/
+	tagsChanged() {
+		this.mutedCached = null;
+		this.silentBuffer = null;
+	}
+
+	isMuted() {
+		if (this.mutedCached === null) {
+			this.mutedCached = this.hasTagWithString('mute');
+		}
+		return this.mutedCached;
+	}
+
+	// one array of zeros, kept, because a muted wave usually stays muted a while
+	// (comment by Claude)
+	getSilentData() {
+		if (!this.silentData || this.silentData.length != this.data.length) {
+			this.silentData = new Float32Array(this.data.length);
+		}
+		return this.silentData;
+	}
+
 	getData() {
-		return this.data;
+		return this.isMuted() ? this.getSilentData() : this.data;
 	}
 
 	getCachedBuffer() {
-		return this.cachedBuffer;
+		if (!this.isMuted()) {
+			return this.cachedBuffer;
+		}
+		if (!this.silentBuffer || this.silentBuffer.length != this.data.length) {
+			this.silentBuffer = getAudioBufferFromData(this.getSilentData());
+		}
+		return this.silentBuffer;
 	}
 
 	getPixelsPerSample() {
@@ -512,6 +556,7 @@ class Wavetable extends Nex {
 	}
 
 	valueAtSample(t) {
+		if (this.isMuted()) return 0;
 		return this.data[t % this.data.length];
 	}
 
@@ -569,8 +614,11 @@ class Wavetable extends Nex {
 		this.amp = n;
 	}
 
+	// the loudest sample of a muted wave is zero, which is also what stops it
+	// being reported as clipping
+	// (comment by Claude)
 	getAmp() {
-		return this.amp;
+		return this.isMuted() ? 0 : this.amp;
 	}
 
 	makeCopy() {

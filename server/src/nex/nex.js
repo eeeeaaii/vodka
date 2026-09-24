@@ -396,15 +396,27 @@ class Nex {
 
 	// Tag functions
 
+	/*
+	Anything keeping an answer that depends on its tags drops it here. Asking the
+	tag list per sample is not affordable in an inner loop, so a wavetable
+	remembers whether it is muted and forgets when this is called.
+
+	(comment by Claude)
+	*/
+	tagsChanged() {
+	}
+
 	addTag(tag) {
 		if (this.hasTag(tag)) return;
 		this.tags.push(tag);
+		this.tagsChanged();
 		this.setDirtyForRendering(true);
 	}
 
 	addTagAtStart(tag) {
 		if (this.hasTag(tag)) return;
-		this.tags.unshift(tag);		
+		this.tags.unshift(tag);
+		this.tagsChanged();
 		this.setDirtyForRendering(true);
 	}
 
@@ -431,6 +443,7 @@ class Nex {
 		for (let i = 0; i < this.tags.length; i++) {
 			if (this.tags[i].equals(tag)) {
 				this.tags.splice(i, 1);
+				this.tagsChanged();
 				this.setDirtyForRendering(true);
 			}
 		}
@@ -440,6 +453,7 @@ class Nex {
 		for (let i = 0; i < this.tags.length; i++) {
 			if (this.tags[i] == tag) {
 				this.tags.splice(i, 1);
+				this.tagsChanged();
 				this.setDirtyForRendering(true);
 				return;
 			}

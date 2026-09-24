@@ -39,6 +39,13 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	font-size: 9px;
 }
 
+/* after .tag.exploded so it wins on background */
+/* (comment by Claude) */
+.tag-mute.exploded {
+	background-color: var(--tag-mute-background);
+	color: var(--tag-editor-background);
+}
+
 .tag-editing.exploded {
 	background-color: var(--tag-editor-background);
 	border: 1px solid var(--tag-background);

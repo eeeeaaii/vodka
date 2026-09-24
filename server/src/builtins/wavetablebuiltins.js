@@ -1639,8 +1639,10 @@ function createWavetableBuiltins() {
     ["wt_"],
     function $normalize(env, executionEnvironment) {
       let wt = env.lb("wt");
+      // nothing to bring up, and dividing by it gives a wave of NaN
+      // (comment by Claude)
       let amp = wt.getAmp();
-      let gain = 1 / amp;
+      let gain = amp > 0 ? 1 / amp : 1;
 
       let dur = wt.getDuration();
       let r = constructWavetable(dur);

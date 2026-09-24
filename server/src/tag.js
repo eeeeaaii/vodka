@@ -98,6 +98,16 @@ class Tag  {
 		if (this.isGhost) {
 			this.tagDomNode.classList.add('tag-ghost');
 		}
+		/*
+		The one tag that says something about the sound rather than about the
+		nex, so it is the one tag worth picking out of a row of them. Exactly
+		mute, not anything containing it: muted-ish is not a thing.
+
+		(comment by Claude)
+		*/
+		if (this.tagString == 'mute') {
+			this.tagDomNode.classList.add('tag-mute');
+		}
 		this.tagDomNode.innerHTML = this.tagString;
 		parentNode.appendChild(this.tagDomNode);
 	}

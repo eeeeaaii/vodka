@@ -20,7 +20,7 @@ import { systemState } from './systemstate.js'
 import { heap } from './heap.js';
 import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
 import { manipulator } from './manipulator.js';
-import { constructWarning } from './nex/eerror.js';
+import { constructWarning, newTagOrThrowOOM } from './nex/eerror.js';
 // estring and eerror each declare this, with the same value; one of them will do
 // (comment by Claude)
 import { MODE_EXPANDED } from './nex/estring.js';
@@ -1078,6 +1078,45 @@ class StepValueAction extends Action {
 }
 
 
+/*
+Mute is a tag, so muting is adding one, and undo is taking it off again. It goes
+on whatever is selected -- a wave is the useful case, but a command carries its
+tags to what it returns, so tagging one mutes what it makes.
+
+(comment by Claude)
+*/
+class ToggleMuteTagAction extends Action {
+	constructor(actionName) {
+		super(actionName);
+	}
+
+	canUndo() {
+		return true;
+	}
+
+	doAction() {
+		let node = systemState.getGlobalSelectedNode();
+		this.nex = node.getNex();
+		this.wasMuted = this.nex.hasTagWithString('mute');
+		if (this.wasMuted) {
+			this.nex.removeTag(newTagOrThrowOOM('mute', 'toggling mute'));
+		} else {
+			this.nex.addTag(newTagOrThrowOOM('mute', 'toggling mute'));
+		}
+		node.setRenderNodeDirtyForRendering(true);
+		eventQueueDispatcher.enqueueRenderOnlyDirty();
+	}
+
+	undoAction() {
+		if (this.wasMuted) {
+			this.nex.addTag(newTagOrThrowOOM('mute', 'toggling mute'));
+		} else {
+			this.nex.removeTag(newTagOrThrowOOM('mute', 'toggling mute'));
+		}
+		eventQueueDispatcher.enqueueRenderOnlyDirty();
+	}
+}
+
 class ChangeRenderModeAction extends Action {
 	constructor(actionName) {
 		super(actionName);
@@ -1299,6 +1338,9 @@ function actionFactory(actionName, eventName) {
 
 		case 'toggle-exploded':
 			return new ChangeRenderModeAction(actionName);
+
+		case 'toggle-mute-tag':
+			return new ToggleMuteTagAction(actionName);
 
 		case 'do-line-break-for-letter':
 		case 'do-line-break-for-separator':
