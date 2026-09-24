@@ -130,7 +130,10 @@ function nearestDelta(near, far, viewLength) {
 }
 
 function scrollWindowTo(el) {
-	let rect = el.getBoundingClientRect();
+	scrollWindowToRect(el.getBoundingClientRect());
+}
+
+function scrollWindowToRect(rect) {
 	let dy = nearestDelta(rect.top, rect.bottom, window.innerHeight);
 	let dx = nearestDelta(rect.left, rect.right, window.innerWidth);
 	if (dy == 0 && dx == 0) {
@@ -157,6 +160,40 @@ function scrollWindowTo(el) {
 		if (t < 1) window.requestAnimationFrame(step);
 	}
 	window.requestAnimationFrame(step);
+}
+
+/*
+Typing into something you cannot see. A command taller than the window can have
+its name above the top of it, and backspace starts an editor up there.
+
+The codespan rather than the whole nex, because a nex taller than the window has
+no single place to scroll to: asking for all of it would bring the bottom into
+view and push the name being typed further off the top. Failing that, the top
+edge on its own, for the same reason.
+
+Deferred a frame, because the editor is put into the dom by the render that
+follows this and the box is the wrong size until it is.
+
+(comment by Claude)
+*/
+function scrollEditedPartIntoView(renderNode) {
+	if (typeof window == 'undefined' || !window.requestAnimationFrame) return;
+	window.requestAnimationFrame(function() {
+		let dom = renderNode.getDomNode();
+		if (!dom || !dom.isConnected) return;
+		let span = dom.querySelector(':scope > .codespan');
+		if (span) {
+			scrollWindowTo(span);
+			return;
+		}
+		let r = dom.getBoundingClientRect();
+		scrollWindowToRect({
+			top: r.top,
+			bottom: Math.min(r.bottom, r.top + 1),
+			left: r.left,
+			right: Math.min(r.right, r.left + 1)
+		});
+	});
 }
 
 let pendingPipScroll = false;
@@ -383,6 +420,7 @@ class RenderNode {
 		if (this.getCurrentEditor()) {
 			throw new Error('cannot edit two things at once');
 		}
+		scrollEditedPartIntoView(this);
 		this.setCurrentEditor(editor);
 		this.getCurrentEditor().startEditing();
 		// the node's own chrome changes too, not just the parent's pips

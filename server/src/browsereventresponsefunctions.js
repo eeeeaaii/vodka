@@ -19,6 +19,7 @@ import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import { systemState } from './systemstate.js'
 import { manipulator } from './manipulator.js'
 import { enqueueAndPerformAction, MultiSelectAction, ClickSelectAction } from './actions.js'
+import { INSERT_BEFORE, INSERT_AFTER, INSERT_INSIDE } from './rendernode.js'
 
 // can return null if user clicks on some other thing
 function getParentNexOfDomElement(elt) {
@@ -61,14 +62,66 @@ function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 	}
 	if (systemState.isMouseFunnelActive() && atTarget) {
 		let parentNexDomElt = getParentNexOfDomElement(browserEvent.target);
-		if (systemState.getGlobalSelectedNode().getDomNode() == parentNexDomElt) {
+		let mode = insertionModeForClick(renderNode, browserEvent);
+		/*
+		Clicking what is already selected used to be nothing to do. It is
+		something to do now: the third of the nex the click landed in says where
+		the pip goes, so clicking lower down the same nex moves it. Still
+		nothing to do when the pip would not move.
+
+		(comment by Claude)
+		*/
+		let selected = systemState.getGlobalSelectedNode();
+		if (selected.getDomNode() == parentNexDomElt
+				&& (!mode || mode == selected.getInsertionMode())) {
 			return;
 		}
 		browserEvent.stopPropagation();
 		// on the undo stack, the same as moving the selection with the keyboard
 		// (comment by Claude)
-		enqueueAndPerformAction(new ClickSelectAction(renderNode));
+		enqueueAndPerformAction(new ClickSelectAction(renderNode, mode));
 	}
+}
+
+/*
+Where in a nex you clicked says where the pip goes. Near the start of it, the
+pip goes before; near the end, after; in the middle, inside.
+
+Along whichever way the container it sits in is laid out -- top to bottom in a
+vertical one, left to right in a horizontal one -- because that is the direction
+"before" and "after" mean anything in. A z directional container stacks its
+children on top of each other and neither axis says anything, so a click there
+is left to mean what it always did.
+
+Inside is only offered by something that can hold a pip inside it. Anywhere
+else the middle third is split down the middle and reads as before or after,
+which is the nearest honest answer.
+
+(comment by Claude)
+*/
+function insertionModeForClick(renderNode, browserEvent) {
+	let dom = renderNode.getDomNode();
+	let parent = renderNode.getParent();
+	if (!dom || !parent || !browserEvent) return null;
+	let parentNex = parent.getNex();
+	if (!parentNex || !parentNex.isNexContainer || !parentNex.isNexContainer()) return null;
+	if (parentNex.isZdirectional && parentNex.isZdirectional()) return null;
+
+	let vertical = parentNex.isVertical && parentNex.isVertical();
+	let rect = dom.getBoundingClientRect();
+	let along = vertical ? (browserEvent.clientY - rect.top) : (browserEvent.clientX - rect.left);
+	let size = vertical ? rect.height : rect.width;
+	if (!(size > 0)) return null;
+
+	let where = along / size;
+	if (where < 1 / 3) return INSERT_BEFORE;
+	if (where > 2 / 3) return INSERT_AFTER;
+
+	let nex = renderNode.getNex();
+	let canGoInside = nex && nex.isNexContainer && nex.isNexContainer()
+			&& nex.canDoInsertInside && nex.canDoInsertInside();
+	if (canGoInside) return INSERT_INSIDE;
+	return where < 0.5 ? INSERT_BEFORE : INSERT_AFTER;
 }
 
 export { respondToClickEvent }

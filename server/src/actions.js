@@ -637,9 +637,12 @@ than leaving a document that has quietly lost its insertion point.
 (comment by Claude)
 */
 class ClickSelectAction extends Action {
-	constructor(nodeToSelect) {
+	constructor(nodeToSelect, insertionMode) {
 		super('click-select');
 		this.nodeToSelect = nodeToSelect;
+		// where in the nex the click landed, or null when the click says nothing
+		// (comment by Claude)
+		this.insertionMode = insertionMode ? insertionMode : null;
 	}
 
 	canUndo() {
@@ -675,6 +678,9 @@ class ClickSelectAction extends Action {
 		(comment by Claude)
 		*/
 		this.nodeToSelect.setSelected();
+		if (this.insertionMode) {
+			this.nodeToSelect.setInsertionMode(this.insertionMode);
+		}
 		if (insertAfterRemove
 				&& systemState.getGlobalSelectedNode() != this.previouslySelected) {
 			let wasIn = this.previouslySelected.getParent();
@@ -695,7 +701,9 @@ class ClickSelectAction extends Action {
 	didSomething() {
 		return this.nodeToSelect != this.previouslySelected
 				|| this.removedInsertionPoint != null
-				|| this.finishedInput;
+				|| this.finishedInput
+				|| (this.insertionMode != null
+					&& this.insertionMode != this.previousInsertionMode);
 	}
 
 	undoAction() {
