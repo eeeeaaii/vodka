@@ -106,7 +106,15 @@ out to it; a leaf has no outline of its own, so the box is the whole of it.
 
 (comment by Claude)
 */
-.nex.collapsed.exploded {
+/*
+div. on the front only to win. Some nexes set a background of their own with
+three classes, the same as this has, and then whichever stylesheet happened to
+load later decided the colour -- a collapsed boolean came out blue. One element
+name is the smallest thing that settles it.
+
+(comment by Claude)
+*/
+div.nex.collapsed.exploded {
 	background-color: var(--collapsed-background);
 }
 
@@ -118,9 +126,18 @@ looked squashed beside an uncollapsed one.
 
 (comment by Claude)
 */
+/*
+Every one of these is the same mark, so none of it is inherited: a boolean is
+bold and upright, a command is italic, and a backslash drawn in either leans
+differently from the same backslash drawn in the other.
+
+(comment by Claude)
+*/
 .collapsed-mark {
 	font-family: Courier;
 	font-size: 10px;
+	font-style: normal;
+	font-weight: normal;
 	color: var(--collapsed-text);
 	padding: 2px 5px 2px 5px;
 }
