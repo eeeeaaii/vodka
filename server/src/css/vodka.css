@@ -137,7 +137,7 @@ differently from the same backslash drawn in the other.
 	font-family: Courier;
 	font-size: 10px;
 	font-style: normal;
-	font-weight: normal;
+	font-weight: bold;
 	color: var(--collapsed-text);
 	padding: 2px 5px 2px 5px;
 }
