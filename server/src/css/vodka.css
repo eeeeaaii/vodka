@@ -108,12 +108,20 @@ out to it; a leaf has no outline of its own, so the box is the whole of it.
 */
 .nex.collapsed.exploded {
 	background-color: var(--collapsed-background);
-	color: var(--collapsed-text);
-	font-family: Courier;
-	font-size: 10px;
 }
 
+/*
+The size belongs to the mark, not to the nex. Put on the nex it is inherited by
+whatever the nex kept -- a command keeps its codespan, which is .95em of its
+parent, so the whole front of it came out at nine pixels instead of fifteen and
+looked squashed beside an uncollapsed one.
+
+(comment by Claude)
+*/
 .collapsed-mark {
+	font-family: Courier;
+	font-size: 10px;
+	color: var(--collapsed-text);
 	padding: 2px 5px 2px 5px;
 }
 
