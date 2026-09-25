@@ -159,8 +159,8 @@ waveform is teal so signal is never confused with structure.
 
   --tag-background: #d0f2f1;
   --tag-mute-background: #ff5a5a;
-  --collapsed-background: #d98f1a;
-  --collapsed-text: #1a1a1a;
+  --collapsed-background: #ffa500;
+  --collapsed-text: #ffffff;
   --tag-editor-background: #1a1a1a;
   --tag-editor-text: #f2f4f8;
 
