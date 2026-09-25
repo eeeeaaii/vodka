@@ -575,7 +575,11 @@ class Command extends NexContainer {
 		let faintleftdot = '<span class="tilde glyphleft faint">·</span>';
 		let codespanHtml = (this.isEditing ? lefttilde : faintleftdot);
 		if ((renderFlags & RENDER_FLAG_COLLAPSED) && (renderFlags & RENDER_FLAG_EXPLODED)) {
-			return codespanHtml;
+			// the same as a command with no name at all: the marks either side
+			// stay, because they say it is a command, and it still is one
+			// (comment by Claude)
+			let rightglyph = '<span class="tilde glyphright">&#8766;</span>';
+			return codespanHtml + (this.isEditing ? '' : rightglyph);
 		}
 		let gclosure = this.getClosureForGhost();
 		let operatorInfix = (gclosure &&

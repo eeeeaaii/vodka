@@ -776,11 +776,25 @@ class RenderNode {
 	(comment by Claude)
 	*/
 	drawCollapsed() {
-		// whatever renderInto just drew is not wanted; fast removal, not innerHTML
-		while (this.domNode.firstChild) {
-			this.domNode.removeChild(this.domNode.lastChild);
-		}
 		this.domNode.classList.add('collapsed');
+		/*
+		A container keeps the front of itself -- the dot and the tilde -- because
+		that is what says which kind of container it is, and it is still that
+		kind while it is switched off. Only the name goes, and its children.
+
+		A leaf has no such front. Whatever it drew was the whole of what it said,
+		so the box replaces it.
+
+		(comment by Claude)
+		*/
+		if (!this.nex.isNexContainer()) {
+			// fast removal, not innerHTML
+			while (this.domNode.firstChild) {
+				this.domNode.removeChild(this.domNode.lastChild);
+			}
+		}
+		// where the pip would be, which is where what is missing would start
+		// (comment by Claude)
 		let mark = document.createElement('div');
 		mark.classList.add('collapsed-mark');
 		mark.innerText = '\\';
