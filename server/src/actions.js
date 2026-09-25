@@ -1011,6 +1011,26 @@ the same reason auditioning does not.
 
 (comment by Claude)
 */
+/*
+What counts as the thing to go back up and run again: whatever starts a sound.
+
+loop-play is play under its older name, and play-with-bpm is play that also
+sets the tempo, so leaving either out would mean walking past the very command
+you were reaching for. break is here because stopping everything and playing
+one thing once is the other way a passage gets started.
+
+play-midi is deliberately not here. It starts a sequence on a port rather than
+a sound in the cycle, and this is bound to a key you hit while listening.
+
+(comment by Claude)
+*/
+const STARTS_SOUND = {
+	'play': true,
+	'loop-play': true,
+	'play-with-bpm': true,
+	'break': true
+};
+
 class ReplayNearestPlayAction extends Action {
 	constructor(actionName) {
 		super(actionName);
@@ -1031,13 +1051,13 @@ class ReplayNearestPlayAction extends Action {
 			let nex = node.getNex();
 			// getCommandName is on Command, and a deferred command is one
 			// (comment by Claude)
-			if (nex && nex.getCommandName && nex.getCommandName() == 'play') {
+			if (nex && nex.getCommandName && STARTS_SOUND[nex.getCommandName()]) {
 				playNode = node;
 				break;
 			}
 		}
 		if (!playNode) {
-			// nothing above you plays anything, so there is nothing to repeat
+			// nothing above you starts anything, so there is nothing to repeat
 			// (comment by Claude)
 			Utils.beep();
 			return;
