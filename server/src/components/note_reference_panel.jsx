@@ -96,6 +96,14 @@ const NoteReferencePanel = () => {
                 <span className="infohotkey">get-bpm</span>reads it.
             </p>
             <p className="infolinemargin">
+                A beat length is spent the moment a wave is made. The wave
+                holds samples, not beats: one beat at 120 bpm becomes 24000
+                samples, and stays 24000 samples when the tempo changes. The
+                length readout measures against the current tempo, so after
+                <span className="infohotkey">set-bpm 60</span>the same wave
+                reads 0.5 b. The wave did not change; the beat did.
+            </p>
+            <p className="infolinemargin">
                 A midi note whose duration is in beats is shortened by 5 ms so
                 its note off lands before the next note on. Durations in any
                 other timebase are played exactly as asked.
@@ -125,11 +133,6 @@ const NoteReferencePanel = () => {
                 <span className="infohotkey">midi</span>is the same number, and
                 is what <span className="infohotkey">send-midi-note</span>and
                 <span className="infohotkey">play-midi</span>take, 0 to 127.
-            </p>
-            <p className="infolinemargin">
-                <span className="infohotkey">nn</span>used to sit an octave
-                below midi; documents saved before that changed sound an octave
-                low until twelve is added to their note numbers.
             </p>
             <p className="infospacer"></p>
 
