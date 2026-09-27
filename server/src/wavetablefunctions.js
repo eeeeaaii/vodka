@@ -112,7 +112,7 @@ function timebaseForTagString(t) {
 	if (t == 'ms' || t == 'millis' || t == 'milliseconds') return 'MILLIS';
 	if (t == 'hz' || t == 'Hz' || t == 'HZ' || t == 'cps') return 'HZ';
 	if (t == 'b' || t == 'beats' || t == 'beat') return 'BEATS';
-	if (t == 'samples' || t == 'samps' || t == 'samp') return 'SAMPLES';
+	if (t == 'samples' || t == 'samps' || t == 'samp' || t == 'sample') return 'SAMPLES';
 	return null;
 }
 
