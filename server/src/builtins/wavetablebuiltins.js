@@ -1797,13 +1797,15 @@ function createWavetableBuiltins() {
 
   Builtin.createBuiltin(
     "delay",
-    ["wt_", "time#%"],
+    ["wt_", "time#%_"],
     function $delay(env, executionEnvironment, commandTags) {
       let time = env.lb("time");
       let wt = env.lb("wt");
 
-      time = convertTimeToSamples(time);
-      let originalDuration = wt.getDuration();
+      let maxDelay = Math.ceil(longestDelay(time));
+      if (maxDelay < 0) maxDelay = 0;
+      let delayAt = lengthAt(time);
+      let dur = wt.getDuration();
       /*
       Anything pushed past the end has to go somewhere. By default the wave
       gets longer to make room for it, which is what you want for a sound that
@@ -1813,24 +1815,33 @@ function createWavetableBuiltins() {
       loop grows by the delay time every pass.
       */
       let wrap = hasCommandTag(commandTags, "wrap");
-      let outputDuration = wrap ? originalDuration : originalDuration + time;
+      let outputDuration = wrap ? dur : dur + maxDelay;
 
       let r = constructWavetable(outputDuration);
       let data = r.getData();
 
-      if (wrap) {
-        for (let i = 0; i < originalDuration; i++) {
-          data[(i + time) % outputDuration] += wt.valueAtSample(i);
-        }
-      } else {
-        for (let i = time; i < outputDuration; i++) {
-          data[i] = wt.valueAtSample(i - time);
+      for (let i = 0; i < outputDuration; i++) {
+        let d = delayAt(i % dur);
+        if (d < 0) d = 0;
+        let readAt = i - d;
+        let lo, hi;
+        if (wrap) {
+          readAt = ((readAt % dur) + dur) % dur;
+          let i0 = Math.floor(readAt);
+          lo = wt.valueAtSample(i0);
+          hi = wt.valueAtSample((i0 + 1) % dur);
+          data[i] = lo + (hi - lo) * (readAt - i0);
+        } else {
+          let i0 = Math.floor(readAt);
+          lo = (i0 >= 0 && i0 < dur) ? wt.valueAtSample(i0) : 0;
+          hi = (i0 + 1 >= 0 && i0 + 1 < dur) ? wt.valueAtSample(i0 + 1) : 0;
+          data[i] = lo + (hi - lo) * (readAt - i0);
         }
       }
       r.init();
       return r;
     },
-    "A copy of |wt moved |time later, with silence in front, longer by |time. Tag the command wrap to keep the length and bring the tail round to the start. Timebase tag goes on |time."
+    "A copy of |wt moved |time later, with silence in front, longer by the longest |time. A wave for |time is a moving tap: the pitch bends with its slope. Tag the command wrap to keep the length and bring the tail round to the start. Timebase tag goes on |time."
   );
 
   Builtin.createBuiltin(
@@ -1943,8 +1954,10 @@ function createWavetableBuiltins() {
   function lengthAt(nex) {
     if (nex.getTypeName() == "-wavetable-") {
       let timebase = nexToTimebase(nex);
+      // unfloored, so a moving tap glides between samples instead of
+      // stepping -- the interpolated read is pointless on whole numbers
       return function (i) {
-        return convertTimeToSamples(nex.valueAtSample(i), timebase);
+        return convertTimeToSamplesExact(nex.valueAtSample(i), timebase);
       };
     }
     let d = convertTimeToSamples(nex);
