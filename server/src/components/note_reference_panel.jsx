@@ -52,19 +52,84 @@ const NoteReferencePanel = () => {
     }
     return (
         <div className="infopanel">
-            <p className="infotitle">Note Numbers</p>
+            <p className="infotitle">Timebases</p>
 
             <p className="infolinemargin">
-                <span className="infohotkey">midi</span>is the number
-                <span className="infohotkey">send-midi-note</span>and
+                Sound is measured in samples, 48000 to the second. Every length
+                a sound builtin takes becomes a number of samples. The number
+                can be tagged with a unit; the tag is the unit. There are five:
+            </p>
+            <p className="infospacer"></p>
+            <p className="infoline"><span className="infohotkey">samp</span>a raw sample count. Also <span className="infohotkey">samps</span><span className="infohotkey">samples</span></p>
+            <p className="infoline"><span className="infohotkey">sec</span>seconds. <span className="infohotkey">#2&lt;sec&gt;</span>is 96000 samples. Also <span className="infohotkey">secs</span><span className="infohotkey">second</span><span className="infohotkey">seconds</span></p>
+            <p className="infoline"><span className="infohotkey">b</span>beats at the global tempo. One beat at 120 bpm is half a second. Also <span className="infohotkey">beat</span><span className="infohotkey">beats</span></p>
+            <p className="infoline"><span className="infohotkey">hz</span>one cycle at that frequency. <span className="infohotkey">#440&lt;hz&gt;</span>is 109 samples. Also <span className="infohotkey">Hz</span><span className="infohotkey">HZ</span><span className="infohotkey">cps</span></p>
+            <p className="infoline"><span className="infohotkey">nn</span>one cycle at that note's pitch. <span className="infohotkey">#69&lt;nn&gt;</span>is the same length as <span className="infohotkey">#440&lt;hz&gt;</span>. Also <span className="infohotkey">note</span></p>
+            <p className="infospacer"></p>
+
+            <p className="infosubheader">Pitch is a length</p>
+            <p className="infolinemargin">
+                <span className="infohotkey">hz</span>and
+                <span className="infohotkey">nn</span>name a pitch, but as a
+                length: one cycle. A wavetable loops when played, so a
+                sinewave <span className="infohotkey">#69&lt;nn&gt;</span>long
+                is one cycle of a sine and sounds at A440. This is how
+                oscillators are tuned.
+            </p>
+            <p className="infospacer"></p>
+
+            <p className="infosubheader">Untagged numbers</p>
+            <p className="infolinemargin">
+                An untagged length is read in the default timebase, which
+                starts as beats. <span className="infohotkey">set-default-timebase</span>sets
+                it from the tags on its argument;
+                <span className="infohotkey">get-default-timebase</span>reads it back.
+            </p>
+            <p className="infospacer"></p>
+
+            <p className="infosubheader">Tempo</p>
+            <p className="infolinemargin">
+                Beats follow the global tempo, which starts at 120 bpm.
+                <span className="infohotkey">set-bpm</span>changes it at once;
+                <span className="infohotkey">play-with-bpm</span>changes it on
+                the downbeat of the loop it starts;
+                <span className="infohotkey">get-bpm</span>reads it.
+            </p>
+            <p className="infolinemargin">
+                A midi note whose duration is in beats is shortened by 5 ms so
+                its note off lands before the next note on. Durations in any
+                other timebase are played exactly as asked.
+            </p>
+            <p className="infolinemargin">
+                Neither the tempo nor the default timebase is saved with a
+                session. Put the <span className="infohotkey">set-bpm</span>and
+                <span className="infohotkey">set-default-timebase</span>calls
+                in the document and they run when it does.
+            </p>
+            <p className="infospacer"></p>
+
+            <p className="infosubheader">Going the other way</p>
+            <p className="infolinemargin">
+                <span className="infohotkey">duration</span>answers in samples;
+                tag the command itself with a timebase for another unit.
+                <span className="infohotkey">brightness</span>answers in hz the
+                same way. The length readout above a wave shows its length in
+                one timebase; click it to cycle through the five.
+            </p>
+            <p className="infospacer"></p>
+
+            <p className="infosubheader">Note numbers</p>
+            <p className="infolinemargin">
+                A note number names a pitch: A440 is 69, middle C is 60, each
+                step is an equal-tempered semitone.
+                <span className="infohotkey">midi</span>is the same number, and
+                is what <span className="infohotkey">send-midi-note</span>and
                 <span className="infohotkey">play-midi</span>take, 0 to 127.
             </p>
             <p className="infolinemargin">
-                <span className="infohotkey">nn</span>is the same number, used as
-                a timebase -- the tag you put on a length, as in
-                <span className="infohotkey">#69&lt;nn&gt;</span>for A440. It used
-                to sit an octave below midi; documents saved before that changed
-                sound an octave low until twelve is added to their note numbers.
+                <span className="infohotkey">nn</span>used to sit an octave
+                below midi; documents saved before that changed sound an octave
+                low until twelve is added to their note numbers.
             </p>
             <p className="infospacer"></p>
 

@@ -34,7 +34,7 @@ const TopMenu = ({ selectedMenuChoice, onMenuChange }) => {
                 onMenuButtonClick={() => onMenuChange(ABSTRACT_DATA_TYPES)} />
             <MenuButton
                 key="NOTE_REFERENCE"
-                text="Note Numbers"
+                text="Timebases"
                 selected={selectedMenuChoice == NOTE_REFERENCE}
                 onMenuButtonClick={() => onMenuChange(NOTE_REFERENCE)} />
             <MenuButton
