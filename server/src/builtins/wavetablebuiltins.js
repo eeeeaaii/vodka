@@ -915,14 +915,10 @@ function createWavetableBuiltins() {
   );
 
   /*
-  A ladder: four one pole stages in a row with one resonance fed back around
-  the whole run, which is what makes it sound like a synthesizer filter rather
-  than four singlepoles. The feedback is solved rather than taken a sample
-  late -- taken late it detunes, and above a couple of kilohertz stops being
-  able to self-oscillate at all. The tanh is what bounds it when it does.
-
-  Full resonance is k a little past the textbook 4, because at exactly 4 the
-  oscillation is marginal and the tanh quietly eats it.
+  Feedback is solved rather than taken a sample late -- late feedback detunes
+  the filter and kills self-oscillation above a couple of kilohertz. Resonance
+  tops out at k = 4.3, a touch past the textbook 4, because at exactly 4 the
+  tanh quietly damps the oscillation before it can sustain.
 
   (comment by Claude)
   */
