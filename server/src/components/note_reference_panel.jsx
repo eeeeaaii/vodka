@@ -126,24 +126,25 @@ const NoteReferencePanel = () => {
             </p>
             <p className="infospacer"></p>
 
-            <p className="infosubheader">Special timebases</p>
+            <p className="infosubheader">Relative timebases</p>
             <p className="infolinemargin">
-                <span className="infohotkey">cents</span>and
-                <span className="infohotkey">semitones</span>are intervals, not
-                lengths: they move a pitch by a ratio rather than naming a
-                duration. 100 cents is a semitone; 1200 cents, or 12 semitones,
-                is an octave, a doubling.
-            </p>
-            <p className="infolinemargin">
-                Two builtins read them, on their amount arguments.
-                <span className="infohotkey">pitch-shift</span>reads an
-                untagged amount as semitones;
-                <span className="infohotkey">resample-by</span>reads one as a
-                rate. Elsewhere they mean nothing. Also
-                <span className="infohotkey">cent</span>
+                <span className="infohotkey">ratio</span>
+                <span className="infohotkey">semitones</span>and
+                <span className="infohotkey">cents</span>move a pitch instead
+                of naming a duration. A ratio of 2 is up an octave, which is
+                12 semitones, which is 1200 cents; 100 cents is a semitone.
+                Also <span className="infohotkey">cent</span>
                 <span className="infohotkey">semitone</span>
                 <span className="infohotkey">semi</span>
                 <span className="infohotkey">semis</span>
+            </p>
+            <p className="infolinemargin">
+                <span className="infohotkey">resample</span>reads its amount in
+                any timebase: a relative one scales the wave, untagged meaning
+                ratio, and a length timebase resamples the wave to that length.
+                <span className="infohotkey">pitch-shift</span>keeps the
+                length, so it takes only relative timebases, untagged meaning
+                semitones.
             </p>
             <p className="infospacer"></p>
 

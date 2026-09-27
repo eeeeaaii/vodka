@@ -47,7 +47,8 @@ import {
   nexToTimebase,
   timebaseFromTags,
   timebaseForTagString,
-  pitchDivisorFromNex,
+  relativeTimebaseFromNex,
+  relativeRate,
   convertSamplesToTimebase,
   getReferenceFrequency,
   setDefaultTimebase,
@@ -618,7 +619,7 @@ function createWavetableBuiltins() {
 
       /*
       Held rather than resampled, because the aliasing is the whole point.
-      resample-by interpolates, which is the right thing there and removes
+      resample interpolates, which is the right thing there and removes
       exactly the ringing that makes this sound like cheap hardware.
 
       (comment by Claude)
@@ -1378,7 +1379,10 @@ function createWavetableBuiltins() {
     function $pitchShift(env, executionEnvironment) {
       let wt = env.lb("wt");
       let semitones = env.lb("semitones");
-      let pitchDivisor = pitchDivisorFromNex(semitones) || 12;
+      if (explicitTimebase(semitones)) {
+        return constructFatalError("pitch-shift: takes a relative timebase, not a length. Sorry!");
+      }
+      let kind = relativeTimebaseFromNex(semitones) || "SEMITONES";
       let dur = wt.getDuration();
       if (dur < 2) {
         return constructFatalError("pitch-shift: nothing to shift. Sorry!");
@@ -1388,7 +1392,7 @@ function createWavetableBuiltins() {
       The speed change moves the pitch and undoes the stretch at the same time,
       so what is left is the original length at a different pitch. Which is why
       this is a function rather than anything new: it is time-stretch and
-      resample-by, one after the other.
+      resample, one after the other.
 
       (comment by Claude)
       */
@@ -1402,7 +1406,10 @@ function createWavetableBuiltins() {
 
       (comment by Claude)
       */
-      let ratio = Math.pow(2, semitones.getTypedValue() / pitchDivisor);
+      let ratio = relativeRate(semitones.getTypedValue(), kind);
+      if (ratio <= 0) {
+        return constructFatalError("pitch-shift: the ratio has to be positive. Sorry!");
+      }
       let longDur = stretchedLength(dur, ratio);
       if (longDur > STRETCH_MAX_OUTPUT) {
         return constructFatalError("pitch-shift: that would be too long to hold. Sorry!");
@@ -1425,131 +1432,95 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Moves |wt by |semitones without changing its length. Negative goes down; fractions are allowed. Tag |semitones with cents and it is cents instead: #100<cents> is one semitone."
+    "Moves |wt by |semitones without changing its length. Negative goes down; fractions are allowed. Tag |semitones with another relative timebase for another unit: #100<cents> is one semitone, #2<ratio> an octave up."
   );
 
+  /*
+  One builtin, two readings, told apart by the tag. A length timebase names
+  what the wave should become; a relative timebase (or no tag) says how far to
+  move it. Absolute and relative resampling differ in how the result's length
+  is found, so they stay separate loops below.
+  */
   Builtin.createBuiltin(
-    "resample-to",
-    ["wt_", "freq#%_?"],
-    function $resampleTo(env, executionEnvironment) {
-      let wt = env.lb("wt");
-      let freq = env.lb("freq");
-      if (freq == UNBOUND) {
-        freq = constructInteger(1);
-        freq.addTag(
-          newTagOrThrowOOM("seconds", "resample wavetable builtin, timebase")
-        );
-        sAttach(freq);
-      }
-      if (!(freq.getTypeName() == "-wavetable-")) {
-        let tag = freq.hasTags() ? freq.getTag(0) : null;
-        freq = getConstantSignalFromValue(freq.getTypedValue());
-        if (tag) {
-          freq.addTag(tag);
-        }
-      }
-
-      let timebase = nexToTimebase(freq);
-      let oldDuration = wt.getDuration();
-      let freqDuration = freq.getDuration();
-
-      // IDK if there's a smarter way to do this than doing two loops,
-      // but I want to calculate the size of the destination first.
-
-      // for reasons I don't understand the below loop crashes chrome if it
-      // goes on too long. I don't know why it's getting an OOM condition.
-      // Experimentally on my machine I can get to about 120,000,000
-      // but I'll restrict the user to 10,000,000
-
-      let maxdur = 10000000;
-      let dur = 0;
-      let oldPosition = 0;
-      for (let i = 0; oldPosition < oldDuration; i = (i + 1) % freqDuration) {
-        let shiftValue = freq.valueAtSample(i);
-        // at every time step we have a different idea of what the new duration
-        // will be, this is the current value
-        let instantaneousNewDuration = convertTimeToSamples(
-          shiftValue,
-          timebase
-        );
-        if (dur > maxdur) {
-          return constructFatalError(
-            `resample-to: result wavetable too long! Must be less than ${maxdur} samples.`
-          );
-        }
-        // for example, if the old duration is 1 second, and the new duration is 0.5 seconds,
-        // then as we are building the new waveform sample by sample, we effectively skip
-        // every other sample. The amount of time we need to advance in each step is given by
-        // the old duration divided by the new duration (in this example, 1 / 0.5 = 2.0 samples)
-        // Of course, we recalculate every step because the resample amount can be a waveform.
-        let amountToAdvance = oldDuration / instantaneousNewDuration;
-        oldPosition += amountToAdvance;
-        dur++;
-      }
-      if (dur == 0) {
-        return constructFatalError(
-          `resample-to: result wavetable too short (would be zero-length).`
-        );
-      }
-      let r = constructWavetable(dur);
-      let data = r.getData();
-
-      let j = 0;
-      oldPosition = 0;
-      for (
-        let i = 0;
-        oldPosition < oldDuration;
-        j++, i = (i + 1) % freqDuration
-      ) {
-        let v = wt.interpolatedValueAtSample(oldPosition);
-        let shiftValue = freq.valueAtSample(i);
-        // convert that to samples
-        let instantaneousNewDuration = convertTimeToSamples(
-          shiftValue,
-          timebase
-        );
-        // that number is the total number of samples it would be
-        // if you resampled this entire wave at that rate.
-        // But we are doing one timestep at a time, so
-        // divide by original sample length.
-        let amountToAdvance = oldDuration / instantaneousNewDuration;
-        oldPosition += amountToAdvance;
-        data[j] = v;
-      }
-
-      r.init();
-      return r;
-    },
-    "Resamples |wt to length |freq, which changes its pitch. Timebase tag goes on |freq."
-  );
-
-  Builtin.createBuiltin(
-    "resample-by",
+    "resample",
     ["wt_", "amount#%_"],
-    function $resampleBy(env, executionEnvironment) {
+    function $resample(env, executionEnvironment) {
       let wt = env.lb("wt");
       let amt = env.lb("amount");
-      if (amt == UNBOUND) {
-        amt = constructInteger(1);
-        sAttach(amt);
-      }
-
-      let pitchDivisor = pitchDivisorFromNex(amt);
-
-      let resultDuration = 0;
-
       let oldDuration = wt.getDuration();
 
-      if (!(amt.getTypeName() == "-wavetable-")) {
-        let scaleFactor = amt.getTypedValue();
-        if (pitchDivisor) {
-          scaleFactor = Math.pow(2, scaleFactor / pitchDivisor);
-          pitchDivisor = null;
+      let lengthTimebase = explicitTimebase(amt);
+      if (lengthTimebase) {
+        // absolute: resample the whole wave to the length |amount names
+        let freq = amt;
+        if (!(freq.getTypeName() == "-wavetable-")) {
+          freq = getConstantSignalFromValue(freq.getTypedValue());
         }
-        if (scaleFactor == 0) {
-          return constructFatalError(
-            "resample-by: cannot scale to a constant value that is zero."
+        let freqDuration = freq.getDuration();
+
+        // for reasons I don't understand the below loop crashes chrome if it
+        // goes on too long. I don't know why it's getting an OOM condition.
+        // Experimentally on my machine I can get to about 120,000,000
+        // but I'll restrict the user to 10,000,000
+
+        let maxdur = 10000000;
+        let dur = 0;
+        let oldPosition = 0;
+        for (let i = 0; oldPosition < oldDuration; i = (i + 1) % freqDuration) {
+          let instantaneousNewDuration = convertTimeToSamples(
+            freq.valueAtSample(i),
+            lengthTimebase
           );
+          if (dur > maxdur) {
+            return constructFatalError(
+              `resample: result would be more than ${maxdur} samples. Sorry!`
+            );
+          }
+          // for example, if the old duration is 1 second, and the new duration is 0.5 seconds,
+          // then as we are building the new waveform sample by sample, we effectively skip
+          // every other sample. The amount of time we need to advance in each step is given by
+          // the old duration divided by the new duration (in this example, 1 / 0.5 = 2.0 samples)
+          // Of course, we recalculate every step because the resample amount can be a waveform.
+          oldPosition += oldDuration / instantaneousNewDuration;
+          dur++;
+        }
+        if (dur == 0) {
+          return constructFatalError(
+            "resample: that leaves less than one sample. Sorry!"
+          );
+        }
+        let r = constructWavetable(dur);
+        let data = r.getData();
+
+        let j = 0;
+        oldPosition = 0;
+        for (
+          let i = 0;
+          oldPosition < oldDuration;
+          j++, i = (i + 1) % freqDuration
+        ) {
+          let v = wt.interpolatedValueAtSample(oldPosition);
+          let instantaneousNewDuration = convertTimeToSamples(
+            freq.valueAtSample(i),
+            lengthTimebase
+          );
+          oldPosition += oldDuration / instantaneousNewDuration;
+          data[j] = v;
+        }
+
+        r.init();
+        return r;
+      }
+
+      // relative: scale the wave by a rate; untagged means ratio
+      let kind = relativeTimebaseFromNex(amt) || "RATIO";
+      let resultDuration = 0;
+
+      if (!(amt.getTypeName() == "-wavetable-")) {
+        let scaleFactor = relativeRate(amt.getTypedValue(), kind);
+        kind = "RATIO";
+        if (scaleFactor == 0) {
+          return constructFatalError("resample: cannot resample by zero. Sorry!");
         }
         amt = getConstantSignalFromValue(scaleFactor);
         resultDuration = oldDuration * (1 / Math.abs(scaleFactor));
@@ -1561,7 +1532,7 @@ function createWavetableBuiltins() {
       let maxdur = 1000000;
       if (resultDuration > maxdur) {
         return constructFatalError(
-          `resample-by: result wavetable too long! Must be less than ${maxdur} samples.`
+          `resample: result would be more than ${maxdur} samples. Sorry!`
         );
       }
       // it is possible to get here: resampling by more than the wave is long
@@ -1570,7 +1541,7 @@ function createWavetableBuiltins() {
       resultDuration = Math.round(resultDuration);
       if (resultDuration < 1) {
         return constructFatalError(
-          "resample-by: that leaves less than one sample. Sorry!"
+          "resample: that leaves less than one sample. Sorry!"
         );
       }
 
@@ -1580,10 +1551,10 @@ function createWavetableBuiltins() {
       let oldPosition = 0;
       for (let i = 0; i < resultDuration; i++) {
         let v = wt.interpolatedValueAtSample(oldPosition);
-        let amountToAdvance = amt.valueAtSample(i % amtDuration);
-        if (pitchDivisor) {
-          amountToAdvance = Math.pow(2, amountToAdvance / pitchDivisor);
-        }
+        let amountToAdvance = relativeRate(
+          amt.valueAtSample(i % amtDuration),
+          kind
+        );
         oldPosition += amountToAdvance;
         data[i] = v;
       }
@@ -1591,8 +1562,11 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    'Resamples |wt by |amount: 1 is no change, negative runs it backwards. Tag |amount with cents or semitones and it is a pitch change instead: #5<cents> detunes up five cents, negative goes down. A constant |amount keeps the length of |wt; a wave sets the length from |amount instead.'
+    'Resamples |wt, which changes its pitch. |amount tagged with a relative timebase scales it: #12<semitones> goes up an octave. Untagged means ratio: 2 is twice as fast, 1 is no change, negative runs it backwards. Tagged with a length timebase, the wave is resampled to that length. A wave for |amount varies the rate over time.'
   );
+
+  Builtin.aliasBuiltin("resample-by", "resample");
+  Builtin.aliasBuiltin("resample-to", "resample");
 
   Builtin.createBuiltin(
     "resample-scale",

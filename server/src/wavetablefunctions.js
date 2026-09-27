@@ -115,21 +115,29 @@ function timebaseForTagString(t) {
 	return null;
 }
 
-// cents and semitones are intervals rather than lengths: the value moves a
-// pitch by 2^(value/divisor) instead of naming a duration. null for anything
-// else, so callers can fall back to their own default reading.
-function pitchDivisorForTagString(t) {
-	if (t == 'cents' || t == 'cent') return 1200;
-	if (t == 'semitones' || t == 'semitone' || t == 'semis' || t == 'semi') return 12;
+// relative timebases move a pitch instead of naming a duration. ratio is the
+// multiplier itself; semitones and cents are 12ths and 1200ths of an octave.
+function relativeTimebaseForTagString(t) {
+	if (t == 'ratio') return 'RATIO';
+	if (t == 'cents' || t == 'cent') return 'CENTS';
+	if (t == 'semitones' || t == 'semitone' || t == 'semis' || t == 'semi') return 'SEMITONES';
 	return null;
 }
 
-function pitchDivisorFromNex(nex) {
+function relativeTimebaseFromNex(nex) {
 	for (let i = 0; i < nex.numTags(); i++) {
-		let d = pitchDivisorForTagString(nex.getTag(i).getTagString());
-		if (d) return d;
+		let r = relativeTimebaseForTagString(nex.getTag(i).getTagString());
+		if (r) return r;
 	}
 	return null;
+}
+
+function relativeRate(value, kind) {
+	switch(kind) {
+		case 'RATIO': return value;
+		case 'SEMITONES': return Math.pow(2, value / 12);
+		case 'CENTS': return Math.pow(2, value / 1200);
+	}
 }
 
 /*
@@ -739,7 +747,8 @@ export { applyFormants,
 		 nexToTimebase,
 		 timebaseForTagString,
 		 timebaseFromTags,
-		 pitchDivisorFromNex,
+		 relativeTimebaseFromNex,
+		 relativeRate,
 		 setDefaultTimebase,
 		 setDefaultTimebaseValue,
 		 getDefaultTimebase,
