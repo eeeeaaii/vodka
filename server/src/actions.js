@@ -1059,7 +1059,6 @@ class ReplayNearestPlayAction extends Action {
 		if (!playNode) {
 			// nothing above you starts anything, so there is nothing to repeat
 			// (comment by Claude)
-			Utils.beep();
 			return;
 		}
 		// the same thing shift-enter does: run it and keep the code

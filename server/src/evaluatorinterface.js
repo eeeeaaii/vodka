@@ -55,7 +55,6 @@ function evaluateAndReplace(s) {
 
 	let n = evaluateTopLevelSafely(s.getNex(), BINDINGS);
 	if (Utils.isFatalError(n)) {
-		Utils.beep();
 		if (!experiments.ERRORS_REPLACE) {
 			manipulator.insertBeforeSelectedAndSelect(new RenderNode(n));
 			return;
@@ -84,7 +83,6 @@ function evaluateAndKeep(s) {
 	systemState.resetStack();
 	let n = evaluateTopLevelSafely(s.getNex(), BINDINGS);
 	if (Utils.isFatalError(n)) {
-		Utils.beep();
 		manipulator.insertBeforeSelectedAndSelect(new RenderNode(n));
 	} else {
 		sHoldDeferred(n);

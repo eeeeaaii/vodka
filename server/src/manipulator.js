@@ -1988,12 +1988,10 @@ class Manipulator {
 			}
 		} catch (e) {
 			if (Utils.isFatalError(e)) {
-				Utils.beep();
 				this.insertBeforeSelectedAndSelect(e);				
 			} else {
 				if (e.message && e.message.indexOf('CONVERT TO EERROR:') == 0) {
 					let ee = constructFatalError(e.message.substr(18));
-					Utils.beep();
 					this.insertBeforeSelectedAndSelect(ee);				
 				} else {
 					throw e;
@@ -2058,12 +2056,10 @@ class Manipulator {
 			return this.selected();
 		} catch (e) {
 			if (Utils.isFatalError(e)) {
-				Utils.beep();
 				this.insertBeforeSelectedAndSelect(e);				
 			} else {
 				if (e.message && e.message.indexOf('CONVERT TO EERROR:') == 0) {
 					let ee = constructFatalError(e.message.substr(18));
-					Utils.beep();
 					this.insertBeforeSelectedAndSelect(ee);				
 				} else {
 					throw e;
