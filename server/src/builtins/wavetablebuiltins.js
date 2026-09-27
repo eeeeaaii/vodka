@@ -2841,18 +2841,36 @@ function createWavetableBuiltins() {
     return convertTimeToSamples(point, timebase);
   }
 
+  // one letter with an optional number is how unnamed split points present
+  // themselves, so no named one may look like that
+  function isReservedSplitPointName(name) {
+    return /^[a-z][0-9]*$/.test(name);
+  }
+
   Builtin.createBuiltin(
     "set-split-points",
-    ["wt_", "points#%()"],
+    ["wt_", "points#%()", "name$?"],
     function $sliceAt(env, executionEnvironment) {
       let wt = env.lb("wt");
       let points = env.lb("points");
+      let namenex = env.lb("name");
       let total = wt.getDuration();
 
       let list = Utils.isNexContainer(points) ? points : null;
       let each = list ? [] : [points];
       for (let i = 0; list && i < list.numChildren(); i++) {
         each.push(list.getChildAt(i));
+      }
+
+      let name = null;
+      if (namenex != UNBOUND) {
+        name = namenex.getFullTypedValue();
+        if (each.length != 1) {
+          return constructFatalError("set-split-points: one name names one point. Sorry!");
+        }
+        if (isReservedSplitPointName(name)) {
+          return constructFatalError("set-split-points: names like a, b or c1 belong to unnamed split points. Sorry!");
+        }
       }
 
       let marks = [];
@@ -2872,16 +2890,29 @@ function createWavetableBuiltins() {
       }
 
       let r = wt.makeCopy();
+      if (name) {
+        // the same name again moves that split point
+        for (let at in r.markerNames) {
+          if (r.markerNames[at] == name) {
+            delete r.markerNames[at];
+            let ix = r.markers.indexOf(Number(at));
+            if (ix != -1) r.markers.splice(ix, 1);
+          }
+        }
+      }
       for (let i = 0; i < marks.length; i++) {
         if (r.markers.indexOf(marks[i]) == -1) {
           r.markers.push(marks[i]);
+        }
+        if (name) {
+          r.markerNames[marks[i]] = name;
         }
       }
       r.markers.sort(function(a, b) { return a - b; });
       r.cacheSections();
       return r;
     },
-    "A copy of |wt with split points at |points, one number or a list; n points give n+1 slices. Tag them with a timebase, or with of-total for a fraction of the wave. A tag on the list applies to every point."
+    "A copy of |wt with split points at |points, one number or a list; n points give n+1 slices. Tag them with a timebase, or with of-total for a fraction of the wave. A tag on the list applies to every point. A single point may be given a |name, which moves the point if the name is already in use."
   );
 
   Builtin.createBuiltin(
@@ -3136,6 +3167,7 @@ function createWavetableBuiltins() {
       against every crossing.
       */
       let moved = [];
+      let movedNames = {};
       let at = 0;
       for (let m = 0; m < r.markers.length; m++) {
         let mark = r.markers[m];
@@ -3151,9 +3183,15 @@ function createWavetableBuiltins() {
         if (moved.length == 0 || moved[moved.length - 1] != best) {
           moved.push(best);
         }
+        // when two merge, the one with a name is the one that survives
+        let name = r.markerNames[mark];
+        if (name && !movedNames[best]) {
+          movedNames[best] = name;
+        }
       }
 
       r.markers = moved;
+      r.markerNames = movedNames;
       r.cacheSections();
       return r;
     },

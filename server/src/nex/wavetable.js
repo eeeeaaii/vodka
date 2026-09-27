@@ -226,6 +226,8 @@ class Wavetable extends Nex {
 		this.playbackStartSample = -1;
 		this.wavetableId = newShortId();
 		this.markers = [];
+		// position -> name, for the split points that have one
+		this.markerNames = {};
 		this.sectionBeingAuditioned = null;
 		this.recording = false;
 		this.recordedChunks = null;
@@ -355,6 +357,7 @@ class Wavetable extends Nex {
 	}
 
 	deleteMarker(i) {
+		delete this.markerNames[this.markers[i]];
 		this.markers.splice(i, 1);
 		// the sections are what you audition, and there is one fewer of them
 		// now -- every other thing that moves a marker recuts them, and this
@@ -634,6 +637,10 @@ class Wavetable extends Nex {
 		for (let i = 0; i < this.markers.length; i++) {
 			nex.markers[i] = this.markers[i];
 		}
+		nex.markerNames = {};
+		for (let at in this.markerNames) {
+			nex.markerNames[at] = this.markerNames[at];
+		}
 		nex.wavetableId = newShortId();
 		nex.cacheSections();
 	}
@@ -717,14 +724,20 @@ class Wavetable extends Nex {
 	*/
 	restoreMarkers(value) {
 		let out = [];
+		let names = {};
 		let raw = value ? value.split(',') : [];
 		for (let i = 0; i < raw.length; i++) {
-			let n = Number(raw[i]);
+			let eq = raw[i].indexOf('=');
+			let n = Number(eq < 0 ? raw[i] : raw[i].substring(0, eq));
 			if (Number.isInteger(n) && n >= 1 && n <= this.data.length - 1) {
 				out.push(n);
+				if (eq >= 0) {
+					names[n] = decodeURIComponent(raw[i].substring(eq + 1));
+				}
 			}
 		}
 		this.markers = out.sort((a, b) => a - b);
+		this.markerNames = names;
 		if (this.markers.length == 0) return;
 		try {
 			this.cacheSections();
@@ -741,7 +754,13 @@ class Wavetable extends Nex {
 	serializePrivateData(ctx) {
 		let fields = [];
 		if (this.markers.length > 0) {
-			fields.push(SPLIT_POINTS_KEY + KEY_SEPARATOR + this.markers.join(','));
+			// a named point is written pos=name, the name uri-encoded so it
+			// cannot collide with any separator
+			let written = this.markers.map(m => {
+				let name = this.markerNames[m];
+				return name ? m + '=' + encodeURIComponent(name) : '' + m;
+			});
+			fields.push(SPLIT_POINTS_KEY + KEY_SEPARATOR + written.join(','));
 		}
 		// last, and the only field that may arrive without a key. Empty when
 		// there was nowhere to put the samples, in which case no field is
@@ -1333,11 +1352,22 @@ class Wavetable extends Nex {
 		return addMarkerButton;
 	}
 
+	// a-z, then a1-z1, a2-z2, and so on
+	autoMarkerName(k) {
+		let letter = String.fromCharCode("a".charCodeAt(0) + (k % 26));
+		let round = Math.floor(k / 26);
+		return round == 0 ? letter : letter + round;
+	}
+
 	getMarkerName(n) {
-		let startnum = "a".charCodeAt(0);
-		let thenum = startnum + n;
-		let thechar = String.fromCharCode(thenum);
-		return thechar;		
+		let name = this.markerNames[this.markers[n]];
+		if (name) return name;
+		// named split points do not use up letters
+		let k = 0;
+		for (let i = 0; i < n; i++) {
+			if (!this.markerNames[this.markers[i]]) k++;
+		}
+		return this.autoMarkerName(k);
 	}
 
 	createMarkerNum(n) {
@@ -1540,8 +1570,9 @@ class Wavetable extends Nex {
 			ctx.fillStyle = '#ffffff';
 			ctx.strokeStyle = '#000000';
 			ctx.font = "11px Courier";
-			ctx.fillRect(xpos, boxy, boxsize, boxsize);
-			ctx.strokeRect(xpos, boxy, boxsize, boxsize);
+			let boxwidth = Math.max(boxsize, Math.ceil(ctx.measureText(n).width) + 2 * nameind);
+			ctx.fillRect(xpos, boxy, boxwidth, boxsize);
+			ctx.strokeRect(xpos, boxy, boxwidth, boxsize);
 			ctx.fillStyle = '#000000';
 			ctx.fillText(n, xpos + nameind, namey);
 		}
