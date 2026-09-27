@@ -1532,12 +1532,22 @@ function createWavetableBuiltins() {
         sAttach(amt);
       }
 
+      let cents = false;
+      for (let i = 0; i < amt.numTags(); i++) {
+        let t = amt.getTag(i).getTagString();
+        if (t == "cents" || t == "cent") cents = true;
+      }
+
       let resultDuration = 0;
 
       let oldDuration = wt.getDuration();
 
       if (!(amt.getTypeName() == "-wavetable-")) {
         let scaleFactor = amt.getTypedValue();
+        if (cents) {
+          scaleFactor = Math.pow(2, scaleFactor / 1200);
+          cents = false;
+        }
         if (scaleFactor == 0) {
           return constructFatalError(
             "resample-by: cannot scale to a constant value that is zero."
@@ -1573,6 +1583,9 @@ function createWavetableBuiltins() {
       for (let i = 0; i < resultDuration; i++) {
         let v = wt.interpolatedValueAtSample(oldPosition);
         let amountToAdvance = amt.valueAtSample(i % amtDuration);
+        if (cents) {
+          amountToAdvance = Math.pow(2, amountToAdvance / 1200);
+        }
         oldPosition += amountToAdvance;
         data[i] = v;
       }
@@ -1580,7 +1593,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    'Resamples |wt by |amount: 1 is no change, negative runs it backwards. A constant |amount keeps the length of |wt; a wave sets the length from |amount instead.'
+    'Resamples |wt by |amount: 1 is no change, negative runs it backwards. Tag |amount with cents and it is a pitch change instead: #5<cents> detunes up five cents, negative goes down. A constant |amount keeps the length of |wt; a wave sets the length from |amount instead.'
   );
 
   Builtin.createBuiltin(
