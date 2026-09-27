@@ -730,7 +730,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "One pole filter on |wt1 with cutoff |wt2, a number or a wave. |wt2 runs 0 to 1 across the range of hearing, by ear rather than by hertz; tag it hz or nn for a real frequency. Tag the command low or high, default low. Does not resonate; use doublepole."
+    "One pole filter on |wt1 with cutoff |wt2, a number or a wave. |wt2 runs 0 to 1 across the range of hearing, by ear rather than by hertz; tag it hz or nn for a real frequency. Tag the command low or high, default low. Does not resonate; use doublepole or fourpole."
   );
 
 
@@ -912,6 +912,76 @@ function createWavetableBuiltins() {
       return r;
     },
     "Two pole filter on |wt. Tag the command low, high, band or notch; low by default. |cutoff runs 0 to 1 across the range of hearing, by ear rather than by hertz, so halfway is about 630Hz and a wave sweeps evenly. Tag it hz or nn for a real frequency. |resonance runs 0 to 1. Both may be waves."
+  );
+
+  /*
+  A ladder: four one pole stages in a row with one resonance fed back around
+  the whole run, which is what makes it sound like a synthesizer filter rather
+  than four singlepoles. The feedback is solved rather than taken a sample
+  late -- taken late it detunes, and above a couple of kilohertz stops being
+  able to self-oscillate at all. The tanh is what bounds it when it does.
+
+  Full resonance is k a little past the textbook 4, because at exactly 4 the
+  oscillation is marginal and the tanh quietly eats it.
+
+  (comment by Claude)
+  */
+  Builtin.createBuiltin(
+    "fourpole",
+    ["wt_", "cutoff#%_", "resonance#%_?"],
+    function $fourpole(env, executionEnvironment, commandTags) {
+      let wt = env.lb("wt");
+      const KINDS = ["low", "high", "band"];
+      let kind = filterKindFromTags(commandTags, KINDS);
+      if (kind == "conflict") {
+        return filterKindError("fourpole", KINDS);
+      }
+      let cutoff = frequencyAt(env.lb("cutoff"));
+      let resonance = amountAt(env.lb("resonance"), 0);
+
+      let dur = Math.max(wt.getDuration(),
+          longestWave(env.lb("cutoff"), env.lb("resonance")));
+      let r = constructWavetable(dur);
+      let data = r.getData();
+      let sampleRate = getSampleRate();
+      let s1 = 0, s2 = 0, s3 = 0, s4 = 0;
+      for (let i = 0; i < dur; i++) {
+        let fc = cutoff(i);
+        if (fc < 0) fc = 0;
+        if (fc > 0.49 * sampleRate) fc = 0.49 * sampleRate;
+        let g = Math.tan((Math.PI * fc) / sampleRate);
+        let G = g / (1 + g);
+        let G4 = G * G * G * G;
+        let k = 4.3 * resonance(i);
+        if (k < 0) k = 0;
+        if (k > 4.3) k = 4.3;
+        let S = G * G * G * (1 - G) * s1 + G * G * (1 - G) * s2
+            + G * (1 - G) * s3 + (1 - G) * s4;
+        let u = Math.tanh((wt.valueAtSample(i) - k * S) / (1 + k * G4));
+        let v1 = G * (u - s1);
+        let y1 = v1 + s1;
+        s1 = y1 + v1;
+        let v2 = G * (y1 - s2);
+        let y2 = v2 + s2;
+        s2 = y2 + v2;
+        let v3 = G * (y2 - s3);
+        let y3 = v3 + s3;
+        s3 = y3 + v3;
+        let v4 = G * (y3 - s4);
+        let y4 = v4 + s4;
+        s4 = y4 + v4;
+        let y = y4;
+        if (kind == "high") {
+          y = u - 4 * y1 + 6 * y2 - 4 * y3 + y4;
+        } else if (kind == "band") {
+          y = 4 * (y2 - 2 * y3 + y4);
+        }
+        data[i] = y;
+      }
+      r.init();
+      return r;
+    },
+    "Four pole ladder filter on |wt, 24dB per octave with one resonance around all four stages. Tag the command low, high or band; low by default. |cutoff runs 0 to 1 across the range of hearing, by ear rather than by hertz; tag it hz or nn for a real frequency. |resonance runs 0 to 1 and self-oscillates at the top. Both may be waves."
   );
 
   Builtin.createBuiltin(
