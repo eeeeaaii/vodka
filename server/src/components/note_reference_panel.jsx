@@ -60,7 +60,7 @@ const NoteReferencePanel = () => {
                 can be tagged with a unit; the tag is the unit. There are six:
             </p>
             <p className="infospacer"></p>
-            <p className="infoline"><span className="infohotkey">samp</span>a raw sample count. Also <span className="infohotkey">samps</span><span className="infohotkey">samples</span></p>
+            <p className="infoline"><span className="infohotkey">samp</span>a raw sample count. Also <span className="infohotkey">sample</span><span className="infohotkey">samps</span><span className="infohotkey">samples</span></p>
             <p className="infoline"><span className="infohotkey">sec</span>seconds. <span className="infohotkey">#2&lt;sec&gt;</span>is 96000 samples. Also <span className="infohotkey">secs</span><span className="infohotkey">second</span><span className="infohotkey">seconds</span></p>
             <p className="infoline"><span className="infohotkey">ms</span>milliseconds. Also <span className="infohotkey">millis</span><span className="infohotkey">milliseconds</span></p>
             <p className="infoline"><span className="infohotkey">b</span>beats at the global tempo. One beat at 120 bpm is half a second. Also <span className="infohotkey">beat</span><span className="infohotkey">beats</span></p>
