@@ -20,6 +20,8 @@ import { systemState } from './systemstate.js'
 import { manipulator } from './manipulator.js'
 import { enqueueAndPerformAction, MultiSelectAction, ClickSelectAction } from './actions.js'
 import { INSERT_BEFORE, INSERT_AFTER, INSERT_INSIDE } from './rendernode.js'
+import { evaluateAndKeep } from './evaluatorinterface.js'
+import * as Utils from './utils.js'
 
 // can return null if user clicks on some other thing
 function getParentNexOfDomElement(elt) {
@@ -61,6 +63,15 @@ function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 		return;
 	}
 	if (systemState.isMouseFunnelActive() && atTarget) {
+		// the second click of a double click on a command runs it in place,
+		// the same as shift-enter; the first click already selected it
+		if (browserEvent.detail == 2 && Utils.isCommand(nex)
+				&& !renderNode.getCurrentEditor()) {
+			browserEvent.stopPropagation();
+			browserEvent.preventDefault();
+			evaluateAndKeep(renderNode);
+			return;
+		}
 		let parentNexDomElt = getParentNexOfDomElement(browserEvent.target);
 		let mode = insertionModeForClick(renderNode, browserEvent);
 		/*

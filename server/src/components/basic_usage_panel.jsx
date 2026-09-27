@@ -70,6 +70,7 @@ const BasicUsagePanel = () => {
         <p className="infospacer"></p>
         <p className="infoline"><span className="infohotkey">enter</span>evaluate the currently selected object and replace it with the result.</p>
         <p className="infoline"><span className="infohotkey">shift-enter</span>evaluate the currently selected nex for side effects, but don't replace it.</p>
+        <p className="infoline"><span className="infohotkey">doubleclick</span>on a command, the same as shift-enter.</p>
         <p className="infospacer"></p>
         <p className="infoline"><span className="infohotkey">delete</span>enters edit mode for currently selected object</p>
         <p className="infospacer"></p>
