@@ -141,7 +141,9 @@ const NoteReferencePanel = () => {
             <p className="infolinemargin">
                 <span className="infohotkey">resample</span>reads its amount in
                 any timebase: a relative one scales the wave, untagged meaning
-                ratio, and a length timebase resamples the wave to that length.
+                ratio, and a length timebase resamples the wave to that length
+                (note the assumption that the original wave is exactly one
+                cycle).
                 <span className="infohotkey">pitch-shift</span>keeps the
                 length, so it takes only relative timebases, untagged meaning
                 semitones.
