@@ -233,7 +233,7 @@ class Wavetable extends Nex {
 		this.currentTimebase = null;
 		this.rightIsClipping = false;
 
-		if (!initSize) initSize = 256;
+		if (initSize == undefined) initSize = 256;
 		let d = new Float32Array(initSize);
 		d.fill(0);
 		this.initWith(d);
@@ -1693,7 +1693,8 @@ function constructWavetableWithFileData(data) {
 }
 
 function constructWavetable(initSize) {
-	if (!initSize) {
+	// an explicit zero is a computed length, not a request for the default
+	if (initSize == undefined) {
 		initSize = 256;
 	}
 	/*
