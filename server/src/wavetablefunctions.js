@@ -115,6 +115,23 @@ function timebaseForTagString(t) {
 	return null;
 }
 
+// cents and semitones are intervals rather than lengths: the value moves a
+// pitch by 2^(value/divisor) instead of naming a duration. null for anything
+// else, so callers can fall back to their own default reading.
+function pitchDivisorForTagString(t) {
+	if (t == 'cents' || t == 'cent') return 1200;
+	if (t == 'semitones' || t == 'semitone' || t == 'semis' || t == 'semi') return 12;
+	return null;
+}
+
+function pitchDivisorFromNex(nex) {
+	for (let i = 0; i < nex.numTags(); i++) {
+		let d = pitchDivisorForTagString(nex.getTag(i).getTagString());
+		if (d) return d;
+	}
+	return null;
+}
+
 /*
 Tags written on the command itself rather than on one of its arguments, as in
 ~(_<`nocycle`>+ @a @b_). Lives here because both the wavetable builtins and the
@@ -722,6 +739,7 @@ export { applyFormants,
 		 nexToTimebase,
 		 timebaseForTagString,
 		 timebaseFromTags,
+		 pitchDivisorFromNex,
 		 setDefaultTimebase,
 		 setDefaultTimebaseValue,
 		 getDefaultTimebase,

@@ -126,6 +126,27 @@ const NoteReferencePanel = () => {
             </p>
             <p className="infospacer"></p>
 
+            <p className="infosubheader">Special timebases</p>
+            <p className="infolinemargin">
+                <span className="infohotkey">cents</span>and
+                <span className="infohotkey">semitones</span>are intervals, not
+                lengths: they move a pitch by a ratio rather than naming a
+                duration. 100 cents is a semitone; 1200 cents, or 12 semitones,
+                is an octave, a doubling.
+            </p>
+            <p className="infolinemargin">
+                Two builtins read them, on their amount arguments.
+                <span className="infohotkey">pitch-shift</span>reads an
+                untagged amount as semitones;
+                <span className="infohotkey">resample-by</span>reads one as a
+                rate. Elsewhere they mean nothing. Also
+                <span className="infohotkey">cent</span>
+                <span className="infohotkey">semitone</span>
+                <span className="infohotkey">semi</span>
+                <span className="infohotkey">semis</span>
+            </p>
+            <p className="infospacer"></p>
+
             <p className="infosubheader">Note numbers</p>
             <p className="infolinemargin">
                 A note number names a pitch: A440 is 69, middle C is 60, each

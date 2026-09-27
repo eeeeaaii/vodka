@@ -47,6 +47,7 @@ import {
   nexToTimebase,
   timebaseFromTags,
   timebaseForTagString,
+  pitchDivisorFromNex,
   convertSamplesToTimebase,
   getReferenceFrequency,
   setDefaultTimebase,
@@ -1376,7 +1377,8 @@ function createWavetableBuiltins() {
     ["wt_", "semitones#%"],
     function $pitchShift(env, executionEnvironment) {
       let wt = env.lb("wt");
-      let semitones = env.lb("semitones").getTypedValue();
+      let semitones = env.lb("semitones");
+      let pitchDivisor = pitchDivisorFromNex(semitones) || 12;
       let dur = wt.getDuration();
       if (dur < 2) {
         return constructFatalError("pitch-shift: nothing to shift. Sorry!");
@@ -1400,7 +1402,7 @@ function createWavetableBuiltins() {
 
       (comment by Claude)
       */
-      let ratio = Math.pow(2, semitones / 12);
+      let ratio = Math.pow(2, semitones.getTypedValue() / pitchDivisor);
       let longDur = stretchedLength(dur, ratio);
       if (longDur > STRETCH_MAX_OUTPUT) {
         return constructFatalError("pitch-shift: that would be too long to hold. Sorry!");
@@ -1423,7 +1425,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    "Moves |wt by |semitones without changing its length. Negative goes down; fractions are allowed."
+    "Moves |wt by |semitones without changing its length. Negative goes down; fractions are allowed. Tag |semitones with cents and it is cents instead: #100<cents> is one semitone."
   );
 
   Builtin.createBuiltin(
@@ -1532,11 +1534,7 @@ function createWavetableBuiltins() {
         sAttach(amt);
       }
 
-      let cents = false;
-      for (let i = 0; i < amt.numTags(); i++) {
-        let t = amt.getTag(i).getTagString();
-        if (t == "cents" || t == "cent") cents = true;
-      }
+      let pitchDivisor = pitchDivisorFromNex(amt);
 
       let resultDuration = 0;
 
@@ -1544,9 +1542,9 @@ function createWavetableBuiltins() {
 
       if (!(amt.getTypeName() == "-wavetable-")) {
         let scaleFactor = amt.getTypedValue();
-        if (cents) {
-          scaleFactor = Math.pow(2, scaleFactor / 1200);
-          cents = false;
+        if (pitchDivisor) {
+          scaleFactor = Math.pow(2, scaleFactor / pitchDivisor);
+          pitchDivisor = null;
         }
         if (scaleFactor == 0) {
           return constructFatalError(
@@ -1583,8 +1581,8 @@ function createWavetableBuiltins() {
       for (let i = 0; i < resultDuration; i++) {
         let v = wt.interpolatedValueAtSample(oldPosition);
         let amountToAdvance = amt.valueAtSample(i % amtDuration);
-        if (cents) {
-          amountToAdvance = Math.pow(2, amountToAdvance / 1200);
+        if (pitchDivisor) {
+          amountToAdvance = Math.pow(2, amountToAdvance / pitchDivisor);
         }
         oldPosition += amountToAdvance;
         data[i] = v;
@@ -1593,7 +1591,7 @@ function createWavetableBuiltins() {
       r.init();
       return r;
     },
-    'Resamples |wt by |amount: 1 is no change, negative runs it backwards. Tag |amount with cents and it is a pitch change instead: #5<cents> detunes up five cents, negative goes down. A constant |amount keeps the length of |wt; a wave sets the length from |amount instead.'
+    'Resamples |wt by |amount: 1 is no change, negative runs it backwards. Tag |amount with cents or semitones and it is a pitch change instead: #5<cents> detunes up five cents, negative goes down. A constant |amount keeps the length of |wt; a wave sets the length from |amount instead.'
   );
 
   Builtin.createBuiltin(
