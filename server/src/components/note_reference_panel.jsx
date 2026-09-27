@@ -57,11 +57,12 @@ const NoteReferencePanel = () => {
             <p className="infolinemargin">
                 Sound is measured in samples, 48000 to the second. Every length
                 a sound builtin takes becomes a number of samples. The number
-                can be tagged with a unit; the tag is the unit. There are five:
+                can be tagged with a unit; the tag is the unit. There are six:
             </p>
             <p className="infospacer"></p>
             <p className="infoline"><span className="infohotkey">samp</span>a raw sample count. Also <span className="infohotkey">samps</span><span className="infohotkey">samples</span></p>
             <p className="infoline"><span className="infohotkey">sec</span>seconds. <span className="infohotkey">#2&lt;sec&gt;</span>is 96000 samples. Also <span className="infohotkey">secs</span><span className="infohotkey">second</span><span className="infohotkey">seconds</span></p>
+            <p className="infoline"><span className="infohotkey">ms</span>milliseconds. Also <span className="infohotkey">millis</span><span className="infohotkey">milliseconds</span></p>
             <p className="infoline"><span className="infohotkey">b</span>beats at the global tempo. One beat at 120 bpm is half a second. Also <span className="infohotkey">beat</span><span className="infohotkey">beats</span></p>
             <p className="infoline"><span className="infohotkey">hz</span>one cycle at that frequency. <span className="infohotkey">#440&lt;hz&gt;</span>is 109 samples. Also <span className="infohotkey">Hz</span><span className="infohotkey">HZ</span><span className="infohotkey">cps</span></p>
             <p className="infoline"><span className="infohotkey">nn</span>one cycle at that note's pitch. <span className="infohotkey">#69&lt;nn&gt;</span>is the same length as <span className="infohotkey">#440&lt;hz&gt;</span>. Also <span className="infohotkey">note</span></p>
@@ -122,7 +123,15 @@ const NoteReferencePanel = () => {
                 tag the command itself with a timebase for another unit.
                 <span className="infohotkey">brightness</span>answers in hz the
                 same way. The length readout above a wave shows its length in
-                one timebase; click it to cycle through the five.
+                one timebase; click it to cycle.
+            </p>
+            <p className="infolinemargin">
+                <span className="infohotkey">timebase-convert</span>converts a
+                value to the timebase the command itself is tagged with,
+                whatever the value was tagged: inside a function,
+                <span className="infohotkey">~(&lt;samples&gt;timebase-convert @a)</span>is
+                @a as samples no matter how the caller tagged it. The answer
+                carries the new tag.
             </p>
             <p className="infospacer"></p>
 

@@ -48,7 +48,10 @@ import {
   timebaseFromTags,
   timebaseForTagString,
   relativeTimebaseFromNex,
+  relativeTimebaseFromTags,
   relativeRate,
+  convertTimeToSamplesExact,
+  getTimebaseSuffix,
   convertSamplesToTimebase,
   getReferenceFrequency,
   setDefaultTimebase,
@@ -2677,17 +2680,54 @@ function createWavetableBuiltins() {
   );
 
   Builtin.createBuiltin(
-    "milliseconds-of",
-    ["len"],
-    function $millisecondsOf(env, executionEnvironment) {
-      let len = env.lb("len");
-      let ms = (convertTimeToSamples(len) / getSampleRate()) * 1000;
-      // setTimeout drops anything after the decimal point, so a float here
-      // would only be rounded later, somewhere less obvious.
-      // (comment by Claude)
-      return constructInteger(Math.round(ms));
+    "timebase-convert",
+    ["a#%"],
+    function $timebaseConvert(env, executionEnvironment, commandTags) {
+      let a = env.lb("a");
+      let target = timebaseFromTags(commandTags);
+      let relTarget = relativeTimebaseFromTags(commandTags);
+      if (!target && !relTarget) {
+        return constructFatalError(
+          "timebase-convert: tag the command with the timebase to convert to. Sorry!"
+        );
+      }
+      let sourceRel = relativeTimebaseFromNex(a);
+      if (target) {
+        if (sourceRel) {
+          return constructFatalError(
+            "timebase-convert: a relative value has no length. Sorry!"
+          );
+        }
+        let samples = convertTimeToSamplesExact(a);
+        let r = constructFloat(convertSamplesToTimebase(target, samples));
+        r.addTag(newTagOrThrowOOM(getTimebaseSuffix(target), "timebase-convert"));
+        return r;
+      }
+      if (explicitTimebase(a)) {
+        return constructFatalError(
+          "timebase-convert: a length is not a pitch change. Sorry!"
+        );
+      }
+      let rate = relativeRate(a.getTypedValue(), sourceRel || "RATIO");
+      if (rate <= 0) {
+        return constructFatalError(
+          "timebase-convert: the ratio has to be positive. Sorry!"
+        );
+      }
+      let v = rate;
+      let suffix = "ratio";
+      if (relTarget == "SEMITONES") {
+        v = 12 * Math.log2(rate);
+        suffix = "semitones";
+      } else if (relTarget == "CENTS") {
+        v = 1200 * Math.log2(rate);
+        suffix = "cents";
+      }
+      let r = constructFloat(v);
+      r.addTag(newTagOrThrowOOM(suffix, "timebase-convert"));
+      return r;
     },
-    "|len in whole milliseconds, rounded. Takes a timebase tag, so this is how a length in beats reaches something outside the audio system."
+    "Converts |a to the timebase the command itself is tagged with, whatever |a was tagged: ~(<`ms`>timebase-convert #2<`b`>) is a beat count as milliseconds. Relative timebases convert among themselves: <`cents`> of #2<`ratio`> is 1200. The answer carries the new tag."
   );
 
   /*

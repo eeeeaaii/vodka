@@ -109,6 +109,7 @@ a single tag behaves exactly as before.
 function timebaseForTagString(t) {
 	if (t == 'note' || t == 'nn') return 'NOTE';
 	if (t == 'seconds' || t == 'second' || t == 'secs' || t == 'sec') return 'SECONDS';
+	if (t == 'ms' || t == 'millis' || t == 'milliseconds') return 'MILLIS';
 	if (t == 'hz' || t == 'Hz' || t == 'HZ' || t == 'cps') return 'HZ';
 	if (t == 'b' || t == 'beats' || t == 'beat') return 'BEATS';
 	if (t == 'samples' || t == 'samps' || t == 'samp') return 'SAMPLES';
@@ -121,6 +122,15 @@ function relativeTimebaseForTagString(t) {
 	if (t == 'ratio') return 'RATIO';
 	if (t == 'cents' || t == 'cent') return 'CENTS';
 	if (t == 'semitones' || t == 'semitone' || t == 'semis' || t == 'semi') return 'SEMITONES';
+	return null;
+}
+
+// tags on a command rather than on one of its arguments
+function relativeTimebaseFromTags(tags) {
+	for (let i = 0; tags && i < tags.length; i++) {
+		let r = relativeTimebaseForTagString(tags[i].getTagString());
+		if (r) return r;
+	}
 	return null;
 }
 
@@ -217,11 +227,45 @@ function convertTimeToSamples(value, timebase) {
 		case 'SECONDS':
 			return Math.floor(sampleRate * value);
 
+		case 'MILLIS':
+			return Math.floor(sampleRate * value / 1000);
+
 		case 'SAMPLES':
 			return Math.floor(value);
 
 		case 'BEATS':
 			return Math.floor(value * (1/BPM) * (60) * sampleRate);
+	}
+}
+
+// unfloored, for converting numbers rather than sizing buffers -- flooring to
+// whole samples inside a unit conversion would quantize the answer
+function convertTimeToSamplesExact(value, timebase) {
+	if (!timebase) {
+		timebase = nexToTimebase(value);
+	}
+	let sampleRate = getSampleRate();
+	if (value.getTypedValue) {
+		value = value.getTypedValue();
+	}
+	switch(timebase) {
+		case 'HZ':
+			return sampleRate / value;
+
+		case 'NOTE':
+			return sampleRate / frequencyForNoteNum(value);
+
+		case 'SECONDS':
+			return sampleRate * value;
+
+		case 'MILLIS':
+			return sampleRate * value / 1000;
+
+		case 'SAMPLES':
+			return value;
+
+		case 'BEATS':
+			return value * (60 / BPM) * sampleRate;
 	}
 }
 
@@ -232,10 +276,13 @@ function convertSamplesToTimebase(timebase, samples) {
 			return sampleRate / samples;
 
 		case 'NOTE':
-			return 1; // no ones going to want to do this
+			return frequencyToNoteNum(sampleRate / samples);
 
 		case 'SECONDS':
 			return samples / sampleRate;
+
+		case 'MILLIS':
+			return (samples / sampleRate) * 1000;
 
 		case 'SAMPLES':
 			return samples;
@@ -258,6 +305,7 @@ function getTimebaseSuffix(tb) {
 		case 'HZ': return 'hz';
 		case 'NOTE': return 'nn';
 		case 'SECONDS': return 'sec';
+		case 'MILLIS': return 'ms';
 		case 'SAMPLES': return 'samp';
 		case 'BEATS': return 'b';
 	}	
@@ -736,6 +784,7 @@ export { applyFormants,
 		 decayTailSamples,
 		 getSampleRate,
 		 convertTimeToSamples,
+		 convertTimeToSamplesExact,
 		 convertSamplesToTimebase,
 		 getTimebaseSuffix,
 		 setGlobalPixelsPerSample,
@@ -748,6 +797,7 @@ export { applyFormants,
 		 timebaseForTagString,
 		 timebaseFromTags,
 		 relativeTimebaseFromNex,
+		 relativeTimebaseFromTags,
 		 relativeRate,
 		 setDefaultTimebase,
 		 setDefaultTimebaseValue,
