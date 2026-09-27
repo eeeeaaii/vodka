@@ -76,7 +76,7 @@ function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 		let mode = insertionModeForClick(renderNode, browserEvent);
 		/*
 		Clicking what is already selected used to be nothing to do. It is
-		something to do now: the third of the nex the click landed in says where
+		something to do now: the half of the nex the click landed in says where
 		the pip goes, so clicking lower down the same nex moves it. Still
 		nothing to do when the pip would not move.
 
@@ -95,18 +95,15 @@ function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 }
 
 /*
-Where in a nex you clicked says where the pip goes. Near the start of it, the
-pip goes before; near the end, after; in the middle, inside.
+Where in a nex you clicked says where the pip goes. The first half puts it
+inside, the second half after. Something that cannot hold a pip inside gets
+before instead, which is the nearest honest answer.
 
-Along whichever way the container it sits in is laid out -- top to bottom in a
-vertical one, left to right in a horizontal one -- because that is the direction
-"before" and "after" mean anything in. A z directional container stacks its
-children on top of each other and neither axis says anything, so a click there
-is left to mean what it always did.
-
-Inside is only offered by something that can hold a pip inside it. Anywhere
-else the middle third is split down the middle and reads as before or after,
-which is the nearest honest answer.
+Halves along whichever way the container it sits in is laid out -- top to
+bottom in a vertical one, left to right in a horizontal one -- because that is
+the direction "before" and "after" mean anything in. A z directional container
+stacks its children on top of each other and neither axis says anything, so a
+click there is left to mean what it always did.
 
 (comment by Claude)
 */
@@ -125,14 +122,12 @@ function insertionModeForClick(renderNode, browserEvent) {
 	if (!(size > 0)) return null;
 
 	let where = along / size;
-	if (where < 1 / 3) return INSERT_BEFORE;
-	if (where > 2 / 3) return INSERT_AFTER;
+	if (where >= 0.5) return INSERT_AFTER;
 
 	let nex = renderNode.getNex();
 	let canGoInside = nex && nex.isNexContainer && nex.isNexContainer()
 			&& nex.canDoInsertInside && nex.canDoInsertInside();
-	if (canGoInside) return INSERT_INSIDE;
-	return where < 0.5 ? INSERT_BEFORE : INSERT_AFTER;
+	return canGoInside ? INSERT_INSIDE : INSERT_BEFORE;
 }
 
 export { respondToClickEvent }
