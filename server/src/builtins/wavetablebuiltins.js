@@ -176,11 +176,8 @@ function createWavetableBuiltins() {
 
   (comment by Claude)
   */
-  // seconds of the start-loop split point, or zero when there is none --
-  // zero means what it always meant, loop the whole wave
   function loopStartSecondsOf(wt) {
-    let at = wt.namedSplitPoint ? wt.namedSplitPoint("start-loop") : -1;
-    return at > 0 ? at / getSampleRate() : 0;
+    return wt.loopStartSeconds ? wt.loopStartSeconds() : 0;
   }
 
   function startPlaying(wt, arg, name) {

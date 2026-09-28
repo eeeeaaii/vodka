@@ -902,7 +902,8 @@ class Wavetable extends Nex {
 			// -- Enter terminates the editor -- so there is no selection point,
 			// and the line is only here to show how far in you are.
 			// (comment by Claude)
-			startAuditioningBuffer(this.cachedBuffer, this, 0, false /* momentary */);
+			startAuditioningBuffer(this.cachedBuffer, this, 0, false /* momentary */,
+				this.loopStartSeconds());
 			// outside the editor there is no playhead layer yet -- this is the
 			// render that adds one
 			// (comment by Claude)
@@ -932,7 +933,8 @@ class Wavetable extends Nex {
 		this.auditioning = true;
 		this.playheadOffset = 0;
 		this.playbackStartSample = this.centerSample;
-		startAuditioningBuffer(this.cachedBuffer, this, this.centerSample, true /* sustained */);
+		startAuditioningBuffer(this.cachedBuffer, this, this.centerSample, true /* sustained */,
+			this.loopStartSeconds());
 		this.startPlayheadAnimation();
 	}
 
@@ -1350,6 +1352,13 @@ class Wavetable extends Nex {
 			return false;
 		}
 		return addMarkerButton;
+	}
+
+	// the start-loop split point in seconds, or zero, which means loop the
+	// whole wave -- the same reading play gives it
+	loopStartSeconds() {
+		let at = this.namedSplitPoint('start-loop');
+		return at > 0 ? at / getSampleRate() : 0;
 	}
 
 	// the position of the split point with this name, or -1

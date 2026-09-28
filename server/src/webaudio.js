@@ -48,12 +48,13 @@ class AuditionPlayer {
 	// sustained means the sound keeps going after the key comes back up. Holding
 	// enter to audition is momentary; toggling playback with space is not.
 	// (comment by Claude)
-	constructor(buffer, startOffsetSamples, sustained) {
+	constructor(buffer, startOffsetSamples, sustained, loopStartSeconds) {
 		this.buffer = buffer;
 		this.sustained = !!sustained;
 		this.startOffsetSamples = startOffsetSamples ? startOffsetSamples : 0;
+		this.loopStartSamples = loopStartSeconds ? loopStartSeconds * SAMPLE_RATE : 0;
 		this.startedAt = ctx.currentTime;
-		this.source = getSourceFromBuffer(buffer, true /* loop */);
+		this.source = getSourceFromBuffer(buffer, true /* loop */, loopStartSeconds);
 		/*
 		Both channels. A merger sends each of its inputs to the output channel
 		of the same number, so connecting once puts an audition in one ear and
@@ -84,7 +85,12 @@ class AuditionPlayer {
 		if (!this.buffer.length) return 0;
 		let elapsed = ctx.currentTime - this.startedAt;
 		let pos = this.startOffsetSamples + elapsed * SAMPLE_RATE;
-		return pos % this.buffer.length;
+		let full = this.buffer.length;
+		// after the first pass the source wraps to the loop point, not zero
+		if (pos < full || !(this.loopStartSamples > 0)) {
+			return pos % full;
+		}
+		return this.loopStartSamples + ((pos - full) % (full - this.loopStartSamples));
 	}
 
 	canChangeLoopData() {
@@ -1078,7 +1084,7 @@ function abortPlayback(channel) {
 }
 
 
-function startAuditioningBuffer(buffer, nex, startOffsetSamples, sustained) {
+function startAuditioningBuffer(buffer, nex, startOffsetSamples, sustained, loopStartSeconds) {
 	maybeCreateAudioContext();
 	checkChannelExists(settings.AUDIO_AUDITION_CHANNEL);
 
@@ -1107,7 +1113,7 @@ function startAuditioningBuffer(buffer, nex, startOffsetSamples, sustained) {
 		auditioningPlayer.abortPlay();
 	}
 
-	auditioningPlayer = new AuditionPlayer(buffer, startOffsetSamples, sustained);
+	auditioningPlayer = new AuditionPlayer(buffer, startOffsetSamples, sustained, loopStartSeconds);
 	thingAuditioning = nex;
 }
 
