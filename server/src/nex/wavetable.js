@@ -1352,6 +1352,14 @@ class Wavetable extends Nex {
 		return addMarkerButton;
 	}
 
+	// the position of the split point with this name, or -1
+	namedSplitPoint(name) {
+		for (let at in this.markerNames) {
+			if (this.markerNames[at] == name) return Number(at);
+		}
+		return -1;
+	}
+
 	// a-z, then a1-z1, a2-z2, and so on
 	autoMarkerName(k) {
 		let letter = String.fromCharCode("a".charCodeAt(0) + (k % 26));

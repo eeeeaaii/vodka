@@ -176,27 +176,19 @@ function createWavetableBuiltins() {
 
   (comment by Claude)
   */
-  function startPlaying(wt, arg, name) {
-    let buffers = [];
-    /*
-    Whether anything being played goes past full scale, asked of the waves
-    rather than worked out here: each one already knows the largest sample it
-    holds, from caching its buffer. So this is a comparison per wave, not a
-    pass over the audio.
+  // seconds of the start-loop split point, or zero when there is none --
+  // zero means what it always meant, loop the whole wave
+  function loopStartSecondsOf(wt) {
+    let at = wt.namedSplitPoint ? wt.namedSplitPoint("start-loop") : -1;
+    return at > 0 ? at / getSampleRate() : 0;
+  }
 
-    (comment by Claude)
-    */
-    let clipping = false;
-    if (Utils.isNexContainer(wt)) {
-      for (let i = 0; i < wt.numChildren(); i++) {
-        let child = wt.getChildAt(i);
-        buffers.push(child.getCachedBuffer());
-        if (child.getAmp && child.getAmp() > 1) clipping = true;
-      }
-    } else {
-      buffers.push(wt.getCachedBuffer());
-      if (wt.getAmp && wt.getAmp() > 1) clipping = true;
-    }
+  function startPlaying(wt, arg, name) {
+    let buffer = wt.getCachedBuffer();
+    // whether the wave goes past full scale, asked of the wave, which already
+    // knows its largest sample from caching its buffer
+    let clipping = !!(wt.getAmp && wt.getAmp() > 1);
+    let loopStartSeconds = loopStartSecondsOf(wt);
 
     let channelnumbers = [1, 2];
     let clip = null;
@@ -233,7 +225,7 @@ function createWavetableBuiltins() {
 
     let converted = toChannelIndexes(channelnumbers, name);
     if (converted.error) return { error: converted.error };
-    let ids = loopPlay(buffers, converted.indexes);
+    let ids = loopPlay(buffer, converted.indexes, loopStartSeconds);
     let what =
         "channel" + (channelnumbers.length == 1 ? " " : "s ") + channelnumbers.join(", ");
     if (clip) {
@@ -258,7 +250,7 @@ function createWavetableBuiltins() {
       let r = startPlaying(env.lb("wt"), env.lb("channelsorclip"), "play");
       return r.error ? r.error : r.clip;
     },
-    "Plays a loop. Returns a clip. Replaces |clip if passed in."
+    "Plays a loop. Returns a clip. Replaces |clip if passed in. A wave with a split point named start-loop plays from the top once, then loops from that point; giving the clip new audio plays the new intro."
   );
 
   // what it was called before it could do both
@@ -298,16 +290,6 @@ function createWavetableBuiltins() {
     ["wt_"],
     function $break(env, executionEnvironment) {
       let wt = env.lb("wt");
-
-      let buffers = [];
-      if (Utils.isNexContainer(wt)) {
-        for (let i = 0; i < wt.numChildren(); i++) {
-          buffers.push(wt.getChildAt(i).getCachedBuffer());
-        }
-      } else {
-        buffers.push(wt.getCachedBuffer());
-      }
-
       /*
       No second argument, unlike play. There is nothing for one to say: a break
       is not a loop you keep a handle on and replace later, it happens once and
@@ -318,7 +300,7 @@ function createWavetableBuiltins() {
       */
       let converted = toChannelIndexes([1, 2], "break");
       if (converted.error) return converted.error;
-      queueBreak(buffers, converted.indexes);
+      queueBreak(wt.getCachedBuffer(), converted.indexes, loopStartSecondsOf(wt));
       return constructNil();
     },
     "Stops everything at the end of the measure and plays |wt once. Anything started meanwhile begins when it ends. Start nothing and everything stops."

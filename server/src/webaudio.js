@@ -435,10 +435,11 @@ function getAudioBufferFromData(data) {
 	return buffer;
 }
 
-function getSourceFromBuffer(buffer, loop) {
+function getSourceFromBuffer(buffer, loop, loopStartSeconds) {
 	let source = ctx.createBufferSource();
 	source.buffer = buffer;
 	source.loop = loop;
+	source.loopStart = loopStartSeconds || 0;
 	source.loopEnd = buffer.length * (1 / SAMPLE_RATE);
 
 	return source;
@@ -525,11 +526,24 @@ let cycleNextBoundaryTime = 0;
 // measured from -- they all start together at the top of the cycle
 let cycleStartedAt = 0;
 
+/*
+How long this member's next pass is. A member with a start-loop split point
+plays the whole wave once and the loop region from then on, so its length is
+a question about state, not a constant.
+*/
+function memberLengthSeconds(loop) {
+	if (loop.introDone && loop.loopStartSeconds > 0) {
+		return loop.lengthSeconds - loop.loopStartSeconds;
+	}
+	return loop.lengthSeconds;
+}
+
 function cycleLengthSeconds() {
 	let longest = 0;
 	for (let id in cycleLoops) {
-		if (cycleLoops[id].lengthSeconds > longest) {
-			longest = cycleLoops[id].lengthSeconds;
+		let len = memberLengthSeconds(cycleLoops[id]);
+		if (len > longest) {
+			longest = len;
 		}
 	}
 	return longest;
@@ -625,6 +639,16 @@ function startCycleAt(startTime) {
 	for (let i = 0; i < playingClips.length; i++) {
 		playingClips[i].passes++;
 	}
+	/*
+	The intro flag advances here, at the boundary, not when the intro pass was
+	scheduled -- lengths must hold still for the whole pass they were computed
+	for, or anything reconstructing the running cycle from them is wrong.
+	*/
+	for (let id in cycleLoops) {
+		if (cycleLoops[id].introScheduled) {
+			cycleLoops[id].introDone = true;
+		}
+	}
 	let len = cycleLengthSeconds();
 	if (len <= 0) {
 		cycleRunning = false;
@@ -643,10 +667,13 @@ function startCycleAt(startTime) {
 		// Muting is not pausing. A loop can be both, and comes back only when
 		// neither says so, so un-pausing must not undo a mute.
 		if (loop.paused || loop.muted) continue;
-		let node = getSourceFromBuffer(loop.buffer, true);
+		let node = getSourceFromBuffer(loop.buffer, true, loop.loopStartSeconds);
 		node.connect(channelMergerNode, 0, loop.channel);
-		node.start(startTime);
+		// the pass after the intro has played starts at the loop point, and
+		// every pass wraps back to it
+		node.start(startTime, loop.introDone ? loop.loopStartSeconds || 0 : 0);
 		node.stop(startTime + len);
+		if (!loop.introDone) loop.introScheduled = true;
 		loop.node = node;
 	}
 	cycleStartedAt = startTime;
@@ -705,18 +732,14 @@ function beginBreak() {
 		releaseClip(0);
 	}
 	breakIds = [];
-	// one wave fans out to every channel, two alternate, and so on -- the same
-	// rule play uses
-	// (comment by Claude)
-	let bufferIndex = 0;
 	for (let i = 0; i < pendingBreak.channels.length; i++) {
-		let buffer = pendingBreak.buffers[bufferIndex];
-		bufferIndex = (bufferIndex + 1) % pendingBreak.buffers.length;
 		let id = nextCycleLoopId++;
 		cycleLoops[id] = {
-			buffer: buffer,
+			buffer: pendingBreak.buffer,
 			channel: pendingBreak.channels[i],
-			lengthSeconds: buffer.length / SAMPLE_RATE,
+			lengthSeconds: pendingBreak.buffer.length / SAMPLE_RATE,
+			loopStartSeconds: pendingBreak.loopStartSeconds || 0,
+			introDone: false,
 			node: null,
 			endAfterCycle: false
 		};
@@ -731,10 +754,10 @@ to wait for, so it starts one, and the break is simply a sample played once.
 
 (comment by Claude)
 */
-function queueBreak(buffers, channels) {
+function queueBreak(buffer, channels, loopStartSeconds) {
 	maybeCreateAudioContext();
 	channels.forEach(checkChannelExists);
-	pendingBreak = { buffers: buffers, channels: channels };
+	pendingBreak = { buffer: buffer, channels: channels, loopStartSeconds: loopStartSeconds || 0 };
 	if (!cycleRunning) {
 		cycleRunning = true;
 		whenAudioClockIsReady(function() {
@@ -751,13 +774,15 @@ ones wait for the boundary, which is what keeps everything in phase.
 
 (comment by Claude)
 */
-function addLoop(buffer, channel) {
+function addLoop(buffer, channel, loopStartSeconds) {
 	maybeCreateAudioContext();
 	checkChannelExists(channel);
 	return addCycleMember({
 		buffer: buffer,
 		channel: channel,
 		lengthSeconds: buffer.length / SAMPLE_RATE,
+		loopStartSeconds: loopStartSeconds || 0,
+		introDone: false,
 		node: null
 	});
 }
@@ -817,7 +842,11 @@ function getLoopPositionSamples(id) {
 	if (!loop || !loop.lengthSeconds) return -1;
 	let elapsed = ctx.currentTime - (cycleNextBoundaryTime - cycleLengthSeconds());
 	if (elapsed < 0) return -1;
-	return Math.floor((elapsed * SAMPLE_RATE) % (loop.lengthSeconds * SAMPLE_RATE));
+	let len = memberLengthSeconds(loop);
+	// after the intro every pass lives in the loop region, so the readout
+	// points there
+	let offset = (loop.introDone && loop.loopStartSeconds > 0) ? loop.loopStartSeconds : 0;
+	return Math.floor((offset + (elapsed % len)) * SAMPLE_RATE);
 }
 
 /*
@@ -873,7 +902,7 @@ after count five is eight, and the cycle ends at six. The caller compares
 against the cycle boundary; the node stops there regardless.
 */
 function nextOwnBoundary(loop, after) {
-	let len = loop.lengthSeconds;
+	let len = memberLengthSeconds(loop);
 	if (!(len > 0)) {
 		return cycleNextBoundaryTime;
 	}
@@ -913,10 +942,11 @@ function muteLoops(ids, muted) {
 		if (!loop.start && !loop.node && cycleRunning) {
 			let at = nextOwnBoundary(loop, ctx.currentTime);
 			if (at < cycleNextBoundaryTime) {
-				let node = getSourceFromBuffer(loop.buffer, true);
+				let node = getSourceFromBuffer(loop.buffer, true, loop.loopStartSeconds);
 				node.connect(channelMergerNode, 0, loop.channel);
-				node.start(at);
+				node.start(at, loop.introDone ? loop.loopStartSeconds || 0 : 0);
 				node.stop(cycleNextBoundaryTime);
+				if (!loop.introDone) loop.introScheduled = true;
 				loop.node = node;
 			}
 		}
@@ -1022,16 +1052,12 @@ function nextCycleBoundary() {
 	return { at: cycleNextBoundaryTime, lengthSeconds: cycleLengthSeconds() };
 }
 
-function loopPlay(bufferList, channelList) {
+function loopPlay(buffer, channelList, loopStartSeconds) {
 	maybeCreateAudioContext();
 	channelList.forEach(checkChannelExists);
-	// one wave fans out to every channel, two alternate, and so on
-	// (comment by Claude)
-	let bufferIndex = 0;
 	let ids = [];
 	for (let i = 0; i < channelList.length; i++) {
-		ids.push(addLoop(bufferList[bufferIndex], channelList[i]));
-		bufferIndex = (bufferIndex + 1) % bufferList.length;
+		ids.push(addLoop(buffer, channelList[i], loopStartSeconds));
 	}
 	return ids;
 }
