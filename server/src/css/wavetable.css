@@ -74,32 +74,144 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 /*
-Collapsed mode packs the waveforms together so a stack of them can be compared
-by eye: everything that is not wave goes, which is the controls, the tags, and
-most of the box around them -- 3px of border and 2px of padding is 10px you are
-trying to see past.
+Condensed is how waves look. They pack together so a stack of them can be
+compared by eye: everything that is not wave stops taking up height -- the
+duration, the tags and the recording button move onto the waveform itself (the
+.wavemeta overlay, built in wavetable.js) -- and most of the box around an
+wave goes, because 3px of border and 2px of padding is 10px you are trying to
+see past.
 
-Except the one you are on. That one is left exactly as it looks with this mode
-switched off, because the moment you land on a wave you want to know how long it
-is and what it is tagged, and because a second appearance for a selected wave is
-one more thing to recognise for no reason. So every rule here says "not the
-selected one" rather than there being a set of rules that dress it back up.
+Two exceptions, and both are a class, so that the way waves normally look is
+what you get with nothing set. body.fullwaves is the toggle (ctrl-backslash),
+for when you want every wave labelled at once. .editing is the wave you are
+working on, which is on its own anyway and wants its markers and its timebase
+out where they can be read rather than cropped to the length of the sound.
+
+A wave too short for its own metadata gets a field beside it instead of a
+cropped label. That is what the full layout does -- a wave shorter than its
+control strip sits in a box wider than itself -- and the field is the thing
+that says so: box longer than wave means the extra is room for the labels, not
+sound. The editing pink, which is the colour that field already has in the full
+layout, and it does not depend on which wave is selected -- it is a fact about
+the wave and the labels on it rather than about where you are.
+
+The stack is a one cell grid: the canvases and the metadata row are all in that
+one cell, so they draw on top of each other and the cell is as big as the
+widest of them. Hence the field, with no measuring -- an absolutely positioned
+row would hang outside the box instead of making room in it. Everything is
+pinned to the start of the cell, because a canvas told to fill it would be
+stretched, and a stretched canvas is a waveform at the wrong scale.
 
 (comment by Claude)
 */
-body.hidewavecontrols .wavetable:not(.newselected) .wavecontrols {
-	display: none;
+body:not(.fullwaves) .wavetable:not(.editing) .waveviewport {
+	display: grid;
+	background-color: var(--editing-background);
 }
 
-body.hidewavecontrols .wavetable:not(.newselected) {
+body:not(.fullwaves) .wavetable:not(.editing) .waveviewport > * {
+	grid-area: 1 / 1;
+	justify-self: start;
+	align-self: start;
+}
+
+/*
+Selection recolours this border, it does not thicken it (see .newselected
+above, which asks for 3px and loses on specificity here). A wave that grew by
+4px each way when you landed on it moved every wave under it and changed the
+scale you were comparing them at -- and nothing else in vodka does that: a
+selected command is drawn red, not bigger.
+
+(comment by Claude)
+*/
+body:not(.fullwaves) .wavetable:not(.editing) {
 	border-width: 1px;
 	padding: 0;
 }
 
-/* tags sit above the wave and push it down exactly as the controls do */
+/*
+The corner of the waveform, which is where a wave is usually quietest and
+where the eye already is. Transparent to the mouse, because the wave underneath
+is dragged and clicked everywhere a label is not -- the labels themselves take
+their own clicks back.
+
+(comment by Claude)
+*/
+.wavemeta {
+	margin: 3px 0 0 3px;
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	pointer-events: none;
+}
+
+.wavemeta > * {
+	pointer-events: auto;
+}
+
+/* little rectangles in a row, tighter than the same things get above a wave
+   where there is height to spare */
 /* (comment by Claude) */
-body.hidewavecontrols .wavetable:not(.newselected) > .tagholder {
+.wavemeta .wavecontrol,
+.wavemeta .tag.exploded {
+	margin: 0 2px 0 0;
+	padding: 1px 3px;
+	flex-grow: 0;
+	white-space: nowrap;
+}
+
+/*
+A box around it, because the control background and the canvas background are
+the same colour -- white on white in the light theme, near enough in the dark
+one -- and over a wave that is the difference between a label and nothing. It
+only showed up before where the sound was loud enough to draw behind it.
+
+The text colour rather than a colour of its own: it is the same ink as the
+numbers it is around.
+
+(comment by Claude)
+*/
+.wavemeta .wavecontrol {
+	border: 1px solid var(--wave-control-text);
+}
+
+/*
+An unselected wave is a waveform. It says one other thing, and only if it is
+true: that it is muted. A muted wave looks exactly like a wave that is playing
+-- the samples are still drawn -- so it is the one piece of metadata you cannot
+work out by looking, and the rest of it is noise over fifty waveforms. The one
+you are on shows everything.
+
+No mode in this rule: the overlay is built only on a wave that is condensed, so
+anywhere it exists this is what it is for.
+
+(comment by Claude)
+*/
+.wavetable:not(.newselected) .wavemeta > *:not(.tag-mute) {
 	display: none;
+}
+
+/*
+And it says it with one letter. Four characters of "mute" over a waveform you
+are not working on is wider than the thing it is telling you, and `m` on a wave
+is unambiguous because it is the only word that ever appears there. The wave
+you are on spells it out, and so does one in the full layout or being edited,
+where there is room.
+
+Drawn, not stored. The tag is `mute` wherever it is written down -- that is
+what the builtins look for and what goes in the file -- and this is css rather
+than a shorter tag string for exactly that reason, as well as because selecting
+a nex re-colours it without re-rendering it.
+
+(comment by Claude)
+*/
+.wavetable:not(.newselected) .wavemeta .tag-mute.exploded {
+	font-size: 0;
+}
+
+.wavetable:not(.newselected) .wavemeta .tag-mute.exploded::before {
+	content: 'm';
+	font-size: 9px;
 }
 
 .wavecontrol {

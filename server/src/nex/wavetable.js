@@ -20,7 +20,7 @@ import { experiments } from '../globalappflags.js'
 import { startAuditioningBuffer, getFileAsBuffer, getAuditionPositionSamples, maybeKillSound } from '../webaudio.js'
 import { possiblyRecordAction } from '../testrecorder.js'
 import { heap } from '../heap.js'
-import { constructFatalError, throwOOM } from './eerror.js'
+import { constructFatalError } from './eerror.js'
 
 
 import { setGlobalPixelsPerSample,
@@ -36,7 +36,7 @@ import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { showManipulator } from '../wtmanip.js'
 import { Editor } from '../editors.js'
 import { doTutorial } from '../help.js'
-import { getAudioBufferFromData, stopRecordingAudio } from '../webaudio.js'
+import { getAudioBufferFromData, getSilentAudioBuffer, stopRecordingAudio } from '../webaudio.js'
 import * as audioStore from '../audiostore.js'
 import { newShortId } from '../utils.js'
 import { systemState } from '../systemstate.js'
@@ -207,10 +207,9 @@ class Wavetable extends Nex {
 		this.windowOriginSample = 0;
 
 		this.sections = [];
-		this.cachedBuffer = null;
+
 		this.mutedCached = null;
 		this.silentData = null;
-		this.silentBuffer = null;
 		this.localPixelsPerSample = -1;
 		this.localHeightPixelsFullScale = -1;
 		this.centerSample = -1;
@@ -274,10 +273,54 @@ class Wavetable extends Nex {
 
 	startRecording() {
 		this.data = new Float32Array();
+		// same as setData: nothing should be left looking at the take before
+		// this one
+		// (comment by Claude)
+		this.cacheSections();
 		this.recordedChunks = [];
 		this.recordedLength = 0;
 		this.recording = true;
+		this.enterEditorForRecording();
 		this.renderOnlyThisNex();
+	}
+
+	/*
+	Recording a wave means working on that wave, so vodka goes to it and opens
+	its editor. Not only for the look of it: without this the keyboard is still
+	wherever it was, and the keys that are harmless there are not harmless on a
+	wave that is being written into -- you can be inserting nexes next to it, or
+	evaluating something, while the samples arrive. In the editor the keys that
+	mean something are the wave's own, and a wave's editor is also where the
+	stop button is.
+
+	A reduced editor, because some of it cannot work on a wave that is still
+	growing: no zoom, no pan, no markers, no moving the selection point. Those
+	ask a question about a wave of a certain length and the length is changing
+	under them. Each of those reads isRecording rather than being switched off
+	here, and they come back by themselves when it stops.
+
+	The editor stays open afterwards. You have just recorded something and the
+	next thing you do with it -- audition it, trim it, mark it up -- is in the
+	editor anyway.
+
+	An immutable wave has no editor to open, and so does a wave that nothing has
+	rendered. Those still have to look like what they are doing, so the flag the
+	renderer reads is set by hand, and taken back when recording stops.
+
+	(comment by Claude)
+	*/
+	enterEditorForRecording() {
+		this.fakeEditingForRecording = false;
+		let nodes = this.getRenderNodes();
+		let node = (nodes && nodes.length > 0) ? nodes[0] : null;
+		if (node && !node.getCurrentEditor()) {
+			node.setSelected();
+			node.possiblyStartMainEditor();
+		}
+		if (!this.isEditing) {
+			this.isEditing = true;
+			this.fakeEditingForRecording = true;
+		}
 	}
 
 	/*
@@ -309,6 +352,10 @@ class Wavetable extends Nex {
 	stopRecording() {
 		this.recording = false;
 		this.recordedChunks = null;
+		if (this.fakeEditingForRecording) {
+			this.isEditing = false;
+			this.fakeEditingForRecording = false;
+		}
 		if (this.data.length == 0) {
 			// nothing arrived; a wavetable cannot be zero samples long
 			// (comment by Claude)
@@ -384,7 +431,6 @@ class Wavetable extends Nex {
 	*/
 	tagsChanged() {
 		this.mutedCached = null;
-		this.silentBuffer = null;
 	}
 
 	isMuted() {
@@ -407,14 +453,30 @@ class Wavetable extends Nex {
 		return this.isMuted() ? this.getSilentData() : this.data;
 	}
 
+	/*
+	The samples as the audio system wants them, built here and not kept.
+
+	A wavetable used to hold its AudioBuffer for the life of the wave, which is
+	the same samples a second time -- an AudioBuffer is its own copy -- so every
+	wave in a document cost twice what it is. Most waves in a document are not
+	playing. Now the copy exists while something is playing or auditioning it,
+	because that is who holds the buffer, and a wave at rest is one array of
+	samples and nothing else.
+
+	The copy is made here, when you play or audition, rather than on the audio
+	timer, so nothing long-winded happens anywhere with a deadline.
+
+	It also fixes something by accident: the buffer used to be made when the
+	wave last cached, so playing a wave that had been written into since then
+	played what it used to be.
+
+	(comment by Claude)
+	*/
 	getCachedBuffer() {
-		if (!this.isMuted()) {
-			return this.cachedBuffer;
+		if (this.isMuted()) {
+			return getSilentAudioBuffer(this.data.length);
 		}
-		if (!this.silentBuffer || this.silentBuffer.length != this.data.length) {
-			this.silentBuffer = getAudioBufferFromData(this.getSilentData());
-		}
-		return this.silentBuffer;
+		return getAudioBufferFromData(this.data);
 	}
 
 	getPixelsPerSample() {
@@ -484,6 +546,12 @@ class Wavetable extends Nex {
 
 	setData(d) {
 		this.data = d;
+		// the section views are windows onto the array that was just replaced,
+		// so they would be showing the old samples -- and holding the old array
+		// up as well, which for a wave that has just been undone is the whole
+		// of it
+		// (comment by Claude)
+		this.cacheSections();
 		this.setDirtyForRendering(true);
 	}
 
@@ -533,11 +601,19 @@ class Wavetable extends Nex {
 
 	// }
 
+	/*
+	What is worth working out once about the samples: the amplitude, which is
+	what the drawing is scaled to. No buffer any more -- see getCachedBuffer --
+	and the sections, which are only views now, are refreshed here because this
+	is where a wave says its samples have changed.
+
+	(comment by Claude)
+	*/
 	cacheValues() {
 		let mm = this.getMinMaxInDataRange(0, this.data.length);
 		let absMin = Math.abs(mm.min);
 		this.setAmp(Math.max(absMin, mm.max));
-		this.cachedBuffer = getAudioBufferFromData(this.data);
+		this.cacheSections();
 	}
 
 	getMinMaxInDataRange(start, end) {
@@ -739,16 +815,10 @@ class Wavetable extends Nex {
 		this.markers = out.sort((a, b) => a - b);
 		this.markerNames = names;
 		if (this.markers.length == 0) return;
-		try {
-			this.cacheSections();
-		} catch (e) {
-			// Sectioning copies the whole wave again, so it can run out of
-			// memory where merely loading it did not. Keep the markers -- they
-			// draw, and they are saved again on the way out -- and leave the
-			// sections empty, which auditionSection already handles.
-			// (comment by Claude)
-			this.sections = [];
-		}
+		// sections are views now and cost nothing to make, so there is no
+		// longer anything here that can run out of memory
+		// (comment by Claude)
+		this.cacheSections();
 	}
 
 	serializePrivateData(ctx) {
@@ -827,7 +897,8 @@ class Wavetable extends Nex {
 				// (comment by Claude)
 				this.playheadOffset = sd.start;
 				this.playbackStartSample = this.centerSample;
-				startAuditioningBuffer(sd.cachedBuffer, this, 0, false /* momentary */);
+				startAuditioningBuffer(getAudioBufferFromData(sd.data), this, 0,
+						false /* momentary */);
 				this.renderOnlyThisNex();
 				this.startPlayheadAnimation();
 			}
@@ -867,29 +938,34 @@ class Wavetable extends Nex {
 		// }
 	}
 
+	/*
+	A section is a start, an end, and a view of the samples between them -- a
+	subarray, which is a window onto the one array rather than a copy of part of
+	it. Nothing is allocated here and there is nothing to charge for.
+
+	It used to copy each section out, into a plain javascript array, which is
+	eight bytes a sample rather than four, and then give each section an
+	AudioBuffer of its own as well. A wave cut into sections cost about five
+	times what the wave is. A section's buffer is built when you audition it,
+	like any other.
+
+	Views go stale when the samples are replaced rather than written into, so
+	this is called from cacheValues, which is what every such replacement ends
+	with.
+
+	(comment by Claude)
+	*/
 	cacheSections() {
-		for (let i = 0; i < this.sections.length; i++) {
-			heap.freeMem(this.sections[i].data.length * heap.incrementalSizeWavetable());
-		}
 		this.sections = [];
 		for (let i = 0; i <= this.markers.length; i++) {
 			let start = (i == 0) ? 0 : this.markers[i - 1];
 			let end = (i == this.markers.length) ? this.data.length : this.markers[i];
-			let k = 0;
+			if (end < start) end = start;
 			this.sections[i] = {
 				start: start,
 				end: end,
-				data: []
+				data: this.data.subarray(start, end)
 			};
-			let sizeReq = (end - start) * heap.incrementalSizeWavetable();
-			if (!heap.requestMem(sizeReq)) {
-				throwOOM(sizeReq);
-			}
-			for (let j = start; j < end ; j++) {
-				this.sections[i].data[k] = this.data[j];
-				k++;
-			}
-			this.sections[i].cachedBuffer = getAudioBufferFromData(this.sections[i].data);
 		}
 	}
 
@@ -902,7 +978,7 @@ class Wavetable extends Nex {
 			// -- Enter terminates the editor -- so there is no selection point,
 			// and the line is only here to show how far in you are.
 			// (comment by Claude)
-			startAuditioningBuffer(this.cachedBuffer, this, 0, false /* momentary */,
+			startAuditioningBuffer(this.getCachedBuffer(), this, 0, false /* momentary */,
 				this.loopStartSeconds());
 			// outside the editor there is no playhead layer yet -- this is the
 			// render that adds one
@@ -933,7 +1009,7 @@ class Wavetable extends Nex {
 		this.auditioning = true;
 		this.playheadOffset = 0;
 		this.playbackStartSample = this.centerSample;
-		startAuditioningBuffer(this.cachedBuffer, this, this.centerSample, true /* sustained */,
+		startAuditioningBuffer(this.getCachedBuffer(), this, this.centerSample, true /* sustained */,
 			this.loopStartSeconds());
 		this.startPlayheadAnimation();
 	}
@@ -1049,7 +1125,8 @@ class Wavetable extends Nex {
 			// nothing at all on some waveforms and move on others, with nothing
 			// on screen to say which you were looking at.
 			// (comment by Claude)
-			this.doingPan = (event.ctrlKey || event.metaKey) && this.isEditing;
+			this.doingPan = (event.ctrlKey || event.metaKey) && this.isEditing
+					&& !this.recording;
 			if (event.shiftKey) {
 				this.doingAmplitudeZoom = true;
 			} else {
@@ -1087,6 +1164,12 @@ class Wavetable extends Nex {
 			this.renderOnlyThisNex();
 		}
 		let movefunction = (e) => {
+			// Nothing to drag on a wave that is recording. Zoom holds the sample
+			// under the cursor still, and that sample is a fraction of a length
+			// that is growing a few times a second, so the wave would crawl out
+			// from under the gesture
+			// (comment by Claude)
+			if (this.recording) return;
 			let y = e.clientY;
 			let x = e.clientX;
 			let deltaY = y - starty;
@@ -1147,7 +1230,8 @@ class Wavetable extends Nex {
 		(comment by Claude)
 		*/
 		let endfunction = () => {
-			if (!dragged && !this.doingPan && this.isEditing && !this.auditioning) {
+			if (!dragged && !this.doingPan && this.isEditing && !this.auditioning
+					&& !this.recording) {
 				this.changeCenterSample(downOffsetX);
 				this.updatePlayhead();
 				this.renderOnlyThisNex();
@@ -1221,15 +1305,91 @@ class Wavetable extends Nex {
 		}
 	}
 
+	/*
+	Condensed mode lays a wave out differently rather than just hiding things.
+	Above the wave, everything costs height: a row of controls and a row of tags
+	is two rows of not-wave between every pair of waves you are trying to
+	compare, which is the whole reason for the mode. Over the wave it costs
+	nothing, and a waveform has plenty of room in it -- the metadata sits in the
+	top left corner, where there is quiet space in most waves and where the
+	start of the sound is anyway.
+
+	A wave too short for its own metadata ends up in a box wider than itself,
+	with a field beside it saying so, exactly as it does in the full layout.
+	The row is a grid cell rather than an overlay for that reason -- see the
+	stacking rules in wavetable.css.
+
+	Which wave is selected is left to css (see the :not(.newselected) rules):
+	both versions of the row are built, because selecting a nex only changes a
+	class on its dom node -- nothing re-renders -- so a structure that depended
+	on which wave was selected would be the structure from whenever it last
+	rendered.
+
+	Editing is different, and is decided here. A wave is re-rendered when it
+	starts and stops being edited, so the structure can follow it, and it has
+	to: editing is working on one wave rather than looking at a stack of them,
+	and it wants the markers, the timebase and the tags out where they can be
+	read and clicked rather than cropped to the length of the sound. So an
+	editing wave gets the full layout and its neighbours stay condensed.
+
+	(comment by Claude)
+	*/
+	/*
+	Recording looks like editing whether or not the editor is open. It normally
+	is -- see enterEditorForRecording -- but a wave with no editor to open
+	records anyway, and so does one whose editor you closed with the samples
+	still arriving, and in both of those the stop button and the growing
+	waveform have to stay where they were rather than the wave quietly
+	condensing mid-take.
+
+	(comment by Claude)
+	*/
+	showsAsEditing() {
+		return this.isEditing || this.recording;
+	}
+
+	wavesAreCondensed() {
+		if (this.showsAsEditing()) {
+			return false;
+		}
+		return typeof document != 'undefined'
+				&& !!document.body
+				&& !document.body.classList.contains('fullwaves');
+	}
+
+	/*
+	The tags go in the row with the duration rather than in a row of their own,
+	so this hands the tag renderer the overlay. RenderNode asks for this after
+	renderInto has run, which is where the overlay is made.
+
+	(comment by Claude)
+	*/
+	getTagHolder(domNode) {
+		if (this.metaOverlayNode) {
+			return this.metaOverlayNode;
+		}
+		return super.getTagHolder(domNode);
+	}
+
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 		super.renderInto(renderNode, renderFlags, withEditor);
 		domNode.classList.add('wavetable');
 		domNode.classList.add('data');
 
+		let condensed = this.wavesAreCondensed();
+		this.metaOverlayNode = null;
+
 		let topcontrols = document.createElement('div');
-		topcontrols.classList.add('wavecontrols')
-		domNode.appendChild(topcontrols);
+		topcontrols.classList.add(condensed ? 'wavemeta' : 'wavecontrols')
+		if (condensed) {
+			// stacked on the waveform, so it is put in the viewport below,
+			// after the canvases, rather than above the wave here
+			// (comment by Claude)
+			this.metaOverlayNode = topcontrols;
+		} else {
+			domNode.appendChild(topcontrols);
+		}
 		topcontrols.appendChild(this.createTimelabel())
 		/*
 		Stop, but no start. A button that begins recording sits among controls
@@ -1247,10 +1407,19 @@ class Wavetable extends Nex {
 		if (this.recording) {
 			topcontrols.appendChild(this.createStopRecordingLabel())
 		}
-		topcontrols.appendChild(this.createSpacer())
-		if (this.isEditing) {
-			topcontrols.appendChild(this.createMarkerNums())
-			topcontrols.appendChild(this.createAddMarker())
+		// the spacer pushes the marker controls to the far end of a row that is
+		// as wide as the wave. The overlay row is only as wide as what is in it,
+		// and an editing wave is never condensed, so neither is ever in it
+		// (comment by Claude)
+		if (!condensed) {
+			topcontrols.appendChild(this.createSpacer())
+			// not while recording: a marker is a position in a wave of a
+			// certain length, and the length is still arriving
+			// (comment by Claude)
+			if (this.isEditing && !this.recording) {
+				topcontrols.appendChild(this.createMarkerNums())
+				topcontrols.appendChild(this.createAddMarker())
+			}
 		}
 
 		let viewport = document.createElement('div');
@@ -1277,10 +1446,15 @@ class Wavetable extends Nex {
 					.getPropertyValue('--wave-playhead').trim();
 			viewport.appendChild(this.playheadNode);
 		}
+		// last, so it is over both canvases rather than under them
+		// (comment by Claude)
+		if (condensed) {
+			viewport.appendChild(topcontrols);
+		}
 		domNode.appendChild(viewport);
 		this.updatePlayhead();
 
-		if (this.isEditing) {
+		if (this.showsAsEditing()) {
 			domNode.classList.add('editing');
 		} else {
 			domNode.classList.remove('editing');
@@ -1472,7 +1646,7 @@ class Wavetable extends Nex {
 		let auditionColor = themeColor('--wave-audition');
 		let solidRectColor = themeColor('--wave-solid');
 
-		if (this.isEditing) {
+		if (this.showsAsEditing()) {
 			regularColor = intenseColor = themeColor('--wave-editing');
 			solidRectColor = themeColor('--wave-solid-editing');
 		}
@@ -1719,7 +1893,12 @@ class WavetableEditor extends Editor {
 		if (text == ' ') {
 			this.nex.togglePlayback();
 		} else if (text == 'v') {
-			this.nex.addMarker();
+			// the reduced editor a recording wave is in: see
+			// enterEditorForRecording
+			// (comment by Claude)
+			if (!this.nex.isRecording()) {
+				this.nex.addMarker();
+			}
 		} else {
 			this.nex.auditionSection(text);
 		}
