@@ -79,7 +79,7 @@ import {
   stretchInto,
   decayTailSamples,
 } from "../wavetablefunctions.js";
-import { loopPlay, queueBreak, atNextCycleStart, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying, getDeviceChannelCount, getDefaultOutputDevice, getDefaultOutputName } from "../webaudio.js";
+import { loopPlay, queueBreak, atNextCycleStart, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying, getDeviceChannelCount, getInputDeviceChannelCount, getDefaultOutputDevice, getDefaultOutputName } from "../webaudio.js";
 import { constructClip, constructUnassignedClip, channelsDescription } from "../nex/clip.js";
 import { Tag } from "../tag.js";
 import { ERROR_TYPE_INFO } from "../nex/eerror.js";
@@ -435,13 +435,19 @@ function createWavetableBuiltins() {
     ["device()"],
     function $audioChannels(env, executionEnvironment) {
       let dev = env.lb("device");
-      let found = deviceIdOrError(dev, "output", "audio-channels");
+      let found = deviceOfAnyKindOrError(dev, "audio-channels");
       if (found.error) return found.error;
+      // an output is opened by pointing a context at it and an input by asking
+      // it for a stream, so the two are asked in different ways
+      // (comment by Claude)
+      let ask = (found.kind == "input")
+          ? getInputDeviceChannelCount
+          : getDeviceChannelCount;
       let dv = constructDeferredValue();
       dv.set(new GenericActivationFunctionGenerator(
         "audio-channels",
         function (callback, exp) {
-          getDeviceChannelCount(found.id, function (n, err) {
+          ask(found.id, function (n, err) {
             if (n < 0) {
               callback(constructFatalError("audio-channels: " + err + " Sorry!"));
               return;
@@ -461,7 +467,7 @@ function createWavetableBuiltins() {
       dv.activate();
       return dv;
     },
-    "The channels of |device, an output from list-audio-devices, counting from 1, which is what play takes. Asking opens the device."
+    "The channels of |device, from list-audio-devices, counting from 1, which is what play and make-clip take. Works for inputs and outputs. Asking opens the device."
   );
 
   /*

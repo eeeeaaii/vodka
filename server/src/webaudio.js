@@ -557,6 +557,51 @@ scheduled against it.
 
 (comment by Claude)
 */
+/*
+How many channels an input has, which is a different question asked a different
+way: an output is opened by pointing a context at it, and an input by asking for
+a stream from it. The stream is let go immediately -- this is a question, not a
+take -- so the browser's recording indicator may blink while it is answered.
+
+getCapabilities is the right thing to read: it says how many channels the device
+can give, where getSettings says how many this stream was granted, which is
+however many were asked for. Not every browser has it, so the granted count is
+the fallback and one channel is the floor -- a device that opened at all has one.
+
+(comment by Claude)
+*/
+function getInputDeviceChannelCount(id, cb) {
+	if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+		cb(-1, 'this browser has no audio input');
+		return;
+	}
+	let constraints = {
+		echoCancellation: false,
+		noiseSuppression: false,
+		autoGainControl: false
+	};
+	if (id && id != 'default') {
+		constraints.deviceId = { exact: id };
+	}
+	navigator.mediaDevices.getUserMedia({ audio: constraints }).then(function(stream) {
+		let n = 0;
+		let track = stream.getAudioTracks()[0];
+		if (track) {
+			let caps = track.getCapabilities ? track.getCapabilities() : null;
+			if (caps && caps.channelCount && caps.channelCount.max) {
+				n = caps.channelCount.max;
+			} else {
+				let st = track.getSettings();
+				n = st.channelCount ? st.channelCount : 0;
+			}
+		}
+		stream.getTracks().forEach(function(t) { t.stop(); });
+		cb(n > 0 ? n : 1);
+	}).catch(function(e) {
+		cb(-1, '' + e);
+	});
+}
+
 function setAudioOutputDevice(id, name, cb) {
 	openOutput(id, function(o, err) {
 		if (!o) {
@@ -1790,5 +1835,5 @@ async function getFileAsBuffer(filepath, dir) {
 
 export { getAudioBufferFromData, getSilentAudioBuffer, loadAudio, muteLoops, addLoop, queueBreak, atNextCycleStart, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio, anythingIsRecording,
 		 listAudioDevices, setAudioOutputDevice, setAudioInputDevice,
-		 getAudioInputDevice, getDefaultOutputDevice, getDefaultOutputName, getDeviceChannelCount }
+		 getAudioInputDevice, getDefaultOutputDevice, getDefaultOutputName, getDeviceChannelCount, getInputDeviceChannelCount }
 
