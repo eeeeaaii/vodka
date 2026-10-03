@@ -264,8 +264,11 @@ function createWavetableBuiltins() {
     let deviceId = clip && clip.getOutputDevice()
         ? clip.getOutputDevice()
         : getDefaultOutputDevice();
+    // the name as well as the id, so a document that came from somewhere else
+    // can find the box by what is written on it
+    // (comment by Claude)
     let ids = loopPlay(buffer, toChannelIndexes(channelnumbers), loopStartSeconds,
-        deviceId);
+        deviceId, clip ? clip.getOutputName() : "");
     let what = channelsDescription(channelnumbers);
     if (clip) {
       clip.setIds(ids, what);

@@ -429,6 +429,85 @@ function openOutput(id, cb) {
 }
 
 /*
+Chrome writes the system default entry as "Default - <the real name>", so the
+same box has two labels depending on which entry you are looking at. Compared
+without that, and without surrounding space.
+
+(comment by Claude)
+*/
+function normalizeDeviceLabel(s) {
+	return ('' + s).replace(/^Default\s*-\s*/i, '').trim();
+}
+
+/*
+The device with this name, if it is here. Used when an id does not resolve --
+see openOutputFor.
+
+The alias is skipped, because "the system default" is not a box and the name is
+being used to find a particular box. The first match wins: a name is not unique,
+and two identical interfaces have the same one, which is the price of a name
+that survives being carried to another machine.
+
+(comment by Claude)
+*/
+function findOutputIdByName(name, cb) {
+	if (!name || !navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+		cb(null);
+		return;
+	}
+	let want = normalizeDeviceLabel(name);
+	enumerateAudioDevices().then(function(devs) {
+		for (let i = 0; i < devs.length; i++) {
+			let d = devs[i];
+			if (d.kind != 'audiooutput') continue;
+			if (d.deviceId == 'default') continue;
+			if (normalizeDeviceLabel(d.label) == want) {
+				cb(d.deviceId);
+				return;
+			}
+		}
+		cb(null);
+	}).catch(function() {
+		cb(null);
+	});
+}
+
+/*
+The device a clip names: by id, and failing that by name.
+
+Two identifiers because they fail in opposite directions. The id is exact and
+names this box and no other, but it is a hash salted per origin, so it is
+meaningless in another browser profile, on another machine, after site data is
+cleared, or even on another port -- an origin is scheme, host and port. The name
+is the label the hardware reports, which for a usb interface carries its
+vendor and product code ("ES-9 (2485:50e0)"), so it is the same string
+everywhere; it is just not unique if you own two of the same box.
+
+So: the id when it works, which is the same session or the same machine, and
+the name when it does not, which is everywhere else. A document carried to
+another machine finds the right interface by the name written on it.
+
+(comment by Claude)
+*/
+function openOutputFor(id, name, cb) {
+	openOutput(id, function(o, err) {
+		if (o || !name) {
+			cb(o, err);
+			return;
+		}
+		findOutputIdByName(name, function(foundId) {
+			if (!foundId) {
+				cb(null, err);
+				return;
+			}
+			console.log('vodka: that device id is not from this browser, found "'
+					+ name + '" by name instead');
+			openOutput(foundId, cb);
+		});
+	});
+}
+
+/*
 A moment in the master's clock, named in another output's clock.
 
 Through performance.now(), which both contexts can speak about: the master says
@@ -1194,7 +1273,7 @@ ones wait for the boundary, which is what keeps everything in phase.
 
 (comment by Claude)
 */
-function addLoop(buffer, channel, loopStartSeconds, deviceId) {
+function addLoop(buffer, channel, loopStartSeconds, deviceId, deviceName) {
 	maybeCreateAudioContext();
 	return addCycleMember({
 		buffer: buffer,
@@ -1203,7 +1282,8 @@ function addLoop(buffer, channel, loopStartSeconds, deviceId) {
 		loopStartSeconds: loopStartSeconds || 0,
 		introDone: false,
 		node: null,
-		outputKey: outputKeyFor(deviceId)
+		outputKey: outputKeyFor(deviceId),
+		outputName: deviceName || ''
 	});
 }
 
@@ -1232,7 +1312,7 @@ function addCycleMember(loop) {
 		if (open) {
 			loop.output = open;
 		} else {
-			openOutput(loop.outputKey, function(o, err) {
+			openOutputFor(loop.outputKey, loop.outputName, function(o, err) {
 				if (o) {
 					loop.output = o;
 					return;
@@ -1512,11 +1592,11 @@ function nextCycleBoundary() {
 	return { at: cycleNextBoundaryTime, lengthSeconds: cycleLengthSeconds() };
 }
 
-function loopPlay(buffer, channelList, loopStartSeconds, deviceId) {
+function loopPlay(buffer, channelList, loopStartSeconds, deviceId, deviceName) {
 	maybeCreateAudioContext();
 	let ids = [];
 	for (let i = 0; i < channelList.length; i++) {
-		ids.push(addLoop(buffer, channelList[i], loopStartSeconds, deviceId));
+		ids.push(addLoop(buffer, channelList[i], loopStartSeconds, deviceId, deviceName));
 	}
 	return ids;
 }
