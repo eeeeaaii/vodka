@@ -79,7 +79,7 @@ import {
   stretchInto,
   decayTailSamples,
 } from "../wavetablefunctions.js";
-import { loopPlay, queueBreak, atNextCycleStart, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying, getAudioChannelCount } from "../webaudio.js";
+import { loopPlay, queueBreak, atNextCycleStart, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying, getDeviceChannelCount, getDefaultOutputDevice, getDefaultOutputName } from "../webaudio.js";
 import { constructClip, constructUnassignedClip, channelsDescription } from "../nex/clip.js";
 import { Tag } from "../tag.js";
 import { ERROR_TYPE_INFO } from "../nex/eerror.js";
@@ -159,18 +159,24 @@ function createWavetableBuiltins() {
         who + ": that clip is gone, a refresh does not keep them. Sorry!");
   }
 
-  // Channels are 1-based to the user, the way audio hardware numbers them.
-  // (comment by Claude)
-  function toChannelIndexes(numbers, who) {
+  /*
+  Channels are 1-based to the user, the way audio hardware numbers them.
+
+  Nothing is refused here. A channel the device does not have is simply not
+  played -- see channelExistsOn in webaudio.js -- because the same expression
+  played on an eight channel interface and on a pair of speakers asks for
+  channels that exist on one and not the other, and that is the point of it
+  rather than a mistake worth stopping for. A number below one survives as a
+  negative index, which no device has either.
+
+  (comment by Claude)
+  */
+  function toChannelIndexes(numbers) {
     let r = [];
     for (let i = 0; i < numbers.length; i++) {
-      if (!(numbers[i] >= 1)) {
-        return { error: constructFatalError(
-            who + ": there is no channel " + numbers[i] + ". Sorry!") };
-      }
       r.push(numbers[i] - 1);
     }
-    return { indexes: r };
+    return r;
   }
 
   /*
@@ -247,14 +253,24 @@ function createWavetableBuiltins() {
       channelnumbers = readChannelNumbers(arg);
     }
 
-    let converted = toChannelIndexes(channelnumbers, name);
-    if (converted.error) return { error: converted.error };
-    let ids = loopPlay(buffer, converted.indexes, loopStartSeconds);
+    /*
+    Which device this goes to: the clip's, if it came with one, and otherwise
+    whatever set-default-audio-output last named. A clip keeps the device it was
+    made with, so playing the same wave through two clips is how you get it out
+    of two interfaces at once, in step.
+
+    (comment by Claude)
+    */
+    let deviceId = clip ? clip.getOutputDevice() : getDefaultOutputDevice();
+    let deviceName = clip ? clip.getOutputName() : getDefaultOutputName();
+    let ids = loopPlay(buffer, toChannelIndexes(channelnumbers), loopStartSeconds,
+        deviceId);
     let what = channelsDescription(channelnumbers);
     if (clip) {
       clip.setIds(ids, what);
     } else {
       clip = constructClip("audio loop", what, ids, endLoops, channelnumbers);
+      clip.setOutputDevice(deviceId, deviceName);
     }
     // a replaced clip is playing something else now, so this is answered
     // again rather than left as it was
@@ -299,16 +315,34 @@ function createWavetableBuiltins() {
   */
   Builtin.createBuiltin(
     "make-clip",
-    ["channels#%()?"],
+    ["channels#%()?", "device()?"],
     function $makeClip(env, executionEnvironment) {
-      let channelnumbers = readChannelNumbers(env.lb("channels"));
-      // the same check play makes, now rather than when you come to play it
-      // (comment by Claude)
-      let converted = toChannelIndexes(channelnumbers, "make-clip");
-      if (converted.error) return converted.error;
-      return constructUnassignedClip("audio loop", channelnumbers);
+      let channelsArg = env.lb("channels");
+      let deviceArg = env.lb("device");
+      /*
+      Both arguments can be orgs -- a list of channel numbers and a device are
+      both orgs -- so one org on its own is read by what is in it rather than by
+      where it is. A device says what kind of device it is; a list of channels
+      does not.
+
+      (comment by Claude)
+      */
+      if (deviceArg == UNBOUND && looksLikeADevice(channelsArg)) {
+        deviceArg = channelsArg;
+        channelsArg = UNBOUND;
+      }
+      let deviceId = getDefaultOutputDevice();
+      let deviceName = getDefaultOutputName();
+      if (deviceArg != UNBOUND) {
+        let found = deviceIdOrError(deviceArg, "output", "make-clip");
+        if (found.error) return found.error;
+        deviceId = found.id;
+        deviceName = found.name;
+      }
+      return constructUnassignedClip("audio loop", readChannelNumbers(channelsArg),
+          null, deviceId, deviceName);
     },
-    "An empty clip on |channels, or channels 1 and 2. Hand it to play and play fills it in instead of starting a second loop, so the expression can be evaluated again in place."
+    "An empty clip on |channels, or channels 1 and 2, playing out of |device, or whatever set-default-audio-output last named. Hand it to play and play fills it in instead of starting a second loop, so the expression can be evaluated again in place."
   );
 
   Builtin.createBuiltin(
@@ -353,29 +387,57 @@ function createWavetableBuiltins() {
 
       (comment by Claude)
       */
-      let converted = toChannelIndexes([1, 2], "break");
-      if (converted.error) return converted.error;
-      queueBreak(wt.getCachedBuffer(), converted.indexes, loopStartSecondsOf(wt));
+      queueBreak(wt.getCachedBuffer(), toChannelIndexes([1, 2]),
+          loopStartSecondsOf(wt));
       return constructNil();
     },
     "Stops everything at the end of the measure and plays |wt once. Anything started meanwhile begins when it ends. Start nothing and everything stops."
   );
 
+  /*
+  How many channels a device has.
+
+  It takes the device now. It used to take nothing and answer for the audio
+  graph, which was built from whatever output the machine happened to be on when
+  vodka first made a sound -- the right answer when there was one device, and
+  increasingly a lie after that. Nothing in the browser's device list says how
+  many channels a device has, so the only way to find out is to open it, which
+  is what this does, and the device stays open for when you play on it.
+
+  (comment by Claude)
+  */
   Builtin.createBuiltin(
     "audio-channels",
-    [],
+    ["device()"],
     function $audioChannels(env, executionEnvironment) {
-      let n = getAudioChannelCount();
-      let r = constructOrg();
-      for (let i = 1; i <= n; i++) {
-        r.appendChild(constructInteger(i));
-      }
-      // one short row rather than a tall column
-      // (comment by Claude)
-      r.setHorizontal();
-      return r;
+      let dev = env.lb("device");
+      let found = deviceIdOrError(dev, "output", "audio-channels");
+      if (found.error) return found.error;
+      let dv = constructDeferredValue();
+      dv.set(new GenericActivationFunctionGenerator(
+        "audio-channels",
+        function (callback, exp) {
+          getDeviceChannelCount(found.id, function (n, err) {
+            if (n < 0) {
+              callback(constructFatalError("audio-channels: " + err + " Sorry!"));
+              return;
+            }
+            let r = constructOrg();
+            for (let i = 1; i <= n; i++) {
+              r.appendChild(constructInteger(i));
+            }
+            // one short row rather than a tall column
+            // (comment by Claude)
+            r.setHorizontal();
+            callback(r);
+          });
+        }
+      ));
+      dv.appendChild(constructInfo("opening an audio device"));
+      dv.activate();
+      return dv;
     },
-    "The audio outputs of this device, as channel numbers counting from 1, which is what play takes. Asking opens the device; the answer is fixed until reload."
+    "The channels of |device, an output from list-audio-devices, counting from 1, which is what play takes. Asking opens the device."
   );
 
   /*
@@ -408,7 +470,18 @@ function createWavetableBuiltins() {
     if (!id) {
       return { error: constructFatalError(who + ": that device has no id. Sorry!") };
     }
-    return { id: id.getFullTypedValue() };
+    let name = dev.getChildTagged(newTagOrThrowOOM("name", who + ", name"));
+    return {
+      id: id.getFullTypedValue(),
+      name: name ? name.getFullTypedValue() : ""
+    };
+  }
+
+  // an org is a device if it says what kind of device it is
+  // (comment by Claude)
+  function looksLikeADevice(nex) {
+    if (!Utils.isNexContainer(nex)) return false;
+    return !!nex.getChildTagged(newTagOrThrowOOM("kind", "is this a device"));
   }
 
   Builtin.createBuiltin(
@@ -444,44 +517,56 @@ function createWavetableBuiltins() {
     "The audio devices on this machine, inputs and outputs. The first time, the browser asks for the microphone, because it withholds device names until you allow it once."
   );
 
+  /*
+  The device a clip gets when it is made without one -- a default in the
+  ordinary sense, not a switch. Nothing playing moves: a clip plays on the
+  device it names, and the ones that already name one go on naming it.
+
+  The device is opened here rather than at the first play, so that its channel
+  count is known and its clock has been running for a while before anything is
+  scheduled against it.
+
+  (comment by Claude)
+  */
   Builtin.createBuiltin(
-    "set-audio-output",
+    "set-default-audio-output",
     ["device()"],
-    function $setAudioOutput(env, executionEnvironment) {
+    function $setDefaultAudioOutput(env, executionEnvironment) {
       let dev = env.lb("device");
-      let found = deviceIdOrError(dev, "output", "set-audio-output");
+      let found = deviceIdOrError(dev, "output", "set-default-audio-output");
       if (found.error) return found.error;
       let dv = constructDeferredValue();
       dv.set(new GenericActivationFunctionGenerator(
-        "set-audio-output",
+        "set-default-audio-output",
         function (callback, exp) {
-          setAudioOutputDevice(found.id, function (err) {
+          setAudioOutputDevice(found.id, found.name, function (err) {
             if (err) {
-              callback(constructFatalError("set-audio-output: " + err + " Sorry!"));
+              callback(constructFatalError(
+                  "set-default-audio-output: " + err + " Sorry!"));
               return;
             }
             callback(dev);
           });
         }
       ));
-      dv.appendChild(constructInfo("choosing an audio output"));
+      dv.appendChild(constructInfo("opening an audio device"));
       dv.activate();
       return dv;
     },
-    "Sends all audio to |device, an org from list-audio-devices, and returns it. Everything already playing moves too. This session only: a device id names hardware on this machine."
+    "Makes |device, an output from list-audio-devices, the one a new clip plays on, and returns it. Clips that already name a device keep it. This session only: a device id names hardware on this machine."
   );
 
   Builtin.createBuiltin(
-    "set-audio-input",
+    "set-default-audio-input",
     ["device()"],
-    function $setAudioInput(env, executionEnvironment) {
+    function $setDefaultAudioInput(env, executionEnvironment) {
       let dev = env.lb("device");
-      let found = deviceIdOrError(dev, "input", "set-audio-input");
+      let found = deviceIdOrError(dev, "input", "set-default-audio-input");
       if (found.error) return found.error;
       setAudioInputDevice(found.id);
       return dev;
     },
-    "Records from |device, an org from list-audio-devices, and returns it. Takes effect the next time recording starts. This session only: a device id names hardware on this machine."
+    "Records from |device, an input from list-audio-devices, and returns it. Recording always uses this one, wherever the clips are playing. Takes effect next time recording starts, and for this session only."
   );
 
   Builtin.createBuiltin(
@@ -528,9 +613,7 @@ function createWavetableBuiltins() {
       // (comment by Claude)
       let channelnumber = -1;
       if (channel != UNBOUND) {
-        let converted = toChannelIndexes([channel.getTypedValue()], "abort-playback");
-        if (converted.error) return converted.error;
-        channelnumber = converted.indexes[0];
+        channelnumber = toChannelIndexes([channel.getTypedValue()])[0];
       }
 
       abortPlayback(channelnumber);

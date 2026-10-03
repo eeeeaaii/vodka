@@ -16,7 +16,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { settings } from './globalappflags.js'
-import { constructFatalError } from './nex/eerror.js'
 import { heap } from './heap.js'
 
 
@@ -48,6 +47,15 @@ class AuditionPlayer {
 	// sustained means the sound keeps going after the key comes back up. Holding
 	// enter to audition is momentary; toggling playback with space is not.
 	// (comment by Claude)
+	// Auditioning is listening to a wave while you work on it, so it goes to
+	// the device vodka was opened on, never to a clip's device. A machine whose
+	// default output does not have the audition channel gets the first one.
+	// (comment by Claude)
+	static channel() {
+		let ch = settings.AUDIO_AUDITION_CHANNEL;
+		return channelExistsOn(outputs[DEFAULT_OUTPUT_KEY], ch) ? ch : 0;
+	}
+
 	constructor(buffer, startOffsetSamples, sustained, loopStartSeconds) {
 		this.buffer = buffer;
 		this.sustained = !!sustained;
@@ -64,7 +72,7 @@ class AuditionPlayer {
 		The second connection only if there is a second channel to make it on,
 		since an output can be mono.
 		*/
-		let ch = settings.AUDIO_AUDITION_CHANNEL;
+		let ch = AuditionPlayer.channel();
 		this.source.connect(channelMergerNode, 0, ch);
 		if (ch + 1 < channelMergerNode.numberOfInputs) {
 			this.source.connect(channelMergerNode, 0, ch + 1);
@@ -214,15 +222,12 @@ default midi port is not saved -- a device id names hardware on this machine.
 
 (comment by Claude)
 */
-let outputDeviceId = null;
+let defaultOutputDeviceId = DEFAULT_OUTPUT_KEY;
+let defaultOutputName = '';
 let inputDeviceId = null;
 
 function getAudioInputDevice() {
 	return inputDeviceId;
-}
-
-function getAudioOutputDevice() {
-	return outputDeviceId;
 }
 
 /*
@@ -305,26 +310,170 @@ says is fixed until reload.
 
 (comment by Claude)
 */
-function setAudioOutputDevice(id, cb) {
+/*
+THE OUTPUTS
+
+An AudioContext plays to one device. So playing on two at once -- the modular
+rig and the speakers, say -- means one context per device, each with its own
+sink and its own channel merger, and the merger is built after the sink is set,
+so it is exactly as wide as that device. Which is also what fixed audio-channels:
+there is no single number any more, there is a number per device.
+
+The one made first is the master. It is the system default device, it is where
+recording and decoding happen, and it is the clock: the cycle is scheduled in
+its time, and every other output converts.
+
+Converting is why this works at all. Two devices run off two crystals and drift
+apart by tens of parts per million, but getOutputTimestamp pairs each context's
+own time with performance.now(), so a moment in the master's time can be named
+in wall clock time and then asked for in the other context's time. Nothing
+accumulates, because the cycle restarts every member at every boundary -- so the
+error is whatever the pairing was worth on that pass, not the sum of every pass
+since you started.
+
+(comment by Claude)
+*/
+const DEFAULT_OUTPUT_KEY = '';
+
+let outputs = {};
+
+/*
+The system default is the master, under whatever name it is asked for. Chrome
+lists it twice -- once as itself and once as the device with the id 'default' --
+and opening a second context on the same hardware would be a second clock to
+keep in step with the first for no reason at all.
+
+(comment by Claude)
+*/
+function outputKeyFor(id) {
+	if (!id || id == 'default') return DEFAULT_OUTPUT_KEY;
+	return id;
+}
+
+function getOpenOutput(id) {
+	return outputs[outputKeyFor(id)] || null;
+}
+
+/*
+Opens a device, or hands back the one already open for it. The callback is
+called with the output, or with null and a reason.
+
+Not synchronous, because setSinkId is a promise and the merger cannot be built
+until it has settled -- the whole point is that the merger is the width of the
+device the context ended up on.
+
+(comment by Claude)
+*/
+function openOutput(id, cb) {
 	maybeCreateAudioContext();
-	if (!ctx.setSinkId) {
-		cb('this browser cannot choose an audio output');
+	let key = outputKeyFor(id);
+	if (outputs[key]) {
+		cb(outputs[key]);
 		return;
 	}
-	ctx.setSinkId(id).then(function() {
-		outputDeviceId = id;
-		let want = channelMergerNode.numberOfInputs;
-		let have = ctx.destination.maxChannelCount;
-		ctx.destination.channelCount = Math.min(want, have);
-		if (have != want) {
-			console.log('vodka: this output has ' + have + ' channel(s) and the audio '
-					+ 'graph was built for ' + want
-					+ '. Reload to play on more than ' + Math.min(want, have) + '.');
-		}
-		cb(null);
+	let AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+	let c = null;
+	try {
+		c = new AudioContextCtor({ sampleRate: SAMPLE_RATE });
+	} catch (e) {
+		c = new AudioContextCtor();
+	}
+	if (!c.setSinkId) {
+		try { c.close(); } catch (e) {}
+		cb(null, 'this browser cannot choose an audio output');
+		return;
+	}
+	c.setSinkId(key).then(function() {
+		if (c.state == 'suspended') c.resume();
+		c.destination.channelCount = c.destination.maxChannelCount;
+		let merger = c.createChannelMerger(c.destination.maxChannelCount);
+		merger.connect(c.destination);
+		let o = { key: key, ctx: c, merger: merger };
+		outputs[key] = o;
+		// getOutputTimestamp answers zeros until a context has produced output,
+		// and this one's timestamps are how it is kept in step with the master
+		// (comment by Claude)
+		startSilentKeepAlive(o);
+		console.log('vodka: opened an audio output with ' + merger.numberOfInputs
+				+ ' channel(s)');
+		cb(o);
 	}).catch(function(e) {
-		cb('' + e);
+		try { c.close(); } catch (e2) {}
+		cb(null, '' + e);
 	});
+}
+
+/*
+A moment in the master's clock, named in another output's clock.
+
+Through performance.now(), which both contexts can speak about: the master says
+what wall clock time its moment is, and the other says what its own time is at a
+wall clock time it has measured. Falls back to the difference between the two
+currentTimes, which is the same answer without the output latency in it, for a
+context too young to have a timestamp yet.
+
+(comment by Claude)
+*/
+function outputTimeFor(o, masterTime) {
+	if (!o || o.ctx == ctx) return masterTime;
+	let perf = contextTimeToPerformanceTime(masterTime);
+	let ts = o.ctx.getOutputTimestamp();
+	if (ts && ts.contextTime != undefined && ts.performanceTime > 0) {
+		return ts.contextTime + (perf - ts.performanceTime) / 1000;
+	}
+	return o.ctx.currentTime + (masterTime - ctx.currentTime);
+}
+
+/*
+How many channels a device has, which is a question only its own context can
+answer: nothing in enumerateDevices says. Opening it is the asking, and the
+device stays open, which is what you wanted anyway if you are asking how many
+channels it has.
+
+(comment by Claude)
+*/
+function getDeviceChannelCount(id, cb) {
+	openOutput(id, function(o, err) {
+		if (!o) {
+			cb(-1, err);
+			return;
+		}
+		cb(o.merger.numberOfInputs);
+	});
+}
+
+/*
+The device a clip gets when it is made without one. It moves nothing that is
+already playing: a clip names the device it plays on, so what is sounding now
+goes on sounding where it is.
+
+Opened here rather than at the first play, so that the context exists, the
+channel count is known, and the clock has had time to start before anything is
+scheduled against it.
+
+(comment by Claude)
+*/
+function setAudioOutputDevice(id, name, cb) {
+	openOutput(id, function(o, err) {
+		if (!o) {
+			cb(err);
+			return;
+		}
+		defaultOutputDeviceId = o.key;
+		// kept so a clip made on this device has something to show besides a
+		// hash
+		// (comment by Claude)
+		defaultOutputName = o.key ? (name ? name : '') : '';
+		cb(null);
+	});
+}
+
+function getDefaultOutputDevice() {
+	return defaultOutputDeviceId;
+}
+
+function getDefaultOutputName() {
+	return defaultOutputName;
 }
 
 /*
@@ -520,6 +669,14 @@ function maybeCreateAudioContext() {
 		ctx.destination.channelCount = ctx.destination.maxChannelCount;
 		channelMergerNode = ctx.createChannelMerger(ctx.destination.maxChannelCount);
 		channelMergerNode.connect(ctx.destination);
+		// the master is an output like any other, and the one every other
+		// output's clock is converted to
+		// (comment by Claude)
+		outputs[DEFAULT_OUTPUT_KEY] = {
+			key: DEFAULT_OUTPUT_KEY,
+			ctx: ctx,
+			merger: channelMergerNode
+		};
 	}
 	// a suspended context's clock does not advance, and everything in the cycle
 	// is scheduled against that clock
@@ -529,25 +686,28 @@ function maybeCreateAudioContext() {
 	}
 }
 
-let silentKeepAlive = null;
 let warnedAboutMissingAudioClock = false;
 
 // getOutputTimestamp answers zeros until the context has produced output, so the
 // midi clock needs something playing whenever anything is in the cycle.
 // (comment by Claude)
-function startSilentKeepAlive() {
-	maybeCreateAudioContext();
-	if (silentKeepAlive) return;
-	let buffer = ctx.createBuffer(1, Math.round(ctx.sampleRate), ctx.sampleRate);
-	let source = ctx.createBufferSource();
+function startSilentKeepAlive(o) {
+	if (!o) {
+		maybeCreateAudioContext();
+		o = outputs[DEFAULT_OUTPUT_KEY];
+	}
+	if (!o || o.keepAlive) return;
+	let c = o.ctx;
+	let buffer = c.createBuffer(1, Math.round(c.sampleRate), c.sampleRate);
+	let source = c.createBufferSource();
 	source.buffer = buffer;
 	source.loop = true;
-	let gain = ctx.createGain();
+	let gain = c.createGain();
 	gain.gain.value = 0;
 	source.connect(gain);
-	gain.connect(ctx.destination);
+	gain.connect(c.destination);
 	source.start();
-	silentKeepAlive = source;
+	o.keepAlive = source;
 }
 
 /*
@@ -628,8 +788,15 @@ function getSilentAudioBuffer(frames) {
 	return ctx.createBuffer(1, frames > 0 ? frames : 1, SAMPLE_RATE);
 }
 
-function getSourceFromBuffer(buffer, loop, loopStartSeconds) {
-	let source = ctx.createBufferSource();
+/*
+An AudioBuffer is not tied to the context that made it, so one wave can be
+playing on three devices at once off the same samples -- which is the whole
+point of the outputs, and would be three copies of the audio otherwise.
+
+(comment by Claude)
+*/
+function getSourceFromBuffer(buffer, loop, loopStartSeconds, output) {
+	let source = (output ? output.ctx : ctx).createBufferSource();
 	source.buffer = buffer;
 	source.loop = loop;
 	source.loopStart = loopStartSeconds || 0;
@@ -638,23 +805,24 @@ function getSourceFromBuffer(buffer, loop, loopStartSeconds) {
 	return source;
 }
 
-// this plays immediately
-// How many outputs the device has, which is what the merger was built with.
-// Asking opens an audio device if nothing has yet.
-// (comment by Claude)
-function getAudioChannelCount() {
-	maybeCreateAudioContext();
-	return channelMergerNode.numberOfInputs;
-}
+/*
+A channel this device does not have is not played and is not complained about.
 
-// Connecting past the merger's last input throws IndexSizeError from inside the
-// web audio api, which says nothing about channels.
-// (comment by Claude)
-function checkChannelExists(channel) {
-	let n = channelMergerNode.numberOfInputs;
-	if (!Number.isInteger(channel) || channel < 0 || channel >= n) {
-		throw constructFatalError('Unknown audio channel number. Sorry!');
-	}
+Which is the only thing that can work now that a clip names its own device: the
+same expression played on the modular rig and on the speakers asks for channels
+that exist on one of them and not on the other, and that is the point of it
+rather than a mistake to report. Channel 7 of a two channel device is silence.
+
+Connecting past the merger's last input would throw IndexSizeError from inside
+the web audio api, which says nothing about channels, so the test is here.
+
+(comment by Claude)
+*/
+function channelExistsOn(output, channel) {
+	if (!output) return false;
+	return Number.isInteger(channel)
+			&& channel >= 0
+			&& channel < output.merger.numberOfInputs;
 }
 /*
 THE GLOBAL CYCLE
@@ -875,12 +1043,21 @@ function startCycleAt(startTime) {
 		// Muting is not pausing. A loop can be both, and comes back only when
 		// neither says so, so un-pausing must not undo a mute.
 		if (loop.paused || loop.muted) continue;
-		let node = getSourceFromBuffer(loop.buffer, true, loop.loopStartSeconds);
-		node.connect(channelMergerNode, 0, loop.channel);
+		// still opening its device, or the device would not open. Either way
+		// there is nowhere to play it this pass
+		// (comment by Claude)
+		if (!loop.output) continue;
+		if (!channelExistsOn(loop.output, loop.channel)) continue;
+		// the same moment, said in this device's own clock
+		// (comment by Claude)
+		let at = outputTimeFor(loop.output, startTime);
+		let node = getSourceFromBuffer(loop.buffer, true, loop.loopStartSeconds,
+				loop.output);
+		node.connect(loop.output.merger, 0, loop.channel);
 		// the pass after the intro has played starts at the loop point, and
 		// every pass wraps back to it
-		node.start(startTime, loop.introDone ? loop.loopStartSeconds || 0 : 0);
-		node.stop(startTime + len);
+		node.start(at, loop.introDone ? loop.loopStartSeconds || 0 : 0);
+		node.stop(at + len);
 		if (!loop.introDone) loop.introScheduled = true;
 		loop.node = node;
 	}
@@ -953,7 +1130,9 @@ function beginBreak() {
 			loopStartSeconds: pendingBreak.loopStartSeconds || 0,
 			introDone: false,
 			node: null,
-			endAfterCycle: false
+			endAfterCycle: false,
+			outputKey: pendingBreak.outputKey,
+			output: outputs[pendingBreak.outputKey] || outputs[DEFAULT_OUTPUT_KEY]
 		};
 		breakIds.push(id);
 	}
@@ -966,10 +1145,14 @@ to wait for, so it starts one, and the break is simply a sample played once.
 
 (comment by Claude)
 */
-function queueBreak(buffer, channels, loopStartSeconds) {
+function queueBreak(buffer, channels, loopStartSeconds, deviceId) {
 	maybeCreateAudioContext();
-	channels.forEach(checkChannelExists);
-	pendingBreak = { buffer: buffer, channels: channels, loopStartSeconds: loopStartSeconds || 0 };
+	pendingBreak = {
+		buffer: buffer,
+		channels: channels,
+		loopStartSeconds: loopStartSeconds || 0,
+		outputKey: outputKeyFor(deviceId === undefined ? defaultOutputDeviceId : deviceId)
+	};
 	if (!cycleRunning) {
 		cycleRunning = true;
 		whenAudioClockIsReady(function() {
@@ -986,16 +1169,16 @@ ones wait for the boundary, which is what keeps everything in phase.
 
 (comment by Claude)
 */
-function addLoop(buffer, channel, loopStartSeconds) {
+function addLoop(buffer, channel, loopStartSeconds, deviceId) {
 	maybeCreateAudioContext();
-	checkChannelExists(channel);
 	return addCycleMember({
 		buffer: buffer,
 		channel: channel,
 		lengthSeconds: buffer.length / SAMPLE_RATE,
 		loopStartSeconds: loopStartSeconds || 0,
 		introDone: false,
-		node: null
+		node: null,
+		outputKey: outputKeyFor(deviceId)
 	});
 }
 
@@ -1010,6 +1193,31 @@ function addCycleMember(loop) {
 	maybeCreateAudioContext();
 	let id = nextCycleLoopId++;
 	loop.endAfterCycle = false;
+	/*
+	Which device this one plays on. Already open nearly always -- choosing a
+	device opens it -- and when it is not, the member sits in the cycle without
+	an output until it is, and starts at the first boundary after that. Being
+	one boundary late the very first time you play on a device you have not
+	named before is better than making play wait for a device to open.
+
+	(comment by Claude)
+	*/
+	if (loop.outputKey !== undefined) {
+		let open = outputs[loop.outputKey];
+		if (open) {
+			loop.output = open;
+		} else {
+			openOutput(loop.outputKey, function(o, err) {
+				if (o) {
+					loop.output = o;
+				} else {
+					console.log('vodka: could not open that audio output: ' + err);
+				}
+			});
+		}
+	} else {
+		loop.output = outputs[DEFAULT_OUTPUT_KEY];
+	}
 	cyclePending[id] = loop;
 	/*
 	Starting is deferred by a microtask so that everything added in one go
@@ -1151,13 +1359,16 @@ function muteLoops(ids, muted) {
 		next pass starts it in the ordinary way.
 		*/
 		if (!was) continue;
-		if (!loop.start && !loop.node && cycleRunning) {
+		if (!loop.start && !loop.node && cycleRunning
+				&& channelExistsOn(loop.output, loop.channel)) {
 			let at = nextOwnBoundary(loop, ctx.currentTime);
 			if (at < cycleNextBoundaryTime) {
-				let node = getSourceFromBuffer(loop.buffer, true, loop.loopStartSeconds);
-				node.connect(channelMergerNode, 0, loop.channel);
-				node.start(at, loop.introDone ? loop.loopStartSeconds || 0 : 0);
-				node.stop(cycleNextBoundaryTime);
+				let node = getSourceFromBuffer(loop.buffer, true, loop.loopStartSeconds,
+						loop.output);
+				node.connect(loop.output.merger, 0, loop.channel);
+				node.start(outputTimeFor(loop.output, at),
+						loop.introDone ? loop.loopStartSeconds || 0 : 0);
+				node.stop(outputTimeFor(loop.output, cycleNextBoundaryTime));
 				if (!loop.introDone) loop.introScheduled = true;
 				loop.node = node;
 			}
@@ -1264,12 +1475,11 @@ function nextCycleBoundary() {
 	return { at: cycleNextBoundaryTime, lengthSeconds: cycleLengthSeconds() };
 }
 
-function loopPlay(buffer, channelList, loopStartSeconds) {
+function loopPlay(buffer, channelList, loopStartSeconds, deviceId) {
 	maybeCreateAudioContext();
-	channelList.forEach(checkChannelExists);
 	let ids = [];
 	for (let i = 0; i < channelList.length; i++) {
-		ids.push(addLoop(buffer, channelList[i], loopStartSeconds));
+		ids.push(addLoop(buffer, channelList[i], loopStartSeconds, deviceId));
 	}
 	return ids;
 }
@@ -1292,7 +1502,6 @@ function abortPlayback(channel) {
 
 function startAuditioningBuffer(buffer, nex, startOffsetSamples, sustained, loopStartSeconds) {
 	maybeCreateAudioContext();
-	checkChannelExists(settings.AUDIO_AUDITION_CHANNEL);
 
 	/*
 	Whatever was auditioning ends here, because there is only one of each of
@@ -1394,7 +1603,7 @@ async function getFileAsBuffer(filepath, dir) {
 }
 
 
-export { getAudioBufferFromData, getSilentAudioBuffer, loadAudio, muteLoops, addLoop, queueBreak, atNextCycleStart, getAudioChannelCount, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio,
+export { getAudioBufferFromData, getSilentAudioBuffer, loadAudio, muteLoops, addLoop, queueBreak, atNextCycleStart, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio,
 		 listAudioDevices, setAudioOutputDevice, setAudioInputDevice,
-		 getAudioInputDevice, getAudioOutputDevice }
+		 getAudioInputDevice, getDefaultOutputDevice, getDefaultOutputName, getDeviceChannelCount }
 

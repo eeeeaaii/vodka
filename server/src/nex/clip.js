@@ -28,6 +28,8 @@ const KEY_SEPARATOR = ':';
 const KIND_KEY = 'kind';
 const CHANNELS_KEY = 'channels';
 const PORT_KEY = 'port';
+const OUTPUT_KEY = 'output';
+const OUTPUT_NAME_KEY = 'outputname';
 
 // what a clip says it is playing on
 // (comment by Claude)
@@ -62,6 +64,25 @@ class Clip extends Nex {
 		// a port for midi
 		// (comment by Claude)
 		this.channels = channels ? channels : [];
+		/*
+		Which audio device this clip plays on, as a device id, with the name it
+		had when it was chosen so that there is something to put on the screen.
+		Empty means the device vodka opened on.
+
+		On the clip rather than on the play command because that is what makes
+		simultaneous output work: two clips of the same wave on two devices are
+		two loops in one cycle, started at the same moment in two clocks. And
+		because a clip is the thing that is playing, so it is the thing that
+		knows where.
+
+		A device id names hardware on one machine, so a clip loaded on another
+		machine -- or after the interface was unplugged -- names a device that
+		is not there, and says so when you play it.
+
+		(comment by Claude)
+		*/
+		this.outputDevice = '';
+		this.outputName = '';
 		this.port = port ? port : null;
 		this.ender = ender ? ender : null;
 		this.ended = false;
@@ -117,6 +138,19 @@ class Clip extends Nex {
 
 	getChannels() {
 		return this.channels;
+	}
+
+	getOutputDevice() {
+		return this.outputDevice;
+	}
+
+	getOutputName() {
+		return this.outputName;
+	}
+
+	setOutputDevice(id, name) {
+		this.outputDevice = id ? id : '';
+		this.outputName = name ? name : '';
 	}
 
 	setClipping(v) {
@@ -230,6 +264,7 @@ class Clip extends Nex {
 		let r = new Clip(this.kind, this.what, this.ids.slice(), null, this.channels.slice(), this.port);
 		r.ended = this.ended;
 		r.clipping = this.clipping;
+		r.setOutputDevice(this.outputDevice, this.outputName);
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -274,6 +309,12 @@ class Clip extends Nex {
 		if (this.port) {
 			fields.push(PORT_KEY + KEY_SEPARATOR + encodeURIComponent(this.port));
 		}
+		if (this.outputDevice) {
+			fields.push(OUTPUT_KEY + KEY_SEPARATOR + encodeURIComponent(this.outputDevice));
+		}
+		if (this.outputName) {
+			fields.push(OUTPUT_NAME_KEY + KEY_SEPARATOR + encodeURIComponent(this.outputName));
+		}
 		return fields.join(FIELD_SEPARATOR);
 	}
 
@@ -302,6 +343,10 @@ class Clip extends Nex {
 				this.what = channelsDescription(this.channels);
 			} else if (key == PORT_KEY) {
 				this.port = decodeURIComponent(val);
+			} else if (key == OUTPUT_KEY) {
+				this.outputDevice = decodeURIComponent(val);
+			} else if (key == OUTPUT_NAME_KEY) {
+				this.outputName = decodeURIComponent(val);
 			}
 		}
 	}
@@ -329,6 +374,19 @@ class Clip extends Nex {
 		line1.classList.add('innerspan');
 		line1.innerHTML = this.isUnassigned() ? 'UNASSIGNED' : this.kind.toUpperCase();
 		innerspans.appendChild(line1);
+
+		/*
+		Which device, when it is not the one vodka opened on. Named rather than
+		numbered: the id is a hash and the name is what is written on the box.
+
+		(comment by Claude)
+		*/
+		if (this.outputDevice) {
+			let devline = document.createElement('div');
+			devline.classList.add('innerspan');
+			devline.innerHTML = this.outputName ? this.outputName : 'another device';
+			innerspans.appendChild(devline);
+		}
 
 		let line2 = document.createElement('div');
 		line2.classList.add('innerspan');
@@ -482,10 +540,11 @@ back from a file, which nothing else would have given one to.
 
 (comment by Claude)
 */
-function constructUnassignedClip(kind, channels, port) {
+function constructUnassignedClip(kind, channels, port, deviceId, deviceName) {
 	let chans = channels ? channels : [];
 	let r = constructClip(kind ? kind : 'audio loop', channelsDescription(chans),
 			[], endLoops, chans, port);
+	r.setOutputDevice(deviceId, deviceName);
 	r.ended = true;
 	return r;
 }
