@@ -239,13 +239,38 @@ before this -- and input and output is what they are.
 
 (comment by Claude)
 */
+/*
+Whether this is the one vodka would use: the output a new clip is made with, or
+the input recording opens. Absent rather than false on the others, so the one
+that matters is the one you can see.
+
+An output that has not been chosen means the device vodka opened on, which is
+the system default, which chrome lists as the device with the id 'default' --
+so that is the entry that gets the mark. A machine whose output list has no such
+entry gets no mark at all, which is honest: nothing here knows which piece of
+hardware the system default is.
+
+(comment by Claude)
+*/
+function isVodkaDefaultDevice(d) {
+	if (d.kind == 'audiooutput') {
+		return outputKeyFor(d.deviceId) == outputKeyFor(defaultOutputDeviceId);
+	}
+	if (!inputDeviceId) return d.deviceId == 'default';
+	return d.deviceId == inputDeviceId;
+}
+
 function describeAudioDevice(d) {
-	return {
+	let r = {
 		id: d.deviceId,
 		kind: (d.kind == 'audioinput') ? 'input' : 'output',
 		name: d.label,
 		group: d.groupId
 	};
+	if (isVodkaDefaultDevice(d)) {
+		r['vodka-default'] = true;
+	}
+	return r;
 }
 
 function enumerateAudioDevices() {

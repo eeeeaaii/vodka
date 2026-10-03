@@ -451,8 +451,13 @@ function createWavetableBuiltins() {
   function deviceToOrg(desc) {
     let r = constructOrg();
     for (let key in desc) {
-      let v = constructEString("" + (desc[key] === undefined || desc[key] === null
-          ? "" : desc[key]));
+      // vodka-default is the one field that is a fact rather than a name, and
+      // it is only ever there when it is true
+      // (comment by Claude)
+      let v = (typeof desc[key] == "boolean")
+          ? constructBool(desc[key])
+          : constructEString("" + (desc[key] === undefined || desc[key] === null
+              ? "" : desc[key]));
       v.addTag(newTagOrThrowOOM(key, "building an audio device"));
       r.appendChild(v);
     }
@@ -514,7 +519,7 @@ function createWavetableBuiltins() {
       dv.activate();
       return dv;
     },
-    "The audio devices on this machine, inputs and outputs. The first time, the browser asks for the microphone, because it withholds device names until you allow it once."
+    "The audio devices on this machine, inputs and outputs. The one vodka is using is tagged vodka-default. The first time, the browser asks for the microphone, because it withholds device names until you allow it once."
   );
 
   /*
