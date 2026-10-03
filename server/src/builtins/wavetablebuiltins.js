@@ -261,16 +261,19 @@ function createWavetableBuiltins() {
 
     (comment by Claude)
     */
-    let deviceId = clip ? clip.getOutputDevice() : getDefaultOutputDevice();
-    let deviceName = clip ? clip.getOutputName() : getDefaultOutputName();
+    let deviceId = clip && clip.getOutputDevice()
+        ? clip.getOutputDevice()
+        : getDefaultOutputDevice();
     let ids = loopPlay(buffer, toChannelIndexes(channelnumbers), loopStartSeconds,
         deviceId);
     let what = channelsDescription(channelnumbers);
     if (clip) {
       clip.setIds(ids, what);
     } else {
+      // No device on it. A clip only names hardware when somebody named it,
+      // and one that does not follows the default wherever it goes
+      // (comment by Claude)
       clip = constructClip("audio loop", what, ids, endLoops, channelnumbers);
-      clip.setOutputDevice(deviceId, deviceName);
     }
     // a replaced clip is playing something else now, so this is answered
     // again rather than left as it was
@@ -331,8 +334,16 @@ function createWavetableBuiltins() {
         deviceArg = channelsArg;
         channelsArg = UNBOUND;
       }
-      let deviceId = getDefaultOutputDevice();
-      let deviceName = getDefaultOutputName();
+      /*
+      Nothing unless you say so. A clip with no device plays on whatever is
+      default when it is played, which is the thing that keeps a document
+      portable: a device id names hardware on one machine, and a clip that never
+      asked for a particular box does not care.
+
+      (comment by Claude)
+      */
+      let deviceId = "";
+      let deviceName = "";
       if (deviceArg != UNBOUND) {
         let found = deviceIdOrError(deviceArg, "output", "make-clip");
         if (found.error) return found.error;
@@ -342,7 +353,7 @@ function createWavetableBuiltins() {
       return constructUnassignedClip("audio loop", readChannelNumbers(channelsArg),
           null, deviceId, deviceName);
     },
-    "An empty clip on |channels, or channels 1 and 2, playing out of |device, or whatever set-default-audio-output last named. Hand it to play and play fills it in instead of starting a second loop, so the expression can be evaluated again in place."
+    "An empty clip on |channels, or channels 1 and 2. Given |device it plays there; given none it plays wherever the default is when you play it. Hand it to play and play fills it in instead of starting a second loop, so the expression can be evaluated again in place."
   );
 
   Builtin.createBuiltin(
