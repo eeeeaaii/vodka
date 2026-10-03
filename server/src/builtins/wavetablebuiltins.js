@@ -18,7 +18,7 @@ import * as Utils from "../utils.js";
 
 import { Builtin } from "../nex/builtin.js";
 
-import { constructFatalError, newTagOrThrowOOM } from "../nex/eerror.js";
+import { constructFatalError, constructInfo, newTagOrThrowOOM } from "../nex/eerror.js";
 import { constructWavetable } from "../nex/wavetable.js";
 import { constructNil } from "../nex/nil.js";
 import { constructInteger } from "../nex/integer.js";
@@ -38,6 +38,9 @@ import {
   loadAudio,
   startRecordingAudio,
   stopRecordingAudio,
+  listAudioDevices,
+  setAudioOutputDevice,
+  setAudioInputDevice,
 } from "../webaudio.js";
 import {
   convertValueFromTag,
@@ -77,7 +80,7 @@ import {
   decayTailSamples,
 } from "../wavetablefunctions.js";
 import { loopPlay, queueBreak, atNextCycleStart, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying, getAudioChannelCount } from "../webaudio.js";
-import { constructClip } from "../nex/clip.js";
+import { constructClip, constructUnassignedClip, channelsDescription } from "../nex/clip.js";
 import { Tag } from "../tag.js";
 import { ERROR_TYPE_INFO } from "../nex/eerror.js";
 import { Command } from "../nex/command.js";
@@ -180,6 +183,26 @@ function createWavetableBuiltins() {
     return wt.loopStartSeconds ? wt.loopStartSeconds() : 0;
   }
 
+  /*
+  The channels argument play and to-clip both take: a number, a list of them, or
+  nothing at all, which is channels 1 and 2.
+
+  (comment by Claude)
+  */
+  function readChannelNumbers(arg) {
+    if (arg == UNBOUND) {
+      return [1, 2];
+    }
+    if (Utils.isNexContainer(arg)) {
+      let r = [];
+      for (let i = 0; i < arg.numChildren(); i++) {
+        r.push(arg.getChildAt(i).getTypedValue());
+      }
+      return r;
+    }
+    return [arg.getTypedValue()];
+  }
+
   function startPlaying(wt, arg, name) {
     let buffer = wt.getCachedBuffer();
     // whether the wave goes past full scale, asked of the wave, which already
@@ -205,26 +228,29 @@ function createWavetableBuiltins() {
         return { error: constructFatalError(name + ": that is not an audio clip. Sorry!") };
       }
       clip = arg;
-      channelnumbers = clip.getChannels();
+      /*
+      A clip says which channels its loop is on, and that is where the
+      replacement goes. Empty only if it came from somewhere that did not say
+      -- a file written before clips carried channels, say -- and the defaults
+      are better than playing it on no channels at all, which is silence with
+      nothing to see.
+
+      (comment by Claude)
+      */
+      if (clip.getChannels().length > 0) {
+        channelnumbers = clip.getChannels();
+      }
       // Out at the boundary and back in at the same one, so the swap is not
       // heard. Nothing here has to know how a loop is put together.
       endLoops(clip.getIds(), true /* at the cycle end */);
     } else if (arg != UNBOUND) {
-      channelnumbers = [];
-      if (Utils.isNexContainer(arg)) {
-        for (let i = 0; i < arg.numChildren(); i++) {
-          channelnumbers.push(arg.getChildAt(i).getTypedValue());
-        }
-      } else {
-        channelnumbers.push(arg.getTypedValue());
-      }
+      channelnumbers = readChannelNumbers(arg);
     }
 
     let converted = toChannelIndexes(channelnumbers, name);
     if (converted.error) return { error: converted.error };
     let ids = loopPlay(buffer, converted.indexes, loopStartSeconds);
-    let what =
-        "channel" + (channelnumbers.length == 1 ? " " : "s ") + channelnumbers.join(", ");
+    let what = channelsDescription(channelnumbers);
     if (clip) {
       clip.setIds(ids, what);
     } else {
@@ -252,6 +278,38 @@ function createWavetableBuiltins() {
 
   // what it was called before it could do both
   Builtin.aliasBuiltin("loop-play", "play");
+
+  /*
+  An empty clip, on the channels you name.
+
+  No wave, because a clip never holds one: it names a loop in the audio system,
+  and the samples are over there. So there is nothing to pass in but the
+  channels, and until play assigns it something this clip is unassigned.
+
+  It exists because of what a clip is for. Play given a clip replaces the loop
+  that clip names instead of starting a second one, which is what lets a play
+  expression be evaluated again in place -- but the only way to get a clip used
+  to be to play something, so the way to arrange that was to play a short silent
+  wave first and keep the clip it answered. That is a loop, a buffer and a cycle
+  member sitting in the cycle for the rest of the session, per expression.
+
+  Nothing is scheduled here: no buffer, no cycle member, no sound.
+
+  (comment by Claude)
+  */
+  Builtin.createBuiltin(
+    "make-clip",
+    ["channels#%()?"],
+    function $makeClip(env, executionEnvironment) {
+      let channelnumbers = readChannelNumbers(env.lb("channels"));
+      // the same check play makes, now rather than when you come to play it
+      // (comment by Claude)
+      let converted = toChannelIndexes(channelnumbers, "make-clip");
+      if (converted.error) return converted.error;
+      return constructUnassignedClip("audio loop", channelnumbers);
+    },
+    "An empty clip on |channels, or channels 1 and 2. Hand it to play and play fills it in instead of starting a second loop, so the expression can be evaluated again in place."
+  );
 
   Builtin.createBuiltin(
     "play-with-bpm",
@@ -318,6 +376,112 @@ function createWavetableBuiltins() {
       return r;
     },
     "The audio outputs of this device, as channel numbers counting from 1, which is what play takes. Asking opens the device; the answer is fixed until reload."
+  );
+
+  /*
+  An audio device, built by hand rather than by convertJSMapToOrg: every field
+  of one is a string -- id, kind, name, group -- and a device id is not a
+  quantity even when it is all digits, which is what that helper would make of
+  it. The same reason midi ports are built by hand; see portToOrg.
+
+  (comment by Claude)
+  */
+  function deviceToOrg(desc) {
+    let r = constructOrg();
+    for (let key in desc) {
+      let v = constructEString("" + (desc[key] === undefined || desc[key] === null
+          ? "" : desc[key]));
+      v.addTag(newTagOrThrowOOM(key, "building an audio device"));
+      r.appendChild(v);
+    }
+    r.setHorizontal();
+    return r;
+  }
+
+  function deviceIdOrError(dev, wantKind, who) {
+    let kind = dev.getChildTagged(newTagOrThrowOOM("kind", who + ", kind"));
+    if (!kind || kind.getFullTypedValue() != wantKind) {
+      return { error: constructFatalError(
+          who + ": that is not an " + wantKind + " device. Sorry!") };
+    }
+    let id = dev.getChildTagged(newTagOrThrowOOM("id", who + ", id"));
+    if (!id) {
+      return { error: constructFatalError(who + ": that device has no id. Sorry!") };
+    }
+    return { id: id.getFullTypedValue() };
+  }
+
+  Builtin.createBuiltin(
+    "list-audio-devices",
+    [],
+    function $listAudioDevices(env, executionEnvironment) {
+      let dv = constructDeferredValue();
+      dv.set(new GenericActivationFunctionGenerator(
+        "list-audio-devices",
+        function (callback, exp) {
+          listAudioDevices(function (devs, err) {
+            // an error rather than nothing, so anything waiting on this gets
+            // to carry on rather than waiting forever
+            // (comment by Claude)
+            if (err) {
+              callback(constructFatalError("list-audio-devices: " + err + " Sorry!"));
+              return;
+            }
+            let r = constructOrg();
+            for (let i = 0; i < devs.length; i++) {
+              r.appendChild(deviceToOrg(devs[i]));
+            }
+            callback(r);
+          });
+        }
+      ));
+      dv.appendChild(constructInfo("listing audio devices"));
+      // without this the activation function never runs
+      // (comment by Claude)
+      dv.activate();
+      return dv;
+    },
+    "The audio devices on this machine, inputs and outputs. The first time, the browser asks for the microphone, because it withholds device names until you allow it once."
+  );
+
+  Builtin.createBuiltin(
+    "set-audio-output",
+    ["device()"],
+    function $setAudioOutput(env, executionEnvironment) {
+      let dev = env.lb("device");
+      let found = deviceIdOrError(dev, "output", "set-audio-output");
+      if (found.error) return found.error;
+      let dv = constructDeferredValue();
+      dv.set(new GenericActivationFunctionGenerator(
+        "set-audio-output",
+        function (callback, exp) {
+          setAudioOutputDevice(found.id, function (err) {
+            if (err) {
+              callback(constructFatalError("set-audio-output: " + err + " Sorry!"));
+              return;
+            }
+            callback(dev);
+          });
+        }
+      ));
+      dv.appendChild(constructInfo("choosing an audio output"));
+      dv.activate();
+      return dv;
+    },
+    "Sends all audio to |device, an org from list-audio-devices, and returns it. Everything already playing moves too. This session only: a device id names hardware on this machine."
+  );
+
+  Builtin.createBuiltin(
+    "set-audio-input",
+    ["device()"],
+    function $setAudioInput(env, executionEnvironment) {
+      let dev = env.lb("device");
+      let found = deviceIdOrError(dev, "input", "set-audio-input");
+      if (found.error) return found.error;
+      setAudioInputDevice(found.id);
+      return dev;
+    },
+    "Records from |device, an org from list-audio-devices, and returns it. Takes effect the next time recording starts. This session only: a device id names hardware on this machine."
   );
 
   Builtin.createBuiltin(

@@ -200,6 +200,144 @@ class LoopingPlayer {
 
 }
 
+/*
+Which audio device vodka uses, on a machine that has more than one. Both are
+null until something chooses, which means the system default -- the browser's
+own choice, which is what you want nearly all of the time.
+
+Held here rather than passed in. A device is a property of the session, not of
+the sound: nobody wants to name their interface again in every play and every
+record, and a wavetable that remembered which card it came out of would be
+wrong the moment it was opened anywhere else. So these are the devices, and
+everything that plays or records uses them. Not saved, for the same reason a
+default midi port is not saved -- a device id names hardware on this machine.
+
+(comment by Claude)
+*/
+let outputDeviceId = null;
+let inputDeviceId = null;
+
+function getAudioInputDevice() {
+	return inputDeviceId;
+}
+
+function getAudioOutputDevice() {
+	return outputDeviceId;
+}
+
+/*
+Everything about a device is a string: enumerateDevices answers deviceId,
+groupId, kind and label, and none of them is a quantity even when an id happens
+to look like one. The kinds are renamed, because 'audioinput' and 'audiooutput'
+are the only two kinds here -- everything that is not audio is filtered out
+before this -- and input and output is what they are.
+
+(comment by Claude)
+*/
+function describeAudioDevice(d) {
+	return {
+		id: d.deviceId,
+		kind: (d.kind == 'audioinput') ? 'input' : 'output',
+		name: d.label,
+		group: d.groupId
+	};
+}
+
+function enumerateAudioDevices() {
+	return navigator.mediaDevices.enumerateDevices().then(function(all) {
+		return all.filter(function(d) {
+			return d.kind == 'audioinput' || d.kind == 'audiooutput';
+		});
+	});
+}
+
+/*
+A browser withholds device names until the microphone has been allowed once --
+the devices are all there, with empty labels, because a list of the hardware
+attached to a machine identifies it. A list of unnamed devices is no use for
+choosing one, so if any name is missing this asks for the microphone, lets go
+of it immediately, and asks again.
+
+Refusing is fine: you get the list with the names it had. Asking for input
+devices is itself a reason to expect the prompt, and the permission is per
+site, so this happens once rather than every time.
+
+(comment by Claude)
+*/
+function askForMicrophoneOnce() {
+	return navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+		stream.getTracks().forEach(function(t) { t.stop(); });
+	});
+}
+
+function listAudioDevices(cb) {
+	if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+		cb(null, 'this browser cannot list audio devices');
+		return;
+	}
+	enumerateAudioDevices().then(function(devs) {
+		if (!devs.some(function(d) { return !d.label; })) {
+			return devs;
+		}
+		return askForMicrophoneOnce().then(enumerateAudioDevices, function() {
+			return devs;
+		});
+	}).then(function(devs) {
+		console.log('vodka: ' + devs.length + ' audio device(s)');
+		cb(devs.map(describeAudioDevice));
+	}).catch(function(e) {
+		cb(null, '' + e);
+	});
+}
+
+/*
+Where the sound goes. setSinkId moves the whole context, so everything already
+playing moves with it rather than only the next thing started.
+
+The channel merger is built once, as wide as the device that was attached when
+the context opened (see maybeCreateAudioContext), and a merger cannot be
+resized -- so moving from a two channel device to a sixteen channel one does
+not get you fourteen more outputs until a reload, and moving the other way
+would ask the destination for more channels than it has, which throws. Hence
+the clamp, and the note in the log: play goes on working either way, and
+audio-channels keeps telling you what it told you before, which the builtin
+says is fixed until reload.
+
+(comment by Claude)
+*/
+function setAudioOutputDevice(id, cb) {
+	maybeCreateAudioContext();
+	if (!ctx.setSinkId) {
+		cb('this browser cannot choose an audio output');
+		return;
+	}
+	ctx.setSinkId(id).then(function() {
+		outputDeviceId = id;
+		let want = channelMergerNode.numberOfInputs;
+		let have = ctx.destination.maxChannelCount;
+		ctx.destination.channelCount = Math.min(want, have);
+		if (have != want) {
+			console.log('vodka: this output has ' + have + ' channel(s) and the audio '
+					+ 'graph was built for ' + want
+					+ '. Reload to play on more than ' + Math.min(want, have) + '.');
+		}
+		cb(null);
+	}).catch(function(e) {
+		cb('' + e);
+	});
+}
+
+/*
+Where recorded sound comes from. Nothing to do now: a stream is asked for each
+time recording starts, so this is read then (see startRecordingAudio). Recording
+already running stays on the device it opened.
+
+(comment by Claude)
+*/
+function setAudioInputDevice(id) {
+	inputDeviceId = id;
+}
+
 function stopRecordingAudio(wt) {
 	wt.stopRecording();
 	if (!recordingRig || recordingRig.wt != wt) return;
@@ -221,14 +359,23 @@ function startRecordingAudio(wt, channel, unlimited) {
 		console.log('vodka: this browser has no audio input');
 		return;
 	}
-	navigator.mediaDevices.getUserMedia({
-		audio: {
-			echoCancellation: false,
-			noiseSuppression: false,
-			autoGainControl: false,
-			channelCount: 2
-		}
-	}).then(function(stream) {
+	let constraints = {
+		echoCancellation: false,
+		noiseSuppression: false,
+		autoGainControl: false,
+		channelCount: 2
+	};
+	/*
+	exact, so a device that has gone away is an error rather than silently
+	recording from whatever the browser would rather use: you asked for that
+	input, and a take off the wrong microphone is worse than no take.
+
+	(comment by Claude)
+	*/
+	if (inputDeviceId) {
+		constraints.deviceId = { exact: inputDeviceId };
+	}
+	navigator.mediaDevices.getUserMedia({ audio: constraints }).then(function(stream) {
 		let track = stream.getAudioTracks()[0];
 		if (track) {
 			let st = track.getSettings();
@@ -403,6 +550,22 @@ function startSilentKeepAlive() {
 	silentKeepAlive = source;
 }
 
+/*
+Temporary, for the first-play-after-a-reload restart. Off unless you turn it on
+from the console -- a global rather than a build flag so it can be turned on
+between a reload and the first play, which is the only moment the bug happens
+in:
+
+	VODKA_DEBUG_CYCLE = true
+
+(comment by Claude)
+*/
+function cycleLog(msg) {
+	if (typeof window == 'undefined' || !window.VODKA_DEBUG_CYCLE) return;
+	let now = ctx ? ctx.currentTime.toFixed(4) : '-';
+	console.log('cycle[' + now + '] ' + msg);
+}
+
 function audioClockIsReady() {
 	if (!ctx || ctx.state != 'running') return false;
 	let ts = ctx.getOutputTimestamp();
@@ -415,12 +578,24 @@ function audioClockIsReady() {
 function whenAudioClockIsReady(f) {
 	startSilentKeepAlive();
 	if (audioClockIsReady()) {
+		cycleLog('clock already ready, state=' + ctx.state
+				+ ' baseLatency=' + ctx.baseLatency
+				+ ' outputLatency=' + ctx.outputLatency);
 		Promise.resolve().then(f);
 		return;
 	}
+	let askedAt = ctx.currentTime;
+	let askedAtWall = performance.now();
+	cycleLog('waiting for the audio clock, state=' + ctx.state);
 	let tries = 0;
 	let check = function() {
 		if (audioClockIsReady() || ++tries > 200) {
+			cycleLog('clock after ' + tries + ' tries, '
+					+ (performance.now() - askedAtWall).toFixed(1) + 'ms wall, '
+					+ ((ctx.currentTime - askedAt) * 1000).toFixed(1) + 'ms context, '
+					+ 'ready=' + audioClockIsReady() + ' state=' + ctx.state
+					+ ' baseLatency=' + ctx.baseLatency
+					+ ' outputLatency=' + ctx.outputLatency);
 			f();
 			return;
 		}
@@ -439,6 +614,18 @@ function getAudioBufferFromData(data) {
 	let chan = buffer.getChannelData(0);
 	chan.set(data);	
 	return buffer;
+}
+
+/*
+Silence of a given length. createBuffer hands back a buffer that is already
+zero, so a muted wave does not need an array of zeros to copy from -- which for
+a long wave is megabytes whose only purpose was to be copied into this.
+
+(comment by Claude)
+*/
+function getSilentAudioBuffer(frames) {
+	maybeCreateAudioContext();
+	return ctx.createBuffer(1, frames > 0 ? frames : 1, SAMPLE_RATE);
 }
 
 function getSourceFromBuffer(buffer, loop, loopStartSeconds) {
@@ -601,6 +788,7 @@ function retireUnownedClips() {
 		let p = playingClips[i];
 		if (p.passes == 0) continue;
 		if (p.clip.references <= 1) {
+			cycleLog('  retiring a clip nobody holds, passes=' + p.passes);
 			// at the end of this pass, not now -- the pass it is in was
 			// scheduled to run to the boundary and should get there
 			p.clip.end(true);
@@ -613,6 +801,20 @@ function retireUnownedClips() {
 // loop shorter than the cycle repeats inside it and is truncated.
 // (comment by Claude)
 function startCycleAt(startTime) {
+	/*
+	startTime is where this pass is meant to begin. Late means the sources are
+	started in the past, which the web audio api honours by playing them from
+	the top immediately -- but their stop time is startTime + len regardless, so
+	a late pass is a short pass, and the next boundary cuts it off wherever it
+	has got to. That is the shape of the bug being chased here.
+
+	(comment by Claude)
+	*/
+	cycleLog('startCycleAt(' + startTime.toFixed(4) + ') late by '
+			+ ((ctx.currentTime - startTime) * 1000).toFixed(1) + 'ms'
+			+ ' members=' + Object.keys(cycleLoops).length
+			+ ' pending=' + Object.keys(cyclePending).length
+			+ ' clips=' + playingClips.length);
 	if (pendingBreak) {
 		beginBreak();
 	} else if (breakIds.length > 0) {
@@ -701,7 +903,11 @@ function startCycleAt(startTime) {
 	let nextBoundary = startTime + len;
 	cycleNextBoundaryTime = nextBoundary;
 	let wakeIn = (nextBoundary - CYCLE_LOOKAHEAD_SECONDS - ctx.currentTime) * 1000;
+	cycleLog('  len=' + len.toFixed(4) + ' nextBoundary=' + nextBoundary.toFixed(4)
+			+ ' wakeIn=' + wakeIn.toFixed(1) + 'ms'
+			+ (cycleTimer ? ' (a timer was already pending!)' : ''));
 	cycleTimer = window.setTimeout(function() {
+		cycleLog('timer fired for boundary ' + nextBoundary.toFixed(4));
 		startCycleAt(nextBoundary);
 	}, wakeIn > 0 ? wakeIn : 0);
 }
@@ -1188,5 +1394,7 @@ async function getFileAsBuffer(filepath, dir) {
 }
 
 
-export { getAudioBufferFromData, loadAudio, muteLoops, addLoop, queueBreak, atNextCycleStart, getAudioChannelCount, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio }
+export { getAudioBufferFromData, getSilentAudioBuffer, loadAudio, muteLoops, addLoop, queueBreak, atNextCycleStart, getAudioChannelCount, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio,
+		 listAudioDevices, setAudioOutputDevice, setAudioInputDevice,
+		 getAudioInputDevice, getAudioOutputDevice }
 

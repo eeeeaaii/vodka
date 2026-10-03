@@ -17,9 +17,24 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Nex } from './nex.js'
 import { heap } from '../heap.js'
-import { getLoopPositionSamples, loopExists, muteLoops } from '../webaudio.js'
+import { getLoopPositionSamples, loopExists, muteLoops, endLoops } from '../webaudio.js'
 import { getMidiLastNote } from '../midifunctions.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
+
+// the same shape the other private data sections use: key:value, ; between
+// (comment by Claude)
+const FIELD_SEPARATOR = ';';
+const KEY_SEPARATOR = ':';
+const KIND_KEY = 'kind';
+const CHANNELS_KEY = 'channels';
+const PORT_KEY = 'port';
+
+// what a clip says it is playing on
+// (comment by Claude)
+function channelsDescription(channels) {
+	if (channels.length == 0) return '';
+	return 'channel' + (channels.length == 1 ? ' ' : 's ') + channels.join(', ');
+}
 
 /*
 A clip is a running loop -- audio or midi -- as something you can hold. Made by
@@ -125,7 +140,19 @@ class Clip extends Nex {
 		return this;
 	}
 
-	// replacing what a clip names keeps the clip itself valid
+	/*
+	Replacing what a clip names keeps the clip itself valid.
+
+	Asks to be drawn, rather than only marking itself dirty. A clip is assigned
+	by play, and play can be run by a gesture that changes nothing in the
+	document and so renders nothing -- a double click, which evaluates in place
+	-- in which case a clip that only said it was dirty would go on saying
+	UNASSIGNED, with its counter stopped, over a loop you could hear playing.
+	Dirty renders are deduped in the queue, so asking costs nothing when
+	something else was going to render anyway.
+
+	(comment by Claude)
+	*/
 	setIds(ids, what) {
 		this.ids = ids;
 		if (what) this.what = what;
@@ -136,6 +163,7 @@ class Clip extends Nex {
 			muteLoops(this.ids, true);
 		}
 		this.setDirtyForRendering(true);
+		eventQueueDispatcher.enqueueRenderOnlyDirty();
 	}
 
 	// true if there was anything left to end
@@ -144,11 +172,40 @@ class Clip extends Nex {
 		if (this.ended || !this.ender) return false;
 		this.ended = true;
 		this.ender(this.ids, atCycleEnd);
+		// it is unassigned now and has to say so: ending happens at a cycle
+		// boundary, on a timer, with nothing else about to render
+		// (comment by Claude)
+		this.setDirtyForRendering(true);
+		eventQueueDispatcher.enqueueRenderOnlyDirty();
 		return true;
 	}
 
 	hasEnded() {
 		return this.ended;
+	}
+
+	/*
+	A clip with no wave assigned to it. A clip is a name for a running loop and
+	holds no audio of its own -- the samples live in the audio system, which is
+	where the loop is -- so a clip that names no loop is not a clip that is
+	paused or quiet or holding something back. It is a clip with nothing in it.
+
+	Which is a useful thing to be. Giving play a clip replaces the loop that
+	clip names instead of starting another, so an unassigned clip is what makes
+	a play expression re-evaluable in place: the first run assigns it, every run
+	after that replaces what it holds.
+
+	Two ways to be in that state, and they are the same state: never assigned
+	(make-clip), or assigned once and since ended, which deletes the loop and
+	leaves the ids naming nothing.
+
+	Not the same as silenced -- see toggle-playback, where the loop keeps its
+	place in the cycle and comes back in phase. That one still has a wave.
+
+	(comment by Claude)
+	*/
+	isUnassigned() {
+		return this.ended || this.ids.length == 0;
 	}
 
 	/*
@@ -185,12 +242,68 @@ class Clip extends Nex {
 	}
 
 	/*
-	A clip names something playing now. There is nothing to write down: reading
-	it back in a later session would name a loop that does not exist. It saves
-	as nil, the same as a deferred with nothing in it.
+	A clip saves as an unassigned clip, whatever it was doing when it was saved.
+	What a clip names cannot be written down -- a loop belongs to the audio
+	system and the audio system does not outlive the page -- but a clip is not
+	only the loop it names. It is also which channels that loop is on, and, more
+	than that, it is the identity that makes the expression it sits in replace
+	its own sound instead of starting a second copy.
+
+	That survives perfectly well, so it is written: kind, channels, port. What
+	comes back is a clip with nothing assigned to it, which is what it honestly
+	is after a reload, and the play expression around it works first time.
+
+	It used to save as nil, because there was no way to write a clip that named
+	nothing. There is now.
+
+	(comment by Claude)
 	*/
 	toStringV2(ctx) {
-		return '[nil]';
+		// [;clip], because a clip is not mutable and comes back that way: the
+		// parser makes anything without the mark mutable
+		// (comment by Claude)
+		return `[${this.toStringV2Literal()}clip]`
+				+ this.toStringV2PrivateDataSection(ctx) + this.toStringV2TagList();
+	}
+
+	serializePrivateData(ctx) {
+		let fields = [ KIND_KEY + KEY_SEPARATOR + encodeURIComponent(this.kind) ];
+		if (this.channels.length > 0) {
+			fields.push(CHANNELS_KEY + KEY_SEPARATOR + this.channels.join(','));
+		}
+		if (this.port) {
+			fields.push(PORT_KEY + KEY_SEPARATOR + encodeURIComponent(this.port));
+		}
+		return fields.join(FIELD_SEPARATOR);
+	}
+
+	/*
+	Whatever is missing keeps the value the constructor gave it, so a clip
+	written by an older version -- or a field this version does not know about
+	-- loads as a clip rather than as nothing.
+
+	(comment by Claude)
+	*/
+	deserializePrivateData(data) {
+		if (!data) return;
+		let parts = data.split(FIELD_SEPARATOR);
+		for (let i = 0; i < parts.length; i++) {
+			let c = parts[i].indexOf(KEY_SEPARATOR);
+			if (c < 0) continue;
+			let key = parts[i].substring(0, c);
+			let val = parts[i].substring(c + 1);
+			if (key == KIND_KEY) {
+				this.kind = decodeURIComponent(val);
+				this.what = this.kind;
+			} else if (key == CHANNELS_KEY) {
+				this.channels = val.split(',')
+						.map(n => parseInt(n, 10))
+						.filter(n => n >= 1);
+				this.what = channelsDescription(this.channels);
+			} else if (key == PORT_KEY) {
+				this.port = decodeURIComponent(val);
+			}
+		}
 	}
 
 	prettyPrintInternal(lvl, hdir) {
@@ -214,7 +327,7 @@ class Clip extends Nex {
 
 		let line1 = document.createElement('div');
 		line1.classList.add('innerspan');
-		line1.innerHTML = this.ended ? 'STOPPED' : this.kind.toUpperCase();
+		line1.innerHTML = this.isUnassigned() ? 'UNASSIGNED' : this.kind.toUpperCase();
 		innerspans.appendChild(line1);
 
 		let line2 = document.createElement('div');
@@ -358,4 +471,23 @@ function constructClip(kind, what, ids, ender, channels, port) {
 	return r;
 }
 
-export { Clip, constructClip }
+/*
+A clip with nothing assigned to it: the shape of one, made before there is a
+loop to name, so that play has something to replace rather than something to
+start. See isUnassigned.
+
+It carries an ender from the start, so that once play has filled it in,
+deleting it stops the sound like any other clip -- including a clip that came
+back from a file, which nothing else would have given one to.
+
+(comment by Claude)
+*/
+function constructUnassignedClip(kind, channels, port) {
+	let chans = channels ? channels : [];
+	let r = constructClip(kind ? kind : 'audio loop', channelsDescription(chans),
+			[], endLoops, chans, port);
+	r.ended = true;
+	return r;
+}
+
+export { Clip, constructClip, constructUnassignedClip, channelsDescription }

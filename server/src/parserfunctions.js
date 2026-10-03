@@ -37,6 +37,7 @@ import { constructLine } from './nex/line.js';
 import { constructDoc } from './nex/doc.js';
 import { constructEError, newTagOrThrowOOM } from './nex/eerror.js';
 import { constructLetter } from './nex/letter.js';
+import { constructUnassignedClip } from './nex/clip.js';
 import { constructSeparator } from './nex/separator.js';
 
 import { Tag } from './tag.js'
@@ -190,6 +191,16 @@ function makeInstanceAtom(instname, privatedata, taglist, nonmutable) {
 			// Any saved wavetable failed to parse because of it.
 			// (comment by Claude)
 			t = constructWavetable();
+			break;
+		/*
+		Always unassigned: a clip names a loop, and a loop does not outlive the
+		page it was playing on. The private data is read into it below and says
+		what it is a clip for -- kind, channels, port.
+
+		(comment by Claude)
+		*/
+		case 'clip':
+			t = constructUnassignedClip();
 			break;
 		case 'surface':
 			t = constructSurface(concatParserString(privatedata));
