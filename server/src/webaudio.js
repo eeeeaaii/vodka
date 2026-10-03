@@ -1235,9 +1235,21 @@ function addCycleMember(loop) {
 			openOutput(loop.outputKey, function(o, err) {
 				if (o) {
 					loop.output = o;
-				} else {
-					console.log('vodka: could not open that audio output: ' + err);
+					return;
 				}
+				/*
+				No such device -- a document saved on another machine, or an
+				interface that is not plugged in. Taken out of the cycle rather
+				than left in it: a member with no output is never played, but it
+				still has a length, and the cycle is as long as its longest
+				member. A clip from somewhere else would silently decide how long
+				every bar was.
+
+				(comment by Claude)
+				*/
+				console.log('vodka: could not open that audio output: ' + err);
+				delete cyclePending[id];
+				delete cycleLoops[id];
 			});
 		}
 	} else {
