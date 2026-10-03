@@ -657,6 +657,28 @@ function setAudioInputDevice(id) {
 }
 
 /*
+How long a sound takes to go out of vodka, through whatever it is going through,
+and back in: the round trip of the loopback, in seconds. Set by hand, because
+nothing in the browser knows it -- it is the output device plus your patch plus
+the input device -- and because trying different numbers and looking at where
+the sound lands is quicker than any measurement vodka could make for you.
+
+It is what a punch-in recording uses to say where the downbeat ended up. See
+startRecordingAudio.
+
+(comment by Claude)
+*/
+let audioLatencySeconds = 0;
+
+function setAudioLatency(seconds) {
+	audioLatencySeconds = seconds > 0 ? seconds : 0;
+}
+
+function getAudioLatency() {
+	return audioLatencySeconds;
+}
+
+/*
 Everything one take is using: the stream, the worklet, and one wave per channel
 being recorded. Stopping is per rig rather than per wave, because the waves of
 one take share a stream -- stopping half of it would leave the microphone open
@@ -687,7 +709,103 @@ function stopRecordingAudio(wt) {
 	// for as long as the take lasted
 	// (comment by Claude)
 	rig.clip = null;
+	rig.stopped = true;
 	recordingRigs = recordingRigs.filter(function(r) { return r != rig; });
+}
+
+/*
+A batch of captured blocks, kept from the sample the take starts on to the sample
+it ends on.
+
+Per block rather than per batch, because a batch is 4096 frames and the two
+edges of a punched take are exact: the downbeat is a moment in the cycle's clock
+and the end is a round trip after the next one. The worklet says when each batch
+was captured, so every block's own time is that plus the frames before it, and
+the block the edge falls inside is cut at the sample.
+
+(comment by Claude)
+*/
+function takeBatch(rig, message) {
+	if (rig.stopped || rig.startTime === null) return;
+	let blocks = message.blocks;
+	let rate = ctx.sampleRate;
+	let frames = 0;
+	for (let i = 0; i < blocks.length; i++) {
+		let blk = blocks[i];
+		let len = (blk && blk[0]) ? blk[0].length : 0;
+		if (!len) continue;
+		let blockStart = message.at + frames / rate;
+		let blockEnd = blockStart + len / rate;
+		frames += len;
+		// before the downbeat
+		if (blockEnd <= rig.startTime) continue;
+		let from = (blockStart < rig.startTime)
+				? Math.round((rig.startTime - blockStart) * rate)
+				: 0;
+		let to = len;
+		let finish = false;
+		if (rig.stopTime !== null) {
+			if (blockStart >= rig.stopTime) {
+				finish = true;
+				to = from;
+			} else if (blockEnd > rig.stopTime) {
+				to = Math.round((rig.stopTime - blockStart) * rate);
+				finish = true;
+			}
+		}
+		if (to > from) {
+			for (let w = 0; w < rig.waves.length; w++) {
+				// a wavetable holds one channel, so each one takes its own out
+				// of the block
+				// (comment by Claude)
+				if (!rig.waves[w].isRecording()) continue;
+				let ch = blk[rig.channels[w]];
+				if (!ch) continue;
+				rig.waves[w].appendRecordedData(
+						(from == 0 && to == len) ? ch : ch.subarray(from, to));
+			}
+			markDelayedStart(rig);
+		}
+		if (finish) {
+			markCycleEnd(rig);
+			stopRecordingAudio(rig.waves[0]);
+			return;
+		}
+	}
+}
+
+/*
+Where the sound you were playing at the downbeat actually came back: a round trip
+after the take began, which is the latency you set. The mark to trim to, and the
+mark to judge the setting by -- if the transient is not sitting on it, the number
+is wrong.
+
+Placed as soon as the take is long enough to hold it, so you can see it while it
+records.
+
+(comment by Claude)
+*/
+function markDelayedStart(rig) {
+	if (!rig.punchIn || rig.markedStart) return;
+	let at = Math.round(audioLatencySeconds * SAMPLE_RATE);
+	if (at < 1) return;
+	for (let i = 0; i < rig.waves.length; i++) {
+		if (rig.waves[i].getDuration() <= at) return;
+	}
+	for (let i = 0; i < rig.waves.length; i++) {
+		rig.waves[i].addNamedMarkerAt(at, 'ds');
+	}
+	rig.markedStart = true;
+}
+
+// where the cycle ended, which is a round trip before the take does
+// (comment by Claude)
+function markCycleEnd(rig) {
+	if (!rig.punchOut || rig.cycleEndTime === null) return;
+	let at = Math.round((rig.cycleEndTime - rig.startTime) * SAMPLE_RATE);
+	for (let i = 0; i < rig.waves.length; i++) {
+		rig.waves[i].addNamedMarkerAt(at, 'ce');
+	}
 }
 
 function recordingRigFor(wt) {
@@ -718,7 +836,7 @@ them away).
 
 (comment by Claude)
 */
-function startRecordingAudio(waves, channels, deviceId, unlimited, clip) {
+function startRecordingAudio(waves, channels, deviceId, unlimited, clip, punchIn, punchOut) {
 	maybeCreateAudioContext();
 	if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
 		console.log('vodka: this browser has no audio input');
@@ -799,24 +917,53 @@ function startRecordingAudio(waves, channels, deviceId, unlimited, clip) {
 							+ ' -- this input gave ' + got + ' channel(s)');
 				}
 			}
-			node.port.onmessage = function(e) {
-				let batch = e.data;
-				for (let i = 0; i < batch.length; i++) {
-					let blk = batch[i];
-					for (let w = 0; w < waves.length; w++) {
-						// a wavetable holds one channel, so each one takes its
-						// own out of the block
-						// (comment by Claude)
-						if (!waves[w].isRecording()) continue;
-						let ch = blk[channels[w]];
-						if (ch) waves[w].appendRecordedData(ch);
-					}
-				}
-			};
-
 			let rig = { waves: waves, channels: channels, clip: clip, stream: stream,
-					node: node, source: source, silence: silence, timer: null };
+					node: node, source: source, silence: silence, timer: null,
+					/*
+					When to start keeping samples and when to stop, in the
+					context's clock. Zero is "from the beginning", which is every
+					recording that is not punched in -- context time zero is in
+					the past, so nothing is ever before it. Null is armed and
+					waiting for a downbeat that has not come yet.
+
+					(comment by Claude)
+					*/
+					startTime: punchIn ? null : 0,
+					stopTime: null,
+					cycleEndTime: null,
+					punchIn: !!punchIn,
+					punchOut: !!punchOut,
+					markedStart: false,
+					stopped: false };
+			node.port.onmessage = function(e) {
+				takeBatch(rig, e.data);
+			};
 			recordingRigs.push(rig);
+			/*
+			Armed. The stream is open and running and its samples are being
+			thrown away -- a device takes a hundred-odd milliseconds to open,
+			which would be a worse error than the latency this is all about, so
+			it is opened now and punched later.
+
+			atNextCycleStart queues this until a cycle begins, which may be after
+			lunch: with nothing playing there is no boundary, and the callback
+			waits for one rather than running.
+
+			(comment by Claude)
+			*/
+			if (punchIn) {
+				atNextCycleStart(function() {
+					if (rig.stopped) return;
+					rig.startTime = cycleStartedAt;
+					if (rig.punchOut) {
+						rig.cycleEndTime = cycleStartedAt + cycleLengthSeconds();
+						// the last sample of the cycle arrives a round trip
+						// after the cycle ends, and not before
+						// (comment by Claude)
+						rig.stopTime = rig.cycleEndTime + audioLatencySeconds;
+					}
+				});
+			}
 			if (!unlimited) {
 				rig.timer = window.setTimeout(function() {
 					if (waves.length > 0 && waves[0].isRecording()) {
@@ -863,6 +1010,13 @@ class VodkaRecorder extends AudioWorkletProcessor {
 	process(inputs) {
 		let input = inputs[0];
 		if (input && input.length > 0 && input[0]) {
+			// when the first block of this batch was captured, in the context's
+			// own clock. Punching in and out needs to land on a sample rather
+			// than on a batch, and a batch is 4096 frames -- most of a tenth of
+			// a second to be wrong by
+			if (this.batch.length == 0) {
+				this.at = currentTime;
+			}
 			let copy = [];
 			for (let c = 0; c < input.length; c++) {
 				copy.push(new Float32Array(input[c]));
@@ -871,7 +1025,7 @@ class VodkaRecorder extends AudioWorkletProcessor {
 			this.batched += input[0].length;
 			// a block is 128 frames; batching keeps the message rate sane
 			if (this.batched >= 4096) {
-				this.port.postMessage(this.batch);
+				this.port.postMessage({ at: this.at, blocks: this.batch });
 				this.batch = [];
 				this.batched = 0;
 			}
@@ -1879,5 +2033,6 @@ async function getFileAsBuffer(filepath, dir) {
 
 export { getAudioBufferFromData, getSilentAudioBuffer, loadAudio, muteLoops, addLoop, queueBreak, atNextCycleStart, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio, anythingIsRecording,
 		 listAudioDevices, setAudioOutputDevice, setAudioInputDevice,
-		 getAudioInputDevice, getDefaultOutputDevice, getDefaultOutputName, getDeviceChannelCount, getInputDeviceChannelCount }
+		 getAudioInputDevice, getDefaultOutputDevice, getDefaultOutputName, getDeviceChannelCount, getInputDeviceChannelCount,
+		 setAudioLatency, getAudioLatency }
 

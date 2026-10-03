@@ -26,6 +26,7 @@ Stored under its own key so a change here can't corrupt the document.
 */
 
 import { systemState } from './systemstate.js'
+import { setAudioLatency, getAudioLatency } from './webaudio.js'
 import {
 	getGlobalPixelsPerSample,
 	setGlobalPixelsPerSample,
@@ -53,6 +54,12 @@ function currentState() {
 			heightPixelsFullScale: getGlobalHeightPixelsFullScale(),
 			bpm: getBpm(),
 			defaultTimebase: getDefaultTimebase()
+		},
+		// a property of the room and the patch rather than of the document, so
+		// it belongs with how you were looking at things rather than in the file
+		// (comment by Claude)
+		audio: {
+			latency: getAudioLatency()
 		}
 	};
 }
@@ -101,6 +108,12 @@ function restoreEditorState() {
 	}
 	if (typeof w.defaultTimebase === 'string') {
 		setDefaultTimebaseValue(w.defaultTimebase);
+	}
+	// later than the rest, so a stored state without it still restores
+	// (comment by Claude)
+	if (stored.audio && typeof stored.audio.latency === 'number'
+			&& stored.audio.latency >= 0) {
+		setAudioLatency(stored.audio.latency);
 	}
 }
 

@@ -65,6 +65,7 @@ import {
   hasCommandTag,
 } from "../wavetablefunctions.js";
 import { fft, nextPowerOfTwo, forEachSpectrum, hannWindow } from "../fft.js";
+import { saveEditorState } from "../editorstate.js";
 import { detectPitchHz } from "../pitch.js";
 import {
   applyFormants,
@@ -79,7 +80,7 @@ import {
   stretchInto,
   decayTailSamples,
 } from "../wavetablefunctions.js";
-import { loopPlay, queueBreak, atNextCycleStart, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying, getDeviceChannelCount, getInputDeviceChannelCount, getDefaultOutputDevice, getDefaultOutputName } from "../webaudio.js";
+import { loopPlay, queueBreak, atNextCycleStart, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying, getDeviceChannelCount, getInputDeviceChannelCount, getDefaultOutputDevice, getDefaultOutputName, setAudioLatency, getAudioLatency } from "../webaudio.js";
 import { constructClip, constructUnassignedClip, channelsDescription } from "../nex/clip.js";
 import { Tag } from "../tag.js";
 import { ERROR_TYPE_INFO } from "../nex/eerror.js";
@@ -646,10 +647,24 @@ function createWavetableBuiltins() {
       let channels = toChannelIndexes(clip.getChannels());
       if (channels.length == 0) channels = [0];
       let unlimited = false;
+      let punchIn = false;
+      let punchOut = false;
       for (let i = 0; commandTags && i < commandTags.length; i++) {
-        if (commandTags[i].getTagString() == "unlimited") {
-          unlimited = true;
-        }
+        let t = commandTags[i].getTagString();
+        if (t == "unlimited") unlimited = true;
+        if (t == "punch-in") punchIn = true;
+        if (t == "punch-out") punchOut = true;
+      }
+      /*
+      Punching out without punching in has nothing to measure from: the take
+      would end at a boundary it never started on, which is a length that
+      depends on when you happened to press the key.
+
+      (comment by Claude)
+      */
+      if (punchOut && !punchIn) {
+        return constructFatalError(
+            "start-recording: punch-out needs punch-in. Sorry!");
       }
       let waves = [];
       for (let i = 0; i < channels.length; i++) {
@@ -662,7 +677,8 @@ function createWavetableBuiltins() {
         w.startRecording();
         waves.push(w);
       }
-      startRecordingAudio(waves, channels, clip.getOutputDevice(), unlimited, clip);
+      startRecordingAudio(waves, channels, clip.getOutputDevice(), unlimited, clip,
+          punchIn, punchOut);
       if (waves.length == 1) return waves[0];
       let r = constructOrg();
       for (let i = 0; i < waves.length; i++) {
@@ -670,7 +686,7 @@ function createWavetableBuiltins() {
       }
       return r;
     },
-    "Records |clip, and answers the wave it is filling, or an org of them when the clip has more than one channel. They are recording already. Recording uses the clip's input device, or the default input. Stops after 30 seconds unless tagged unlimited."
+    "Records |clip, and answers the wave it is filling, or an org of them when the clip has more than one channel. They are recording already. Recording uses the clip's input device, or the default input. Stops after 30 seconds unless tagged unlimited. Tagged punch-in it waits for a cycle to start, and tagged punch-out as well it stops a cycle later."
   );
 
   /*
@@ -680,6 +696,44 @@ function createWavetableBuiltins() {
 
   (comment by Claude)
   */
+  /*
+  The round trip: out of vodka, through whatever it is going through, and back
+  in. Nothing in the browser knows it -- it is the output device plus your patch
+  plus the input device -- and trying a number and looking at where the sound
+  landed is quicker than any measurement vodka could make.
+
+  An integer is samples and a float is seconds, the way the other wavetable
+  builtins read a number.
+
+  (comment by Claude)
+  */
+  Builtin.createBuiltin(
+    "set-audio-latency",
+    ["amount#%"],
+    function $setAudioLatency(env, executionEnvironment) {
+      let amount = env.lb("amount");
+      let seconds = Utils.isInteger(amount)
+          ? amount.getTypedValue() / getSampleRate()
+          : amount.getTypedValue();
+      if (!(seconds >= 0)) {
+        return constructFatalError("set-audio-latency: that is less than nothing. Sorry!");
+      }
+      setAudioLatency(seconds);
+      saveEditorState();
+      return amount;
+    },
+    "How long sound takes to go out of vodka and come back in, as samples if whole and seconds if not. A punch-in recording marks the downbeat this far in, so set it by looking at where the sound actually landed."
+  );
+
+  Builtin.createBuiltin(
+    "audio-latency",
+    [],
+    function $audioLatency(env, executionEnvironment) {
+      return constructInteger(Math.round(getAudioLatency() * getSampleRate()));
+    },
+    "The round trip vodka is assuming, in samples. See set-audio-latency."
+  );
+
   Builtin.createBuiltin(
     "stop-recording",
     ["_wt_()"],

@@ -424,6 +424,30 @@ class Wavetable extends Nex {
 		this.renderOnlyThisNex();
 	}
 
+	/*
+	A split point put there by vodka rather than by hand, at a sample it worked
+	out: where the sound you were playing came back round to the input, or where
+	the cycle it was recorded against ended. See the punch-in recording in
+	webaudio.js.
+
+	Named, because the name is the whole point -- a mark you have to work out the
+	meaning of is worse than no mark. Silently does nothing at the ends, same as
+	addMarker, since a split there makes an empty section.
+
+	(comment by Claude)
+	*/
+	addNamedMarkerAt(sample, name) {
+		sample = Math.round(sample);
+		if (sample < 1 || sample > this.data.length - 1) return;
+		if (this.markers.indexOf(sample) < 0) {
+			this.markers.push(sample);
+			this.markers = this.markers.sort((a, b) => { return a - b; });
+		}
+		this.markerNames[sample] = name;
+		this.cacheSections();
+		this.renderOnlyThisNex();
+	}
+
 	deleteMarker(i) {
 		delete this.markerNames[this.markers[i]];
 		this.markers.splice(i, 1);
