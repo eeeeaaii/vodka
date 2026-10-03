@@ -25,7 +25,7 @@ import { constructFatalError, throwOOM } from './eerror.js'
 import { Closure } from './closure.js'
 import { ContextType } from '../contexttype.js'
 import { evaluateNexSafely } from '../evaluator.js'
-import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED, RENDER_FLAG_COLLAPSED, CONSOLE_DEBUG } from '../globalconstants.js'
+import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED, RENDER_FLAG_COLLAPSED, COLLAPSE_TAG, CONSOLE_DEBUG } from '../globalconstants.js'
 import { Editor, isAutocompleteKeyCombo } from '../editors.js'
 import { experiments } from '../globalappflags.js'
 import { doTutorial } from '../help.js'
@@ -52,19 +52,17 @@ because an argument that is not in the list is invisible to everything
 downstream: arity, optional parameters and variadics all see the call the way it
 now reads, with no special case for a hole in the middle.
 
-Collapsing is a property of a rendered node rather than of a nex -- the same nex
-can be shown in more than one place -- so this asks whether any of the places it
-is shown is collapsed. A nex with no render nodes at all is not in the document
-and cannot have been collapsed by anybody.
+Collapsing is a tag on the nex -- COLLAPSE_TAG, a single backslash, written by
+the collapse keystroke and by nothing else -- so this is a question about the
+nex and the answer does not come from the view layer. It used to: this walked
+the nex's render nodes asking each of them, which made every call that took a
+collapsed argument depend on the dom, and meant a nex nothing had rendered could
+not be collapsed at all. Being a tag it also saves with the document, travels
+with a copy, and is answerable without any of the machinery that will not be
+here once this runs somewhere other than javascript.
 */
 function isCollapsed(nex) {
-	let nodes = nex.getRenderNodes();
-	for (let i = 0; i < nodes.length; i++) {
-		if (nodes[i].getCollapsed && nodes[i].getCollapsed()) {
-			return true;
-		}
-	}
-	return false;
+	return nex.hasTagWithString(COLLAPSE_TAG);
 }
 
 class Command extends NexContainer {

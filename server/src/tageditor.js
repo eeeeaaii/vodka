@@ -20,6 +20,7 @@ import { throwOOM, newTagOrThrowOOM, constructFatalError } from './nex/eerror.js
 import { Editor } from './editors.js'
 import { Tag } from './tag.js'
 import * as Utils from './utils.js'
+import { COLLAPSE_TAG } from './globalconstants.js'
 
 
 class TagEditor extends Editor {
@@ -92,6 +93,19 @@ class TagEditor extends Editor {
 	}
 
 	shouldAppend(text) {
+		/*
+		Every single character except a backslash. That one is the collapsed
+		mark (COLLAPSE_TAG), and the keystroke that writes it is the only thing
+		allowed to: typed here it would be a nex that reads as collapsed with
+		nothing to expand, or -- worse -- one you could expand by deleting a
+		tag, which is not what deleting a tag is for.
+
+		Swallowed rather than passed on, so it does not collapse the nex you are
+		in the middle of tagging either.
+
+		(comment by Claude)
+		*/
+		if (text == COLLAPSE_TAG) return false;
 		// append if a single character, otherwise it's special
 		return (/^.$/.test(text));
 	}

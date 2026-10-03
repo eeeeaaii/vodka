@@ -600,11 +600,20 @@ const KeyResponseFunctions = {
 		s.toggleCollapsed();
 	},
 
-	// the control strip is wider than a short wave, so a wave's box cannot show
-	// its real length while the strip is there
-	// (comment by Claude)
+	/*
+	Waves are condensed unless this says otherwise: the duration and the tags
+	sit on the waveform, and an unselected wave is a waveform and nothing else.
+	The full layout puts them back above the wave, where the control strip is
+	wider than a short wave, so a wave's box cannot show its real length while
+	the strip is there.
+
+	A class for the exception rather than for the normal case, so that the
+	normal case is what you get with nothing set.
+
+	(comment by Claude)
+	*/
 	'toggle-wave-controls': function(s) {
-		document.body.classList.toggle('hidewavecontrols');
+		document.body.classList.toggle('fullwaves');
 	},
 
 	// I hate commas

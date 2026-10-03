@@ -37,6 +37,24 @@ const RENDER_FLAG_INSERT_INSIDE = 256;
 const RENDER_FLAG_INSERT_AROUND = 512;
 const RENDER_FLAG_COLLAPSED = 1024;
 
+/*
+Collapsed is a tag on the nex, and this is the tag: a single backslash, the key
+that puts it there. On the nex rather than on the render node because collapsing
+an argument takes it out of the call it is in (see command.js), and the
+execution path must not have to ask the view layer anything -- it is the hot
+path, and it is the part that has to be able to leave javascript one day.
+
+Being a tag, it saves and loads with the document and travels with a copy, which
+a render node's state could never do.
+
+The tag editor refuses to type a backslash (see tageditor.js), so the collapse
+keystroke is the only way to put this on or take it off. Anything else would be
+a nex you could not expand, or an expanded nex that reads as collapsed.
+
+(comment by Claude)
+*/
+const COLLAPSE_TAG = '\\';
+
 // render modes are values that are stored as state, for example in RenderNode objects.
 
 const RENDER_MODE_EXPLO = 1;
@@ -45,6 +63,7 @@ const RENDER_MODE_INHERIT = 3;
 
 export {
 	UNHANDLED_KEY,
+	COLLAPSE_TAG,
 	RENDER_FLAG_NORMAL,
 	RENDER_FLAG_SHALLOW,
 	RENDER_FLAG_EXPLODED,

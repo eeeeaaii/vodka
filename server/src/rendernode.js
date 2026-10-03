@@ -28,9 +28,11 @@ import { EStringEditor } from './nex/estring.js'
 import { CommandEditor } from './nex/command.js'
 import { InstantiatorEditor } from './nex/instantiator.js'
 import { TagEditor } from './tageditor.js'
+import { newTagOrThrowOOM } from './nex/eerror.js'
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import { doTutorial } from './help.js'
 import {
+	COLLAPSE_TAG,
 	RENDER_FLAG_SELECTED,
 	RENDER_FLAG_SHALLOW,
 	RENDER_FLAG_NORMAL,
@@ -66,6 +68,11 @@ const MAX_SIBLING_COUNT = 1000;
 // it lets selection changes move it without re-rendering anything.
 // (comment by Claude)
 let liveInsertionPips = [];
+
+// the render node with an editor open, if any. The pip scroll needs it: see
+// editedPartRect
+// (comment by Claude)
+let editingRenderNode = null;
 
 function registerInsertionPip(el) {
 	liveInsertionPips = liveInsertionPips.filter(p => p.isConnected);
@@ -136,6 +143,33 @@ function scrollWindowTo(el) {
 function scrollWindowToRect(rect) {
 	let dy = nearestDelta(rect.top, rect.bottom, window.innerHeight);
 	let dx = nearestDelta(rect.left, rect.right, window.innerWidth);
+	scrollWindowBy(dx, dy);
+}
+
+/*
+Straight to the top of the document, for the things that go there: see
+sitelesserrors.js. The whole way, not the nearest edge, because what is at the
+top is the first child and anything above it is the margin the document sits in.
+
+Putting something at the top of the document means re-rendering from the root,
+which re-registers the pip, which asks to be scrolled to -- and the pip is
+wherever you were working, which is what we are deliberately scrolling away
+from. So the pip scroll stands down for a moment afterwards. A moment rather
+than a flag that the next pip scroll clears, because there may not be a next
+one, and a flag left set would swallow a real scroll much later.
+
+(comment by Claude)
+*/
+const PIP_SCROLL_STANDOWN_MS = 500;
+let pipScrollStandsDownUntil = 0;
+
+function scrollWindowToTop() {
+	if (typeof window == 'undefined') return;
+	pipScrollStandsDownUntil = Date.now() + PIP_SCROLL_STANDOWN_MS;
+	scrollWindowBy(0, -window.scrollY);
+}
+
+function scrollWindowBy(dx, dy) {
 	if (dy == 0 && dx == 0) {
 		return;
 	}
@@ -174,13 +208,31 @@ edge on its own, for the same reason.
 Deferred a frame, because the editor is put into the dom by the render that
 follows this and the box is the wrong size until it is.
 
+One frame is not always enough. A nex can have its editor started before it is
+in the document at all -- wrapping builds the new container, starts the editor
+on it, and only then puts it where it goes -- and the render that attaches it
+comes off the event queue some frames later. So this waits for the dom rather
+than for a frame, and gives up after a budget, because an editor on a node that
+never lands anywhere must not leave a scroll pending forever.
+
+Abandoned if another editor starts in the meantime: there is only one thing
+being typed into, and it is the newer one.
+
 (comment by Claude)
 */
+const EDITED_PART_SCROLL_FRAMES = 20;
+
 function scrollEditedPartIntoView(renderNode) {
+	editingRenderNode = renderNode;
 	if (typeof window == 'undefined' || !window.requestAnimationFrame) return;
-	window.requestAnimationFrame(function() {
+	let framesLeft = EDITED_PART_SCROLL_FRAMES;
+	function attempt() {
+		if (editingRenderNode != renderNode) return;
 		let dom = renderNode.getDomNode();
-		if (!dom || !dom.isConnected) return;
+		if (!dom || !dom.isConnected) {
+			if (--framesLeft > 0) window.requestAnimationFrame(attempt);
+			return;
+		}
 		let span = dom.querySelector(':scope > .codespan');
 		if (span) {
 			scrollWindowTo(span);
@@ -193,11 +245,48 @@ function scrollEditedPartIntoView(renderNode) {
 			left: r.left,
 			right: Math.min(r.right, r.left + 1)
 		});
-	});
+	}
+	window.requestAnimationFrame(attempt);
 }
 
 let pendingPipScroll = false;
 
+/*
+The part of a nex an editor is typing into: the codespan, which for a command is
+the dot-or-tilde and the name, at the top left of it.
+
+Looked up fresh every time because every render builds a new one.
+
+(comment by Claude)
+*/
+function editedPartRect() {
+	if (!editingRenderNode || !editingRenderNode.getCurrentEditor()) {
+		return null;
+	}
+	let dom = editingRenderNode.getDomNode();
+	if (!dom || !dom.isConnected) {
+		return null;
+	}
+	let span = dom.querySelector(':scope > .codespan');
+	return span ? span.getBoundingClientRect() : null;
+}
+
+/*
+An editor outranks the pip. The pip says where the next thing you insert will
+go, and a container's pip can be a long way from its name -- wrap a selection
+taller than the window in a command and the pip lands after the whole thing,
+below the bottom of it, while the name you are about to type is at the top. Of
+those two the name has to be the one on the screen: the pip is where you will be
+next, the name is where you are now.
+
+So while an editor is open, scrolling aims at the part being edited and nothing
+else, every time the view could have moved -- the pip appearing somewhere else,
+or a render of the nex being edited. Being already in view costs no scrolling
+(see nearestDelta), so this holds the name on the screen without fighting you
+for the scrollbar between keystrokes.
+
+(comment by Claude)
+*/
 function scrollPipIntoView() {
 	if (pendingPipScroll || typeof window == 'undefined' || !window.requestAnimationFrame) {
 		return;
@@ -205,12 +294,20 @@ function scrollPipIntoView() {
 	pendingPipScroll = true;
 	window.requestAnimationFrame(function() {
 		pendingPipScroll = false;
+		if (Date.now() < pipScrollStandsDownUntil) {
+			return;
+		}
+		let edited = editedPartRect();
+		if (edited) {
+			scrollWindowToRect(edited);
+			return;
+		}
 		let attached = liveInsertionPips.filter(p => p.isConnected);
 		let pip = attached[attached.length - 1];
 		if (!pip || !pip.scrollIntoView) {
 			return;
 		}
-		scrollWindowTo(pip);
+		scrollWindowToRect(pip.getBoundingClientRect());
 	});
 }
 
@@ -244,7 +341,20 @@ class RenderNode {
 
 		this.renderNodeIsDirty = true;
 
-		let startCollapsed = false;
+		/*
+		A nex says whether it is collapsed, so a document comes back folded the
+		way you left it.
+
+		Two spellings, because they are two different things. The backslash tag
+		is one you collapsed by hand and is written and removed by the keystroke
+		(see toggleCollapsed). A tag starting with a colon marks machinery --
+		`:docs`, `:init`, `::drawfunction` -- and those start folded away every
+		time the document is opened however you left them, which is the point of
+		them: nobody wants a template's documentation in the way.
+
+		(comment by Claude)
+		*/
+		let startCollapsed = forNex.hasTagWithString(COLLAPSE_TAG);
 		if (forNex.isNexContainer()) {
 			let tags = forNex.getAllTags();
 			for (let i = 0; i < tags.length; i++) {
@@ -310,6 +420,9 @@ class RenderNode {
 	}
 
 	stopEditing() {
+		if (editingRenderNode == this) {
+			editingRenderNode = null;
+		}
 		this.setCurrentEditor(null);
 		this.setRenderNodeDirtyForRendering(true);
 		// set parent dirty when you stop editing because of redrawing pips
@@ -324,6 +437,12 @@ class RenderNode {
 			// the editor will decide when it's finished and will stop editing
 			if (!this.getCurrentEditor().isEditing()) {
 				this.stopEditing();
+			} else {
+				// a keystroke can change the size of what is being edited, or of
+				// what is under it, so what was on the screen a moment ago may
+				// not be now
+				// (comment by Claude)
+				scrollEditedPartIntoView(this);
 			}
 			return newkeycode;
 		} catch (e) {
@@ -462,8 +581,37 @@ class RenderNode {
 		this.isCollapsed = v;
 	}
 
+	/*
+	The tag is the state and this is the only thing that writes it. The flag
+	here is a copy of it, read on every render and by the insertion pip, and
+	kept rather than looked up because this is the view's answer to the question
+	and the nex's answer is the one the evaluator uses.
+
+	Every render node showing this nex gets the new value. The same nex can be
+	on the screen in more than one place, and it is now one fact about the nex
+	rather than one per view, so a copy left saying otherwise would be a nex
+	drawn expanded that no command would pass.
+
+	A colon tag collapses a nex without the backslash tag being there, so
+	expanding one of those removes nothing. That is the right outcome: it folds
+	itself away again next time the document is opened.
+
+	(comment by Claude)
+	*/
 	toggleCollapsed(v) {
-		this.isCollapsed = !this.isCollapsed;
+		let collapsed = !this.isCollapsed;
+		let tag = newTagOrThrowOOM(COLLAPSE_TAG, 'collapsing a nex');
+		if (collapsed) {
+			this.nex.addTag(tag);
+		} else {
+			this.nex.removeTag(tag);
+		}
+		let nodes = this.nex.getRenderNodes();
+		for (let i = 0; i < nodes.length; i++) {
+			nodes[i].isCollapsed = collapsed;
+			nodes[i].setRenderNodeDirtyForRendering(true);
+		}
+		this.isCollapsed = collapsed;
 		this.setRenderNodeDirtyForRendering(true);
 	}
 
@@ -1235,6 +1383,7 @@ class RenderNode {
 }
 
 export { RenderNode,
+	scrollWindowToTop,
 	INSERT_UNSPECIFIED,
 	INSERT_AFTER,
 	INSERT_BEFORE,

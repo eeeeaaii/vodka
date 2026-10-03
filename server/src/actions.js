@@ -20,7 +20,8 @@ import { systemState } from './systemstate.js'
 import { heap } from './heap.js';
 import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
 import { manipulator } from './manipulator.js';
-import { constructWarning, newTagOrThrowOOM } from './nex/eerror.js';
+import { constructWarning, newTagOrThrowOOM } from './nex/eerror.js'
+import { reportSitelessError } from './sitelesserrors.js';
 // estring and eerror each declare this, with the same value; one of them will do
 // (comment by Claude)
 import { MODE_EXPANDED } from './nex/estring.js';
@@ -505,6 +506,37 @@ class ChangeDirectionAction extends Action {
 	}
 }
 
+/*
+Collapsing writes a tag on the nex, so it changes the document and undo has to
+be able to take it back. It used to be a flag on a render node, which nothing
+saved and the undo buffer could not reach, so it went through the legacy action
+-- which answers no to canUndo, and that stops undo dead rather than stepping
+over it: one backslash and you could not undo anything older than it.
+
+Undone by toggling again, because that is exactly the inverse, and on the node
+it was done to rather than whatever is selected when you get round to undoing.
+
+(comment by Claude)
+*/
+class ToggleCollapsedAction extends Action {
+	constructor(actionName) {
+		super(actionName);
+	}
+
+	canUndo() {
+		return true;
+	}
+
+	doAction() {
+		this.savedSelectedNode = systemState.getGlobalSelectedNode();
+		KeyResponseFunctions[this.actionName](this.savedSelectedNode);
+	}
+
+	undoAction() {
+		this.savedSelectedNode.toggleCollapsed();
+	}
+}
+
 class ChangeSelectedNodeAction extends Action {
 	constructor(actionName) {
 		super(actionName);
@@ -910,21 +942,6 @@ class EvaluateAndReplaceAction extends Action {
 	}
 
 	doAction() {
-		/*
-		The warning belongs to the undo, so taking the undo back takes it with
-		it -- otherwise every undo/redo cycle leaves another one behind. Having
-		one is also what says this is a redo rather than a first run. Removed
-		before anything else reads an index, since it sits in the document just
-		before the node being evaluated.
-
-		(comment by Claude)
-		*/
-		if (this.undoWarning) {
-			if (this.undoWarning.getParent()) {
-				manipulator.removeNex(this.undoWarning);
-			}
-			this.undoWarning = null;
-		}
 		this.nodeBeingEvaluated = systemState.getGlobalSelectedNode();
 		this.parentOfNodeBeingEvaluated = this.nodeBeingEvaluated.getParent();
 		this.index = this.parentOfNodeBeingEvaluated.getIndexOfChild(this.nodeBeingEvaluated);
@@ -952,8 +969,8 @@ class EvaluateAndReplaceAction extends Action {
 		this.nodeBeingEvaluated.setSelected();
 		this.nodeBeingEvaluated.setInsertionMode(this.savedInsertionMode);
 
-		let ee = constructWarning("Warning: undoing code evaluation does not undo side effects.");
-		this.undoWarning = this.parentOfNodeBeingEvaluated.insertChildBefore(ee, this.nodeBeingEvaluated);
+		reportSitelessError(
+				constructWarning("Warning: undoing code evaluation does not undo side effects."));
 	}
 }
 
@@ -968,23 +985,14 @@ class EvaluateInPlaceAction extends Action {
 	}
 
 	doAction() {
-		// the warning is the undo's, not the document's -- see
-		// EvaluateAndReplaceAction
-		// (comment by Claude)
-		if (this.undoWarning) {
-			if (this.undoWarning.getParent()) {
-				manipulator.removeNex(this.undoWarning);
-			}
-			this.undoWarning = null;
-		}
 		this.nodeBeingEvaluated = systemState.getGlobalSelectedNode();
 		this.parentOfNodeBeingEvaluated = this.nodeBeingEvaluated.getParent();
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
 	}
 
 	undoAction() {
-		let ee = constructWarning("Warning: undoing code evaluation does not undo side effects.")
-		this.undoWarning = this.parentOfNodeBeingEvaluated.insertChildBefore(ee, this.nodeBeingEvaluated);
+		reportSitelessError(
+				constructWarning("Warning: undoing code evaluation does not undo side effects."));
 	}
 }
 
@@ -1304,6 +1312,8 @@ function actionFactory(actionName, eventName) {
 			return new StepValueAction(actionName);
 		case 'toggle-dir':
 			return new ChangeDirectionAction(actionName);
+		case 'toggle-collapsed':
+			return new ToggleCollapsedAction(actionName);
 
 		case 'insert-command-at-insertion-point':
 		case 'insert-bool-at-insertion-point':

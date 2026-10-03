@@ -27,6 +27,7 @@ import { experiments } from './globalappflags.js'
 import { manipulator } from './manipulator.js'
 import { recordPerformedAction, UnwrapDeferredAction } from './actions.js'
 import { evaluateNexSafely, evaluateTopLevelSafely } from './evaluator.js'
+import { reportSitelessError } from './sitelesserrors.js'
 
 
 // TODO(#264): this file used to call n.rootLevelPostEvaluationStep() in
@@ -68,14 +69,15 @@ function evaluateAndReplace(s) {
 
 /**
  * This method is used to evaluate a Nex and keep the code rather than replacing
- * it with the result. An error thrown while evaluating is prepended to the
- * parent of the selected node, before the selected node.
+ * it with the result. Nothing is being replaced, so an error thrown while
+ * evaluating has no site in the document to stand in and goes to the top of it
+ * instead -- see sitelesserrors.js.
  *
  * The result itself is not wanted, but a deferred result cannot simply be
  * dropped: it is still running, and it is not in the document, so nothing would
  * ever show what it came back with -- which is how a failed save reported
  * nothing at all. sHoldDeferred gives it to the engine to hold, and an error it
- * finishes with goes to the top of the document.
+ * finishes with goes to the top of the document too.
  *
  * @param {RenderNode} s = the RenderNode to evaluate
  */
@@ -83,11 +85,24 @@ function evaluateAndKeep(s) {
 	systemState.resetStack();
 	let n = evaluateTopLevelSafely(s.getNex(), BINDINGS);
 	if (Utils.isFatalError(n)) {
-		manipulator.insertBeforeSelectedAndSelect(new RenderNode(n));
+		reportSitelessError(n);
 	} else {
 		sHoldDeferred(n);
 	}
 
+	/*
+	Nothing is replaced here, but evaluating can still change what is on the
+	screen: play assigns the clip sitting in the expression, recording fills a
+	wavetable, a surface gets drawn on. Those mark themselves dirty and then
+	wait for somebody to render, and this path -- double click, and the
+	keystroke that evaluates in place -- was not that somebody.
+
+	Only the dirty ones, and deduped in the queue, so this costs nothing when
+	the evaluation changed nothing.
+
+	(comment by Claude)
+	*/
+	eventQueueDispatcher.enqueueRenderOnlyDirty();
 	eventQueueDispatcher.enqueueAlertAnimation(s);
 }
 

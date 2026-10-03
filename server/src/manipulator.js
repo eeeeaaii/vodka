@@ -1452,20 +1452,41 @@ class Manipulator {
 		}
 	}	
 
+	/*
+	The selection lands on a child, so the pip has to be put somewhere by hand,
+	and the place for it is where it already was on the screen. Taking the
+	default instead means insert-after on a child that is itself a screenful
+	tall, which puts the pip at the bottom of it -- a long way from the container
+	name you were just standing on.
+
+	Inside or before the container is before its first child, which is the same
+	spot now that the container is gone. After the container is after its last
+	child, which is also the same spot, so that one selects the last child rather
+	than the first. Around is a square, and the nearest square to the one that
+	was around the whole container is the one around the child it starts with.
+
+	(comment by Claude)
+	*/
 	unroll(s) {
 		let p = s.getParent();
-		let c = null;
-		let toselect = null;
+		let mode = s.getInsertionMode();
+		let children = [];
 		while(s.hasChildren()) {
-			c = s.getFirstChild();
-			if (!toselect) {
-				toselect = c;
-			}
+			let c = s.getFirstChild();
+			children.push(c);
 			p.insertChildBefore(c, s);
 		}
-		if (c) {
-			p.removeChild(s);
-			toselect.setSelected();
+		if (children.length == 0) return;
+		p.removeChild(s);
+		let toselect = (mode == INSERT_AFTER)
+				? children[children.length - 1]
+				: children[0];
+		toselect.setSelected();
+		if (mode == INSERT_INSIDE) {
+			mode = INSERT_BEFORE;
+		}
+		if (mode != INSERT_UNSPECIFIED) {
+			toselect.setInsertionMode(mode);
 		}
 	}
 
@@ -1622,12 +1643,27 @@ class Manipulator {
 		}
 	}
 
+	/*
+	The pip goes inside the wrapper, in front of what was just enclosed, rather
+	than taking the default -- which, now that the wrapper has a child, is
+	insert-after, putting the pip past the whole thing.
+
+	Wrapping is not finishing. You wrap because you have realised something has
+	to happen to this bit, so the bit is still what you are working on, and the
+	pip belongs next to it instead of after it. It also keeps the pip near the
+	name you are about to type, which for anything taller than the window is
+	the difference between the two being on the same screen or a screenful
+	apart.
+
+	(comment by Claude)
+	*/
 	wrapSelectedInAndSelect(wrapperNode) {
 		let s = this.selected();
 		let p = s.getParent();
 		p.replaceChildWith(s, wrapperNode);
 		wrapperNode.appendChild(s);
 		wrapperNode.setSelected();
+		this._forceInsertionMode(INSERT_INSIDE, wrapperNode);
 		return s;
 	}
 
