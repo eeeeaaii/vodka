@@ -780,8 +780,24 @@ function startRecordingAudio(waves, channels, deviceId, unlimited, clip) {
 			node.connect(silence);
 			silence.connect(ctx.destination);
 
+			/*
+			A wave with no channel coming is stopped now rather than left
+			recording silence until the time limit. Chrome gives at most two
+			channels from any input -- the cap is hardcoded in chromium, see
+			crbug 40403559 -- so a clip asking for four comes back with two
+			waves that have something in them and two that are empty and
+			finished, which is at least the truth about what arrived.
+
+			(comment by Claude)
+			*/
 			for (let i = 0; i < waves.length; i++) {
-				waves[i].startRecording();
+				if (channels[i] < got) {
+					waves[i].startRecording();
+				} else {
+					if (waves[i].isRecording()) waves[i].stopRecording();
+					console.log('vodka: nothing is coming on channel ' + (channels[i] + 1)
+							+ ' -- this input gave ' + got + ' channel(s)');
+				}
 			}
 			node.port.onmessage = function(e) {
 				let batch = e.data;
