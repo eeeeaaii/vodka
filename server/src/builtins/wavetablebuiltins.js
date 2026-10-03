@@ -261,6 +261,10 @@ function createWavetableBuiltins() {
 
     (comment by Claude)
     */
+    if (clip && clip.getDeviceKind() == "input") {
+      return { error: constructFatalError(
+          name + ": that clip records, it does not play. Sorry!") };
+    }
     let deviceId = clip && clip.getOutputDevice()
         ? clip.getOutputDevice()
         : getDefaultOutputDevice();
@@ -347,14 +351,20 @@ function createWavetableBuiltins() {
       */
       let deviceId = "";
       let deviceName = "";
+      let deviceKind = "";
       if (deviceArg != UNBOUND) {
-        let found = deviceIdOrError(deviceArg, "output", "make-clip");
+        // either kind: an output clip is something to play through and an input
+        // clip is something to record from, and which it is is the device's to
+        // say rather than yours
+        // (comment by Claude)
+        let found = deviceOfAnyKindOrError(deviceArg, "make-clip");
         if (found.error) return found.error;
         deviceId = found.id;
         deviceName = found.name;
+        deviceKind = found.kind;
       }
       return constructUnassignedClip("audio loop", readChannelNumbers(channelsArg),
-          null, deviceId, deviceName);
+          null, deviceId, deviceName, deviceKind);
     },
     "An empty clip on |channels, or channels 1 and 2. Given |device it plays there; given none it plays wherever the default is when you play it. Hand it to play and play fills it in instead of starting a second loop, so the expression can be evaluated again in place."
   );
@@ -496,6 +506,17 @@ function createWavetableBuiltins() {
     };
   }
 
+  function deviceOfAnyKindOrError(dev, who) {
+    let kind = dev.getChildTagged(newTagOrThrowOOM("kind", who + ", kind"));
+    if (!kind) {
+      return { error: constructFatalError(who + ": that is not a device. Sorry!") };
+    }
+    let found = deviceIdOrError(dev, kind.getFullTypedValue(), who);
+    if (found.error) return found;
+    found.kind = kind.getFullTypedValue();
+    return found;
+  }
+
   // an org is a device if it says what kind of device it is
   // (comment by Claude)
   function looksLikeADevice(nex) {
@@ -588,35 +609,83 @@ function createWavetableBuiltins() {
     "Records from |device, an input from list-audio-devices, and returns it. Recording always uses this one, wherever the clips are playing. Takes effect next time recording starts, and for this session only."
   );
 
+  /*
+  Recording is the other direction through a clip.
+
+  A clip is a device and a set of channels, which is exactly what a take needs,
+  so this consumes one and answers the waves it is filling -- one per channel, so
+  recording four inputs at once is one expression rather than four. They are
+  already recording when you get them.
+
+  The clip is not handed back. It was the routing, and the routing is spent: the
+  thing worth keeping is the audio, and vodka holds the clip only for as long as
+  the take lasts. Stop with any of the waves; they share a stream and stop
+  together.
+
+  (comment by Claude)
+  */
   Builtin.createBuiltin(
     "start-recording",
-    ["_wt_", "channel#?"],
+    ["clipμ"],
     function $startRecording(env, executionEnvironment, commandTags) {
-      let wt = env.lb("wt");
-      let channel = env.lb("channel");
-      // 1-based to the user, the way audio hardware numbers channels
-      // (comment by Claude)
-      let n = channel == UNBOUND ? 1 : channel.getTypedValue();
-      if (n < 1) {
-        return constructFatalError("start-recording: there is no channel " + n + ". Sorry!");
+      let clip = env.lb("clip");
+      if (Utils.isNil(clip)) return goneClipError("start-recording");
+      if (!Utils.isClip(clip)) {
+        return constructFatalError("start-recording: not a clip. Sorry!");
       }
+      if (clip.getDeviceKind() == "output") {
+        return constructFatalError(
+            "start-recording: that clip plays, it does not record. Sorry!");
+      }
+      let channels = toChannelIndexes(clip.getChannels());
+      if (channels.length == 0) channels = [0];
       let unlimited = false;
       for (let i = 0; commandTags && i < commandTags.length; i++) {
         if (commandTags[i].getTagString() == "unlimited") {
           unlimited = true;
         }
       }
-      startRecordingAudio(wt, n - 1, unlimited);
-      return wt;
+      let waves = [];
+      for (let i = 0; i < channels.length; i++) {
+        let w = constructWavetable();
+        w.setMutable(true);
+        // started here rather than when the stream opens, so what comes back is
+        // already a wave that is recording -- opening a device takes a moment
+        // and nothing should be handed a wave that is about to be one
+        // (comment by Claude)
+        w.startRecording();
+        waves.push(w);
+      }
+      startRecordingAudio(waves, channels, clip.getOutputDevice(), unlimited, clip);
+      if (waves.length == 1) return waves[0];
+      let r = constructOrg();
+      for (let i = 0; i < waves.length; i++) {
+        r.appendChild(waves[i]);
+      }
+      return r;
     },
-    "Records into |wt from |channel, or channel 1. A wavetable holds one channel, so stereo is recorded one side at a time. Stops after 30 seconds unless tagged unlimited."
+    "Records |clip, and answers the wave it is filling, or an org of them when the clip has more than one channel. They are recording already. Recording uses the clip's input device, or the default input. Stops after 30 seconds unless tagged unlimited."
   );
 
+  /*
+  Any wave of the take, or the org start-recording answered. The waves of one
+  take share a stream and stop together, so naming one of them is naming all of
+  them -- the org is taken as well because that is what you were handed.
+
+  (comment by Claude)
+  */
   Builtin.createBuiltin(
     "stop-recording",
-    ["_wt_"],
+    ["_wt_()"],
     function $startRecording(env, executionEnvironment) {
       let wt = env.lb("wt");
+      if (Utils.isNexContainer(wt)) {
+        for (let i = 0; i < wt.numChildren(); i++) {
+          let c = wt.getChildAt(i);
+          if (Utils.isWavetable(c)) stopRecordingAudio(c);
+        }
+        return wt;
+      }
       stopRecordingAudio(wt);
       return wt;
     },

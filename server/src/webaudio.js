@@ -591,32 +591,83 @@ function setAudioInputDevice(id) {
 	inputDeviceId = id;
 }
 
+/*
+Everything one take is using: the stream, the worklet, and one wave per channel
+being recorded. Stopping is per rig rather than per wave, because the waves of
+one take share a stream -- stopping half of it would leave the microphone open
+and the other half running.
+
+(comment by Claude)
+*/
 function stopRecordingAudio(wt) {
-	wt.stopRecording();
-	if (!recordingRig || recordingRig.wt != wt) return;
-	if (recordingRig.timer) window.clearTimeout(recordingRig.timer);
-	recordingRig.node.port.onmessage = null;
-	recordingRig.source.disconnect();
-	recordingRig.node.disconnect();
-	recordingRig.silence.disconnect();
+	let rig = recordingRigFor(wt);
+	if (!rig) {
+		// not ours, but it still has to stop thinking it is recording
+		// (comment by Claude)
+		if (wt && wt.stopRecording) wt.stopRecording();
+		return;
+	}
+	for (let i = 0; i < rig.waves.length; i++) {
+		rig.waves[i].stopRecording();
+	}
+	if (rig.timer) window.clearTimeout(rig.timer);
+	rig.node.port.onmessage = null;
+	rig.source.disconnect();
+	rig.node.disconnect();
+	rig.silence.disconnect();
 	// let go of the microphone, or the browser keeps showing it as in use
 	// (comment by Claude)
-	recordingRig.stream.getTracks().forEach(function(t) { t.stop(); });
-	recordingRig = null;
+	rig.stream.getTracks().forEach(function(t) { t.stop(); });
+	// and the clip that was being recorded into, which vodka was holding only
+	// for as long as the take lasted
+	// (comment by Claude)
+	rig.clip = null;
+	recordingRigs = recordingRigs.filter(function(r) { return r != rig; });
 }
 
-function startRecordingAudio(wt, channel, unlimited) {
+function recordingRigFor(wt) {
+	for (let i = 0; i < recordingRigs.length; i++) {
+		if (recordingRigs[i].waves.indexOf(wt) >= 0) return recordingRigs[i];
+	}
+	return null;
+}
+
+function anythingIsRecording() {
+	return recordingRigs.length > 0;
+}
+
+/*
+Records one wave per channel, from one device, off one stream.
+
+The channels are the ones asked for, in the order they were asked for, and one
+that the device does not have is simply not recorded -- the same rule playback
+has, and for the same reason: a clip is a routing, and a routing that half fits
+a device should do the half that fits.
+
+Multi-channel needs saying three times over, because every layer downmixes to
+stereo if you let it: the track is asked for exactly as many channels as the
+highest one wanted, the worklet node is told explicitly how many it has and that
+they are discrete rather than a surround layout to be folded down, and the
+processor copies them all out (it always did -- it was the consumer that threw
+them away).
+
+(comment by Claude)
+*/
+function startRecordingAudio(waves, channels, deviceId, unlimited, clip) {
 	maybeCreateAudioContext();
-	if (!channel) channel = 0;
 	if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
 		console.log('vodka: this browser has no audio input');
 		return;
+	}
+	let want = 1;
+	for (let i = 0; i < channels.length; i++) {
+		if (channels[i] + 1 > want) want = channels[i] + 1;
 	}
 	let constraints = {
 		echoCancellation: false,
 		noiseSuppression: false,
 		autoGainControl: false,
-		channelCount: 2
+		channelCount: want
 	};
 	/*
 	exact, so a device that has gone away is an error rather than silently
@@ -625,20 +676,27 @@ function startRecordingAudio(wt, channel, unlimited) {
 
 	(comment by Claude)
 	*/
-	if (inputDeviceId) {
-		constraints.deviceId = { exact: inputDeviceId };
+	let useDevice = deviceId ? deviceId : inputDeviceId;
+	if (useDevice) {
+		constraints.deviceId = { exact: useDevice };
 	}
 	navigator.mediaDevices.getUserMedia({ audio: constraints }).then(function(stream) {
+		let got = want;
 		let track = stream.getAudioTracks()[0];
 		if (track) {
 			let st = track.getSettings();
-			console.log('vodka: recording from "' + track.label + '" -- '
-					+ (st.channelCount ? st.channelCount : '?') + ' channel(s) at '
-					+ (st.sampleRate ? st.sampleRate : '?') + 'Hz');
+			if (st.channelCount) got = st.channelCount;
+			console.log('vodka: recording from "' + track.label + '" -- asked for '
+					+ want + ' channel(s), got ' + (st.channelCount ? st.channelCount : '?')
+					+ ' at ' + (st.sampleRate ? st.sampleRate : '?') + 'Hz');
 		}
 		return maybeLoadRecorderWorklet().then(function() {
 			let source = ctx.createMediaStreamSource(stream);
-			let node = new AudioWorkletNode(ctx, 'vodka-recorder');
+			let node = new AudioWorkletNode(ctx, 'vodka-recorder', {
+				channelCount: got,
+				channelCountMode: 'explicit',
+				channelInterpretation: 'discrete'
+			});
 			// A worklet only runs while it is connected to the graph, and this
 			// one listens rather than making a sound, so it goes to a silent
 			// gain node.
@@ -649,25 +707,31 @@ function startRecordingAudio(wt, channel, unlimited) {
 			node.connect(silence);
 			silence.connect(ctx.destination);
 
-			wt.startRecording();
+			for (let i = 0; i < waves.length; i++) {
+				waves[i].startRecording();
+			}
 			node.port.onmessage = function(e) {
-				if (!wt.isRecording()) return;
 				let batch = e.data;
 				for (let i = 0; i < batch.length; i++) {
 					let blk = batch[i];
-					// a wavetable holds one channel, so a stereo input is
-					// recorded one side at a time
-					// (comment by Claude)
-					wt.appendRecordedData(blk[channel] ? blk[channel] : blk[0]);
+					for (let w = 0; w < waves.length; w++) {
+						// a wavetable holds one channel, so each one takes its
+						// own out of the block
+						// (comment by Claude)
+						if (!waves[w].isRecording()) continue;
+						let ch = blk[channels[w]];
+						if (ch) waves[w].appendRecordedData(ch);
+					}
 				}
 			};
 
-			recordingRig = { wt: wt, stream: stream, node: node,
-					source: source, silence: silence, timer: null };
+			let rig = { waves: waves, channels: channels, clip: clip, stream: stream,
+					node: node, source: source, silence: silence, timer: null };
+			recordingRigs.push(rig);
 			if (!unlimited) {
-				recordingRig.timer = window.setTimeout(function() {
-					if (wt.isRecording()) {
-						stopRecordingAudio(wt);
+				rig.timer = window.setTimeout(function() {
+					if (waves.length > 0 && waves[0].isRecording()) {
+						stopRecordingAudio(waves[0]);
 						console.log('vodka: stopped at the 30 second limit. Tag '
 								+ 'start-recording with `unlimited` to record for longer.');
 					}
@@ -675,6 +739,9 @@ function startRecordingAudio(wt, channel, unlimited) {
 			}
 		});
 	}).catch(function(err) {
+		for (let i = 0; i < waves.length; i++) {
+			if (waves[i].isRecording()) waves[i].stopRecording();
+		}
 		console.log('vodka: could not open the audio input: '
 				+ err.name + ': ' + err.message
 				+ (err.constraint ? ' (constraint: ' + err.constraint + ')' : ''));
@@ -727,9 +794,10 @@ registerProcessor('vodka-recorder', VodkaRecorder);
 `;
 
 let recorderWorkletReady = null;
-// what is recording now, so stopRecordingAudio can end it
+// the takes running now, so stopRecordingAudio can find the one a wave belongs
+// to -- more than one, because two takes can be running on two devices
 // (comment by Claude)
-let recordingRig = null;
+let recordingRigs = [];
 
 function maybeLoadRecorderWorklet() {
 	if (!recorderWorkletReady) {
@@ -1720,7 +1788,7 @@ async function getFileAsBuffer(filepath, dir) {
 }
 
 
-export { getAudioBufferFromData, getSilentAudioBuffer, loadAudio, muteLoops, addLoop, queueBreak, atNextCycleStart, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio,
+export { getAudioBufferFromData, getSilentAudioBuffer, loadAudio, muteLoops, addLoop, queueBreak, atNextCycleStart, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio, anythingIsRecording,
 		 listAudioDevices, setAudioOutputDevice, setAudioInputDevice,
 		 getAudioInputDevice, getDefaultOutputDevice, getDefaultOutputName, getDeviceChannelCount }
 

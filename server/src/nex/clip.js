@@ -30,6 +30,7 @@ const CHANNELS_KEY = 'channels';
 const PORT_KEY = 'port';
 const OUTPUT_KEY = 'output';
 const OUTPUT_NAME_KEY = 'outputname';
+const DEVICE_KIND_KEY = 'devicekind';
 
 // what a clip says it is playing on
 // (comment by Claude)
@@ -83,6 +84,11 @@ class Clip extends Nex {
 		*/
 		this.outputDevice = '';
 		this.outputName = '';
+		// 'output' or 'input', or empty for a clip that named no device.
+		// A clip faces one way: you play through an output and record from an
+		// input, and a clip is the routing either way round
+		// (comment by Claude)
+		this.deviceKind = '';
 		this.port = port ? port : null;
 		this.ender = ender ? ender : null;
 		this.ended = false;
@@ -148,9 +154,14 @@ class Clip extends Nex {
 		return this.outputName;
 	}
 
-	setOutputDevice(id, name) {
+	getDeviceKind() {
+		return this.deviceKind;
+	}
+
+	setOutputDevice(id, name, kind) {
 		this.outputDevice = id ? id : '';
 		this.outputName = name ? name : '';
+		this.deviceKind = (id && kind) ? kind : '';
 	}
 
 	setClipping(v) {
@@ -264,7 +275,7 @@ class Clip extends Nex {
 		let r = new Clip(this.kind, this.what, this.ids.slice(), null, this.channels.slice(), this.port);
 		r.ended = this.ended;
 		r.clipping = this.clipping;
-		r.setOutputDevice(this.outputDevice, this.outputName);
+		r.setOutputDevice(this.outputDevice, this.outputName, this.deviceKind);
 		this.copyFieldsTo(r);
 		return r;
 	}
@@ -315,6 +326,9 @@ class Clip extends Nex {
 		if (this.outputName) {
 			fields.push(OUTPUT_NAME_KEY + KEY_SEPARATOR + encodeURIComponent(this.outputName));
 		}
+		if (this.deviceKind) {
+			fields.push(DEVICE_KIND_KEY + KEY_SEPARATOR + this.deviceKind);
+		}
 		return fields.join(FIELD_SEPARATOR);
 	}
 
@@ -347,6 +361,8 @@ class Clip extends Nex {
 				this.outputDevice = decodeURIComponent(val);
 			} else if (key == OUTPUT_NAME_KEY) {
 				this.outputName = decodeURIComponent(val);
+			} else if (key == DEVICE_KIND_KEY) {
+				this.deviceKind = val;
 			}
 		}
 	}
@@ -540,11 +556,11 @@ back from a file, which nothing else would have given one to.
 
 (comment by Claude)
 */
-function constructUnassignedClip(kind, channels, port, deviceId, deviceName) {
+function constructUnassignedClip(kind, channels, port, deviceId, deviceName, deviceKind) {
 	let chans = channels ? channels : [];
 	let r = constructClip(kind ? kind : 'audio loop', channelsDescription(chans),
 			[], endLoops, chans, port);
-	r.setOutputDevice(deviceId, deviceName);
+	r.setOutputDevice(deviceId, deviceName, deviceKind);
 	r.ended = true;
 	return r;
 }

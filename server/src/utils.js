@@ -193,6 +193,12 @@ function isClip(n) {
 	return n.getTypeName() == '-clip-';
 }
 
+function isWavetable(n) {
+	if (n instanceof RenderNode) n = n.getNex();
+	if (!n || !n.getTypeName) return false;
+	return n.getTypeName() == '-wavetable-';
+}
+
 function isFloat(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n || !n.getTypeName) return false;
@@ -359,6 +365,7 @@ export {
 	isCommand,
 	isContract,
 	isClip,
+	isWavetable,
 	isLambda,
 	isRoot,
 	isNex,
