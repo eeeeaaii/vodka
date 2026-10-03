@@ -22,8 +22,7 @@ import { Root } from './nex/root.js'
 import { Org } from './nex/org.js'
 import { evaluateNexSafely, wrapError } from './evaluator.js'
 import { constructCommand } from './nex/command.js'
-import { RENDER_MODE_EXPLO } from './globalconstants.js'
-import { eventQueueDispatcher } from './eventqueuedispatcher.js'
+import { reportSitelessError } from './sitelesserrors.js'
 
 let isSetup = false;
 
@@ -112,42 +111,15 @@ function reportOrphanedError(dv) {
 	if (!Utils.isFatalError(value)) {
 		return;
 	}
-	let root = systemState.getRoot();
-	if (!root) {
-		return;
+	// where it goes, how a repeat of it is collapsed and what it does to the
+	// scroll are all sitelesserrors.js's business now
+	// (comment by Claude)
+	let node = reportSitelessError(value);
+	// nothing to detach if it was counted on the error already at the top
+	// rather than put in the document itself
+	if (node && node.getNex() == value) {
+		dv.removeChildAt(0);
 	}
-	/*
-	The same failure over and over is one thing that keeps happening, not a
-	document full of news. If the error already at the top says the same thing,
-	count it there instead of pushing another line in, the way a console
-	collapses a repeated message. Only the top one is compared, so two failures
-	alternating still both show.
-	*/
-	let top = root.numChildren() > 0 ? root.getChildAt(0).getNex() : null;
-	if (top && Utils.isFatalError(top)
-			&& top.getFullTypedValue() == value.getFullTypedValue()) {
-		top.incrementRepeatCount();
-		eventQueueDispatcher.enqueueTopLevelRender();
-		return;
-	}
-	let node = root.prependChild(value);
-	dv.removeChildAt(0);
-	/*
-	Exploded explicitly, whatever the document is set to. A value nex is
-	display:none unless it is exploded, and a document in normal mode is the
-	usual case, so an error left to inherit is put in the document correctly
-	and then not shown at all. This one is an alert; it has to be legible from
-	wherever it lands.
-	*/
-	node.setRenderMode(RENDER_MODE_EXPLO);
-	/*
-	A top level render, not just the dirty nodes: a node that has this moment
-	been added to the root has never been rendered, and the exploded flag is
-	worked out on the way down from the root. Rendering it on its own leaves it
-	display:none in an exploded document -- present, correct, and invisible.
-	*/
-	root.setRenderNodeDirtyForRendering(true);
-	eventQueueDispatcher.enqueueTopLevelRender();
 }
 
 function sEval(cmd, env, errmsg, shouldThrow) {
