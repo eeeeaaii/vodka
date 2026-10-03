@@ -229,7 +229,7 @@ class Wavetable extends Nex {
 		this.markerNames = {};
 		this.sectionBeingAuditioned = null;
 		this.recording = false;
-		this.recordedChunks = null;
+		this.recordingBuffer = null;
 		this.recordedLength = 0;
 		this.currentTimebase = null;
 		this.rightIsClipping = false;
@@ -277,7 +277,9 @@ class Wavetable extends Nex {
 		// this one
 		// (comment by Claude)
 		this.cacheSections();
-		this.recordedChunks = [];
+		// a second of samples to start with, doubled whenever it runs out
+		// (comment by Claude)
+		this.recordingBuffer = new Float32Array(getSampleRate());
 		this.recordedLength = 0;
 		this.recording = true;
 		this.enterEditorForRecording();
@@ -326,32 +328,51 @@ class Wavetable extends Nex {
 	/*
 	Samples as they arrive, while recording.
 
-	The blocks are kept as they come and joined into one buffer at each render
-	rather than growing a single array by copying it every time. cacheValues is
-	deliberately not called: it walks the whole buffer for the amplitude and
-	builds an AudioBuffer, neither of which is wanted several times a second,
-	and neither of which the waveform display needs. stopRecording does it once
-	at the end.
+	Written into a buffer that is grown by doubling, and this.data is a view of
+	the part of it that has been filled -- so a block costs a copy of itself and
+	nothing else, and the wave reads at its true length the whole way through.
+
+	It used to keep every block and rebuild the whole wave out of them each time
+	one arrived. That is quadratic: a thirty second take arrives in about eleven
+	thousand blocks and block n copies n blocks' worth, which comes to tens of
+	gigabytes of allocation for one take. The live set stayed small, so it never
+	looked like a leak -- it is a garbage collector asked to keep up with an
+	allocation rate nothing needs to have.
+
+	cacheValues is deliberately not called: it walks the whole buffer for the
+	amplitude, which is not wanted several times a second and which the waveform
+	display does not need. stopRecording does it once at the end.
 
 	(comment by Claude)
 	*/
 	appendRecordedData(block) {
-		if (!this.recordedChunks) return;
-		this.recordedChunks.push(block);
-		this.recordedLength += block.length;
-		let joined = new Float32Array(this.recordedLength);
-		let at = 0;
-		for (let i = 0; i < this.recordedChunks.length; i++) {
-			joined.set(this.recordedChunks[i], at);
-			at += this.recordedChunks[i].length;
+		if (!this.recordingBuffer) return;
+		if (this.recordedLength + block.length > this.recordingBuffer.length) {
+			let want = this.recordingBuffer.length * 2;
+			while (want < this.recordedLength + block.length) want *= 2;
+			let bigger = new Float32Array(want);
+			bigger.set(this.recordingBuffer.subarray(0, this.recordedLength));
+			this.recordingBuffer = bigger;
 		}
-		this.data = joined;
+		this.recordingBuffer.set(block, this.recordedLength);
+		this.recordedLength += block.length;
+		this.data = this.recordingBuffer.subarray(0, this.recordedLength);
 		this.renderOnlyThisNex();
 	}
 
 	stopRecording() {
 		this.recording = false;
-		this.recordedChunks = null;
+		/*
+		Trimmed to what was recorded, as its own array: the buffer underneath is
+		up to twice as long as the take, and a view of the first half of it
+		holds all of it up for as long as the wave exists.
+
+		(comment by Claude)
+		*/
+		if (this.recordingBuffer) {
+			this.data = this.recordingBuffer.slice(0, this.recordedLength);
+			this.recordingBuffer = null;
+		}
 		if (this.fakeEditingForRecording) {
 			this.isEditing = false;
 			this.fakeEditingForRecording = false;
