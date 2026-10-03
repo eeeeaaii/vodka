@@ -563,13 +563,27 @@ way: an output is opened by pointing a context at it, and an input by asking for
 a stream from it. The stream is let go immediately -- this is a question, not a
 take -- so the browser's recording indicator may blink while it is answered.
 
-getCapabilities is the right thing to read: it says how many channels the device
-can give, where getSettings says how many this stream was granted, which is
-however many were asked for. Not every browser has it, so the granted count is
-the fallback and one channel is the floor -- a device that opened at all has one.
+You have to ask for a lot to be told there is a lot. Both of the things that
+could answer this describe the stream that was opened rather than the hardware:
+getSettings says what this stream was granted, and chrome's getCapabilities
+reports what the capture it negotiated can be constrained to. Opening with no
+channelCount at all gets the default, which is two, and then both of them say
+two however many inputs the interface has.
+
+So the stream is asked for more channels than anything has, and whatever comes
+back is what the device would give. The processing is off, which matters for
+more than fidelity: echo cancellation and the rest are mono or stereo, so a
+stream that goes through them cannot be anything else.
+
+The larger of the two numbers, because they disagree on some drivers, and one
+channel as the floor -- a device that opened at all has one. Both are logged,
+since a device that reports less than it has is the kind of thing you want the
+numbers for rather than the conclusion.
 
 (comment by Claude)
 */
+const MORE_CHANNELS_THAN_ANYTHING_HAS = 64;
+
 function getInputDeviceChannelCount(id, cb) {
 	if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
 		cb(-1, 'this browser has no audio input');
@@ -578,24 +592,30 @@ function getInputDeviceChannelCount(id, cb) {
 	let constraints = {
 		echoCancellation: false,
 		noiseSuppression: false,
-		autoGainControl: false
+		autoGainControl: false,
+		channelCount: { ideal: MORE_CHANNELS_THAN_ANYTHING_HAS }
 	};
 	if (id && id != 'default') {
 		constraints.deviceId = { exact: id };
 	}
 	navigator.mediaDevices.getUserMedia({ audio: constraints }).then(function(stream) {
-		let n = 0;
 		let track = stream.getAudioTracks()[0];
+		let capMax = 0;
+		let granted = 0;
 		if (track) {
 			let caps = track.getCapabilities ? track.getCapabilities() : null;
 			if (caps && caps.channelCount && caps.channelCount.max) {
-				n = caps.channelCount.max;
-			} else {
-				let st = track.getSettings();
-				n = st.channelCount ? st.channelCount : 0;
+				capMax = caps.channelCount.max;
 			}
+			let st = track.getSettings();
+			granted = st.channelCount ? st.channelCount : 0;
+			console.log('vodka: input "' + track.label + '" -- asked for '
+					+ MORE_CHANNELS_THAN_ANYTHING_HAS + ', capabilities say max '
+					+ (capMax ? capMax : '?') + ', the stream gave '
+					+ (granted ? granted : '?'));
 		}
 		stream.getTracks().forEach(function(t) { t.stop(); });
+		let n = Math.max(capMax, granted);
 		cb(n > 0 ? n : 1);
 	}).catch(function(e) {
 		cb(-1, '' + e);
@@ -708,11 +728,19 @@ function startRecordingAudio(waves, channels, deviceId, unlimited, clip) {
 	for (let i = 0; i < channels.length; i++) {
 		if (channels[i] + 1 > want) want = channels[i] + 1;
 	}
+	/*
+	ideal rather than a bare number, which means the same thing to the
+	constraints algorithm but says so: a device with fewer channels than this
+	gives what it has rather than refusing. exact would refuse, and a take that
+	does not happen is worse than a take missing its top channels.
+
+	(comment by Claude)
+	*/
 	let constraints = {
 		echoCancellation: false,
 		noiseSuppression: false,
 		autoGainControl: false,
-		channelCount: want
+		channelCount: { ideal: want }
 	};
 	/*
 	exact, so a device that has gone away is an error rather than silently
