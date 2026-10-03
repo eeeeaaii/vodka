@@ -666,9 +666,16 @@ the sound lands is quicker than any measurement vodka could make for you.
 It is what a punch-in recording uses to say where the downbeat ended up. See
 startRecordingAudio.
 
+Starts at 2400 samples, which is 50ms at the rate vodka runs at. Not a
+measurement -- a place to start bisecting from that is the right order of
+magnitude for a browser, where the output alone is usually 20 to 40ms. Zero
+would be worse than a wrong guess: the ds mark would land on sample 0, where a
+split point cannot go, so the take would come back with no mark at all and
+nothing to correct from.
+
 (comment by Claude)
 */
-let audioLatencySeconds = 0;
+let audioLatencySeconds = 2400 / SAMPLE_RATE;
 
 function setAudioLatency(seconds) {
 	audioLatencySeconds = seconds > 0 ? seconds : 0;
