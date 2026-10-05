@@ -17,7 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Nex } from './nex.js'
 import { heap } from '../heap.js'
-import { getLoopPositionSamples, loopExists, muteLoops, endLoops } from '../webaudio.js'
+import { getLoopPositionSamples, loopExists, loopsAreQueued, muteLoops, endLoops } from '../webaudio.js'
 import { getMidiLastNote } from '../midifunctions.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 
@@ -254,6 +254,23 @@ class Clip extends Nex {
 	}
 
 	/*
+	What the clip is doing, in one word.
+
+	Queued is the one that is not about the clip itself: a loop joins the cycle
+	at the next boundary rather than when you play it, so between pressing the
+	key and hearing anything there is a wait of up to a whole cycle. Without a
+	word for it the clip looks exactly like one that is playing, and the only
+	way to tell is that you cannot hear it.
+
+	(comment by Claude)
+	*/
+	stateLine() {
+		if (this.isUnassigned()) return 'UNASSIGNED';
+		if (loopsAreQueued(this.ids)) return 'QUEUED';
+		return this.kind.toUpperCase();
+	}
+
+	/*
 	Deleting a clip ends it, at the moment the document lets go rather than
 	whenever the undo buffer gets round to it -- a clip you deleted that went
 	on playing for another fifty deletions would be a clip you cannot stop.
@@ -386,10 +403,10 @@ class Clip extends Nex {
 		let innerspans = document.createElement('div');
 		innerspans.classList.add('sysinnerspans');
 
-		let line1 = document.createElement('div');
-		line1.classList.add('innerspan');
-		line1.innerHTML = this.isUnassigned() ? 'UNASSIGNED' : this.kind.toUpperCase();
-		innerspans.appendChild(line1);
+		this.stateSpan = document.createElement('div');
+		this.stateSpan.classList.add('innerspan');
+		this.stateSpan.innerHTML = this.stateLine();
+		innerspans.appendChild(this.stateSpan);
 
 		/*
 		Which device, when it is not the one vodka opened on. Named rather than
@@ -506,6 +523,11 @@ class Clip extends Nex {
 						: getLoopPositionSamples(this.ids[0]);
 			}
 			this.showPosition(pos);
+			// the same way the position is kept up to date, and for the same
+			// reason: a clip going from queued to playing is a word changing in
+			// a span, which is not worth asking the document to render for
+			// (comment by Claude)
+			this.showState();
 			// stopped from somewhere else, like the stop button -- give up
 			// rather than spin for the rest of the session. Having no position
 			// is not that: a loop waiting for the boundary is still ours, and a
@@ -519,6 +541,14 @@ class Clip extends Nex {
 			this.posFrame = window.requestAnimationFrame(step);
 		};
 		this.posFrame = window.requestAnimationFrame(step);
+	}
+
+	showState() {
+		if (!this.stateSpan) return;
+		let line = this.stateLine();
+		if (this.stateSpan.innerHTML != line) {
+			this.stateSpan.innerHTML = line;
+		}
 	}
 
 	showPosition(pos) {

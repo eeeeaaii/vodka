@@ -1691,6 +1691,20 @@ function loopExists(id) {
 	return !!(cycleLoops[id] || cyclePending[id]);
 }
 
+/*
+Waiting for the boundary: joined the cycle, not yet sounding. Everything added
+in one go joins in one go, so the first id answers for all of them.
+
+(comment by Claude)
+*/
+function loopsAreQueued(ids) {
+	for (let i = 0; i < ids.length; i++) {
+		if (cycleLoops[ids[i]]) return false;
+		if (cyclePending[ids[i]]) return true;
+	}
+	return false;
+}
+
 function getLoopPositionSamples(id) {
 	if (!ctx) return -1;
 	let loop = cycleLoops[id];
@@ -2038,7 +2052,7 @@ async function getFileAsBuffer(filepath, dir) {
 }
 
 
-export { getAudioBufferFromData, getSilentAudioBuffer, loadAudio, muteLoops, addLoop, queueBreak, atNextCycleStart, getLoopPositionSamples, loopExists, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio, anythingIsRecording,
+export { getAudioBufferFromData, getSilentAudioBuffer, loadAudio, muteLoops, addLoop, queueBreak, atNextCycleStart, getLoopPositionSamples, loopExists, loopsAreQueued, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio, anythingIsRecording,
 		 listAudioDevices, setAudioOutputDevice, setAudioInputDevice,
 		 getAudioInputDevice, getDefaultOutputDevice, getDefaultOutputName, getDeviceChannelCount, getInputDeviceChannelCount,
 		 setAudioLatency, getAudioLatency }
