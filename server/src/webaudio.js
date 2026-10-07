@@ -34,7 +34,6 @@ let SAMPLE_RATE = 48000;
 
 let thingAuditioning = null;
 
-let channelPlayers = [];
 let auditioningPlayer = null;
 
 
@@ -119,93 +118,6 @@ class AuditionPlayer {
 		}
 		auditioningPlayer = null;
 	}
-}
-
-class OneshotPlayer {
-	constructor(buffer, channel) {
-		this.channel = channel;
-
-		this.source = getSourceFromBuffer(buffer, false);
-		this.source.connect(channelMergerNode, 0, channel);
-		this.source.start();
-
-		let sampleLength = buffer.length / SAMPLE_RATE;
-
-		window.setTimeout(function() {
-			this.source.disconnect(channelMergerNode);
-			if (channelPlayers[this.channel] == this) {
-				channelPlayers[this.channel] = null;
-			}
-		}.bind(this), sampleLength * 1.05 * 1000)
-	}
-
-	canChangeLoopData() {
-		return false;
-	}
-
-	abortPlay() {
-		this.source.stop();
-		try {
-			this.source.disconnect(channelMergerNode);
-		} catch (e) {
-			console.log('why is this failing? ' + e);
-		}
-		if (channelPlayers[this.channel] == this) {
-			channelPlayers[this.channel] = null;
-		}
-	}
-}
-
-class LoopingPlayer {
-	constructor(buffer, channel) {
-		this.channel = channel;
-		this.source = getSourceFromBuffer(buffer, true);
-		this.source.connect(channelMergerNode, 0, channel);
-		this.source.start();
-		this.currentlyPlayingSampleStartTime = ctx.currentTime;
-		this.currentlyPlayingSampleLength = buffer.length / SAMPLE_RATE;
-		this.outputSourceWaitingForDeletion = null;
-	}
-
-	abortPlay() {
-		this.source.stop();
-		this.source.disconnect(channelMergerNode);
-		if (channelPlayers[this.channel] == this) {
-			channelPlayers[this.channel] = null;
-		}
-	}
-
-	canChangeLoopData() {
-		return (this.outputSourceWaitingForDeletion == null);
-	}
-
-	changeLoopData(buffer) {
-		let newsource = getSourceFromBuffer(buffer, true);
-
-		let startTime = 0;
-		let currentTime = ctx.currentTime;
-
-		let howLongBeenPlaying = currentTime - this.currentlyPlayingSampleStartTime;
-		let howManyRepetitions = Math.floor(howLongBeenPlaying / this.currentlyPlayingSampleLength);
-		startTime = (howManyRepetitions + 1) * this.currentlyPlayingSampleLength + this.currentlyPlayingSampleStartTime;
-		let timeUntilChange = startTime - currentTime;
-
-		this.source.stop(startTime);
-		newsource.start(startTime);
-		// we can connect the source now but we can't disconnect the previous one until after it stops playing.
-		newsource.connect(channelMergerNode, 0, this.channel);
-
-		this.outputSourceWaitingForDeletion = this.source;
-		this.source = newsource;
-		this.currentlyPlayingSampleStartTime = startTime;
- 		this.currentlyPlayingSampleLength = buffer.length / SAMPLE_RATE;
-
-		window.setTimeout(function() {
-			this.outputSourceWaitingForDeletion.disconnect(channelMergerNode);
-			this.outputSourceWaitingForDeletion = null;
-		}.bind(this), timeUntilChange * 1.05 * 1000)
-	}
-
 }
 
 /*
@@ -1709,7 +1621,16 @@ function getLoopPositionSamples(id) {
 	if (!ctx) return -1;
 	let loop = cycleLoops[id];
 	if (!loop || !loop.lengthSeconds) return -1;
-	let elapsed = ctx.currentTime - (cycleNextBoundaryTime - cycleLengthSeconds());
+	/*
+	From when this pass began, which is remembered, rather than worked back from
+	the next boundary minus the cycle length. Those agree only while a boundary
+	cannot move, which is about to stop being true -- and the subtraction was
+	already wrong for the pass in which a member joins or leaves, since the
+	length is recomputed at the boundary.
+
+	(comment by Claude)
+	*/
+	let elapsed = ctx.currentTime - cycleStartedAt;
 	if (elapsed < 0) return -1;
 	let len = memberLengthSeconds(loop);
 	// after the intro every pass lives in the loop region, so the readout
@@ -1936,16 +1857,26 @@ function loopPlay(buffer, channelList, loopStartSeconds, deviceId, deviceName) {
 // we don't need to stop nicely at end of loop
 // because user can do that by putting in a gain(0, ...) or something
 // this is for abort/free resources/etc.
+/*
+Stops what is playing on a channel, now rather than at a boundary.
+
+It used to look in channelPlayers, which was a list of OneshotPlayer and
+LoopingPlayer objects -- classes nothing had constructed since playback moved
+into the cycle. So the list was always empty and this builtin had quietly done
+nothing at all for however long that has been true. The classes are gone and
+this asks the cycle, which is where the sound is.
+
+(comment by Claude)
+*/
 function abortPlayback(channel) {
-	if (channel == -1) {
-		for (let i = 0; i < channelPlayers.length; i++) {
-			if (channelPlayers[i]) {
-				channelPlayers[i].abortPlay();
-			}
-		}
-	} else if (channelPlayers[channel]) {
-		channelPlayers[channel].abortPlay();
+	let ids = [];
+	for (let id in cycleLoops) {
+		if (channel == -1 || cycleLoops[id].channel == channel) ids.push(id);
 	}
+	for (let id in cyclePending) {
+		if (channel == -1 || cyclePending[id].channel == channel) ids.push(id);
+	}
+	endLoops(ids, false);
 }
 
 
@@ -1990,10 +1921,7 @@ function getAuditionPositionSamples() {
 
 function isAnySoundPlaying() {
 	if (auditioningPlayer) return true;
-	for (let i = 0; i < channelPlayers.length; i++) {
-		if (channelPlayers[i]) return true;
-	}
-	return false;
+	return anyLoopsPlaying();
 }
 
 function stopAllSound() {
