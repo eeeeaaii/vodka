@@ -33,21 +33,27 @@ import {
 import { getSourceFromBuffer } from './audiobuffers.js'
 
 /*
-THE GLOBAL CYCLE
+THE TRANSPORT
 
-Every loop shares one cycle, whose length is the longest loop in it. Adding a
-loop waits for the current cycle to finish, then the cycle becomes as long as it
-needs to be and everything starts together.
+One cycle, and a track for every clip that has anything to do with it. A track
+is what a clip is, seen from the audio system: a device, a set of channels, the
+material it is playing, and one thing waiting to happen to it at the next
+boundary.
 
-That is what `mix` already does, made to happen live rather than in advance:
-mixing a four beat wave with a six beat one gives six beats, with the short one
-playing through and then its first half again, because valueAtSample wraps. Here
-each loop is its own source node set to repeat, and all of them are cut and
-restarted at the cycle boundary, which comes to the same thing while leaving
-each loop separately removable.
+The cycle is as long as its longest track, every track is restarted at every
+boundary, and a track shorter than the cycle repeats inside it and is cut at the
+end. That is what makes everything stay in phase without anything being
+resampled or nudged: nothing is ever asked to carry on across a boundary.
 
-The boundary is scheduled on ctx.currentTime, so it is exact. setTimeout is only
-used to wake up early enough to do the scheduling.
+A track and its clip live and die together. The engine holds a reference to the
+clip while the track is in the cycle, which is what stops a clip nobody else
+holds being collected in the middle of a bar: the collection is a stop queued on
+that track, and it finishes when the stop does.
+
+A member is one channel of one track. A stereo track is two members off one
+buffer; a midi track is one member that schedules messages instead of making a
+sound. Members are what get scheduled; tracks are what the rest of vodka talks
+to.
 
 (comment by Claude)
 */
@@ -56,28 +62,10 @@ used to wake up early enough to do the scheduling.
 // (comment by Claude)
 const CYCLE_LOOKAHEAD_SECONDS = 0.15;
 
-let cycleLoops = {};        // id -> { buffer, channel, lengthSeconds, node, endAfterCycle }
-let cyclePending = {};      // loops that join at the next boundary
-/*
-A break: everything stops, one sample plays alone, and whatever you start while
-it plays comes in when it ends.
+// every track with anything in the cycle, playing or waiting
+// (comment by Claude)
+let tracks = [];
 
-Queued rather than done, because the point of a break is where it lands. It
-waits for the boundary the same as anything else joining the cycle, so the
-music finishes the bar it is in.
-
-Once it has the floor the cycle is the break and nothing else, which is what
-makes the rest of it work without any new machinery: the cycle is as long as
-its longest member, so for one pass the cycle is exactly the break; anything
-started meanwhile waits for the next boundary, which is the end of the break,
-and then they all begin together from the top, in phase, the way they would
-after any other boundary. If nothing was started, the cycle has no members
-left, and a cycle with nothing in it stops.
-
-(comment by Claude)
-*/
-let pendingBreak = null;    // { buffers, channels } waiting for the next boundary
-let breakIds = [];          // what the break is playing on, while it plays
 /*
 Things to do at the moment the next cycle begins, which is the moment whatever
 is waiting to join it starts sounding. A tempo change belongs here: what makes
@@ -87,191 +75,470 @@ the downbeat of the passage it is the tempo of.
 (comment by Claude)
 */
 let doAtNextCycleStart = [];
-let nextCycleLoopId = 1;
 let cycleTimer = null;
 let cycleRunning = false;
 let cycleNextBoundaryTime = 0;
-// when the pass now playing began, which is what every loop's own repeats are
+// when the pass now playing began, which is what every track's own repeats are
 // measured from -- they all start together at the top of the cycle
 let cycleStartedAt = 0;
 
 /*
-How long this member's next pass is. A member with a start-loop split point
+How long this member's next pass is. A member with a loop-start split point
 plays the whole wave once and the loop region from then on, so its length is
 a question about state, not a constant.
 */
-function memberLengthSeconds(loop) {
-	if (loop.introDone && loop.loopStartSeconds > 0) {
-		return loop.lengthSeconds - loop.loopStartSeconds;
+function memberLengthSeconds(member) {
+	if (member.introDone && member.loopStartSeconds > 0) {
+		return member.lengthSeconds - member.loopStartSeconds;
 	}
-	return loop.lengthSeconds;
+	return member.lengthSeconds;
+}
+
+// A member that keeps its own records -- midi does -- gets told when it leaves
+// the cycle, so nothing has to hold on to it after that.
+// (comment by Claude)
+function retireMember(member) {
+	if (member && member.retired) member.retired();
+}
+
+function stopMemberNow(member) {
+	if (member.stop) member.stop();
+	if (member.node) {
+		try { member.node.stop(); } catch (e) {}
+		member.node.disconnect();
+		member.node = null;
+	}
+}
+
+class Track {
+	constructor(clip) {
+		this.clip = clip ? clip : null;
+		// sounding now
+		this.members = [];
+		// joining at the next boundary, and whether it clears the floor
+		this.pending = null;
+		this.pendingExclusive = false;
+		// leaving at the next boundary
+		this.stopAtBoundary = false;
+		this.passes = 0;
+		/*
+		A track nothing holds and nothing can hold: a break. It has no clip, so
+		the rule that collects a clip nobody wants cannot reach it, and it would
+		otherwise play for ever. One pass is what a break is.
+
+		(comment by Claude)
+		*/
+		this.oneShot = false;
+		this.paused = false;
+		this.muted = false;
+		/*
+		The engine owns the clip while the track is in the cycle. That is the
+		whole of vodka's garbage collection for clips: a clip nobody else holds
+		has one reference left, which is this one, and it cannot be collected
+		until the track lets go -- which it does when a stop completes, at a
+		boundary, rather than in the middle of a bar.
+
+		(comment by Claude)
+		*/
+		if (this.clip) heap.addReference(this.clip);
+	}
+
+	isEmpty() {
+		return this.members.length == 0 && !this.pending;
+	}
+
+	// in the cycle at all, sounding or waiting
+	isInCycle() {
+		return !this.isEmpty();
+	}
+
+	// waiting for the boundary, with nothing sounding yet
+	isQueued() {
+		return this.members.length == 0 && !!this.pending;
+	}
+
+	isPlaying() {
+		return this.isInCycle() && !this.paused;
+	}
+
+	/*
+	What this track asks the cycle to be at least as long as. Zero while it is
+	only waiting, so something queued cannot stretch the pass it is waiting for.
+	*/
+	passLengthSeconds() {
+		let longest = 0;
+		for (let i = 0; i < this.members.length; i++) {
+			let len = memberLengthSeconds(this.members[i]);
+			if (len > longest) longest = len;
+		}
+		return longest;
+	}
+
+	/*
+	New material at the next boundary. Whatever is playing now plays to the end
+	of the pass and is replaced there, so the swap is not heard.
+
+	Replacing what was already waiting rather than adding to it: a track plays
+	one thing, so queueing a second is changing your mind, not asking for both.
+	This is the per-track queue -- queueing on one track leaves every other
+	track alone, which is what lets one evaluation start a dozen parts at once.
+
+	(comment by Claude)
+	*/
+	queue(members, exclusive) {
+		this.pending = members;
+		this.pendingExclusive = !!exclusive;
+		this.stopAtBoundary = false;
+	}
+
+	/*
+	Stopping, either at the next boundary or now. At the boundary is what a clip
+	being let go asks for, and what replacing one asks for; now is for stopping
+	everything, and for a device that turned out not to be there.
+
+	(comment by Claude)
+	*/
+	stop(atBoundary) {
+		if (atBoundary) {
+			this.queueStop();
+			return;
+		}
+		this.stopNow();
+		forgetTrack(this);
+	}
+
+	queueStop() {
+		this.pending = null;
+		this.pendingExclusive = false;
+		this.stopAtBoundary = true;
+	}
+
+	// now, not at a boundary: stopping everything, or a device that went away
+	// (comment by Claude)
+	stopNow() {
+		for (let i = 0; i < this.members.length; i++) {
+			stopMemberNow(this.members[i]);
+			retireMember(this.members[i]);
+		}
+		this.members = [];
+		if (this.pending) {
+			for (let i = 0; i < this.pending.length; i++) {
+				retireMember(this.pending[i]);
+			}
+		}
+		this.pending = null;
+		this.stopAtBoundary = false;
+	}
+
+	/*
+	What the boundary does to this track, before anything is scheduled: the
+	material waiting comes in, and anything leaving goes.
+	*/
+	applyBoundary() {
+		if (this.stopAtBoundary) {
+			this.stopNow();
+			return;
+		}
+		if (!this.pending) return;
+		for (let i = 0; i < this.members.length; i++) {
+			stopMemberNow(this.members[i]);
+			retireMember(this.members[i]);
+		}
+		this.members = this.pending;
+		this.pending = null;
+		this.pendingExclusive = false;
+		// a track that has just been given new material has not played it yet
+		this.passes = 0;
+	}
+
+	/*
+	The intro flag advances at the boundary, not when the intro pass was
+	scheduled -- lengths must hold still for the whole pass they were computed
+	for, or anything reconstructing the running cycle from them is wrong.
+	*/
+	advanceIntro() {
+		for (let i = 0; i < this.members.length; i++) {
+			if (this.members[i].introScheduled) this.members[i].introDone = true;
+		}
+	}
+
+	startPass(startTime, len) {
+		if (this.paused || this.muted) return;
+		for (let i = 0; i < this.members.length; i++) {
+			this.startMember(this.members[i], startTime, len);
+		}
+	}
+
+	startMember(member, startTime, len) {
+		// A member that brings its own way of starting -- midi does, and
+		// schedules messages rather than making a sound.
+		// (comment by Claude)
+		if (member.start) {
+			member.start(startTime, len);
+			return;
+		}
+		// still opening its device, or the device would not open. Either way
+		// there is nowhere to play it this pass
+		// (comment by Claude)
+		if (!member.output) return;
+		if (!channelExistsOn(member.output, member.channel)) return;
+		// the same moment, said in this device's own clock
+		// (comment by Claude)
+		let at = outputTimeFor(member.output, startTime);
+		let node = getSourceFromBuffer(member.buffer, true, member.loopStartSeconds,
+				member.output);
+		node.connect(member.output.merger, 0, member.channel);
+		// the pass after the intro has played starts at the loop point, and
+		// every pass wraps back to it
+		node.start(at, member.introDone ? member.loopStartSeconds || 0 : 0);
+		node.stop(at + len);
+		if (!member.introDone) member.introScheduled = true;
+		member.node = node;
+	}
+
+	setPaused(paused) {
+		this.paused = paused;
+		if (!paused) return;
+		for (let i = 0; i < this.members.length; i++) {
+			stopMemberNow(this.members[i]);
+		}
+	}
+
+	/*
+	Silences the track without taking it out of the cycle, so it comes back in
+	phase. Independent of pausing on purpose: a track can be both, and stops
+	being silent only when neither says so.
+
+	Muting cuts the sound off where it is. Unmuting waits for the track to come
+	back round to its own beginning, the same as unpausing: a loop that started
+	again in the middle of a bar would be out of time with everything else.
+	*/
+	setMuted(muted) {
+		let was = this.muted;
+		this.muted = muted;
+		if (muted) {
+			// not skipped when the flag was already set: asking again still has
+			// to cut off whatever is sounding
+			for (let i = 0; i < this.members.length; i++) {
+				stopMemberNow(this.members[i]);
+			}
+			return;
+		}
+		if (!was || this.paused || !cycleRunning) return;
+		for (let i = 0; i < this.members.length; i++) {
+			this.unmuteMember(this.members[i]);
+		}
+	}
+
+	/*
+	Unmuting, and the member's own boundary decides when: it comes back where it
+	would have come back anyway, in phase with itself. If that is still inside
+	this pass it is started for the rest of the pass; if not, the next pass
+	starts it in the ordinary way.
+	*/
+	unmuteMember(member) {
+		if (member.start || member.node) return;
+		if (!channelExistsOn(member.output, member.channel)) return;
+		let at = nextOwnBoundary(member, ctx.currentTime);
+		if (at >= cycleNextBoundaryTime) return;
+		let node = getSourceFromBuffer(member.buffer, true, member.loopStartSeconds,
+				member.output);
+		node.connect(member.output.merger, 0, member.channel);
+		node.start(outputTimeFor(member.output, at),
+				member.introDone ? member.loopStartSeconds || 0 : 0);
+		node.stop(outputTimeFor(member.output, cycleNextBoundaryTime));
+		if (!member.introDone) member.introScheduled = true;
+		member.node = node;
+	}
+
+	/*
+	Where this track is, in samples from the start of its material. A readout
+	rather than anything to synchronise against, and -1 when there is nothing
+	to read: a track waiting for the boundary has no position yet.
+	*/
+	positionSamples() {
+		if (!ctx || this.members.length == 0) return -1;
+		let member = this.members[0];
+		if (!member.lengthSeconds) return -1;
+		if (member.lastNote) return member.lastNote();
+		let elapsed = ctx.currentTime - cycleStartedAt;
+		if (elapsed < 0) return -1;
+		let len = memberLengthSeconds(member);
+		// after the intro every pass lives in the loop region, so the readout
+		// points there
+		let base = member.introDone ? member.loopStartSeconds : 0;
+		return Math.round((base + (elapsed % len)) * SAMPLE_RATE);
+	}
+}
+
+/*
+When a member next comes back round to its own beginning.
+
+The cycle is as long as the longest track, and a shorter one repeats inside
+that -- a four count loop in a six count cycle starts again at four. Its own
+boundaries are what matter for muting it: a four count loop told to stop should
+stop after four, not wait for the six. They are measured from the top of the
+cycle, because that is where everything is started.
+
+Never returns the moment it is asked about, so a loop is always allowed to
+finish the repeat it is in the middle of.
+
+The answer can land past the end of the cycle, and for a loop whose length does
+not divide the cycle it usually does -- the four count loop's next own boundary
+after count five is eight, and the cycle ends at six. The caller compares
+against the cycle boundary; the node stops there regardless.
+*/
+function nextOwnBoundary(member, after) {
+	let len = memberLengthSeconds(member);
+	if (!(len > 0)) {
+		return cycleNextBoundaryTime;
+	}
+	let elapsed = after - cycleStartedAt;
+	let n = Math.floor(elapsed / len) + 1;
+	return cycleStartedAt + n * len;
 }
 
 function cycleLengthSeconds() {
 	let longest = 0;
-	for (let id in cycleLoops) {
-		let len = memberLengthSeconds(cycleLoops[id]);
-		if (len > longest) {
-			longest = len;
-		}
+	for (let i = 0; i < tracks.length; i++) {
+		let len = tracks[i].passLengthSeconds();
+		if (len > longest) longest = len;
 	}
 	return longest;
 }
 
 function anyLoopsPlaying() {
-	for (let id in cycleLoops) return true;
-	for (let id in cyclePending) return true;
+	for (let i = 0; i < tracks.length; i++) {
+		if (tracks[i].isInCycle()) return true;
+	}
 	return false;
 }
 
 /*
-While a clip is playing, the audio system owns it. That is what decides how
-long it plays for: at every boundary each playing clip is asked whether anyone
-else still holds it, and one that nobody else holds has just played its last
-pass. Nothing can stop it, replace it or even name it any more, so there is
-nothing to schedule it for.
+The track a clip is playing on, made if it has none. One track per clip, for as
+long as the clip is alive: that is the whole of the relationship, and it is why
+there is no way to refer to a track except through its clip.
+
+(comment by Claude)
+*/
+function trackFor(clip) {
+	if (clip.getTrack && clip.getTrack()) return clip.getTrack();
+	let track = new Track(clip);
+	tracks.push(track);
+	if (clip.setTrack) clip.setTrack(track);
+	return track;
+}
+
+// a track with no clip: a break, which nothing holds and nothing can replace
+// (comment by Claude)
+function anonymousTrack() {
+	let track = new Track(null);
+	track.oneShot = true;
+	tracks.push(track);
+	return track;
+}
+
+function forgetTrack(track) {
+	tracks = tracks.filter(function(t) { return t != track; });
+	if (track.clip) {
+		let clip = track.clip;
+		track.clip = null;
+		if (clip.setTrack) clip.setTrack(null);
+		heap.removeReference(clip);
+	}
+}
+
+/*
+A clip nobody else holds has played its last pass.
 
 That is where the one-shot comes from. Shift-enter throws the clip away, so the
 audio system is its only owner and it plays once. Press enter instead and the
 clip lands in the document, which holds it, so it loops. Delete it and the
-document lets go, and it stops at the end of the pass it is in rather than
-being cut off. None of those are special cases.
+document lets go, and it stops rather than being cut off. None of those are
+special cases.
 
-A clip is spared on the pass that starts it, since the document has not taken
-hold of it yet when the first cycle is scheduled.
+A track is spared on the pass that starts it, since the document has not taken
+hold of the clip yet when the first cycle is scheduled.
+
+(comment by Claude)
 */
-let playingClips = [];
-
-function clipStartedPlaying(clip, ids) {
-	for (let i = 0; i < playingClips.length; i++) {
-		if (playingClips[i].clip == clip) {
-			playingClips[i].ids = ids;
-			return;
-		}
-	}
-	heap.addReference(clip);
-	playingClips.push({ clip: clip, ids: ids, passes: 0 });
-}
-
-function releaseClip(i) {
-	let clip = playingClips[i].clip;
-	playingClips.splice(i, 1);
-	heap.removeReference(clip);
-}
-
-function retireUnownedClips() {
-	for (let i = playingClips.length - 1; i >= 0; i--) {
-		let p = playingClips[i];
-		if (p.passes == 0) continue;
-		if (p.clip.references <= 1) {
-			cycleLog('  retiring a clip nobody holds, passes=' + p.passes);
-			// at the end of this pass, not now -- the pass it is in was
-			// scheduled to run to the boundary and should get there
-			p.clip.end(true);
-			releaseClip(i);
+function queueStopsForUnheldClips() {
+	for (let i = 0; i < tracks.length; i++) {
+		let track = tracks[i];
+		if (!track.clip || track.passes == 0 || track.stopAtBoundary) continue;
+		if (track.clip.references <= 1) {
+			cycleLog('  stopping a clip nobody holds, passes=' + track.passes);
+			track.clip.end(true);
 		}
 	}
 }
 
-// Starts every loop at the boundary and cuts it at the end of the cycle, so a
-// loop shorter than the cycle repeats inside it and is truncated.
+// Starts every track at the boundary and cuts it at the end of the cycle, so a
+// track shorter than the cycle repeats inside it and is truncated.
 // (comment by Claude)
 function startCycleAt(startTime) {
-	/*
-	startTime is where this pass is meant to begin. Late means the sources are
-	started in the past, which the web audio api honours by playing them from
-	the top immediately -- but their stop time is startTime + len regardless, so
-	a late pass is a short pass, and the next boundary cuts it off wherever it
-	has got to. That is the shape of the bug being chased here.
-
-	(comment by Claude)
-	*/
 	cycleLog('startCycleAt(' + startTime.toFixed(4) + ') late by '
 			+ ((ctx.currentTime - startTime) * 1000).toFixed(1) + 'ms'
-			+ ' members=' + Object.keys(cycleLoops).length
-			+ ' pending=' + Object.keys(cyclePending).length
-			+ ' clips=' + playingClips.length);
-	if (pendingBreak) {
-		beginBreak();
-	} else if (breakIds.length > 0) {
-		// it has had its one pass. Whatever was started while it played is
-		// waiting in cyclePending and is about to begin; if nothing was, there
-		// is nothing left and the cycle stops below.
-		// (comment by Claude)
-		endLoops(breakIds, false);
-		breakIds = [];
-	}
-	retireUnownedClips();
-	for (let id in cyclePending) {
-		cycleLoops[id] = cyclePending[id];
-		delete cyclePending[id];
-	}
-	for (let id in cycleLoops) {
-		if (cycleLoops[id].endAfterCycle) {
-			retireMember(cycleLoops[id]);
-			delete cycleLoops[id];
-		}
-	}
+			+ ' tracks=' + tracks.length);
+	queueStopsForUnheldClips();
 	/*
-	Counted before the length check, so that a clip holding nothing still gets
-	a pass and can be retired when nobody else wants it. An empty clip makes
-	the cycle length zero and stops the cycle, and a clip that never counts a
-	pass is never retired.
+	A track coming in exclusively clears the floor: everything else that is
+	playing stops here, at this boundary, which is where it was going to be
+	restarted anyway, so nothing is cut off in the middle of a phrase.
+
+	Only what is playing. Anything else queued for this same boundary survives
+	and comes in alongside -- two things asked for in one breath are one
+	intention, and the break used to delete them.
 
 	(comment by Claude)
 	*/
-	for (let i = 0; i < playingClips.length; i++) {
-		playingClips[i].passes++;
+	let exclusive = null;
+	for (let i = 0; i < tracks.length; i++) {
+		if (tracks[i].pending && tracks[i].pendingExclusive) exclusive = tracks[i];
 	}
-	/*
-	The intro flag advances here, at the boundary, not when the intro pass was
-	scheduled -- lengths must hold still for the whole pass they were computed
-	for, or anything reconstructing the running cycle from them is wrong.
-	*/
-	for (let id in cycleLoops) {
-		if (cycleLoops[id].introScheduled) {
-			cycleLoops[id].introDone = true;
+	if (exclusive) {
+		for (let i = 0; i < tracks.length; i++) {
+			if (tracks[i] != exclusive && tracks[i].members.length > 0) {
+				tracks[i].queueStop();
+			}
 		}
 	}
+	for (let i = 0; i < tracks.length; i++) {
+		tracks[i].applyBoundary();
+	}
+	/*
+	Counted before the length check, so that a track holding nothing still gets
+	a pass and can be stopped when nobody wants it. An empty clip makes the
+	cycle length zero and stops the cycle, and a track that never counts a pass
+	is never collected.
+
+	(comment by Claude)
+	*/
+	for (let i = 0; i < tracks.length; i++) {
+		tracks[i].passes++;
+		tracks[i].advanceIntro();
+		// it has had its pass. Whatever was started while it played is waiting,
+		// and comes in at the boundary this one goes out on
+		// (comment by Claude)
+		if (tracks[i].oneShot && tracks[i].members.length > 0) {
+			tracks[i].queueStop();
+		}
+	}
+	let gone = tracks.filter(function(t) { return t.isEmpty(); });
+	for (let i = 0; i < gone.length; i++) forgetTrack(gone[i]);
+
 	let len = cycleLengthSeconds();
 	if (len <= 0) {
 		cycleRunning = false;
 		cycleTimer = null;
 		return;
 	}
-	for (let id in cycleLoops) {
-		let loop = cycleLoops[id];
-		// A member that brings its own way of starting -- midi does, and
-		// schedules messages rather than making a sound.
-		// (comment by Claude)
-		if (loop.start) {
-			if (!loop.paused && !loop.muted) loop.start(startTime, len);
-			continue;
-		}
-		// Muting is not pausing. A loop can be both, and comes back only when
-		// neither says so, so un-pausing must not undo a mute.
-		if (loop.paused || loop.muted) continue;
-		// still opening its device, or the device would not open. Either way
-		// there is nowhere to play it this pass
-		// (comment by Claude)
-		if (!loop.output) continue;
-		if (!channelExistsOn(loop.output, loop.channel)) continue;
-		// the same moment, said in this device's own clock
-		// (comment by Claude)
-		let at = outputTimeFor(loop.output, startTime);
-		let node = getSourceFromBuffer(loop.buffer, true, loop.loopStartSeconds,
-				loop.output);
-		node.connect(loop.output.merger, 0, loop.channel);
-		// the pass after the intro has played starts at the loop point, and
-		// every pass wraps back to it
-		node.start(at, loop.introDone ? loop.loopStartSeconds || 0 : 0);
-		node.stop(at + len);
-		if (!loop.introDone) loop.introScheduled = true;
-		loop.node = node;
+	for (let i = 0; i < tracks.length; i++) {
+		tracks[i].startPass(startTime, len);
 	}
 	cycleStartedAt = startTime;
 	/*
-	After the loops for this pass are scheduled, so that anything doing this is
+	After the tracks for this pass are scheduled, so that anything doing this is
 	taking effect alongside the sound rather than ahead of it, and cleared
 	first so that something added by one of them waits for the next cycle
 	rather than running twice in this one.
@@ -289,8 +556,7 @@ function startCycleAt(startTime) {
 	cycleNextBoundaryTime = nextBoundary;
 	let wakeIn = (nextBoundary - CYCLE_LOOKAHEAD_SECONDS - ctx.currentTime) * 1000;
 	cycleLog('  len=' + len.toFixed(4) + ' nextBoundary=' + nextBoundary.toFixed(4)
-			+ ' wakeIn=' + wakeIn.toFixed(1) + 'ms'
-			+ (cycleTimer ? ' (a timer was already pending!)' : ''));
+			+ ' wakeIn=' + wakeIn.toFixed(1) + 'ms');
 	cycleTimer = window.setTimeout(function() {
 		cycleLog('timer fired for boundary ' + nextBoundary.toFixed(4));
 		startCycleAt(nextBoundary);
@@ -300,404 +566,156 @@ function startCycleAt(startTime) {
 /*
 Runs fn when the next cycle starts -- the same boundary at which anything
 queued right now begins to sound. With nothing playing there is no boundary to
-wait for and the caller is about to start one, so this still lands on the first
-beat of what it starts.
+wait for, so this waits until something starts one, which may be a long time.
 
 (comment by Claude)
 */
-/*
-When the pass now playing began. Asked for by the punch-in recording, which has
-to know where the downbeat was in the clock the samples are arriving on -- and
-which should not be reading a variable out of here to find out.
-
-(comment by Claude)
-*/
-function currentCycleStart() {
-	return cycleStartedAt;
-}
-
 function atNextCycleStart(fn) {
 	doAtNextCycleStart.push(fn);
 }
 
-/*
-Takes the floor. Everything playing stops here rather than at some later
-boundary -- a break that let the old loop finish underneath it would not be a
-break -- and the clips are ended, so the document shows what you can hear.
-
-The break is put straight into cycleLoops rather than into cyclePending,
-because it is starting now, at this boundary, not at the next one.
-
-(comment by Claude)
-*/
-function beginBreak() {
-	let ids = [];
-	for (let id in cycleLoops) ids.push(id);
-	for (let id in cyclePending) ids.push(id);
-	endLoops(ids, false);
-	while (playingClips.length > 0) {
-		playingClips[0].clip.end(false);
-		releaseClip(0);
-	}
-	breakIds = [];
-	for (let i = 0; i < pendingBreak.channels.length; i++) {
-		let id = nextCycleLoopId++;
-		cycleLoops[id] = {
-			buffer: pendingBreak.buffer,
-			channel: pendingBreak.channels[i],
-			lengthSeconds: pendingBreak.buffer.length / SAMPLE_RATE,
-			loopStartSeconds: pendingBreak.loopStartSeconds || 0,
-			introDone: false,
-			node: null,
-			endAfterCycle: false,
-			outputKey: pendingBreak.outputKey,
-			output: outputs[pendingBreak.outputKey] || outputs[DEFAULT_OUTPUT_KEY]
-		};
-		breakIds.push(id);
-	}
-	pendingBreak = null;
+function startCycleIfNeeded() {
+	if (cycleRunning) return;
+	cycleRunning = true;
+	whenAudioClockIsReady(function() {
+		startCycleAt(ctx.currentTime);
+	});
 }
 
 /*
-Queues a break for the next boundary. With nothing playing there is no boundary
-to wait for, so it starts one, and the break is simply a sample played once.
+Which device a member plays on. Already open nearly always -- choosing a device
+opens it -- and when it is not, the member sits in its track without an output
+until it is, and starts at the first boundary after that. Being one boundary
+late the very first time you play on a device you have not named before is
+better than making play wait for a device to open.
 
 (comment by Claude)
 */
-function queueBreak(buffer, channels, loopStartSeconds, deviceId) {
-	maybeCreateAudioContext();
-	pendingBreak = {
-		buffer: buffer,
-		channels: channels,
-		loopStartSeconds: loopStartSeconds || 0,
-		outputKey: outputKeyFor(deviceId === undefined ? getDefaultOutputDevice() : deviceId)
-	};
-	if (!cycleRunning) {
-		cycleRunning = true;
-		whenAudioClockIsReady(function() {
-			startCycleAt(ctx.currentTime);
-		});
+function attachOutput(track, member) {
+	if (member.outputKey === undefined) {
+		member.output = outputs[DEFAULT_OUTPUT_KEY];
+		return;
 	}
+	let open = outputs[member.outputKey];
+	if (open) {
+		member.output = open;
+		return;
+	}
+	openOutputFor(member.outputKey, member.outputName, function(o, err) {
+		if (o) {
+			member.output = o;
+			return;
+		}
+		/*
+		No such device -- a document saved on another machine, or an interface
+		that is not plugged in. The track stops rather than staying in the cycle:
+		a member with no output is never played, but it still has a length, and
+		the cycle is as long as its longest track. A clip from somewhere else
+		would silently decide how long every bar was.
+
+		(comment by Claude)
+		*/
+		console.log('vodka: could not open that audio output: ' + err);
+		track.queueStop();
+	});
 }
 
-/*
-Joins the cycle. Returns an id.
-
-The first loop starts immediately, since there is no cycle to wait for. Later
-ones wait for the boundary, which is what keeps everything in phase.
-
-(comment by Claude)
-*/
-function addLoop(buffer, channel, loopStartSeconds, deviceId, deviceName) {
-	maybeCreateAudioContext();
-	return addCycleMember({
+function makeAudioMember(buffer, channel, loopStartSeconds, deviceId, deviceName) {
+	return {
 		buffer: buffer,
 		channel: channel,
 		lengthSeconds: buffer.length / SAMPLE_RATE,
 		loopStartSeconds: loopStartSeconds || 0,
 		introDone: false,
+		introScheduled: false,
 		node: null,
 		outputKey: outputKeyFor(deviceId),
 		outputName: deviceName || ''
-	});
+	};
 }
 
 /*
-Anything with a length can join the cycle. An audio loop brings a buffer and a
-channel; a midi sequence brings start and stop functions instead, and schedules
-messages rather than making a sound.
+Queues audio on a track: one member per channel, all of them joining at the same
+boundary because they are one thing.
 
 (comment by Claude)
 */
-function addCycleMember(loop) {
+function queueAudio(track, buffer, channelList, loopStartSeconds, deviceId, deviceName, exclusive) {
 	maybeCreateAudioContext();
-	let id = nextCycleLoopId++;
-	loop.endAfterCycle = false;
-	/*
-	Which device this one plays on. Already open nearly always -- choosing a
-	device opens it -- and when it is not, the member sits in the cycle without
-	an output until it is, and starts at the first boundary after that. Being
-	one boundary late the very first time you play on a device you have not
-	named before is better than making play wait for a device to open.
-
-	(comment by Claude)
-	*/
-	if (loop.outputKey !== undefined) {
-		let open = outputs[loop.outputKey];
-		if (open) {
-			loop.output = open;
-		} else {
-			openOutputFor(loop.outputKey, loop.outputName, function(o, err) {
-				if (o) {
-					loop.output = o;
-					return;
-				}
-				/*
-				No such device -- a document saved on another machine, or an
-				interface that is not plugged in. Taken out of the cycle rather
-				than left in it: a member with no output is never played, but it
-				still has a length, and the cycle is as long as its longest
-				member. A clip from somewhere else would silently decide how long
-				every bar was.
-
-				(comment by Claude)
-				*/
-				console.log('vodka: could not open that audio output: ' + err);
-				delete cyclePending[id];
-				delete cycleLoops[id];
-			});
-		}
-	} else {
-		loop.output = outputs[DEFAULT_OUTPUT_KEY];
+	let members = [];
+	for (let i = 0; i < channelList.length; i++) {
+		let member = makeAudioMember(buffer, channelList[i], loopStartSeconds,
+				deviceId, deviceName);
+		attachOutput(track, member);
+		members.push(member);
 	}
-	cyclePending[id] = loop;
-	/*
-	Starting is deferred by a microtask so that everything added in one go
-	starts together.
-
-	play adds one loop per channel, one at a time. Starting the cycle as
-	soon as the first arrived meant the second was already too late for it and
-	waited for the next boundary -- so a stereo pair played left only for its
-	first time round, then both from then on.
-
-	(comment by Claude)
-	*/
-	if (!cycleRunning) {
-		cycleRunning = true;
-		whenAudioClockIsReady(function() {
-			startCycleAt(ctx.currentTime);
-		});
-	}
-	return id;
+	track.queue(members, exclusive);
+	startCycleIfNeeded();
+	return track;
 }
 
-/*
-Where a running loop is, for the counter on a clip. Reckoned the same way the
-audition player does it, and like that one it is a readout rather than anything
-to synchronise against. -1 when the loop is not running.
-*/
-/*
-Whether a loop is still one of ours, which is not the same question as where it
-is. A loop waiting for the next boundary has no position yet but has not gone
-anywhere, and a clip that could not tell those apart would give up watching a
-loop that has not started.
-
-(comment by Claude)
-*/
-function loopExists(id) {
-	return !!(cycleLoops[id] || cyclePending[id]);
-}
-
-/*
-Waiting for the boundary: joined the cycle, not yet sounding. Everything added
-in one go joins in one go, so the first id answers for all of them.
-
-(comment by Claude)
-*/
-function loopsAreQueued(ids) {
-	for (let i = 0; i < ids.length; i++) {
-		if (cycleLoops[ids[i]]) return false;
-		if (cyclePending[ids[i]]) return true;
-	}
-	return false;
-}
-
-function getLoopPositionSamples(id) {
-	if (!ctx) return -1;
-	let loop = cycleLoops[id];
-	if (!loop || !loop.lengthSeconds) return -1;
-	/*
-	From when this pass began, which is remembered, rather than worked back from
-	the next boundary minus the cycle length. Those agree only while a boundary
-	cannot move, which is about to stop being true -- and the subtraction was
-	already wrong for the pass in which a member joins or leaves, since the
-	length is recomputed at the boundary.
-
-	(comment by Claude)
-	*/
-	let elapsed = ctx.currentTime - cycleStartedAt;
-	if (elapsed < 0) return -1;
-	let len = memberLengthSeconds(loop);
-	// after the intro every pass lives in the loop region, so the readout
-	// points there
-	let offset = (loop.introDone && loop.loopStartSeconds > 0) ? loop.loopStartSeconds : 0;
-	return Math.floor((offset + (elapsed % len)) * SAMPLE_RATE);
-}
-
-/*
-A paused loop keeps its place in the cycle and its length, so it is still what
-the cycle is measured against and it comes back in phase rather than starting a
-new bar of its own. It simply is not scheduled while it is paused.
-*/
-function pauseLoops(ids, paused) {
-	let found = false;
-	for (let i = 0; i < ids.length; i++) {
-		let loop = cycleLoops[ids[i]] || cyclePending[ids[i]];
-		if (!loop) continue;
-		found = true;
-		loop.paused = paused;
-		if (paused) {
-			if (loop.stop) loop.stop();
-			if (loop.node) {
-				try { loop.node.stop(); } catch (e) {}
-				loop.node.disconnect();
-				loop.node = null;
-			}
-		}
-	}
-	return found;
-}
-
-// playing means in the cycle and not paused -- a clip whose loops have gone is
-// not playing either
-/*
-Silences the loops a clip owns without taking them out of the cycle, so they
-come back in phase. Independent of pausing on purpose: a clip can be both, and
-stops being silent only when neither says so.
-
-Muting cuts the sound off where it is. Unmuting waits for the loop to come back
-round to its own beginning, the same as unpausing: a loop that started again in
-the middle of a bar would be out of time with everything else.
-*/
-/*
-When a loop next comes back round to its own beginning.
-
-The cycle is as long as the longest loop, and a shorter one repeats inside that
--- a four count loop in a six count cycle starts again at four. Its own
-boundaries are what matter for muting it: a four count loop told to stop should
-stop after four, not wait for the six. They are measured from the top of the
-cycle, because that is where every loop is started.
-
-Never returns the moment it is asked about, so a loop is always allowed to
-finish the repeat it is in the middle of.
-
-The answer can land past the end of the cycle, and for a loop whose length does
-not divide the cycle it usually does -- the four count loop's next own boundary
-after count five is eight, and the cycle ends at six. The caller compares
-against the cycle boundary; the node stops there regardless.
-*/
-function nextOwnBoundary(loop, after) {
-	let len = memberLengthSeconds(loop);
-	if (!(len > 0)) {
-		return cycleNextBoundaryTime;
-	}
-	let elapsed = after - cycleStartedAt;
-	let n = Math.floor(elapsed / len) + 1;
-	return cycleStartedAt + n * len;
-}
-
-function muteLoops(ids, muted) {
-	let found = false;
-	for (let i = 0; i < ids.length; i++) {
-		let loop = cycleLoops[ids[i]] || cyclePending[ids[i]];
-		if (!loop) continue;
-		found = true;
-		let was = loop.muted;
-		loop.muted = muted;
-
-		// Not skipped when the flag was already set: asking again still has to
-		// cut off whatever is sounding.
-		// (comment by Claude)
-		if (muted) {
-			if (loop.stop) loop.stop();
-			if (loop.node) {
-				try { loop.node.stop(); } catch (e) {}
-				loop.node.disconnect();
-				loop.node = null;
-			}
-			continue;
-		}
-		/*
-		Unmuting, and the same boundary decides when: the loop comes back where
-		it would have come back anyway, in phase with itself. If that is still
-		inside this pass it is started for the rest of the pass; if not, the
-		next pass starts it in the ordinary way.
-		*/
-		if (!was) continue;
-		if (!loop.start && !loop.node && cycleRunning
-				&& channelExistsOn(loop.output, loop.channel)) {
-			let at = nextOwnBoundary(loop, ctx.currentTime);
-			if (at < cycleNextBoundaryTime) {
-				let node = getSourceFromBuffer(loop.buffer, true, loop.loopStartSeconds,
-						loop.output);
-				node.connect(loop.output.merger, 0, loop.channel);
-				node.start(outputTimeFor(loop.output, at),
-						loop.introDone ? loop.loopStartSeconds || 0 : 0);
-				node.stop(outputTimeFor(loop.output, cycleNextBoundaryTime));
-				if (!loop.introDone) loop.introScheduled = true;
-				loop.node = node;
-			}
-		}
-	}
-	return found;
-}
-
-function loopsArePlaying(ids) {
-	for (let i = 0; i < ids.length; i++) {
-		let loop = cycleLoops[ids[i]] || cyclePending[ids[i]];
-		if (loop && !loop.paused) return true;
-	}
-	return false;
-}
-
-function togglePauseLoops(ids) {
-	return pauseLoops(ids, loopsArePlaying(ids));
-}
-
-// A member that keeps its own records -- midi does -- gets told when it leaves
-// the cycle, so nothing has to hold on to it after that.
+// a sequence that schedules its own messages: see midifunctions.js
 // (comment by Claude)
-function retireMember(loop) {
-	if (loop && loop.retired) loop.retired();
+function queueMidi(track, member) {
+	maybeCreateAudioContext();
+	track.queue([ member ], false);
+	startCycleIfNeeded();
+	return track;
 }
 
-function endLoops(ids, atCycleEnd) {
-	for (let i = 0; i < ids.length; i++) {
-		let id = ids[i];
-		let loop = cycleLoops[id] || cyclePending[id];
-		if (!loop) continue;
-		if (atCycleEnd) {
-			loop.endAfterCycle = true;
-		} else {
-			if (loop.stop) loop.stop();
-			if (loop.node) {
-				try { loop.node.stop(); } catch (e) {}
-				loop.node.disconnect();
-			}
-			retireMember(loop);
-			delete cycleLoops[id];
-			delete cyclePending[id];
-		}
-	}
+/*
+Takes the floor. Everything playing stops at the boundary this comes in on --
+which is where it was going to restart anyway, so nothing is cut short -- and
+then this is the only thing in the cycle, so for one pass the cycle is exactly
+this. Anything started while it plays waits for the next boundary, which is the
+end of it, and they all begin together from the top.
+
+(comment by Claude)
+*/
+function queueBreak(buffer, channels, loopStartSeconds, deviceId) {
+	let track = anonymousTrack();
+	return queueAudio(track, buffer, channels, loopStartSeconds,
+			deviceId === undefined ? getDefaultOutputDevice() : deviceId, '', true);
 }
 
 function endAllLoops() {
-	let ids = [];
-	for (let id in cycleLoops) ids.push(id);
-	for (let id in cyclePending) ids.push(id);
-	endLoops(ids, false);
-	// nothing is going to reach another boundary, so let go of the clips here
-	// rather than leaving the audio system owning them forever
-	while (playingClips.length > 0) {
-		playingClips[0].clip.end(false);
-		releaseClip(0);
+	let all = tracks.slice();
+	for (let i = 0; i < all.length; i++) {
+		if (all[i].clip) all[i].clip.end(false);
+		all[i].stopNow();
+		forgetTrack(all[i]);
 	}
+	tracks = [];
 	if (cycleTimer) {
 		window.clearTimeout(cycleTimer);
 		cycleTimer = null;
 	}
 	cycleRunning = false;
-	// a break that was queued or playing is over too -- stopping everything
-	// means everything, and leaving either of these set would have the next
-	// cycle open by tidying up after a break that is long gone
-	// (comment by Claude)
-	pendingBreak = null;
-	breakIds = [];
-	// and anything that was waiting for a downbeat that is not going to come
+	// anything that was waiting for a downbeat that is not going to come
 	// (comment by Claude)
 	doAtNextCycleStart = [];
 }
 
+/*
+Stops whatever is on a channel, now rather than at a boundary. -1 is every
+channel.
+
+(comment by Claude)
+*/
+function abortPlayback(channel) {
+	let all = tracks.slice();
+	for (let i = 0; i < all.length; i++) {
+		let track = all[i];
+		let hit = false;
+		for (let j = 0; j < track.members.length; j++) {
+			if (channel == -1 || track.members[j].channel == channel) hit = true;
+		}
+		if (!hit) continue;
+		if (track.clip) track.clip.end(false);
+		track.stopNow();
+		forgetTrack(track);
+	}
+}
 
 // When the next cycle begins, in ctx.currentTime, and how long a cycle is.
 // This is what midi aligns to.
@@ -706,61 +724,31 @@ function nextCycleBoundary() {
 	return { at: cycleNextBoundaryTime, lengthSeconds: cycleLengthSeconds() };
 }
 
-function loopPlay(buffer, channelList, loopStartSeconds, deviceId, deviceName) {
-	maybeCreateAudioContext();
-	let ids = [];
-	for (let i = 0; i < channelList.length; i++) {
-		ids.push(addLoop(buffer, channelList[i], loopStartSeconds, deviceId, deviceName));
-	}
-	return ids;
-}
-
-// we don't need to stop nicely at end of loop
-// because user can do that by putting in a gain(0, ...) or something
-// this is for abort/free resources/etc.
 /*
-Stops what is playing on a channel, now rather than at a boundary.
-
-It used to look in channelPlayers, which was a list of OneshotPlayer and
-LoopingPlayer objects -- classes nothing had constructed since playback moved
-into the cycle. So the list was always empty and this builtin had quietly done
-nothing at all for however long that has been true. The classes are gone and
-this asks the cycle, which is where the sound is.
+When the pass now playing began. Asked for by the punch-in recording, which has
+to know where the downbeat was in the clock the samples are arriving on.
 
 (comment by Claude)
 */
-function abortPlayback(channel) {
-	let ids = [];
-	for (let id in cycleLoops) {
-		if (channel == -1 || cycleLoops[id].channel == channel) ids.push(id);
-	}
-	for (let id in cyclePending) {
-		if (channel == -1 || cyclePending[id].channel == channel) ids.push(id);
-	}
-	endLoops(ids, false);
+function currentCycleStart() {
+	return cycleStartedAt;
 }
 
 export {
 	CYCLE_LOOKAHEAD_SECONDS,
+	Track,
+	trackFor,
+	anonymousTrack,
+	forgetTrack,
 	cycleLengthSeconds,
 	anyLoopsPlaying,
-	clipStartedPlaying,
 	startCycleAt,
 	atNextCycleStart,
 	currentCycleStart,
+	queueAudio,
+	queueMidi,
 	queueBreak,
-	addLoop,
-	addCycleMember,
-	loopExists,
-	loopsAreQueued,
-	getLoopPositionSamples,
-	pauseLoops,
-	muteLoops,
-	loopsArePlaying,
-	togglePauseLoops,
-	endLoops,
 	endAllLoops,
 	nextCycleBoundary,
-	loopPlay,
 	abortPlayback
 }

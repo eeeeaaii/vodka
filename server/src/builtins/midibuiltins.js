@@ -16,13 +16,13 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Builtin } from '../nex/builtin.js'; 
-import { getMidiPorts, openMidiPort, isPortOpen, addMidiSequence, setDefaultMidiPort, getDefaultMidiPort,
+import { getMidiPorts, openMidiPort, isPortOpen, makeMidiSequence, setDefaultMidiPort, getDefaultMidiPort,
 		 sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
 		 sendMidiNoteWithDuration } from '../midifunctions.js'
 import { convertTimeToSamples, nexToTimebase, getSampleRate } from '../wavetablefunctions.js'
 import { constructClip } from '../nex/clip.js'
 import * as Utils from '../utils.js'
-import { endLoops, clipStartedPlaying } from '../webaudio.js'
+import { trackFor, queueMidi } from '../transport.js'
 import { UNBOUND } from '../environment.js'
 import { constructOrg } from '../nex/org.js'; 
 import { constructEString } from '../nex/estring.js'
@@ -347,24 +347,19 @@ function createMidiBuiltins() {
 					? 'empty'
 					: events.length + ' note' + (events.length == 1 ? '' : 's');
 
-			if (clip) {
-				// Out at the boundary and back in at the same one, the way an
-				// audio loop is replaced. Stopping the old sequence now instead
-				// would send its note offs early and cut a note that is sounding.
-				// (comment by Claude)
-				endLoops(clip.getIds(), true /* at the cycle end */);
+			if (!clip) {
+				clip = constructClip('midi loop', what, null, portId);
 			}
+			/*
+			Out at the boundary and back in at the same one, the way an audio
+			loop is replaced -- which is what queueing on the clip's track means.
+			Stopping the old sequence now instead would send its note offs early
+			and cut a note that is sounding.
 
-			let id = addMidiSequence(portId, events, lengthSeconds);
-			if (clip) {
-				clip.setIds([ id ], what);
-			} else {
-				clip = constructClip('midi loop', what, [ id ], endLoops, null, portId);
-			}
-			// the midi system owns it while it plays, and how long that lasts is
-			// decided by whether anything else owns it too
-			// (comment by Claude)
-			clipStartedPlaying(clip, [ id ]);
+			(comment by Claude)
+			*/
+			queueMidi(trackFor(clip), makeMidiSequence(portId, events, lengthSeconds));
+			clip.assigned(what);
 			return clip;
 		},
 		'Plays a midi sequence on |port. Returns a clip. Replaces |clip if passed in.'

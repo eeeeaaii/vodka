@@ -46,28 +46,7 @@ import {
 	getAudioLatency
 } from './audiodevices.js'
 import { getAudioBufferFromData, getSilentAudioBuffer, getSourceFromBuffer } from './audiobuffers.js'
-import {
-	anyLoopsPlaying,
-	atNextCycleStart,
-	currentCycleStart,
-	cycleLengthSeconds,
-	endAllLoops,
-	muteLoops,
-	addLoop,
-	queueBreak,
-	getLoopPositionSamples,
-	loopExists,
-	loopsAreQueued,
-	clipStartedPlaying,
-	pauseLoops,
-	togglePauseLoops,
-	loopsArePlaying,
-	addCycleMember,
-	endLoops,
-	nextCycleBoundary,
-	loopPlay,
-	abortPlayback
-} from './transport.js'
+import { anyLoopsPlaying, atNextCycleStart, currentCycleStart, cycleLengthSeconds, endAllLoops, abortPlayback, queueBreak } from './transport.js'
 import { startRecordingAudio, stopRecordingAudio, anythingIsRecording } from './audiorecording.js'
 
 
@@ -143,10 +122,6 @@ class AuditionPlayer {
 			return pos % full;
 		}
 		return this.loopStartSamples + ((pos - full) % (full - this.loopStartSamples));
-	}
-
-	canChangeLoopData() {
-		return false;
 	}
 
 	abortPlay() {
@@ -274,8 +249,13 @@ async function getFileAsBuffer(filepath, dir) {
 }
 
 
-export { getAudioBufferFromData, getSilentAudioBuffer, loadAudio, muteLoops, addLoop, queueBreak, atNextCycleStart, getLoopPositionSamples, loopExists, loopsAreQueued, clipStartedPlaying, pauseLoops, togglePauseLoops, loopsArePlaying, addCycleMember, contextTimeToPerformanceTime, endLoops, endAllLoops, anyLoopsPlaying, nextCycleBoundary, maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound, startAuditioningBuffer, getFileAsBuffer, loopPlay, abortPlayback, startRecordingAudio, stopRecordingAudio, anythingIsRecording,
-		 listAudioDevices, setAudioOutputDevice, setAudioInputDevice,
-		 getAudioInputDevice, getDefaultOutputDevice, getDefaultOutputName, getDeviceChannelCount, getInputDeviceChannelCount,
-		 setAudioLatency, getAudioLatency }
-
+export {
+	getAudioBufferFromData, getSilentAudioBuffer, loadAudio, getFileAsBuffer,
+	maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound,
+	startAuditioningBuffer, contextTimeToPerformanceTime, anyLoopsPlaying,
+	startRecordingAudio, stopRecordingAudio, anythingIsRecording,
+	listAudioDevices, setAudioOutputDevice, setAudioInputDevice,
+	getAudioInputDevice, getDefaultOutputDevice, getDefaultOutputName,
+	getDeviceChannelCount, getInputDeviceChannelCount,
+	setAudioLatency, getAudioLatency
+}

@@ -17,8 +17,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Nex } from './nex.js'
 import { heap } from '../heap.js'
-import { getLoopPositionSamples, loopExists, loopsAreQueued, muteLoops, endLoops } from '../webaudio.js'
-import { getMidiLastNote } from '../midifunctions.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 
 // the same shape the other private data sections use: key:value, ; between
@@ -54,13 +52,22 @@ place. A clip is not a generic handle: it names a loop and nothing else.
 (comment by Claude)
 */
 class Clip extends Nex {
-	constructor(kind, what, ids, ender, channels, port) {
+	constructor(kind, what, channels, port) {
 		super();
 		// audio or midi, so whatever is handed one can tell whether it is the
 		// sort it knows how to replace
 		this.kind = kind ? kind : 'clip';
 		this.what = what ? what : this.kind;
-		this.ids = ids ? ids : [];
+		/*
+		The track this clip is playing on, which is the audio system's side of
+		the same object: one track per clip for as long as the clip is alive,
+		made when something first plays through it, and gone when it stops.
+
+		A clip that names no track is unassigned -- see isUnassigned.
+
+		(comment by Claude)
+		*/
+		this.track = null;
 		// a replacement stays where the loop already is: channels for audio,
 		// a port for midi
 		// (comment by Claude)
@@ -90,7 +97,6 @@ class Clip extends Nex {
 		// (comment by Claude)
 		this.deviceKind = '';
 		this.port = port ? port : null;
-		this.ender = ender ? ender : null;
 		this.ended = false;
 		this.posFrame = null;
 		this.posSpan = null;
@@ -124,7 +130,7 @@ class Clip extends Nex {
 	setMuted(v) {
 		if (this.muted == !!v) return;
 		this.muted = !!v;
-		muteLoops(this.ids, this.muted);
+		if (this.track) this.track.setMuted(this.muted);
 		this.setDirtyForRendering(true);
 		eventQueueDispatcher.enqueueRenderOnlyDirty();
 	}
@@ -138,8 +144,16 @@ class Clip extends Nex {
 		return this.kind;
 	}
 
-	getIds() {
-		return this.ids;
+	getTrack() {
+		return this.track;
+	}
+
+	// the transport sets this, both ways: a track is given to a clip when one
+	// is made for it and taken away when it leaves the cycle
+	// (comment by Claude)
+	setTrack(track) {
+		this.track = track;
+		if (track) this.ended = false;
 	}
 
 	getChannels() {
@@ -198,14 +212,26 @@ class Clip extends Nex {
 
 	(comment by Claude)
 	*/
-	setIds(ids, what) {
-		this.ids = ids;
+	/*
+	Whatever is playing on this clip has been replaced. The clip is the same
+	clip, so a muted one stays muted across a replacement rather than coming
+	back audible.
+
+	Asks to be drawn, rather than only marking itself dirty. A clip is assigned
+	by play, and play can be run by a gesture that changes nothing in the
+	document and so renders nothing -- a double click, which evaluates in place
+	-- in which case a clip that only said it was dirty would go on saying
+	UNASSIGNED, with its counter stopped, over a loop you could hear playing.
+	Dirty renders are deduped in the queue, so asking costs nothing when
+	something else was going to render anyway.
+
+	(comment by Claude)
+	*/
+	assigned(what) {
 		if (what) this.what = what;
 		this.ended = false;
-		// the clip is the same clip, so a muted one stays muted across a
-		// replacement rather than coming back audible
-		if (this.muted) {
-			muteLoops(this.ids, true);
+		if (this.muted && this.track) {
+			this.track.setMuted(true);
 		}
 		this.setDirtyForRendering(true);
 		eventQueueDispatcher.enqueueRenderOnlyDirty();
@@ -214,9 +240,9 @@ class Clip extends Nex {
 	// true if there was anything left to end
 	// (comment by Claude)
 	end(atCycleEnd) {
-		if (this.ended || !this.ender) return false;
+		if (this.ended || !this.track) return false;
 		this.ended = true;
-		this.ender(this.ids, atCycleEnd);
+		this.track.stop(atCycleEnd);
 		// it is unassigned now and has to say so: ending happens at a cycle
 		// boundary, on a timer, with nothing else about to render
 		// (comment by Claude)
@@ -250,7 +276,7 @@ class Clip extends Nex {
 	(comment by Claude)
 	*/
 	isUnassigned() {
-		return this.ended || this.ids.length == 0;
+		return this.ended || !this.track;
 	}
 
 	/*
@@ -266,7 +292,7 @@ class Clip extends Nex {
 	*/
 	stateLine() {
 		if (this.isUnassigned()) return 'UNASSIGNED';
-		if (loopsAreQueued(this.ids)) return 'QUEUED';
+		if (this.track.isQueued()) return 'QUEUED';
 		return this.kind.toUpperCase();
 	}
 
@@ -289,8 +315,9 @@ class Clip extends Nex {
 	makeCopy(shallow) {
 		// A copy names the same loop but must not be able to stop it a second
 		// time. It is a picture of the clip, not another clip.
-		let r = new Clip(this.kind, this.what, this.ids.slice(), null, this.channels.slice(), this.port);
-		r.ended = this.ended;
+		let r = new Clip(this.kind, this.what, this.channels.slice(), this.port);
+		// a copy names no track: it is a picture of the clip, not another clip
+		r.ended = true;
 		r.clipping = this.clipping;
 		r.setOutputDevice(this.outputDevice, this.outputName, this.deviceKind);
 		this.copyFieldsTo(r);
@@ -515,13 +542,8 @@ class Clip extends Nex {
 				this.showPosition(-1);
 				return;
 			}
-			let alive = this.ids.length && loopExists(this.ids[0]);
-			let pos = -1;
-			if (alive) {
-				pos = this.isMidi()
-						? getMidiLastNote(this.ids[0])
-						: getLoopPositionSamples(this.ids[0]);
-			}
+			let alive = !!this.track && this.track.isInCycle();
+			let pos = alive ? this.track.positionSamples() : -1;
 			this.showPosition(pos);
 			// the same way the position is kept up to date, and for the same
 			// reason: a clip going from queued to playing is a word changing in
@@ -569,8 +591,8 @@ class Clip extends Nex {
 	}
 }
 
-function constructClip(kind, what, ids, ender, channels, port) {
-	let r = new Clip(kind, what, ids, ender, channels, port);
+function constructClip(kind, what, channels, port) {
+	let r = new Clip(kind, what, channels, port);
 	heap.requestMem(r.memUsed());
 	return r;
 }
@@ -589,7 +611,7 @@ back from a file, which nothing else would have given one to.
 function constructUnassignedClip(kind, channels, port, deviceId, deviceName, deviceKind) {
 	let chans = channels ? channels : [];
 	let r = constructClip(kind ? kind : 'audio loop', channelsDescription(chans),
-			[], endLoops, chans, port);
+			chans, port);
 	r.setOutputDevice(deviceId, deviceName, deviceKind);
 	r.ended = true;
 	return r;

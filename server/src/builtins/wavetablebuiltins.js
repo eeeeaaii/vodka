@@ -80,7 +80,8 @@ import {
   stretchInto,
   decayTailSamples,
 } from "../wavetablefunctions.js";
-import { loopPlay, queueBreak, atNextCycleStart, abortPlayback, endLoops, clipStartedPlaying, togglePauseLoops, loopsArePlaying, getDeviceChannelCount, getInputDeviceChannelCount, getDefaultOutputDevice, getDefaultOutputName, setAudioLatency, getAudioLatency } from "../webaudio.js";
+import { getDeviceChannelCount, getInputDeviceChannelCount, getDefaultOutputDevice, getDefaultOutputName, setAudioLatency, getAudioLatency } from "../webaudio.js";
+import { trackFor, queueAudio, queueBreak, atNextCycleStart, abortPlayback } from "../transport.js";
 import { constructClip, constructUnassignedClip, channelsDescription } from "../nex/clip.js";
 import { Tag } from "../tag.js";
 import { ERROR_TYPE_INFO } from "../nex/eerror.js";
@@ -120,9 +121,11 @@ function createWavetableBuiltins() {
       if (!Utils.isClip(clip)) {
         return constructFatalError("toggle-playback: not a clip. Sorry!");
       }
-      if (!togglePauseLoops(clip.getIds())) {
+      let track = clip.getTrack();
+      if (!track || !track.isInCycle()) {
         return constructFatalError("toggle-playback: that clip already stopped. Sorry!");
       }
+      track.setPaused(track.isPlaying());
       return clip;
     },
     /*
@@ -143,7 +146,8 @@ function createWavetableBuiltins() {
       if (!Utils.isClip(clip)) {
         return constructFatalError("is-playing: not a clip. Sorry!");
       }
-      return constructBool(loopsArePlaying(clip.getIds()));
+      let track = clip.getTrack();
+      return constructBool(!!track && track.isPlaying());
     },
     "True if |clip is making sound: still in the cycle, and not silenced."
   );
@@ -247,9 +251,6 @@ function createWavetableBuiltins() {
       if (clip.getChannels().length > 0) {
         channelnumbers = clip.getChannels();
       }
-      // Out at the boundary and back in at the same one, so the swap is not
-      // heard. Nothing here has to know how a loop is put together.
-      endLoops(clip.getIds(), true /* at the cycle end */);
     } else if (arg != UNBOUND) {
       channelnumbers = readChannelNumbers(arg);
     }
@@ -269,27 +270,30 @@ function createWavetableBuiltins() {
     let deviceId = clip && clip.getOutputDevice()
         ? clip.getOutputDevice()
         : getDefaultOutputDevice();
-    // the name as well as the id, so a document that came from somewhere else
-    // can find the box by what is written on it
-    // (comment by Claude)
-    let ids = loopPlay(buffer, toChannelIndexes(channelnumbers), loopStartSeconds,
-        deviceId, clip ? clip.getOutputName() : "");
     let what = channelsDescription(channelnumbers);
-    if (clip) {
-      clip.setIds(ids, what);
-    } else {
+    if (!clip) {
       // No device on it. A clip only names hardware when somebody named it,
       // and one that does not follows the default wherever it goes
       // (comment by Claude)
-      clip = constructClip("audio loop", what, ids, endLoops, channelnumbers);
+      clip = constructClip("audio loop", what, channelnumbers);
     }
+    /*
+    The clip's track takes the new material, which replaces whatever that track
+    was playing at the next boundary -- out and back in at the same one, so the
+    swap is not heard. A clip that has never played gets a track here.
+
+    The device name goes with the id, so a document that came from somewhere
+    else can find the box by what is written on it.
+
+    (comment by Claude)
+    */
+    queueAudio(trackFor(clip), buffer, toChannelIndexes(channelnumbers),
+        loopStartSeconds, deviceId, clip.getOutputName(), false);
+    clip.assigned(what);
     // a replaced clip is playing something else now, so this is answered
     // again rather than left as it was
     // (comment by Claude)
     clip.setClipping(clipping);
-    // the audio system owns it while it plays, and how long that lasts is
-    // decided by whether anything else owns it too
-    clipStartedPlaying(clip, ids);
     return { clip: clip };
   }
 

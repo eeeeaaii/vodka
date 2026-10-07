@@ -18,7 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { Tag } from './tag.js'
 import { constructOrg, convertJSMapToOrg } from './nex/org.js'
 import { constructFatalError } from './nex/eerror.js'
-import { addCycleMember, contextTimeToPerformanceTime } from './webaudio.js'
+import { contextTimeToPerformanceTime } from './webaudio.js'
 
 
 var midi = null;
@@ -255,7 +255,7 @@ and midi wants wall time, which is what contextTimeToPerformanceTime is for.
 */
 // kept so a clip can ask what its sequence last played
 // (comment by Claude)
-let midiMembers = {};
+
 
 /*
 Which port a midi builtin means when it is not told. In memory only: a port id
@@ -274,31 +274,18 @@ function getDefaultMidiPort() {
 	return defaultMidiPort;
 }
 
-function addMidiSequence(portId, events, lengthSeconds) {
-	let member = makeMidiCycleMember(portId, events, lengthSeconds);
-	let id = addCycleMember(member);
-	member.id = id;
-	midiMembers[id] = member;
-	return id;
-}
-
 /*
-What a midi clip shows instead of a position in samples: the note whose start
-has most recently gone past. Everything is scheduled ahead with a timestamp, so
-this is a question about the clock rather than about anything that has happened.
+A sequence to put on a track. The member is handed back rather than an id: a
+track holds its members, and nothing outside the transport has any business
+knowing how to name one.
 
 (comment by Claude)
 */
-function getMidiLastNote(id) {
-	let member = midiMembers[id];
-	if (!member) return -1;
-	let now = performance.now();
-	let list = member.scheduled;
-	for (let i = list.length - 1; i >= 0; i--) {
-		if (list[i].at <= now) return list[i].note;
-	}
-	return -1;
+function makeMidiSequence(portId, events, lengthSeconds) {
+	return makeMidiCycleMember(portId, events, lengthSeconds);
 }
+
+
 
 function makeMidiCycleMember(portId, events, lengthSeconds) {
 	let out = midiOutputOrThrow(portId);
@@ -347,8 +334,21 @@ function makeMidiCycleMember(portId, events, lengthSeconds) {
 			}
 			member.scheduled = previous.concat(member.thisCycle);
 		},
-		retired: function() {
-			delete midiMembers[member.id];
+		/*
+		What a midi track shows instead of a position in samples: the note whose
+		start has most recently gone past. Everything is scheduled ahead with a
+		timestamp, so this is a question about the clock rather than about
+		anything that has happened.
+
+		(comment by Claude)
+		*/
+		lastNote: function() {
+			let now = performance.now();
+			let list = member.scheduled;
+			for (let i = list.length - 1; i >= 0; i--) {
+				if (list[i].at <= now) return list[i].note;
+			}
+			return -1;
 		},
 		stop: function() {
 			// messages already handed over cannot be recalled, so silence
@@ -469,6 +469,6 @@ function getMidiPorts(incb) {
 }
 
 
-export { getMidiPorts, openMidiPort, isPortOpen, addMidiListener, addMidiSequence, getMidiLastNote,
+export { getMidiPorts, openMidiPort, isPortOpen, addMidiListener, makeMidiSequence,
 		 setDefaultMidiPort, getDefaultMidiPort, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
 		 sendMidiNoteWithDuration, anyMidiNotesSounding, midiPanic }
