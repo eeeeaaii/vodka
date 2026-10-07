@@ -378,6 +378,34 @@ function createWavetableBuiltins() {
     "An empty clip on |channels, or channels 1 and 2. Given |device it plays there; given none it plays wherever the default is when you play it. Hand it to play and play fills it in instead of starting a second loop, so the expression can be evaluated again in place."
   );
 
+  /*
+  A tempo change for the next downbeat, on its own rather than bolted to a way
+  of playing.
+
+  play-with-bpm is play plus this, and a break with a tempo change would have
+  been a third builtin, and the one after that a fourth. A tempo change is not a
+  kind of playing -- it is a thing to do at a boundary, which is how it has
+  always been implemented -- so it composes with all of them: ask for a break
+  and a tempo in the same breath and they land together.
+
+  (comment by Claude)
+  */
+  Builtin.createBuiltin(
+    "queue-bpm",
+    ["bpm#%"],
+    function $queueBpm(env, executionEnvironment) {
+      let bpm = env.lb("bpm").getTypedValue();
+      if (!(bpm > 0)) {
+        return constructFatalError("queue-bpm: bpm must be more than zero. Sorry!");
+      }
+      atNextCycleStart(function () {
+        setBpm(bpm);
+      });
+      return env.lb("bpm");
+    },
+    "Sets the tempo to |bpm when the next cycle starts, rather than now, so the change lands on a downbeat. With nothing playing it waits for something to start."
+  );
+
   Builtin.createBuiltin(
     "play-with-bpm",
     ["bpm#%", "wt_", "channelsorclip#%()μ∅?"],
