@@ -1573,11 +1573,37 @@ class Wavetable extends Nex {
 		return addMarkerButton;
 	}
 
-	// the start-loop split point in seconds, or zero, which means loop the
+	// the loop-start split point in seconds, or zero, which means loop the
 	// whole wave -- the same reading play gives it
 	loopStartSeconds() {
-		let at = this.namedSplitPoint('start-loop');
+		let at = this.namedSplitPoint('loop-start');
 		return at > 0 ? at / getSampleRate() : 0;
+	}
+
+	/*
+	The points in this wave where it is musically all right to stop, in seconds.
+
+	Any split point whose name begins with `loop-` -- loop-start, loop-2,
+	loop-end, whatever you call them. The name is the declaration: a split point
+	called `verse` is a place you marked, and one called `loop-verse` is a place
+	you are willing to leave from.
+
+	They are what lets a cycle end early. Switch to something else and the cycle
+	does not have to run every loop to its end; it runs each of them to its next
+	eligible point. A wave with none of these can only be left at its end, which
+	is what everything did before there was a way to say otherwise.
+
+	(comment by Claude)
+	*/
+	eligiblePointsSeconds() {
+		let rate = getSampleRate();
+		let r = [];
+		for (let at in this.markerNames) {
+			if (('' + this.markerNames[at]).startsWith('loop-')) {
+				r.push(Number(at) / rate);
+			}
+		}
+		return r.sort((a, b) => a - b);
 	}
 
 	// the position of the split point with this name, or -1

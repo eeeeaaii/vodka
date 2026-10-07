@@ -194,6 +194,10 @@ function createWavetableBuiltins() {
     return wt.loopStartSeconds ? wt.loopStartSeconds() : 0;
   }
 
+  function eligiblePointsOf(wt) {
+    return wt.eligiblePointsSeconds ? wt.eligiblePointsSeconds() : [];
+  }
+
   /*
   The channels argument play and to-clip both take: a number, a list of them, or
   nothing at all, which is channels 1 and 2.
@@ -288,7 +292,7 @@ function createWavetableBuiltins() {
     (comment by Claude)
     */
     queueAudio(trackFor(clip), buffer, toChannelIndexes(channelnumbers),
-        loopStartSeconds, deviceId, clip.getOutputName(), false);
+        loopStartSeconds, deviceId, clip.getOutputName(), false, eligiblePointsOf(wt));
     clip.assigned(what);
     // a replaced clip is playing something else now, so this is answered
     // again rather than left as it was
@@ -304,7 +308,7 @@ function createWavetableBuiltins() {
       let r = startPlaying(env.lb("wt"), env.lb("channelsorclip"), "play");
       return r.error ? r.error : r.clip;
     },
-    "Plays a loop. Returns a clip. Replaces |clip if passed in. A wave with a split point named start-loop plays from the top once, then loops from that point; giving the clip new audio plays the new intro."
+    "Plays a loop. Returns a clip. Replaces |clip if passed in. A wave with a split point named loop-start plays from the top once, then loops from that point; any split point named loop-something is a place the cycle may end early when you switch."
   );
 
   // what it was called before it could do both
@@ -417,7 +421,7 @@ function createWavetableBuiltins() {
       (comment by Claude)
       */
       queueBreak(wt.getCachedBuffer(), toChannelIndexes([1, 2]),
-          loopStartSecondsOf(wt));
+          loopStartSecondsOf(wt), undefined, eligiblePointsOf(wt));
       return constructNil();
     },
     "Stops everything at the end of the measure and plays |wt once. Anything started meanwhile begins when it ends. Start nothing and everything stops."

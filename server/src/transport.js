@@ -207,10 +207,38 @@ class Track {
 		forgetTrack(this);
 	}
 
+	/*
+	Leaving at the next point this track is willing to be left -- its own, not
+	the cycle's. Nobody waits for anybody to stop: a four count loop told to go
+	stops after four even if the cycle is six, which is the same rule muting
+	already follows.
+
+	The bookkeeping still happens at the boundary, where everything else
+	happens; this only brings the sound to an end at the right moment. So a
+	wave with a loop- point halfway through goes quiet halfway through and is
+	tidied up at the end of the pass.
+
+	(comment by Claude)
+	*/
 	queueStop() {
 		this.pending = null;
 		this.pendingExclusive = false;
 		this.stopAtBoundary = true;
+		if (!cycleRunning || this.members.length == 0) return;
+		let at = this.nextEligiblePoint(ctx.currentTime);
+		if (!(at > 0) || at >= cycleNextBoundaryTime) return;
+		for (let i = 0; i < this.members.length; i++) {
+			let member = this.members[i];
+			if (member.stopAt) {
+				member.stopAt(at);
+			} else if (member.node) {
+				try {
+					member.node.stop(outputTimeFor(member.output, at));
+				} catch (e) {
+					console.log('vodka: could not bring a loop\'s end forward: ' + e);
+				}
+			}
+		}
 	}
 
 	// now, not at a boundary: stopping everything, or a device that went away
@@ -233,22 +261,36 @@ class Track {
 	/*
 	What the boundary does to this track, before anything is scheduled: the
 	material waiting comes in, and anything leaving goes.
+
+	Let go of rather than stopped. Every source was given its stop time when its
+	pass was scheduled, and that time is this boundary, so it is already ending
+	on its own -- telling it to stop here would stop it now, and now is a
+	lookahead before the boundary, which would cut the last tenth of a second
+	off every pass.
+
+	(comment by Claude)
 	*/
 	applyBoundary() {
 		if (this.stopAtBoundary) {
-			this.stopNow();
+			this.releaseMembers();
+			this.pending = null;
+			this.stopAtBoundary = false;
 			return;
 		}
 		if (!this.pending) return;
-		for (let i = 0; i < this.members.length; i++) {
-			stopMemberNow(this.members[i]);
-			retireMember(this.members[i]);
-		}
+		this.releaseMembers();
 		this.members = this.pending;
 		this.pending = null;
 		this.pendingExclusive = false;
 		// a track that has just been given new material has not played it yet
 		this.passes = 0;
+	}
+
+	releaseMembers() {
+		for (let i = 0; i < this.members.length; i++) {
+			retireMember(this.members[i]);
+		}
+		this.members = [];
 	}
 
 	/*
@@ -294,6 +336,15 @@ class Track {
 		node.stop(at + len);
 		if (!member.introDone) member.introScheduled = true;
 		member.node = node;
+	}
+
+	/*
+	The earliest moment this track is willing to be left. Every member of a
+	track is the same material, so the first one answers for all of them.
+	*/
+	nextEligiblePoint(after) {
+		if (this.members.length == 0) return 0;
+		return memberEligibleAfter(this.members[0], after);
 	}
 
 	setPaused(paused) {
@@ -396,6 +447,44 @@ function nextOwnBoundary(member, after) {
 	let elapsed = after - cycleStartedAt;
 	let n = Math.floor(elapsed / len) + 1;
 	return cycleStartedAt + n * len;
+}
+
+/*
+When this member could next be left, at or after a moment.
+
+The material plays from `base` -- nothing on the intro pass, the loop point
+afterwards -- for one pass length, and repeats inside the cycle. So a split
+point at `m` seconds into the wave is reachable this pass if it is inside that
+window, and it comes round again every pass after.
+
+The end of a pass is always eligible and is the last candidate, which is what
+makes a wave with no loop- points behave exactly as everything did before:
+the only place you can leave it is the end.
+
+(comment by Claude)
+*/
+function memberEligibleAfter(member, after) {
+	let len = memberLengthSeconds(member);
+	if (!(len > 0)) return cycleNextBoundaryTime;
+	let base = member.introDone ? (member.loopStartSeconds || 0) : 0;
+	let offsets = [];
+	let points = member.eligiblePoints || [];
+	for (let i = 0; i < points.length; i++) {
+		let offset = points[i] - base;
+		if (offset > 0 && offset < len) offsets.push(offset);
+	}
+	offsets.push(len);
+	offsets.sort(function(a, b) { return a - b; });
+	let elapsed = after - cycleStartedAt;
+	let k = Math.floor(elapsed / len);
+	if (k < 0) k = 0;
+	for (let pass = k; pass <= k + 1; pass++) {
+		for (let i = 0; i < offsets.length; i++) {
+			let t = cycleStartedAt + pass * len + offsets[i];
+			if (t > after) return t;
+		}
+	}
+	return cycleStartedAt + (k + 2) * len;
 }
 
 function cycleLengthSeconds() {
@@ -574,6 +663,74 @@ function atNextCycleStart(fn) {
 	doAtNextCycleStart.push(fn);
 }
 
+/*
+Something is waiting, so the cycle may be able to end sooner than it was going
+to.
+
+Every track that is playing says the earliest moment it is willing to be left,
+and the cycle ends when the last of them has had one -- the max, because
+everything restarts together and nobody may be cut off mid-phrase. Never later
+than the boundary already scheduled, and never sooner than there is time to
+schedule it.
+
+A wave with no loop- split points can only be left at the end of its pass, so a
+document without any of them never pulls a boundary in at all. That is what
+keeps this from changing what anything already does.
+
+(comment by Claude)
+*/
+function maybeEndCycleEarly() {
+	if (!cycleRunning || !cycleTimer) return;
+	let earliest = ctx.currentTime + CYCLE_LOOKAHEAD_SECONDS;
+	let want = 0;
+	for (let i = 0; i < tracks.length; i++) {
+		if (tracks[i].members.length == 0) continue;
+		let at = tracks[i].nextEligiblePoint(earliest);
+		if (at > want) want = at;
+	}
+	if (!(want > 0) || want >= cycleNextBoundaryTime) return;
+	cycleLog('  ending the cycle early, at ' + want.toFixed(4)
+			+ ' instead of ' + cycleNextBoundaryTime.toFixed(4));
+	moveBoundaryTo(want);
+}
+
+/*
+Bringing the boundary forward, which means telling everything already scheduled
+to stop sooner than it was told to.
+
+A source is given its stop time when its pass is scheduled, so a pass that is
+cut short has to be told again. Calling stop a second time with an earlier time
+is allowed and the last call is the one that counts; it is wrapped anyway,
+because if some browser disagrees the sound would otherwise run past the
+boundary and overlap what starts there, and a line in the console is a better
+way to find that out than the sound.
+
+(comment by Claude)
+*/
+function moveBoundaryTo(at) {
+	for (let i = 0; i < tracks.length; i++) {
+		let members = tracks[i].members;
+		for (let j = 0; j < members.length; j++) {
+			let member = members[j];
+			if (member.stopAt) {
+				member.stopAt(at);
+			} else if (member.node) {
+				try {
+					member.node.stop(outputTimeFor(member.output, at));
+				} catch (e) {
+					console.log('vodka: could not bring a loop\'s end forward: ' + e);
+				}
+			}
+		}
+	}
+	cycleNextBoundaryTime = at;
+	if (cycleTimer) window.clearTimeout(cycleTimer);
+	let wakeIn = (at - CYCLE_LOOKAHEAD_SECONDS - ctx.currentTime) * 1000;
+	cycleTimer = window.setTimeout(function() {
+		startCycleAt(at);
+	}, wakeIn > 0 ? wakeIn : 0);
+}
+
 function startCycleIfNeeded() {
 	if (cycleRunning) return;
 	cycleRunning = true;
@@ -620,12 +777,16 @@ function attachOutput(track, member) {
 	});
 }
 
-function makeAudioMember(buffer, channel, loopStartSeconds, deviceId, deviceName) {
+function makeAudioMember(buffer, channel, loopStartSeconds, deviceId, deviceName, eligiblePoints) {
 	return {
 		buffer: buffer,
 		channel: channel,
 		lengthSeconds: buffer.length / SAMPLE_RATE,
 		loopStartSeconds: loopStartSeconds || 0,
+		// where in this material it is all right to stop, in seconds from the
+		// top of the wave. See eligiblePointsSeconds in wavetable.js
+		// (comment by Claude)
+		eligiblePoints: eligiblePoints ? eligiblePoints : [],
 		introDone: false,
 		introScheduled: false,
 		node: null,
@@ -640,17 +801,18 @@ boundary because they are one thing.
 
 (comment by Claude)
 */
-function queueAudio(track, buffer, channelList, loopStartSeconds, deviceId, deviceName, exclusive) {
+function queueAudio(track, buffer, channelList, loopStartSeconds, deviceId, deviceName, exclusive, eligiblePoints) {
 	maybeCreateAudioContext();
 	let members = [];
 	for (let i = 0; i < channelList.length; i++) {
 		let member = makeAudioMember(buffer, channelList[i], loopStartSeconds,
-				deviceId, deviceName);
+				deviceId, deviceName, eligiblePoints);
 		attachOutput(track, member);
 		members.push(member);
 	}
 	track.queue(members, exclusive);
 	startCycleIfNeeded();
+	maybeEndCycleEarly();
 	return track;
 }
 
@@ -660,6 +822,7 @@ function queueMidi(track, member) {
 	maybeCreateAudioContext();
 	track.queue([ member ], false);
 	startCycleIfNeeded();
+	maybeEndCycleEarly();
 	return track;
 }
 
@@ -672,10 +835,11 @@ end of it, and they all begin together from the top.
 
 (comment by Claude)
 */
-function queueBreak(buffer, channels, loopStartSeconds, deviceId) {
+function queueBreak(buffer, channels, loopStartSeconds, deviceId, eligiblePoints) {
 	let track = anonymousTrack();
 	return queueAudio(track, buffer, channels, loopStartSeconds,
-			deviceId === undefined ? getDefaultOutputDevice() : deviceId, '', true);
+			deviceId === undefined ? getDefaultOutputDevice() : deviceId, '', true,
+			eligiblePoints);
 }
 
 function endAllLoops() {
