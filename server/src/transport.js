@@ -606,11 +606,19 @@ function startCycleAt(startTime) {
 	for (let i = 0; i < tracks.length; i++) {
 		tracks[i].passes++;
 		tracks[i].advanceIntro();
-		// it has had its pass. Whatever was started while it played is waiting,
-		// and comes in at the boundary this one goes out on
-		// (comment by Claude)
+		/*
+		It has had its pass. Whatever was started while it played is waiting,
+		and comes in at the boundary this one goes out on.
+
+		The flag directly rather than queueStop, which would also try to bring
+		the sound to an end at this track's next eligible point -- and this is
+		running before the pass is scheduled, so there is nothing to bring
+		forward and the arithmetic would be against the pass before this one.
+
+		(comment by Claude)
+		*/
 		if (tracks[i].oneShot && tracks[i].members.length > 0) {
-			tracks[i].queueStop();
+			tracks[i].stopAtBoundary = true;
 		}
 	}
 	let gone = tracks.filter(function(t) { return t.isEmpty(); });
