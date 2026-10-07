@@ -398,10 +398,24 @@ function startRecordingAudio(waves, channels, deviceId, unlimited, clip, punchIn
 
 			(comment by Claude)
 			*/
+			/*
+			Only the ones with nothing coming. The waves were started by whoever
+			asked for the take, before the device was opened, so that what came
+			back was already recording -- starting them again here is what put a
+			real editor on the last of them.
+
+			startRecording asks its wave to go into its editor, and a wave that
+			is not in the document yet has no render node to do that with, so it
+			only sets the flag. By the time this promise resolves the waves have
+			been rendered, so the second call found render nodes, selected each
+			wave in turn and opened an editor on the last one -- which then
+			stayed open, because an editor somebody really opened is not the flag
+			that stopRecording takes back.
+
+			(comment by Claude)
+			*/
 			for (let i = 0; i < waves.length; i++) {
-				if (channels[i] < got) {
-					waves[i].startRecording();
-				} else {
+				if (channels[i] >= got) {
 					if (waves[i].isRecording()) waves[i].stopRecording();
 					console.log('vodka: nothing is coming on channel ' + (channels[i] + 1)
 							+ ' -- this input gave ' + got + ' channel(s)');
