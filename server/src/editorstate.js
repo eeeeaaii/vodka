@@ -34,6 +34,8 @@ import {
 	setGlobalHeightPixelsFullScale,
 	getBpm,
 	setBpm,
+	getOctaveSpan,
+	setOctaveSpan,
 	getDefaultTimebase,
 	setDefaultTimebaseValue
 } from './wavetablefunctions.js'
@@ -60,6 +62,11 @@ function currentState() {
 		// (comment by Claude)
 		audio: {
 			latency: getAudioLatency()
+		},
+		// measured against the rig, the same as the latency is
+		// (comment by Claude)
+		cv: {
+			octaveSpan: getOctaveSpan()
 		}
 	};
 }
@@ -114,6 +121,9 @@ function restoreEditorState() {
 	if (stored.audio && typeof stored.audio.latency === 'number'
 			&& stored.audio.latency >= 0) {
 		setAudioLatency(stored.audio.latency);
+	}
+	if (stored.cv && isPositiveNumber(stored.cv.octaveSpan)) {
+		setOctaveSpan(stored.cv.octaveSpan);
 	}
 }
 

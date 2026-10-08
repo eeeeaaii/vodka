@@ -47,6 +47,8 @@ import {
   convertTimeToSamples,
   setBpm,
   getBpm,
+  setOctaveSpan,
+  getOctaveSpan,
   nexToTimebase,
   timebaseFromTags,
   timebaseForTagString,
@@ -768,6 +770,32 @@ function createWavetableBuiltins() {
       return constructInteger(Math.round(getAudioLatency() * getSampleRate()));
     },
     "The round trip vodka is assuming, in samples. See set-audio-latency."
+  );
+
+  Builtin.createBuiltin(
+    "set-octave-span",
+    ["amount#%"],
+    function $setOctaveSpan(env, executionEnvironment) {
+      let amount = env.lb("amount");
+      let span = amount.getTypedValue();
+      if (!(span > 0)) {
+        return constructFatalError(
+            "set-octave-span: an octave has to be worth something. Sorry!");
+      }
+      setOctaveSpan(span);
+      saveEditorState();
+      return amount;
+    },
+    "How much a sample value has to change to move a 1V/octave oscillator one octave. Measure it: tune to a note at a constant of 0, then find the constant that is exactly an octave up."
+  );
+
+  Builtin.createBuiltin(
+    "octave-span",
+    [],
+    function $octaveSpan(env, executionEnvironment) {
+      return constructFloat(getOctaveSpan());
+    },
+    "The sample value worth one octave of 1V/octave pitch. See set-octave-span."
   );
 
   Builtin.createBuiltin(
