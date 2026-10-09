@@ -75,29 +75,6 @@ function getBpm() {
 	return BPM;
 }
 
-/*
-How much a sample value has to change to move a 1V/octave oscillator by one
-octave. Nothing in vodka uses it: it is here so that a patch computing control
-voltages has one place to ask, instead of the number being written into every
-document that sends pitch to a modular.
-
-It is a property of the converter and the rig rather than of the music -- it
-depends on what voltage the interface calls full scale -- so it cannot be
-derived, only measured against something that makes a pitch. A semitone is a
-twelfth of it, and the default assumes an output of plus or minus ten volts.
-
-(comment by Claude)
-*/
-let OCTAVE_SPAN = 0.1;
-
-function setOctaveSpan(s) {
-	OCTAVE_SPAN = s;
-}
-
-function getOctaveSpan() {
-	return OCTAVE_SPAN;
-}
-
 function setGlobalPixelsPerSample(n) {
 	PIXELS_PER_SAMPLE = n;
 }
@@ -816,8 +793,6 @@ export { applyFormants,
 		 getGlobalHeightPixelsFullScale,
 		 setBpm,
 		 getBpm,
-		 setOctaveSpan,
-		 getOctaveSpan,
 		 nexToTimebase,
 		 timebaseForTagString,
 		 timebaseFromTags,
