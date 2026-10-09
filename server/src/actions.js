@@ -20,8 +20,7 @@ import { systemState } from './systemstate.js'
 import { heap } from './heap.js';
 import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
 import { manipulator } from './manipulator.js';
-import { constructWarning, newTagOrThrowOOM } from './nex/eerror.js'
-import { reportSitelessError } from './sitelesserrors.js';
+import { newTagOrThrowOOM } from './nex/eerror.js'
 // estring and eerror each declare this, with the same value; one of them will do
 // (comment by Claude)
 import { MODE_EXPANDED } from './nex/estring.js';
@@ -968,9 +967,6 @@ class EvaluateAndReplaceAction extends Action {
 		this.parentOfNodeBeingEvaluated.insertChildAt(this.nodeBeingEvaluated, this.index);
 		this.nodeBeingEvaluated.setSelected();
 		this.nodeBeingEvaluated.setInsertionMode(this.savedInsertionMode);
-
-		reportSitelessError(
-				constructWarning("Warning: undoing code evaluation does not undo side effects."));
 	}
 }
 
@@ -990,9 +986,14 @@ class EvaluateInPlaceAction extends Action {
 		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
 	}
 
+	/*
+	Nothing to undo. Shift-enter replaced nothing, so putting the document back
+	is already done; whatever the code did to the world is not ours to reverse
+	and saying so on every undo was worse than the warning was worth.
+
+	(comment by Claude)
+	*/
 	undoAction() {
-		reportSitelessError(
-				constructWarning("Warning: undoing code evaluation does not undo side effects."));
 	}
 }
 

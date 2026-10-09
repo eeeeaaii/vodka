@@ -27,8 +27,7 @@ Errors with nowhere to stand.
 
 The ordinary case is an error that replaces something: you evaluate a command,
 it fails, and the error stands where the result would have. Some failures have
-no such site. Shift-enter keeps the code and replaces nothing. Undo's warning
-that side effects were not undone is about the undo, not about any nex. A
+no such site. Shift-enter keeps the code and replaces nothing. A
 deferred value nobody is holding comes back with an error long after the code
 that started it has gone. Each of these used to be dropped next to whatever
 happened to be selected, which from where you are sitting is a random place in
@@ -44,8 +43,8 @@ show.
 
 Errors scroll the document to the top every time, because an error is news
 whether or not you have seen one like it before. Warnings scroll only when they
-are new: being thrown back to the top on every undo would be worse than the
-warning is useful. Both flash, so a repeat reads as something that happened
+are new: being thrown back to the top for a warning you have already read and
+decided to live with would be worse than the warning is useful. Both flash, so a repeat reads as something that happened
 again rather than something that was already sitting there.
 
 (comment by Claude)
