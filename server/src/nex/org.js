@@ -137,14 +137,30 @@ class Org extends NexContainer {
 	}
 
 
+	// the member a template tagged :draw, if this org has one
+	// (comment by Claude)
+	getDrawFunction() {
+		return this.getChildWithTag(newTagOrThrowOOM('::drawfunction', 'draw function logic'));
+	}
+
+	/*
+	An org with a draw function is whatever it drew, so RenderNode stops there
+	and does not go on to draw the members underneath it. They are how it is
+	made, not what it looks like.
+
+	(comment by Claude)
+	*/
+	hasCustomDrawing() {
+		return !!this.getDrawFunction();
+	}
+
 	getDirtyForRendering() {
 		let customShouldDraw = this.getChildWithTag(new Tag(':shouldDraw'));
 		if (customShouldDraw) {
 			// ahem
 			return;
 		}
-		let drawFunction = this.getChildWithTag(new Tag('::draw'));
-		if (drawFunction) {
+		if (this.hasCustomDrawing()) {
 			// if you provide a draw function but not a shouldDraw, then we don't know
 			// how to keep track of whether state is dirty so we assume it's
 			// always dirty and redraw every time.
@@ -197,7 +213,7 @@ class Org extends NexContainer {
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 
-		let drawFunction = this.getChildWithTag(newTagOrThrowOOM('::drawfunction', 'draw function logic'));
+		let drawFunction = this.getDrawFunction();
 		if (drawFunction) {
 			// No argument: the org went in unquoted, so it arrived as an
 			// evaluated copy rather than the org itself, which is no use to

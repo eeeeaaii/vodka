@@ -175,6 +175,13 @@ class Nex {
 		return false;
 	}
 
+	// a nex that paints itself and has no children to show; see Org, which is
+	// the only one, and RenderNode.render, which stops for it
+	// (comment by Claude)
+	hasCustomDrawing() {
+		return false;
+	}
+
 	setOnNextRenderCallback(callback) {
 		this.onNextRenderCallback = callback;
 		// the callback fires from this nex's next render, so there has to be one

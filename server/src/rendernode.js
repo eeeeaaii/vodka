@@ -776,6 +776,15 @@ class RenderNode {
 		this.nex.doRenderSequencing(this);
 		this.isCurrentlyExploded = !!(useFlags & RENDER_FLAG_EXPLODED);
 
+		/*
+		A nex that drew itself is finished. Its children are the workings, and
+		drawing them below the face would put both on the screen at once.
+
+		(comment by Claude)
+		*/
+		if (this.nex.hasCustomDrawing()) {
+			return;
+		}
 
 		if (!(useFlags & RENDER_FLAG_EXPLODED)
 				&& this.nex.isNexContainer()
