@@ -16,6 +16,15 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { ValueNex, startNumberDrag } from './valuenex.js'
+import {
+	clampDigitExponent,
+	digitCaretDisplay,
+	digitCaretHtml,
+	isDigitCaretKey,
+	routeDigitCaretKey,
+	steppedValue,
+	DIGIT_CARET_EVENT_TABLE
+} from './digitcaret.js'
 import { Editor } from '../editors.js'
 import { experiments } from '../globalappflags.js'
 import { heap } from '../heap.js'
@@ -34,6 +43,19 @@ class Integer extends ValueNex {
 			this.setValue('0');
 		}
 		this.minusPressed = false; // TODO: move to editor
+		/*
+		Which digit the arrows work on, as a power of ten: 0 is the ones place,
+		3 the thousands. A whole number has no places below the ones, so this
+		never goes negative -- see clampDigitExponent.
+
+		The caret only shows once the arrows have been used on it, so typing a
+		number into a fresh integer does not make padding zeros appear under
+		your fingers, and it goes away again when the editor closes.
+
+		(comment by Claude)
+		*/
+		this.editDigitExponent = 0;
+		this.digitCaretActive = false;
 	}
 
 	wasmSetup() {
@@ -127,15 +149,74 @@ class Integer extends ValueNex {
 	still move the selection as usual.
 	*/
 	getEventTable(context) {
-		return {
-			'ShiftArrowUp': 'increment-value',
-			'ShiftArrowDown': 'decrement-value',
-		};
+		return DIGIT_CARET_EVENT_TABLE;
 	}
 
-	// whole numbers move by whole numbers
+	// one press of the arrow, which is one of whatever digit you are on
+	// (comment by Claude)
 	getStepAmount() {
-		return 1;
+		return Math.pow(10, this.editDigitExponent);
+	}
+
+	// a whole number's caret stops at the ones place
+	// (comment by Claude)
+	allowsFractionDigits() {
+		return false;
+	}
+
+	// shown only once the arrows have been used, see the constructor
+	// (comment by Claude)
+	showsDigitCaret() {
+		return this.isEditing && this.digitCaretActive;
+	}
+
+	startEditing() {
+		this.digitCaretActive = false;
+	}
+
+	stopEditing() {
+		this.digitCaretActive = false;
+	}
+
+	/*
+	Left is a bigger digit and right is a smaller one, which is the direction
+	they sit in the number rather than the direction the exponent goes. Moving
+	left off the front of the number pads it with zeros, so 3000 becomes 03000
+	and the next press up makes it 13000.
+
+	(comment by Claude)
+	*/
+	moveEditDigit(delta) {
+		this.editDigitExponent = clampDigitExponent(
+				this.editDigitExponent + delta, this.allowsFractionDigits());
+		this.digitCaretActive = true;
+		this.setDirtyForRendering(true);
+	}
+
+	// add or subtract one of the digit the caret is on
+	// (comment by Claude)
+	stepByEditDigit(direction) {
+		this.setValue(steppedValue(this.getValue(), this.editDigitExponent, direction));
+		this.digitCaretActive = true;
+		this.setDirtyForRendering(true);
+	}
+
+	/*
+	The digit the arrows are on gets an underline that blinks, the way a text
+	caret does. The thousands commas are already dropped while editing, so the
+	caret counts digits in a string with nothing else in it.
+
+	(comment by Claude)
+	*/
+	escapedRenderValue() {
+		if (!this.showsDigitCaret()) {
+			return super.escapedRenderValue();
+		}
+		let d = digitCaretDisplay(this.getValue(), this.editDigitExponent);
+		if (!d) {
+			return super.escapedRenderValue();
+		}
+		return digitCaretHtml(this, d.text, d.index);
 	}
 
 	// there is nothing finer than one to offer, so modifiers mean nothing here
@@ -270,8 +351,18 @@ class IntegerEditor extends Editor {
 	}
 
 	shouldTerminateAndReroute(text) {
+		if (isDigitCaretKey(text)) {
+			return false;
+		}
 		return super.shouldTerminateAndReroute()
 			|| !this.shouldAppend(text);
+	}
+
+	performSpecialProcessing(text) {
+		if (routeDigitCaretKey(this.nex, text)) {
+			return null;
+		}
+		return super.performSpecialProcessing(text);
 	}
 }
 

@@ -61,7 +61,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 /*
-The digit the arrows are working on while a float is being edited. Underlined
+The digit the arrows are working on while a number is being edited. Underlined
 and blinking, because that is what a caret looks like everywhere else.
 
 The underline's colour is what blinks rather than a border, so the number does
@@ -69,14 +69,14 @@ not change size twice a second.
 
 (comment by Claude)
 */
-.floatdigitcaret {
+.digitcaret {
 	text-decoration: underline;
 	text-decoration-thickness: 2px;
 	text-underline-offset: 2px;
-	animation: floatdigitblink 1.1s steps(1, end) infinite;
+	animation: digitblink 1.1s steps(1, end) infinite;
 }
 
-@keyframes floatdigitblink {
+@keyframes digitblink {
 	0%, 50% {
 		text-decoration-color: currentColor;
 	}

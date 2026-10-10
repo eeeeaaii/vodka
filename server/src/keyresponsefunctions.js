@@ -348,35 +348,23 @@ const DefaultHandlers = {
 }
 
 /*
-How far one press moves it is the nex's business: a whole number steps by one, a
-float by a tenth. Stepping a float by one would be the same as retyping it.
+Stepping a number with shift and an arrow. Both kinds of number keep a caret on
+one of their digits and know how far one press of it moves them, so there is
+nothing to decide here.
 
-Rounded to the number of decimal places the step has, because 0.1 added to
-itself in binary floating point arrives at 0.30000000000000004, and a number
-box that reads like that after three presses is useless.
+(comment by Claude)
 */
 function stepValue(s, direction) {
 	let nex = s.getNex();
 	// something you are not allowed to edit is not something to step
 	// (comment by Claude)
-	if (!nex.isMutable()) {
+	if (!nex.isMutable() || !nex.stepByEditDigit) {
 		return;
 	}
-	// a float knows which of its digits it is on, and rounds to suit
-	// (comment by Claude)
-	if (nex.stepByEditDigit) {
-		nex.stepByEditDigit(direction);
-		return;
-	}
-	let step = nex.getStepAmount ? nex.getStepAmount() : 1;
-	let n = nex.getTypedValue();
-	if (isNaN(n)) {
-		n = 0;
-	}
-	nex.setValue(String(roundToStep(n + direction * step, step)));
+	nex.stepByEditDigit(direction);
 }
 
-// which digit the arrows are stepping. Only a float has them.
+// which digit the arrows are stepping
 // (comment by Claude)
 function moveEditDigit(s, delta) {
 	let nex = s.getNex();
@@ -384,16 +372,6 @@ function moveEditDigit(s, delta) {
 		return;
 	}
 	nex.moveEditDigit(delta);
-}
-
-function roundToStep(v, step) {
-	let places = 0;
-	let s = String(step);
-	let dot = s.indexOf('.');
-	if (dot != -1) {
-		places = s.length - dot - 1;
-	}
-	return Number(v.toFixed(places));
 }
 
 const KeyResponseFunctions = {
