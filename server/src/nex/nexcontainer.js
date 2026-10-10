@@ -311,10 +311,6 @@ class NexContainer extends Nex {
 		return this.getChildArray();
 	}
 
-	renderChildrenIfNormal() {
-		return true;
-	}
-
 	getContextType() {
 		return ContextType.PASSTHROUGH;
 	}

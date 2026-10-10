@@ -833,11 +833,21 @@ class RenderNode {
 		*/
 		this.setRenderNodeDirtyForRendering(false);
 
-		if (!(useFlags & RENDER_FLAG_EXPLODED)
-				&& this.nex.isNexContainer()
-				&& !this.nex.renderChildrenIfNormal()) {
-			return;
-		}
+		/*
+		A container always offers its children, in normal mode as in exploded.
+		Most things draw nothing of themselves in normal mode -- a command's
+		name is hidden by the stylesheet, a value nex is display:none -- and
+		that is the right amount for them to say. But their children may not
+		be code: a doc buried in the arguments of a call is a thing somebody
+		meant to be looked at, and refusing to descend made it disappear
+		instead.
+
+		So the rule is that normal mode hides what is machinery and shows what
+		is not, and it is the stylesheet that decides which is which. Nobody
+		stops the walk.
+
+		(comment by Claude)
+		*/
 		// if we are in normal mode we ignore collapse bit and render normally.
 		if (this.getCollapsed() && (useFlags & RENDER_FLAG_EXPLODED)) {
 			this.drawCollapsed();

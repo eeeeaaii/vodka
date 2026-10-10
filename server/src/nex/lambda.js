@@ -118,10 +118,6 @@ class Lambda extends NexContainer {
     return null;
   }
 
-  renderChildrenIfNormal() {
-    return false;
-  }
-
   toString(version, ctx) {
     if (version == "v2") {
       return this.toStringV2(ctx);

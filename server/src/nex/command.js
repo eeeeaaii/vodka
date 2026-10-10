@@ -668,10 +668,6 @@ class Command extends NexContainer {
 		return domNode.firstChild;
 	}
 
-	renderChildrenIfNormal() {
-		return false;
-	}
-
 	isEmpty() {
 		return this.commandtext.get() == null || this.commandtext.get() == '';
 	}
