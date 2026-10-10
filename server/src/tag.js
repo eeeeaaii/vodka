@@ -16,6 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { heap } from './heap.js'
+import { isSpecialTagString } from './specialtags.js'
 
 /**
  * Represents a tag.
@@ -99,9 +100,26 @@ class Tag  {
 			this.tagDomNode.classList.add('tag-ghost');
 		}
 		/*
-		The one tag that says something about the sound rather than about the
-		nex, so it is the one tag worth picking out of a row of them. Exactly
-		mute, not anything containing it: muted-ish is not a thing.
+		A tag vodka reads is a different kind of thing from a tag you wrote for
+		yourself, so it is drawn the other way up -- see specialtags.js for
+		which ones those are and tags.css for what that looks like.
+
+		Mute used to be the only one picked out, and in its own red, which sat
+		badly next to everything else red. Being the opposite of an ordinary
+		tag says the same thing without needing a colour of its own, and says
+		it about every tag that means something rather than only that one.
+
+		(comment by Claude)
+		*/
+		if (isSpecialTagString(this.tagString)) {
+			this.tagDomNode.classList.add('tag-special');
+		}
+		/*
+		Still marked out on its own as well, and no longer for its colour: a
+		condensed wave hides every tag but this one and draws it as a single
+		`m`, which needs a way to say which tag it is. See wavetable.css.
+
+		Exactly mute, not anything containing it: muted-ish is not a thing.
 
 		(comment by Claude)
 		*/

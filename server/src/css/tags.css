@@ -39,11 +39,29 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	font-size: 9px;
 }
 
-/* after .tag.exploded so it wins on background */
-/* (comment by Claude) */
-.tag-mute.exploded {
-	background-color: var(--tag-mute-background);
-	color: var(--tag-editor-background);
+/*
+A tag vodka reads rather than one you wrote: the ordinary tag turned inside
+out. Light box, dark text, dark edge in a light document, and the other way
+round in a dark one -- which comes out of the tokens by itself, because an
+ordinary tag is already dark on light in one theme and light on dark in the
+other.
+
+Inverting rather than colouring is what lets every instruction tag be marked
+at once. A colour each would need eight of them, all different from the reds
+and oranges already in use, and would still leave you learning which was
+which; the only thing worth saying here is that this one is not a label.
+
+After .tag.exploded so it wins on background.
+
+(comment by Claude)
+*/
+.tag-special.exploded {
+	background-color: var(--tag-special-background);
+	color: var(--tag-special-text);
+	/* a pixel off the padding, so the border does not resize the tag */
+	/* (comment by Claude) */
+	border: 1px solid var(--tag-special-text);
+	padding: 3px 7px 3px 7px;
 }
 
 .tag-editing.exploded {

@@ -19,6 +19,10 @@ import { Tag } from './tag.js'
 import { newTagOrThrowOOM } from './nex/eerror.js'
 import { constructWavetable } from './nex/wavetable.js'; 
 import { hannWindow } from './fft.js'
+// the spellings live with the rest of what a tag can mean, which is a module
+// that imports nothing because tags themselves ask it questions
+// (comment by Claude)
+import { timebaseForTagString, relativeTimebaseForTagString } from './specialtags.js'
 
 
 // sc sample rate is 48k samples/sec
@@ -106,25 +110,6 @@ a single tag behaves exactly as before.
 */
 // null for a tag that does not name a timebase, so callers can tell a tag they
 // understand from one meant for something else
-function timebaseForTagString(t) {
-	if (t == 'note' || t == 'nn') return 'NOTE';
-	if (t == 'seconds' || t == 'second' || t == 'secs' || t == 'sec') return 'SECONDS';
-	if (t == 'ms' || t == 'millis' || t == 'milliseconds') return 'MILLIS';
-	if (t == 'hz' || t == 'Hz' || t == 'HZ' || t == 'cps') return 'HZ';
-	if (t == 'b' || t == 'beats' || t == 'beat') return 'BEATS';
-	if (t == 'samples' || t == 'samps' || t == 'samp' || t == 'sample') return 'SAMPLES';
-	return null;
-}
-
-// relative timebases move a pitch instead of naming a duration. ratio is the
-// multiplier itself; semitones and cents are 12ths and 1200ths of an octave.
-function relativeTimebaseForTagString(t) {
-	if (t == 'ratio') return 'RATIO';
-	if (t == 'cents' || t == 'cent') return 'CENTS';
-	if (t == 'semitones' || t == 'semitone' || t == 'semis' || t == 'semi') return 'SEMITONES';
-	return null;
-}
-
 // tags on a command rather than on one of its arguments
 function relativeTimebaseFromTags(tags) {
 	for (let i = 0; tags && i < tags.length; i++) {

@@ -54,8 +54,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
   --string-submit-focus-text: #000000;
 
   --tag-background: #6e6e6e;
-  /* mute is the one tag about the sound rather than the nex */
-  --tag-mute-background: #b0202a;
+  /* a tag vodka reads is the ordinary tag inverted: see tags.css */
+  --tag-special-background: #dddddd;
+  --tag-special-text: #414141;
   /* a collapsed nex is a box of this with a backslash in it */
   --collapsed-background: #ffa500;
   --collapsed-text: #ffffff;
@@ -158,7 +159,8 @@ waveform is teal so signal is never confused with structure.
   --string-submit-focus-text: #ffffff;
 
   --tag-background: #d0f2f1;
-  --tag-mute-background: #ff5a5a;
+  --tag-special-background: #1a1a1a;
+  --tag-special-text: #f2f4f8;
   --collapsed-background: #ffa500;
   --collapsed-text: #ffffff;
   --tag-editor-background: #1a1a1a;
