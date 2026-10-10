@@ -16,7 +16,24 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
+/*
+An error shows in normal mode too, where almost nothing else does.
+
+Everything a value nex is made of is display:none until exploded, and an error
+is a value nex -- so a draw function that failed put its error in the document
+and the stylesheet hid it, leaving a face with a silent gap in it. A failure is
+the one thing that must never be invisible: you are looking at the drawing
+precisely because you cannot see the code behind it.
+
+(comment by Claude)
+*/
 .eerror {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	font-style: italic;
+	font-family: monospace;
+	color: var(--error-text);
 }
 
 .eerror.exploded {
