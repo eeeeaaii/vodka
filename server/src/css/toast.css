@@ -62,7 +62,14 @@ around that would be a second error-looking thing around the first.
 	pointer-events: auto;
 	cursor: pointer;
 	opacity: 0;
-	transition: opacity 0.2s linear;
+	/*
+	TEMPORARY, to find out whether the transition is what lingers: effectively
+	instant, so if a toast still seems to hang about on its way out, the
+	transition was never the thing doing it.
+
+	(comment by Claude)
+	*/
+	transition: opacity 0.0001s linear;
 }
 
 .toast.toastshown {
