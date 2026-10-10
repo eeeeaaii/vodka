@@ -31,8 +31,7 @@ import { RENDER_FLAG_SELECTED,
 		 RENDER_FLAG_EXPLODED,
 		 RENDER_FLAG_DEPTH_EXCEEDED,
 		 RENDER_FLAG_COLLAPSED,
-		 COLLAPSE_TAG,
-		 RENDER_MODE_INHERIT } from '../globalconstants.js'
+		 COLLAPSE_TAG } from '../globalconstants.js'
 import { possiblyRecordAction } from '../testrecorder.js'
 import { doTutorial } from '../help.js'
 import { Tag } from '../tag.js'
@@ -73,7 +72,6 @@ class Nex {
 		this.dirtyForRendering = true;
 		this.mutable = true;
 		this.clickActive = true;
-		this.modeHint = RENDER_MODE_INHERIT;
 	}
 
     /**
@@ -119,13 +117,6 @@ class Nex {
 		return this.doTabs(lvl, hdir) + str;// exp // + '\n';
 	}
 
-	setModeHint(m) {
-		this.modeHint = m;
-	}
-
-	getModeHint() {
-		return this.modeHint;
-	}
 
 	memUsed() {
 		let tagMem = 0;

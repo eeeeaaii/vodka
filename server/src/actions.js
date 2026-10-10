@@ -1212,25 +1212,6 @@ class ToggleMuteTagAction extends Action {
 	}
 }
 
-class ChangeRenderModeAction extends Action {
-	constructor(actionName) {
-		super(actionName);
-	}
-
-	canUndo() {
-		return true;
-	}
-
-	doAction() {
-		this.savedRenderMode = systemState.getGlobalSelectedNode().getRenderMode();
-		KeyResponseFunctions[this.actionName](systemState.getGlobalSelectedNode());
-	}
-
-	undoAction() {
-		systemState.getGlobalSelectedNode().setRenderMode(this.savedRenderMode);
-	}
-}
-
 class LineBreakAction extends Action {
 	// basically to delete a line break.
 	// If the line break was "do-line-break-for-letter"
@@ -1435,9 +1416,6 @@ function actionFactory(actionName, eventName) {
 		case 'lineDefault':
 		case 'docDefault':
 			return new DefaultHandlerAction(actionName, eventName);
-
-		case 'toggle-exploded':
-			return new ChangeRenderModeAction(actionName);
 
 		case 'toggle-mute-tag':
 			return new ToggleMuteTagAction(actionName);

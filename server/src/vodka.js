@@ -60,9 +60,7 @@ import { possiblyRecordAction, startRecordingTest } from './testrecorder.js'
 import {
 	RENDER_FLAG_EXPLODED,
 	RENDER_FLAG_NORMAL,
-	RENDER_FLAG_RENDER_IF_DIRTY,
-	RENDER_MODE_NORM,
-	RENDER_MODE_EXPLO } from './globalconstants.js'
+	RENDER_FLAG_RENDER_IF_DIRTY } from './globalconstants.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { BINDINGS } from './environment.js'
 import { rootManager } from './rootmanager.js'
@@ -214,13 +212,11 @@ function setDocRootFromStart() {
 	loadAndRun('start-doc', function(result) {
 		let expNode = root.appendChild(result);
 		expNode.setSelected(false);
-		root.setRenderMode(RENDER_MODE_NORM);
 		systemState.setGlobalCurrentDefaultRenderFlags(0);	
 	});
 }
 
 function setEmptyDocRoot() {
-	root.setRenderMode(RENDER_MODE_EXPLO);
 	root.setSelected(false);
 }
 
@@ -347,15 +343,6 @@ async function setup() {
 	// }
 
 
-	// Note this object has to keep existing even with mobile off, because
-	// keydispatcher calls setExplodedState unconditionally when you toggle
-	// exploded mode.
-	keyDispatcher.setUiCallbackObject({
-		'setExplodedState': function(exploded) {
-			// MOBILE WIP: see note at the import above.
-			// document.getElementById("mobile_esc").innerText = (exploded) ? 'explode' : 'contract'
-		}});
-
 	// testharness.js needs this
 	window.doKeyInput = doKeyInput;
 	window.runTest = runTest;
@@ -403,7 +390,6 @@ async function setup() {
 		// Picked up where the last page load left off. An explicitly requested
 		// file still wins over this, which is why it sits below those two.
 		// (comment by Claude)
-		root.setRenderMode(RENDER_MODE_EXPLO);
 		root.setSelected(false);
 		systemState.setGlobalCurrentDefaultRenderFlags(0);
 		// the document is back and nothing else is in memory yet, which is the

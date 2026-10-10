@@ -29,11 +29,6 @@ import { isAutocompleteKeyCombo } from './editors.js'
 class KeyDispatcher {
 	constructor() {
 		this.nqmarks = 0;
-		this.uiCallbackObject = null;
-	}
-
-	setUiCallbackObject(obj) {
-		this.uiCallbackObject = obj;
 	}
 
 	shouldBubble(keycode, whichkey, hasShift, hasCtrl, hasMeta, hasAlt) {
@@ -108,8 +103,6 @@ class KeyDispatcher {
 				action.systemClipboardText = text;
 				enqueueAndPerformAction(action);
 			});
-		} else if (eventName == 'Escape' && !systemState.getGlobalSelectedNode().usingEditor()) {
-			this.toggleGlobalExplodedMode();
 		} else {
 			// 1. look in override table
 			// 2. look in regular table
@@ -270,12 +263,6 @@ class KeyDispatcher {
 		return ('' + navigator.platform).substring(0, 3) == 'Mac';
 	}
 
-	toggleGlobalExplodedMode() {
-		let root = systemState.getRoot();
-		this.uiCallbackObject.setExplodedState(root.isExploded())
-		root.toggleRenderMode();
-	}
-
 	// Four tables: mac and pc, each for containers and for atoms. A table may map
 	// several key combinations to the same action -- that is how ctrl and alt both
 	// reach the wrap-inserts, stated outright instead of achieved by string surgery.
@@ -325,7 +312,6 @@ class KeyDispatcher {
 			'CtrlShiftEnter':       'start-main-editor',
 			'AltBackspace':         'start-main-editor',
 			'CtrlBackspace':        'start-main-editor',
-			'ShiftEscape':          'toggle-exploded',
 			'~':                    'insert-command-at-insertion-point',
 			'!':                    'insert-bool-at-insertion-point',
 			'@':                    'insert-symbol-at-insertion-point',
@@ -380,9 +366,6 @@ class KeyDispatcher {
 			'AltShiftSpace':      'toggle-dir',
 			'MetaShiftSpace':     'toggle-dir',
 			'MetaShiftBackspace': 'remove-selected-and-select-previous-sibling',
-			'CtrlShiftEscape':    'toggle-exploded',
-			'AltShiftEscape':     'toggle-exploded',
-			'MetaShiftEscape':    'toggle-exploded',
 		};
 	}
 
@@ -427,7 +410,6 @@ class KeyDispatcher {
 			'CtrlShiftEnter':       'start-main-editor',
 			'AltBackspace':         'start-main-editor',
 			'CtrlBackspace':        'start-main-editor',
-			'ShiftEscape':          'toggle-exploded',
 			'~':                    'insert-command-at-insertion-point',
 			'!':                    'insert-bool-at-insertion-point',
 			'@':                    'insert-symbol-at-insertion-point',
@@ -482,9 +464,6 @@ class KeyDispatcher {
 			'AltShiftSpace':      'toggle-dir',
 			'MetaShiftSpace':     'toggle-dir',
 			'MetaShiftBackspace': 'remove-selected-and-select-previous-sibling',
-			'CtrlShiftEscape':    'toggle-exploded',
-			'AltShiftEscape':     'toggle-exploded',
-			'MetaShiftEscape':    'toggle-exploded',
 		};
 	}
 
@@ -522,8 +501,6 @@ class KeyDispatcher {
 			'CtrlShiftEnter':       'start-main-editor',
 			'AltBackspace':         'start-main-editor',
 			'CtrlBackspace':        'start-main-editor',
-			'ShiftEscape':          'toggle-exploded',
-			'ShiftEscape':          'toggle-exploded',
 			'Enter':                'evaluate-nex',
 			'~':                    'insert-command-at-insertion-point',
 			'!':                    'insert-bool-at-insertion-point',
@@ -575,9 +552,6 @@ class KeyDispatcher {
 			'CtrlShiftBackspace':  'start-main-editor',
 			'MetaShiftTab':       'select-parent',
 			'MetaShiftBackspace': 'remove-selected-and-select-previous-sibling',
-			'CtrlShiftEscape':    'toggle-exploded',
-			'AltShiftEscape':     'toggle-exploded',
-			'MetaShiftEscape':    'toggle-exploded',
 		};
 	}
 
@@ -615,8 +589,6 @@ class KeyDispatcher {
 			'CtrlShiftEnter':       'start-main-editor',
 			'AltBackspace':         'start-main-editor',
 			'CtrlBackspace':        'start-main-editor',
-			'ShiftEscape':          'toggle-exploded',
-			'ShiftEscape':          'toggle-exploded',
 			'Enter':                'evaluate-nex',
 			'~':                    'insert-command-at-insertion-point',
 			'!':                    'insert-bool-at-insertion-point',
@@ -668,9 +640,6 @@ class KeyDispatcher {
 			'CtrlShiftBackspace':  'start-main-editor',
 			'MetaShiftTab':       'select-parent',
 			'MetaShiftBackspace': 'remove-selected-and-select-previous-sibling',
-			'CtrlShiftEscape':    'toggle-exploded',
-			'AltShiftEscape':     'toggle-exploded',
-			'MetaShiftEscape':    'toggle-exploded',
 		};
 	}
 }

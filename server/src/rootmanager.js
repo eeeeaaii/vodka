@@ -18,7 +18,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { RenderNode } from './rendernode.js'
 import { Root } from './nex/root.js'
 import { systemState } from './systemstate.js'
-import { RENDER_MODE_NORM } from './globalconstants.js'
 
 
 class RootManager  {
@@ -29,15 +28,11 @@ class RootManager  {
 		if (!args) {
 			args = {};
 		}
-		if (!args.mode) {
-			args.mode = RENDER_MODE_NORM;
-		}
 		if (!args.domNode) {
 			args.domNode = document.getElementById(args.id ? args.id : 'vodkaroot');
 		}
 		let rootnex = new Root(true /* attached */);
 		let root = new RenderNode(rootnex);
-		root.setRenderMode(args.mode);
 		root.setRenderDepth(0);
 		document.vodkaroot = root; // for debugging in chrome dev tools
 		root.setDomNode(args.domNode);

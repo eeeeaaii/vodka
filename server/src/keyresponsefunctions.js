@@ -420,10 +420,6 @@ const KeyResponseFunctions = {
 		s.getNex().toggleDir();
 	},
 
-	'toggle-exploded': function(s) {
-		s.toggleRenderMode();
-	},
-
 	'select-parent': function(s) { manipulator.selectParent(); },
 
 	'activate-or-return-exp-child': function(s) {

@@ -16,7 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { RenderNode } from './rendernode.js'
-import { RENDER_MODE_EXPLO, RENDER_FLAG_RERENDER } from './globalconstants.js'
+import { RENDER_FLAG_RERENDER } from './globalconstants.js'
 
 /*
 TOASTS
@@ -161,7 +161,6 @@ function makeToast(notice) {
 
 	(comment by Claude)
 	*/
-	node.setRenderMode(RENDER_MODE_EXPLO);
 	// the top of its own little tree, since it is not in the document's
 	// (comment by Claude)
 	node.setRenderDepth(0);

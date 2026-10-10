@@ -35,11 +35,6 @@ import { experiments } from '../globalappflags.js'
 import {
 	GenericActivationFunctionGenerator
 } from '../asyncfunctions.js'
-import {
-	RENDER_MODE_NORM,
-	RENDER_MODE_EXPLO,
-	RENDER_MODE_INHERIT,
-} from '../globalconstants.js'
 import { sAttach } from '../syntheticroot.js'
 import { readAudioTags, libraryNames } from '../audiolibraries.js'
 
@@ -582,32 +577,6 @@ function createFileBuiltins() {
 		},
 		'Defines a package. |block is evaluated, and anything it binds is scoped under |name.'
 	);
-
-	Builtin.createBuiltin(
-		'normal-mode',
-		[ 'nex' ],
-		function $normalMode(env, executionEnvironment) {
-			let nex = env.lb('nex');
-			nex.setModeHint(RENDER_MODE_NORM);
-			let nodes = nex.getRenderNodes();
-			nodes.forEach(node => setRenderMode(RENDER_MODE_NORM));
-			return nex;
-		},
-		'Makes |nex draw as normal by default.'
-	);	
-
-	Builtin.createBuiltin(
-		'exploded-mode',
-		[ 'nex' ],
-		function $explodedMode(env, executionEnvironment) {
-			let nex = env.lb('nex');
-			nex.setModeHint(RENDER_MODE_EXPLO);
-			let nodes = nex.getRenderNodes();
-			nodes.forEach(node => setRenderMode(RENDER_MODE_EXPLO));
-			return nex;
-		},
-		'Makes |nex draw as exploded by default.'
-	);	
 
 }
 

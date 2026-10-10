@@ -47,7 +47,6 @@ import {
 
 	RENDER_MODE_NORM,
 	RENDER_MODE_EXPLO,
-	RENDER_MODE_INHERIT,
 } from './globalconstants.js'
 
 import { experiments } from './globalappflags.js'
@@ -332,8 +331,6 @@ class RenderNode {
 		this.wrapperDomNodes = [];
 		this.domNode = document.createElement("div");
 
-		this.renderMode = forNex.getModeHint();
-
 		this.isCurrentlyExploded = false;
 		this.currentEd = null;
 		this.wrapperDomNode = null;
@@ -378,7 +375,6 @@ class RenderNode {
 		for (let i = 0; i < this.childnodes.length; i++) {
 			newNode.childnodes[i] = this.childnodes[i].nodeCopy();
 		}
-		newNode.renderMode = this.renderMode;
 		newNode.isCurrentlyExploded = this.isCurrentlyExploded;
 		return newNode;
 	}
@@ -625,33 +621,27 @@ class RenderNode {
 		return this.isCurrentlyExploded;
 	}
 
+	/*
+	Normal mode is a doc seen as the thing it is: a title is a title, not a word
+	nex holding five letter nexes. Exploded mode is the structure underneath it.
+
+	Which one you get is not a setting any more. It is a fact about the nex. A
+	doc that is immutable is one an evaluation handed back -- it is a result, so
+	it is drawn as a result, and so is everything inside it. Anything you can
+	still edit is drawn exploded. That is the whole rule, and it is why there is
+	no longer an escape key that turns the document inside out.
+
+	So a doc is how you build a face for something: return one, and what you get
+	back is the drum machine rather than the expression that made it.
+
+	(comment by Claude)
+	*/
 	getRenderMode() {
-		if (this.renderMode == RENDER_MODE_INHERIT) {
-			let p = this.getParent();
-			if (p) {
-				this.renderMode = p.getRenderMode();
-			} else {
-				this.renderMode = RENDER_MODE_EXPLO;
-			}
+		if (Utils.isDoc(this.nex) && !this.nex.isMutable()) {
+			return RENDER_MODE_NORM;
 		}
-		return this.renderMode;
-	}
-
-	setRenderMode(newRenderMode) {
-		this.renderMode = newRenderMode;
-		for (let i = 0; i < this.childnodes.length; i++) {
-			this.childnodes[i].setRenderMode(newRenderMode);
-		}
-		this.setRenderNodeDirtyForRendering(true);
-	}
-
-	toggleRenderMode() {
-		let renderMode = this.getRenderMode();
-		if (renderMode == RENDER_MODE_EXPLO) {
-			this.setRenderMode(RENDER_MODE_NORM);
-		} else {
-			this.setRenderMode(RENDER_MODE_EXPLO);			
-		}
+		let p = this.getParent();
+		return p ? p.getRenderMode() : RENDER_MODE_EXPLO;
 	}
 
 	getNex() {
