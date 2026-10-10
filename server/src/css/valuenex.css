@@ -59,3 +59,28 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	width: min-content;
 }
 */
+
+/*
+The digit the arrows are working on while a float is being edited. Underlined
+and blinking, because that is what a caret looks like everywhere else.
+
+The underline's colour is what blinks rather than a border, so the number does
+not change size twice a second.
+
+(comment by Claude)
+*/
+.floatdigitcaret {
+	text-decoration: underline;
+	text-decoration-thickness: 2px;
+	text-underline-offset: 2px;
+	animation: floatdigitblink 1.1s steps(1, end) infinite;
+}
+
+@keyframes floatdigitblink {
+	0%, 50% {
+		text-decoration-color: currentColor;
+	}
+	50.001%, 100% {
+		text-decoration-color: transparent;
+	}
+}

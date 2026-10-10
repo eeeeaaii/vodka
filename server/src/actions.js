@@ -1093,6 +1093,24 @@ It also holds on to the node it acted on instead of reading the selection when
 the undo runs -- by then the selection may be somewhere else entirely, and
 undoing an edit to whatever happens to be selected now is how you lose work.
 */
+/*
+Stepping a number that keeps a digit caret happens inside its editor, so that
+the digit you are on has somewhere to live and so that escape puts the number
+back. The first press is what opens the editor; every press after that is routed
+to the editor and never arrives here.
+
+(comment by Claude)
+*/
+function startDigitEditorIfWanted(node) {
+	if (!node.getNex().moveEditDigit) {
+		return;
+	}
+	if (node.getCurrentEditor()) {
+		return;
+	}
+	node.possiblyStartMainEditor();
+}
+
 class StepValueAction extends Action {
 	constructor(actionName) {
 		super(actionName);
@@ -1105,11 +1123,52 @@ class StepValueAction extends Action {
 	doAction() {
 		this.node = systemState.getGlobalSelectedNode();
 		this.oldValue = this.node.getNex().getValue();
+		startDigitEditorIfWanted(this.node);
 		KeyResponseFunctions[this.actionName](this.node);
 	}
 
+	/*
+	The editor the first press opened is closed on the way back, because being
+	left editing a number that is no longer the one you stepped is worse than
+	being left looking at it.
+
+	(comment by Claude)
+	*/
 	undoAction() {
+		if (this.node.usingEditor()) {
+			this.node.stopEditing();
+		}
 		this.node.getNex().setValue(this.oldValue);
+	}
+}
+
+/*
+Moving the caret from one digit to another. It opens the editor the same way
+stepping does, and it is not undoable, because nothing about the document
+changed -- only where the next press will land.
+
+(comment by Claude)
+*/
+class EditDigitAction extends Action {
+	constructor(actionName) {
+		super(actionName);
+	}
+
+	canUndo() {
+		return true;
+	}
+
+	didSomething() {
+		return false;
+	}
+
+	doAction() {
+		let node = systemState.getGlobalSelectedNode();
+		startDigitEditorIfWanted(node);
+		KeyResponseFunctions[this.actionName](node);
+	}
+
+	undoAction() {
 	}
 }
 
@@ -1311,6 +1370,9 @@ function actionFactory(actionName, eventName) {
 		case 'increment-value':
 		case 'decrement-value':
 			return new StepValueAction(actionName);
+		case 'edit-digit-left':
+		case 'edit-digit-right':
+			return new EditDigitAction(actionName);
 		case 'toggle-dir':
 			return new ChangeDirectionAction(actionName);
 		case 'toggle-collapsed':

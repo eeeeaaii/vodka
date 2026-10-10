@@ -362,12 +362,28 @@ function stepValue(s, direction) {
 	if (!nex.isMutable()) {
 		return;
 	}
+	// a float knows which of its digits it is on, and rounds to suit
+	// (comment by Claude)
+	if (nex.stepByEditDigit) {
+		nex.stepByEditDigit(direction);
+		return;
+	}
 	let step = nex.getStepAmount ? nex.getStepAmount() : 1;
 	let n = nex.getTypedValue();
 	if (isNaN(n)) {
 		n = 0;
 	}
 	nex.setValue(String(roundToStep(n + direction * step, step)));
+}
+
+// which digit the arrows are stepping. Only a float has them.
+// (comment by Claude)
+function moveEditDigit(s, delta) {
+	let nex = s.getNex();
+	if (!nex.isMutable() || !nex.moveEditDigit) {
+		return;
+	}
+	nex.moveEditDigit(delta);
 }
 
 function roundToStep(v, step) {
@@ -408,6 +424,18 @@ const KeyResponseFunctions = {
 
 	'decrement-value': function(s) {
 		stepValue(s, -1);
+	},
+
+	/*
+	Which decimal place the arrows are working on. Left is the bigger digit,
+	which is where it sits in the number.
+	*/
+	'edit-digit-left': function(s) {
+		moveEditDigit(s, 1);
+	},
+
+	'edit-digit-right': function(s) {
+		moveEditDigit(s, -1);
 	},
 
 	'toggle-dir': function(s) {
