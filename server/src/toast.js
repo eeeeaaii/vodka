@@ -42,11 +42,18 @@ point of something that is about to disappear.
 (comment by Claude)
 */
 
-// quickly in, long enough to read a line of, quickly out
-// (comment by Claude)
-const FADE_IN_MS = 200;
+/*
+Quickly in, long enough to read a line of, quickly out.
+
+The two fades have to match the transition on .toast in toast.css, which is
+what actually does the fading: these only say when the hold starts and when the
+element is taken away.
+
+(comment by Claude)
+*/
+const FADE_IN_MS = 80;
 const HOLD_MS = 2000;
-const FADE_OUT_MS = 200;
+const FADE_OUT_MS = 80;
 
 /*
 A runaway -- something failing on every audio callback -- would otherwise fill

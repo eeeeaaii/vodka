@@ -63,13 +63,14 @@ around that would be a second error-looking thing around the first.
 	cursor: pointer;
 	opacity: 0;
 	/*
-	TEMPORARY, to find out whether the transition is what lingers: effectively
-	instant, so if a toast still seems to hang about on its way out, the
-	transition was never the thing doing it.
+	Kept the same as FADE_IN_MS and FADE_OUT_MS in toast.js, which count the
+	hold from the end of the fade in and take the element away at the end of
+	the fade out. A fade here that the timers there do not know about is a
+	toast removed mid-fade or one sitting invisible for a while.
 
 	(comment by Claude)
 	*/
-	transition: opacity 0.0001s linear;
+	transition: opacity 0.08s linear;
 }
 
 .toast.toastshown {
