@@ -156,7 +156,12 @@ class Org extends NexContainer {
 
 		let drawFunction = this.getChildWithTag(newTagOrThrowOOM('::drawfunction', 'draw function logic'));
 		if (drawFunction) {
-			let cmd = systemState.getSCF().makeCommandWithClosureOneArg(drawFunction, this);
+			// No argument: the org went in unquoted, so it arrived as an
+			// evaluated copy rather than the org itself, which is no use to
+			// anybody. The draw function reaches the real one through self,
+			// which the template bound in its lexical scope.
+			// (comment by Claude)
+			let cmd = systemState.getSCF().makeCommandWithClosureZeroArgs(drawFunction);
 
 			let drawReturn = systemState.getSCF().sEval2(cmd, BINDINGS, 'org: custom drawing function');
 			let drawHTML = '<div class="draw-error">ERROR: invalid result from custom draw function.<div>';
