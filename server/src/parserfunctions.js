@@ -50,9 +50,11 @@ function concatParserString(arr) {
 }
 
 function decorateNex(nex, tags, nonmutable) {
-	if (!nonmutable) {
-		nex.setMutable(true);
-	}		
+	// The semicolon in the saved form means immutable, and it has to be obeyed
+	// in both directions: a nex defaults to mutable, so only saying so when the
+	// mark is absent left every loaded nex mutable and the mark did nothing.
+	// (comment by Claude)
+	nex.setMutable(!nonmutable);
 	if (!tags) {
 		return nex;
 	}

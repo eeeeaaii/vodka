@@ -340,29 +340,12 @@ class RenderNode {
 
 		/*
 		A nex says whether it is collapsed, so a document comes back folded the
-		way you left it.
-
-		Two spellings, because they are two different things. The backslash tag
-		is one you collapsed by hand and is written and removed by the keystroke
-		(see toggleCollapsed). A tag starting with a colon marks machinery --
-		`:docs`, `:init`, `::drawfunction` -- and those start folded away every
-		time the document is opened however you left them, which is the point of
-		them: nobody wants a template's documentation in the way.
+		way you left it. The backslash tag is the only thing that says so: it is
+		written and removed by the keystroke, see toggleCollapsed.
 
 		(comment by Claude)
 		*/
-		let startCollapsed = forNex.hasTagWithString(COLLAPSE_TAG);
-		if (forNex.isNexContainer()) {
-			let tags = forNex.getAllTags();
-			for (let i = 0; i < tags.length; i++) {
-				let s = tags[i].getTagString();
-				if (s.startsWith(':')) {
-					startCollapsed = true;
-				}
-			}
-		}
-
-		this.isCollapsed = startCollapsed;
+		this.isCollapsed = forNex.hasTagWithString(COLLAPSE_TAG);
 
 		this.nodesThatIfDroppedInvalidateTheSelection = [];
 

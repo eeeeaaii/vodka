@@ -109,8 +109,7 @@ function isSpecialTagString(t) {
 	if (!t) return false;
 	/*
 	Machinery. A tag starting with a colon -- `:docs`, `:init`,
-	`::drawfunction` -- is vodka's rather than yours, which is why a nex
-	wearing one opens folded however you left it. See RenderNode.
+	`::drawfunction` -- is vodka's rather than yours.
 
 	(comment by Claude)
 	*/
