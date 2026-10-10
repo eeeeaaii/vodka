@@ -79,6 +79,29 @@ After .tag.exploded so it wins on background.
 }
 
 /*
+A tag being edited is already drawn inverted -- that is how you can see you are
+in it -- which leaves a special tag being edited looking exactly like any other
+tag being edited, and the one moment you most want to know whether vodka reads
+this tag is while you are typing it.
+
+So it inverts again, back to a dark box with light text, and keeps the border
+that says it is being edited. Which makes the spelling visible as you go: type
+`sampl` and nothing happens, `sample` and it flips, the second `s` keeps it,
+and `samplesx` drops it again.
+
+Last in the file, and naming both classes, so it beats the editing and ghost
+rules above rather than relying on where it sits.
+
+(comment by Claude)
+*/
+.tag-special.tag-editing.exploded,
+.tag-special.tag-ghost.exploded {
+	background-color: var(--tag-special-text);
+	color: var(--tag-special-background);
+	border: 1px solid var(--tag-special-background);
+}
+
+/*
 
 for "ask tags" (switch colors?)
 
