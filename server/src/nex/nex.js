@@ -30,6 +30,8 @@ import { RENDER_FLAG_SELECTED,
 		 RENDER_FLAG_RERENDER,
 		 RENDER_FLAG_EXPLODED,
 		 RENDER_FLAG_DEPTH_EXCEEDED,
+		 RENDER_FLAG_COLLAPSED,
+		 COLLAPSE_TAG,
 		 RENDER_MODE_INHERIT } from '../globalconstants.js'
 import { possiblyRecordAction } from '../testrecorder.js'
 import { doTutorial } from '../help.js'
@@ -661,7 +663,18 @@ class Nex {
 			return;
 		}
 		let isExploded = (renderFlags & RENDER_FLAG_EXPLODED);
+		let isCollapsed = (renderFlags & RENDER_FLAG_COLLAPSED);
 		for (let i = 0; i < this.tags.length; i++) {
+			/*
+			Every tag but the one that did the collapsing. A collapsed nex is
+			already drawn as a box with a backslash in it, and that box is this
+			tag -- showing it as well would be saying it twice, in two shapes.
+
+			(comment by Claude)
+			*/
+			if (isCollapsed && this.tags[i].getTagString() == COLLAPSE_TAG) {
+				continue;
+			}
 			this.tags[i].draw(domNode, isExploded);
 		}		
 	}

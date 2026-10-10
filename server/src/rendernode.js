@@ -882,17 +882,19 @@ class RenderNode {
 			}
 		}
 		/*
-		Tags render even on a container whose children are hidden -- they say
-		what the thing is, which is the most useful thing to know about
-		something you cannot see inside of.
+		Tags render even on a container whose children are hidden, and even on a
+		nex that is collapsed away entirely -- they say what the thing is, which
+		is the most useful thing to know about something you cannot see inside
+		of, and the only thing left to go on when you cannot see it at all.
 
-		A commented out nex is the exception. It is meant to read as absent, and
-		the mark that collapsed it is itself a tag, so rendering tags here would
-		draw the very thing that switched it off.
+		Collapsed used to hide them, because the mark that collapsed it is
+		itself a tag and showing the tags would draw the very thing that
+		switched it off. That one tag is skipped instead, in renderTags, which
+		costs nothing and keeps the rest.
 
 		(comment by Claude)
 		*/
-		if (this.nex.hasTags() && !(this.getCollapsed() && (useFlags & RENDER_FLAG_EXPLODED))) {
+		if (this.nex.hasTags()) {
 			let tagHolder = this.nex.getTagHolder(this.domNode);
 			this.nex.renderTags(tagHolder, useFlags, this.getCurrentEditor());
 		}

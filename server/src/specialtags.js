@@ -29,10 +29,12 @@ Here rather than in wavetablefunctions.js, where the timebase spellings used to
 live, because that file imports tag.js and the tags have to be able to ask
 about themselves. This imports nothing.
 
-Deliberately not here: the tag vocabularies that belong to one builtin -- the
-filter kinds, the vowel names. Those mean something to one command and nothing
-anywhere else, and `a` or `low` as a label of your own is far more likely than
-either of them being meant as an instruction.
+The vocabularies that belong to one builtin are here too -- the filter kinds,
+the vowel names -- even though `a` or `low` as a label of your own will now be
+marked as though it meant something. That is the wrong way round on purpose:
+the question you have when you write one of these is whether you spelled it in
+a way vodka will recognise, and a tag that lights up when it should not is a
+smaller problem than one that silently does nothing.
 
 (comment by Claude)
 */
@@ -79,6 +81,30 @@ const INSTRUCTION_TAGS = [
 // (comment by Claude)
 const COLLAPSE_TAG = '\\';
 
+/*
+The kinds a filter can be, across every builtin that takes one -- not every
+one of these works on every filter, but each is a real spelling somewhere, and
+being told which command wants which is not a job a colour can do.
+
+`pass` is optional on all of them: lowpass and low are the same word said two
+ways, which is the rule filterKindFromTags follows.
+
+(comment by Claude)
+*/
+const FILTER_KINDS = [
+	'low',
+	'high',
+	'band',
+	'notch',
+	'peak',
+	'lowshelf',
+	'highshelf'
+];
+
+// the vowels formant knows, which are the keys of VOWEL_FORMANTS
+// (comment by Claude)
+const VOWELS = ['a', 'e', 'i', 'o', 'u'];
+
 function isSpecialTagString(t) {
 	if (!t) return false;
 	/*
@@ -93,6 +119,21 @@ function isSpecialTagString(t) {
 	if (INSTRUCTION_TAGS.indexOf(t) >= 0) return true;
 	if (timebaseForTagString(t)) return true;
 	if (relativeTimebaseForTagString(t)) return true;
+	/*
+	The builtin vocabularies, matched the way the builtins match them: trimmed
+	and lowercased, and with the optional `pass` taken off a filter kind. Done
+	here rather than above because the tags vodka reads everywhere are matched
+	exactly -- `hz`, `Hz` and `HZ` are spellings that were chosen, and `hZ` is
+	not one of them.
+
+	(comment by Claude)
+	*/
+	let normalized = t.trim().toLowerCase();
+	if (VOWELS.indexOf(normalized) >= 0) return true;
+	let kind = normalized.endsWith('pass')
+			? normalized.substring(0, normalized.length - 4)
+			: normalized;
+	if (FILTER_KINDS.indexOf(kind) >= 0) return true;
 	return false;
 }
 
