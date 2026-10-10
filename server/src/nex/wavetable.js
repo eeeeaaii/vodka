@@ -219,6 +219,9 @@ class Wavetable extends Nex {
 		this.playheadOffset = 0;
 		this.playheadNode = null;
 		this.playheadFrame = null;
+		// the readout of where the selection point is, while there is one
+		// (comment by Claude)
+		this.positionLabelNode = null;
 		this.doingPan = false;
 		// where the line was before playback borrowed it
 		// (comment by Claude)
@@ -1121,6 +1124,7 @@ class Wavetable extends Nex {
 	}
 
 	updatePlayhead() {
+		this.updatePositionLabel();
 		if (!this.playheadNode) return;
 		let ctx = this.playheadNode.getContext('2d');
 		// An empty overlay is an invisible one, so there is no separate hidden
@@ -1437,6 +1441,17 @@ class Wavetable extends Nex {
 		}
 		topcontrols.appendChild(this.createTimelabel())
 		/*
+		Only while editing: outside the editor there is no selection point, and
+		while recording the length is still arriving, so a position in it is a
+		number that is about to be wrong.
+
+		(comment by Claude)
+		*/
+		this.positionLabelNode = null;
+		if (this.isEditing && !this.recording) {
+			topcontrols.appendChild(this.createPositionLabel())
+		}
+		/*
 		Stop, but no start. A button that begins recording sits among controls
 		you press all the time, so it gets pressed by accident, and the accident
 		is expensive: it starts overwriting the wave you were working on. There
@@ -1531,6 +1546,55 @@ class Wavetable extends Nex {
 			return false;
 		}
 		return timelabel;
+	}
+
+	/*
+	Where the selection point is, next to how long the wave is, because the two
+	are the same kind of fact about the same wave and you are usually reading
+	one against the other.
+
+	In whatever timebase the duration is being shown in, so the pair can be
+	compared, and clicking the duration changes both. Except for the two bases
+	that are a duration rather than a distance from the start: a position has
+	no frequency and is not a note, so those read in samples instead of in
+	nonsense.
+
+	(comment by Claude)
+	*/
+	positionLabelText() {
+		let at = this.centerSample;
+		if (at < 0) return '';
+		let timebase = this.getCurrentTimebase();
+		if (timebase == 'HZ' || timebase == 'NOTE') {
+			timebase = 'SAMPLES';
+		}
+		let n = convertSamplesToTimebase(timebase, at);
+		n = Math.round(n * 1000) / 1000;
+		return '@ ' + n + ' ' + getTimebaseSuffix(timebase);
+	}
+
+	createPositionLabel() {
+		let positionlabel = document.createElement('div');
+		positionlabel.classList.add('wavecontrol');
+		positionlabel.innerText = this.positionLabelText();
+		this.positionLabelNode = positionlabel;
+		return positionlabel;
+	}
+
+	/*
+	The line moves sixty times a second while a wave is auditioning, and that
+	path deliberately does not re-render the nex. So the number is written
+	straight into the label it already has, which is one text write rather than
+	rebuilding the controls.
+
+	(comment by Claude)
+	*/
+	updatePositionLabel() {
+		if (!this.positionLabelNode) return;
+		let text = this.positionLabelText();
+		if (this.positionLabelNode.innerText != text) {
+			this.positionLabelNode.innerText = text;
+		}
 	}
 
 	createStopRecordingLabel() {
@@ -1682,14 +1746,28 @@ class Wavetable extends Nex {
 		}
 	}
 
-	// xval is a pixel position in the window
+	/*
+	Where the selection point goes for a press at this pixel.
+
+	A position in a wave is between two samples, not on one. That is what it
+	means everywhere else already -- a split point at n cuts the wave into
+	0..n and n..end, and playback from n starts with sample n -- so this is the
+	place that was saying something different: it used to answer with the
+	sample the pixel landed in, which is that sample's left hand edge, so
+	pressing anywhere in a sample zoomed up to forty pixels wide put the line
+	at the start of it and never after it.
+
+	Rounded to the nearest edge instead, which is the one you were pointing at,
+	and which can be the end of the wave -- there are n+1 places to stand in n
+	samples and the last of them is a real one.
+
+	(comment by Claude)
+	*/
 	changeCenterSample(xval) {
-		let samps = this.samplesRepresentedByPixel(xval);
-		if (samps.start == samps.end) {
-			this.centerSample = samps.start;
-		} else {
-			this.centerSample = Math.floor(samps.start + (samps.end - samps.start))
-		}
+		let at = Math.round(this.windowOriginSample + xval / this.getPixelsPerSample());
+		if (at < 0) at = 0;
+		if (at > this.data.length) at = this.data.length;
+		this.centerSample = at;
 	}
 
 	createWaveformCanvas() {
