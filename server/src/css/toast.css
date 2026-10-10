@@ -1,0 +1,88 @@
+/*
+This file is part of Vodka.
+
+Vodka is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Vodka is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+/*
+The layer notices are shown in: fixed, so it is in the same place however far
+down the document has been scrolled, and above everything, including the help
+panel.
+
+It is not there to be clicked -- it covers a corner of the document and the
+document is still the thing you are working on -- so the layer itself passes
+clicks through and only the toasts in it take them.
+
+(comment by Claude)
+*/
+#toastlayer {
+	position: fixed;
+	top: 0;
+	right: 0;
+	z-index: 2000;
+	padding: 12px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 8px;
+	max-width: 60vw;
+	pointer-events: none;
+}
+
+/*
+No chrome of its own. What is inside is an error nex rendered the way the
+document renders one, and it brings its own border and background; a box drawn
+around that would be a second error-looking thing around the first.
+
+(comment by Claude)
+*/
+.toast {
+	position: relative;
+	pointer-events: auto;
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 0.2s linear;
+}
+
+.toast.toastshown {
+	opacity: 1;
+}
+
+/*
+Room for the close button, made in the notice itself rather than around it, so
+the button sits inside the error's own border instead of floating off its
+corner. Only once it is pinned: nothing is covered while there is no button.
+
+(comment by Claude)
+*/
+.toast.toastpinned > .valuenex {
+	padding-right: 22px;
+}
+
+.toastclose {
+	position: absolute;
+	top: 3px;
+	right: 5px;
+	font-family: monospace;
+	font-size: 14px;
+	line-height: 14px;
+	font-style: normal;
+	color: var(--info-text);
+	opacity: 0.6;
+	cursor: pointer;
+}
+
+.toastclose:hover {
+	opacity: 1;
+}
