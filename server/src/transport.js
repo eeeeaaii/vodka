@@ -62,6 +62,38 @@ to.
 // (comment by Claude)
 const CYCLE_LOOKAHEAD_SECONDS = 0.15;
 
+/*
+A master instant said in a device's own clock, and the same answer every time
+it is asked about.
+
+outputTimeFor re-anchors on a fresh pair of clock readings every call, which is
+what keeps two devices from drifting apart over a long set, but it means one
+instant converts to two slightly different numbers if you ask twice. A boundary
+is asked about twice by design: once to end the pass that stops there and once
+to begin the pass that starts there. Those two have to be the same sample or
+the seam is a gap or an overlap of a millisecond, and on a constant that is a
+full scale step to zero and back -- inaudible in music and a loud click on a CV
+output, which is where the symptom turned up.
+
+Only the instant last asked about is remembered, per device, which is all a
+seam needs. It also means every member scheduled in one pass converts the
+boundary once, so the two sides of a stereo pair start on the same sample
+rather than within a sample of each other.
+
+(comment by Claude)
+*/
+let seamTimes = new Map();
+
+function seamTimeFor(output, masterTime) {
+	let remembered = seamTimes.get(output);
+	if (remembered && remembered.masterTime === masterTime) {
+		return remembered.outputTime;
+	}
+	let outputTime = outputTimeFor(output, masterTime);
+	seamTimes.set(output, { masterTime: masterTime, outputTime: outputTime });
+	return outputTime;
+}
+
 // every track with anything in the cycle, playing or waiting
 // (comment by Claude)
 let tracks = [];
@@ -326,13 +358,39 @@ class Track {
 		if (!channelExistsOn(member.output, member.channel)) return;
 		// the same moment, said in this device's own clock
 		// (comment by Claude)
-		let at = outputTimeFor(member.output, startTime);
+		let at = seamTimeFor(member.output, startTime);
 		let node = getSourceFromBuffer(member.buffer, true, member.loopStartSeconds,
 				member.output);
 		node.connect(member.output.merger, 0, member.channel);
+		/*
+		The pass ending here was given its stop time a pass ago, converted off
+		clock readings from then, so it does not end on the sample this one
+		begins on. Told again, with the number this pass is starting at, so the
+		two meet exactly.
+
+		A stop time already scheduled can be replaced by another, earlier or
+		later, and the last one said is the one that counts.
+
+		(comment by Claude)
+		*/
+		if (member.node) {
+			try {
+				member.node.stop(at);
+			} catch (e) {
+				console.log('vodka: could not line up a loop\'s seam: ' + e);
+			}
+		}
 		// the pass after the intro has played starts at the loop point, and
 		// every pass wraps back to it
 		node.start(at, member.introDone ? member.loopStartSeconds || 0 : 0);
+		/*
+		A backstop rather than the real end of the pass: the boundary stops it
+		on the sample the next pass starts on, and this is only here so that a
+		pass whose boundary never arrives -- the cycle stopped, the device went
+		away -- does not play on forever.
+
+		(comment by Claude)
+		*/
 		node.stop(at + len);
 		if (!member.introDone) member.introScheduled = true;
 		member.node = node;
@@ -724,7 +782,10 @@ function moveBoundaryTo(at) {
 				member.stopAt(at);
 			} else if (member.node) {
 				try {
-					member.node.stop(outputTimeFor(member.output, at));
+					// through the seam, because the cycle that starts at this
+					// moment will ask about it too and has to get this number
+					// (comment by Claude)
+					member.node.stop(seamTimeFor(member.output, at));
 				} catch (e) {
 					console.log('vodka: could not bring a loop\'s end forward: ' + e);
 				}
