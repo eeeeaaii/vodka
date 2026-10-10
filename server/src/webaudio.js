@@ -49,7 +49,7 @@ import {
 } from './audiodevices.js'
 import { getAudioBufferFromData, getSilentAudioBuffer, getSourceFromBuffer } from './audiobuffers.js'
 import { anyLoopsPlaying, atNextCycleStart, currentCycleStart, cycleLengthSeconds, endAllLoops, abortPlayback, queueBreak } from './transport.js'
-import { startRecordingAudio, stopRecordingAudio, anythingIsRecording } from './audiorecording.js'
+import { startRecordingAudio, stopRecordingAudio, anythingIsRecording, stopAllRecording } from './audiorecording.js'
 
 
 /*
@@ -255,7 +255,7 @@ export {
 	getAudioBufferFromData, getSilentAudioBuffer, loadAudio, getFileAsBuffer,
 	maybeKillSound, getAuditionPositionSamples, isAnySoundPlaying, stopAllSound,
 	startAuditioningBuffer, contextTimeToPerformanceTime, anyLoopsPlaying,
-	startRecordingAudio, stopRecordingAudio, anythingIsRecording,
+	startRecordingAudio, stopRecordingAudio, anythingIsRecording, stopAllRecording,
 	listAudioDevices, setAudioOutputDevice, setAudioInputDevice,
 	getAudioInputDevice, getDefaultOutputDevice, getDefaultOutputName,
 	anOutputDeviceWasChosen, anInputDeviceWasChosen,

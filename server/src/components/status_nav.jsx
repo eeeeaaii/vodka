@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'preact/hooks';
-import { isAnySoundPlaying, stopAllSound, anyLoopsPlaying } from '../webaudio.js';
+import { isAnySoundPlaying, stopAllSound, anyLoopsPlaying, anythingIsRecording, stopAllRecording } from '../webaudio.js';
 import { anyMidiNotesSounding, midiPanic } from '../midifunctions.js';
 import { stopAllLoops, anyLoopsRunning } from '../builtins/asyncbuiltins.js';
 import { hasPendingSave } from '../autosave.js';
@@ -21,7 +21,12 @@ const StatusNav = () => {
             // a midi note left sounding is the same kind of problem as audio
             // still running, and more urgent -- nothing stops it on its own
             // (comment by Claude)
-            setPlaying(isAnySoundPlaying() || anyMidiNotesSounding() || anyLoopsRunning() || anyLoopsPlaying());
+            // a take counts as something going on: it is holding the
+            // microphone open and filling a wave, so there has to be a stop
+            // button while one is running even if nothing is making a sound
+            // (comment by Claude)
+            setPlaying(isAnySoundPlaying() || anyMidiNotesSounding() || anyLoopsRunning()
+                    || anyLoopsPlaying() || anythingIsRecording());
             setUnsaved(hasPendingSave());
             setDisplayedBpm(getBpm());
         }, POLL_MS);
@@ -45,6 +50,7 @@ const StatusNav = () => {
                          midiPanic();
                          stopAllSound();
                          stopAllLoops();
+                         stopAllRecording();
                          setPlaying(false);
                      }}>
                     {/* currentColor so the icon follows the theme token on the parent */}

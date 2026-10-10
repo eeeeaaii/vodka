@@ -188,6 +188,26 @@ function anythingIsRecording() {
 }
 
 /*
+Every take, ended where it is.
+
+For the stop button, which is the one place in vodka that means stop whatever
+is going on without having to say what. A take is as much a thing going on as a
+loop is -- more so, because it is holding the microphone open and filling a
+wave -- so leaving it running after you pressed stop would be a surprise.
+
+A copy of the list, because stopping a take takes it out of the one being
+walked.
+
+(comment by Claude)
+*/
+function stopAllRecording() {
+	let rigs = recordingRigs.slice();
+	for (let i = 0; i < rigs.length; i++) {
+		if (rigs[i].waves.length > 0) stopRecordingAudio(rigs[i].waves[0]);
+	}
+}
+
+/*
 Records one wave per channel, from one device, off one stream.
 
 The channels are the ones asked for, in the order they were asked for, and one
@@ -436,5 +456,6 @@ function maybeLoadRecorderWorklet() {
 export {
 	startRecordingAudio,
 	stopRecordingAudio,
-	anythingIsRecording
+	anythingIsRecording,
+	stopAllRecording
 }
