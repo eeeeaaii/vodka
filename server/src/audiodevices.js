@@ -225,6 +225,27 @@ default midi port is not saved -- a device id names hardware on this machine.
 let defaultOutputDeviceId = DEFAULT_OUTPUT_KEY;
 let defaultOutputName = '';
 let inputDeviceId = null;
+/*
+Whether somebody said which device, as opposed to vodka using whatever the
+machine was pointed at.
+
+Separate from the id because the two answers are not the same question.
+Choosing the entry the browser calls 'default' sets the id to the same empty
+key an unchosen output has, and choosing is choosing: the point of this flag is
+to know whether anybody has, and playing or recording without having chosen is
+what it is for.
+
+(comment by Claude)
+*/
+let outputDeviceChosen = false;
+
+function anOutputDeviceWasChosen() {
+	return outputDeviceChosen;
+}
+
+function anInputDeviceWasChosen() {
+	return inputDeviceId !== null;
+}
 
 function getAudioInputDevice() {
 	return inputDeviceId;
@@ -629,6 +650,7 @@ function setAudioOutputDevice(id, name, cb) {
 			return;
 		}
 		defaultOutputDeviceId = o.key;
+		outputDeviceChosen = true;
 		// kept so a clip made on this device has something to show besides a
 		// hash
 		// (comment by Claude)
@@ -705,6 +727,8 @@ export {
 	openOutput,
 	openOutputFor,
 	outputTimeFor,
+	anOutputDeviceWasChosen,
+	anInputDeviceWasChosen,
 	listAudioDevices,
 	getDeviceChannelCount,
 	getInputDeviceChannelCount,

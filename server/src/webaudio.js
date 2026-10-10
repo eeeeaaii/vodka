@@ -42,6 +42,8 @@ import {
 	getDefaultOutputName,
 	setAudioInputDevice,
 	getAudioInputDevice,
+	anOutputDeviceWasChosen,
+	anInputDeviceWasChosen,
 	setAudioLatency,
 	getAudioLatency
 } from './audiodevices.js'
@@ -256,6 +258,7 @@ export {
 	startRecordingAudio, stopRecordingAudio, anythingIsRecording,
 	listAudioDevices, setAudioOutputDevice, setAudioInputDevice,
 	getAudioInputDevice, getDefaultOutputDevice, getDefaultOutputName,
+	anOutputDeviceWasChosen, anInputDeviceWasChosen,
 	getDeviceChannelCount, getInputDeviceChannelCount,
 	setAudioLatency, getAudioLatency
 }
