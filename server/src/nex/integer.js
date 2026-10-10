@@ -152,12 +152,6 @@ class Integer extends ValueNex {
 		return DIGIT_CARET_EVENT_TABLE;
 	}
 
-	// one press of the arrow, which is one of whatever digit you are on
-	// (comment by Claude)
-	getStepAmount() {
-		return Math.pow(10, this.editDigitExponent);
-	}
-
 	// a whole number's caret stops at the ones place
 	// (comment by Claude)
 	allowsFractionDigits() {

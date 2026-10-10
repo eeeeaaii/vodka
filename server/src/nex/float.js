@@ -214,12 +214,6 @@ class Float extends ValueNex {
 		return DIGIT_CARET_EVENT_TABLE;
 	}
 
-	// one press of the arrow, which is one of whatever digit you are on
-	// (comment by Claude)
-	getStepAmount() {
-		return Math.pow(10, this.editDigitExponent);
-	}
-
 	// a float's caret can go into the fraction; an integer's cannot
 	// (comment by Claude)
 	allowsFractionDigits() {
