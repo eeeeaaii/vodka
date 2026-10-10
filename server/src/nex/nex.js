@@ -36,6 +36,7 @@ import { RENDER_FLAG_SELECTED,
 import { possiblyRecordAction } from '../testrecorder.js'
 import { doTutorial } from '../help.js'
 import { Tag } from '../tag.js'
+import { styleAttributeFor } from '../nexstyle.js'
 import { heap } from '../heap.js'
 
 
@@ -630,7 +631,10 @@ class Nex {
 		if (systemState.getIsMobile()) {
 			domNode.classList.add('mobile');
 		}
-		domNode.setAttribute("style", this.getCurrentStyle());
+		// a style set the new way belongs to the finished thing, so it is not
+		// worn while you are looking at the parts -- see nexstyle.js
+		// (comment by Claude)
+		domNode.setAttribute("style", styleAttributeFor(this.currentStyle, isExploded));
 		if (renderFlags & RENDER_FLAG_DEPTH_EXCEEDED) {
 			this.clearDomNode(domNode);
 		}

@@ -27,6 +27,7 @@ import { convertJSMapToOrg } from '../nex/org.js'
 import { RenderNode } from '../rendernode.js'
 import { systemState } from '../systemstate.js'
 import { rootManager } from '../rootmanager.js'
+import { checkStyle, markRestrictedStyle } from '../nexstyle.js'
 import { experiments, getExperimentsAsString, getSettings, setSettingValue, hasSettingName } from '../globalappflags.js'
 import { UNBOUND } from '../environment.js'
 import { webFontManager } from '../webfonts.js'
@@ -144,6 +145,27 @@ function createSyscalls() {
 			return n;
 		},
 		'Gives |nex the css style |style, replacing any it had.'
+	);
+
+	Builtin.createBuiltin(
+		'set-style of',
+		[ 'style$', 'nex' ],
+		function $setStyleOf(env, executionEnvironment) {
+			let s = env.lb('style').getFullTypedValue();
+			let n = env.lb('nex');
+			if (!Utils.isDocElement(n)) {
+				return constructFatalError('set-style of: you can only style a doc,'
+						+ ' a line, a word, a letter or a separator, not a '
+						+ n.getTypeName() + '. Sorry!');
+			}
+			let checked = checkStyle(s);
+			if (checked.problem) {
+				return constructFatalError('set-style of: ' + checked.problem + '. Sorry!');
+			}
+			n.setCurrentStyle(markRestrictedStyle(checked.css));
+			return n;
+		},
+		'Gives |nex the style |style, replacing any it had. Colour, size and font only, on a doc, line, word, letter or separator, and it shows in normal mode only.'
 	);
 
 	Builtin.createBuiltin(
