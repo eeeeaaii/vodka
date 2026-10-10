@@ -16,9 +16,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 /*
-The layer notices are shown in: fixed, so it is in the same place however far
-down the document has been scrolled, and above everything, including the help
-panel.
+The layer notices are shown in: fixed at the top middle, so it is in the same
+place however far down the document has been scrolled, and above everything,
+including the help panel.
 
 It is not there to be clicked -- it covers a corner of the document and the
 document is still the thing you are working on -- so the layer itself passes
@@ -29,15 +29,25 @@ clicks through and only the toasts in it take them.
 #toastlayer {
 	position: fixed;
 	top: 0;
+	left: 0;
 	right: 0;
 	z-index: 2000;
 	padding: 12px;
 	display: flex;
 	flex-direction: column;
-	align-items: flex-end;
+	align-items: center;
 	gap: 8px;
-	max-width: 60vw;
 	pointer-events: none;
+}
+
+/*
+Only as wide as what it is saying, up to most of the window, so a one line
+error is a small thing at the top of the screen rather than a banner across it.
+
+(comment by Claude)
+*/
+#toastlayer > .toast {
+	max-width: 60vw;
 }
 
 /*
