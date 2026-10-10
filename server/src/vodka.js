@@ -57,13 +57,11 @@ import { constructEString } from './nex/estring.js'
 import { NEXT_NEX_ID, setNextNexId } from './nex/nex.js'
 import { runTest } from './tests/unittests.js';
 import { possiblyRecordAction, startRecordingTest } from './testrecorder.js'
-import {
-	RENDER_FLAG_EXPLODED,
-	RENDER_FLAG_NORMAL,
-	RENDER_FLAG_RENDER_IF_DIRTY } from './globalconstants.js'
+import { RENDER_FLAG_RENDER_IF_DIRTY } from './globalconstants.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { BINDINGS } from './environment.js'
 import { rootManager } from './rootmanager.js'
+import { doDrawPass } from './drawpass.js'
 import { setAPIDocCategory } from './documentation.js'
 import { maybeKillSound } from './webaudio.js'
 // MOBILE WIP: mobile support is half-finished -- the control panel markup in
@@ -182,6 +180,7 @@ function nodeLevelRender(node) {
 }
 
 function topLevelRender() {
+	doDrawPass();
 	systemState.setGlobalRenderPassNumber(systemState.getGlobalRenderPassNumber() + 1);
 	let flags = systemState.getGlobalCurrentDefaultRenderFlags();
 	systemState.getRoot().setRenderDepth(0);
@@ -189,6 +188,7 @@ function topLevelRender() {
 }
 
 function renderOnlyDirty() {
+	doDrawPass();
 	systemState.setGlobalRenderPassNumber(systemState.getGlobalRenderPassNumber() + 1);
 	let flags = systemState.getGlobalCurrentDefaultRenderFlags();
 	systemState.getRoot().setRenderDepth(0);

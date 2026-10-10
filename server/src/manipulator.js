@@ -623,14 +623,24 @@ class Manipulator {
 		return c;
 	}
 
+	/*
+	Stopping at a drawn org, because there is nothing inside one to stop on:
+	it is drawn as what it is rather than as what it is made of, so a leaf in
+	there is not on the screen and selecting it puts you somewhere you cannot
+	see, with no insertion point, typing blind.
+
+	(comment by Claude)
+	*/
 	_getFirstLeafInside(s) {
-		while(Utils.isNexContainer(s)
+		while(Utils.isNexContainer(s) && !s.isSealed()
 			&& (s = s.getFirstChild()) != null);
 		return s;
 	}
 
+	// see _getFirstLeafInside
+	// (comment by Claude)
 	_getLastLeafInside(s) {
-		while(Utils.isNexContainer(s)
+		while(Utils.isNexContainer(s) && !s.isSealed()
 			&& (s = s.getLastChild()) != null);
 		return s;
 	}
@@ -1357,7 +1367,9 @@ class Manipulator {
 
 	selectFirstLeaf() {
 		let c = (systemState.getGlobalSelectedNode());
-		while(Utils.isNexContainer(c) && c.hasChildren()) {
+		// see _getFirstLeafInside
+		// (comment by Claude)
+		while(Utils.isNexContainer(c) && !c.isSealed() && c.hasChildren()) {
 			c = c.getFirstChild();
 		}
 		c.setSelected();
@@ -1519,6 +1531,15 @@ class Manipulator {
 		// the selection is not in the document at all, so there is nothing to
 		// find a common ancestor in
 		if (aChain.indexOf(root) == -1) return null;
+		/*
+		Neither end may be inside a drawn org. Picking a range in there would
+		put a selection where nothing is drawn, and applying it wraps the range
+		in a new org -- restructuring something whose structure is not on the
+		screen.
+
+		(comment by Claude)
+		*/
+		if (a.selectionTarget() != a || b.selectionTarget() != b) return null;
 
 		let common = null;
 		for (let n = b; n; n = n.getParent()) {

@@ -64,8 +64,12 @@ const AbstractDataTypesPanel = () => {
 
         In addition to <span className="infohotkey">:init</span>, there are other special tags that can be applied to children of
         the model.
-        If the model has a lambda child tagged <span className="infohotkey">:draw</span>, that returns HTML, an instance of that model will
-        be rendered with that HTML in normal (non-exploded) mode.
+        If the model has a lambda child tagged <span className="infohotkey">:draw</span>, it is called with no arguments and whatever
+        nex it returns becomes the instance's first child, tagged <span className="infohotkey">:rendered</span>. An org whose first child
+        wears that tag is drawn as that child, in normal (non-exploded) mode, and nothing descends into it. You can put a
+        <span className="infohotkey">:rendered</span> child there by hand instead, and it is never regenerated.
+        A <span className="infohotkey">:shouldDraw</span> child, if there is one, is asked whether to call <span className="infohotkey">:draw</span> again;
+        without one the drawing is redone whenever something changes the org.
         If the model has a doc child tagged <span className="infohotkey">:docs</span>, those docs appear in the tooltip when you type the model name
         into the instantiator.
       </p>

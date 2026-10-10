@@ -22,7 +22,6 @@ export const tutorialContent = {
 			`Hold down the alt/option key while using the navigation commands (arrows and tab)`,
 			`Hold down the alt/option key while inserting objects using the symbol characters.`,
 			`Try copying, pasting, undoing, and redoing with cmd (or ctrl) z, x, c, v, and y.`,
-			`Press escape.`,
 		],
 	},
 	'tooltip': {

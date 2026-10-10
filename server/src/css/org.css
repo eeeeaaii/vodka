@@ -157,14 +157,22 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 .zdir.exploded > .nex:nth-child(17) { margin-top:160px; }
 
 /*
-What an org says when its draw function hands back something it cannot draw.
-Plain and red: it is a complaint, not part of anybody's interface.
+An org drawn as its `:rendered` child: no box, no colour of its own. What you
+see is the drawing, so the org around it should not be visible at all.
 
 (comment by Claude)
 */
-.draw-error {
-	font-family: Courier;
-	font-size: 11px;
-	color: var(--error-text);
-	padding: 4px;
+.drawnorg {
+	height: auto;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	background-color: transparent;
+	border: none;
+	padding: 0;
+}
+
+.drawnorg.selected {
+	outline: 2px solid var(--selected-border);
+	outline-offset: 2px;
 }

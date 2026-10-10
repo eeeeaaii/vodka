@@ -299,6 +299,18 @@ class NexContainer extends Nex {
 		}
 	}
 
+	/*
+	Which children get drawn, which is not always all of them: an org showing
+	a drawing draws that and nothing else. Separate from getChildArray, which
+	answers what is actually in there -- the members of a drawn org are still
+	its members, they are just not what it looks like.
+
+	(comment by Claude)
+	*/
+	getChildArrayForRendering() {
+		return this.getChildArray();
+	}
+
 	renderChildrenIfNormal() {
 		return true;
 	}

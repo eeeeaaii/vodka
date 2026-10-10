@@ -82,9 +82,6 @@ const BasicUsagePanel = () => {
         <p className="infospacer"></p>
         <p className="infoline"><span className="infohotkey"><span className="optionkey">{OPTION_KEY}</span>-shift-delete</span>"unroll" the selected container -- dissolve it, leaving its children behind in its place (containers only)</p>
         <p className="infospacer"></p>
-        <p className="infoline"><span className="infohotkey">shift-escape</span>toggle exploded/normal modes for entire document</p>
-        <p className="infoline"><span className="infohotkey">shift-alt-escape</span>toggle exploded/normal modes for selected object (and its children)</p>
-        <p className="infospacer"></p>
         <p className="infoline"><span className="infohotkey"><span className="optionkey">{OPTION_KEY}</span>-shift</span>and any of&nbsp;<span className="infohotkey">{'~&*^({[<'}</span>wrap-inserts the specified container around the currently selected object</p>
         <p className="infospacer"></p>
         <p className="infoline"><span className="infohotkey"><span className="metakey">{META_KEY}</span>-c</span>copy</p>

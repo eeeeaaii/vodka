@@ -334,7 +334,16 @@ class RenderNode {
 		this.isCurrentlyExploded = false;
 		this.currentEd = null;
 		this.wrapperDomNode = null;
-		this.setInsertionMode(INSERT_UNSPECIFIED);
+		/*
+		Assigned, not set. setInsertionMode returns early when the mode is the
+		one already there, and an unassigned field is not equal to anything --
+		so going through the setter here ran the whole body, and for a letter,
+		a word, a line or a separator that body asks for a render. Building a
+		render node is not an event; it happens during one.
+
+		(comment by Claude)
+		*/
+		this.insertionMode = INSERT_UNSPECIFIED;
 
 		this.renderNodeIsDirty = true;
 
@@ -560,11 +569,10 @@ class RenderNode {
 	}
 
 	/*
-	A result you cannot take apart, which is the same question as whether it is
-	drawn normal: normal mode is a thing shown as what it is rather than as
-	what it is made of, and you cannot reach into what you cannot see. So the
-	selection treats it as one object -- select it, copy it, delete it, but do
-	not reach the letters inside. Regenerate it instead; that is what it is for.
+	A drawing is not something you take apart. The org can be selected, moved,
+	copied and deleted like any nex, but nothing goes inside it: there is no
+	hierarchy on the screen to go inside of, so offering a traversal through
+	things nobody can see would be a lie.
 
 	(comment by Claude)
 	*/
@@ -653,35 +661,23 @@ class RenderNode {
 	}
 
 
-	isExploded() {
-		return this.isCurrentlyExploded;
-	}
-
 	/*
-	Normal mode is a doc seen as the thing it is: a title is a title, not a word
-	nex holding five letter nexes. Exploded mode is the structure underneath it.
+	Normal mode is a thing shown as what it is rather than as what it is made
+	of. Exactly one thing turns it on: an org whose first child wears the
+	`:rendered` tag is drawn as that child, and so is everything inside it.
 
-	Which one you get is not a setting any more. It is a fact about the nex. A
-	doc that is immutable is one an evaluation handed back -- it is a result,
-	so it is drawn as a result, and so is everything inside it. Anything you
-	can still edit is drawn exploded. That is the whole rule, and it is why
-	there is no longer an escape key that turns the document inside out.
-
-	The doc is the boundary and nothing else is: a line or a word is a piece of
-	one, not a thing in its own right, so neither starts a normal region on its
-	own account.
-
-	So a doc is how you build a face for something: return one, and what you get
-	back is the drum machine rather than the expression that made it.
+	It is not a setting and no key toggles it. It was briefly keyed off an
+	immutable doc, which was two rules pretending to be one -- immutability
+	now means only that there is no editor.
 
 	(comment by Claude)
 	*/
 	getRenderMode() {
-		if (Utils.isDoc(this.nex) && !this.nex.isMutable()) {
+		let p = this.getParent();
+		if (p && p.getRenderMode() == RENDER_MODE_NORM) {
 			return RENDER_MODE_NORM;
 		}
-		let p = this.getParent();
-		return p ? p.getRenderMode() : RENDER_MODE_EXPLO;
+		return this.nex.hasCustomDrawing() ? RENDER_MODE_NORM : RENDER_MODE_EXPLO;
 	}
 
 	getNex() {
@@ -827,16 +823,15 @@ class RenderNode {
 		this.nex.renderInto(this, useFlags, this.getCurrentEditor());
 		this.nex.doRenderSequencing(this);
 		this.isCurrentlyExploded = !!(useFlags & RENDER_FLAG_EXPLODED);
-
 		/*
-		A nex that drew itself is finished. Its children are the workings, and
-		drawing them below the face would put both on the screen at once.
+		It has rendered, so it is clean. Said here rather than at the bottom
+		of the method because there are returns in between, and a node that
+		left by one of them stayed dirty for ever -- nothing else clears this
+		flag, setAllNotDirty only clears the nex's.
 
 		(comment by Claude)
 		*/
-		if (this.nex.hasCustomDrawing()) {
-			return;
-		}
+		this.setRenderNodeDirtyForRendering(false);
 
 		if (!(useFlags & RENDER_FLAG_EXPLODED)
 				&& this.nex.isNexContainer()
@@ -853,7 +848,7 @@ class RenderNode {
 			// getChildAt walks the child list from the head every call, so
 			// snapshot the children once instead of paying c squared
 			// (comment by Claude)
-			let childNexes = this.getNex().getChildArray();
+			let childNexes = this.getNex().getChildArrayForRendering();
 			let i = 0;
 			for (i = 0; i < this.childnodes.length; i++) {
 				if (i >= childNexes.length) {
@@ -1162,6 +1157,13 @@ class RenderNode {
 		if (Utils.isRoot(this.nex)) {
 			return INSERT_INSIDE;
 		}
+		// nothing goes inside something that says nothing goes inside it, and
+		// the pip that says it would is one you cannot see: a drawn org is not
+		// exploded, and every pip is drawn by the exploded path
+		// (comment by Claude)
+		if (nex.isNexContainer() && !nex.canDoInsertInside()) {
+			return INSERT_AFTER;
+		}
 		if (nex.isNexContainer() && nex.numChildren() == 0) {
 			// for commands that we know have no args, we don't do insert inside by default.
 			if (Utils.isCommand(nex)
@@ -1184,6 +1186,21 @@ class RenderNode {
 	// TODO: this is confusing because you might think that the boolean passed in tells it whether
 	// or not to make the thing selected.
 	setSelected(rerender) {
+		/*
+		The last word on what gets selected. The descent paths each refuse to
+		go inside a drawn org, but they are not the only way in -- an undo
+		restores a node saved before the org had a drawing, and an org can
+		acquire one while something inside it is selected. Either way the
+		selection would be somewhere nothing is drawn, with no insertion point
+		and no way to get one, so it comes back out here.
+
+		(comment by Claude)
+		*/
+		let target = this.selectionTarget();
+		if (target != this) {
+			target.setSelected(rerender);
+			return;
+		}
 		let selectedNode = systemState.getGlobalSelectedNode();
 		if (selectedNode == this) return;
 		if (selectedNode) {

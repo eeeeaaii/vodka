@@ -31,7 +31,8 @@ import { RENDER_FLAG_SELECTED,
 		 RENDER_FLAG_EXPLODED,
 		 RENDER_FLAG_DEPTH_EXCEEDED,
 		 RENDER_FLAG_COLLAPSED,
-		 COLLAPSE_TAG } from '../globalconstants.js'
+		 COLLAPSE_TAG,
+		 RENDERED_TAG } from '../globalconstants.js'
 import { possiblyRecordAction } from '../testrecorder.js'
 import { doTutorial } from '../help.js'
 import { Tag } from '../tag.js'
@@ -597,11 +598,7 @@ class Nex {
 
 	_setClickHandler(renderNode) {
 		renderNode.addEventListener('mousedown', (event) => {
-			// a nex that answers clicks itself answers them even where clicks
-			// are otherwise switched off, which is how a button drawn inside an
-			// org's face still works -- see Org.silenceClicks
-			// (comment by Claude)
-			if (!this.clickActive && !this.extraClickHandler) return true;
+			if (!this.clickActive) return true;
 			let atTarget = !event.vodkaTargetFinished;
 			event.vodkaTargetFinished = true;
 			if (atTarget) {
@@ -675,6 +672,16 @@ class Nex {
 			(comment by Claude)
 			*/
 			if (isCollapsed && this.tags[i].getTagString() == COLLAPSE_TAG) {
+				continue;
+			}
+			/*
+			Nor the one that says this nex is what its org looks like. That
+			tag is addressed to vodka, and a face is the one place where what
+			is on the screen is supposed to be only what the author drew.
+
+			(comment by Claude)
+			*/
+			if (this.tags[i].getTagString() == RENDERED_TAG) {
 				continue;
 			}
 			this.tags[i].draw(domNode, isExploded);

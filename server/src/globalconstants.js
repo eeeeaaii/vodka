@@ -55,6 +55,11 @@ a nex you could not expand, or an expanded nex that reads as collapsed.
 */
 const COLLAPSE_TAG = '\\';
 
+// the tag on an org's first child that says that child is what the org looks
+// like -- see Org.getDrawing
+// (comment by Claude)
+const RENDERED_TAG = ':rendered';
+
 // render modes are values that are stored as state, for example in RenderNode objects.
 
 const RENDER_MODE_EXPLO = 1;
@@ -63,6 +68,7 @@ const RENDER_MODE_NORM = 2;
 export {
 	UNHANDLED_KEY,
 	COLLAPSE_TAG,
+	RENDERED_TAG,
 	RENDER_FLAG_NORMAL,
 	RENDER_FLAG_SHALLOW,
 	RENDER_FLAG_EXPLODED,

@@ -26,26 +26,37 @@ import { constructFloat } from './float.js'
 import { heap } from '../heap.js'
 import { constructFatalError, newTagOrThrowOOM } from './eerror.js'
 import { systemState } from '../systemstate.js'
-import { RenderNode } from '../rendernode.js'
-import { RENDER_FLAG_RERENDER } from '../globalconstants.js'
+import { RENDERED_TAG } from '../globalconstants.js'
 import { BINDINGS } from '../environment.js'
 
 
 /*
-One tag, made once. getChildWithTag needs a Tag to compare against, and a tag's
-string is charged to the heap when it is set and given back when the tag is
-freed -- so building a fresh one on every render, which is what asking whether
-an org has a draw function does, spends heap that nothing ever returns.
+Tags made once each. getChildWithTag needs a Tag to compare against, and a
+tag's string is charged to the heap when it is set and given back when the tag
+is freed -- so building a fresh one every time anybody asks whether an org has
+a drawing spends heap that nothing ever returns.
 
 (comment by Claude)
 */
-let theDrawFunctionTag = null;
+let theTags = {};
+
+function theTag(s, context) {
+	if (!theTags[s]) {
+		theTags[s] = newTagOrThrowOOM(s, context);
+	}
+	return theTags[s];
+}
 
 function drawFunctionTag() {
-	if (!theDrawFunctionTag) {
-		theDrawFunctionTag = newTagOrThrowOOM('::drawfunction', 'draw function logic');
-	}
-	return theDrawFunctionTag;
+	return theTag('::drawfunction', 'draw function logic');
+}
+
+function renderedTag() {
+	return theTag(RENDERED_TAG, 'the drawing of an org');
+}
+
+function shouldDrawTag() {
+	return theTag(':shouldDraw', 'whether to draw an org again');
 }
 
 
@@ -55,6 +66,10 @@ class Org extends NexContainer {
 		// private data is currently unused but I want the logic for
 		// handling it here so I can implement parsing and tests for it
 		this.privateData = '';
+
+		// an org that has never been drawn needs drawing
+		// (comment by Claude)
+		this.drawingIsStale = true;
 
 		// if this org is instantiated as a template,
 		// then it will have this set to the self-scope.
@@ -161,111 +176,144 @@ class Org extends NexContainer {
 	}
 
 	/*
-	An org with a draw function is whatever it drew, so RenderNode stops there
-	and does not go on to draw the members underneath it. They are how it is
+	The drawing: an org's first child, wearing the `:rendered` tag.
+
+	It is an ordinary nex in the ordinary tree, which is the whole point. The
+	drawing used to be painted through a render node that was a child of
+	nothing, so selection, traversal, dirty tracking and undo could not see it,
+	and a click handler a draw function set up was thrown away every time the
+	face was rebuilt. A real child is reached by all of that machinery for
+	free.
+
+	First child, and the tag, and nothing else: the rule is mechanical so that
+	you can put a `:rendered` doc there by hand and get a face without writing
+	a draw function at all. An org with no `:draw` member is never visited by
+	the draw pass, so a face you wrote yourself is never regenerated.
+
+	(comment by Claude)
+	*/
+	getDrawing() {
+		if (this.numChildren() == 0) return null;
+		let first = this.getChildAt(0);
+		return first.hasTag(renderedTag()) ? first : null;
+	}
+
+	/*
+	An org that has a drawing is that drawing, so RenderNode draws only the
+	first child and nothing descends into it. The other children are how it is
 	made, not what it looks like.
 
 	(comment by Claude)
 	*/
 	hasCustomDrawing() {
-		return !!this.getDrawFunction();
+		return !!this.getDrawing();
 	}
 
 	/*
-	A drawn org is dirty when it says it is, the same as everything else.
+	Whether the draw pass should run `:draw` again.
 
-	It used to claim to be always dirty, on the grounds that without a
-	:shouldDraw nobody can know when your state moved. That cannot work: an org
-	that is always dirty redraws on every pass, and anything the drawing does
-	that asks for a render -- a deferred settling, an error, an allocation --
-	asks for the pass that will ask again. The page never comes back.
+	Ordinarily: when something changed the org. `set self.yesorno T` reaches
+	Environment.set, which replaces the member in place, which calls changed()
+	-- so state moving marks the drawing stale and nothing has to say so.
 
-	Knowing when to redraw is :shouldDraw's job, and :shouldDraw is still a
-	stub. Until it is not, a face refreshes when something marks the org dirty.
+	A `:shouldDraw` member overrides that and is asked instead. Anything but
+	true means no: a member that answers with nil, or with nothing at all,
+	means do not draw, because the alternative -- treating "I could not tell"
+	as yes -- is an org that redraws for ever.
 
 	(comment by Claude)
 	*/
+	shouldDraw() {
+		let shouldDrawFunction = this.getChildWithTag(shouldDrawTag());
+		if (!shouldDrawFunction) {
+			return this.drawingIsStale;
+		}
+		if (shouldDrawFunction.getTypeName() != '-closure-') {
+			return false;
+		}
+		let cmd = systemState.getSCF().makeCommandWithClosureZeroArgs(shouldDrawFunction);
+		let r = systemState.getSCF().sEval2(cmd, BINDINGS, 'org: shouldDraw');
+		return !!(r && r.getTypeName() == '-bool-' && r.getTypedValue());
+	}
 
 	/*
-	What a draw function is allowed to hand back.
+	Run the draw function and keep what it gives back.
 
-	A string is html, which is the escape hatch: whatever you can write, the
-	org becomes. A doc, a line or a word is drawn as itself, which is the
-	ordinary way -- you build the face out of the same pieces everything else
-	in vodka is built out of, and because a value coming back from an
-	evaluation is immutable, it draws in normal mode without being told to.
+	Called by the draw pass, which runs before rendering and never during it.
+	Drawing is evaluation -- it allocates, it can settle a deferred, it can
+	fail -- and evaluation inside a render pass is how a render asks for the
+	render that asks again.
 
-	An error is drawn as the error nex itself, so you can open it and see what
-	actually went wrong. Flattening it to text lost that: the cause of a
-	failure is the wrapped error inside, and a string keeps only the wrapper.
+	Whatever comes back is used, whatever it is. An error becomes the face and
+	is therefore visible and openable rather than lost. Putting the drawing in
+	does not mark the drawing stale, or every pass would ask for another one.
 
 	(comment by Claude)
 	*/
-	drawCustom(renderNode, domNode, drawReturn) {
-		if (Utils.isEString(drawReturn)) {
-			domNode.innerHTML = drawReturn.getFullTypedValue();
+	refreshDrawing() {
+		let drawFunction = this.getDrawFunction();
+		if (!drawFunction) return;
+		// No argument: an org passed to a command goes in unquoted, so it
+		// would arrive as an evaluated copy. A draw function reaches the real
+		// one through self, which the template bound in its lexical scope.
+		// (comment by Claude)
+		let cmd = systemState.getSCF().makeCommandWithClosureZeroArgs(drawFunction);
+		let drawing = systemState.getSCF().sEval2(cmd, BINDINGS, 'org: custom drawing function');
+		this.setDrawing(drawing);
+	}
+
+	setDrawing(drawing) {
+		if (!drawing.hasTag(renderedTag())) {
+			drawing.addTag(newTagOrThrowOOM(RENDERED_TAG, 'the drawing of an org'));
+		}
+		let old = this.getDrawing();
+		if (old == drawing) {
+			this.drawingIsStale = false;
 			return;
 		}
-		if (Utils.isDocContainerType(drawReturn) || Utils.isFatalError(drawReturn)) {
-			this.drawNexInto(renderNode, domNode, drawReturn);
-			return;
+		if (old) {
+			this.replaceChildAt(drawing, 0);
+		} else {
+			this.prependChild(drawing);
 		}
-		domNode.innerHTML = '<div class="draw-error">'
-				+ this.escape('a draw function must return a string, a doc, a line or'
-						+ ' a word, not ' + drawReturn.getTypeName(), true)
-				+ '</div>';
+		// the drawing is the answer to staleness, not another cause of it
+		// (comment by Claude)
+		this.drawingIsStale = false;
 	}
 
-	/*
-	The face belongs to the org, so a click on it is a click on the org: the
-	drawn nexes do not answer for themselves, and the event goes on up to the
-	org's own handler, which is a nex in the document and can be selected.
-
-	Except where a part of the face was given a click handler. That part is a
-	button -- an x in a row of x's that turns something on and off -- and the
-	click is its business.
-
-	(comment by Claude)
-	*/
-	silenceClicks(nex) {
-		nex.clickActive = false;
-		if (nex.isNexContainer()) {
-			nex.doForEachChild(c => this.silenceClicks(c));
-		}
-	}
-
-	// a nex drawn in place of the org, on its own render node because it is
-	// not a child of anything -- it is what the org looks like
+	// an org showing a drawing is drawn as that drawing and nothing else; the
+	// members are how it is made, not what it looks like
 	// (comment by Claude)
-	drawNexInto(renderNode, domNode, nex) {
-		this.silenceClicks(nex);
-		let node = new RenderNode(nex);
-		node.setRenderDepth(renderNode.getRenderDepth() + 1);
-		node.render(RENDER_FLAG_RERENDER);
-		domNode.innerHTML = '';
-		domNode.appendChild(node.getDomNode());
+	getChildArrayForRendering() {
+		let drawing = this.getDrawing();
+		return drawing ? [ drawing ] : this.getChildArray();
+	}
+
+	// nothing goes inside an org that is showing a drawing; what you would be
+	// putting it next to is not on the screen
+	// (comment by Claude)
+	canDoInsertInside() {
+		return !this.hasCustomDrawing();
+	}
+
+	// anything that changes an org makes its drawing out of date, which is
+	// what lets `set self.x` redraw a face without saying so
+	// (comment by Claude)
+	changed() {
+		this.drawingIsStale = true;
+		super.changed();
 	}
 
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
-
-		let drawFunction = this.getDrawFunction();
-		if (drawFunction) {
-			// No argument: the org went in unquoted, so it arrived as an
-			// evaluated copy rather than the org itself, which is no use to
-			// anybody. The draw function reaches the real one through self,
-			// which the template bound in its lexical scope.
-			// (comment by Claude)
-			let cmd = systemState.getSCF().makeCommandWithClosureZeroArgs(drawFunction);
-
-			let drawReturn = systemState.getSCF().sEval2(cmd, BINDINGS, 'org: custom drawing function');
-			this.drawCustom(renderNode, domNode, drawReturn);
-		} else {
-			super.renderInto(renderNode, renderFlags, withEditor);
-			domNode.classList.add('org');
-			domNode.classList.add('data');
-			domNode.classList.add('redorgs');			
+		super.renderInto(renderNode, renderFlags, withEditor);
+		if (this.hasCustomDrawing()) {
+			domNode.classList.add('drawnorg');
+			return;
 		}
+		domNode.classList.add('org');
+		domNode.classList.add('data');
+		domNode.classList.add('redorgs');
 	}
 
 	/*
