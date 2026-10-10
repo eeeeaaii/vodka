@@ -87,9 +87,6 @@ class Word extends NexContainer {
 		})
 	}
 
-	toggleDir() {} // can only be horizontal
-	setVertical() {}
-
 	getContextType() {
 		if (this.isMutable()) {
 			return ContextType.WORD;

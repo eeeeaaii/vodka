@@ -51,9 +51,6 @@ class Doc extends NexContainer {
 		return `[${this.toStringV2Literal()}doc]${this.toStringV2PrivateDataSection(ctx)}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2', ctx)}${this.listEndV2()}`;
 	}
 
-	toggleDir() {} // can only be vertical
-	setHorizontal() {}
-
 	prettyPrintInternal(lvl, hdir) {
 		return this.standardListPrettyPrint(lvl, '[doc]', hdir);
 	}

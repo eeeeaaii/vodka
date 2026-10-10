@@ -27,6 +27,8 @@ import { Tag } from '../tag.js'
 import { heap } from '../heap.js'
 import { constructFatalError, newTagOrThrowOOM } from './eerror.js'
 import { systemState } from '../systemstate.js'
+import { RenderNode } from '../rendernode.js'
+import { RENDER_FLAG_RERENDER } from '../globalconstants.js'
 import { BINDINGS } from '../environment.js'
 
 
@@ -151,6 +153,47 @@ class Org extends NexContainer {
 		return super.getDirtyForRendering();
 	}
 
+	/*
+	What a draw function is allowed to hand back.
+
+	A string is html, which is the escape hatch: whatever you can write, the
+	org becomes. A doc, a line or a word is drawn as itself, which is the
+	ordinary way -- you build the face out of the same pieces everything else
+	in vodka is built out of, and because a value coming back from an
+	evaluation is immutable, it draws in normal mode without being told to.
+
+	An error is drawn as the error nex itself, so you can open it and see what
+	actually went wrong. Flattening it to text lost that: the cause of a
+	failure is the wrapped error inside, and a string keeps only the wrapper.
+
+	(comment by Claude)
+	*/
+	drawCustom(renderNode, domNode, drawReturn) {
+		if (Utils.isEString(drawReturn)) {
+			domNode.innerHTML = drawReturn.getFullTypedValue();
+			return;
+		}
+		if (Utils.isDocContainerType(drawReturn) || Utils.isFatalError(drawReturn)) {
+			this.drawNexInto(renderNode, domNode, drawReturn);
+			return;
+		}
+		domNode.innerHTML = '<div class="draw-error">'
+				+ this.escape('a draw function must return a string, a doc, a line or'
+						+ ' a word, not ' + drawReturn.getTypeName(), true)
+				+ '</div>';
+	}
+
+	// a nex drawn in place of the org, on its own render node because it is
+	// not a child of anything -- it is what the org looks like
+	// (comment by Claude)
+	drawNexInto(renderNode, domNode, nex) {
+		let node = new RenderNode(nex);
+		node.setRenderDepth(renderNode.getRenderDepth() + 1);
+		node.render(RENDER_FLAG_RERENDER);
+		domNode.innerHTML = '';
+		domNode.appendChild(node.getDomNode());
+	}
+
 	renderInto(renderNode, renderFlags, withEditor) {
 		let domNode = renderNode.getDomNode();
 
@@ -164,13 +207,7 @@ class Org extends NexContainer {
 			let cmd = systemState.getSCF().makeCommandWithClosureZeroArgs(drawFunction);
 
 			let drawReturn = systemState.getSCF().sEval2(cmd, BINDINGS, 'org: custom drawing function');
-			let drawHTML = '<div class="draw-error">ERROR: invalid result from custom draw function.<div>';
-			if (Utils.isEString(drawReturn)) {
-				drawHTML = drawReturn.getFullTypedValue();
-			} else if (Utils.isFatalError(drawReturn)) {
-				drawHTML = '<div class="draw-error">' + drawReturn.getFullTypedValue() + '</div>'
-			}
-			domNode.innerHTML = drawHTML;
+			this.drawCustom(renderNode, domNode, drawReturn);
 		} else {
 			super.renderInto(renderNode, renderFlags, withEditor);
 			domNode.classList.add('org');

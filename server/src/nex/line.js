@@ -101,9 +101,6 @@ class Line extends NexContainer {
 		})
 	}
 
-	toggleDir() {} // can only be horizontal
-	setVertical() {}
-
 	getValueAsString() {
 		let s = '';
 		this.doForEachChild(c => {

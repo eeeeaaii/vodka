@@ -555,6 +555,10 @@ class RenderNode {
 		this.renderDepth = depth;
 	}
 
+	getRenderDepth() {
+		return this.renderDepth ? this.renderDepth : 0;
+	}
+
 
 	setCollapsed(v) {
 		this.isCollapsed = v;
@@ -609,10 +613,11 @@ class RenderNode {
 	nex holding five letter nexes. Exploded mode is the structure underneath it.
 
 	Which one you get is not a setting any more. It is a fact about the nex. A
-	doc that is immutable is one an evaluation handed back -- it is a result, so
-	it is drawn as a result, and so is everything inside it. Anything you can
-	still edit is drawn exploded. That is the whole rule, and it is why there is
-	no longer an escape key that turns the document inside out.
+	doc, line or word that is immutable is one an evaluation handed back -- it
+	is a result, so it is drawn as a result, and so is everything inside it.
+	Anything you can still edit is drawn exploded. That is the whole rule, and
+	it is why there is no longer an escape key that turns the document inside
+	out.
 
 	So a doc is how you build a face for something: return one, and what you get
 	back is the drum machine rather than the expression that made it.
@@ -620,7 +625,7 @@ class RenderNode {
 	(comment by Claude)
 	*/
 	getRenderMode() {
-		if (Utils.isDoc(this.nex) && !this.nex.isMutable()) {
+		if (Utils.isDocContainerType(this.nex) && !this.nex.isMutable()) {
 			return RENDER_MODE_NORM;
 		}
 		let p = this.getParent();

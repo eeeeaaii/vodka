@@ -156,8 +156,15 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 .zdir.exploded > .nex:nth-child(16) { margin-top:150px; }
 .zdir.exploded > .nex:nth-child(17) { margin-top:160px; }
 
+/*
+What an org says when its draw function hands back something it cannot draw.
+Plain and red: it is a complaint, not part of anybody's interface.
 
-
-
-
-
+(comment by Claude)
+*/
+.draw-error {
+	font-family: Courier;
+	font-size: 11px;
+	color: var(--error-text);
+	padding: 4px;
+}
