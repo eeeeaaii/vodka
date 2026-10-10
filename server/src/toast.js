@@ -202,9 +202,18 @@ function showNoticeToast(notice) {
 	if (already) {
 		already.notice.incrementRepeatCount();
 		already.node.render(RENDER_FLAG_RERENDER);
-		// a repeat is news again, so an unpinned one gets its time back
-		// (comment by Claude)
-		if (!already.pinned) startCountdown(already);
+		/*
+		A repeat is news again, so an unpinned one gets its time back -- and is
+		brought back to full first, because the one it caught up with may be
+		halfway through going away, and a toast that counted up while invisible
+		would be a message nobody got.
+
+		(comment by Claude)
+		*/
+		if (!already.pinned) {
+			already.element.classList.add('toastshown');
+			startCountdown(already);
+		}
 		return null;
 	}
 
