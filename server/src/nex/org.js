@@ -199,10 +199,29 @@ class Org extends NexContainer {
 				+ '</div>';
 	}
 
+	/*
+	The face belongs to the org, so a click on it is a click on the org: the
+	drawn nexes do not answer for themselves, and the event goes on up to the
+	org's own handler, which is a nex in the document and can be selected.
+
+	Except where a part of the face was given a click handler. That part is a
+	button -- an x in a row of x's that turns something on and off -- and the
+	click is its business.
+
+	(comment by Claude)
+	*/
+	silenceClicks(nex) {
+		nex.clickActive = false;
+		if (nex.isNexContainer()) {
+			nex.doForEachChild(c => this.silenceClicks(c));
+		}
+	}
+
 	// a nex drawn in place of the org, on its own render node because it is
 	// not a child of anything -- it is what the org looks like
 	// (comment by Claude)
 	drawNexInto(renderNode, domNode, nex) {
+		this.silenceClicks(nex);
 		let node = new RenderNode(nex);
 		node.setRenderDepth(renderNode.getRenderDepth() + 1);
 		node.render(RENDER_FLAG_RERENDER);

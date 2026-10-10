@@ -560,15 +560,16 @@ class RenderNode {
 	}
 
 	/*
-	A result you cannot take apart. A doc, line or word an evaluation handed
-	back draws in normal mode and has no editor, so the selection treats it as
-	one object: select it, copy it, delete it, but do not reach the letters
-	inside. Regenerate it instead -- that is what it is for.
+	A result you cannot take apart, which is the same question as whether it is
+	drawn normal: normal mode is a thing shown as what it is rather than as
+	what it is made of, and you cannot reach into what you cannot see. So the
+	selection treats it as one object -- select it, copy it, delete it, but do
+	not reach the letters inside. Regenerate it instead; that is what it is for.
 
 	(comment by Claude)
 	*/
 	isSealed() {
-		return Utils.isDocContainerType(this.nex) && !this.nex.isMutable();
+		return this.getRenderMode() == RENDER_MODE_NORM;
 	}
 
 	// the outermost sealed thing this sits inside, or this if there is none:
@@ -582,6 +583,29 @@ class RenderNode {
 			}
 		}
 		return target;
+	}
+
+	/*
+	The innermost thing at or above this one that answers clicks itself,
+	looking no further than the sealed thing it lives in.
+
+	This is what makes a face out of a finished doc work. The doc is picked as
+	a whole when you click the text in it, but an x in a row of x's that has
+	been given a click handler is not text, it is a button, and a click on it
+	belongs to it rather than to the document it is drawn in.
+
+	(comment by Claude)
+	*/
+	clickHandlerAncestor() {
+		for (let n = this; n; n = n.getParent()) {
+			if (n.getNex().extraClickHandler) {
+				return n;
+			}
+			if (n.isSealed()) {
+				return null;
+			}
+		}
+		return null;
 	}
 
 
@@ -638,11 +662,14 @@ class RenderNode {
 	nex holding five letter nexes. Exploded mode is the structure underneath it.
 
 	Which one you get is not a setting any more. It is a fact about the nex. A
-	doc, line or word that is immutable is one an evaluation handed back -- it
-	is a result, so it is drawn as a result, and so is everything inside it.
-	Anything you can still edit is drawn exploded. That is the whole rule, and
-	it is why there is no longer an escape key that turns the document inside
-	out.
+	doc that is immutable is one an evaluation handed back -- it is a result,
+	so it is drawn as a result, and so is everything inside it. Anything you
+	can still edit is drawn exploded. That is the whole rule, and it is why
+	there is no longer an escape key that turns the document inside out.
+
+	The doc is the boundary and nothing else is: a line or a word is a piece of
+	one, not a thing in its own right, so neither starts a normal region on its
+	own account.
 
 	So a doc is how you build a face for something: return one, and what you get
 	back is the drum machine rather than the expression that made it.
@@ -650,7 +677,7 @@ class RenderNode {
 	(comment by Claude)
 	*/
 	getRenderMode() {
-		if (Utils.isDocContainerType(this.nex) && !this.nex.isMutable()) {
+		if (Utils.isDoc(this.nex) && !this.nex.isMutable()) {
 			return RENDER_MODE_NORM;
 		}
 		let p = this.getParent();

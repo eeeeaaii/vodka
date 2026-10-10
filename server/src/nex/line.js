@@ -140,12 +140,6 @@ class Line extends NexContainer {
 		super.insertChildAt(c, i);
 	}
 
-	// nothing is inserted into a finished one; see RenderNode.isSealed
-	// (comment by Claude)
-	canDoInsertInside() {
-		return this.isMutable();
-	}
-
 	getContextType() {
 		if (this.isMutable()) {
 			return ContextType.LINE;

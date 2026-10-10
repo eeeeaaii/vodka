@@ -597,7 +597,11 @@ class Nex {
 
 	_setClickHandler(renderNode) {
 		renderNode.addEventListener('mousedown', (event) => {
-			if (!this.clickActive) return true;
+			// a nex that answers clicks itself answers them even where clicks
+			// are otherwise switched off, which is how a button drawn inside an
+			// org's face still works -- see Org.silenceClicks
+			// (comment by Claude)
+			if (!this.clickActive && !this.extraClickHandler) return true;
 			let atTarget = !event.vodkaTargetFinished;
 			event.vodkaTargetFinished = true;
 			if (atTarget) {

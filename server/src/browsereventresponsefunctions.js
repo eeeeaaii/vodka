@@ -72,6 +72,16 @@ function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 		(comment by Claude)
 		*/
 		let target = renderNode.selectionTarget();
+		/*
+		Something inside the finished doc answers this click itself -- a button
+		in a face built out of a doc -- so the click is its business and the
+		doc is not selected out from under it.
+
+		(comment by Claude)
+		*/
+		if (target != renderNode && renderNode.clickHandlerAncestor()) {
+			return;
+		}
 		let mode = insertionModeForClick(target, browserEvent);
 		/*
 		Clicking what is already selected used to be nothing to do. It is
