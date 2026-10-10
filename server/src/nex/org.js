@@ -23,13 +23,30 @@ import { wrapError, evaluateNexSafely } from '../evaluator.js'
 import { constructEString } from './estring.js'
 import { constructInteger } from './integer.js'
 import { constructFloat } from './float.js'
-import { Tag } from '../tag.js'
 import { heap } from '../heap.js'
 import { constructFatalError, newTagOrThrowOOM } from './eerror.js'
 import { systemState } from '../systemstate.js'
 import { RenderNode } from '../rendernode.js'
 import { RENDER_FLAG_RERENDER } from '../globalconstants.js'
 import { BINDINGS } from '../environment.js'
+
+
+/*
+One tag, made once. getChildWithTag needs a Tag to compare against, and a tag's
+string is charged to the heap when it is set and given back when the tag is
+freed -- so building a fresh one on every render, which is what asking whether
+an org has a draw function does, spends heap that nothing ever returns.
+
+(comment by Claude)
+*/
+let theDrawFunctionTag = null;
+
+function drawFunctionTag() {
+	if (!theDrawFunctionTag) {
+		theDrawFunctionTag = newTagOrThrowOOM('::drawfunction', 'draw function logic');
+	}
+	return theDrawFunctionTag;
+}
 
 
 class Org extends NexContainer {
@@ -140,7 +157,7 @@ class Org extends NexContainer {
 	// the member a template tagged :draw, if this org has one
 	// (comment by Claude)
 	getDrawFunction() {
-		return this.getChildWithTag(newTagOrThrowOOM('::drawfunction', 'draw function logic'));
+		return this.getChildWithTag(drawFunctionTag());
 	}
 
 	/*
@@ -154,20 +171,20 @@ class Org extends NexContainer {
 		return !!this.getDrawFunction();
 	}
 
-	getDirtyForRendering() {
-		let customShouldDraw = this.getChildWithTag(new Tag(':shouldDraw'));
-		if (customShouldDraw) {
-			// ahem
-			return;
-		}
-		if (this.hasCustomDrawing()) {
-			// if you provide a draw function but not a shouldDraw, then we don't know
-			// how to keep track of whether state is dirty so we assume it's
-			// always dirty and redraw every time.
-			return true;
-		}
-		return super.getDirtyForRendering();
-	}
+	/*
+	A drawn org is dirty when it says it is, the same as everything else.
+
+	It used to claim to be always dirty, on the grounds that without a
+	:shouldDraw nobody can know when your state moved. That cannot work: an org
+	that is always dirty redraws on every pass, and anything the drawing does
+	that asks for a render -- a deferred settling, an error, an allocation --
+	asks for the pass that will ask again. The page never comes back.
+
+	Knowing when to redraw is :shouldDraw's job, and :shouldDraw is still a
+	stub. Until it is not, a face refreshes when something marks the org dirty.
+
+	(comment by Claude)
+	*/
 
 	/*
 	What a draw function is allowed to hand back.
