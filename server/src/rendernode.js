@@ -559,6 +559,31 @@ class RenderNode {
 		return this.renderDepth ? this.renderDepth : 0;
 	}
 
+	/*
+	A result you cannot take apart. A doc, line or word an evaluation handed
+	back draws in normal mode and has no editor, so the selection treats it as
+	one object: select it, copy it, delete it, but do not reach the letters
+	inside. Regenerate it instead -- that is what it is for.
+
+	(comment by Claude)
+	*/
+	isSealed() {
+		return Utils.isDocContainerType(this.nex) && !this.nex.isMutable();
+	}
+
+	// the outermost sealed thing this sits inside, or this if there is none:
+	// what a click anywhere in a finished doc actually picks
+	// (comment by Claude)
+	selectionTarget() {
+		let target = this;
+		for (let n = this; n; n = n.getParent()) {
+			if (n.isSealed()) {
+				target = n;
+			}
+		}
+		return target;
+	}
+
 
 	setCollapsed(v) {
 		this.isCollapsed = v;

@@ -1369,6 +1369,7 @@ class Manipulator {
 	selectLastChild() {
 		let s = (systemState.getGlobalSelectedNode());
 		if (!Utils.isNexContainer(s)) return false;
+		if (s.isSealed()) return false;
 		let c = s.getLastChild();
 		if (c) {
 			c.setSelected();
@@ -1380,6 +1381,7 @@ class Manipulator {
 	selectFirstChild() {
 		let s = (systemState.getGlobalSelectedNode());
 		if (!Utils.isNexContainer(s)) return false;
+		if (s.isSealed()) return false;
 		let c = s.getFirstChild();
 		if (c) {
 			c.setSelected();
@@ -1390,6 +1392,7 @@ class Manipulator {
 
 	selectNthChild(n) {
 		let s = (systemState.getGlobalSelectedNode());
+		if (s.isSealed()) return false;
 		if (n >= s.numChildren()) return false;
 		if (n < 0) return false;
 		let c = s.getChildAt(n);

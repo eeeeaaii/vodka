@@ -105,6 +105,12 @@ class Doc extends NexContainer {
 		return s;
 	}
 
+	// nothing is inserted into a finished one; see RenderNode.isSealed
+	// (comment by Claude)
+	canDoInsertInside() {
+		return this.isMutable();
+	}
+
 	getContextType() {
 		if (this.isMutable()) {
 			return ContextType.DOC;

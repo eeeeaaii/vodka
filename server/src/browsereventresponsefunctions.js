@@ -23,14 +23,6 @@ import { INSERT_BEFORE, INSERT_AFTER, INSERT_INSIDE } from './rendernode.js'
 import { evaluateAndKeep } from './evaluatorinterface.js'
 import * as Utils from './utils.js'
 
-// can return null if user clicks on some other thing
-function getParentNexOfDomElement(elt) {
-	while(elt && !elt.classList.contains('nex')) {
-		elt = elt.parentNode;
-	}
-	return elt;
-}
-
 function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 	// ctrl-shift-click, and command-shift-click on a mac, selects whatever
 	// contains both this and what is already selected
@@ -72,8 +64,15 @@ function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 			evaluateAndKeep(renderNode);
 			return;
 		}
-		let parentNexDomElt = getParentNexOfDomElement(browserEvent.target);
-		let mode = insertionModeForClick(renderNode, browserEvent);
+		/*
+		A finished doc is picked as a whole. Clicking a word inside one selects
+		the doc it belongs to, because that is the only thing in there you are
+		allowed to have: see RenderNode.isSealed.
+
+		(comment by Claude)
+		*/
+		let target = renderNode.selectionTarget();
+		let mode = insertionModeForClick(target, browserEvent);
 		/*
 		Clicking what is already selected used to be nothing to do. It is
 		something to do now: the half of the nex the click landed in says where
@@ -83,14 +82,14 @@ function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 		(comment by Claude)
 		*/
 		let selected = systemState.getGlobalSelectedNode();
-		if (selected.getDomNode() == parentNexDomElt
+		if (selected.getDomNode() == target.getDomNode()
 				&& (!mode || mode == selected.getInsertionMode())) {
 			return;
 		}
 		browserEvent.stopPropagation();
 		// on the undo stack, the same as moving the selection with the keyboard
 		// (comment by Claude)
-		enqueueAndPerformAction(new ClickSelectAction(renderNode, mode));
+		enqueueAndPerformAction(new ClickSelectAction(target, mode));
 	}
 }
 
