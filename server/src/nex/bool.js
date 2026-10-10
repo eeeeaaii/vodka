@@ -109,8 +109,29 @@ class Bool extends ValueNex {
 		}
 	}
 
+	/*
+	Shift and an arrow, the same keys that step a number. There is only one
+	other value, so both directions do the same thing: hold shift-up or
+	shift-down and it flips for as long as you like.
+
+	No left and right, because there are no digits to move between, and no
+	editor -- StepValueAction only opens one for a nex that has moveEditDigit,
+	and there is nothing to type into a bool anyway.
+
+	(comment by Claude)
+	*/
 	getEventTable(context) {
-		return {};
+		return {
+			'ShiftArrowUp': 'increment-value',
+			'ShiftArrowDown': 'decrement-value',
+		};
+	}
+
+	// what stepping means when there are two values
+	// (comment by Claude)
+	stepByEditDigit(direction) {
+		this.setValue(this.getTypedValue() ? 'no' : 'yes');
+		this.setDirtyForRendering(true);
 	}
 
 	memUsed() {
