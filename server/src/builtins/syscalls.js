@@ -165,7 +165,7 @@ function createSyscalls() {
 			n.setCurrentStyle(markRestrictedStyle(checked.css));
 			return n;
 		},
-		'Gives |nex the style |style, replacing any it had. Colour, size and font only, on a doc, line, word, letter or separator, and it shows in normal mode only.'
+		'Gives |nex the style |style, replacing any it had. Colour, border, font, size and spacing only, on a doc, line, word, letter or separator, and it shows in normal mode only.'
 	);
 
 	Builtin.createBuiltin(

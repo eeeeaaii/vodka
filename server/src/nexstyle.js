@@ -38,23 +38,45 @@ browser ignores it rather than throwing the rest of the declaration away.
 const STYLE_MARK = '/*new*/';
 
 /*
-Colour, size, and the font. Enough to build something that looks like what you
-meant, and not enough to move it somewhere else on the page: no position, no
-transform, no display, no overflow. Those are how a drawing stops being
-anything the editor can reason about.
+The dividing line is this: a property may change how a thing looks inside the
+box it already has, and may change how big that box is. It may not change where
+the box is. So no position, no float, no transform, no display, no overflow, no
+z-index -- those are the ones that make a drawing stop being something the
+editor can reason about, because after them what you see is no longer where the
+nex is.
+
+Everything here passes that test. Colour, border, the font, the size of the
+box, the space in and around it, and the few cosmetics (opacity, cursor) that
+say what a thing is for. `margin` is the one to watch: a negative margin does
+pull a thing over its neighbour. It is in because spacing things apart is the
+whole job and the alternative is nothing.
 
 (comment by Claude)
 */
 const ALLOWED = [
 	'background-color',
 	'border-color',
+	'border-radius',
+	'border-style',
 	'border-width',
 	'color',
+	'cursor',
 	'font-family',
 	'font-size',
 	'font-style',
 	'font-weight',
 	'height',
+	'letter-spacing',
+	'line-height',
+	'margin',
+	'max-height',
+	'max-width',
+	'min-height',
+	'min-width',
+	'opacity',
+	'padding',
+	'text-align',
+	'text-decoration',
 	'width',
 ];
 
@@ -63,10 +85,22 @@ const ALLOWED = [
 const SPELLINGS = {
 	'background': 'background-color',
 	'bg-color': 'background-color',
-	'border': 'border-width or border-color',
+	'border': 'border-width, border-color or border-style',
 	'font': 'font-family or font-size',
 	'text-color': 'color',
 	'foreground': 'color',
+	'align': 'text-align',
+	'underline': 'text-decoration',
+	'radius': 'border-radius',
+	'corner-radius': 'border-radius',
+	'padding-left': 'padding',
+	'padding-right': 'padding',
+	'padding-top': 'padding',
+	'padding-bottom': 'padding',
+	'margin-left': 'margin',
+	'margin-right': 'margin',
+	'margin-top': 'margin',
+	'margin-bottom': 'margin',
 };
 
 function isRestrictedStyle(s) {
@@ -124,9 +158,7 @@ function checkStyle(s) {
 			return { problem: `"${d.bad}" is not a css declaration -- it wants`
 					+ ' a property, a colon, and a value' };
 		}
-		if (d.property == 'border-style') {
-			sawBorderStyle = true;
-		} else if (ALLOWED.indexOf(d.property) < 0) {
+		if (ALLOWED.indexOf(d.property) < 0) {
 			let instead = SPELLINGS[d.property]
 					? `. Did you mean ${SPELLINGS[d.property]}?`
 					: `. You can set: ${ALLOWED.join(', ')}`;
@@ -137,6 +169,8 @@ function checkStyle(s) {
 		}
 		if (d.property == 'border-width' || d.property == 'border-color') {
 			sawBorder = true;
+		} else if (d.property == 'border-style') {
+			sawBorderStyle = true;
 		}
 		kept.push(`${d.property}: ${d.value}`);
 	}
