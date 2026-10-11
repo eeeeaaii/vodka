@@ -662,22 +662,36 @@ class RenderNode {
 
 
 	/*
-	Normal mode is a thing shown as what it is rather than as what it is made
-	of. Exactly one thing turns it on: an org whose first child wears the
-	`:rendered` tag is drawn as that child, and so is everything inside it.
+	Whether this nex is where normal mode begins. Two things do it, and they
+	are independent of each other.
 
-	It is not a setting and no key toggles it. It was briefly keyed off an
-	immutable doc, which was two rules pretending to be one -- immutability
-	now means only that there is no editor.
+	An org whose first child wears the `:rendered` tag is drawn as that child.
+	That is how a `:draw` face works and it does not care about mutability.
+
+	A doc, line, word, letter or separator that is immutable is a result --
+	evaluation is what makes one, since Doc/Line/Word.evaluate hand back a copy
+	with setMutable(false). A result is shown as the thing it is rather than as
+	the expression that made it, which is also the only way to see what a style
+	does: a style set the new way is withheld in exploded mode on purpose, so
+	without this there would be no way to look at one short of building a whole
+	template. Hit enter on it and you are looking at it.
+
+	It is not a setting and no key toggles it.
 
 	(comment by Claude)
 	*/
+	startsNormalMode() {
+		let nex = this.nex;
+		return nex.hasCustomDrawing()
+				|| (Utils.isDocElement(nex) && !nex.isMutable());
+	}
+
 	getRenderMode() {
 		let p = this.getParent();
 		if (p && p.getRenderMode() == RENDER_MODE_NORM) {
 			return RENDER_MODE_NORM;
 		}
-		return this.nex.hasCustomDrawing() ? RENDER_MODE_NORM : RENDER_MODE_EXPLO;
+		return this.startsNormalMode() ? RENDER_MODE_NORM : RENDER_MODE_EXPLO;
 	}
 
 	getNex() {
@@ -821,6 +835,22 @@ class RenderNode {
 		}
 
 		this.nex.renderInto(this, useFlags, this.getCurrentEditor());
+		/*
+		The outermost thing in normal mode wears a class saying so, because the
+		selection has to be visible on something that has deliberately been
+		given no chrome of its own. Only the outermost: everything inside is
+		sealed too, and outlining all of it would draw the structure the whole
+		point was to stop drawing.
+
+		Here rather than in renderInto because this is where the mode is known.
+		Toggled, not added, so it comes off again when a copy is pasted and the
+		thing becomes editable.
+
+		(comment by Claude)
+		*/
+		let p = this.getParent();
+		this.domNode.classList.toggle('sealedboundary',
+				this.isSealed() && !(p && p.isSealed()));
 		this.nex.doRenderSequencing(this);
 		this.isCurrentlyExploded = !!(useFlags & RENDER_FLAG_EXPLODED);
 		/*

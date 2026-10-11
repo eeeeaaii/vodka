@@ -171,18 +171,3 @@ see is the drawing, so the org around it should not be visible at all.
 	border: none;
 	padding: 0;
 }
-
-/*
-Selected. An outline rather than a border, so that saying where the selection
-is does not move the drawing by a pixel -- an interface that twitches when you
-arrow onto it is worse than one with no mark at all. `newselected` is the class
-the selection actually sets; the bare `selected` in the rules above it is older
-and nothing adds it any more.
-
-(comment by Claude)
-*/
-.drawnorg.newselected {
-	outline: 1px solid var(--selected-border);
-	outline-offset: 2px;
-	border-radius: 2px;
-}

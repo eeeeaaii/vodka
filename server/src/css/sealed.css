@@ -1,0 +1,40 @@
+/*
+This file is part of Vodka.
+
+Vodka is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Vodka is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+/*
+Where normal mode begins: a drawn org, or a doc element that evaluation made
+immutable. Such a thing is drawn as what it is and has no chrome of its own, so
+the only thing left to say about it is which one is selected.
+
+An outline rather than a border, so that saying where the selection is does not
+move the drawing by a pixel -- an interface that twitches when you arrow onto
+it is worse than one with no mark at all.
+
+Only the outermost one is marked. Everything inside a sealed thing is sealed
+too, and outlining all of it would draw the structure the whole point was to
+stop drawing.
+
+`newselected` is the class the selection actually sets; a bare `selected`
+appears in older rules elsewhere and nothing adds it any more.
+
+(comment by Claude)
+*/
+.sealedboundary.newselected {
+	outline: 1px solid var(--selected-border);
+	outline-offset: 2px;
+	border-radius: 2px;
+}

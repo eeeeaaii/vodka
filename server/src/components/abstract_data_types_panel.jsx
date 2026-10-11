@@ -115,6 +115,17 @@ const AbstractDataTypesPanel = () => {
         <span className="infohotkey">font-weight</span>and friends are the safer way to say it.
       </p>
       <p className="infolinemargin">
+        But if the style only shows in normal mode, how do I look at one while I am writing the code?
+      </p>
+      <p className="infolinemargin">
+        Hit enter on it. Evaluating a doc, line, word, letter or separator hands back an immutable
+        copy, and an immutable one of those is shown as the thing it is -- in normal mode, wearing
+        its style -- rather than as the expression that made it. So you can evaluate a single
+        <span className="infohotkey">set-style of</span>and look at the result without building a
+        template around it. The same thing then behaves like a drawing: it is selected as one unit,
+        with an outline, and nothing goes inside it. Paste a copy to get an editable one back.
+      </p>
+      <p className="infolinemargin">
         There is an older builtin, <span className="infohotkey">apply-css-style to</span>, which takes
         any css at all and applies it in both modes. It still works and is on its way out.
       </p>

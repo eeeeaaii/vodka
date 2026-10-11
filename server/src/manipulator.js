@@ -614,8 +614,17 @@ class Manipulator {
 		return c;
 	}
 
+	/*
+	No child of a sealed thing, because a sealed thing is drawn as what it is
+	and nothing in it is separately on the screen. Saying it has no child is
+	what makes the walks that use this -- _getLeafBefore and _getLeafAfter,
+	which is left and right arrow, and the line-to-line moves built on them --
+	stop at it and hand it back whole instead of descending into it.
+
+	(comment by Claude)
+	*/
 	_getFirstChildOf(s) {
-		if (!Utils.isNexContainer(s)) return false;
+		if (!Utils.isNexContainer(s) || s.isSealed()) return false;
 		let c = s.getFirstChild();
 		if (!c) {
 			return false;
@@ -645,8 +654,10 @@ class Manipulator {
 		return s;
 	}
 
+	// see _getFirstChildOf
+	// (comment by Claude)
 	_getLastChildOf(s) {
-		if (!Utils.isNexContainer(s)) return false;
+		if (!Utils.isNexContainer(s) || s.isSealed()) return false;
 		let c = s.getLastChild();
 		if (!c) {
 			return false;
