@@ -137,7 +137,68 @@ class Org extends NexContainer {
 		let r = constructOrg();
 		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
+		if (this.templateInstantiationLexicalSelfScope) {
+			r.reinstantiateSelf(this.templateInstantiationLexicalSelfScope);
+		}
 		return r;
+	}
+
+	/*
+	A copy of an instantiated template is its own instance.
+
+	`self` lives in exactly one place: the scope `_instantiate` pushes, which
+	is the lexical environment of every member closure it makes. Copying an org
+	copies its closures, and a copied closure keeps the environment it had on
+	purpose (Closure.makeCopy, for reference counting) -- so without this,
+	every member of the copy resolves `self` to the original. The copy draws
+	from the original's state, and `set self.x` in one of its handlers writes
+	the original's member. It looks like a button and drives a different one.
+
+	The field cannot simply be copied: it is the handle the org finalizes when
+	it is freed, and two orgs finalizing one scope would release it twice. So
+	the copy gets a scope of its own, parented where the original's is
+	parented, with `self` bound to the copy, and every member closure is
+	re-rooted at a scope that says so. Which is what `_instantiate` does; this
+	is the same thing, done again for the copy.
+
+	A member whose lexical environment does not itself bind `self` to the
+	original is left alone -- it closed over something else, somewhere else,
+	and the template system has no business redirecting it.
+
+	Note this does not reach the shallow path in `evaluate`, where the children
+	are appended afterwards by the caller and a closure child evaluates to the
+	very same closure rather than to a copy of it. Evaluating a mutable
+	instance therefore still shares its members; `copy` and paste are what this
+	fixes.
+
+	(comment by Claude)
+	*/
+	reinstantiateSelf(oldScope) {
+		let original = oldScope.getLocalBinding('self');
+		let newScope = oldScope.getParent().pushEnv();
+		newScope.bind('self', this);
+		// not finalized: this org holds it now and gives it up when it is freed
+		// (comment by Claude)
+		this.templateInstantiationLexicalSelfScope = newScope;
+		this.doForEachChild((c) => {
+			if (c.getTypeName() != '-closure-') return;
+			let env = c.getLexicalEnvironment();
+			if (env == oldScope) {
+				c.setLexicalEnvironment(newScope);
+			} else if (original && env.getLocalBinding('self') == original) {
+				/*
+				A member that was already a closure when the template was
+				instantiated got a scope of its own, pushed on the environment
+				its lambda came from. Same again, and finalized straight away
+				as `_instantiate` does, because the closure holds its own
+				reference to it.
+				*/
+				let memberScope = env.getParent().pushEnv();
+				memberScope.bind('self', this);
+				c.setLexicalEnvironment(memberScope);
+				memberScope.finalize();
+			}
+		});
 	}
 
 	hasChildTag(tag) {

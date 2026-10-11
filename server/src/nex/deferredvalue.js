@@ -134,9 +134,12 @@ class DeferredValue extends NexContainer {
 	// Deleted means it has stopped waiting. A wait-for-click that is out of the
 	// document but still listening would fire into nothing.
 	// (comment by Claude)
+	// Detach rather than stop: the source may have other deferred values
+	// waiting on it, and it goes away when the last one does.
+	// (comment by Claude)
 	stopFunctioning() {
-		if (this.activationFunctionGenerator && this.activationFunctionGenerator.stop) {
-			this.activationFunctionGenerator.stop();
+		if (this.activationFunctionGenerator) {
+			this.activationFunctionGenerator.detach(this);
 		}
 	}
 
@@ -188,11 +191,19 @@ class DeferredValue extends NexContainer {
 		let held = this.getChildAt(0);
 		if (Utils.isFatalError(held)) {
 			justSettling = false;
-			if (this.activationFunctionGenerator && this.activationFunctionGenerator.stop) {
-				this.activationFunctionGenerator.stop();
-			}
 		}
 		this.state = justSettling ? DVSTATE_SETTLED : DVSTATE_FINISHED;
+		/*
+		Finished means done waiting, so it stops being one of the source's
+		waiters -- which is what stops the source, once the last one is gone.
+		Detach rather than stop because the source may be shared: a copy of
+		this is waiting on the same file read and has not heard yet.
+
+		(comment by Claude)
+		*/
+		if (!justSettling && this.activationFunctionGenerator) {
+			this.activationFunctionGenerator.detach(this);
+		}
 		if (!experiments.DISABLE_ALERT_ANIMATIONS) {
 			this.doAlertAnimation();
 		}
@@ -224,11 +235,9 @@ class DeferredValue extends NexContainer {
 	}
 
 	activate() {
-		let finishCallback = ((value) => this.startFinish(value));
-		let settleCallback = ((value) => this.startSettle(value));
 		// TODO: remove the didNotWait check once #292 is fixed
 		// (comment by Claude)
-		let didNotWait = this.activationFunctionGenerator.getFunction(finishCallback, settleCallback, this)();
+		let didNotWait = this.activationFunctionGenerator.attach(this);
 		if (!didNotWait) {
 			this.state = DVSTATE_ACTIVATED;
 		}
@@ -250,12 +259,51 @@ class DeferredValue extends NexContainer {
 		return '-deferredvalue-';
 	}
 
+	/*
+	A deferred value is a value that is not here yet, plus the arrangement by
+	which it will arrive, and the two halves copy differently.
+
+	The children are the value half and copy like any container's. The
+	activation function generator is the arrangement, and it is a live
+	registration with something outside the nex tree, so it decides for itself
+	whether the copy joins it or gets one of its own: a file read or a timer is
+	shared, because there is one event coming and the copy should not start a
+	second one, while a source watching this value's own contents makes a new
+	registration against the copy's contents, because the copy is a different
+	thing to click.
+
+	This used to return a copy of the contents instead -- not a deferred value
+	at all -- so a deferred inside a copied list was silently replaced by what
+	it held, and one with nothing in it yet threw a TypeError.
+
+	(comment by Claude)
+	*/
 	makeCopy(shallow) {
-		// A copy of a deferred value should ACTUALLY just be a copy of the contents,
-		// since you can't really copy a waiting file handle or something.
-		// Since this defaults to immutable and can't be made mutable, the only time
-		// makeCopy should be called is for a copy and paste operation.
-		return this.getChildAt(0).makeCopy();
+		let r = constructDeferredValue();
+		this.copyChildrenTo(r, shallow);
+		this.copyFieldsTo(r);
+		r.state = this.state;
+		r.privateData = this.privateData;
+		// this generation and not a new one: a copy of a cancelled deferred
+		// value is cancelled. set() would stamp the current one.
+		// (comment by Claude)
+		r.ffgen = this.ffgen;
+		if (this.activationFunctionGenerator) {
+			r.activationFunctionGenerator =
+					this.activationFunctionGenerator.copyForDeferred(this, r);
+			/*
+			The copy carries the state and the contents it was copied from, so
+			there is no catching up to do: a copy of a settled one is settled
+			holding the current value and waits for the next event, and a copy
+			of a finished one holds the answer and waits for nothing.
+
+			(comment by Claude)
+			*/
+			if (r.isActivated() && !r.isFinished()) {
+				r.activationFunctionGenerator.attach(r);
+			}
+		}
+		return r;
 	}
 
 	doAlertAnimation() {
@@ -319,10 +367,16 @@ class DeferredValue extends NexContainer {
 		return this;
 	}
 
+	/*
+	Always immutable, so there is nothing for the flag to say and nothing to
+	complain about. It used to throw, which was unreachable only because
+	makeCopy removed the deferred value before anything could ask: now that a
+	copy is a real one, pasting it runs setMutableRecursive(true) over it and a
+	throw there would put an error in the document instead of the paste.
+
+	(comment by Claude)
+	*/
 	setMutable(v) {
-		if (v) {
-			throw constructFatalError('cannot make deferred values mutable.');
-		}
 	}
 
 	getDefaultHandler() {

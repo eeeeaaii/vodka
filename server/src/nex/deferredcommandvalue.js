@@ -48,8 +48,8 @@ import { constructFatalError } from './eerror.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 import { experiments } from '../globalappflags.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
-import { executeRunInfo } from '../commandfunctions.js'
-import { DCP_WAITING, DCP_READY_SETTLED, DCP_READY_FINISHED } from '../dcpolicy.js'
+import { executeRunInfo, ArgContainer, Arg, RunInfo } from '../commandfunctions.js'
+import { DCP_WAITING, DCP_READY_SETTLED, DCP_READY_FINISHED, makeDCPolicy } from '../dcpolicy.js'
 
 // nothing yet: no value has been produced, so it has no latest
 const DCV_WAITING = 1;
@@ -178,7 +178,18 @@ class DeferredCommandValue extends NexContainer {
 	same settle/finish distinction its arguments used: an argument that settled
 	means another value may follow, so this settles too and stays armed.
 	*/
-	run() {
+	/*
+	armOnly subscribes to the arguments without running the call, which is what
+	a copy of one that has already produced something needs: it holds what the
+	original computed, so firing again on the event that produced it would do
+	the work twice. It runs when its arguments next produce something.
+
+	Same rule a copied deferred value follows -- settled, holding the current
+	value, waiting for the next event rather than redelivering the last one.
+
+	(comment by Claude)
+	*/
+	run(armOnly) {
 		if (this.isCancelled() || this.isFinished() || !this._runInfo) {
 			return;
 		}
@@ -197,6 +208,19 @@ class DeferredCommandValue extends NexContainer {
 			throw e;
 		}
 		if (argResult == DCP_WAITING) {
+			return;
+		}
+		if (armOnly) {
+			/*
+			Unless there is nothing left to wait for, in which case staying
+			armed would be a spinning glyph over a call that can never run
+			again. Finish with what it already holds.
+
+			(comment by Claude)
+			*/
+			if (argResult == DCP_READY_FINISHED) {
+				this.produce(this.getLatest(), false);
+			}
 			return;
 		}
 		let result = executeRunInfo(this._runInfo, this._activationEnv);
@@ -286,10 +310,11 @@ class DeferredCommandValue extends NexContainer {
 		return result;
 	}
 
+	// always immutable, so there is nothing for the flag to say. It used to
+	// throw, which turned pasting one into a fatal error in the document --
+	// setMutableRecursive(true) is unconditional on a paste.
+	// (comment by Claude)
 	setMutable(v) {
-		if (v) {
-			throw constructFatalError('cannot make deferred command values mutable.');
-		}
 	}
 
 	canDoInsertInside() { return false; }
@@ -298,12 +323,85 @@ class DeferredCommandValue extends NexContainer {
 
 	getDefaultHandler() { return 'standardDefault'; }
 
+	/*
+	A copy is a second call over the copy's own arguments.
+
+	This is a call waiting on the deferred values among its own children, which
+	makes it the inward-looking kind: it cannot share what it is waiting on,
+	because the copy is waiting on copies. So the run state is rebuilt against
+	the copy's children and the copy subscribes itself to them.
+
+	Which composes with how a deferred value copies. A copied argument waiting
+	on a file read shares that one read, so one read drives two calls; a copied
+	argument waiting on a click gets its own thing to click, so you have two
+	buttons. Each is right for what it is.
+
+	It used to copy the children and the state and nothing else, so what came
+	back looked live and was inert: no run info, no environment, no policy,
+	nothing subscribed.
+
+	(comment by Claude)
+	*/
 	makeCopy(shallow) {
 		let r = constructDeferredCommandValue();
 		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
 		r.state = this.state;
+		// A finished or cancelled one has already released its run state and
+		// is only the answer it computed; there is nothing left to wait for.
+		// Shallow has no children to build a call out of.
+		// (comment by Claude)
+		if (!shallow && this._runInfo && !r.isFinished() && !r.isCancelled()) {
+			r._rebuildRunStateFrom(this);
+		}
 		return r;
+	}
+
+	/*
+	The run state of a copy, built from the copy's own children rather than
+	taken from src: the arg container holds Args that wrap particular nexes,
+	and src's are src's.
+
+	What comes off src unchanged is only description -- the name to use in
+	errors, the expected return type, the tags, the environment the call runs
+	in. The policy is a fresh one of the kind the tags ask for rather than a
+	copy of src's, because a policy holds its progress through the arguments
+	and an argument that has already settled skips itself, so starting from the
+	top is right.
+
+	(comment by Claude)
+	*/
+	_rebuildRunStateFrom(src) {
+		let si = src._runInfo;
+		let closure = this.getChildAt(1);
+		if (!closure || closure.getTypeName() != '-closure-') {
+			// dropTheCall took the call away, so there is nothing to rebuild
+			// (comment by Claude)
+			return;
+		}
+		let cmdname = si.cmdname.get();
+		let argContainer = new ArgContainer(this);
+		for (let i = 2; i < this.numChildren(); i++) {
+			argContainer.addArg(new Arg(this.getChildAt(i)));
+		}
+		// offset by two, past the result and the closure, as in
+		// DeferredCommand.evaluate
+		// (comment by Claude)
+		argContainer.makeUpdating(this, 2);
+		let runInfo = new RunInfo(
+				closure,
+				cmdname,
+				si.expectedReturnType,
+				argContainer,
+				closure.getArgEvaluator(cmdname, argContainer, src._activationEnv),
+				si.commandDebugString,
+				si.skipAlert,
+				si.tags,
+				si.packageName);
+		this.setRunState(runInfo, src._activationEnv, makeDCPolicy(si.tags));
+		// arm without running if src already produced something: see run()
+		// (comment by Claude)
+		this.run(src.isSettled());
 	}
 
 	toString(version, ctx) {

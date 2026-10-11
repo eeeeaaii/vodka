@@ -606,7 +606,7 @@ class RenderNode {
 	*/
 	clickHandlerAncestor() {
 		for (let n = this; n; n = n.getParent()) {
-			if (n.getNex().extraClickHandler) {
+			if (n.getNex().hasClickHandlers()) {
 				return n;
 			}
 			if (n.isSealed()) {

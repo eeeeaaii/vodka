@@ -50,8 +50,8 @@ function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 		}
 		return;
 	}
-	if (nex.extraClickHandler) {
-		nex.extraClickHandler(browserEvent.clientX, browserEvent.clientY);
+	if (nex.hasClickHandlers()) {
+		nex.doClickHandlers(browserEvent.clientX, browserEvent.clientY);
 		return;
 	}
 	if (systemState.isMouseFunnelActive() && atTarget) {

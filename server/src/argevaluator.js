@@ -231,6 +231,18 @@ class ArgEvaluator {
       argnex.isSettled() &&
       !argnex.isFinished()
     ) {
+      /*
+      Listening as well as reading: on the usual path the listener went on
+      below, the first time this argument came back as a deferred value, and
+      this branch is only ever a later pass. A copy walks its arguments from
+      the top with none of them processed, so a settled one arrives here
+      first -- and without this it would read the value that is already there
+      and never hear another. addListener dedupes, so the usual path is
+      unaffected.
+
+      (comment by Claude)
+      */
+      argnex.addListener(listener);
       let subargnex = argnex.getSettledValue();
       this.checkType(subargnex, param, i);
       arg.setSubstituteValue(subargnex);

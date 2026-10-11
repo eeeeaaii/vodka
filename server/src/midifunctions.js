@@ -93,6 +93,26 @@ function addMidiListener(id, f) {
 	}
 }
 
+/*
+A listener that is done. Nothing could stop listening before, so a deferred
+value waiting on midi kept being told about every note for the rest of the
+session after it was deleted.
+
+The port is left open and the onmidimessage handler left installed when the
+last listener goes: opening it is the expensive part and somebody is likely to
+wait on the same port again. respondToMidiMessage over an empty list does
+nothing.
+
+(comment by Claude)
+*/
+function removeMidiListener(id, f) {
+	if (!inputListeners[id]) return;
+	let i = inputListeners[id].indexOf(f);
+	if (i >= 0) {
+		inputListeners[id].splice(i, 1);
+	}
+}
+
 function setupFirstInputListener(id, f) {
 	inputListeners[id] = [ f ];
 	if (!midi) return;
@@ -469,6 +489,6 @@ function getMidiPorts(incb) {
 }
 
 
-export { getMidiPorts, openMidiPort, isPortOpen, addMidiListener, makeMidiSequence,
+export { getMidiPorts, openMidiPort, isPortOpen, addMidiListener, removeMidiListener, makeMidiSequence,
 		 setDefaultMidiPort, getDefaultMidiPort, sendMidiData, sendMidiNoteOn, sendMidiNoteOff,
 		 sendMidiNoteWithDuration, anyMidiNotesSounding, midiPanic }

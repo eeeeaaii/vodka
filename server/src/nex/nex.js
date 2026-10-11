@@ -17,6 +17,67 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 let NEXT_NEX_ID = 0;
 
+/*
+Lists of callbacks, kept the same way in the three places a nex can be waited
+on: clicks, contents changing, the next render.
+
+Each used to be a single field, so a second waiter overwrote the first and
+waited forever. Two `wait-for-click` on one button is enough to see it, and it
+is not only something a person can write by hand -- copying a deferred command
+makes a second waiter on whatever the first one was watching.
+
+Null until something registers, because every nex has these and almost no nex
+uses them.
+
+(comment by Claude)
+*/
+function addCallback(list, f) {
+	if (!list) {
+		list = [];
+	}
+	if (list.indexOf(f) < 0) {
+		list.push(f);
+	}
+	return list;
+}
+
+function removeCallback(list, f) {
+	if (!list) return null;
+	let i = list.indexOf(f);
+	if (i >= 0) {
+		list.splice(i, 1);
+	}
+	return list.length == 0 ? null : list;
+}
+
+/*
+All of them, over a copy of the list, because a callback can register or
+unregister while it is being called -- settling a deferred value is how most
+of these end.
+
+One that throws does not silence the rest: they all run, and then the first
+failure is rethrown, so it reaches whoever was going to handle it.
+
+(comment by Claude)
+*/
+function doCallbacks(list, a, b) {
+	if (!list) return;
+	let l = list.slice();
+	let firstError = null;
+	for (let i = 0; i < l.length; i++) {
+		try {
+			l[i](a, b);
+		} catch (e) {
+			if (!firstError) {
+				firstError = e;
+			}
+		}
+	}
+	if (firstError) {
+		throw firstError;
+	}
+}
+
 function setNextNexId(val) {
 	NEXT_NEX_ID = val;
 }
@@ -68,7 +129,8 @@ class Nex {
 		this.tags = [];
 		this.id = NEXT_NEX_ID++;
 		this.copiedFromID = -1;
-		this.extraClickHandler = null;
+		this.extraClickHandlers = null;
+		this.onNextRenderCallbacks = null;
 		this.closure = null; // only lambdas have closures but just copying is prob cheaper than testing?
 		this.inPackage = null; // well here we go with more things in the env I guess.
 		this.dirtyForRendering = true;
@@ -184,19 +246,40 @@ class Nex {
 		return false;
 	}
 
-	setOnNextRenderCallback(callback) {
-		this.onNextRenderCallback = callback;
+	addOnNextRenderCallback(callback) {
+		this.onNextRenderCallbacks = addCallback(this.onNextRenderCallbacks, callback);
 		// the callback fires from this nex's next render, so there has to be one
 		// (comment by Claude)
 		this.renderOnlyThisNex();
 	}
 
+	removeOnNextRenderCallback(callback) {
+		this.onNextRenderCallbacks = removeCallback(this.onNextRenderCallbacks, callback);
+	}
+
+	// one shot: the list is taken away before they run, so one that registers
+	// again is waiting for the render after this one
+	// (comment by Claude)
 	doOnNextRenderCallback() {
-		if (this.onNextRenderCallback) {
-			let t = this.onNextRenderCallback;
-			this.onNextRenderCallback = null;
-			t();
-		}
+		let list = this.onNextRenderCallbacks;
+		this.onNextRenderCallbacks = null;
+		doCallbacks(list);
+	}
+
+	addClickHandler(f) {
+		this.extraClickHandlers = addCallback(this.extraClickHandlers, f);
+	}
+
+	removeClickHandler(f) {
+		this.extraClickHandlers = removeCallback(this.extraClickHandlers, f);
+	}
+
+	hasClickHandlers() {
+		return !!this.extraClickHandlers;
+	}
+
+	doClickHandlers(x, y) {
+		doCallbacks(this.extraClickHandlers, x, y);
 	}
 
 	setMutable(val) {
@@ -605,7 +688,7 @@ class Nex {
 			if (atTarget) {
 				possiblyRecordAction(event, 'mouse');
 			}
-			if (atTarget || this.extraClickHandler) {
+			if (atTarget || this.hasClickHandlers()) {
 				eventQueueDispatcher.enqueueDoClickHandlerAction(this, renderNode, atTarget, event)
 			}
 		}, false);
@@ -708,5 +791,5 @@ class Nex {
 //if (typeof module !== 'undefined' && module.exports) module.exports = { Nex: Nex }
 
 
-export { Nex, setNextNexId, NEXT_NEX_ID }
+export { Nex, setNextNexId, NEXT_NEX_ID, addCallback, removeCallback, doCallbacks }
 

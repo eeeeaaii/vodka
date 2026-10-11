@@ -223,6 +223,18 @@ class Environment {
 		return r;
 	}
 
+	/*
+	What this environment binds itself, as opposed to what it can see through
+	its parents. Asked when something needs to know whether a particular scope
+	is the one that introduced a name -- which is how a copy of an instantiated
+	template finds the scopes that bind `self` to the org being copied.
+
+	(comment by Claude)
+	*/
+	getLocalBinding(name) {
+		return this.symbols[name] ? this.symbols[name].val : null;
+	}
+
 	doForEachBinding(f) {
 		for (let s in this.symbols) {
 			let symrec = this.symbols[s];

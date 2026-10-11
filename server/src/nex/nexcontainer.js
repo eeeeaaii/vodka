@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { Nex } from './nex.js';
+import { Nex, addCallback, removeCallback, doCallbacks } from './nex.js';
 import { ContextType } from '../contexttype.js'
 import { experiments } from '../globalappflags.js'
 import { heap } from '../heap.js'
@@ -57,7 +57,7 @@ class NexContainer extends Nex {
 		this.firstChildNex = null;
 		this.numChildNexes = 0;
 		this.lastChildNex = null;
-		this.onContentsChangedCallback = 0;
+		this.onContentsChangedCallbacks = null;
 		this.tagHolder = null;
 	}
 
@@ -135,8 +135,12 @@ class NexContainer extends Nex {
 		newContainer.lastChildNex = this.lastChildNex;
 	}
 
-	setOnContentsChangedCallback(cb) {
-		this.onContentsChangedCallback = cb;
+	addOnContentsChangedCallback(cb) {
+		this.onContentsChangedCallbacks = addCallback(this.onContentsChangedCallbacks, cb);
+	}
+
+	removeOnContentsChangedCallback(cb) {
+		this.onContentsChangedCallbacks = removeCallback(this.onContentsChangedCallbacks, cb);
 	}
 
 	copyChildrenTo(n, shallow) {
@@ -345,9 +349,7 @@ class NexContainer extends Nex {
 
 	changed() {
 		this.setDirtyForRendering(true);
-		if (this.onContentsChangedCallback) {
-			this.onContentsChangedCallback();
-		}
+		doCallbacks(this.onContentsChangedCallbacks);
 	}
 
 	// called by RenderNode
