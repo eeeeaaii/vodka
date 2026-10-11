@@ -18,7 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import { systemState } from './systemstate.js'
 import { manipulator } from './manipulator.js'
-import { enqueueAndPerformAction, MultiSelectAction, ClickSelectAction } from './actions.js'
+import { actionFactory, enqueueAndPerformAction, MultiSelectAction, ClickSelectAction } from './actions.js'
 import { INSERT_BEFORE, INSERT_AFTER, INSERT_INSIDE } from './rendernode.js'
 import { evaluateAndKeep } from './evaluatorinterface.js'
 import * as Utils from './utils.js'
@@ -62,6 +62,29 @@ function respondToClickEvent(nex, renderNode, atTarget, browserEvent) {
 			browserEvent.stopPropagation();
 			browserEvent.preventDefault();
 			evaluateAndKeep(renderNode);
+			return;
+		}
+		/*
+		And the second click on a string opens its editor. A string is the one
+		nex whose whole content is text you typed, so the gesture that means
+		"let me change this text" everywhere else on a computer should mean it
+		here too. Backspace still does the same from the keyboard.
+
+		Only when the string is already what is selected, which after the first
+		click of a real double click it is. If it is not -- the click arrived
+		some other way -- this falls through and selects it, and the next double
+		click opens it.
+
+		(comment by Claude)
+		*/
+		if (browserEvent.detail == 2 && Utils.isEString(nex)
+				&& nex.isMutable()
+				&& !renderNode.getCurrentEditor()
+				&& systemState.getGlobalSelectedNode().getNex() == nex) {
+			browserEvent.stopPropagation();
+			browserEvent.preventDefault();
+			enqueueAndPerformAction(actionFactory('start-main-editor'));
+			eventQueueDispatcher.enqueueImportantTopLevelRender();
 			return;
 		}
 		/*

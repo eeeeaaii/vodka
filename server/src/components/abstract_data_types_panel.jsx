@@ -1,3 +1,5 @@
+import { ALLOWED } from '../nexstyle.js';
+
 const AbstractDataTypesPanel = () => {
   return (
     <div className="infopanel">
@@ -72,6 +74,40 @@ const AbstractDataTypesPanel = () => {
         without one the drawing is redone whenever something changes the org.
         If the model has a doc child tagged <span className="infohotkey">:docs</span>, those docs appear in the tooltip when you type the model name
         into the instantiator.
+      </p>
+      <p className="infospacer"></p>
+      <p className="infospacer"></p>
+      <p className="infosubheader">Appearance</p>
+      <p className="infolinemargin">
+        But how do I make a drawing look like anything?
+      </p>
+      <p className="infolinemargin">
+        <span className="infohotkey">set-style of</span>takes a string of css and a nex, and gives that nex
+        the style. Only a doc, a line, a word, a letter or a separator can have one -- those are the
+        nexes a drawing is made of. The style shows only in normal mode, so a style meant for a
+        finished interface never rearranges the code that built it.
+      </p>
+      <p className="infolinemargin">
+        Only the properties below are allowed, and anything else is an error that says so. The rule
+        is that a property may change how a thing looks inside the box it has, and how big that box
+        is, but not where the box is -- so there is no position, float, transform, display or
+        z-index. After one of those, what you see is no longer where the nex is.
+      </p>
+      <p className="infoline infoindent">
+        {ALLOWED.join(', ')}
+      </p>
+      <p className="infospacer"></p>
+      <p className="infolinemargin">
+        Two notes. A border shorthand with no style in it gets
+        <span className="infohotkey">solid</span>added, because css defaults a border to none and a
+        border you asked for is a border you should see. And the
+        <span className="infohotkey">font</span>shorthand needs both a size and a family or the
+        browser throws the whole declaration away without saying anything, so
+        <span className="infohotkey">font-weight</span>and friends are the safer way to say it.
+      </p>
+      <p className="infolinemargin">
+        There is an older builtin, <span className="infohotkey">apply-css-style to</span>, which takes
+        any css at all and applies it in both modes. It still works and is on its way out.
       </p>
       <p className="infospacer"></p>
       <p className="infospacer"></p>
