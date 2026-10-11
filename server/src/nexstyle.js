@@ -51,16 +51,29 @@ say what a thing is for. `margin` is the one to watch: a negative margin does
 pull a thing over its neighbour. It is in because spacing things apart is the
 whole job and the alternative is nothing.
 
+The shorthands are here too -- `border` and the four sides of it, and `font`.
+A shorthand only ever sets the longhands it is made of, so it cannot say
+anything the list above does not already allow; what it saves you is writing
+three declarations to draw one line. `background` is the shorthand that is NOT
+here: it can carry a background-image, and an image is a url, which is a hole
+out of vodka to somewhere else.
+
 (comment by Claude)
 */
 const ALLOWED = [
 	'background-color',
+	'border',
+	'border-bottom',
 	'border-color',
+	'border-left',
 	'border-radius',
+	'border-right',
 	'border-style',
+	'border-top',
 	'border-width',
 	'color',
 	'cursor',
+	'font',
 	'font-family',
 	'font-size',
 	'font-style',
@@ -85,13 +98,15 @@ const ALLOWED = [
 const SPELLINGS = {
 	'background': 'background-color',
 	'bg-color': 'background-color',
-	'border': 'border-width, border-color or border-style',
-	'font': 'font-family or font-size',
 	'text-color': 'color',
 	'foreground': 'color',
 	'align': 'text-align',
 	'underline': 'text-decoration',
 	'radius': 'border-radius',
+	'border-top-width': 'border-top or border-width',
+	'border-top-color': 'border-top or border-color',
+	'border-top-style': 'border-top or border-style',
+	'outline': 'border',
 	'corner-radius': 'border-radius',
 	'padding-left': 'padding',
 	'padding-right': 'padding',
@@ -102,6 +117,46 @@ const SPELLINGS = {
 	'margin-top': 'margin',
 	'margin-bottom': 'margin',
 };
+
+const BORDER_SHORTHANDS = [
+	'border',
+	'border-top',
+	'border-right',
+	'border-bottom',
+	'border-left',
+];
+
+const BORDER_STYLE_KEYWORDS = [
+	'none',
+	'hidden',
+	'dotted',
+	'dashed',
+	'solid',
+	'double',
+	'groove',
+	'ridge',
+	'inset',
+	'outset',
+];
+
+/*
+`border: 1px red` draws nothing, because the shorthand sets every part of the
+border it is made of and the part it was not told about goes back to its
+default, and the default style is none. The parts of the shorthand can be given
+in any order, so saying `solid` at the end of one that did not mention a style
+is both safe and what the person meant.
+
+(comment by Claude)
+*/
+function withVisibleBorderStyle(value) {
+	let words = value.split(/\s+/);
+	for (let i = 0; i < words.length; i++) {
+		if (BORDER_STYLE_KEYWORDS.indexOf(words[i].toLowerCase()) >= 0) {
+			return value;
+		}
+	}
+	return value + ' solid';
+}
 
 function isRestrictedStyle(s) {
 	return !!s && s.indexOf(STYLE_MARK) == 0;
@@ -167,12 +222,19 @@ function checkStyle(s) {
 		if (!d.value) {
 			return { problem: `${d.property} was given no value` };
 		}
-		if (d.property == 'border-width' || d.property == 'border-color') {
+		let value = d.value;
+		if (BORDER_SHORTHANDS.indexOf(d.property) >= 0) {
+			value = withVisibleBorderStyle(value);
+			// a shorthand has said what the style is, so nothing below should
+			// go on to say it again and overwrite it
+			// (comment by Claude)
+			sawBorderStyle = true;
+		} else if (d.property == 'border-width' || d.property == 'border-color') {
 			sawBorder = true;
 		} else if (d.property == 'border-style') {
 			sawBorderStyle = true;
 		}
-		kept.push(`${d.property}: ${d.value}`);
+		kept.push(`${d.property}: ${value}`);
 	}
 	/*
 	A border nobody can see is not a border. Css defaults border-style to none,
