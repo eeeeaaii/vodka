@@ -91,10 +91,19 @@ const AbstractDataTypesPanel = () => {
         But how do I make a drawing look like anything?
       </p>
       <p className="infolinemargin">
-        <span className="infohotkey">set-style of</span>takes a string of css and a nex, and gives that nex
-        the style. Only a doc, a line, a word, a letter or a separator can have one -- those are the
-        nexes a drawing is made of. The style shows only in normal mode, so a style meant for a
+        <span className="infohotkey">set-style of</span>takes a string of css and a nex, and adds that
+        style to the nex. Only a doc, a line, a word, a letter or a separator can have one -- those are
+        the nexes a drawing is made of. The style shows only in normal mode, so a style meant for a
         finished interface never rearranges the code that built it.
+      </p>
+      <p className="infolinemargin">
+        Adding, not replacing: a property you name again takes its new value and keeps its place, and
+        everything else stays. To take a property off, give it no value at all --
+        <span className="infohotkey">border:;</span>-- which is not valid css and so cannot mean
+        anything else. Removing takes the whole family, so that also removes
+        <span className="infohotkey">border-width</span>and the rest of them;
+        <span className="infohotkey">border-radius:;</span>removes only the radius, and
+        <span className="infohotkey">all:;</span>removes everything.
       </p>
       <p className="infolinemargin">
         Only the properties below are allowed, and anything else is an error that says so. The rule

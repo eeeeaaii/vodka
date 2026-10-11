@@ -158,14 +158,14 @@ function createSyscalls() {
 						+ ' a line, a word, a letter or a separator, not a '
 						+ n.getTypeName() + '. Sorry!');
 			}
-			let checked = checkStyle(s);
+			let checked = checkStyle(s, n.getCurrentStyle());
 			if (checked.problem) {
 				return constructFatalError('set-style of: ' + checked.problem + '. Sorry!');
 			}
 			n.setCurrentStyle(markRestrictedStyle(checked.css));
 			return n;
 		},
-		'Gives |nex the style |style, replacing any it had. Colour, border, font, size and spacing only, on a doc, line, word, letter or separator, and it shows in normal mode only.'
+		'Adds the style |style to |nex, replacing any property it names. A property given no value, as in `border:;`, is removed. Colour, border, font, size and spacing only, on a doc, line, word, letter or separator, and it shows in normal mode only.'
 	);
 
 	Builtin.createBuiltin(

@@ -190,28 +190,57 @@ function parseDeclarations(s) {
 }
 
 /*
-Checking a style string, and saying what is wrong with it rather than only that
-something is. Returns the css to store, or a string naming the problem.
+Checking a style string and merging it into the one a nex already has, and
+saying what is wrong with it rather than only that something is. Returns the
+css to store, or a string naming the problem.
+
+Additive, because a style is now something you look at and adjust. Setting
+`background-color` on a thing that already has a border should give it both; a
+whole style written out again every time you want to change one number is a
+style nobody will touch twice. A property named again replaces its old value
+and keeps its old place in the order.
+
+	border: 1px solid black          ->  border: 1px solid black
+	background-color: red            ->  border: 1px solid black;
+	                                     background-color: red
+	background-color: blue           ->  border: 1px solid black;
+	                                     background-color: blue
+
+A property given no value at all is removed:
+
+	border:;                         ->  background-color: blue
+
+That is not valid css -- nothing could mean it, since a declaration with no
+value is simply dropped by a browser -- which is what makes it safe to use for
+this. Removing takes the whole family: `border:;` also removes border-width,
+border-color, border-style and border-radius, because somebody who says the
+border should go means all of it. `border-radius:;` removes only the radius.
+`all:;` removes everything.
 
 A value is not checked beyond being there -- the browser is better at that than
 anything written here would be, and a value it does not understand is a
 declaration it ignores, not a hole in anything.
 
+Merging only happens into a style that was set this way. One set with the old
+builtin is unchecked, so there is nothing to safely merge with, and it is
+replaced instead.
+
 (comment by Claude)
 */
-function checkStyle(s) {
+function checkStyle(s, existingStyle) {
 	let declarations = parseDeclarations(s);
-	if (declarations.length == 0) {
-		return { css: '' };
-	}
-	let kept = [];
-	let sawBorder = false;
-	let sawBorderStyle = false;
+	let kept = isRestrictedStyle(existingStyle)
+			? parseDeclarations(existingStyle.substring(STYLE_MARK.length))
+			: [];
 	for (let i = 0; i < declarations.length; i++) {
 		let d = declarations[i];
 		if (d.bad) {
 			return { problem: `"${d.bad}" is not a css declaration -- it wants`
 					+ ' a property, a colon, and a value' };
+		}
+		if (!d.value) {
+			kept = removeProperty(kept, d.property);
+			continue;
 		}
 		if (ALLOWED.indexOf(d.property) < 0) {
 			let instead = SPELLINGS[d.property]
@@ -219,34 +248,60 @@ function checkStyle(s) {
 					: `. You can set: ${ALLOWED.join(', ')}`;
 			return { problem: `${d.property} is not a style you can set${instead}` };
 		}
-		if (!d.value) {
-			return { problem: `${d.property} was given no value` };
-		}
 		let value = d.value;
 		if (BORDER_SHORTHANDS.indexOf(d.property) >= 0) {
 			value = withVisibleBorderStyle(value);
-			// a shorthand has said what the style is, so nothing below should
-			// go on to say it again and overwrite it
-			// (comment by Claude)
-			sawBorderStyle = true;
-		} else if (d.property == 'border-width' || d.property == 'border-color') {
-			sawBorder = true;
-		} else if (d.property == 'border-style') {
-			sawBorderStyle = true;
 		}
-		kept.push(`${d.property}: ${value}`);
+		kept = setProperty(kept, d.property, value);
 	}
 	/*
 	A border nobody can see is not a border. Css defaults border-style to none,
 	so asking for a width and a colour and getting nothing is the first thing
-	anybody hits; a border asked for is a border drawn.
+	anybody hits; a border asked for is a border drawn. A shorthand has already
+	had this done to its own value, so it counts as having said what the style
+	is and nothing here overwrites it.
 
 	(comment by Claude)
 	*/
-	if (sawBorder && !sawBorderStyle) {
-		kept.push('border-style: solid');
+	let has = (prop) => kept.some(d => d.property == prop);
+	let hasShorthand = kept.some(d => BORDER_SHORTHANDS.indexOf(d.property) >= 0);
+	if ((has('border-width') || has('border-color'))
+			&& !has('border-style') && !hasShorthand) {
+		kept.push({ property: 'border-style', value: 'solid' });
 	}
-	return { css: kept.join('; ') };
+	return { css: kept.map(d => `${d.property}: ${d.value}`).join('; ') };
+}
+
+// in place if it is already there, keeping the order the style was written in,
+// otherwise on the end
+// (comment by Claude)
+function setProperty(declarations, property, value) {
+	let out = declarations.slice();
+	for (let i = 0; i < out.length; i++) {
+		if (out[i].property == property) {
+			out[i] = { property: property, value: value };
+			return out;
+		}
+	}
+	out.push({ property: property, value: value });
+	return out;
+}
+
+/*
+The property and everything under it: `border:;` takes border-width and the
+rest with it, because a border that is gone is gone. `all:;` takes everything,
+which is the only thing `all` is allowed to be used for -- as a property to
+set it would mean something far beyond this list.
+
+(comment by Claude)
+*/
+function removeProperty(declarations, property) {
+	if (property == 'all') {
+		return [];
+	}
+	let prefix = property + '-';
+	return declarations.filter(d =>
+			d.property != property && d.property.indexOf(prefix) != 0);
 }
 
 // the mark, then the css: one string, because that is what a nex stores
