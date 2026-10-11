@@ -127,7 +127,7 @@ class Instantiator extends NexContainer {
 			return '';
 		}
 		let b = BINDINGS.lookupBinding(this.orgname.get());
-		let docs = templateStore.getTemplateDocs(b);
+		let docs = templateStore.getTemplateDocs(b, this.orgname.get());
 		if (!docs) {
 			return '';
 		}

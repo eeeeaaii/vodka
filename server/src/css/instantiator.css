@@ -47,3 +47,16 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	margin-top: 2px;
 	margin-left: 15px;
 }
+
+/*
+The initializer's doc string, under the line that says how to call it. Lighter
+than the call itself, which is what you came to read.
+
+(comment by Claude)
+*/
+.templateline3 {
+	margin-top: 4px;
+	margin-left: 15px;
+	max-width: 30em;
+	opacity: 0.75;
+}
