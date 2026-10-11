@@ -148,9 +148,6 @@ differently from the same backslash drawn in the other.
 	align-items: flex-start;
 }
 
-.objecttag {
-	display:none;
-}
 
 .render-depth-exceeded {
 	border: 2px dashed var(--oom-text);
@@ -163,7 +160,23 @@ differently from the same backslash drawn in the other.
 	background-color: var(--oom-background);
 }
 
-.exploded > .objecttag {
+/*
+The ghost id: the same nex drawn in more than one place at once, marked with
+its id in every place it appears. Only ever present when that has happened --
+prependObjectTag (nex.js:351) is the only thing that makes one -- so there is
+no state in which this should be hidden.
+
+It used to be `.exploded > .objecttag`, which meant normal mode silently
+dropped the warning. That is backwards. Normal mode is where it matters most:
+a template that hands the same immutable doc to eight instances gives all eight
+the same face, and since wait-for-click writes its handler into a single slot
+on the nex (asyncfunctions.js:154), only the last one of them answers a click.
+Nothing about that is visible in a finished interface. The ghost id is the one
+thing that says so.
+
+(comment by Claude)
+*/
+.objecttag {
 	border: 1px solid var(--oom-strong-border);
 	background-color: var(--oom-strong-background);
 	color: var(--oom-strong-text);
@@ -179,7 +192,21 @@ differently from the same backslash drawn in the other.
 	opacity: 0.2;
 }
 
-.newselected.exploded > .objecttag {
+/*
+Stronger in normal mode. Exploded, the repeat is half visible anyway -- the
+same structure is drawn twice and you can see it -- so the mark only has to
+confirm it. Normal mode shows a finished thing with no structure on screen at
+all, so the mark is carrying the whole warning by itself, and it is sitting on
+top of whatever colour the interface chose.
+
+(comment by Claude)
+*/
+.nex:not(.exploded) > .objecttag {
+	opacity: 0.55;
+}
+
+/* the one you are on reads clearly; the rest stay out of the way */
+.newselected > .objecttag {
 	opacity: 1.0;
 	z-index: 100;
 }
