@@ -72,6 +72,15 @@ const AbstractDataTypesPanel = () => {
         <span className="infohotkey">:rendered</span> child there by hand instead, and it is never regenerated.
         A <span className="infohotkey">:shouldDraw</span> child, if there is one, is asked whether to call <span className="infohotkey">:draw</span> again;
         without one the drawing is redone whenever something changes the org.
+      </p>
+      <p className="infolinemargin">
+        What counts is a change to the org itself -- a member being set. A change deeper inside the
+        drawing does not count and will not redraw it, which matters when the drawing holds something
+        that acts: a <span className="infohotkey">wait-for-click</span> puts what it settled with in
+        place of what it was waiting on, so a button that is clicked is replaced by the click. If you
+        want the face rebuilt, say so by mutating the org -- keep a count of the clicks and
+        <span className="infohotkey">set</span>it in the handler. A drawing that never needs rebuilding
+        is an equally good thing to write, and this way you are not charged for one.
         If the model has a doc child tagged <span className="infohotkey">:docs</span>, those docs appear in the tooltip when you type the model name
         into the instantiator.
       </p>
