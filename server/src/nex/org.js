@@ -107,7 +107,19 @@ class Org extends NexContainer {
 		return this.standardListPrettyPrint(lvl, '[org]', hdir);
 	}
 
+	/*
+	An instance of a template does not survive being written out: its members
+	are closures, and a closure saves as nil. What came back used to be an org
+	with no methods and a face full of nils, which looked like nothing at all.
+	So it saves as a marker instead -- a string, which shows what it is and
+	does nothing if evaluated. Seeing one means a dead instance to delete.
+
+	(comment by Claude)
+	*/
 	toStringV2(ctx) {
+		if (this.templateInstantiationLexicalSelfScope) {
+			return '$"-inst-"';
+		}
 		return `${this.toStringV2Literal()}${this.toStringV2PrivateDataSection(ctx)}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2', ctx)}${this.listEndV2()}`;
 
 	}
