@@ -243,6 +243,20 @@ class Lambda extends NexContainer {
     }
   }
 
+  /*
+  Inside the codespan and ahead of everything in it, so the tags come before
+  the dot the way they do on a symbol or an integer. The codespan is rewritten
+  on every render, which takes the old holder with it.
+
+  (comment by Claude)
+  */
+  getTagHolder(domNode) {
+    let tagHolder = document.createElement("div");
+    tagHolder.classList.add("tagholder");
+    domNode.firstChild.prepend(tagHolder);
+    return tagHolder;
+  }
+
   needsEvaluation() {
     return true;
   }

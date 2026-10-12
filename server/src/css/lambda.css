@@ -45,3 +45,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border-color: var(--selected-border);
 }
 
+
+/* the codespan is italic, and a tag is not */
+/* (comment by Claude) */
+.lambda > .codespan .tag {
+	font-style: normal;
+}
