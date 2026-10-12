@@ -136,7 +136,7 @@ function createWavetableBuiltins() {
       if (!Utils.isClip(clip)) {
         return constructFatalError("queue-stop: not a clip. Sorry!");
       }
-      clip.end(true);
+      clip.endAtCycleEnd();
       return clip;
     },
     "Stops |clip at the end of the cycle."

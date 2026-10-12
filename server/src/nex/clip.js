@@ -243,12 +243,26 @@ class Clip extends Nex {
 		if (this.ended || !this.track) return false;
 		this.ended = true;
 		this.track.stop(atCycleEnd);
+		this.markEnded();
+		return true;
+	}
+
+	// at the end of the global cycle, not at the track's own earlier point
+	// (comment by Claude)
+	endAtCycleEnd() {
+		if (this.ended || !this.track) return false;
+		this.ended = true;
+		this.track.queueStopAtCycleEnd();
+		this.markEnded();
+		return true;
+	}
+
+	markEnded() {
 		// it is unassigned now and has to say so: ending happens at a cycle
 		// boundary, on a timer, with nothing else about to render
 		// (comment by Claude)
 		this.setDirtyForRendering(true);
 		eventQueueDispatcher.enqueueRenderOnlyDirty();
-		return true;
 	}
 
 	hasEnded() {

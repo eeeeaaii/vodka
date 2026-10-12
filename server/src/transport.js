@@ -274,6 +274,19 @@ class Track {
 
 	// now, not at a boundary: stopping everything, or a device that went away
 	// (comment by Claude)
+	/*
+	Leaving at the end of the cycle, not at this track's own point. Nothing to
+	schedule: every source was already given this boundary as its stop time
+	when its pass started, so setting the flag is the whole of it.
+
+	(comment by Claude)
+	*/
+	queueStopAtCycleEnd() {
+		this.pending = null;
+		this.pendingExclusive = false;
+		this.stopAtBoundary = true;
+	}
+
 	stopNow() {
 		for (let i = 0; i < this.members.length; i++) {
 			stopMemberNow(this.members[i]);
