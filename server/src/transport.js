@@ -618,7 +618,7 @@ function queueStopsForUnheldClips() {
 		if (!track.clip || track.passes == 0 || track.stopAtBoundary) continue;
 		if (track.clip.references <= 1) {
 			cycleLog('  stopping a clip nobody holds, passes=' + track.passes);
-			track.clip.end(true);
+			track.clip.endAtCycleEnd();
 		}
 	}
 }
