@@ -27,7 +27,7 @@ import { convertJSMapToOrg } from '../nex/org.js'
 import { RenderNode } from '../rendernode.js'
 import { systemState } from '../systemstate.js'
 import { rootManager } from '../rootmanager.js'
-import { checkStyle, markRestrictedStyle } from '../nexstyle.js'
+import { checkStyle, isRestrictedStyle, markRestrictedStyle, STYLE_MARK } from '../nexstyle.js'
 import { experiments, getExperimentsAsString, getSettings, setSettingValue, hasSettingName } from '../globalappflags.js'
 import { UNBOUND } from '../environment.js'
 import { webFontManager } from '../webfonts.js'
@@ -166,6 +166,29 @@ function createSyscalls() {
 			return n;
 		},
 		'Adds the style |style to |nex, replacing any property it names. A property given no value, as in `border:;`, is removed. Colour, border, font, size and spacing only, on a doc, line, word, letter or separator, and it shows in normal mode only.'
+	);
+
+	/*
+	Only what set-style of put there. A style from the old css builtins is a
+	different thing, and set-style of throws it away rather than adding to it,
+	so as far as this pair is concerned it is not there.
+
+	(comment by Claude)
+	*/
+	Builtin.createBuiltin(
+		'get-style of',
+		[ 'nex' ],
+		function $getStyleOf(env, executionEnvironment) {
+			let n = env.lb('nex');
+			if (!Utils.isDocElement(n)) {
+				return constructFatalError('get-style of: only a doc, a line, a word,'
+						+ ' a letter or a separator has a style, not a '
+						+ n.getTypeName() + '. Sorry!');
+			}
+			let s = n.getCurrentStyle();
+			return constructEString(isRestrictedStyle(s) ? s.substring(STYLE_MARK.length) : '');
+		},
+		'The style set-style of gave |nex.'
 	);
 
 	Builtin.createBuiltin(
