@@ -61,6 +61,27 @@ class NexContainer extends Nex {
 		this.tagHolder = null;
 	}
 
+	/*
+	For a container whose first child is a codespan -- a lambda, a command, an
+	instantiator. The tags go inside it and ahead of everything in it, so they
+	come before the dot the way they do on a symbol or an integer. The codespan
+	is rewritten on every render, which takes the old holder with it.
+
+	(comment by Claude)
+	*/
+	tagHolderInCodespan(domNode) {
+		// a shallow render leaves the codespan as it was, holder and all
+		// (comment by Claude)
+		let first = domNode.firstChild.firstChild;
+		if (first && first.classList && first.classList.contains('tagholder')) {
+			return first;
+		}
+		let tagHolder = document.createElement('div');
+		tagHolder.classList.add('tagholder');
+		domNode.firstChild.prepend(tagHolder);
+		return tagHolder;
+	}
+
 	getChildTagged(tag) {
 		for (let p = this.firstChildNex; p != null; p = p.next) {
 			if (p.n.hasTag(tag)) {

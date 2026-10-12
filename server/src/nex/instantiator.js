@@ -178,7 +178,7 @@ class Instantiator extends NexContainer {
 	}
 
 	getTagHolder(domNode) {
-		return domNode.firstChild;
+		return this.tagHolderInCodespan(domNode);
 	}
 
 	getDefaultHandler() {

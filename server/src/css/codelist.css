@@ -137,3 +137,9 @@ That's why the weird "3.2px"
 	background-color: var(--selected-border);
 }
 
+
+/* the codespan is italic, and a tag is not */
+/* (comment by Claude) */
+.codespan .tag {
+	font-style: normal;
+}
