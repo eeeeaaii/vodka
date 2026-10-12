@@ -18,6 +18,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from '../utils.js'
 
 import { NexContainer, V_DIR, H_DIR, Z_DIR } from './nexcontainer.js'
+import { copyForDrawing, isCopyingForDrawing } from './nex.js'
 import { experiments } from '../globalappflags.js'
 import { wrapError, evaluateNexSafely } from '../evaluator.js'
 import { constructEString } from './estring.js'
@@ -134,6 +135,12 @@ class Org extends NexContainer {
 	}
 
 	makeCopy(shallow) {
+		// shared, not copied, when it is going into a face: a copy of one of
+		// these is a picture of it, and a face wants the thing itself
+		// (comment by Claude)
+		if (isCopyingForDrawing()) {
+			return this;
+		}
 		let r = constructOrg();
 		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
@@ -320,7 +327,11 @@ class Org extends NexContainer {
 		// (comment by Claude)
 		let cmd = systemState.getSCF().makeCommandWithClosureZeroArgs(drawFunction);
 		let drawing = systemState.getSCF().sEval2(cmd, BINDINGS, 'org: custom drawing function');
-		this.setDrawing(drawing);
+		// The face is our copy of what the component gave back, never the nex
+		// itself -- see copyForDrawing. This is the only place that happens: a
+		// `:rendered` child put there by hand is left exactly as it is.
+		// (comment by Claude)
+		this.setDrawing(copyForDrawing(drawing));
 	}
 
 	setDrawing(drawing) {

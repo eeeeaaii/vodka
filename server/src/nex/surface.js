@@ -17,7 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as Utils from '../utils.js'
 
-import { Nex } from './nex.js'
+import { Nex, isCopyingForDrawing } from './nex.js'
 import { heap } from '../heap.js'
 import { constructFatalError } from './eerror.js'
 
@@ -43,6 +43,12 @@ class Surface extends Nex {
 	}
 
 	makeCopy() {
+		// shared, not copied, when it is going into a face: a copy of one of
+		// these is a picture of it, and a face wants the thing itself
+		// (comment by Claude)
+		if (isCopyingForDrawing()) {
+			return this;
+		}
 		let r = constructSurface(this.width, this.height);
 		this.copyFieldsTo(r);
 		return r;

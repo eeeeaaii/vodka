@@ -78,6 +78,49 @@ function doCallbacks(list, a, b) {
 	}
 }
 
+/*
+Copying a nex that is on its way into a face.
+
+A draw function's result becomes the face of one org instance, and the engine
+copies it rather than installing the very nex the component handed back. The
+point is that a component author does not have to think about where what they
+return came from: a doc bound to a symbol, an immutable literal, something
+already on the screen somewhere else, or a structure built fresh every time --
+all of them behave the same, because the face is always the engine's own copy.
+
+It is not a plain deep copy. Structure is copied: docs, lines, words, letters,
+separators, lists, and the deferred values waiting inside them, which each need
+their own registration against their own child -- that is what makes two
+instances of a component with a button two separately clickable buttons.
+
+Nexes that ARE something rather than describe something are shared instead: an
+org, a surface, a wavetable, a clip. A copy of one of those is deliberately a
+picture of it -- a second canvas nobody paints on, a clip that names no track,
+an org whose state is not the state its parent is holding -- so copying one into
+a face would show you the picture and leave the real thing off screen.
+
+A flag rather than an argument to makeCopy because makeCopy is implemented in
+twenty-seven places and four of them care. Nothing inside makeCopy evaluates, so
+there is nothing to reenter.
+
+(comment by Claude)
+*/
+let copyingForDrawing = false;
+
+function copyForDrawing(nex) {
+	let was = copyingForDrawing;
+	copyingForDrawing = true;
+	try {
+		return nex.makeCopy();
+	} finally {
+		copyingForDrawing = was;
+	}
+}
+
+function isCopyingForDrawing() {
+	return copyingForDrawing;
+}
+
 function setNextNexId(val) {
 	NEXT_NEX_ID = val;
 }
@@ -791,5 +834,6 @@ class Nex {
 //if (typeof module !== 'undefined' && module.exports) module.exports = { Nex: Nex }
 
 
-export { Nex, setNextNexId, NEXT_NEX_ID, addCallback, removeCallback, doCallbacks }
+export { Nex, setNextNexId, NEXT_NEX_ID, addCallback, removeCallback, doCallbacks,
+		copyForDrawing, isCopyingForDrawing }
 

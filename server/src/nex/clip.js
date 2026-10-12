@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { Nex } from './nex.js'
+import { Nex, isCopyingForDrawing } from './nex.js'
 import { heap } from '../heap.js'
 import { eventQueueDispatcher } from '../eventqueuedispatcher.js'
 
@@ -313,6 +313,12 @@ class Clip extends Nex {
 	}
 
 	makeCopy(shallow) {
+		// shared, not copied, when it is going into a face: a copy of one of
+		// these is a picture of it, and a face wants the thing itself
+		// (comment by Claude)
+		if (isCopyingForDrawing()) {
+			return this;
+		}
 		// A copy names the same loop but must not be able to stop it a second
 		// time. It is a picture of the clip, not another clip.
 		let r = new Clip(this.kind, this.what, this.channels.slice(), this.port);

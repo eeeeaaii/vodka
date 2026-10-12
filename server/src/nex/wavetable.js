@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { Nex } from './nex.js'
+import { Nex, isCopyingForDrawing } from './nex.js'
 import { experiments } from '../globalappflags.js'
 import { startAuditioningBuffer, getFileAsBuffer, getAuditionPositionSamples, maybeKillSound } from '../webaudio.js'
 import { possiblyRecordAction } from '../testrecorder.js'
@@ -749,6 +749,12 @@ class Wavetable extends Nex {
 	}
 
 	makeCopy() {
+		// shared, not copied, when it is going into a face: a copy of one of
+		// these is a picture of it, and a face wants the thing itself
+		// (comment by Claude)
+		if (isCopyingForDrawing()) {
+			return this;
+		}
 		let r = constructWavetable(this.data.length);
 		this.copyFieldsTo(r);
 		return r;
