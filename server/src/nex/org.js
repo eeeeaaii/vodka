@@ -72,6 +72,11 @@ class Org extends NexContainer {
 		// (comment by Claude)
 		this.drawingIsStale = true;
 
+		// a face with an error in it is never drawn again -- see shouldDraw.
+		// Not copied: a new instance is how you get a working one back
+		// (comment by Claude)
+		this.bricked = false;
+
 		// if this org is instantiated as a template,
 		// then it will have this set to the self-scope.
 		// this is important because when this obj is freed,
@@ -278,6 +283,35 @@ class Org extends NexContainer {
 	}
 
 	/*
+	A fatal error anywhere in the face bricks the org: it is not drawn again,
+	and the error stays where it landed for you to see. Redrawing would throw
+	the error away along with the face it is in, and an error can arrive long
+	after :draw returned -- a click handler failing -- so this looks at the
+	face rather than at what :draw did.
+
+	Into deferred values, since a finished one holds its error as a child, but
+	not into an org inside the face: that one answers for its own face.
+
+	(comment by Claude)
+	*/
+	faceHasError() {
+		let drawing = this.getDrawing();
+		if (!drawing) return false;
+		let found = false;
+		let walk = function(n) {
+			if (found) return;
+			if (Utils.isFatalError(n)) {
+				found = true;
+				return;
+			}
+			if (Utils.isOrg(n) || !n.isNexContainer()) return;
+			n.doForEachChild(walk);
+		};
+		walk(drawing);
+		return found;
+	}
+
+	/*
 	Whether the draw pass should run `:draw` again.
 
 	Ordinarily: when something changed the org. `set self.yesorno T` reaches
@@ -292,6 +326,11 @@ class Org extends NexContainer {
 	(comment by Claude)
 	*/
 	shouldDraw() {
+		if (this.bricked) return false;
+		if (this.faceHasError()) {
+			this.bricked = true;
+			return false;
+		}
 		let shouldDrawFunction = this.getChildWithTag(shouldDrawTag());
 		if (!shouldDrawFunction) {
 			return this.drawingIsStale;
