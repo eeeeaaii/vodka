@@ -305,7 +305,7 @@ function createBasicBuiltins() {
 		[ 'list()' ],
 		function $vertical(env, executionEnvironment) {
 			let n = env.lb('list');
-			n.setHorizontal();
+			n.setVertical();
 			return n;
 		},
 		'Draws |list top to bottom.'
@@ -316,7 +316,7 @@ function createBasicBuiltins() {
 		[ 'list()' ],
 		function $zdirectional(env, executionEnvironment) {
 			let n = env.lb('list');
-			n.setHorizontal();
+			n.setZdirectional();
 			return n;
 		},
 		'Draws |list as a stack, elements overlapping toward the viewer.'
