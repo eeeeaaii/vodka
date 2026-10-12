@@ -243,10 +243,6 @@ class Lambda extends NexContainer {
     }
   }
 
-  getTagHolder(domNode) {
-    return domNode.firstChild;
-  }
-
   needsEvaluation() {
     return true;
   }
