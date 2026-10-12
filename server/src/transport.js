@@ -161,7 +161,6 @@ class Track {
 		(comment by Claude)
 		*/
 		this.oneShot = false;
-		this.paused = false;
 		this.muted = false;
 		/*
 		The engine owns the clip while the track is in the cycle. That is the
@@ -190,7 +189,7 @@ class Track {
 	}
 
 	isPlaying() {
-		return this.isInCycle() && !this.paused;
+		return this.isInCycle();
 	}
 
 	/*
@@ -337,7 +336,7 @@ class Track {
 	}
 
 	startPass(startTime, len) {
-		if (this.paused || this.muted) return;
+		if (this.muted) return;
 		for (let i = 0; i < this.members.length; i++) {
 			this.startMember(this.members[i], startTime, len);
 		}
@@ -405,21 +404,12 @@ class Track {
 		return memberEligibleAfter(this.members[0], after);
 	}
 
-	setPaused(paused) {
-		this.paused = paused;
-		if (!paused) return;
-		for (let i = 0; i < this.members.length; i++) {
-			stopMemberNow(this.members[i]);
-		}
-	}
-
 	/*
 	Silences the track without taking it out of the cycle, so it comes back in
-	phase. Independent of pausing on purpose: a track can be both, and stops
-	being silent only when neither says so.
+	phase.
 
 	Muting cuts the sound off where it is. Unmuting waits for the track to come
-	back round to its own beginning, the same as unpausing: a loop that started
+	back round to its own beginning: a loop that started
 	again in the middle of a bar would be out of time with everything else.
 	*/
 	setMuted(muted) {
@@ -433,7 +423,7 @@ class Track {
 			}
 			return;
 		}
-		if (!was || this.paused || !cycleRunning) return;
+		if (!was || !cycleRunning) return;
 		for (let i = 0; i < this.members.length; i++) {
 			this.unmuteMember(this.members[i]);
 		}

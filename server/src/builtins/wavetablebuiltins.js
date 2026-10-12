@@ -81,7 +81,7 @@ import {
   decayTailSamples,
 } from "../wavetablefunctions.js";
 import { getDeviceChannelCount, getInputDeviceChannelCount, getDefaultOutputDevice, getDefaultOutputName, anOutputDeviceWasChosen, anInputDeviceWasChosen, setAudioLatency, getAudioLatency } from "../webaudio.js";
-import { trackFor, queueAudio, queueBreak, atNextCycleStart, abortPlayback } from "../transport.js";
+import { trackFor, queueAudio, queueBreak, atNextCycleStart } from "../transport.js";
 import { constructClip, constructUnassignedClip, channelsDescription } from "../nex/clip.js";
 import { Tag } from "../tag.js";
 import { ERROR_TYPE_INFO } from "../nex/eerror.js";
@@ -113,28 +113,33 @@ function createWavetableBuiltins() {
   );
 
   Builtin.createBuiltin(
-    "toggle-playback",
+    "stop",
     ["clipμ"],
-    function $togglePlayback(env, executionEnvironment) {
+    function $stop(env, executionEnvironment) {
       let clip = env.lb("clip");
-      if (Utils.isNil(clip)) return goneClipError("toggle-playback");
+      if (Utils.isNil(clip)) return goneClipError("stop");
       if (!Utils.isClip(clip)) {
-        return constructFatalError("toggle-playback: not a clip. Sorry!");
+        return constructFatalError("stop: not a clip. Sorry!");
       }
-      let track = clip.getTrack();
-      if (!track || !track.isInCycle()) {
-        return constructFatalError("toggle-playback: that clip already stopped. Sorry!");
-      }
-      track.setPaused(track.isPlaying());
+      clip.end(false);
       return clip;
     },
-    /*
-    Silencing a clip is not the end of it: the loop keeps its place in the
-    cycle and its length, so starting it again puts it back in phase rather
-    than starting a bar of its own. Delete the clip if you meant to be rid of
-    it, which lets it finish the pass it is in.
-    */
-    "Silences |clip, or starts it again. A silenced clip keeps its place in the cycle and returns in time."
+    "Stops |clip now."
+  );
+
+  Builtin.createBuiltin(
+    "queue-stop",
+    ["clipμ"],
+    function $queueStop(env, executionEnvironment) {
+      let clip = env.lb("clip");
+      if (Utils.isNil(clip)) return goneClipError("queue-stop");
+      if (!Utils.isClip(clip)) {
+        return constructFatalError("queue-stop: not a clip. Sorry!");
+      }
+      clip.end(true);
+      return clip;
+    },
+    "Stops |clip at the end of the cycle."
   );
 
   Builtin.createBuiltin(
@@ -149,7 +154,7 @@ function createWavetableBuiltins() {
       let track = clip.getTrack();
       return constructBool(!!track && track.isPlaying());
     },
-    "True if |clip is making sound: still in the cycle, and not silenced."
+    "True if |clip is making sound: still in the cycle."
   );
 
   /*
@@ -820,24 +825,6 @@ function createWavetableBuiltins() {
       return wt;
     },
     "Stops |wt recording."
-  );
-
-  Builtin.createBuiltin(
-    "abort-playback",
-    ["channel#?"],
-    function $abortPlayback(env, executionEnvironment) {
-      let channel = env.lb("channel");
-      // -1 is every channel, which is what no argument means
-      // (comment by Claude)
-      let channelnumber = -1;
-      if (channel != UNBOUND) {
-        channelnumber = toChannelIndexes([channel.getTypedValue()])[0];
-      }
-
-      abortPlayback(channelnumber);
-      return constructNil();
-    },
-    "Stops playback on |channel, or on all of them."
   );
 
   Builtin.createBuiltin(

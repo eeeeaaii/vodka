@@ -270,8 +270,8 @@ class Clip extends Nex {
 	(make-clip), or assigned once and since ended, which deletes the loop and
 	leaves the ids naming nothing.
 
-	Not the same as silenced -- see toggle-playback, where the loop keeps its
-	place in the cycle and comes back in phase. That one still has a wave.
+	Not the same as muted, where the loop keeps its place in the cycle and
+	comes back in phase. That one still has a wave.
 
 	(comment by Claude)
 	*/
