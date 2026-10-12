@@ -62,6 +62,10 @@ to.
 // (comment by Claude)
 const CYCLE_LOOKAHEAD_SECONDS = 0.15;
 
+// how far ahead of now an unmuted loop is started, so it starts on time
+// (comment by Claude)
+const UNMUTE_LEAD_SECONDS = 0.02;
+
 /*
 A master instant said in a device's own clock, and the same answer every time
 it is asked about.
@@ -421,9 +425,8 @@ class Track {
 	Silences the track without taking it out of the cycle, so it comes back in
 	phase.
 
-	Muting cuts the sound off where it is. Unmuting waits for the track to come
-	back round to its own beginning: a loop that started
-	again in the middle of a bar would be out of time with everything else.
+	Both are immediate. Muting cuts the sound off where it is, and unmuting
+	brings it back where it would have been.
 	*/
 	setMuted(muted) {
 		let was = this.muted;
@@ -443,21 +446,39 @@ class Track {
 	}
 
 	/*
-	Unmuting, and the member's own boundary decides when: it comes back where it
-	would have come back anyway, in phase with itself. If that is still inside
-	this pass it is started for the rest of the pass; if not, the next pass
-	starts it in the ordinary way.
+	Unmuting is immediate, and in phase: the sound comes back at the place in
+	the material it would have reached had it never been muted. A short lead so
+	the start time is still in the future when the device gets it -- a start in
+	the past plays at once from the offset given, and so is late by however
+	late it was.
+
+	The offset follows what the looping source would have done since the top of
+	the cycle: from where the pass started to the end of the buffer once, then
+	round the loop region.
+
+	(comment by Claude)
 	*/
 	unmuteMember(member) {
 		if (member.start || member.node) return;
 		if (!channelExistsOn(member.output, member.channel)) return;
-		let at = nextOwnBoundary(member, ctx.currentTime);
+		let at = ctx.currentTime + UNMUTE_LEAD_SECONDS;
 		if (at >= cycleNextBoundaryTime) return;
+		let end = member.buffer.length / SAMPLE_RATE;
+		let loopStart = member.loopStartSeconds || 0;
+		let from = member.introDone ? loopStart : 0;
+		let elapsed = at - cycleStartedAt;
+		let offset;
+		if (elapsed < end - from) {
+			offset = from + elapsed;
+		} else if (end - loopStart > 0) {
+			offset = loopStart + ((elapsed - (end - from)) % (end - loopStart));
+		} else {
+			return;
+		}
 		let node = getSourceFromBuffer(member.buffer, true, member.loopStartSeconds,
 				member.output);
 		node.connect(member.output.merger, 0, member.channel);
-		node.start(outputTimeFor(member.output, at),
-				member.introDone ? member.loopStartSeconds || 0 : 0);
+		node.start(outputTimeFor(member.output, at), offset);
 		node.stop(outputTimeFor(member.output, cycleNextBoundaryTime));
 		if (!member.introDone) member.introScheduled = true;
 		member.node = node;
@@ -481,33 +502,6 @@ class Track {
 		let base = member.introDone ? member.loopStartSeconds : 0;
 		return Math.round((base + (elapsed % len)) * SAMPLE_RATE);
 	}
-}
-
-/*
-When a member next comes back round to its own beginning.
-
-The cycle is as long as the longest track, and a shorter one repeats inside
-that -- a four count loop in a six count cycle starts again at four. Its own
-boundaries are what matter for muting it: a four count loop told to stop should
-stop after four, not wait for the six. They are measured from the top of the
-cycle, because that is where everything is started.
-
-Never returns the moment it is asked about, so a loop is always allowed to
-finish the repeat it is in the middle of.
-
-The answer can land past the end of the cycle, and for a loop whose length does
-not divide the cycle it usually does -- the four count loop's next own boundary
-after count five is eight, and the cycle ends at six. The caller compares
-against the cycle boundary; the node stops there regardless.
-*/
-function nextOwnBoundary(member, after) {
-	let len = memberLengthSeconds(member);
-	if (!(len > 0)) {
-		return cycleNextBoundaryTime;
-	}
-	let elapsed = after - cycleStartedAt;
-	let n = Math.floor(elapsed / len) + 1;
-	return cycleStartedAt + n * len;
 }
 
 /*
