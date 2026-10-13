@@ -147,6 +147,12 @@ function isWord(n) {
 	return n.getTypeName() == '-word-';
 }
 
+function isSurface(n) {
+	if (n instanceof RenderNode) n = n.getNex();
+	if (!n || !n.getTypeName) return false;
+	return n.getTypeName() == '-surface-';
+}
+
 function isOrg(n) {
 	if (n instanceof RenderNode) n = n.getNex();
 	if (!n || !n.getTypeName) return false;
@@ -350,6 +356,7 @@ export {
 	isNonFatalError,
 	isInDocContext,
 	isDocElement,
+	isSurface,
 	isDocContainerType,
 	isDeferredValue,
 	isDeferredCommand,

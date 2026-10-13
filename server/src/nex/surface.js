@@ -17,46 +17,68 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as Utils from '../utils.js'
 
-import { Nex, isCopyingForDrawing } from './nex.js'
+import { NexContainer } from './nexcontainer.js'
 import { heap } from '../heap.js'
 import { constructFatalError } from './eerror.js'
+import { evaluateNexSafely } from '../evaluator.js'
+import { RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
 
-/**
- * Represents a drawing surface (canvas).
- */
-class Surface extends Nex {
+/*
+What a path's paint string may set. These go onto the svg path as attributes,
+so the list is also what keeps a surface from reaching outside vodka: nothing
+here can load anything, and values mentioning url are refused below.
+
+(comment by Claude)
+*/
+const ALLOWED_PAINT = [
+	'fill', 'stroke', 'stroke-width', 'stroke-dasharray', 'stroke-linecap',
+	'stroke-linejoin', 'opacity', 'fill-opacity', 'stroke-opacity', 'transform'
+];
+
+// A path with no paint is a thin line in the text colour, so a bare list of
+// points shows up in either theme. svg's own default, a black fill and no line,
+// would draw an open path as nothing.
+// (comment by Claude)
+const DEFAULT_PAINT = {
+	'fill': 'none',
+	'stroke': 'currentColor',
+	'stroke-width': '1'
+};
+
+/*
+A surface is a container of paths, and a path is a list of points:
+
+  ((3 4) (238 43) (84 23))          lines from point to point
+  (("m" 3 4) ("d" 9 2))             move, then draw
+  ("fill: #c33" (0 0) (10 0) (5 8))  paint first, if you want it
+
+Mutable, it is drawn exploded like any container, so the points can be edited.
+Immutable, it is drawn as the picture, in svg, and its children are not drawn
+at all. Anything that is not a valid path, or a valid point, is skipped: a typo
+should not brick a face.
+
+(comment by Claude)
+*/
+class Surface extends NexContainer {
 	constructor(w, h) {
 		super();
-		if (!w) w = 100;
-		if (!h) h = 100;
-		this.width = w;
-		this.height = h;
-
-		this.canvas = document.createElement('canvas');
-		this.canvas.setAttribute('width', '' + this.width);
-		this.canvas.setAttribute('height', '' + this.height);
+		this.width = w || 100;
+		this.height = h || 100;
+		this.drawingAsPicture = false;
+		this.setVertical();
 	}
 
 	getTypeName() {
 		return '-surface-';
 	}
 
-	makeCopy() {
-		// shared, not copied, when it is going into a face: a copy of one of
-		// these is a picture of it, and a face wants the thing itself
-		// (comment by Claude)
-		if (isCopyingForDrawing()) {
-			return this;
-		}
+	makeCopy(shallow) {
 		let r = constructSurface(this.width, this.height);
+		this.copyChildrenTo(r, shallow);
 		this.copyFieldsTo(r);
 		return r;
-	}
-
-	copyFieldsTo(nex) {
-		super.copyFieldsTo(nex);
-		nex.canvas.getContext('2d').drawImage(this.canvas, 0, 0);
 	}
 
 	toString(version, ctx) {
@@ -66,153 +88,97 @@ class Surface extends Nex {
 		return super.toString(version);
 	}
 
-	renderInto(renderNode, renderFlags, withEditor) {
-		super.renderInto(renderNode, renderFlags, withEditor);
-		let domNode = renderNode.getDomNode();
-		domNode.classList.add('surface');
-		domNode.appendChild(this.canvas);
-	}
-
-	// erm changes a number to a hex string I think
-	toHex(n) {
-		let z = n.toString(16);
-		if (z.length == 1) {
-			z = '0' + z;
-		}
-		return z;
-	}
-
-	isValidColorList(n) {
-		let nc = n.numChildren();
-		if (nc != 3 && nc != 4) return false;
-		for (let i = 0; i < n.numChildren(); i++) {
-			let c = n.getChildAt(i);
-			if (!Utils.isInteger(c)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	convertColorList(n) {
-		let carray = []
-		for (let i = 0; i < n.numChildren(); i++) {
-			let c = n.getChildAt(i);
-			carray.push(c.getTypedValue())
-		}
-		return carray;
-	}
-
-
-	setFillFromColor(color) {
-		let t, r, g, b;
-		if (color.length == 4) {
-			t = color[0] / 256.0;
-			r = color[1];
-			g = color[2];
-			b = color[3];							
-		} else {
-			t = 1.0;
-			r = color[0];
-			g = color[1];
-			b = color[2];
-		}
-		let ctx = this.canvas.getContext("2d");
-		ctx.globalAlpha = t;
-		ctx.fillStyle = '#' + this.toHex(r) + this.toHex(g) + this.toHex(b);
-	}
-
-	setStrokeFromColor(color) {
-		let t, r, g, b;
-		if (color.length == 4) {
-			t = color[0] / 256.0;
-			r = color[1];
-			g = color[2];
-			b = color[3];							
-		} else {
-			t = 1.0;
-			r = color[0];
-			g = color[1];
-			b = color[2];
-		}
-		let ctx = this.canvas.getContext("2d");
-		ctx.globalAlpha = t;
-		ctx.strokeStyle = '#' + this.toHex(r) + this.toHex(g) + this.toHex(b);
-	}
-
-	fillBackground(color) {
-		let r = color[0];
-		let g = color[1];
-		let b = color[2];
-		let ctx = this.canvas.getContext("2d");
-		ctx.fillStyle = '#' + this.toHex(r) + this.toHex(g) + this.toHex(b);
-		ctx.fillRect(0, 0, this.width, this.height);
-	}
-
-	drawLine(color, x1, y1, x2, y2) {
-		let ctx = this.canvas.getContext("2d");
-		this.setStrokeFromColor(color);
-		ctx.beginPath();
-		ctx.moveTo(x1, y1);
-		ctx.lineTo(x2, y2);
-		ctx.stroke();		
-	}
-
-	drawRect(color, x, y, w, h) {
-		this.setFillFromColor(color);
-		let ctx = this.canvas.getContext("2d");
-		ctx.fillRect(x, y, w, h);		
-	}
-
-	drawDot(color, x, y) {
-		this.setFillFromColor(color);
-		let ctx = this.canvas.getContext("2d");
-		ctx.fillRect(x, y, 1, 1);		
-	}
-
-	colorAt(x, y) {
-		let ctx = this.canvas.getContext("2d");
-		let imgdata = ctx.getImageData(x, y, 1, 1)
-		let r = imgdata.data[0];
-		let g = imgdata.data[1];
-		let b = imgdata.data[2];
-		let a = imgdata.data[3];
-		return [
-			r, g, b, a
-		];
-	}
-
-	copyFromClipboard() {
-		navigator.clipboard.read().then(data => {
-			if (data.length != 1) return;
-			let item = data[0];
-			if (item.types[0] != 'image/png') return;
-			item.getType('image/png').then(blob => {
-				let image = document.createElement('img');
-                image.src = URL.createObjectURL(blob);
-                let body = document.getElementsByTagName('body')[0];
-                body.appendChild(image);
-                let t = this;
-                setTimeout(function() {
-					let ctx = this.canvas.getContext("2d");
-					ctx.drawImage(image, 0, 0);
-					body.removeChild(image);
-                }.bind(this), 10);
-			})
-		});
-	}
-
 	toStringV2(ctx) {
-		return `[${this.toStringV2Literal()}surface]${this.toStringV2PrivateDataSection(ctx)}${this.toStringV2TagList()}`
+		return `[${this.toStringV2Literal()}surface]${this.toStringV2PrivateDataSection(ctx)}${this.listStartV2()}${this.toStringV2TagList()}${super.childrenToString('v2', ctx)}${this.listEndV2()}`;
 	}
 
-	deserializePrivateData(data) {
+	prettyPrintInternal(lvl, hdir) {
+		return this.standardListPrettyPrint(lvl, '[surface]', hdir);
 	}
 
 	serializePrivateData(ctx) {
-		return '';
+		return `${this.width} ${this.height}`;
 	}
 
+	deserializePrivateData(data) {
+		let parts = ('' + data).trim().split(/\s+/);
+		let w = Number(parts[0]);
+		let h = Number(parts[1]);
+		if (w > 0) this.width = w;
+		if (h > 0) this.height = h;
+	}
+
+	rootLevelPostEvaluationStep() {
+		this.setMutable(false);
+	}
+
+	evaluate(env) {
+		if (this.mutable) {
+			let listcopy = this.makeCopy(true);
+			let iterator = null;
+			this.doForEachChild(function(child) {
+				let newchild = evaluateNexSafely(child, env);
+				iterator = listcopy.fastAppendChildAfter(newchild, iterator);
+			})
+			listcopy.setMutable(false);
+			return listcopy;
+		} else {
+			return this;
+		}
+	}
+
+	canDoInsertInside() {
+		return this.isMutable();
+	}
+
+	/*
+	A path deep inside can change -- a number in a point set from code -- and
+	only that point's own nex is marked. Drawn as a picture, the surface is the
+	only thing on the screen for any of it, so it is dirty if anything under it
+	is.
+
+	(comment by Claude)
+	*/
+	getDirtyForRendering() {
+		if (super.getDirtyForRendering()) return true;
+		return this.drawingAsPicture && anyDescendantDirty(this);
+	}
+
+	// the picture is drawn in place of the children, see renderInto
+	// (comment by Claude)
+	getChildArrayForRendering() {
+		if (this.drawingAsPicture) {
+			return [];
+		}
+		return super.getChildArrayForRendering();
+	}
+
+	renderInto(renderNode, renderFlags, withEditor) {
+		let domNode = renderNode.getDomNode();
+		super.renderInto(renderNode, renderFlags, withEditor);
+		domNode.classList.add('surface');
+		domNode.classList.add('data');
+		// set here, read by getChildArrayForRendering straight after, in the
+		// same render
+		// (comment by Claude)
+		this.drawingAsPicture = !(renderFlags & RENDER_FLAG_EXPLODED);
+		if (this.drawingAsPicture) {
+			domNode.appendChild(this.makeSvg());
+			clearDescendantsDirty(this);
+		}
+	}
+
+	makeSvg() {
+		let svg = document.createElementNS(SVG_NS, 'svg');
+		svg.setAttribute('width', '' + this.width);
+		svg.setAttribute('height', '' + this.height);
+		svg.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
+		this.doForEachChild(c => {
+			let p = pathElementFor(c);
+			if (p) svg.appendChild(p);
+		});
+		return svg;
+	}
 
 	getDefaultHandler() {
 		return 'standardDefault';
@@ -220,7 +186,8 @@ class Surface extends Nex {
 
 	getEventTable(context) {
 		return {
-		}
+			'Backspace': 'remove-selected-and-select-previous-sibling-if-empty',
+		};
 	}
 
 	memUsed() {
@@ -228,9 +195,95 @@ class Surface extends Nex {
 	}
 }
 
+function anyDescendantDirty(nex) {
+	let found = false;
+	nex.doForEachChild(c => {
+		if (found) return;
+		if (c.dirtyForRendering || (c.isNexContainer() && anyDescendantDirty(c))) {
+			found = true;
+		}
+	});
+	return found;
+}
+
+function clearDescendantsDirty(nex) {
+	nex.doForEachChild(c => {
+		c.setDirtyForRendering(false);
+		if (c.isNexContainer()) clearDescendantsDirty(c);
+	});
+}
+
+function numberValue(n) {
+	if (!Utils.isInteger(n) && !Utils.isFloat(n)) return null;
+	let v = n.getTypedValue();
+	return Number.isFinite(v) ? v : null;
+}
+
+/*
+One point as svg path data, or null if it can't be read. A bare point draws,
+except the first one in a path, which has to be a move because an svg path
+can't start anywhere else.
+
+(comment by Claude)
+*/
+function pointData(point, isFirst) {
+	if (!Utils.isOrg(point)) return null;
+	let kids = point.getChildArray();
+	let step = 'd';
+	let i = 0;
+	if (kids.length > 0 && Utils.isEString(kids[0])) {
+		step = kids[0].getFullTypedValue();
+		i = 1;
+	}
+	if (step != 'm' && step != 'd') return null;
+	if (kids.length - i != 2) return null;
+	let x = numberValue(kids[i]);
+	let y = numberValue(kids[i + 1]);
+	if (x === null || y === null) return null;
+	let letter = (step == 'm' || isFirst) ? 'M' : 'L';
+	return `${letter} ${x} ${y}`;
+}
+
+function applyPaint(el, paintString) {
+	let paint = Object.assign({}, DEFAULT_PAINT);
+	let decls = ('' + paintString).split(';');
+	for (let i = 0; i < decls.length; i++) {
+		let colon = decls[i].indexOf(':');
+		if (colon < 0) continue;
+		let name = decls[i].substring(0, colon).trim().toLowerCase();
+		let value = decls[i].substring(colon + 1).trim();
+		if (ALLOWED_PAINT.indexOf(name) < 0) continue;
+		if (!value || /url/i.test(value)) continue;
+		paint[name] = value;
+	}
+	for (let name in paint) {
+		el.setAttribute(name, paint[name]);
+	}
+}
+
+function pathElementFor(path) {
+	if (!Utils.isOrg(path)) return null;
+	let kids = path.getChildArray();
+	let i = 0;
+	let paintString = '';
+	if (kids.length > 0 && Utils.isEString(kids[0])) {
+		paintString = kids[0].getFullTypedValue();
+		i = 1;
+	}
+	let data = [];
+	for (; i < kids.length; i++) {
+		let d = pointData(kids[i], data.length == 0);
+		if (d) data.push(d);
+	}
+	if (data.length == 0) return null;
+	let el = document.createElementNS(SVG_NS, 'path');
+	el.setAttribute('d', data.join(' '));
+	applyPaint(el, paintString);
+	return el;
+}
+
 function constructSurface(w, h) {
-	let sizeRequired = heap.sizeSurface() + w * h * heap.incrementalSizeSurface();
-	if (!heap.requestMem(sizeRequired)) {
+	if (!heap.requestMem(heap.sizeSurface())) {
 		throw constructFatalError(`OUT OF MEMORY: cannot allocate Surface.
 stats: ${heap.stats()}`)
 	}
@@ -238,5 +291,4 @@ stats: ${heap.stats()}`)
 }
 
 
-export { Surface, constructSurface}
-
+export { Surface, constructSurface }

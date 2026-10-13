@@ -15,168 +15,40 @@ You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import * as Utils from '../utils.js'
-
 import { Builtin } from '../nex/builtin.js'
-import { constructOrg } from '../nex/org.js'
-import { constructInteger } from '../nex/integer.js'
-import { Surface } from '../nex/surface.js'
-import { UNBOUND } from '../environment.js'
+import { constructSurface } from '../nex/surface.js'
 import { constructFatalError } from '../nex/eerror.js'
 
 /**
  * Creates all surface builtins.
  */
 function createSurfaceBuiltins() {
+	/*
+	The only one. Drawing is appending a path, erasing is removing one, and the
+	list builtins already do both. Comes back immutable, so it is drawn as the
+	picture rather than as the lists it holds.
+
+	(comment by Claude)
+	*/
 	Builtin.createBuiltin(
 		'make-surface',
-		[ 'w#%?', 'h#%?' ],
+		[ 'w#%', 'h#%', 'nex...' ],
 		function $makeSurface(env, executionEnvironment) {
-			let wnex = env.lb('w');
-			let hnex = env.lb('h');
-
-			let w = (wnex == UNBOUND) ? 100 : wnex.getTypedValue();
-			let h = (hnex == UNBOUND) ? 100 : hnex.getTypedValue();
-
-			let r = constructSurface(w, h);
-			return r;
-		},
-		'A drawing surface |w by |h pixels.'
-	);
-
-	Builtin.createBuiltin(
-		'fill-background',
-		[ 'surf', 'color()' ],
-		function $fillBackground(env, executionEnvironment) {
-			let surf = env.lb('surf');
-			let color = env.lb('color');
-
-			if (!surf.isValidColorList(color)) {
-				return constructFatalError(`fill-background: color list must have exactly three integer members.`);				
-			}
-
-			// most of them can have an alpha component, but background fill can't.
-			if (color.numChildren() != 3) {
-				return constructFatalError(`fill-background: color list must have exactly three integer members.`);				
-			}
-
-			let colorarray = surf.convertColorList(color);
-
-			surf.fillBackground(colorarray);
-
-			return surf;
-		},
-		'Fills |surface with |color.'
-	);
-
-	Builtin.createBuiltin(
-		'draw-line',
-		[ 'surf', 'color()', 'x1#%', 'y1#%', 'x2#%', 'y2#%'],
-		function $drawLine(env, executionEnvironment) {
-			let surf = env.lb('surf');
-			let color = env.lb('color');
-
-			if (!surf.isValidColorList(color)) {
-				return constructFatalError(`draw-line: color list must have exactly three or four integer members.`);				
-			}
-
-			let colorarray = surf.convertColorList(color);
-
-			let x1 = env.lb('x1').getTypedValue();
-			let y1 = env.lb('y1').getTypedValue();
-			let x2 = env.lb('x2').getTypedValue();
-			let y2 = env.lb('y2').getTypedValue();
-
-			surf.drawLine(colorarray, x1, y1, x2, y2);
-
-			return surf;
-		},
-		'Draws a line on |surface.'
-	);
-
-	Builtin.createBuiltin(
-		'draw-rectangle',
-		[ 'surf', 'color()', 'x#%', 'y#%', 'w#%', 'h#%' ],
-		function $drawRectangle(env, executionEnvironment) {
-			let surf = env.lb('surf');
-			let color = env.lb('color');
-
-			if (!surf.isValidColorList(color)) {
-				return constructFatalError(`draw-rectangle: color list must have exactly three or four integer members.`);				
-			}
-
-			let colorarray = surf.convertColorList(color);
-
-			let x = env.lb('x').getTypedValue();
-			let y = env.lb('y').getTypedValue();
 			let w = env.lb('w').getTypedValue();
 			let h = env.lb('h').getTypedValue();
-
-			surf.drawRect(colorarray, x, y, w, h);
-
-			return surf;
-		},
-		'Draws a rectangle on |surface.'
-	);
-
-	Builtin.createBuiltin(
-		'draw-dot',
-		[ 'surf', 'color()', 'x#%', 'y#%'],
-		function $drawRectangle(env, executionEnvironment) {
-			let surf = env.lb('surf');
-			let color = env.lb('color');
-
-			if (!surf.isValidColorList(color)) {
-				return constructFatalError(`draw-dot: color list must have exactly three or four integer members.`);				
+			if (!(w > 0) || !(h > 0)) {
+				return constructFatalError(`make-surface: width and height must be more than zero.`);
 			}
-
-			let colorarray = surf.convertColorList(color);
-
-			let x = env.lb('x').getTypedValue();
-			let y = env.lb('y').getTypedValue();
-
-			surf.drawDot(colorarray, x, y);
-
-			return surf;
-		},
-		'Draws a dot of |color on |surf at |x, |y.'
-	);
-
-	Builtin.createBuiltin(
-		'color-at',
-		[ 'surf', 'x#%', 'y#%'],
-		function $drawRectangle(env, executionEnvironment) {
-			let surf = env.lb('surf');
-
-			let x = env.lb('x').getTypedValue();
-			let y = env.lb('y').getTypedValue();
-
-			let colorarray = surf.colorAt(x, y);
-
-			let r = constructOrg();
-			r.appendChild(constructInteger(colorarray[0]))
-			r.appendChild(constructInteger(colorarray[1]))
-			r.appendChild(constructInteger(colorarray[2]))
-			r.appendChild(constructInteger(colorarray[3]))
-
+			let r = constructSurface(w, h);
+			let args = env.lb('nex');
+			for (let i = 0; i < args.numChildren(); i++) {
+				r.appendChild(args.getChildAt(i));
+			}
+			r.setMutable(false);
 			return r;
 		},
-		'The color of |surf at |x, |y, as an org of red, green, blue and alpha, each 0 to 255.'
-	);
-
-
-	Builtin.createBuiltin(
-		'copy-from-clipboard',
-		[ 'surf'],
-		function $drawRectangle(env, executionEnvironment) {
-			let surf = env.lb('surf');
-
-			surf.copyFromClipboard();
-			return surf;
-		},
-		'Copies the image clipboard into |surface.'
+		'A surface |w by |h holding the paths |nex.'
 	);
 }
 
 export { createSurfaceBuiltins }
-

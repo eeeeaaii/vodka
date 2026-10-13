@@ -22,8 +22,7 @@ somewhere appropriate instead of inlining it everywhere.
 A wavetable holds megabytes of samples. That is fine written into a file, where
 the samples go in the file's own resource section, and hopeless in localStorage,
 which holds about five megabytes in total, so autosave puts them in IndexedDB
-and writes a reference. A surface will have the same problem when its drawing is
-made to persist at all.
+and writes a reference.
 
 (comment by Claude)
 */

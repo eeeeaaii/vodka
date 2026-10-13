@@ -668,7 +668,7 @@ class RenderNode {
 	An org whose first child wears the `:rendered` tag is drawn as that child.
 	That is how a `:draw` face works and it does not care about mutability.
 
-	A doc, line, word, letter or separator that is immutable is a result --
+	A doc, line, word, letter, separator or surface that is immutable is a result --
 	evaluation is what makes one, since Doc/Line/Word.evaluate hand back a copy
 	with setMutable(false). A result is shown as the thing it is rather than as
 	the expression that made it, which is also the only way to see what a style
@@ -683,7 +683,7 @@ class RenderNode {
 	startsNormalMode() {
 		let nex = this.nex;
 		return nex.hasCustomDrawing()
-				|| (Utils.isDocElement(nex) && !nex.isMutable());
+				|| ((Utils.isDocElement(nex) || Utils.isSurface(nex)) && !nex.isMutable());
 	}
 
 	getRenderMode() {

@@ -427,6 +427,9 @@ vlang used: ${this.usedSpace}
   sizeWavetable() {
     return 1500;
   } // NOT VERIFIED
+  sizeSurface() {
+    return 1500;
+  } // NOT VERIFIED
   sizeWord() {
     return 1500;
   } // NOT VERIFIED
@@ -438,9 +441,6 @@ vlang used: ${this.usedSpace}
   // these values I got from research, not experimenting
   incrementalSizeString() {
     return 2;
-  }
-  incrementalSizeSurface() {
-    return 4;
   }
   incrementalSizeWavetable() {
     return 8;

@@ -204,9 +204,6 @@ function makeInstanceAtom(instname, privatedata, taglist, nonmutable) {
 		case 'clip':
 			t = constructUnassignedClip();
 			break;
-		case 'surface':
-			t = constructSurface(concatParserString(privatedata));
-			break;
 		case 'letter':
 			t = constructLetter(concatParserString(privatedata));
 			break;
@@ -236,6 +233,10 @@ function makeInstanceList(instname, children, privatedata, taglist, verthoriz, n
 			break;
 		case 'doc':
 			t = constructDoc();
+			isList = true;
+			break;
+		case 'surface':
+			t = constructSurface();
 			isList = true;
 			break;
 		default:
