@@ -25,8 +25,7 @@ import { constructFatalError } from '../nex/eerror.js'
 function createSurfaceBuiltins() {
 	/*
 	The only one. Drawing is appending a path, erasing is removing one, and the
-	list builtins already do both. Comes back immutable, so it is drawn as the
-	picture rather than as the lists it holds.
+	list builtins already do both.
 
 	(comment by Claude)
 	*/
@@ -44,7 +43,6 @@ function createSurfaceBuiltins() {
 			for (let i = 0; i < args.numChildren(); i++) {
 				r.appendChild(args.getChildAt(i));
 			}
-			r.setMutable(false);
 			return r;
 		},
 		'A surface |w by |h holding the paths |nex.'

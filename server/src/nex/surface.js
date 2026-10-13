@@ -165,6 +165,13 @@ class Surface extends NexContainer {
 		if (this.drawingAsPicture) {
 			domNode.appendChild(this.makeSvg());
 			clearDescendantsDirty(this);
+		} else {
+			// children are appended after this, so the label comes first
+			// (comment by Claude)
+			let label = document.createElement('div');
+			label.classList.add('surfacelabel');
+			label.innerText = `surface ${this.width}×${this.height}`;
+			domNode.appendChild(label);
 		}
 	}
 

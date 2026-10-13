@@ -26,20 +26,34 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	display: block;
 }
 
+/*
+Exploded, a surface is a list of lists, which on its own looks exactly like an
+org of orgs. The dashed border and the label above the paths say it is a
+picture taken apart.
+(comment by Claude)
+*/
 .surface.exploded {
 	padding: 3px;
+	border: 2px dashed var(--surface-glyph);
+	border-radius: 6px;
+}
+
+.surface.exploded.newselected {
+	border: 2px dashed var(--selected-border);
+}
+
+.surface.exploded.mutable {
+	border-width: 3px;
+	padding: 2px;
 }
 
 .surface.exploded > .nex.exploded {
 	margin: 2px;
 }
 
-
-.surface.exploded {
-	border: 3px solid var(--unselected-border);
+.surfacelabel {
+	font-family: Courier;
+	font-size: 9px;
+	color: var(--surface-glyph);
+	margin: 0 2px 2px 2px;
 }
-
-.surface.exploded.newselected {
-	border: 3px solid var(--selected-border);
-}
-
