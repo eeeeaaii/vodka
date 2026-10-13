@@ -306,8 +306,7 @@ class KeyDispatcher {
 			// play again from wherever you are: walks up to the nearest play
 			// command and runs it, so you do not have to shift-tab out first
 			// (comment by Claude)
-			'MetaShiftKeyP':        'replay-nearest-play',
-			'CtrlShiftKeyP':        'replay-nearest-play',
+			'CtrlShiftKeyD':        'do-nearest-do',
 			'Enter':                'evaluate-nex',
 			'ShiftSpace':           'toggle-dir',
 			'ShiftBackspace':       'remove-selected-and-select-previous-sibling',
@@ -404,8 +403,7 @@ class KeyDispatcher {
 			// play again from wherever you are: walks up to the nearest play
 			// command and runs it, so you do not have to shift-tab out first
 			// (comment by Claude)
-			'MetaShiftKeyP':        'replay-nearest-play',
-			'CtrlShiftKeyP':        'replay-nearest-play',
+			'CtrlShiftKeyD':        'do-nearest-do',
 			'Enter':                'evaluate-nex',
 			'ShiftSpace':           'toggle-dir',
 			'ShiftBackspace':       'remove-selected-and-select-previous-sibling',
@@ -484,8 +482,7 @@ class KeyDispatcher {
 			// play again from wherever you are: walks up to the nearest play
 			// command and runs it, so you do not have to shift-tab out first
 			// (comment by Claude)
-			'MetaShiftKeyP':        'replay-nearest-play',
-			'CtrlShiftKeyP':        'replay-nearest-play',
+			'CtrlShiftKeyD':        'do-nearest-do',
 			'Tab':                  'move-right-down',
 			'ArrowUp':              'move-left-up',
 			'ArrowDown':            'move-right-down',
@@ -572,8 +569,7 @@ class KeyDispatcher {
 			// play again from wherever you are: walks up to the nearest play
 			// command and runs it, so you do not have to shift-tab out first
 			// (comment by Claude)
-			'MetaShiftKeyP':        'replay-nearest-play',
-			'CtrlShiftKeyP':        'replay-nearest-play',
+			'CtrlShiftKeyD':        'do-nearest-do',
 			'Tab':                  'move-right-down',
 			'ArrowUp':              'move-left-up',
 			'ArrowDown':            'move-right-down',

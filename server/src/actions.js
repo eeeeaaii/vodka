@@ -1086,48 +1086,25 @@ class EvaluateInPlaceAction extends Action {
 
 
 /*
-Play again, from wherever you are standing.
+Do it again, from wherever you are standing.
 
-Working on a wave means being somewhere deep inside the expression that plays
-it, and hearing the change means getting back out to the play command and
-running it: shift-tab until the whole thing is selected, then shift-enter. This
-is that, in one key. It walks up from the selection and runs the first play
-command it meets, starting with the selected nex itself, so that pressing it
-while already on the play command does the obvious thing.
+Working on something means being deep inside the expression that uses it, and
+seeing or hearing the change means getting back out to the command that runs it.
+This is that, in one key: it walks up from the selection and evaluates the
+first command tagged do, starting with the selected nex itself. If nothing above
+you is tagged do, nothing happens. Tagging the command is what says which one
+-- a play, a redraw, anything.
 
-The selection does not move. Playing is something you do to the document, not
-somewhere you go in it, and being thrown out to the top every time you wanted
-to hear the change would undo the reason for having the shortcut. Nothing needs
-selecting anyway: what runs the code takes the node, and only looks at the
-selection to decide where to put an error.
+The selection does not move. Running something is done to the document, not
+somewhere you go in it, and being thrown out to the top every time would undo
+the reason for having the shortcut.
 
-Undoing does nothing, the way undoing an audition does nothing -- the sound has
-been made and there is no taking it back. A redo does not play it again, for
-the same reason auditioning does not.
+Undoing does nothing, the way undoing an audition does nothing -- what it did
+has been done. A redo does not do it again either.
 
 (comment by Claude)
 */
-/*
-What counts as the thing to go back up and run again: whatever starts a sound.
-
-loop-play is play under its older name, and play-with-bpm is play that also
-sets the tempo, so leaving either out would mean walking past the very command
-you were reaching for. break is here because stopping everything and playing
-one thing once is the other way a passage gets started.
-
-play-midi is deliberately not here. It starts a sequence on a port rather than
-a sound in the cycle, and this is bound to a key you hit while listening.
-
-(comment by Claude)
-*/
-const STARTS_SOUND = {
-	'play': true,
-	'loop-play': true,
-	'play-with-bpm': true,
-	'break': true
-};
-
-class ReplayNearestPlayAction extends Action {
+class DoNearestDoAction extends Action {
 	constructor(actionName) {
 		super(actionName);
 		this.hasBeenDone = false;
@@ -1142,24 +1119,22 @@ class ReplayNearestPlayAction extends Action {
 			return;
 		}
 		this.hasBeenDone = true;
-		let playNode = null;
+		let doNode = null;
 		for (let node = systemState.getGlobalSelectedNode(); node; node = node.getParent()) {
 			let nex = node.getNex();
 			// getCommandName is on Command, and a deferred command is one
 			// (comment by Claude)
-			if (nex && nex.getCommandName && STARTS_SOUND[nex.getCommandName()]) {
-				playNode = node;
+			if (nex && nex.getCommandName && nex.hasTagWithString('do')) {
+				doNode = node;
 				break;
 			}
 		}
-		if (!playNode) {
-			// nothing above you starts anything, so there is nothing to repeat
-			// (comment by Claude)
+		if (!doNode) {
 			return;
 		}
 		// the same thing shift-enter does: run it and keep the code
 		// (comment by Claude)
-		KeyResponseFunctions['evaluate-nex-and-keep'](playNode);
+		KeyResponseFunctions['evaluate-nex-and-keep'](doNode);
 	}
 
 	undoAction() {
@@ -1483,8 +1458,8 @@ function actionFactory(actionName, eventName) {
 		case 'evaluate-nex-and-keep':
 			return new EvaluateInPlaceAction(actionName);
 
-		case 'replay-nearest-play':
-			return new ReplayNearestPlayAction(actionName);
+		case 'do-nearest-do':
+			return new DoNearestDoAction(actionName);
 
 		case 'wrap-in-command':
 		case 'wrap-in-doc':
