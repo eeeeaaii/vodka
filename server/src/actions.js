@@ -29,12 +29,12 @@ import { scheduleAutosave } from './autosave.js'
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 
 /*
-Undo is a stack of buffers. The bottom one is ordinary undo, 50 deep. Each
-ctrl-shift-s pushes a context, a buffer of its own 1000 deep, and edits go into
-the top buffer. Ctrl-shift-r undoes everything in the top buffer and pops it,
-so pressing it again goes back to the context under that, and so on down.
-Ctrl-shift-f flattens the whole stack back into ordinary undo, keeping the
-newest 50: that is keeping what you did.
+Undo is ordinary undo, 50 deep, plus at most one context on top of it.
+Ctrl-shift-s starts a context, a buffer of its own 1000 deep, and edits go into
+it. Ctrl-shift-r undoes everything in the context and closes it. Ctrl-shift-s
+in a context restarts it where you are (see setSavePoint). Ctrl-shift-f closes
+it keeping everything, so ordinary undo keeps the newest 50: that is keeping
+what you did.
 
 Each buffer is bounded so that a forgotten ctrl-shift-s costs a bounded amount.
 The bottom one drops its oldest steps as usual. A full context refuses instead:
@@ -44,7 +44,7 @@ would make it impossible to get back to where it started.
 Plain undo stops at a context's start. Leaving a context is ctrl-shift-r (or
 ctrl-shift-f), so redo inside one never has to reach across a boundary.
 
-Only the top buffer has a redo tail. Pushing a context throws away the one
+Only the top buffer has a redo tail. Starting a context throws away the one
 below it, because acting from here abandons it just as an ordinary edit would.
 
 (comment by Claude)
@@ -277,8 +277,20 @@ function undo() {
 	return true;
 }
 
+/*
+Inside a context, ctrl-shift-s again restarts it here: what the context holds
+moves down to the buffer under it, and a fresh one starts. So contexts never
+nest -- there is at most one.
+
+(comment by Claude)
+*/
 function setSavePoint() {
-	topBuffer().discardRedoTail();
+	let top = topBuffer();
+	top.discardRedoTail();
+	if (top.isContext) {
+		undoBuffers.pop();
+		appendDone(topBuffer(), top.entries);
+	}
 	undoBuffers.push(new UndoBuffer(CONTEXT_UNDO_DEPTH, true));
 }
 
