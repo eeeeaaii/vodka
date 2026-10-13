@@ -27,52 +27,65 @@ import { MODE_EXPANDED } from './nex/estring.js';
 import { scheduleAutosave } from './autosave.js'
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 
-const levelsOfUndo = 1000;
-
-const actionStack = [];
-
-let nextPosition = 0;
-let queueBottom = 0;
-let queueTop = 0;
-let numItemsInQueue = 0;
 /*
-How far back undo has walked. Needed because the ring cannot say on its own:
-once the buffer is full, nextPosition and queueBottom are the same slot whether
-there are fifty things to undo or none, and undo walked straight past the
-bottom and undid already-undone actions a second time.
+Undo is a stack of buffers. The bottom one is ordinary undo, 50 deep. Each
+ctrl-shift-s pushes a context, a buffer of its own 1000 deep, and edits go into
+the top buffer. Ctrl-shift-r undoes everything in the top buffer and pops it,
+so pressing it again goes back to the context under that, and so on down.
+Ctrl-shift-f flattens the whole stack back into ordinary undo, keeping the
+newest 50: that is keeping what you did.
+
+Each buffer is bounded so that a forgotten ctrl-shift-s costs a bounded amount.
+A context that overflows loses its oldest steps, and every buffer under it goes
+with them, because nothing can be undone across the missing steps.
+
+Plain undo stops at a context's start. Leaving a context is ctrl-shift-r (or
+ctrl-shift-f), so redo inside one never has to reach across a boundary.
+
+Only the top buffer has a redo tail. Pushing a context throws away the one
+below it, because acting from here abandons it just as an ordinary edit would.
 
 (comment by Claude)
 */
-let undosDeep = 0;
+const BASE_UNDO_DEPTH = 50;
+const CONTEXT_UNDO_DEPTH = 1000;
 
-/*
-A save point for ctrl-shift-s and ctrl-shift-r. Positions are counted from the
-start of the session rather than as slots in the ring, so the distance from
-the save point can grow past the ring's size: that is how restore knows the
-point has fallen off the bottom and it can only undo everything.
+class UndoBuffer {
+	constructor(capacity, isContext) {
+		this.capacity = capacity;
+		this.isContext = isContext;
+		this.entries = [];
+		// entries below this are done, entries at or above it are the redo tail
+		// (comment by Claude)
+		this.cursor = 0;
+		// steps that fell off the bottom, so how far you are from the start of
+		// the context can still be told after overflowing
+		// (comment by Claude)
+		this.evicted = 0;
+	}
 
-The save point is lost if you undo past it and then do something new, because
-the actions that led to it are thrown away with the redo tail.
+	discardRedoTail() {
+		for (let i = this.cursor; i < this.entries.length; i++) {
+			releaseActionNexes(this.entries[i]);
+		}
+		this.entries.length = this.cursor;
+	}
 
-(comment by Claude)
-*/
-let currentPoint = 0;
-let savePoint = 0;
-let savePointLost = false;
-let hasSavePoint = false;
-
-function advance(queuePos) {
-	return (queuePos + 1) % levelsOfUndo;
-}
-
-function retreat(queuePos) {
-	let p = queuePos - 1;
-	if (p < 0) {
-		return p + levelsOfUndo;
-	} else {
-		return p;
+	discardAll() {
+		for (let i = 0; i < this.entries.length; i++) {
+			releaseActionNexes(this.entries[i]);
+		}
+		this.entries = [];
+		this.cursor = 0;
 	}
 }
+
+let undoBuffers = [new UndoBuffer(BASE_UNDO_DEPTH, false)];
+
+function topBuffer() {
+	return undoBuffers[undoBuffers.length - 1];
+}
+
 
 /*
 What an action is holding so it can be undone.
@@ -132,49 +145,34 @@ function releaseActionNexes(action) {
 }
 
 /*
-Putting an action in the next slot, without running it. The two callers differ
+Putting an action in the top buffer, without running it. The two callers differ
 only in whether the work has happened yet: a key or a click hands over something
 still to do, while a deferred value finishing or an editor failing hands over
 something that already happened and only needs to be undoable.
 
+Acting after an undo abandons everything ahead of us, so the redo tail goes
+first.
+
 (comment by Claude)
 */
 function pushActionSlot(action) {
-	// whatever was in this slot is falling out of the buffer
-	// (comment by Claude)
-	releaseActionNexes(actionStack[nextPosition]);
-	actionStack[nextPosition] = action;
-	if (nextPosition == queueTop) {
-		queueTop = advance(queueTop);
-		nextPosition = advance(nextPosition);
-		if (numItemsInQueue == levelsOfUndo) {
-			queueBottom = advance(queueBottom);
-		} else {
-			numItemsInQueue++;
+	let top = topBuffer();
+	top.discardRedoTail();
+	top.entries.push(action);
+	top.cursor++;
+	if (top.entries.length > top.capacity) {
+		releaseActionNexes(top.entries.shift());
+		top.cursor--;
+		top.evicted++;
+		// nothing under this can be reached any more
+		// (comment by Claude)
+		for (let i = 0; i < undoBuffers.length - 1; i++) {
+			undoBuffers[i].discardAll();
 		}
-	} else {
-		/*
-		Acting after an undo abandons everything ahead of us. Those entries
-		describe a document that no longer exists, and redo would replay them
-		onto this one -- the comment above claimed overwriting the slot covered
-		it, but only this one slot is overwritten, not the rest of the tail.
-
-		(comment by Claude)
-		*/
-		if (savePoint > currentPoint) {
-			savePointLost = true;
-		}
-		nextPosition = advance(nextPosition);
-		for (let p = nextPosition; p != queueTop; p = advance(p)) {
-			releaseActionNexes(actionStack[p]);
-			actionStack[p] = null;
-			numItemsInQueue--;
-		}
-		queueTop = nextPosition;
+		undoBuffers = [top];
 	}
-	undosDeep = 0;
-	currentPoint++;
 }
+
 
 function enqueueAndPerformAction(action) {
 	/*
@@ -226,92 +224,110 @@ function recordPerformedAction(action) {
 
 
 function redo() {
-	if (nextPosition != queueTop) {
-		// the same gap as in enqueueAndPerformAction: a redo deletes again
-		// (comment by Claude)
-		heap.beginAction();
-		try {
-			actionStack[nextPosition].doAction();
-		} finally {
-			heap.endAction();
-		}
-		nextPosition = advance(nextPosition);
-		undosDeep--;
-		currentPoint++;
-		scheduleAutosave(systemState.getRoot());
-		return true;
-	} else {
+	let top = topBuffer();
+	if (top.cursor >= top.entries.length) {
 		console.log('cannot redo');
 		return false;
 	}
+	// the same gap as in enqueueAndPerformAction: a redo deletes again
+	// (comment by Claude)
+	heap.beginAction();
+	try {
+		top.entries[top.cursor].doAction();
+	} finally {
+		heap.endAction();
+	}
+	top.cursor++;
+	scheduleAutosave(systemState.getRoot());
+	return true;
 }
 
 function undo() {
-	// nothing recorded yet, or undo has already reached the oldest thing the
-	// buffer still holds. Without this, the first ctrl-z of a session reads an
-	// empty slot and throws.
-	// (comment by Claude)
-	if (undosDeep >= numItemsInQueue) {
+	let top = topBuffer();
+	if (top.cursor == 0) {
 		console.log('cannot undo');
 		return false;
 	}
-	let pos = retreat(nextPosition);
-	if (actionStack[pos] && actionStack[pos].canUndo()) {
-		nextPosition = pos;
-		undosDeep++;
-		currentPoint--;
-		heap.beginAction();
-		try {
-			actionStack[nextPosition].undoAction();
-		} finally {
-			heap.endAction();
-		}
-		scheduleAutosave(systemState.getRoot());
-		return true;
-	} else {
+	let action = top.entries[top.cursor - 1];
+	if (!action.canUndo()) {
 		console.log('cannot undo');
 		return false;
 	}
+	top.cursor--;
+	heap.beginAction();
+	try {
+		action.undoAction();
+	} finally {
+		heap.endAction();
+	}
+	scheduleAutosave(systemState.getRoot());
+	return true;
 }
 
 function setSavePoint() {
-	savePoint = currentPoint;
-	savePointLost = false;
-	hasSavePoint = true;
+	topBuffer().discardRedoTail();
+	undoBuffers.push(new UndoBuffer(CONTEXT_UNDO_DEPTH, true));
 }
 
 /*
-Back to the save point: undo down to it, or redo up to it if you had undone
-past it. If it is gone -- fallen off the bottom of the ring, or thrown away
-with a redo tail -- undo as far as the ring goes, which is as close as you can
-get.
+Undo the top context back to where it started, and pop it. Whatever could not
+be undone -- an action that says it cannot be -- is still done, so it moves down
+onto the buffer underneath rather than vanishing, and that buffer can still
+undo it.
+
+If the context overflowed, there is no buffer underneath any more, and this is
+as close as it gets: an ordinary buffer takes its place.
 
 (comment by Claude)
 */
 function restoreSavePoint() {
-	if (!hasSavePoint) return;
-	let oldest = currentPoint - (numItemsInQueue - undosDeep);
-	if (savePointLost || savePoint < oldest) {
-		while (undo());
-		hasSavePoint = false;
-		return;
+	let top = topBuffer();
+	if (!top.isContext) return;
+	while (undo());
+	top.discardRedoTail();
+	undoBuffers.pop();
+	if (undoBuffers.length == 0) {
+		undoBuffers.push(new UndoBuffer(BASE_UNDO_DEPTH, false));
 	}
-	while (currentPoint > savePoint && undo());
-	while (currentPoint < savePoint && redo());
-	// a restore uses up the save point
-	// (comment by Claude)
-	hasSavePoint = false;
+	appendDone(topBuffer(), top.entries);
 }
 
-// How much of the undo ring comes after the save point, as a percentage: past
-// 100 and restore can no longer get back to it. Zero if nothing has been saved,
-// null once the save point is lost.
+// Every context collapses into one ordinary buffer, newest 50 kept. The redo
+// tail goes: flattening is saying this is where you are.
+// (comment by Claude)
+function flattenSavePoints() {
+	if (!topBuffer().isContext) return;
+	topBuffer().discardRedoTail();
+	let all = [];
+	for (let i = 0; i < undoBuffers.length; i++) {
+		all = all.concat(undoBuffers[i].entries);
+	}
+	undoBuffers = [new UndoBuffer(BASE_UNDO_DEPTH, false)];
+	appendDone(topBuffer(), all);
+}
+
+// entries that are done, onto the end of a buffer with no redo tail, dropping
+// the oldest past its capacity
+// (comment by Claude)
+function appendDone(buffer, entries) {
+	for (let i = 0; i < entries.length; i++) {
+		buffer.entries.push(entries[i]);
+	}
+	while (buffer.entries.length > buffer.capacity) {
+		releaseActionNexes(buffer.entries.shift());
+	}
+	buffer.cursor = buffer.entries.length;
+}
+
+// How full the top context is, as a percentage: past 100 and ctrl-shift-r can
+// no longer get all the way back. Null outside any context.
 // (comment by Claude)
 function undoDistancePercent() {
-	if (!hasSavePoint) return 0;
-	if (savePointLost) return null;
-	return Math.round(Math.max(0, currentPoint - savePoint) * 100 / levelsOfUndo);
+	let top = topBuffer();
+	if (!top.isContext) return null;
+	return Math.round((top.evicted + top.cursor) * 100 / top.capacity);
 }
+
 
 /*
 An action that turns out to have changed nothing must not go on the stack.
@@ -1512,4 +1528,4 @@ function actionFactory(actionName, eventName) {
 
 export { actionFactory, enqueueAndPerformAction, recordPerformedAction, MultiSelectAction,
 		 ClickSelectAction, UnwrapDeferredAction, EditorErrorAction, undo, redo,
-		 setSavePoint, restoreSavePoint, undoDistancePercent }
+		 setSavePoint, restoreSavePoint, flattenSavePoints, undoDistancePercent }

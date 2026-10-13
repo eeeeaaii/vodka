@@ -21,7 +21,7 @@ import { UNHANDLED_KEY } from './globalconstants.js';
 import { systemState } from './systemstate.js';
 import { BINDINGS } from './environment.js';
 import { manipulator } from './manipulator.js';
-import { actionFactory, enqueueAndPerformAction, undo, redo, setSavePoint, restoreSavePoint } from './actions.js'
+import { actionFactory, enqueueAndPerformAction, undo, redo, setSavePoint, restoreSavePoint, flattenSavePoints } from './actions.js'
 import { evaluateAndKeep } from './evaluatorinterface.js';
 import { experiments } from './globalappflags.js'
 import { isAutocompleteKeyCombo } from './editors.js'
@@ -84,6 +84,8 @@ class KeyDispatcher {
 			setSavePoint();
 		} else if (this.getClipboardCommand(eventName) == 'restore-save-point') {
 			restoreSavePoint();
+		} else if (this.getClipboardCommand(eventName) == 'flatten-save-points') {
+			flattenSavePoints();
 		} else if (this.getClipboardCommand(eventName) == 'save') {
 			let rn = manipulator.doSave();
 			if (rn) {
@@ -237,6 +239,7 @@ class KeyDispatcher {
 			// (comment by Claude)
 			case 'CtrlShiftKeyS': return 'set-save-point';
 			case 'CtrlShiftKeyR': return 'restore-save-point';
+			case 'CtrlShiftKeyF': return 'flatten-save-points';
 			case 'CtrlKeyS': case 'MetaKeyS': return 'save';
 			case 'CtrlKeyX': case 'MetaKeyX': return 'cut';
 			case 'CtrlKeyC': case 'MetaKeyC': return 'copy';

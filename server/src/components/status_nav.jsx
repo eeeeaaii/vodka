@@ -16,7 +16,7 @@ const StatusNav = () => {
     // set-bpm is a builtin, so this changes from inside the document with
     // nothing to tell the ui about it
     const [bpm, setDisplayedBpm] = useState(getBpm());
-    // how far the undo stack is from the ctrl-shift-s save point
+    // how full the ctrl-shift-s context is; null outside one
     // (comment by Claude)
     const [undoPercent, setUndoPercent] = useState(undoDistancePercent());
 
@@ -66,10 +66,11 @@ const StatusNav = () => {
                     </svg>
                 </div>}
             <div className="statusnavitem bpmreadout" title="beats per minute">{bpm}</div>
-            <div className="statusnavitem undoreadout"
-                 title="distance from the save point (ctrl-shift-s saves, ctrl-shift-r restores)">
-                U{undoPercent === null ? '--' : undoPercent}%
-            </div>
+            {undoPercent !== null &&
+                <div className="statusnavitem undoreadout"
+                     title="how full the save point's undo buffer is (ctrl-shift-r restores, ctrl-shift-f keeps)">
+                    U{undoPercent}%
+                </div>}
         </div>
     );
 };
