@@ -17,6 +17,21 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 
 .surface {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.surface svg {
+	display: block;
+}
+
+.surface.exploded {
+	padding: 3px;
+}
+
+.surface.exploded > .nex.exploded {
+	margin: 2px;
 }
 
 
