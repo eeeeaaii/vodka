@@ -20,7 +20,8 @@ import { systemState } from './systemstate.js'
 import { heap } from './heap.js';
 import { KeyResponseFunctions, DefaultHandlers } from './keyresponsefunctions.js';
 import { manipulator } from './manipulator.js';
-import { newTagOrThrowOOM } from './nex/eerror.js'
+import { newTagOrThrowOOM, constructWarning } from './nex/eerror.js'
+import { reportSitelessError } from './sitelesserrors.js'
 // estring and eerror each declare this, with the same value; one of them will do
 // (comment by Claude)
 import { MODE_EXPANDED } from './nex/estring.js';
@@ -36,8 +37,9 @@ Ctrl-shift-f flattens the whole stack back into ordinary undo, keeping the
 newest 50: that is keeping what you did.
 
 Each buffer is bounded so that a forgotten ctrl-shift-s costs a bounded amount.
-A context that overflows loses its oldest steps, and every buffer under it goes
-with them, because nothing can be undone across the missing steps.
+The bottom one drops its oldest steps as usual. A full context refuses instead:
+an edit made in it is undone straight away, because dropping its oldest step
+would make it impossible to get back to where it started.
 
 Plain undo stops at a context's start. Leaving a context is ctrl-shift-r (or
 ctrl-shift-f), so redo inside one never has to reach across a boundary.
@@ -58,10 +60,12 @@ class UndoBuffer {
 		// entries below this are done, entries at or above it are the redo tail
 		// (comment by Claude)
 		this.cursor = 0;
-		// steps that fell off the bottom, so how far you are from the start of
-		// the context can still be told after overflowing
-		// (comment by Claude)
-		this.evicted = 0;
+	}
+
+	// a context with no room for another edit once the redo tail is gone
+	// (comment by Claude)
+	isFullContext() {
+		return this.isContext && this.cursor >= this.capacity;
 	}
 
 	discardRedoTail() {
@@ -71,13 +75,6 @@ class UndoBuffer {
 		this.entries.length = this.cursor;
 	}
 
-	discardAll() {
-		for (let i = 0; i < this.entries.length; i++) {
-			releaseActionNexes(this.entries[i]);
-		}
-		this.entries = [];
-		this.cursor = 0;
-	}
 }
 
 let undoBuffers = [new UndoBuffer(BASE_UNDO_DEPTH, false)];
@@ -160,17 +157,30 @@ function pushActionSlot(action) {
 	top.discardRedoTail();
 	top.entries.push(action);
 	top.cursor++;
-	if (top.entries.length > top.capacity) {
+	// only the bottom buffer drops steps; a context refuses before it gets
+	// here, see refuseIfContextFull. Something recorded rather than performed
+	// can still go one past, which is better than losing the start.
+	// (comment by Claude)
+	if (!top.isContext && top.entries.length > top.capacity) {
 		releaseActionNexes(top.entries.shift());
 		top.cursor--;
-		top.evicted++;
-		// nothing under this can be reached any more
-		// (comment by Claude)
-		for (let i = 0; i < undoBuffers.length - 1; i++) {
-			undoBuffers[i].discardAll();
-		}
-		undoBuffers = [top];
 	}
+}
+
+/*
+A full context takes no more edits. The action has already run -- whether it
+did anything is only known afterwards -- so it is undone again on the spot.
+
+(comment by Claude)
+*/
+function refuseIfContextFull(action) {
+	if (!topBuffer().isFullContext()) return false;
+	if (action.canUndo()) {
+		action.undoAction();
+	}
+	reportSitelessError(constructWarning(
+		`This save point's undo buffer is full (${CONTEXT_UNDO_DEPTH} edits). ctrl-shift-r to restore, ctrl-shift-f to keep.`));
+	return true;
 }
 
 
@@ -192,6 +202,9 @@ function enqueueAndPerformAction(action) {
 	try {
 		action.doAction();
 		if (!action.didSomething()) {
+			return;
+		}
+		if (refuseIfContextFull(action)) {
 			return;
 		}
 		pushActionSlot(action);
@@ -275,9 +288,6 @@ be undone -- an action that says it cannot be -- is still done, so it moves down
 onto the buffer underneath rather than vanishing, and that buffer can still
 undo it.
 
-If the context overflowed, there is no buffer underneath any more, and this is
-as close as it gets: an ordinary buffer takes its place.
-
 (comment by Claude)
 */
 function restoreSavePoint() {
@@ -286,9 +296,6 @@ function restoreSavePoint() {
 	while (undo());
 	top.discardRedoTail();
 	undoBuffers.pop();
-	if (undoBuffers.length == 0) {
-		undoBuffers.push(new UndoBuffer(BASE_UNDO_DEPTH, false));
-	}
 	appendDone(topBuffer(), top.entries);
 }
 
@@ -319,13 +326,12 @@ function appendDone(buffer, entries) {
 	buffer.cursor = buffer.entries.length;
 }
 
-// How full the top context is, as a percentage: past 100 and ctrl-shift-r can
-// no longer get all the way back. Null outside any context.
+// How full the top context is, as a percentage. Null outside any context.
 // (comment by Claude)
 function undoDistancePercent() {
 	let top = topBuffer();
 	if (!top.isContext) return null;
-	return Math.round((top.evicted + top.cursor) * 100 / top.capacity);
+	return Math.round(top.cursor * 100 / top.capacity);
 }
 
 
