@@ -59,6 +59,7 @@ the actions that led to it are thrown away with the redo tail.
 let currentPoint = 0;
 let savePoint = 0;
 let savePointLost = false;
+let hasSavePoint = false;
 
 function advance(queuePos) {
 	return (queuePos + 1) % levelsOfUndo;
@@ -276,6 +277,7 @@ function undo() {
 function setSavePoint() {
 	savePoint = currentPoint;
 	savePointLost = false;
+	hasSavePoint = true;
 }
 
 /*
@@ -287,6 +289,7 @@ get.
 (comment by Claude)
 */
 function restoreSavePoint() {
+	if (!hasSavePoint) return;
 	let oldest = currentPoint - (numItemsInQueue - undosDeep);
 	if (savePointLost || savePoint < oldest) {
 		while (undo());
@@ -296,12 +299,14 @@ function restoreSavePoint() {
 	while (currentPoint < savePoint && redo());
 }
 
-// How far you are from the save point, as a percentage of the undo ring. Null
-// once the save point is lost.
+// How much of the undo ring comes after the save point, as a percentage: past
+// 100 and restore can no longer get back to it. Zero if nothing has been saved,
+// null once the save point is lost.
 // (comment by Claude)
 function undoDistancePercent() {
+	if (!hasSavePoint) return 0;
 	if (savePointLost) return null;
-	return Math.round(Math.abs(currentPoint - savePoint) * 100 / levelsOfUndo);
+	return Math.round(Math.max(0, currentPoint - savePoint) * 100 / levelsOfUndo);
 }
 
 /*
