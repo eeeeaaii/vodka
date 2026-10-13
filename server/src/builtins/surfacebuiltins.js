@@ -31,21 +31,16 @@ function createSurfaceBuiltins() {
 	*/
 	Builtin.createBuiltin(
 		'make-surface',
-		[ 'w#%', 'h#%', 'nex...' ],
+		[ 'w#%', 'h#%' ],
 		function $makeSurface(env, executionEnvironment) {
 			let w = env.lb('w').getTypedValue();
 			let h = env.lb('h').getTypedValue();
 			if (!(w > 0) || !(h > 0)) {
 				return constructFatalError(`make-surface: width and height must be more than zero.`);
 			}
-			let r = constructSurface(w, h);
-			let args = env.lb('nex');
-			for (let i = 0; i < args.numChildren(); i++) {
-				r.appendChild(args.getChildAt(i));
-			}
-			return r;
+			return constructSurface(w, h);
 		},
-		'A surface |w by |h holding the paths |nex.'
+		'An empty surface |w by |h.'
 	);
 }
 
