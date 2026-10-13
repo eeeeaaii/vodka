@@ -340,7 +340,7 @@ The gap is the only thing separating them.
 }
 
 /* reads as a label rather than something to press, unlike its neighbours */
-.bpmreadout {
+.bpmreadout, .undoreadout {
 	cursor: default;
 }
 

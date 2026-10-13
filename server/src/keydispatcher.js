@@ -21,7 +21,7 @@ import { UNHANDLED_KEY } from './globalconstants.js';
 import { systemState } from './systemstate.js';
 import { BINDINGS } from './environment.js';
 import { manipulator } from './manipulator.js';
-import { actionFactory, enqueueAndPerformAction, undo, redo } from './actions.js'
+import { actionFactory, enqueueAndPerformAction, undo, redo, setSavePoint, restoreSavePoint } from './actions.js'
 import { evaluateAndKeep } from './evaluatorinterface.js';
 import { experiments } from './globalappflags.js'
 import { isAutocompleteKeyCombo } from './editors.js'
@@ -80,6 +80,10 @@ class KeyDispatcher {
 			undo();
 		} else if (this.getClipboardCommand(eventName) == 'redo') {
 			redo();
+		} else if (this.getClipboardCommand(eventName) == 'set-save-point') {
+			setSavePoint();
+		} else if (this.getClipboardCommand(eventName) == 'restore-save-point') {
+			restoreSavePoint();
 		} else if (this.getClipboardCommand(eventName) == 'save') {
 			let rn = manipulator.doSave();
 			if (rn) {
@@ -229,6 +233,10 @@ class KeyDispatcher {
 		switch(eventName) {
 			case 'CtrlKeyZ': case 'MetaKeyZ': return 'undo';
 			case 'MetaKeyY': return 'redo';
+			// ctrl only: cmd-shift-r is the browser's hard reload
+			// (comment by Claude)
+			case 'CtrlShiftKeyS': return 'set-save-point';
+			case 'CtrlShiftKeyR': return 'restore-save-point';
 			case 'CtrlKeyS': case 'MetaKeyS': return 'save';
 			case 'CtrlKeyX': case 'MetaKeyX': return 'cut';
 			case 'CtrlKeyC': case 'MetaKeyC': return 'copy';

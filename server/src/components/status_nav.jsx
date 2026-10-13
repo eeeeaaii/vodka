@@ -4,6 +4,7 @@ import { anyMidiNotesSounding, midiPanic } from '../midifunctions.js';
 import { stopAllLoops, anyLoopsRunning } from '../builtins/asyncbuiltins.js';
 import { hasPendingSave } from '../autosave.js';
 import { getBpm } from '../wavetablefunctions.js';
+import { undoDistancePercent } from '../actions.js';
 
 // None of what this shows announces itself, so poll. Cheap -- two boolean reads
 // and a number.
@@ -15,6 +16,9 @@ const StatusNav = () => {
     // set-bpm is a builtin, so this changes from inside the document with
     // nothing to tell the ui about it
     const [bpm, setDisplayedBpm] = useState(getBpm());
+    // how far the undo stack is from the ctrl-shift-s save point
+    // (comment by Claude)
+    const [undoPercent, setUndoPercent] = useState(undoDistancePercent());
 
     useEffect(() => {
         const id = setInterval(() => {
@@ -29,6 +33,7 @@ const StatusNav = () => {
                     || anyLoopsPlaying() || anythingIsRecording());
             setUnsaved(hasPendingSave());
             setDisplayedBpm(getBpm());
+            setUndoPercent(undoDistancePercent());
         }, POLL_MS);
         return () => clearInterval(id);
     }, []);
@@ -61,6 +66,10 @@ const StatusNav = () => {
                     </svg>
                 </div>}
             <div className="statusnavitem bpmreadout" title="beats per minute">{bpm}</div>
+            <div className="statusnavitem undoreadout"
+                 title="distance from the save point (ctrl-shift-s saves, ctrl-shift-r restores)">
+                U{undoPercent === null ? '--' : undoPercent}%
+            </div>
         </div>
     );
 };

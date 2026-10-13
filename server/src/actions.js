@@ -45,6 +45,21 @@ bottom and undid already-undone actions a second time.
 */
 let undosDeep = 0;
 
+/*
+A save point for ctrl-shift-s and ctrl-shift-r. Positions are counted from the
+start of the session rather than as slots in the ring, so the distance from
+the save point can grow past the ring's size: that is how restore knows the
+point has fallen off the bottom and it can only undo everything.
+
+The save point is lost if you undo past it and then do something new, because
+the actions that led to it are thrown away with the redo tail.
+
+(comment by Claude)
+*/
+let currentPoint = 0;
+let savePoint = 0;
+let savePointLost = false;
+
 function advance(queuePos) {
 	return (queuePos + 1) % levelsOfUndo;
 }
@@ -145,6 +160,9 @@ function pushActionSlot(action) {
 
 		(comment by Claude)
 		*/
+		if (savePoint > currentPoint) {
+			savePointLost = true;
+		}
 		nextPosition = advance(nextPosition);
 		for (let p = nextPosition; p != queueTop; p = advance(p)) {
 			releaseActionNexes(actionStack[p]);
@@ -154,6 +172,7 @@ function pushActionSlot(action) {
 		queueTop = nextPosition;
 	}
 	undosDeep = 0;
+	currentPoint++;
 }
 
 function enqueueAndPerformAction(action) {
@@ -217,9 +236,12 @@ function redo() {
 		}
 		nextPosition = advance(nextPosition);
 		undosDeep--;
+		currentPoint++;
 		scheduleAutosave(systemState.getRoot());
+		return true;
 	} else {
 		console.log('cannot redo');
+		return false;
 	}
 }
 
@@ -230,12 +252,13 @@ function undo() {
 	// (comment by Claude)
 	if (undosDeep >= numItemsInQueue) {
 		console.log('cannot undo');
-		return;
+		return false;
 	}
 	let pos = retreat(nextPosition);
 	if (actionStack[pos] && actionStack[pos].canUndo()) {
 		nextPosition = pos;
 		undosDeep++;
+		currentPoint--;
 		heap.beginAction();
 		try {
 			actionStack[nextPosition].undoAction();
@@ -243,9 +266,42 @@ function undo() {
 			heap.endAction();
 		}
 		scheduleAutosave(systemState.getRoot());
+		return true;
 	} else {
 		console.log('cannot undo');
+		return false;
 	}
+}
+
+function setSavePoint() {
+	savePoint = currentPoint;
+	savePointLost = false;
+}
+
+/*
+Back to the save point: undo down to it, or redo up to it if you had undone
+past it. If it is gone -- fallen off the bottom of the ring, or thrown away
+with a redo tail -- undo as far as the ring goes, which is as close as you can
+get.
+
+(comment by Claude)
+*/
+function restoreSavePoint() {
+	let oldest = currentPoint - (numItemsInQueue - undosDeep);
+	if (savePointLost || savePoint < oldest) {
+		while (undo());
+		return;
+	}
+	while (currentPoint > savePoint && undo());
+	while (currentPoint < savePoint && redo());
+}
+
+// How far you are from the save point, as a percentage of the undo ring. Null
+// once the save point is lost.
+// (comment by Claude)
+function undoDistancePercent() {
+	if (savePointLost) return null;
+	return Math.round(Math.abs(currentPoint - savePoint) * 100 / levelsOfUndo);
 }
 
 /*
@@ -1446,4 +1502,5 @@ function actionFactory(actionName, eventName) {
 
 
 export { actionFactory, enqueueAndPerformAction, recordPerformedAction, MultiSelectAction,
-		 ClickSelectAction, UnwrapDeferredAction, EditorErrorAction, undo, redo }
+		 ClickSelectAction, UnwrapDeferredAction, EditorErrorAction, undo, redo,
+		 setSavePoint, restoreSavePoint, undoDistancePercent }
