@@ -27,7 +27,7 @@ import { MODE_EXPANDED } from './nex/estring.js';
 import { scheduleAutosave } from './autosave.js'
 import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 
-const levelsOfUndo = 50;
+const levelsOfUndo = 1000;
 
 const actionStack = [];
 
@@ -293,10 +293,14 @@ function restoreSavePoint() {
 	let oldest = currentPoint - (numItemsInQueue - undosDeep);
 	if (savePointLost || savePoint < oldest) {
 		while (undo());
+		hasSavePoint = false;
 		return;
 	}
 	while (currentPoint > savePoint && undo());
 	while (currentPoint < savePoint && redo());
+	// a restore uses up the save point
+	// (comment by Claude)
+	hasSavePoint = false;
 }
 
 // How much of the undo ring comes after the save point, as a percentage: past
