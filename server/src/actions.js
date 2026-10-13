@@ -1086,25 +1086,46 @@ class EvaluateInPlaceAction extends Action {
 
 
 /*
-Do it again, from wherever you are standing.
+Play again, from wherever you are standing.
 
-Working on something means being deep inside the expression that uses it, and
-seeing or hearing the change means getting back out to the command that runs it.
-This is that, in one key: it walks up from the selection and evaluates the
-first command tagged do, starting with the selected nex itself. If nothing above
-you is tagged do, nothing happens. Tagging the command is what says which one
--- a play, a redraw, anything.
+Working on a wave means being deep inside the expression that plays it, and
+hearing the change means getting back out to the command that runs it. This is
+that, in one key. It walks up from the selection, starting with the selected
+nex itself, all the way to the top:
 
-The selection does not move. Running something is done to the document, not
-somewhere you go in it, and being thrown out to the top every time would undo
-the reason for having the shortcut.
+  - the first thing on the way tagged play wins, however far up it is;
+  - failing that, the first play command on the way;
+  - failing that, nothing.
 
-Undoing does nothing, the way undoing an audition does nothing -- what it did
-has been done. A redo does not do it again either.
+The tag is for when the thing that should run is not a play: a begin that sets
+things up and then plays, a redraw, anything. It wins over a play nearer to you
+because tagging is saying which one you mean.
+
+The selection does not move. Playing is something you do to the document, not
+somewhere you go in it.
+
+Undoing does nothing, the way undoing an audition does nothing -- the sound has
+been made and there is no taking it back. A redo does not play it again either.
 
 (comment by Claude)
 */
-class DoNearestDoAction extends Action {
+/*
+What counts as a play command. loop-play is play under its older name, and
+play-with-bpm is play that also sets the tempo, so leaving either out would mean
+walking past the very command you were reaching for. break is here because
+stopping everything and playing one thing once is the other way a passage gets
+started.
+
+(comment by Claude)
+*/
+const STARTS_SOUND = {
+	'play': true,
+	'loop-play': true,
+	'play-with-bpm': true,
+	'break': true
+};
+
+class ReplayNearestPlayAction extends Action {
 	constructor(actionName) {
 		super(actionName);
 		this.hasBeenDone = false;
@@ -1119,22 +1140,28 @@ class DoNearestDoAction extends Action {
 			return;
 		}
 		this.hasBeenDone = true;
-		let doNode = null;
+		let taggedNode = null;
+		let playNode = null;
 		for (let node = systemState.getGlobalSelectedNode(); node; node = node.getParent()) {
 			let nex = node.getNex();
-			// getCommandName is on Command, and a deferred command is one
-			// (comment by Claude)
-			if (nex && nex.getCommandName && nex.hasTagWithString('do')) {
-				doNode = node;
+			if (!nex) continue;
+			if (nex.hasTagWithString('play')) {
+				taggedNode = node;
 				break;
 			}
+			// getCommandName is on Command, and a deferred command is one
+			// (comment by Claude)
+			if (!playNode && nex.getCommandName && STARTS_SOUND[nex.getCommandName()]) {
+				playNode = node;
+			}
 		}
-		if (!doNode) {
+		let target = taggedNode || playNode;
+		if (!target) {
 			return;
 		}
 		// the same thing shift-enter does: run it and keep the code
 		// (comment by Claude)
-		KeyResponseFunctions['evaluate-nex-and-keep'](doNode);
+		KeyResponseFunctions['evaluate-nex-and-keep'](target);
 	}
 
 	undoAction() {
@@ -1458,8 +1485,8 @@ function actionFactory(actionName, eventName) {
 		case 'evaluate-nex-and-keep':
 			return new EvaluateInPlaceAction(actionName);
 
-		case 'do-nearest-do':
-			return new DoNearestDoAction(actionName);
+		case 'replay-nearest-play':
+			return new ReplayNearestPlayAction(actionName);
 
 		case 'wrap-in-command':
 		case 'wrap-in-doc':
