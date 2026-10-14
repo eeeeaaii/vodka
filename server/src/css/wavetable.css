@@ -55,6 +55,35 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	pointer-events: none;
 }
 
+/*
+The guide through the edit line, see showGuide in wavetable.js. The anchor sits
+at the line inside the wave; the guide is fixed to the window and takes its x
+from the anchor. If the anchor is gone, the fallback puts it off screen.
+(comment by Claude)
+*/
+.waveguideanchor {
+	position: absolute;
+	top: 0;
+	width: 0;
+	height: 1px;
+	anchor-name: --wave-edit-line;
+	pointer-events: none;
+}
+
+.waveguide {
+	display: none;
+	position: fixed;
+	position-anchor: --wave-edit-line;
+	left: anchor(left, -10px);
+	top: 0;
+	bottom: 0;
+	width: 1px;
+	background-color: var(--wave-playhead);
+	opacity: 0.5;
+	pointer-events: none;
+	z-index: 1000;
+}
+
 .wavetable.newselected {
 	border: 3px solid var(--selected-border);	
 }

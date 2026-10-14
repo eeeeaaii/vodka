@@ -173,6 +173,42 @@ function parseInlineSamples(data) {
 const DEFAULT_SIZE = 256;
 
 /*
+The guide: a thin line the full height of the window, through the edit line of
+the wave being edited, so it can be lined up against the waves above and below
+it -- a guide layer, as in an image editor.
+
+One for the page, since only one wave is edited at a time. It is not inside
+the wave because a fixed element inside anything transformed is not fixed any
+more. It finds the edit line by css anchor positioning instead: the wave keeps
+a zero-width anchor at the line, and the browser keeps the guide on it through
+scrolling and layout without anyone having to tell it.
+
+(comment by Claude)
+*/
+let guideNode = null;
+let guideOwner = null;
+
+function showGuide(owner) {
+	if (!guideNode) {
+		guideNode = document.createElement('div');
+		guideNode.classList.add('waveguide');
+		document.body.appendChild(guideNode);
+	}
+	guideOwner = owner;
+	guideNode.style.display = 'block';
+}
+
+// only the wave that is showing it can take it away: rendering some other wave
+// must not hide the one being edited
+// (comment by Claude)
+function hideGuide(owner) {
+	if (guideNode && guideOwner === owner) {
+		guideNode.style.display = 'none';
+		guideOwner = null;
+	}
+}
+
+/*
 Zooming while not editing sets the global scale that every non-editing
 wavetable draws at, so all of them have to repaint together or the document
 shows waves at unrelated scales.
@@ -1131,6 +1167,7 @@ class Wavetable extends Nex {
 
 	updatePlayhead() {
 		this.updatePositionLabel();
+		this.updateGuide();
 		if (!this.playheadNode) return;
 		let ctx = this.playheadNode.getContext('2d');
 		// An empty overlay is an invisible one, so there is no separate hidden
@@ -1146,6 +1183,17 @@ class Wavetable extends Nex {
 		// out two pixels wide and half strength
 		// (comment by Claude)
 		this.drawVertLine(ctx, x + 0.5, false, this.playheadColor);
+	}
+
+	updateGuide() {
+		let x = Math.round(this.pixelPositionOfSample(this.centerSample));
+		if (!this.guideAnchorNode || !this.isEditing || this.centerSample < 0
+				|| x < 0 || x > this.windowWidth()) {
+			hideGuide(this);
+			return;
+		}
+		this.guideAnchorNode.style.left = x + 'px';
+		showGuide(this);
 	}
 
 	_setClickHandler(renderNode) {
@@ -1511,6 +1559,11 @@ class Wavetable extends Nex {
 			this.playheadColor = getComputedStyle(document.documentElement)
 					.getPropertyValue('--wave-playhead').trim();
 			viewport.appendChild(this.playheadNode);
+			this.guideAnchorNode = document.createElement('div');
+			this.guideAnchorNode.classList.add('waveguideanchor');
+			viewport.appendChild(this.guideAnchorNode);
+		} else {
+			this.guideAnchorNode = null;
 		}
 		// last, so it is over both canvases rather than under them
 		// (comment by Claude)
