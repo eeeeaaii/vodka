@@ -1623,13 +1623,19 @@ class Wavetable extends Nex {
 	positionLabelText() {
 		let at = this.centerSample;
 		if (at < 0) return '';
+		return '@ ' + this.positionText(at);
+	}
+
+	// a distance from the start, in the duration's timebase -- see above
+	// (comment by Claude)
+	positionText(at) {
 		let timebase = this.getCurrentTimebase();
 		if (timebase == 'HZ' || timebase == 'NOTE') {
 			timebase = 'SAMPLES';
 		}
 		let n = convertSamplesToTimebase(timebase, at);
 		n = Math.round(n * 1000) / 1000;
-		return '@ ' + n + ' ' + getTimebaseSuffix(timebase);
+		return n + ' ' + getTimebaseSuffix(timebase);
 	}
 
 	createPositionLabel() {
@@ -1758,7 +1764,10 @@ class Wavetable extends Nex {
 	createMarkerNum(n) {
 		let markerNum = document.createElement('div');
 		markerNum.classList.add('wavecontrol');
-		markerNum.innerText = this.getMarkerName(n);
+		// where it is as well as what it is called, in the same timebase as
+		// the duration, so clicking the duration changes these too
+		// (comment by Claude)
+		markerNum.innerText = this.getMarkerName(n) + ' ' + this.positionText(this.markers[n]);
 		markerNum.onmousedown = (event) => {
 			if (this.pressIsAGesture(event)) {
 				return true;
