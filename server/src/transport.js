@@ -187,9 +187,11 @@ class Track {
 		return !this.isEmpty();
 	}
 
-	// waiting for the boundary, with nothing sounding yet
+	// something is waiting for the boundary, whether or not something is
+	// sounding now -- new material queued over a playing loop counts too
+	// (comment by Claude)
 	isQueued() {
-		return this.members.length == 0 && !!this.pending;
+		return !!this.pending;
 	}
 
 	isPlaying() {
