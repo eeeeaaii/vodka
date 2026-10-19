@@ -348,10 +348,13 @@ the help button.
 .cliplight {
 	width: 18px;
 	padding: 0;
+	/* a 2px ring of whatever is behind the bar, red or not, so the light sits
+	   a little inside its slot (comment by Claude) */
+	border-color: transparent;
+	background-clip: padding-box;
 }
 
 .cliplight.clipping {
-	border-color: var(--clip-clipping);
 	background-color: var(--clip-clipping);
 }
 
