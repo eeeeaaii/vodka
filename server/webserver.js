@@ -503,7 +503,7 @@ async function serviceApiRequest(sessionId, resp, data) {
 		arg = data.substr(i + 1);
 	}
 	let respData = `v2:?"unknown api method. Sorry!"`;
-	if ((opcode == 'save' || opcode == 'saveraw') && !writesAllowed()) {
+	if (FILE_WRITE_OPCODES.indexOf(opcode) != -1 && !writesAllowed()) {
 		respData = `v2:?"this vodka does not keep files, your work is in this browser. Sorry!"`;
 	} else if (opcode == 'save') {
 		respData = await serviceApiSaveRequest(arg, sessionId);
@@ -515,6 +515,12 @@ async function serviceApiRequest(sessionId, resp, data) {
 		respData = await serviceApiSaveRequest(arg, sessionId);
 	} else if (opcode == 'loadraw') {
 		respData = await serviceApiLoadRequestUserSession(arg, sessionId, false /*fallback to user session*/);
+	} else if (opcode == 'copyfile' || opcode == 'movefile') {
+		respData = await serviceApiCopyRequest(arg, sessionId, opcode == 'movefile');
+	} else if (opcode == 'deletefile') {
+		respData = await serviceApiDeleteRequest(arg, sessionId);
+	} else if (opcode == 'newfile') {
+		respData = await serviceApiNewFileRequest(arg, sessionId);
 	} else if (opcode == 'listfiles') {
 		respData = await serviceApiListFilesRequest(sessionId, false /*standard*/);
 	} else if (opcode == 'listaudio') {
@@ -555,6 +561,8 @@ Run it on your own machine and it saves as it always has.
 
 (comment by Claude)
 */
+const FILE_WRITE_OPCODES = [ 'save', 'saveraw', 'copyfile', 'movefile', 'deletefile', 'newfile' ];
+
 function writesAllowed() {
 	return webenv_vars.isLocal;
 }
@@ -604,6 +612,84 @@ async function serviceApiSaveRequest(data, sessionId) {
 		return `v2:?{2||success}`;
 	} catch (err) {
 		return (`v2:?"save failed. Sorry!"`);
+	}
+}
+
+/*
+Everything that changes a file goes through here first, so copy, move, delete
+and new file get the same checks save does: a legal name, a real session, the
+-functions suffix kept for packages, and no writing into a read-only session.
+
+Returns the path, or the error to send back.
+
+(comment by Claude)
+*/
+function writablePath(nm, sessionId, verb) {
+	if (containsIllegalFilenameCharacters(nm)) {
+		return { error: `v2:?"${verb} failed (illegal filename '${nm}'). Sorry!"` };
+	}
+	let sessionDirectory = getSessionDirectory(sessionId, true /*local only*/);
+	if (!sessionDirectory) {
+		return { error: `v2:?"${verb} failed (bad session). Sorry!"` };
+	}
+	if (nm.endsWith('-functions') && sessionDirectory != './packages/') {
+		return { error: `v2:?"${verb} failed: the filename suffix '-functions' is reserved for library files.  Sorry!"` };
+	}
+	if (sessionIsWriteProtected(sessionId)) {
+		return { error: `v2:?"${verb} failed: this session is read-only."` };
+	}
+	return { path: `${sessionDirectory}/${nm}` };
+}
+
+async function serviceApiCopyRequest(data, sessionId, move) {
+	let verb = move ? 'move' : 'copy';
+	let [from, to] = data.split('\t');
+	let src = writablePath(from, sessionId, verb);
+	if (src.error) return src.error;
+	let dst = writablePath(to, sessionId, verb);
+	if (dst.error) return dst.error;
+	try {
+		if (move) {
+			await fsPromises.rename(src.path, dst.path);
+		} else {
+			await fsPromises.copyFile(src.path, dst.path);
+		}
+		return `v2:?{2||success}`;
+	} catch (err) {
+		if (isFileNotFound(err)) {
+			return `v2:?"${verb} failed: no file '${from}'. Sorry!"`;
+		}
+		return `v2:?"${verb} failed. Sorry!"`;
+	}
+}
+
+async function serviceApiDeleteRequest(nm, sessionId) {
+	let target = writablePath(nm, sessionId, 'delete');
+	if (target.error) return target.error;
+	try {
+		await fsPromises.unlink(target.path);
+		return `v2:?{2||success}`;
+	} catch (err) {
+		if (isFileNotFound(err)) {
+			return `v2:?"delete failed: no file '${nm}'. Sorry!"`;
+		}
+		return `v2:?"delete failed. Sorry!"`;
+	}
+}
+
+// unlike save, refuses to touch a file that is already there
+// (comment by Claude)
+async function serviceApiNewFileRequest(nm, sessionId) {
+	let target = writablePath(nm, sessionId, 'new file');
+	if (target.error) return target.error;
+	try {
+		await fsPromises.writeFile(target.path, '', { flag: 'wx' });
+		return `v2:?{2||success}`;
+	} catch (err) {
+		if (err.code == 'EEXIST') {
+			return `v2:?"new file failed: '${nm}' already exists. Sorry!"`;
+		}
+		return `v2:?"new file failed. Sorry!"`;
 	}
 }
 

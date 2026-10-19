@@ -270,6 +270,19 @@ function saveRaw(name, data, callback) {
 	});
 }
 
+// copyfile, movefile, deletefile, newfile: the names go tab-separated after
+// the opcode, and the answer is the same as save's
+// (comment by Claude)
+function fileOp(opcode, names, callback) {
+	let payload = [opcode].concat(names).join('\t');
+
+	sendToServer(payload, function(data) {
+		parseReturnPayload(data, callback);
+	}, function() {
+		callback(serverError());
+	});
+}
+
 function importNex(name, callback) {
 	let payload = `load\t${name}`;
 
@@ -420,6 +433,7 @@ export {
 	listStandardFunctionFiles,
 	loadRaw,
 	saveRaw,
+	fileOp,
 	loadAndRun,
 	saveShortcut,
 	listAudio

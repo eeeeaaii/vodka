@@ -47,6 +47,7 @@ import {
 	importNex,
 	loadRaw,
 	saveRaw,
+	fileOp,
 	listFiles,
 	listAudio,
 	listStandardFunctionFiles
@@ -66,6 +67,27 @@ function isWavFile(nex) {
 	}
 	let v = nex.getFullTypedValue();
 	return typeof v == 'string' && v.toLowerCase().endsWith('.wav');
+}
+
+function fileName(nex) {
+	return nex.getTypeName() == '-symbol-' ? nex.getTypedValue() : nex.getFullTypedValue();
+}
+
+// copy, move, delete and new file all wait on the server the same way
+// (comment by Claude)
+function deferredFileOp(builtinName, opcode, names, message) {
+	let def = constructDeferredValue();
+	def.set(new GenericActivationFunctionGenerator(
+		builtinName,
+		function(callback, def) {
+			fileOp(opcode, names, callback);
+		}
+	));
+	let info = constructEError(message);
+	info.setErrorType(ERROR_TYPE_INFO);
+	def.appendChild(info);
+	def.activate();
+	return def;
 }
 
 function createFileBuiltins() {
@@ -451,6 +473,48 @@ function createFileBuiltins() {
 		'Saves the bytes of |val in the file |name.'
 	);
 
+
+	Builtin.createBuiltin(
+		'copy-file',
+		[ '_from', '_to' ],
+		function $copyFile(env, executionEnvironment) {
+			let from = fileName(env.lb('from'));
+			let to = fileName(env.lb('to'));
+			return deferredFileOp('copy-file', 'copyfile', [from, to], `copy file ${from} to ${to}`);
+		},
+		'Copies the file |from to |to, replacing |to if it exists.'
+	);
+
+	Builtin.createBuiltin(
+		'move-file',
+		[ '_from', '_to' ],
+		function $moveFile(env, executionEnvironment) {
+			let from = fileName(env.lb('from'));
+			let to = fileName(env.lb('to'));
+			return deferredFileOp('move-file', 'movefile', [from, to], `move file ${from} to ${to}`);
+		},
+		'Renames the file |from to |to, replacing |to if it exists.'
+	);
+
+	Builtin.createBuiltin(
+		'delete-file',
+		[ '_name' ],
+		function $deleteFile(env, executionEnvironment) {
+			let nm = fileName(env.lb('name'));
+			return deferredFileOp('delete-file', 'deletefile', [nm], `delete file ${nm}`);
+		},
+		'Deletes the file |name.'
+	);
+
+	Builtin.createBuiltin(
+		'new-file',
+		[ '_name' ],
+		function $newFile(env, executionEnvironment) {
+			let nm = fileName(env.lb('name'));
+			return deferredFileOp('new-file', 'newfile', [nm], `new file ${nm}`);
+		},
+		'Makes an empty file |name. Fails if it already exists.'
+	);
 
 	Builtin.createBuiltin(
 		'import',
