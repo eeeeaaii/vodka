@@ -99,7 +99,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
   /* orange, not red: past full scale is worth looking at, not an alarm */
   /* (comment by Claude) */
   --clip-clipping: #c46a10;
-  --clip-light: #ff1a1a;
+  --clip-light: #ed4d45;
   --clip-position: #8a8a8a;
   --contract-glyph: #736b0d;
   --closure-glyph: #736b0d;
@@ -202,7 +202,7 @@ waveform is teal so signal is never confused with structure.
   --wave-playhead: #4ade80;
   --clip-glyph: #7fbdb8;
   --clip-clipping: #ffa033;
-  --clip-light: #ff3030;
+  --clip-light: #ed4d45;
   --clip-position: #9aa0a6;
   --contract-glyph: #7fbdb8;
   --closure-glyph: #7fbdb8;
