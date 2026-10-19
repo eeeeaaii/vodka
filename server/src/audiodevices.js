@@ -78,6 +78,7 @@ function maybeCreateAudioContext() {
 			ctx: ctx,
 			merger: channelMergerNode
 		};
+		attachClipMeters(outputs[DEFAULT_OUTPUT_KEY]);
 	}
 	// a suspended context's clock does not advance, and everything in the cycle
 	// is scheduled against that clock
@@ -85,6 +86,49 @@ function maybeCreateAudioContext() {
 	if (ctx.state == 'suspended') {
 		ctx.resume();
 	}
+}
+
+/*
+Clipping is a property of the mix, not of any one wave: two quiet loops can
+add up to more than full scale. So it is measured where everything has already
+been added together, at the merger feeding the device, one analyser per
+channel -- an analyser on the merger itself would mix the channels down first,
+and a left channel over full scale could average out to something that is not.
+
+(comment by Claude)
+*/
+const CLIP_METER_SIZE = 2048;
+let clipMeterBuffer = null;
+
+function attachClipMeters(o) {
+	let n = o.merger.numberOfInputs;
+	let splitter = o.ctx.createChannelSplitter(n);
+	o.merger.connect(splitter);
+	o.clipMeters = [];
+	for (let i = 0; i < n; i++) {
+		let a = o.ctx.createAnalyser();
+		a.fftSize = CLIP_METER_SIZE;
+		splitter.connect(a, i);
+		o.clipMeters.push(a);
+	}
+}
+
+// whether any output went over full scale in the last ~40ms of audio
+// (comment by Claude)
+function outputIsClipping() {
+	if (!clipMeterBuffer) clipMeterBuffer = new Float32Array(CLIP_METER_SIZE);
+	for (let key in outputs) {
+		let meters = outputs[key].clipMeters;
+		if (!meters) continue;
+		for (let i = 0; i < meters.length; i++) {
+			meters[i].getFloatTimeDomainData(clipMeterBuffer);
+			for (let j = 0; j < CLIP_METER_SIZE; j++) {
+				let v = clipMeterBuffer[j];
+				if (v > 1 || v < -1) return true;
+			}
+		}
+	}
+	return false;
 }
 
 // getOutputTimestamp answers zeros until the context has produced output, so the
@@ -436,6 +480,7 @@ function openOutput(id, cb) {
 		merger.connect(c.destination);
 		let o = { key: key, ctx: c, merger: merger };
 		outputs[key] = o;
+		attachClipMeters(o);
 		// getOutputTimestamp answers zeros until a context has produced output,
 		// and this one's timestamps are how it is kept in step with the master
 		// (comment by Claude)
@@ -710,6 +755,7 @@ function getAudioLatency() {
 
 export {
 	ctx,
+	outputIsClipping,
 	channelMergerNode,
 	SAMPLE_RATE,
 	outputs,

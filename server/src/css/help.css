@@ -299,12 +299,12 @@ position: fixed;
 	color: var(--help-link);
 }
 
-/* Small persistent nav, sitting to the left of the help button. */
-/* (comment by Claude) */
 /*
-A bar of its own beside the help button, in the same colours, so the two read as
-one row of controls rather than as something floating next to something else.
-The gap is the only thing separating them.
+The status bar is a row of islands, each its own small block in the help
+button's colours, with the same 4px gap between them as between the bar and
+the help button.
+
+(comment by Claude)
 */
 .statusnav {
 	position: fixed;
@@ -317,17 +317,19 @@ The gap is the only thing separating them.
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	gap: 6px;
+	gap: 4px;
 	font-family: Courier;
 	font-size: 9px;
-	border: 2px solid var(--help-accent);
-	background-color: var(--help-accent);
 	color: var(--help-background);
-	padding: 2px 6px 2px 6px;
 	z-index: 1001;
 }
 
 .statusnavitem {
+	box-sizing: border-box;
+	height: 18px;
+	padding: 2px 6px 2px 6px;
+	border: 2px solid var(--help-accent);
+	background-color: var(--help-accent);
 	cursor: pointer;
 	display: flex;
 	align-items: center;
@@ -335,13 +337,22 @@ The gap is the only thing separating them.
 }
 
 .stopbutton {
-	/* against the bar's own fill now, not the page */
 	color: var(--help-background);
 }
 
 /* reads as a label rather than something to press, unlike its neighbours */
-.bpmreadout, .undoreadout {
+.bpmreadout, .undoreadout, .cliplight {
 	cursor: default;
+}
+
+.cliplight {
+	width: 18px;
+	padding: 0;
+}
+
+.cliplight.clipping {
+	border-color: var(--clip-clipping);
+	background-color: var(--clip-clipping);
 }
 
 .stopbutton svg {

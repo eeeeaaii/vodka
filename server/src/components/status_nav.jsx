@@ -1,10 +1,17 @@
-import { useState, useEffect } from 'preact/hooks';
+import { useState, useEffect, useRef } from 'preact/hooks';
 import { isAnySoundPlaying, stopAllSound, anyLoopsPlaying, anythingIsRecording, stopAllRecording } from '../webaudio.js';
 import { anyMidiNotesSounding, midiPanic } from '../midifunctions.js';
 import { stopAllLoops, anyLoopsRunning } from '../builtins/asyncbuiltins.js';
 import { hasPendingSave } from '../autosave.js';
 import { getBpm } from '../wavetablefunctions.js';
 import { undoDistancePercent } from '../actions.js';
+import { outputIsClipping } from '../audiodevices.js';
+import { onPlaybackFrame } from '../playbackloop.js';
+
+// how long the clip light stays on after the last sample over full scale, so a
+// single click is still something you can see
+// (comment by Claude)
+const CLIP_HOLD_MS = 300;
 
 // None of what this shows announces itself, so poll. Cheap -- two boolean reads
 // and a number.
@@ -19,6 +26,28 @@ const StatusNav = () => {
     // how full the ctrl-shift-s context is; null outside one
     // (comment by Claude)
     const [undoPercent, setUndoPercent] = useState(undoDistancePercent());
+    const clipLight = useRef(null);
+
+    /*
+    The clip light is set straight on its element every frame rather than
+    through state: the poll above is a quarter of a second, which is long
+    enough to miss a click entirely, and rendering the bar sixty times a
+    second to change one class is not worth it.
+
+    (comment by Claude)
+    */
+    useEffect(() => {
+        let lastClip = -Infinity;
+        let lit = false;
+        return onPlaybackFrame((now) => {
+            if (outputIsClipping()) lastClip = now;
+            let on = now - lastClip < CLIP_HOLD_MS;
+            if (on != lit && clipLight.current) {
+                clipLight.current.classList.toggle('clipping', on);
+                lit = on;
+            }
+        });
+    }, []);
 
     useEffect(() => {
         const id = setInterval(() => {
@@ -43,7 +72,10 @@ const StatusNav = () => {
             {/* dot, then the stop button, then the tempo -- the two that come
                 and go are on the left, so the number does not move when they
                 appear */}
-            {unsaved && <div className="unsaveddot" title="not saved yet"></div>}
+            {unsaved &&
+                <div className="statusnavitem" title="not saved yet">
+                    <div className="unsaveddot"></div>
+                </div>}
             {playing &&
                 <div className="statusnavitem stopbutton" title="stop everything"
                      onClick={() => {
@@ -66,6 +98,8 @@ const StatusNav = () => {
                     </svg>
                 </div>}
             <div className="statusnavitem bpmreadout" title="beats per minute">{bpm}</div>
+            <div className="statusnavitem cliplight" ref={clipLight}
+                 title="red while the output is louder than full scale"></div>
             {undoPercent !== null &&
                 <div className="statusnavitem undoreadout"
                      title="how full the save point's undo buffer is (ctrl-shift-r restores, ctrl-shift-f keeps)">
