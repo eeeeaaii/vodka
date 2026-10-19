@@ -97,7 +97,13 @@ and a left channel over full scale could average out to something that is not.
 
 (comment by Claude)
 */
-const CLIP_METER_SIZE = 2048;
+/*
+1024 samples is about 21ms, a little more than one 60Hz frame, so checking
+every frame still sees every sample. Any longer only means reading more of the
+same samples twice -- which adds up with a sixteen channel interface.
+(comment by Claude)
+*/
+const CLIP_METER_SIZE = 1024;
 let clipMeterBuffer = null;
 
 function attachClipMeters(o) {
@@ -113,7 +119,7 @@ function attachClipMeters(o) {
 	}
 }
 
-// whether any output went over full scale in the last ~40ms of audio
+// whether any output went over full scale in the last ~21ms of audio
 // (comment by Claude)
 function outputIsClipping() {
 	if (!clipMeterBuffer) clipMeterBuffer = new Float32Array(CLIP_METER_SIZE);

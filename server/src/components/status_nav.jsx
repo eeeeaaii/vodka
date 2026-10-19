@@ -40,7 +40,12 @@ const StatusNav = () => {
         let lastClip = -Infinity;
         let lit = false;
         return onPlaybackFrame((now) => {
-            if (outputIsClipping()) lastClip = now;
+            // nothing can clip while nothing is sounding, and checking sixteen
+            // channels sixty times a second for nothing adds up
+            // (comment by Claude)
+            if ((isAnySoundPlaying() || anythingIsRecording()) && outputIsClipping()) {
+                lastClip = now;
+            }
             let on = now - lastClip < CLIP_HOLD_MS;
             if (on != lit && clipLight.current) {
                 clipLight.current.classList.toggle('clipping', on);
