@@ -352,6 +352,9 @@ the help button.
 	   a little inside its slot (comment by Claude) */
 	border-color: transparent;
 	background-clip: padding-box;
+	/* the ring already looks like gap, so take it back out of the real gap
+	   (comment by Claude) */
+	margin: 0 -2px;
 }
 
 .cliplight.clipping {
