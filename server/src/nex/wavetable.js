@@ -1873,42 +1873,60 @@ class Wavetable extends Nex {
 		let clippingColor = themeColor('--wave-clipping');
 
 		let zeroColor = themeColor('--wave-zero');
-		for (let i = 0 ; i < this.windowWidth(); i += increment) {
-			let range = this.samplesRepresentedByMultiplePixels(i, i + increment);
-			let v = this.minMaxSoundLevelInsidePixel(i);
-			if (v.max > 1) drawTopClippingLine = true;
-			if (v.min < -1) drawBottomClippingLine = true;
-			let top = this.yPositionOfWaveValue(v.max);
-			let bottom = this.yPositionOfWaveValue(v.min);
-			let doAudition = (this.sectionBeingAuditioned &&
-				range.start >= this.sectionBeingAuditioned.start &&
-				range.start < this.sectionBeingAuditioned.end);
-			if (doRect || solidRect) {
-				let center = this.yPositionOfWaveValue(0);
-				let start = top;
-				let end = center;
-				if (top > center) {
-					start = center;
-					end = bottom;
-				}
-				let height = end - start;
-				let width = increment;
+		/*
+		Zoomed in far enough that each sample is a box, the boxes go where the
+		samples are: from the pixel of sample s to the pixel of s+1. Stepping
+		across the canvas a whole box at a time from pixel zero put them on a
+		grid of their own, which drifted from the edit line and split points
+		whenever the window started partway into a sample or the zoom was not
+		a whole number of pixels -- the line could land in the middle of a box
+		when it is always really between two.
 
+		(comment by Claude)
+		*/
+		if (doRect || solidRect) {
+			let first = Math.max(0, Math.floor(this.windowOriginSample));
+			let last = Math.min(this.data.length - 1,
+					Math.ceil(this.windowOriginSample + this.windowWidth() / pps));
+			let center = this.yPositionOfWaveValue(0);
+			for (let s = first; s <= last; s++) {
+				let v = this.data[s];
+				if (v > 1) drawTopClippingLine = true;
+				if (v < -1) drawBottomClippingLine = true;
+				let x = Math.round(this.pixelPositionOfSample(s));
+				let width = Math.round(this.pixelPositionOfSample(s + 1)) - x;
+				let y = this.yPositionOfWaveValue(v);
+				let start = Math.min(y, center);
+				let height = Math.abs(y - center);
+				let doAudition = (this.sectionBeingAuditioned &&
+					s >= this.sectionBeingAuditioned.start &&
+					s < this.sectionBeingAuditioned.end);
 				if (doAudition) {
 					ctx.beginPath();
 					ctx.fillStyle = auditionColor;
-					ctx.fillRect(i, 0, width, this.windowHeight());
+					ctx.fillRect(x, 0, width, this.windowHeight());
 				}
 				if (doRect) {
 					ctx.beginPath();
 					ctx.strokeStyle = regularColor;
-					ctx.strokeRect(i, start, width, height);
+					ctx.strokeRect(x, start, width, height);
 				} else {
 					ctx.beginPath();
 					ctx.fillStyle = solidRectColor;
-					ctx.fillRect(i, start, width, height);
+					ctx.fillRect(x, start, width, height);
 				}
-			} else {
+			}
+		} else {
+			for (let i = 0 ; i < this.windowWidth(); i += increment) {
+				let range = this.samplesRepresentedByMultiplePixels(i, i + increment);
+				let v = this.minMaxSoundLevelInsidePixel(i);
+				if (v.max > 1) drawTopClippingLine = true;
+				if (v.min < -1) drawBottomClippingLine = true;
+				let top = this.yPositionOfWaveValue(v.max);
+				let bottom = this.yPositionOfWaveValue(v.min);
+				let doAudition = (this.sectionBeingAuditioned &&
+					range.start >= this.sectionBeingAuditioned.start &&
+					range.start < this.sectionBeingAuditioned.end);
 				if (doAudition) {
 					this.drawVertLine(ctx, i, false, auditionColor);					
 				}
@@ -1948,23 +1966,15 @@ class Wavetable extends Nex {
 					ctx.stroke();					
 				}
 			}
-			// do lines here if necessary
-			if (this.isEditing) {
-				for (let j = 0; j < this.markers.length; j++) {
-					let marker = this.markers[j];
-					if (this.shouldDoLine(marker, range)) {
-						this.drawVertLine(ctx, i, false, markerColor);
-					}
-				}
-			} else {
-				for (let j = 0; j < this.markers.length; j++) {
-					let marker = this.markers[j];
-					if (this.shouldDoLine(marker, range)) {
-						this.drawVertLine(ctx, i, false, lightMarkerColor);
-					}
-				}
-			}
-
+		}
+		// split points are between samples, drawn on the same pixel the edit
+		// line would be, so a line at a split point sits on top of it
+		// (comment by Claude)
+		for (let j = 0; j < this.markers.length; j++) {
+			let x = Math.round(this.pixelPositionOfSample(this.markers[j]));
+			if (x < 0 || x > this.windowWidth()) continue;
+			this.drawVertLine(ctx, x + 0.5, false,
+					this.isEditing ? markerColor : lightMarkerColor);
 		}
 		// draw marker names
 		for (let i = 0; i < this.markers.length; i++) {
@@ -1998,12 +2008,6 @@ class Wavetable extends Nex {
 		}
 
 		return canvas;
-	}
-
-	shouldDoLine(lineSample, range) {
-		return (range.start == range.end && lineSample == range.start)
-				||
-				(lineSample >= range.start && lineSample < range.end);
 	}
 
 	debugString() {
