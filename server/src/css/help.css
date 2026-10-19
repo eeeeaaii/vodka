@@ -358,7 +358,7 @@ the help button.
 }
 
 .cliplight.clipping {
-	background-color: var(--clip-clipping);
+	background-color: var(--clip-light);
 }
 
 .stopbutton svg {
