@@ -100,10 +100,11 @@ and a left channel over full scale could average out to something that is not.
 /*
 1024 samples is about 21ms, a little more than one 60Hz frame, so checking
 every frame still sees every sample. Any longer only means reading more of the
-same samples twice -- which adds up with a sixteen channel interface.
+same samples twice.
 (comment by Claude)
 */
 const CLIP_METER_SIZE = 1024;
+const METERED_CHANNELS = 2;
 let clipMeterBuffer = null;
 
 function attachClipMeters(o) {
@@ -111,7 +112,10 @@ function attachClipMeters(o) {
 	let splitter = o.ctx.createChannelSplitter(n);
 	o.merger.connect(splitter);
 	o.clipMeters = [];
-	for (let i = 0; i < n; i++) {
+	// only the first two: those are the speakers, and the rest of a big
+	// interface is control voltage, where full scale is a setting, not damage
+	// (comment by Claude)
+	for (let i = 0; i < Math.min(n, METERED_CHANNELS); i++) {
 		let a = o.ctx.createAnalyser();
 		a.fftSize = CLIP_METER_SIZE;
 		splitter.connect(a, i);
