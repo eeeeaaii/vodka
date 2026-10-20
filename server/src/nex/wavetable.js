@@ -40,6 +40,7 @@ import { getAudioBufferFromData, getSilentAudioBuffer, stopRecordingAudio } from
 import * as audioStore from '../audiostore.js'
 import { newShortId } from '../utils.js'
 import { systemState } from '../systemstate.js'
+import { drawWaveSamples, drawClippingLines } from '../wavedrawing.js'
 
 
 // zoom essentially means a number of pixels equals a number of samples
@@ -1387,26 +1388,6 @@ class Wavetable extends Nex {
 		};
 	}
 
-	minMaxSoundLevelInsidePixel(p) {
-		let range = this.samplesRepresentedByPixel(p);
-		if (range.start == range.end) {
-			let v = this.data[range.start];
-			return { min: v, max: v };
-		} else if (range.end - range.start < 4) {
-			return this.getMinMaxInDataRange(range.start, range.end);
-		} else {
-			let diff = range.end - range.start;
-			// pick three random points, not at exact intervals to reduce chance of aliasing
-			let midSample1 = Math.floor(range.start + .3 * diff);
-			let midSample2 = Math.floor(range.start + .7 * diff);
-			let d0 = this.data[range.start];
-			let d1 = this.data[midSample1];
-			let d2 = this.data[midSample2];
-			let min = Math.min(d0, Math.min(d1, d2));
-			let max = Math.max(d0, Math.max(d1, d2));
-			return { min: min, max: max };
-		}
-	}
 
 	/*
 	Condensed mode lays a wave out differently rather than just hiding things.
@@ -1791,18 +1772,6 @@ class Wavetable extends Nex {
 		return markerList;
 	}
 
-	samplesRepresentedByMultiplePixels(p, endp) {
-		let z = [];
-		for (let i = p; i < endp; i++) {
-			z.push(this.samplesRepresentedByPixel(i));
-		}
-		let r = z[0];
-		for (let i = 1; i < z.length; i++) {
-			if (z[i].start < r.start) r.start = z[i].start;
-			if (z[i].end > r.end) r.end = z[i].end;
-		}
-		return r;
-	}
 
 	samplesRepresentedByPixel(p) {
 		let samplesPerPixel = 1 / this.getPixelsPerSample();
@@ -1846,127 +1815,37 @@ class Wavetable extends Nex {
 		canvas.setAttribute('width', this.windowWidth());
 		let ctx = canvas.getContext("2d");
 
-		let pps = this.getPixelsPerSample();
-		let increment = Math.ceil(pps);
-		let doRect = (pps >= 2);
-		let solidRect = (pps >= 1 && pps < 2);
-		ctx.lineWidth = 1;
-		let drawTopClippingLine = false;
-		let drawBottomClippingLine = false;
 		// from the stylesheet, so the canvas and the dom can't drift apart
 		// (comment by Claude)
 		let themeColor = (name) => getComputedStyle(document.documentElement)
 				.getPropertyValue(name).trim();
 
-		let regularColor = themeColor('--wave-regular');
-		let intenseColor = themeColor('--wave-intense');
-		let auditionColor = themeColor('--wave-audition');
-		let solidRectColor = themeColor('--wave-solid');
-
+		let colors = {
+			regular: themeColor('--wave-regular'),
+			intense: themeColor('--wave-intense'),
+			audition: themeColor('--wave-audition'),
+			solid: themeColor('--wave-solid')
+		};
 		if (this.showsAsEditing()) {
-			regularColor = intenseColor = themeColor('--wave-editing');
-			solidRectColor = themeColor('--wave-solid-editing');
+			colors.regular = colors.intense = themeColor('--wave-editing');
+			colors.solid = themeColor('--wave-solid-editing');
 		}
 
 		let markerColor = themeColor('--wave-marker');
 		let lightMarkerColor = themeColor('--wave-marker-light');
 		let clippingColor = themeColor('--wave-clipping');
 
-		let zeroColor = themeColor('--wave-zero');
-		/*
-		Zoomed in far enough that each sample is a box, the boxes go where the
-		samples are: from the pixel of sample s to the pixel of s+1. Stepping
-		across the canvas a whole box at a time from pixel zero put them on a
-		grid of their own, which drifted from the edit line and split points
-		whenever the window started partway into a sample or the zoom was not
-		a whole number of pixels -- the line could land in the middle of a box
-		when it is always really between two.
-
-		(comment by Claude)
-		*/
-		if (doRect || solidRect) {
-			let first = Math.max(0, Math.floor(this.windowOriginSample));
-			let last = Math.min(this.data.length - 1,
-					Math.ceil(this.windowOriginSample + this.windowWidth() / pps));
-			let center = this.yPositionOfWaveValue(0);
-			for (let s = first; s <= last; s++) {
-				let v = this.data[s];
-				if (v > 1) drawTopClippingLine = true;
-				if (v < -1) drawBottomClippingLine = true;
-				let x = Math.round(this.pixelPositionOfSample(s));
-				let width = Math.round(this.pixelPositionOfSample(s + 1)) - x;
-				let y = this.yPositionOfWaveValue(v);
-				let start = Math.min(y, center);
-				let height = Math.abs(y - center);
-				let doAudition = (this.sectionBeingAuditioned &&
-					s >= this.sectionBeingAuditioned.start &&
-					s < this.sectionBeingAuditioned.end);
-				if (doAudition) {
-					ctx.beginPath();
-					ctx.fillStyle = auditionColor;
-					ctx.fillRect(x, 0, width, this.windowHeight());
-				}
-				if (doRect) {
-					ctx.beginPath();
-					ctx.strokeStyle = regularColor;
-					ctx.strokeRect(x, start, width, height);
-				} else {
-					ctx.beginPath();
-					ctx.fillStyle = solidRectColor;
-					ctx.fillRect(x, start, width, height);
-				}
-			}
-		} else {
-			for (let i = 0 ; i < this.windowWidth(); i += increment) {
-				let range = this.samplesRepresentedByMultiplePixels(i, i + increment);
-				let v = this.minMaxSoundLevelInsidePixel(i);
-				if (v.max > 1) drawTopClippingLine = true;
-				if (v.min < -1) drawBottomClippingLine = true;
-				let top = this.yPositionOfWaveValue(v.max);
-				let bottom = this.yPositionOfWaveValue(v.min);
-				let doAudition = (this.sectionBeingAuditioned &&
-					range.start >= this.sectionBeingAuditioned.start &&
-					range.start < this.sectionBeingAuditioned.end);
-				if (doAudition) {
-					this.drawVertLine(ctx, i, false, auditionColor);					
-				}
-				let center = this.yPositionOfWaveValue(0);
-				let start = top;
-				let end = bottom;
-				if (top < center && bottom < center) {
-					ctx.beginPath();
-					ctx.strokeStyle = intenseColor;
-					ctx.moveTo(i, top);
-					ctx.lineTo(i, bottom);					
-					ctx.stroke();
-
-					ctx.beginPath();
-					ctx.strokeStyle = regularColor;
-					ctx.moveTo(i, bottom);					
-					ctx.lineTo(i, center);					
-					ctx.stroke();
-
-				} else if (top > center && bottom > center) {
-					ctx.beginPath();
-					ctx.strokeStyle = regularColor;
-					ctx.moveTo(i, center);
-					ctx.lineTo(i, top);					
-					ctx.stroke();
-
-					ctx.beginPath();
-					ctx.strokeStyle = intenseColor;
-					ctx.moveTo(i, top);					
-					ctx.lineTo(i, bottom);					
-					ctx.stroke();
-				} else {
-					ctx.beginPath();
-					ctx.moveTo(i, top);
-					ctx.strokeStyle = regularColor;
-					ctx.lineTo(i, bottom);					
-					ctx.stroke();					
-				}
-			}
-		}
+		let view = {
+			data: this.data,
+			width: this.windowWidth(),
+			height: this.windowHeight(),
+			origin: this.windowOriginSample,
+			pps: this.getPixelsPerSample(),
+			heightFullScale: this.getHeightPixelsFullScale(),
+			colors: colors,
+			audition: this.sectionBeingAuditioned
+		};
+		let clips = drawWaveSamples(ctx, view);
 		// split points are between samples, drawn on the same pixel the edit
 		// line would be, so a line at a split point sits on top of it
 		// (comment by Claude)
@@ -1994,12 +1873,7 @@ class Wavetable extends Nex {
 			ctx.fillStyle = '#000000';
 			ctx.fillText(n, xpos + nameind, namey);
 		}
-		if (drawTopClippingLine) {
-			this.drawHorizLine(ctx, 1, true, clippingColor);
-		}
-		if (drawBottomClippingLine) {
-			this.drawHorizLine(ctx, -1, true, clippingColor);
-		}
+		drawClippingLines(ctx, view, clips, clippingColor);
 		if (this.rightIsClipping) {
 			this.drawEndCap(ctx);
 			// this.drawVertLine(ctx, this.windowWidth() - 10, false, zeroColor)
@@ -2049,19 +1923,6 @@ class Wavetable extends Nex {
 		ctx.setLineDash([]);		
 	}
 
-
-	drawHorizLine(ctx, atY, dash, color) {
-		let lineY = this.yPositionOfWaveValue(atY);
-		ctx.beginPath();
-		ctx.moveTo(0, lineY);
-		ctx.strokeStyle = color;
-		if (dash) {
-			ctx.setLineDash([10, 5])
-		}
-		ctx.lineTo(this.windowWidth(), lineY);
-		ctx.stroke();
-		ctx.setLineDash([]);		
-	}
 
 	getEventTable(context) {
 		return {
