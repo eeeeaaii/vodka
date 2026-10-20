@@ -51,7 +51,7 @@ html {
 }
 
 html.toppanelopen {
-	--top-panel-h: 300px;
+	--top-panel-h: 100px;
 }
 
 /*

@@ -32,9 +32,9 @@ import { onPlaybackFrame } from './playbackloop.js'
 import { drawWaveSamples, drawClippingLines } from './wavedrawing.js'
 
 const STORAGE_KEY = 'vodka-top-panel-open';
-// the wave's height inside the panel: 300 less the border
+// the wave's height inside the panel: 100 less the border
 // (comment by Claude)
-const WAVE_HEIGHT = 298;
+const WAVE_HEIGHT = 98;
 
 let panel = null;
 let canvas = null;
