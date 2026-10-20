@@ -7,6 +7,7 @@ import { getBpm } from '../wavetablefunctions.js';
 import { undoDistancePercent } from '../actions.js';
 import { outputIsClipping } from '../audiodevices.js';
 import { onPlaybackFrame } from '../playbackloop.js';
+import { toggleTopPanel, isTopPanelOpen, restoreTopPanel } from '../toppanel.js';
 
 // how long the clip light stays on after the last sample over full scale, so a
 // single click is still something you can see
@@ -27,6 +28,10 @@ const StatusNav = () => {
     // (comment by Claude)
     const [undoPercent, setUndoPercent] = useState(undoDistancePercent());
     const clipLight = useRef(null);
+    const [panelOpen, setPanelOpen] = useState(() => {
+        restoreTopPanel();
+        return isTopPanelOpen();
+    });
 
     /*
     The clip light is set straight on its element every frame rather than
@@ -110,6 +115,13 @@ const StatusNav = () => {
                      title="how full the save point's undo buffer is (ctrl-shift-r restores, ctrl-shift-f keeps)">
                     U{undoPercent}%
                 </div>}
+            <div className="statusnavitem panelcaret" title="show what is playing"
+                 onClick={() => {
+                     toggleTopPanel();
+                     setPanelOpen(isTopPanelOpen());
+                 }}>
+                {panelOpen ? '\u25b4' : '\u25be'}
+            </div>
         </div>
     );
 };

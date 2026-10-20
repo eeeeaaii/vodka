@@ -1,0 +1,74 @@
+/*
+This file is part of Vodka.
+
+Vodka is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Vodka is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+/*
+The top panel: as tall as --top-panel-h, so it grows and shrinks with the
+padding that makes room for it. Opaque, because the document scrolls up
+underneath it. Below the help and the toasts, above the document.
+
+The wave is pinned to the bottom edge, so opening the panel slides it down into
+view rather than uncovering it from the top.
+
+(comment by Claude)
+*/
+#toppanel {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: var(--top-panel-h);
+	overflow: hidden;
+	background-color: var(--page-background);
+	z-index: 900;
+}
+
+html.toppanelopen #toppanel {
+	border-bottom: 2px solid var(--help-accent);
+}
+
+#toppanel .toppanelwave {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 298px;
+}
+
+#toppanel canvas {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	display: block;
+}
+
+#toppanel .toppanelplayhead {
+	display: none;
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: 1px;
+	background-color: var(--wave-playhead);
+	pointer-events: none;
+	will-change: transform;
+}
+
+#toppanel .toppanelplayhead.showing {
+	display: block;
+}

@@ -129,10 +129,24 @@ the view on every keystroke would be worse than the problem being solved.
 */
 const PIP_SCROLL_MARGIN = 24;
 
-function nearestDelta(near, far, viewLength) {
-	if (near < 0) return near - PIP_SCROLL_MARGIN;
-	if (far > viewLength) return far - viewLength + PIP_SCROLL_MARGIN;
+function nearestDelta(near, far, viewStart, viewEnd) {
+	if (near < viewStart) return near - viewStart - PIP_SCROLL_MARGIN;
+	if (far > viewEnd) return far - viewEnd + PIP_SCROLL_MARGIN;
 	return 0;
+}
+
+/*
+Where the visible part of the window starts. The top panel covers the top of
+it when it is open, and something under the panel is no more on screen than
+something above the window -- so that is where the pip has to be brought to.
+Read off the panel itself rather than the setting, so it is right while the
+panel is still sliding.
+
+(comment by Claude)
+*/
+function visibleTop() {
+	let panel = document.getElementById('toppanel');
+	return panel ? Math.max(0, panel.getBoundingClientRect().bottom) : 0;
 }
 
 function scrollWindowTo(el) {
@@ -140,8 +154,8 @@ function scrollWindowTo(el) {
 }
 
 function scrollWindowToRect(rect) {
-	let dy = nearestDelta(rect.top, rect.bottom, window.innerHeight);
-	let dx = nearestDelta(rect.left, rect.right, window.innerWidth);
+	let dy = nearestDelta(rect.top, rect.bottom, visibleTop(), window.innerHeight);
+	let dx = nearestDelta(rect.left, rect.right, 0, window.innerWidth);
 	scrollWindowBy(dx, dy);
 }
 

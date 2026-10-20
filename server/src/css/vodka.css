@@ -28,6 +28,43 @@ body, html {
 	height:100%;
 }
 
+/*
+How much of the top of the window the top panel takes, 0 when it is closed.
+Everything that sits at the top of the window reads this: the document is
+padded down by it, and the help button, status bar, toasts and guide line all
+start below it. One number so they all move together, and registered so it can
+be animated, which is what makes the panel slide rather than jump.
+
+(comment by Claude)
+*/
+@property --top-panel-h {
+	syntax: '<length>';
+	inherits: true;
+	initial-value: 0px;
+}
+
+html {
+	--top-panel-h: 0px;
+	transition: --top-panel-h 150ms ease-out;
+	/* so a native scrollIntoView stops below the panel too */
+	scroll-padding-top: var(--top-panel-h);
+}
+
+html.toppanelopen {
+	--top-panel-h: 300px;
+}
+
+/*
+The document is pushed down by padding, not by putting the panel in its way,
+and inside the body's height rather than added to it -- so the page is no
+taller with the panel open and there is no scrollbar just for the panel.
+
+(comment by Claude)
+*/
+body {
+	padding-top: var(--top-panel-h);
+}
+
 #codepane {
 	height: 100%;
 	width: 100%;

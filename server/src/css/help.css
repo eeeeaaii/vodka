@@ -50,11 +50,11 @@ panel rather than making the whole page taller.
     display: flex;
 	flex-direction: column;
 	position: fixed;
-	top: 0;
+	top: var(--top-panel-h);
 	left: 0;
 	z-index: 1000;
 	margin: 20px;
-	max-height: calc(100vh - 40px);
+	max-height: calc(100vh - 40px - var(--top-panel-h));
 	/* the container is only a frame; what is in it takes its own clicks, and
 	   the document underneath keeps the rest */
 	/* (comment by Claude) */
@@ -105,7 +105,7 @@ panel rather than making the whole page taller.
 	(comment by Claude)
 	*/
 	overflow-y: auto;
-	max-height: calc(100vh - 110px);
+	max-height: calc(100vh - 110px - var(--top-panel-h));
 }
 
 .infopanel .infotitle {
@@ -223,7 +223,7 @@ panel rather than making the whole page taller.
 /*	display: none;*/
 position: fixed;
 	cursor: pointer;
-	top: 0px;
+	top: var(--top-panel-h);
 	right: 0px;
 	margin-top: 3px;
 	margin-right: 3px;
@@ -308,7 +308,7 @@ the help button.
 */
 .statusnav {
 	position: fixed;
-	top: 0px;
+	top: var(--top-panel-h);
 	/* clear of the help button, plus a 4px gap -- measured, since the button's
 	   width depends on its text */
 	right: 42px;

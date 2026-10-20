@@ -75,7 +75,7 @@ from the anchor. If the anchor is gone, the fallback puts it off screen.
 	position: fixed;
 	position-anchor: --wave-edit-line;
 	left: anchor(left, -10px);
-	top: 0;
+	top: var(--top-panel-h);
 	bottom: 0;
 	width: 1px;
 	background-color: var(--wave-playhead);

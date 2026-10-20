@@ -28,7 +28,7 @@ clicks through and only the toasts in it take them.
 */
 #toastlayer {
 	position: fixed;
-	top: 0;
+	top: var(--top-panel-h);
 	left: 0;
 	right: 0;
 	z-index: 2000;
