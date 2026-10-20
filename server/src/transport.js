@@ -264,6 +264,9 @@ class Track {
 		if (!cycleRunning || this.members.length == 0) return;
 		let at = this.nextEligiblePoint(ctx.currentTime);
 		if (!(at > 0) || at >= cycleNextBoundaryTime) return;
+		// kept so the top panel can draw this track going quiet where it does
+		// (comment by Claude)
+		this.cutAt = at;
 		for (let i = 0; i < this.members.length; i++) {
 			let member = this.members[i];
 			if (member.stopAt) {
@@ -465,18 +468,8 @@ class Track {
 		if (!channelExistsOn(member.output, member.channel)) return;
 		let at = ctx.currentTime + UNMUTE_LEAD_SECONDS;
 		if (at >= cycleNextBoundaryTime) return;
-		let end = member.buffer.length / SAMPLE_RATE;
-		let loopStart = member.loopStartSeconds || 0;
-		let from = member.introDone ? loopStart : 0;
-		let elapsed = at - cycleStartedAt;
-		let offset;
-		if (elapsed < end - from) {
-			offset = from + elapsed;
-		} else if (end - loopStart > 0) {
-			offset = loopStart + ((elapsed - (end - from)) % (end - loopStart));
-		} else {
-			return;
-		}
+		let offset = memberOffsetAt(member, at - cycleStartedAt);
+		if (offset < 0) return;
 		let node = getSourceFromBuffer(member.buffer, true, member.loopStartSeconds,
 				member.output);
 		node.connect(member.output.merger, 0, member.channel);
@@ -966,6 +959,33 @@ function currentCycleStart() {
 	return cycleStartedAt;
 }
 
+/*
+Where in its buffer a member is, in seconds, a given time into the pass: from
+where the pass started to the end of the buffer once, then round the loop
+region. -1 if there is no loop region to go round.
+
+(comment by Claude)
+*/
+function memberOffsetAt(member, elapsed) {
+	let end = member.buffer.length / SAMPLE_RATE;
+	let loopStart = member.loopStartSeconds || 0;
+	let from = member.introDone ? loopStart : 0;
+	if (elapsed < end - from) return from + elapsed;
+	if (end - loopStart > 0) return loopStart + ((elapsed - (end - from)) % (end - loopStart));
+	return -1;
+}
+
+// for looking at, not changing: what the top panel draws from
+// (comment by Claude)
+function playingTracks() {
+	return tracks;
+}
+
+// the pass now playing, or about to: it starts a little before it is heard
+function currentCycleBounds() {
+	return { start: cycleStartedAt, end: cycleNextBoundaryTime, running: cycleRunning };
+}
+
 export {
 	CYCLE_LOOKAHEAD_SECONDS,
 	Track,
@@ -982,5 +1002,8 @@ export {
 	queueBreak,
 	endAllLoops,
 	nextCycleBoundary,
-	abortPlayback
+	abortPlayback,
+	memberOffsetAt,
+	playingTracks,
+	currentCycleBounds
 }
