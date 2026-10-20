@@ -341,7 +341,12 @@ the help button.
 }
 
 /* reads as a label rather than something to press, unlike its neighbours */
-.bpmreadout, .undoreadout, .cliplight {
+.bpmreadout, .undoreadout, .panelcaret {
+	font-size: 15px;
+	line-height: 1;
+}
+
+.cliplight {
 	cursor: default;
 }
 
