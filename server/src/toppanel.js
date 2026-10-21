@@ -169,17 +169,20 @@ the width of the window: a hundred sample loop is a hundred wide boxes.
 Scaled the same way too -- full scale reaches the edges, and a sum louder than
 that is shrunk to fit and gets the dashed clipping lines.
 
+At one canvas pixel per css pixel, like a wave in the document, not at the
+device's pixel ratio. The one pixel lines sit on pixel boundaries and blur
+across two, which is what makes a wave grey; on a retina canvas the same lines
+land solid and come out nearly black.
+
 (comment by Claude)
 */
 function draw() {
 	needsRedraw = false;
 	let width = canvas.clientWidth;
 	let height = WAVE_HEIGHT;
-	let dpr = window.devicePixelRatio || 1;
-	canvas.width = Math.round(width * dpr);
-	canvas.height = Math.round(height * dpr);
+	canvas.width = width;
+	canvas.height = height;
 	let c = canvas.getContext('2d');
-	c.setTransform(dpr, 0, 0, dpr, 0, 0);
 	c.clearRect(0, 0, width, height);
 	if (!shown || shown.data.length == 0) return;
 	let data = shown.data;
