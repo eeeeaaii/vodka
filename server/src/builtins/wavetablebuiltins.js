@@ -271,6 +271,11 @@ function createWavetableBuiltins() {
         return { error: constructFatalError(name + ": that is not an audio clip. Sorry!") };
       }
       clip = arg;
+      // done for good: playing it again is not an error, it just does nothing
+      // (comment by Claude)
+      if (clip.isDeactivated()) {
+        return { clip: clip, ignored: true };
+      }
       /*
       A clip says which channels its loop is on, and that is where the
       replacement goes. Empty only if it came from somewhere that did not say
@@ -447,6 +452,7 @@ function createWavetableBuiltins() {
       }
       let r = startPlaying(env.lb("wt"), env.lb("channelsorclip"), "play-with-bpm");
       if (r.error) return r.error;
+      if (r.ignored) return r.clip;
       /*
       The tempo changes when this starts sounding, not now. Going from a fast
       passage to a slow one, the moment that matters is the downbeat of the
@@ -468,27 +474,51 @@ function createWavetableBuiltins() {
 
   Builtin.createBuiltin(
     "break",
-    ["wt_"],
+    ["wt_", "clipμ∅?"],
     function $break(env, executionEnvironment) {
       let wt = env.lb("wt");
+      let clip = env.lb("clip");
       /*
-      No second argument, unlike play. There is nothing for one to say: a break
-      is not a loop you keep a handle on and replace later, it happens once and
-      is over, so there is no clip to hand back and no clip to be given. The
-      channels are the ones play uses when it is not told otherwise.
+      A break happens once. It plays on a clip and deactivates it, so the clip
+      ignores everything after -- this break included -- and an expression
+      holding it can be run again without the break coming round again. Without
+      a clip one is made, deactivated the same way, and handed back.
+
+      The channels and the device are the clip's if it says, and the ones play
+      uses when it is not told otherwise if not.
 
       (comment by Claude)
       */
-      // no clip to name a device, so a break is always on the default one
-      // (comment by Claude)
-      if (!anOutputDeviceWasChosen()) {
+      if (clip != UNBOUND && clip.getKind() != "audio loop") {
+        return constructFatalError("break: that is not an audio clip. Sorry!");
+      }
+      if (clip != UNBOUND && clip.isDeactivated()) {
+        return clip;
+      }
+      if (clip != UNBOUND && clip.getDeviceKind() == "input") {
+        return constructFatalError("break: that clip records, it does not play. Sorry!");
+      }
+      let channelnumbers = (clip != UNBOUND && clip.getChannels().length > 0)
+          ? clip.getChannels()
+          : [1, 2];
+      let deviceId = (clip != UNBOUND && clip.getOutputDevice())
+          ? clip.getOutputDevice()
+          : undefined;
+      if (deviceId === undefined && !anOutputDeviceWasChosen()) {
         return noDeviceChosenError("break", "output");
       }
-      queueBreak(wt.getCachedBuffer(), toChannelIndexes([1, 2]),
-          loopStartSecondsOf(wt), undefined, eligiblePointsOf(wt));
-      return constructNil();
+      let what = channelsDescription(channelnumbers);
+      if (clip == UNBOUND) {
+        clip = constructClip("audio loop", what, channelnumbers);
+      }
+      queueBreak(wt.getCachedBuffer(), toChannelIndexes(channelnumbers),
+          loopStartSecondsOf(wt), deviceId, eligiblePointsOf(wt), clip);
+      clip.assigned(what);
+      clip.setClipping(!!(wt.getAmp && wt.getAmp() > 1));
+      clip.deactivate();
+      return clip;
     },
-    "Stops everything at the end of the measure and plays |wt once. Anything started meanwhile begins when it ends. Start nothing and everything stops."
+    "Stops everything at the end of the measure and plays |wt once on |clip, then deactivates |clip so that it never plays again. Anything started meanwhile begins when it ends. Start nothing and everything stops."
   );
 
   /*

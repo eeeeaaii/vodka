@@ -350,6 +350,9 @@ function createMidiBuiltins() {
 			if (!clip) {
 				clip = constructClip('midi loop', what, null, portId);
 			}
+			// done for good: playing it again does nothing
+			// (comment by Claude)
+			if (clip.isDeactivated()) return clip;
 			/*
 			Out at the boundary and back in at the same one, the way an audio
 			loop is replaced -- which is what queueing on the clip's track means.
