@@ -896,15 +896,8 @@ end of it, and they all begin together from the top.
 
 (comment by Claude)
 */
-function queueBreak(buffer, channels, loopStartSeconds, deviceId, eligiblePoints, clip) {
-	/*
-	On the clip's track when there is one, so the clip shows the break while it
-	plays -- and one pass, held or not, because that is what a break is.
-
-	(comment by Claude)
-	*/
-	let track = clip ? trackFor(clip) : anonymousTrack();
-	track.oneShot = true;
+function queueBreak(buffer, channels, loopStartSeconds, deviceId, eligiblePoints) {
+	let track = anonymousTrack();
 	return queueAudio(track, buffer, channels, loopStartSeconds,
 			deviceId === undefined ? getDefaultOutputDevice() : deviceId, '', true,
 			eligiblePoints);

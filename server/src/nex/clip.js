@@ -114,17 +114,6 @@ class Clip extends Nex {
 		(comment by Claude)
 		*/
 		this.clipping = false;
-		/*
-		Done for good. A deactivated clip ignores anything that would start it
-		again, for the rest of the page's life -- break deactivates the clip it
-		plays on, so a break written into a piece happens once however many
-		times the expression around it is run.
-
-		Not saved: a reload brings the clip back as an ordinary unassigned one.
-
-		(comment by Claude)
-		*/
-		this.deactivated = false;
 		// nothing here is yours to type over
 		this.setMutable(false);
 	}
@@ -199,16 +188,6 @@ class Clip extends Nex {
 
 	getPort() {
 		return this.port;
-	}
-
-	isDeactivated() {
-		return this.deactivated;
-	}
-
-	deactivate() {
-		this.deactivated = true;
-		this.setDirtyForRendering(true);
-		eventQueueDispatcher.enqueueRenderOnlyDirty();
 	}
 
 	/*
@@ -326,9 +305,6 @@ class Clip extends Nex {
 	(comment by Claude)
 	*/
 	stateLine() {
-		// what it is playing goes on being shown until it has finished
-		// (comment by Claude)
-		if (this.deactivated && this.isUnassigned()) return 'DEACTIVATED';
 		if (this.isUnassigned()) return 'UNASSIGNED';
 		if (this.track.isQueued()) return 'QUEUED';
 		return this.kind.toUpperCase();
@@ -363,9 +339,6 @@ class Clip extends Nex {
 		// a copy names no track: it is a picture of the clip, not another clip
 		r.ended = true;
 		r.clipping = this.clipping;
-		// a copy can be handed to play, so it has to refuse as well
-		// (comment by Claude)
-		r.deactivated = this.deactivated;
 		r.setOutputDevice(this.outputDevice, this.outputName, this.deviceKind);
 		this.copyFieldsTo(r);
 		return r;
