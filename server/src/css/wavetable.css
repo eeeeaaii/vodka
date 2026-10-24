@@ -205,19 +205,37 @@ numbers it is around.
 }
 
 /*
-An unselected wave is a waveform. It says one other thing, and only if it is
-true: that it is muted. A muted wave looks exactly like a wave that is playing
--- the samples are still drawn -- so it is the one piece of metadata you cannot
-work out by looking, and the rest of it is noise over fifty waveforms. The one
-you are on shows everything.
+An unselected wave is a waveform with its tags on it, and nothing else: the
+duration and the other controls are noise over fifty waveforms. The one you are
+on shows everything.
 
 No mode in this rule: the overlay is built only on a wave that is condensed, so
 anywhere it exists this is what it is for.
 
 (comment by Claude)
 */
-.wavetable:not(.newselected) .wavemeta > *:not(.tag-mute) {
+.wavetable:not(.newselected) .wavemeta > *:not(.tag) {
 	display: none;
+}
+
+/*
+The tags do show on a wave you are not on, but they do not get to make it
+wider: a wave is as wide as its sound, and its tags are cut off at the edge of
+it. Zero wide, so the row adds nothing to the size of the cell, and then
+stretched back out to the width the canvas gave the cell, so the tags have the
+whole wave to sit in before they are clipped. The one you are on still grows to
+show all of them.
+
+(comment by Claude)
+*/
+.wavetable:not(.newselected) .wavemeta {
+	width: 0;
+	min-width: calc(100% - 3px);
+	overflow: hidden;
+}
+
+.wavetable:not(.newselected) .wavemeta > * {
+	flex-shrink: 0;
 }
 
 /*
