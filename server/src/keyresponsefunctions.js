@@ -43,7 +43,7 @@ import { Word } from './nex/word.js';
 import { ContextType } from './contexttype.js'
 import { manipulator } from './manipulator.js'
 import { RenderNode } from './rendernode.js'; 
-import { evaluateAndReplace, evaluateAndKeep, evaluateAndCopy } from './evaluatorinterface.js';
+import { evaluateAndReplace, evaluateAndKeep } from './evaluatorinterface.js';
 import { UNHANDLED_KEY } from './globalconstants.js'
 import { experiments } from './globalappflags.js'
 

@@ -197,15 +197,6 @@ function markPipDirty() {
 	}
 }
 
-function evaluateAndCopy(s) {
-	if (isHiddenFromView(s)) return;
-	systemState.resetStack();
-	let n = evaluateTopLevelSafely(s.getNex(), BINDINGS);
-	if (n) {
-		manipulator.replaceSelectedWith(new RenderNode(n));
-	}
-}
-
 // used by the repl
 function evaluateAndReturn(nex) {
 	systemState.resetStack();
@@ -215,7 +206,6 @@ function evaluateAndReturn(nex) {
 
 export {
 	evaluateAndReplace,
-	evaluateAndCopy,
 	evaluateAndKeep,
 	unwrapFinishedDeferredInDocument,
 	evaluateAndReturn
