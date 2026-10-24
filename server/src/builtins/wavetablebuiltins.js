@@ -334,12 +334,28 @@ function createWavetableBuiltins() {
 
   Builtin.createBuiltin(
     "play",
-    ["wt_", "channelsorclip#%()μ∅?"],
+    ["wtorclip_μ", "channelsorclip#%()μ∅?"],
     function $loopPlay(env, executionEnvironment) {
-      let r = startPlaying(env.lb("wt"), env.lb("channelsorclip"), "play");
+      let first = env.lb("wtorclip");
+      /*
+      A clip on its own is a play with nothing to play, so it plays nothing:
+      the clip stops at the end of the cycle. Which is what lets you collapse
+      the wave in a play expression and run it to stop the loop, rather than
+      keeping a second expression around for that.
+
+      (comment by Claude)
+      */
+      if (Utils.isClip(first)) {
+        if (env.lb("channelsorclip") != UNBOUND) {
+          return constructFatalError("play: a clip on its own stops it, so nothing goes after it. Sorry!");
+        }
+        first.endAtCycleEnd();
+        return first;
+      }
+      let r = startPlaying(first, env.lb("channelsorclip"), "play");
       return r.error ? r.error : r.clip;
     },
-    "Plays a loop. Returns a clip. Replaces |clip if passed in. A wave with a split point named loop-start plays from the top once, then loops from that point; any split point named loop-something is a place the cycle may end early when you switch."
+    "Plays a loop. Returns a clip. Replaces |clip if passed in. Given only a clip, stops it at the end of the cycle. A wave with a split point named loop-start plays from the top once, then loops from that point; any split point named loop-something is a place the cycle may end early when you switch."
   );
 
   // what it was called before it could do both

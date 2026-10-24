@@ -28,6 +28,19 @@ import { manipulator } from './manipulator.js'
 import { recordPerformedAction, UnwrapDeferredAction } from './actions.js'
 import { evaluateNexSafely, evaluateTopLevelSafely } from './evaluator.js'
 import { reportSitelessError } from './sitelesserrors.js'
+import { COLLAPSE_TAG } from './globalconstants.js'
+
+/*
+A collapsed nex cannot be run from the document. You cannot see the code in
+it, so you cannot see what you would be running. Collapsing something inside an
+expression is different -- that takes the argument out of the call -- and the
+expression around it runs as it now reads.
+
+(comment by Claude)
+*/
+function isHiddenFromView(s) {
+	return s.getNex().hasTagWithString(COLLAPSE_TAG);
+}
 
 
 // TODO(#264): this file used to call n.rootLevelPostEvaluationStep() in
@@ -44,6 +57,7 @@ import { reportSitelessError } from './sitelesserrors.js'
  * @param {RenderNode} s - the RenderNode to evaluate and replace (probably the selected node)
  */
 function evaluateAndReplace(s) {
+	if (isHiddenFromView(s)) return;
 	/*
 	Every top level evaluation begins with nothing nested, so the count starts
 	there. A backstop rather than the mechanism: runCommand now pops in a finally,
@@ -82,6 +96,7 @@ function evaluateAndReplace(s) {
  * @param {RenderNode} s = the RenderNode to evaluate
  */
 function evaluateAndKeep(s) {
+	if (isHiddenFromView(s)) return;
 	systemState.resetStack();
 	let n = evaluateTopLevelSafely(s.getNex(), BINDINGS);
 	if (Utils.isFatalError(n)) {
@@ -183,6 +198,7 @@ function markPipDirty() {
 }
 
 function evaluateAndCopy(s) {
+	if (isHiddenFromView(s)) return;
 	systemState.resetStack();
 	let n = evaluateTopLevelSafely(s.getNex(), BINDINGS);
 	if (n) {
