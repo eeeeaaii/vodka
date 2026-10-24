@@ -1110,9 +1110,9 @@ been made and there is no taking it back. A redo does not play it again either.
 (comment by Claude)
 */
 /*
-What counts as a play command. loop-play is play under its older name, and
-play-with-bpm is play that also sets the tempo, so leaving either out would mean
-walking past the very command you were reaching for. break is here because
+What counts as a play command. loop-play is play under its older name, so
+leaving it out would mean walking past the very command you were reaching for.
+break is here because
 stopping everything and playing one thing once is the other way a passage gets
 started.
 
@@ -1121,7 +1121,6 @@ started.
 const STARTS_SOUND = {
 	'play': true,
 	'loop-play': true,
-	'play-with-bpm': true,
 	'break': true
 };
 

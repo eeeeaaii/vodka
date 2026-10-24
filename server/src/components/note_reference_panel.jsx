@@ -92,8 +92,8 @@ const NoteReferencePanel = () => {
             <p className="infolinemargin">
                 Beats follow the global tempo, which starts at 120 bpm.
                 <span className="infohotkey">set-bpm</span>changes it at once;
-                <span className="infohotkey">play-with-bpm</span>changes it on
-                the downbeat of the loop it starts;
+                <span className="infohotkey">queue-bpm</span>changes it on
+                the next downbeat;
                 <span className="infohotkey">get-bpm</span>reads it.
             </p>
             <p className="infolinemargin">

@@ -189,12 +189,6 @@ function createWavetableBuiltins() {
     return r;
   }
 
-  /*
-  What play does, so that play-with-bpm can be play with one more thing rather
-  than a second copy of it that drifts.
-
-  (comment by Claude)
-  */
   function loopStartSecondsOf(wt) {
     return wt.loopStartSeconds ? wt.loopStartSeconds() : 0;
   }
@@ -429,11 +423,10 @@ function createWavetableBuiltins() {
   A tempo change for the next downbeat, on its own rather than bolted to a way
   of playing.
 
-  play-with-bpm is play plus this, and a break with a tempo change would have
-  been a third builtin, and the one after that a fourth. A tempo change is not a
-  kind of playing -- it is a thing to do at a boundary, which is how it has
-  always been implemented -- so it composes with all of them: ask for a break
-  and a tempo in the same breath and they land together.
+  A tempo change is not a kind of playing -- it is a thing to do at a boundary,
+  which is how it has always been implemented -- so it composes with every way
+  of playing: ask for a break and a tempo in the same breath and they land
+  together.
 
   (comment by Claude)
   */
@@ -453,34 +446,6 @@ function createWavetableBuiltins() {
     "Sets the tempo to |bpm when the next cycle starts, rather than now, so the change lands on a downbeat. With nothing playing it waits for something to start."
   );
 
-  Builtin.createBuiltin(
-    "play-with-bpm",
-    ["bpm#%", "wt_", "channelsorclip#%()μ∅?"],
-    function $playWithBpm(env, executionEnvironment) {
-      let bpm = env.lb("bpm").getTypedValue();
-      if (!(bpm > 0)) {
-        return constructFatalError("play-with-bpm: bpm must be more than zero. Sorry!");
-      }
-      let r = startPlaying(env.lb("wt"), env.lb("channelsorclip"), "play-with-bpm");
-      if (r.error) return r.error;
-      /*
-      The tempo changes when this starts sounding, not now. Going from a fast
-      passage to a slow one, the moment that matters is the downbeat of the
-      slow one: set the tempo when you ask and everything between here and
-      there is measured against a tempo that is not playing yet.
-
-      The same boundary the loop joins at, because it is the same event -- see
-      atNextCycleStart.
-
-      (comment by Claude)
-      */
-      atNextCycleStart(function() {
-        setBpm(bpm);
-      });
-      return r.clip;
-    },
-    "Like play, but sets the tempo to |bpm when the loop starts sounding rather than at once, so the change lands on the downbeat. |wt and |channelsorclip are as in play."
-  );
 
   Builtin.createBuiltin(
     "break",
