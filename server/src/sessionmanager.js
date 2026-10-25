@@ -30,10 +30,14 @@ both machines would be pointing at.
 
 import { systemState, PAGE_SEPARATOR } from './systemstate.js'
 import * as audioStore from './audiostore.js'
-import { stopAutosave } from './autosave.js'
+import { stopAutosave, flushAutosave } from './autosave.js'
+import { canSave } from './deployment.js'
 
 const AUTOSAVE_PREFIX = 'vodka.autosave.';
 const NAMES_KEY = 'vodka.sessionnames';
+// zoom and the like, kept per session alongside the document -- see editorstate.js
+const EDITORSTATE_PREFIX = 'vodka.editorstate.';
+const PER_SESSION_PREFIXES = [AUTOSAVE_PREFIX, EDITORSTATE_PREFIX];
 const SESSION_PREFIX = 'vs-';
 const FILE_VERSION = 1;
 const FILE_EXTENSION = '.vks';
@@ -154,18 +158,146 @@ Autosave is stopped first. It writes on a timer and again as the page unloads,
 so a document deleted while it is still being saved comes straight back.
 */
 function deleteSessionData(sessionId) {
-	stopAutosave();
-	try {
-		window.localStorage.removeItem(AUTOSAVE_PREFIX + sessionId);
-	} catch (e) {
-		// storage unreadable; the audio is still worth removing
+	if (sessionId == systemState.getSessionId()) {
+		stopAutosave();
 	}
+	let storageIds = storageIdsOf(sessionId);
 	let names = readNames();
-	if (names[sessionId]) {
-		delete names[sessionId];
-		writeNames(names);
+	for (let i = 0; i < storageIds.length; i++) {
+		for (let j = 0; j < PER_SESSION_PREFIXES.length; j++) {
+			try {
+				window.localStorage.removeItem(PER_SESSION_PREFIXES[j] + storageIds[i]);
+			} catch (e) {
+				// storage unreadable; the audio is still worth removing
+			}
+		}
+		delete names[storageIds[i]];
 	}
-	return audioStore.removeAllForSession(sessionId);
+	writeNames(names);
+	return Promise.all(storageIds.map(function (id) {
+		return audioStore.removeAllForSession(id);
+	}));
+}
+
+/*
+A session's browser storage is held under its id, and under its id plus a page
+for each page anybody opened -- so everything done to a session as a whole
+(delete, copy, rename) is done to each of these.
+
+(comment by Claude)
+*/
+function storageIdsOf(sessionId) {
+	let ids = [sessionId];
+	try {
+		for (let i = 0; i < window.localStorage.length; i++) {
+			let key = window.localStorage.key(i);
+			for (let j = 0; key && j < PER_SESSION_PREFIXES.length; j++) {
+				let pagePrefix = PER_SESSION_PREFIXES[j] + sessionId + PAGE_SEPARATOR;
+				let id = key.substring(PER_SESSION_PREFIXES[j].length);
+				if (key.indexOf(pagePrefix) == 0 && ids.indexOf(id) == -1) {
+					ids.push(id);
+				}
+			}
+		}
+	} catch (e) {
+		// storage unreadable; the session itself is still the one to act on
+	}
+	return ids;
+}
+
+// the same storage id, under another session
+function renamedStorageId(storageId, fromSessionId, toSessionId) {
+	return toSessionId + storageId.substring(fromSessionId.length);
+}
+
+/*
+Copies everything this browser holds for one session under another: each
+page's document and the audio that goes with it. The document records whose it
+is, so that is rewritten too, or the copy would think it was the original.
+
+If it is the session on screen, whatever is waiting to be autosaved is written
+first, or the copy would be of the document as it was a moment ago.
+
+(comment by Claude)
+*/
+function copySessionData(fromSessionId, toSessionId, name) {
+	if (fromSessionId == systemState.getSessionId()) {
+		flushAutosave();
+	}
+	let storageIds = storageIdsOf(fromSessionId);
+	let writes = [];
+	for (let i = 0; i < storageIds.length; i++) {
+		let toId = renamedStorageId(storageIds[i], fromSessionId, toSessionId);
+		let doc = documentOf(storageIds[i]);
+		if (doc) {
+			doc.sessionId = toId;
+			writeStorage(AUTOSAVE_PREFIX + toId, JSON.stringify(doc));
+		}
+		let editorState = readStorage(EDITORSTATE_PREFIX + storageIds[i]);
+		if (editorState) {
+			writeStorage(EDITORSTATE_PREFIX + toId, editorState);
+		}
+		writes.push(audioStore.copyAllForSession(storageIds[i], toId));
+	}
+	if (name) {
+		setName(toSessionId, name);
+	}
+	return Promise.all(writes).then(function () { return toSessionId; });
+}
+
+function moveSessionData(fromSessionId, toSessionId, name) {
+	return copySessionData(fromSessionId, toSessionId, name).then(function () {
+		return deleteSessionData(fromSessionId);
+	}).then(function () { return toSessionId; });
+}
+
+/*
+How much of the browser's storage a session is using: its documents and editor
+state, counted as the two bytes a character costs in localStorage, and its
+audio, which is nearly always most of it.
+
+(comment by Claude)
+*/
+function browserBytesOf(sessionId) {
+	let storageIds = storageIdsOf(sessionId);
+	let docBytes = 0;
+	for (let i = 0; i < storageIds.length; i++) {
+		for (let j = 0; j < PER_SESSION_PREFIXES.length; j++) {
+			let raw = readStorage(PER_SESSION_PREFIXES[j] + storageIds[i]);
+			if (raw) docBytes += raw.length * 2;
+		}
+	}
+	return Promise.all(storageIds.map(function (id) {
+		return audioStore.sizeForSession(id);
+	})).then(function (sizes) {
+		return sizes.reduce(function (a, b) { return a + b; }, docBytes);
+	});
+}
+
+/*
+On a server you run yourself a session is also a folder of files, and the
+folder is the server's to list, make, rename, copy and delete. These answer
+nothing useful anywhere else, and are not asked.
+
+(comment by Claude)
+*/
+function listSessionFolders() {
+	if (!canSave()) return Promise.resolve([]);
+	return fetch('sessions.json').then(function (r) {
+		return r.ok ? r.json() : [];
+	}).catch(function () { return []; });
+}
+
+function sessionFolderOp(op, id, to) {
+	if (!canSave()) return Promise.resolve({ ok: true });
+	return fetch('sessions', {
+		method: 'POST',
+		body: JSON.stringify({ op: op, id: id, to: to }),
+	}).then(function (r) {
+		return r.json();
+	}).catch(function () {
+		return { ok: false, error: 'could not reach the server.' };
+	});
 }
 
 function documentOf(sessionId) {
@@ -280,24 +412,6 @@ function importSession(parsed) {
 	});
 }
 
-// A duplicate is a new session holding the same things, so it gets a new id --
-// unlike an import, which is the same session arriving somewhere else.
-// (comment by Claude)
-function duplicateCurrentSession(name) {
-	let sessionId = newSessionId();
-	let doc = documentOf(systemState.getSessionId());
-	if (doc) {
-		doc = JSON.parse(JSON.stringify(doc));
-		doc.sessionId = sessionId;
-		writeStorage(AUTOSAVE_PREFIX + sessionId, JSON.stringify(doc));
-	}
-	setName(sessionId, name);
-	let writes = audioStore.entries().map(function (e) {
-		return audioStore.putForSession(sessionId, e.hash, e.buffer);
-	});
-	return Promise.all(writes).then(function () { return sessionId; });
-}
-
 /*
 showSaveFilePicker lets the browser put the file where the user says and is
 chrome and edge only, so the anchor is not a legacy path -- it is what firefox
@@ -367,6 +481,11 @@ export {
 	FILE_VERSION,
 	listSessions,
 	deleteSessionData,
+	copySessionData,
+	moveSessionData,
+	browserBytesOf,
+	listSessionFolders,
+	sessionFolderOp,
 	nameOf,
 	setName,
 	newSessionId,
@@ -377,7 +496,6 @@ export {
 	fileNameForCurrentSession,
 	parseSessionFile,
 	importSession,
-	duplicateCurrentSession,
 	saveTextToFile,
 	readTextFromFile,
 }

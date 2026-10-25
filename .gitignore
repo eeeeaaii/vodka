@@ -4,11 +4,10 @@ node_modules
 
 testing/____tmpfile.txt
 server/sounds/other_licenses/
-server/sessions/*
-# named sessions are working documents, not part of the app. samples is the
-# exception: it ships with vodka.
-server/namedsessions/*
-!server/namedsessions/samples/
+server/sessions/
+# your sessions, not part of the app. Clone your own sessions repo here (see
+# README). The samples that ship with vodka live in server/samples/.
+server/namedsessions/
 server/docs/*
 server/webenv.txt
 

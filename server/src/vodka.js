@@ -46,8 +46,7 @@ import { createWavetableBuiltins } from './builtins/wavetablebuiltins.js'
 import { createWaveMathBuiltins } from './builtins/wavemathbuiltins.js'
 import { createMidiBuiltins } from './builtins/midibuiltins.js'
 import { loadAndRun } from './servercommunication.js'
-import { newSessionId } from './sessionmanager.js'
-import { loadDeploymentConfig } from './deployment.js'
+import { loadDeploymentConfig, defaultSessionId } from './deployment.js'
 import { installMouseDefaults } from './mousedefaults.js'
 import { RenderNode } from './rendernode.js'
 import { Root } from './nex/root.js'
@@ -236,25 +235,22 @@ function setOrCreateSessionId() {
 			systemState.setPageId(page);
 		}
 	}
-	let sessionId = null;
-	if (params.has('sessionId')) {
-		sessionId = params.get('sessionId');
-		Utils.setCookie('sessionId', sessionId);
-	} else {
-		sessionId = Utils.getCookie('sessionId');
-	}
 	/*
-	Nothing else is going to make one. A static host has no server to mint an id
-	and redirect, and the vodka server no longer needs to either -- a session
-	only exists in the browser, so the browser is the right place to name it.
+	No session in the url means the default one, always. The cookie used to
+	fill in, but two tabs share it, so it named whichever session some tab was
+	in last -- and "no session id" has to reliably mean "default" for the
+	default to be somewhere you can come back to.
 
-	Put into the address bar without navigating, so the url is still the way
-	back to this session.
+	Put into the address bar without navigating, so the url still says where
+	you are.
 
 	(comment by Claude)
 	*/
-	if (!sessionId) {
-		sessionId = newSessionId();
+	let sessionId = params.has('sessionId') ? params.get('sessionId') : null;
+	if (sessionId) {
+		Utils.setCookie('sessionId', sessionId);
+	} else {
+		sessionId = defaultSessionId();
 		Utils.setCookie('sessionId', sessionId);
 		try {
 			let url = new URL(window.location.href);

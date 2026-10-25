@@ -47,21 +47,57 @@ If you install Vodka locally, you can make changes or use your own audio samples
 If you want the session sharing links to point at your own machine rather than at
 vodka.church, also create a file `server/webenv.txt` containing the single word `local`.
 
+### Your sessions
+
+Running locally, every session is a folder in `server/namedsessions/`. Opening
+`http://localhost:3000` with no session in the address takes you to `default-local`,
+which is always there. The Sessions tab in the help menu lists your sessions with
+how much space each one uses, and lets you make, rename, duplicate, export and
+delete them. When you're in `default-local`, "save this session as..." moves what
+you're working on into a session with a name and leaves the default empty for the
+next sketch.
+
+`server/namedsessions/` is gitignored, so it can be a git repo of your own. To keep
+your sessions in version control:
+
+```
+cd server
+git clone https://github.com/<you>/<your-sessions-repo>.git namedsessions
+```
+
+Then commit and push from inside `server/namedsessions/` like any other repo.
+Pulling Vodka never touches it. If you'd rather keep your sessions somewhere else
+on disk, set `VODKA_SESSIONS_DIR` to that folder before running `./run.sh`.
+
+### Samples and the standard library
+
+Two read-only sessions ship with Vodka: `samples` (in `server/samples/`) and
+`packages`, the standard library (in `server/packages/`). Sample names end in
+`-sample` and library names end in `-functions`. When you load a name that isn't
+in your session, Vodka looks for it in samples if it ends in `-sample` and in the
+standard library otherwise. So you can load a sample or a library file from any
+session, change it, and save it, and from then on your session uses your copy.
+Saving a `-sample` or `-functions` name shows a warning so you know you're
+hiding the shipped file.
+
+`load` and `list-files` can also read from another session:
+
+```
+~(_list-files_)                      the files in this session
+~(_list-files @samples_)             the files in another session
+~(_load @poems-sample_)              from your session, or from samples
+~(_load @my-other-session @riff_)    from another session; saving still goes here
+```
+
 ### Editing the standard library
 
-Normally your work is saved into a session directory, and the standard library in
-`server/packages/` can be loaded but not written to. On a local server you can edit
-the library directly:
-
-1. Create `server/webenv.txt` containing the single word `local` (as above).
-2. Navigate to `http://localhost:3000/?sessionId=packages`
-
-Saves now go straight to `server/packages/` instead of a session directory, so you
-can edit library files in place without moving anything afterwards. Files whose
-names end in `-functions` are library files, and can *only* be saved this way.
+On a local server you can edit the library directly by navigating to
+`http://localhost:3000/?sessionId=packages`. Saves then go straight to
+`server/packages/`, so you can edit library files in place without moving anything
+afterwards. The same works for `?sessionId=samples`.
 
 This works on a local server only. On a public one the library stays readable but
-not writable, which is why the `local` setting is what unlocks it.
+not writable.
 
 ## Documentation
 

@@ -66,6 +66,7 @@ function main() {
 	copyDir(path.join(SERVER_DIR, 'dist'), path.join(out, 'dist'));
 	copyDir(path.join(SERVER_DIR, 'src', 'css'), path.join(out, 'css'));
 	copyDir(path.join(SERVER_DIR, 'packages'), path.join(out, 'packages'));
+	copyDir(path.join(SERVER_DIR, 'samples'), path.join(out, 'samples'));
 	copyDir(path.join(SERVER_DIR, 'sounds'), path.join(out, 'sounds'));
 	copyDir(path.join(SERVER_DIR, 'waves'), path.join(out, 'waves'));
 
@@ -78,12 +79,16 @@ function main() {
 	fs.writeFileSync(path.join(out, 'config.json'), JSON.stringify({
 		canSave: false,
 		liveIndex: false,
+		defaultSession: 'default',
 	}, null, 1) + '\n');
 
-	const packages = fs.readdirSync(path.join(SERVER_DIR, 'packages'));
-	fs.writeFileSync(path.join(out, 'packages', 'index.json'),
-			JSON.stringify(packages, null, 1) + '\n');
-	console.log('makestatic: packages/index.json lists ' + packages.length + ' entries');
+	// the two sessions that ship with vodka, listed the same way
+	for (const dir of ['packages', 'samples']) {
+		const names = fs.readdirSync(path.join(SERVER_DIR, dir));
+		fs.writeFileSync(path.join(out, dir, 'index.json'),
+				JSON.stringify(names, null, 1) + '\n');
+		console.log('makestatic: ' + dir + '/index.json lists ' + names.length + ' entries');
+	}
 
 	// the audio libraries are a bank (or category) holding wav files, so their
 	// index is a map, which is what list-audio reads

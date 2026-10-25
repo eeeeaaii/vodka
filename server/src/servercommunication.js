@@ -18,7 +18,8 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import * as Utils from './utils.js';
 
 import { BINDINGS } from './environment.js'
-import { constructFatalError } from './nex/eerror.js'
+import { constructFatalError, constructWarning } from './nex/eerror.js'
+import { showNoticeToast } from './toast.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { parse } from './nexparser2.js';
 import { AudioCollector, encode as encodeContainer, decode as decodeContainer } from './audiocontainer.js';
@@ -75,11 +76,44 @@ need the api, and only the vodka server allows those.
 
 (comment by Claude)
 */
-function fetchShippedFile(name) {
-	return fetch('packages/' + encodeURIComponent(name)).then(function (r) {
+function fetchShippedFile(name, dir) {
+	if (!dir) dir = shippedDirFor(name);
+	return fetch(dir + '/' + encodeURIComponent(name)).then(function (r) {
 		if (!r.ok) throw new Error('not found');
 		return r.text();
 	});
+}
+
+/*
+What ships with vodka is two read-only sessions, and the suffix says which one a
+name is looked for in when it is not in yours. Kept in step with load in
+webserver.js.
+
+(comment by Claude)
+*/
+const SAMPLE_SUFFIX = '-sample';
+const LIBRARY_SUFFIX = '-functions';
+const SHIPPED_SESSIONS = ['packages', 'samples'];
+
+function shippedDirFor(name) {
+	return name.endsWith(SAMPLE_SUFFIX) ? 'samples' : 'packages';
+}
+
+/*
+Saving one of these names in your session is allowed, and is how you make your
+own copy of a sample or a library file -- but from then on yours is the one
+everything gets, including after the shipped one changes. Said once, at the
+moment it happens, which is the only moment there is anyone to tell.
+
+(comment by Claude)
+*/
+function warnIfShippedName(name) {
+	if (!name.endsWith(SAMPLE_SUFFIX) && !name.endsWith(LIBRARY_SUFFIX)) return;
+	if (SHIPPED_SESSIONS.indexOf(systemState.getSessionId()) != -1) return;
+	let suffix = name.endsWith(SAMPLE_SUFFIX) ? SAMPLE_SUFFIX : LIBRARY_SUFFIX;
+	showNoticeToast(constructWarning(
+			`saved ${name} in this session. Names ending in ${suffix} are for files`
+			+ ` that ship with vodka, so in this session your ${name} hides any shipped one.`));
 }
 
 /*
@@ -108,12 +142,18 @@ function listFromIndex(which, callback) {
 	});
 }
 
-function listFiles(callback) {
+// with a session, that session's files rather than this one's
+// (comment by Claude)
+function listFiles(session, callback) {
 	if (!hasLiveIndex()) {
-		listFromIndex('packages', callback);
+		if (session && SHIPPED_SESSIONS.indexOf(session) == -1) {
+			callback(constructFatalError(`no session '${session}' here -- only packages and samples`));
+			return;
+		}
+		listFromIndex(session ? session : 'packages', callback);
 		return;
 	}
-	let payload = `listfiles`;
+	let payload = session ? `listfiles\t${session}` : `listfiles`;
 
 	sendToServer(payload, function(data) {
 		parseReturnPayload(data, callback);
@@ -218,6 +258,37 @@ function loadNex(name, callback) {
 	});
 }
 
+// load with a session: read from it, never write to it
+// (comment by Claude)
+function loadNexFromSession(session, name, callback) {
+	if (!hasLiveIndex()) {
+		if (SHIPPED_SESSIONS.indexOf(session) == -1) {
+			callback(constructFatalError(`no session '${session}' here -- only packages and samples`));
+			return;
+		}
+		fetchShippedFile(name, session).then(function (text) {
+			document.title = name;
+			systemState.setDefaultFileName(name);
+			parseReturnPayload(text, callback);
+		}).catch(function () {
+			callback(serverError());
+		});
+		return;
+	}
+	let payload = `loadfrom\t${session}\t${name}`;
+
+	// the name is what a later save uses, and a save goes to this session --
+	// which is the point: load it from there, keep it here
+	// (comment by Claude)
+	sendToServer(payload, function(data) {
+		document.title = name;
+		systemState.setDefaultFileName(name);
+		parseReturnPayload(data, callback);
+	}, function() {
+		callback(serverError());
+	});
+}
+
 function loadRaw(name, callback) {
 	let payload = `loadraw\t${name}`;
 
@@ -252,6 +323,7 @@ function saveNex(name, nex, callback) {
 			if (!Utils.isFatalError(r)) {
 				document.title = name;
 				systemState.setDefaultFileName(name);
+				warnIfShippedName(name);
 			}
 			callback(r);
 		});
@@ -264,7 +336,10 @@ function saveRaw(name, data, callback) {
 	let payload = `saveraw\t${name}\t${data}`;
 
 	sendToServer(payload, function(data) {
-		parseReturnPayload(data, callback);
+		parseReturnPayload(data, function(r) {
+			if (!Utils.isFatalError(r)) warnIfShippedName(name);
+			callback(r);
+		});
 	}, function() {
 		callback(serverError());
 	});
@@ -429,6 +504,7 @@ export {
 	saveNex,
 	importNex,
 	loadNex,
+	loadNexFromSession,
 	listFiles,
 	listStandardFunctionFiles,
 	loadRaw,
