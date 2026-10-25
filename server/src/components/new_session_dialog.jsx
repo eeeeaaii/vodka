@@ -6,7 +6,7 @@ under and naming it is a choice rather than a chore.
 
 (comment by Claude)
 */
-const NewSessionDialog = ({ sessionId, title, onCreate, onCancel }) => {
+const NewSessionDialog = ({ sessionId, title, buttonText, onCreate, onCancel }) => {
     const [name, setName] = useState(sessionId);
 
     const create = () => onCreate(name.trim() ? name.trim() : sessionId);
@@ -22,7 +22,7 @@ const NewSessionDialog = ({ sessionId, title, onCreate, onCancel }) => {
                 <input className="dialoginput" type="text" value={name} autoFocus
                     onInput={(e) => setName(e.target.value)} onKeyDown={onKey} />
                 <div className="dialogbuttons">
-                    <button className="dialogbutton" onClick={create}>create</button>
+                    <button className="dialogbutton" onClick={create}>{buttonText ? buttonText : 'create'}</button>
                     <button className="dialogbutton" onClick={onCancel}>cancel</button>
                 </div>
             </div>

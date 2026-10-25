@@ -5,6 +5,7 @@ import BasicUsagePanel from './basic_usage_panel';
 import ApiReferencePanel from './api_reference_panel';
 import AbstractDataTypesPanel from './abstract_data_types_panel';
 import WelcomePanel from './welcome_panel';
+import SessionsPanel from './sessions_panel';
 import AccessButton from './access_button';
 import StatusNav from './status_nav';
 import Tutorial from './tutorial';
@@ -17,7 +18,7 @@ import {
 } from '../help';
 
 
-import { WELCOME, QUICK_REFERENCE, ABSTRACT_DATA_TYPES, BASE_API, SOUND_API, NOTE_REFERENCE, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
+import { WELCOME, SESSIONS, QUICK_REFERENCE, ABSTRACT_DATA_TYPES, BASE_API, SOUND_API, NOTE_REFERENCE, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
 
 const MINIMIZED = 0;
 const SHOWING_PANELS = 1;
@@ -32,6 +33,7 @@ const BASE_API_PANEL = 2;
 const SOUND_API_PANEL = 6;
 const ABSTRACT_DATA_TYPES_PANEL = 3;
 const NOTE_REFERENCE_PANEL = 4;
+const SESSIONS_PANEL = 5;
 
 function initialUiState() {
     switch (getInitialHelpState()) {
@@ -62,6 +64,9 @@ const App = () => {
         switch(menuChoice) {
             case WELCOME:
                 setPanel(WELCOME_PANEL);
+                break;
+            case SESSIONS:
+                setPanel(SESSIONS_PANEL);
                 break;
             case QUICK_REFERENCE:
                 setPanel(BASIC_USAGE_PANEL);
@@ -99,6 +104,7 @@ const App = () => {
             case ABSTRACT_DATA_TYPES_PANEL: return ABSTRACT_DATA_TYPES;
             case NOTE_REFERENCE_PANEL:      return NOTE_REFERENCE;
             case WELCOME_PANEL:             return WELCOME;
+            case SESSIONS_PANEL:            return SESSIONS;
             case BASIC_USAGE_PANEL:
             default:                        return QUICK_REFERENCE;
         }
@@ -116,6 +122,8 @@ const App = () => {
                 return <NoteReferencePanel/>;
             case WELCOME_PANEL:
                 return <WelcomePanel/>;
+            case SESSIONS_PANEL:
+                return <SessionsPanel/>;
             case BASIC_USAGE_PANEL:
             default:
                 return <BasicUsagePanel/>;

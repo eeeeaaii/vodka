@@ -21,8 +21,6 @@ const fs = require('fs');
 const fsPromises = require('fs').promises;
 const querystring = require('querystring');
 
-const { v4: uuidv4 } = require('uuid');
-
 const hostname = '127.0.0.1';
 const port = Number(process.env.VODKA_PORT) || 3000;
 
@@ -44,13 +42,44 @@ const webenv_vars = {}
 
 const ERROR = "Rather than a beep<br>Or a rude error message,<br>These words: \"File not found.\"";
  
-// generated sessions live in sessions/, named ones in namedsessions/
-// (comment by Claude)
-const GENERATED_SESSION_PREFIX = 'vs-';
+/*
+Every session on a local server is a folder in here, and the folder is yours:
+it is gitignored, so you can clone your own sessions repo into it and commit
+from inside. VODKA_SESSIONS_DIR puts it somewhere else entirely.
 
-function isGeneratedSessionId(sessionId) {
-	return typeof sessionId === 'string'
-			&& sessionId.indexOf(GENERATED_SESSION_PREFIX) === 0;
+Generated vs- ids used to get a directory of their own under sessions/. A local
+server no longer makes them -- a page with no session goes to default-local --
+so the ones that are left get moved in here at startup and are named sessions
+like any other. A hosted vodka still uses them, but it keeps nothing, so they
+never need a directory.
+
+(comment by Claude)
+*/
+const SESSIONS_DIR = process.env.VODKA_SESSIONS_DIR
+		? process.env.VODKA_SESSIONS_DIR.replace(/\/+$/, '')
+		: './namedsessions';
+const LEGACY_GENERATED_SESSIONS_DIR = './sessions';
+const SAMPLES_DIR = './samples/';
+
+// ship with vodka, so they are never a folder of yours
+// (comment by Claude)
+const RESERVED_SESSIONS = [ 'packages', 'samples' ];
+
+const DEFAULT_LOCAL_SESSION = 'default-local';
+const DEFAULT_REMOTE_SESSION = 'default';
+
+/*
+A name that is not in your session is looked for in what ships with vodka, and
+the suffix says where: -sample in samples/, anything else in packages/. So a
+sample or a library file can be loaded from any session, edited, and saved, and
+the copy in your session is what you get from then on.
+
+(comment by Claude)
+*/
+const SAMPLE_SUFFIX = '-sample';
+
+function defaultSessionId() {
+	return webenv_vars.isLocal ? DEFAULT_LOCAL_SESSION : DEFAULT_REMOTE_SESSION;
 }
 
 let api_reqs = 1;
@@ -102,6 +131,7 @@ async function processRequest(req, resp) {
 	if (parsedUrl.pathname == '/config.json') {
 		sendResponse(resp, 200, 'application/json', JSON.stringify({
 			canSave: writesAllowed(),
+			defaultSession: defaultSessionId(),
 			// a live server can look in the directory, so a file added while
 			// you work shows up without a rebuild
 			// (comment by Claude)
@@ -109,10 +139,11 @@ async function processRequest(req, resp) {
 		}), 'config');
 		return;
 	}
-	if (parsedUrl.pathname == '/packages/index.json') {
+	if (parsedUrl.pathname == '/packages/index.json'
+			|| parsedUrl.pathname == '/samples/index.json') {
 		let names = [];
 		try {
-			names = fs.readdirSync('./packages');
+			names = fs.readdirSync(parsedUrl.pathname == '/samples/index.json' ? SAMPLES_DIR : './packages');
 		} catch (e) {
 			names = [];
 		}
@@ -129,6 +160,25 @@ async function processRequest(req, resp) {
 		let dir = '.' + parsedUrl.pathname.substring(0, parsedUrl.pathname.lastIndexOf('/'));
 		sendResponse(resp, 200, 'application/json',
 				JSON.stringify(audioIndex(dir)), 'index');
+		return;
+	}
+
+	if (parsedUrl.pathname == '/sessions.json') {
+		sendResponse(resp, 200, 'application/json',
+				JSON.stringify(await listSessionFolders()), 'sessions');
+		return;
+	}
+	if (parsedUrl.pathname == '/sessions') {
+		if (!writesAllowed()) {
+			sendResponse(resp, 403, 'application/json',
+					JSON.stringify({ ok: false, error: 'this vodka does not keep sessions.' }), 'sessions');
+			return;
+		}
+		loadRequestBody(req, function(data) {
+			serviceSessionOpRequest(data).then(function(r) {
+				sendResponse(resp, 200, 'application/json', JSON.stringify(r), 'sessions');
+			});
+		});
 		return;
 	}
 
@@ -153,62 +203,6 @@ async function processRequest(req, resp) {
 					return;
 				});
 		})
-	} else if (query.new) {
-		// named sessions are made with tools/createnamedsession.js
-		// (comment by Claude)
-		let sessionId = await createNewUUIDSession(resp);
-		if (!sessionId) {
-			sendResponse(resp, 401, 'text/html', 'could not create session');
-			return;
-		}
-		sendRedirect(resp, urlWithSession(sessionId));
-		return;
-
-
-
-	} else if (query.copy) {
-		if (!writesAllowed()) {
-			sendResponse(resp, 403, 'text/html',
-					'this vodka does not keep files, so there is nothing to copy.', 'ERROR');
-			return;
-		}
-		let sessionId = query.sessionId || sessionIdFromCookie;
-		let readonly = (query.type == 'readonly');
-		if (!sessionId) {
-			sendResponse(resp, 401, 'text/html', 'Cannot copy a session without a session ID.');
-			return;
-		}
-		let exists = await checkIfSessionExists(sessionId);
-		if (!exists) {
-			sendResponse(resp, 401, 'text/html', "unknown session id", 'ERROR');	
-			return;		
-		}
-
-		let newSessionId = await createNewUUIDSession(resp);
-		if (!newSessionId) {
-			sendResponse(resp, 401, 'text/html', 'could not create session');
-			return;
-		}
-		if (readonly) {
-			let isWriteProtected = await sessionIsWriteProtected(newSessionId);
-			if (isWriteProtected) {
-				sendResponse(resp, 500, 'text/html', 'new session is already write protected.');
-				return;
-			}
-			let ableToWriteProtect = await writeProtectSession(newSessionId);
-			if (!ableToWriteProtect) {
-				sendResponse(resp, 500, 'text/html', 'could not write protect read only session.');
-				return;
-			}
-		}
-		let success = copySessionContents(sessionId, newSessionId);
-		if (!success) {
-			sendResponse(resp, 500, 'text/html', 'could not copy session files');
-			return;
-		}
-		sendRedirect(resp, urlWithSession(newSessionId));
-		return;
-
 	} else if (query.sessionId) {
 		/*
 		A hosted vodka keeps nothing, so it has no session directories to check
@@ -221,7 +215,13 @@ async function processRequest(req, resp) {
 		if (writesAllowed()) {
 			let exists = await checkIfSessionExists(query.sessionId);
 			if (!exists) {
-				sendResponse(resp, 401, 'text/html', "unknown session id specified in query string", 'ERROR');
+				// a typo should not make a folder in your repo, so sessions are
+				// only made on purpose, from the Sessions tab in help
+				// (comment by Claude)
+				sendResponse(resp, 401, 'text/html',
+						`there is no session called "${escapeHtml(query.sessionId)}". `
+						+ `Open <a href="/">your default session</a> and make it from the Sessions tab in help.`,
+						'ERROR');
 				return;
 			}
 		} else if (!isLegalSessionId(query.sessionId)) {
@@ -231,59 +231,40 @@ async function processRequest(req, resp) {
 		await serviceRequestForRegularFile(query.sessionId, path, resp);
 		return;
 
-	} else if (sessionIdFromCookie && !isPageLoad) {
-		// assets only. A page load with no session in the URL gets a new
-		// session, so that opening a tab never lands you in an existing one --
-		// the URL is the only way back to a session.
-		// (comment by Claude)
-		let sessionId = sessionIdFromCookie;
-		let exists = await checkIfSessionExists(sessionId);
-		if (!exists) {
-			// if the user sends an unknown session ID in the cookie, it could be that
-			// their session was deleted. Since users shouldn't be manually inserting
-			// cookies into their session, we just assume this and give them a new
-			// session. But -- should we put something in the response so they know?
-			sessionId = await createNewUUIDSession(resp);
-			if (!sessionId) {
-				sendResponse(resp, 401, 'text/html', 'could not create session');
-				return;				
-			}
+	} else if (isPageLoad) {
+		/*
+		A page with no session in the url goes to the default session, so there
+		is always somewhere to come back to -- it used to mint a new one every
+		time, and the only way back to your work was the url you happened to
+		keep. The cookie is not consulted: two tabs share it, so it says which
+		session some tab was in last, not which one you asked for.
+
+		(comment by Claude)
+		*/
+		let sessionId = defaultSessionId();
+		if (writesAllowed() && !(await ensureSessionFolder(sessionId))) {
+			sendResponse(resp, 500, 'text/html', 'could not create the default session', 'ERROR');
+			return;
 		}
-		serviceRequestForRegularFile(sessionId, path, resp);
+		sendRedirect(resp, urlWithSession(sessionId));
 		return;
 
 	} else {
-		let newSessionId = await createNewUUIDSession(resp);
-		if (!newSessionId) {
-			sendResponse(resp, 401, 'text/html', 'could not create session');
-			return;
+		// assets. Only host.html looks at the session, and it is a page load.
+		// (comment by Claude)
+		let sessionId = sessionIdFromCookie;
+		if (!sessionId || !isLegalSessionId(sessionId)) {
+			sessionId = defaultSessionId();
 		}
-		if (isPageLoad) {
-			sendRedirect(resp, urlWithSession(newSessionId));
-			return;
-		}
-		serviceRequestForRegularFile(newSessionId, path, resp);
+		serviceRequestForRegularFile(sessionId, path, resp);
 		return;
 	}
 };
 
-async function createNewUUIDSession(resp) {
-	let newSessionId = GENERATED_SESSION_PREFIX + uuidv4();
-	let success = await createSession(newSessionId, resp);
-	return success ? newSessionId : null;
-}
-
-function isValidSessionNameForUserCreate(sessionName) {
-	if (sessionName == 'packages') return false;
-	if (sessionName == 'samples') return false;
-	if (isGeneratedSessionId(sessionName)) return false;
-	let isIdentifier = /^[a-zA-Z0-9_-]+$/.test(sessionName);
-	return isIdentifier;
-}
-
-async function createSession(sessionId, resp) {
-	resp.setHeader('Set-Cookie', `sessionId=${sessionId}`);
-	return await createSessionIdDirectory(sessionId);
+function escapeHtml(text) {
+	return String(text).replace(/[&<>"']/g, function(c) {
+		return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+	});
 }
 
 // actually also loads css files, js files, etc.
@@ -305,12 +286,20 @@ async function serviceRequestForRegularFile(sessionId, path, resp) {
 		// so the client has one way of reading a file that ships with the app
 		// (comment by Claude)
 		path = "." + path;
+	} else if (path.indexOf('/samples/') == 0) {
+		// shipped too, and read the same way
+		// (comment by Claude)
+		path = "." + path;
 	} else if (path.indexOf('/dist/') == 0) {
 		// the bundled client, written by build.sh
 		path = "." + path;
 	} else if (path.indexOf('/session/') == 0) {
-		path = path.substr(8);
-		path = './sessions/' + sessionId + path;
+		let sessionDirectory = getSessionDirectory(sessionId);
+		if (!sessionDirectory) {
+			sendResponse(resp, 400, 'text/html', 'bad session id', 'ERROR');
+			return;
+		}
+		path = sessionDirectory + path.substr(9);
 		isSessionDownload = true;
 	} else {
 		path = "./src" + path;
@@ -450,20 +439,18 @@ function isFileNotFound(error) {
 	return error.message.substr(0, 6) == "ENOENT";
 }
 
-function containsIllegalSessionCharacters(fn) {
-	if (fn == 'packages') return true;
-	if (fn == 'samples') return true;
-	let isIdentifier = /^[a-zA-Z0-9_-]+$/.test(fn);
-	return !isIdentifier;
+// a session of yours, as opposed to one that ships with vodka
+// (comment by Claude)
+function isUserSessionId(sessionId) {
+	return isLegalSessionId(sessionId) && RESERVED_SESSIONS.indexOf(sessionId) == -1;
 }
 
-async function createSessionIdDirectory(sessionId) {
-	if (containsIllegalSessionCharacters(sessionId)) {
+async function ensureSessionFolder(sessionId) {
+	if (!isUserSessionId(sessionId)) {
 		return false;
 	}
-	let dirpath = `${getSessionDirectory(sessionId, true /*local only*/)}`;
 	try {
-		await fsPromises.mkdir(dirpath);
+		await fsPromises.mkdir(getSessionDirectory(sessionId), { recursive: true });
 		return true;
 	} catch (err) {
 		return false;
@@ -471,7 +458,8 @@ async function createSessionIdDirectory(sessionId) {
 }
 
 async function checkIfSessionExists(sessionId) {
-	let dirpath = `${getSessionDirectory(sessionId, true /*local only*/)}`;
+	let dirpath = getSessionDirectory(sessionId);
+	if (!dirpath) return false;
 	try {
 		await fsPromises.access(dirpath, fs.constants.F_OK);
 		return true;
@@ -513,6 +501,8 @@ async function serviceApiRequest(sessionId, resp, data) {
 	// in the future due to tab escaping or -- idk, security shit
 	} else if (opcode == 'saveraw') {
 		respData = await serviceApiSaveRequest(arg, sessionId);
+	} else if (opcode == 'loadfrom') {
+		respData = await serviceApiLoadFromRequest(arg);
 	} else if (opcode == 'loadraw') {
 		respData = await serviceApiLoadRequestUserSession(arg, sessionId, false /*fallback to user session*/);
 	} else if (opcode == 'copyfile' || opcode == 'movefile') {
@@ -522,7 +512,11 @@ async function serviceApiRequest(sessionId, resp, data) {
 	} else if (opcode == 'newfile') {
 		respData = await serviceApiNewFileRequest(arg, sessionId);
 	} else if (opcode == 'listfiles') {
-		respData = await serviceApiListFilesRequest(sessionId, false /*standard*/);
+		// with an argument it is some other session's files
+		// (comment by Claude)
+		respData = arg
+				? await serviceApiListOtherSessionRequest(arg)
+				: await serviceApiListFilesRequest(sessionId, false /*standard*/);
 	} else if (opcode == 'listaudio') {
 		respData = await serviceApiListAudioDirRequest(arg);
 	} else if (opcode == 'liststandardfunctionfiles') {
@@ -541,10 +535,6 @@ function containsIllegalFilenameCharacters(fn) {
 A session id names a directory, so anything in it that is not an identifier can
 walk out of the sessions directory and into the rest of the disk. The file name
 has always been checked; this is the other half of the path.
-
-isGeneratedSessionId only looks at the prefix, so a generated id needs checking
-too -- the prefix says where the directory lives, not that the rest of the name
-is safe.
 
 (comment by Claude)
 */
@@ -577,10 +567,10 @@ function getSessionDirectory(sessionId, localAccessOnly) {
 		r = './packages/'
 	} else if (!isLegalSessionId(sessionId)) {
 		return null;
-	} else if (isGeneratedSessionId(sessionId)) {
-		r = `./sessions/${sessionId}/`;
+	} else if (sessionId == 'samples') {
+		r = SAMPLES_DIR;
 	} else {
-		r = `./namedsessions/${sessionId}/`;
+		r = `${SESSIONS_DIR}/${sessionId}/`;
 	}
 	return r;
 
@@ -589,16 +579,12 @@ function getSessionDirectory(sessionId, localAccessOnly) {
 async function serviceApiSaveRequest(data, sessionId) {
 	let i = data.indexOf('\t');
 	let nm = data.substr(0, i);
-	let isLibraryFile = nm.endsWith('-functions');
 	if (containsIllegalFilenameCharacters(nm)) {
 		return `v2:?"save failed (illegal filename). Sorry!"`;
 	}
 	let sessionDirectory = getSessionDirectory(sessionId, true /*local only*/);
 	if (!sessionDirectory) {
 		return `v2:?"save failed (bad session). Sorry!"`;
-	}
-	if (isLibraryFile && sessionDirectory != './packages/') {
-		return `v2:?"save failed: the filename suffix '-functions' is reserved for library files, but you are trying to save this in a non-library session.  Sorry!"`;
 	}
 	if (sessionIsWriteProtected(sessionId)) {
 		return `v2:?"save failed: this session is read-only. To save files, create a copy of this session."`;
@@ -618,7 +604,7 @@ async function serviceApiSaveRequest(data, sessionId) {
 /*
 Everything that changes a file goes through here first, so copy, move, delete
 and new file get the same checks save does: a legal name, a real session, the
--functions suffix kept for packages, and no writing into a read-only session.
+and no writing into a read-only session.
 
 Returns the path, or the error to send back.
 
@@ -631,9 +617,6 @@ function writablePath(nm, sessionId, verb) {
 	let sessionDirectory = getSessionDirectory(sessionId, true /*local only*/);
 	if (!sessionDirectory) {
 		return { error: `v2:?"${verb} failed (bad session). Sorry!"` };
-	}
-	if (nm.endsWith('-functions') && sessionDirectory != './packages/') {
-		return { error: `v2:?"${verb} failed: the filename suffix '-functions' is reserved for library files.  Sorry!"` };
 	}
 	if (sessionIsWriteProtected(sessionId)) {
 		return { error: `v2:?"${verb} failed: this session is read-only."` };
@@ -698,20 +681,6 @@ function sessionIsWriteProtected(sessionId) {
 	return fs.existsSync(filepath);
 }
 
-async function writeProtectSession(sessionId) {
-	let sessionDirectory = getSessionDirectory(sessionId, true /*local only*/);
-	let path = `${sessionDirectory}/${writeprotectionfile}`;
-
-	let savedata = '1';
-
-	try {
-		await fsPromises.writeFile(path, savedata);
-		return true;
-	} catch (err) {
-		return false;
-	}	
-}
-
 async function serviceApiLoadRequestUserSession(nm, sessionId, fallback) {
 	let sessionDirectory = getSessionDirectory(sessionId);
 	if (!sessionDirectory) {
@@ -721,11 +690,63 @@ async function serviceApiLoadRequestUserSession(nm, sessionId, fallback) {
 	try {
 		return await fsPromises.readFile(path);
 	} catch (err) {
-		if (fallback) {
+		if (fallback && nm.endsWith(SAMPLE_SUFFIX)) {
+			return await serviceApiLoadRequestShipped('samples', nm);
+		} else if (fallback) {
 			return await serviceApiLoadRequestPackages(nm);
 		} else {
 			return `v2:?"file not found in session: '${nm}'. Sorry!"`;
 		}
+	}
+}
+
+async function serviceApiLoadRequestShipped(sessionId, nm) {
+	try {
+		return await fsPromises.readFile(`${getSessionDirectory(sessionId)}/${nm}`);
+	} catch (err) {
+		return `v2:?"file not found in ${sessionId}: '${nm}'. Sorry!"`;
+	}
+}
+
+/*
+Reading another session, never writing to one: load with two arguments, and
+list-files with one. A hosted vodka has no sessions of its own on disk, so
+there the only others are the two that ship with it.
+
+(comment by Claude)
+*/
+function canReadOtherSession(sessionId) {
+	if (RESERVED_SESSIONS.indexOf(sessionId) != -1) return true;
+	return webenv_vars.isLocal && isLegalSessionId(sessionId);
+}
+
+async function serviceApiLoadFromRequest(arg) {
+	let [fromSession, nm] = (arg ? arg : '').split('\t');
+	if (!fromSession || !canReadOtherSession(fromSession)) {
+		return `v2:?"load failed: cannot read session '${fromSession}'. Sorry!"`;
+	}
+	if (!nm || containsIllegalFilenameCharacters(nm)) {
+		return `v2:?"load failed (illegal filename '${nm}'). Sorry!"`;
+	}
+	if (!(await checkIfSessionExists(fromSession))) {
+		return `v2:?"load failed: no session '${fromSession}'. Sorry!"`;
+	}
+	try {
+		return await fsPromises.readFile(`${getSessionDirectory(fromSession)}/${nm}`);
+	} catch (err) {
+		return `v2:?"file not found in session '${fromSession}': '${nm}'. Sorry!"`;
+	}
+}
+
+async function serviceApiListOtherSessionRequest(otherSession) {
+	if (!canReadOtherSession(otherSession) || !(await checkIfSessionExists(otherSession))) {
+		return `v2:?"no session '${otherSession}'. Sorry!"`;
+	}
+	let s = await getDirectoryForListFilesRequest(getSessionDirectory(otherSession));
+	if (s) {
+		return 'v2:' + s;
+	} else {
+		return `v2:?"could not get directory listing. Sorry!"`;
 	}
 }
 
@@ -870,31 +891,146 @@ async function serviceApiListFilesRequest(sessionId, standard) {
 	}
 }
 
-async function copySessionContents(oldSessionId, newSessionId, cb) {
-	let oldPath = `./sessions/${oldSessionId}/`;
-	try {
-		let files = await fsPromises.readdir(oldPath);
-		let r = await copySessionFileArray(oldSessionId, newSessionId, files);
-		return r;
-	} catch (err) {
-		return false;
-	}
-}
+/*
+The Sessions tab in help. On a local server a session is a folder, so this is
+where they are listed, made, renamed, copied and thrown away. The browser's own
+copy of each one -- the autosaved document and its audio -- is the client's to
+move along with it.
 
-async function copySessionFileArray(oldSessionId, newSessionId, files) {
-	for (let i = 0; i < files.length; i++) {
-		let file = files[i];
-		let src = `./sessions/${oldSessionId}/${file}`;
-		let dst = `./sessions/${newSessionId}/${file}`;
-		try {
-			await fsPromises.copyFile(src, dst);
-		} catch (err) {
-			return false;
+A hosted vodka has no folders, so it lists none and refuses the rest.
+
+(comment by Claude)
+*/
+async function folderSize(dirpath) {
+	let total = 0;
+	let entries = [];
+	try {
+		entries = await fsPromises.readdir(dirpath, { withFileTypes: true });
+	} catch (e) {
+		return 0;
+	}
+	for (let i = 0; i < entries.length; i++) {
+		let p = dirpath + '/' + entries[i].name;
+		if (entries[i].isDirectory()) {
+			total += await folderSize(p);
+		} else {
+			try {
+				total += (await fsPromises.stat(p)).size;
+			} catch (e) {
+				// gone while we were counting
+			}
 		}
 	}
-	return true;
+	return total;
 }
 
+async function listSessionFolders() {
+	if (!webenv_vars.isLocal) {
+		return [];
+	}
+	let entries = [];
+	try {
+		entries = await fsPromises.readdir(SESSIONS_DIR, { withFileTypes: true });
+	} catch (e) {
+		return [];
+	}
+	let r = [];
+	for (let i = 0; i < entries.length; i++) {
+		let name = entries[i].name;
+		// .git and the like: your repo, not a session
+		if (!entries[i].isDirectory() || !isUserSessionId(name)) continue;
+		r.push({ id: name, bytes: await folderSize(`${SESSIONS_DIR}/${name}`) });
+	}
+	return r;
+}
+
+async function serviceSessionOpRequest(data) {
+	let req;
+	try {
+		req = JSON.parse(data);
+	} catch (e) {
+		return { ok: false, error: 'bad request.' };
+	}
+	let id = req.id;
+	let to = req.to;
+	if (!isUserSessionId(id)) {
+		return { ok: false, error: `"${id}" is not a session you can change.` };
+	}
+	if ((req.op == 'rename' || req.op == 'duplicate') && !isUserSessionId(to)) {
+		return { ok: false, error: `"${to}" is not a usable name -- letters, digits, _ and - only, and not packages or samples.` };
+	}
+	let from = `${SESSIONS_DIR}/${id}`;
+	let dest = `${SESSIONS_DIR}/${to}`;
+	try {
+		if (req.op == 'create') {
+			await fsPromises.mkdir(from);
+		} else if (req.op == 'rename' || req.op == 'duplicate') {
+			if (fs.existsSync(dest)) {
+				return { ok: false, error: `there is already a session called "${to}".` };
+			}
+			if (req.op == 'rename') {
+				await fsPromises.rename(from, dest);
+			} else {
+				await fsPromises.cp(from, dest, { recursive: true });
+			}
+			// the default always exists, so renaming it away leaves an empty one
+			if (id == DEFAULT_LOCAL_SESSION) {
+				await ensureSessionFolder(DEFAULT_LOCAL_SESSION);
+			}
+		} else if (req.op == 'delete') {
+			await fsPromises.rm(from, { recursive: true, force: true });
+			if (id == DEFAULT_LOCAL_SESSION) {
+				await ensureSessionFolder(DEFAULT_LOCAL_SESSION);
+			}
+		} else {
+			return { ok: false, error: `unknown operation "${req.op}".` };
+		}
+	} catch (err) {
+		if (err.code == 'EEXIST') {
+			return { ok: false, error: `there is already a session called "${id}".` };
+		}
+		if (err.code == 'ENOENT') {
+			return { ok: false, error: `there is no session called "${id}".` };
+		}
+		return { ok: false, error: `${req.op} failed: ${err.message}` };
+	}
+	return { ok: true };
+}
+
+/*
+Before there was one folder of sessions, generated ids had sessions/ to
+themselves. Anything still in there is somebody's work, so it is moved across
+rather than left behind -- unless a session of the same name is already in the
+new place, in which case both are left where they are and it says so.
+
+(comment by Claude)
+*/
+async function prepareSessionsFolder() {
+	if (!webenv_vars.isLocal) return;
+	await fsPromises.mkdir(SESSIONS_DIR, { recursive: true });
+	await ensureSessionFolder(DEFAULT_LOCAL_SESSION);
+	let legacy = [];
+	try {
+		legacy = await fsPromises.readdir(LEGACY_GENERATED_SESSIONS_DIR, { withFileTypes: true });
+	} catch (e) {
+		return;
+	}
+	for (let i = 0; i < legacy.length; i++) {
+		let name = legacy[i].name;
+		if (!legacy[i].isDirectory() || !isUserSessionId(name)) continue;
+		let dest = `${SESSIONS_DIR}/${name}`;
+		if (fs.existsSync(dest)) {
+			console.log(`sessions: left ${LEGACY_GENERATED_SESSIONS_DIR}/${name} alone, ${dest} already exists`);
+			continue;
+		}
+		try {
+			await fsPromises.rename(`${LEGACY_GENERATED_SESSIONS_DIR}/${name}`, dest);
+			console.log(`sessions: moved ${LEGACY_GENERATED_SESSIONS_DIR}/${name} to ${dest}`);
+		} catch (e) {
+			console.log(`sessions: could not move ${name}: ${e.message}`);
+		}
+	}
+}
 
 async function transformHost(sessionId, data) {
 	let bootdata = await getPreBootstrapInjectData(sessionId);
@@ -938,6 +1074,7 @@ function getHeadInjectData() {
 (async function() {
 	try {
 		await loadWebEnv();
+		await prepareSessionsFolder();
 		server.listen(port, hostname, () => {
 			console.log(`Server running at http://${hostname}:${port}/`);
 		  });	

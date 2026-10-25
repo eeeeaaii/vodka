@@ -18,8 +18,8 @@ if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
 	cat <<'USAGE'
 usage: ./clearsessions.sh
 
-Deletes every generated session in server/sessions/. Named sessions in
-server/namedsessions/ are left alone.
+Deletes every generated (vs-...) session in server/namedsessions/. Sessions
+you named are left alone.
 
 This is destructive and does not ask. Run from the testing directory.
 USAGE
@@ -27,6 +27,6 @@ USAGE
 fi
 
 
-pushd ../server/sessions
-rm -rf *
+pushd ../server/namedsessions
+rm -rf vs-*
 popd
