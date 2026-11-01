@@ -23,7 +23,7 @@ import { showNoticeToast } from './toast.js'
 import { evaluateNexSafely } from './evaluator.js'
 import { parse } from './nexparser2.js';
 import { AudioCollector, encode as encodeContainer, decode as decodeContainer } from './audiocontainer.js';
-import { hasLiveIndex } from './deployment.js';
+import { hasLiveIndex, canSave } from './deployment.js';
 import { SerializationContext, SERIALIZE_FILE } from './serializationcontext.js'
 import { systemState } from './systemstate.js'
 
@@ -130,7 +130,9 @@ function fetchIndex(which) {
 }
 
 function namesToOrgPayload(names) {
-	let quoted = names.map(function (n) { return '"' + n + '"'; }).join(' ');
+	// $"..." is a string; a bare "..." is not, and fails to parse
+	// (comment by Claude)
+	let quoted = names.map(function (n) { return '$"' + n + '"'; }).join(' ');
 	return 'v2:(| ' + quoted + ' |)';
 }
 
@@ -290,6 +292,12 @@ function loadNexFromSession(session, name, callback) {
 }
 
 function loadRaw(name, callback) {
+	if (!hasLiveIndex()) {
+		fetchShippedFile(name).then(callback).catch(function () {
+			callback(serverError());
+		});
+		return;
+	}
 	let payload = `loadraw\t${name}`;
 
 	sendToServer(payload, function(data) {
@@ -300,6 +308,10 @@ function loadRaw(name, callback) {
 }
 
 function saveNex(name, nex, callback) {
+	if (!canSave()) {
+		callback(noWritesHere());
+		return;
+	}
 	// The collector rides along with the walk: wavetables hand their samples to
 	// it as they're reached, and it's the walk finishing that tells us which
 	// samples the document actually refers to.
@@ -333,6 +345,10 @@ function saveNex(name, nex, callback) {
 }
 
 function saveRaw(name, data, callback) {
+	if (!canSave()) {
+		callback(noWritesHere());
+		return;
+	}
 	let payload = `saveraw\t${name}\t${data}`;
 
 	sendToServer(payload, function(data) {
@@ -349,6 +365,10 @@ function saveRaw(name, data, callback) {
 // the opcode, and the answer is the same as save's
 // (comment by Claude)
 function fileOp(opcode, names, callback) {
+	if (!canSave()) {
+		callback(noWritesHere());
+		return;
+	}
 	let payload = [opcode].concat(names).join('\t');
 
 	sendToServer(payload, function(data) {
@@ -359,6 +379,18 @@ function fileOp(opcode, names, callback) {
 }
 
 function importNex(name, callback) {
+	// a static host has no api to ask, but the file is right there to fetch
+	// (comment by Claude)
+	if (!hasLiveIndex()) {
+		fetchShippedFile(name).then(function (text) {
+			parseReturnPayload(text, function (nex) {
+				callback(evaluateImportedFile(nex));
+			});
+		}).catch(function () {
+			callback(serverError());
+		});
+		return;
+	}
 	let payload = `load\t${name}`;
 
 	sendToServer(payload, function(data) {
@@ -391,6 +423,16 @@ function loadAndRun(name, callback) {
 	}, function() {
 		callback(serverError());
 	});
+}
+
+/*
+A vodka that keeps no files says so the same way whether a vodka server is
+refusing the write or there is no server at all to send it to.
+
+(comment by Claude)
+*/
+function noWritesHere() {
+	return constructFatalError('this vodka does not keep files, your work is in this browser. Sorry!');
 }
 
 function serverError() {
