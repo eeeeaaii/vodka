@@ -84,7 +84,10 @@ function nameOf(sessionId) {
 
 function setName(sessionId, name) {
 	let names = readNames();
-	if (name && name != sessionId) {
+	// a name the same as the id is still kept: it is what lists a session made
+	// a moment ago and not yet typed into
+	// (comment by Claude)
+	if (name) {
 		names[sessionId] = name;
 	} else {
 		delete names[sessionId];
@@ -97,6 +100,43 @@ function newSessionId() {
 			? window.crypto.randomUUID()
 			: ('' + Date.now() + '-' + Math.random().toString(16).substring(2));
 	return SESSION_PREFIX + uuid;
+}
+
+/*
+The id a typed name becomes: spaces to _, anything else that cannot go in an
+id dropped, so "mercury venus" is mercury_venus. No name at all, or nothing
+usable left, gets a generated id. A name already taken gets _2, _3 and so on.
+
+(comment by Claude)
+*/
+function sessionIdForName(name, isTaken) {
+	let id = (name || '').trim().replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
+	if (!id) return newSessionId();
+	if (!isTaken(id)) return id;
+	let n = 2;
+	while (isTaken(id + '_' + n)) n++;
+	return id + '_' + n;
+}
+
+// "session created" has to outlive the page load that opens the new session,
+// so it is left in sessionStorage for the next page to pick up
+// (comment by Claude)
+const JUST_CREATED_KEY = 'vodka.justcreated';
+
+function markJustCreated(sessionId) {
+	try {
+		window.sessionStorage.setItem(JUST_CREATED_KEY, sessionId);
+	} catch (e) { /* no notice, nothing else lost */ }
+}
+
+function takeJustCreated() {
+	try {
+		let id = window.sessionStorage.getItem(JUST_CREATED_KEY);
+		window.sessionStorage.removeItem(JUST_CREATED_KEY);
+		return id;
+	} catch (e) {
+		return null;
+	}
 }
 
 /*
@@ -489,6 +529,9 @@ export {
 	nameOf,
 	setName,
 	newSessionId,
+	sessionIdForName,
+	markJustCreated,
+	takeJustCreated,
 	documentOf,
 	readStorage,
 	writeStorage,
