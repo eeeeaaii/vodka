@@ -10,6 +10,7 @@ import AccessButton from './access_button';
 import StatusNav from './status_nav';
 import Tutorial from './tutorial';
 import NoteReferencePanel from './note_reference_panel';
+import { takeJustCreated } from '../sessionmanager.js';
 
 import { systemState } from '../systemstate.js';
 import {
@@ -59,6 +60,11 @@ const App = () => {
     useEffect(() => {
         markVisited();
     }, []);
+
+    // the session this page was opened to show, if it was made a moment ago
+    // in the sessions tab -- see markJustCreated
+    // (comment by Claude)
+    let [ justCreated, setJustCreated ] = useState(takeJustCreated);
 
     const handleMenuChange = (menuChoice) => {
         switch(menuChoice) {
@@ -143,6 +149,17 @@ const App = () => {
                 in every screenshot is a dot in every golden. */}
             {/* (comment by Claude) */}
             {uiState != HIDDEN && <StatusNav/>}
+            {justCreated &&
+                <div className="dialogscrim" onClick={() => setJustCreated(null)}>
+                    <div className="dialogbox" onClick={(e) => e.stopPropagation()}>
+                        <p className="dialogtitle">Session created</p>
+                        <p>You are now in <b>{justCreated}</b>.</p>
+                        <div className="dialogbuttons">
+                            <button className="dialogbutton" autoFocus
+                                onClick={() => setJustCreated(null)}>ok</button>
+                        </div>
+                    </div>
+                </div>}
             {
                 (() => {
                     switch(uiState) {

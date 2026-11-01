@@ -5,7 +5,8 @@ import { canSave, defaultSessionId } from '../deployment.js';
 import NewSessionDialog from './new_session_dialog';
 import {
     listSessions,
-    newSessionId,
+    sessionIdForName,
+    markJustCreated,
     nameOf,
     setName,
     exportCurrentSession,
@@ -42,10 +43,6 @@ function formatBytes(n) {
     if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
     if (n < 1024 * 1024 * 1024) return (n / (1024 * 1024)).toFixed(1) + ' MB';
     return (n / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
-}
-
-function isUsableName(name) {
-    return /^[a-zA-Z0-9_-]+$/.test(name) && RESERVED.indexOf(name) == -1;
 }
 
 const SessionsPanel = () => {
@@ -120,31 +117,32 @@ const SessionsPanel = () => {
         setConfirming({ kind: kind, id: id });
     };
 
-    // what a new name becomes: the folder name on a local server, a label on a
-    // fresh id on the web
-    const newIdFor = (name) => local ? name : newSessionId();
+    // what a new name becomes, on a local server (the folder name) and on the
+    // web alike -- see sessionIdForName
+    const isTaken = (id) => id == defaultId
+            || RESERVED.indexOf(id) != -1
+            || rows.some((r) => r.id == id);
+    const newIdFor = (name) => sessionIdForName(name, isTaken);
 
     const onName = (rawName) => {
         let d = dialog;
         setDialog(null);
         let name = rawName.trim();
-        if (!name) return;
-        if (local && !isUsableName(name)) {
-            setMessage(`"${name}" will not do as a session name -- letters, digits, _ and - only, and not packages or samples.`);
-            return;
-        }
+        // naming a new session is optional; everything else needs a name
+        if (!name && d.kind != 'new') return;
         let to = newIdFor(name);
         if (d.kind == 'new') {
             sessionFolderOp('create', to).then((r) => {
                 if (failed(r)) return;
-                if (!local) setName(to, name);
+                if (!local) setName(to, to);
+                markJustCreated(to);
                 goTo(to);
             });
         } else if (d.kind == 'duplicate') {
             sessionFolderOp('duplicate', d.id, to).then((r) => {
                 if (failed(r)) return;
-                return copySessionData(d.id, to, local ? null : name).then(() => {
-                    setMessage(`made ${name}, a copy of ${nameOf(d.id)}.`);
+                return copySessionData(d.id, to, null).then(() => {
+                    setMessage(`made ${to}, a copy of ${nameOf(d.id)}.`);
                     refresh();
                 });
             });
@@ -174,7 +172,7 @@ const SessionsPanel = () => {
             let op = local ? 'rename' : 'create';
             sessionFolderOp(op, d.id, to).then((r) => {
                 if (failed(r)) return;
-                return moveSessionData(d.id, to, local ? null : name).then(() => goTo(to));
+                return moveSessionData(d.id, to, null).then(() => goTo(to));
             });
         }
     };
