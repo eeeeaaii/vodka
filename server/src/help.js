@@ -131,7 +131,9 @@ function buildURL(obj) {
 		obj.page = systemState.getPageId();
 	}
 
-	let r = `http://${getFeatureVector().hostname}`;
+	// same scheme as this page, so an https site keeps its links on https
+	// (comment by Claude)
+	let r = `${window.location.protocol}//${getFeatureVector().hostname}`;
 	let first = true;
 	for (let k in obj) {
 		if (obj[k] == null) {
