@@ -31,19 +31,19 @@ const path = require('path');
 
 // kept in step with webserver.js
 // (comment by Claude)
-const GENERATED_SESSION_PREFIX = 'vs-';
-
 const RESERVED = ['packages', 'samples'];
+const SESSIONS_DIR = process.env.VODKA_SESSIONS_DIR
+		? process.env.VODKA_SESSIONS_DIR.replace(/\/+$/, '')
+		: './namedsessions';
 
 const USAGE = `usage: node tools/createnamedsession.js <name>
 
-Creates a named session, which is a directory under namedsessions/ that vodka
-saves and loads files in. Named sessions can only be made here -- the server
-used to allow it over HTTP, which let anyone claim any name.
+Creates a session, which is a directory under namedsessions/ (or under
+VODKA_SESSIONS_DIR, if set) that vodka saves and loads files in. The Sessions
+tab in the help menu does the same thing on a local server.
 
 Names may contain letters, digits, underscores and hyphens. "packages" and
-"samples" are reserved, and a name cannot start with "vs-", which marks the
-sessions the server generates for itself.
+"samples" are reserved.
 
 Open the result at /?sessionId=<name>
 
@@ -79,21 +79,17 @@ function main() {
 		fail(`"${name}" is reserved.`);
 	}
 
-	if (name.indexOf(GENERATED_SESSION_PREFIX) === 0) {
-		fail(`"${GENERATED_SESSION_PREFIX}" is reserved for sessions the server generates.`
-				+ ` A named session starting with it would be looked for in the wrong directory.`);
-	}
-
 	if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
 		fail(`"${name}" is not a valid name -- letters, digits, underscores and hyphens only.`);
 	}
 
 	// relative, same as the server resolves them
 	// (comment by Claude)
-	let dir = path.join('./namedsessions', name);
+	let dir = path.join(SESSIONS_DIR, name);
 
-	if (!fs.existsSync('./namedsessions')) {
-		fail('no namedsessions directory here -- run this from the server directory.');
+	if (!fs.existsSync(SESSIONS_DIR)) {
+		fail(`no ${SESSIONS_DIR} directory here -- run this from the server directory,`
+				+ ` or start the server once to make it.`);
 	}
 
 	if (fs.existsSync(dir)) {

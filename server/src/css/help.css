@@ -378,14 +378,39 @@ the help button.
 }
 
 
-.sessionlist {
-	margin: 0 0 0 24px;
-	padding: 0;
+/* the Sessions tab */
+/* (comment by Claude) */
+
+.infopanel table.sessiontable {
+	border-collapse: collapse;
+	font-size: 10px;
 }
 
-.sessionlistempty {
-	list-style: none;
+.infopanel table.sessiontable th {
+	text-align: left;
+	font-weight: normal;
 	opacity: 0.6;
+	padding: 0 16px 4px 0;
+}
+
+.infopanel table.sessiontable td {
+	padding: 2px 16px 2px 0;
+	vertical-align: top;
+	/* sizes line up when read down the column */
+	font-variant-numeric: tabular-nums;
+}
+
+.infopanel .sessionid {
+	opacity: 0.6;
+}
+
+.infopanel .sessionaction {
+	margin-right: 10px;
+	white-space: nowrap;
+}
+
+.infopanel .sessiontopactions .sessionaction {
+	margin-right: 16px;
 }
 
 .sessionmessage {

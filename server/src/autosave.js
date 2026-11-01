@@ -50,6 +50,7 @@ const FORMAT_VERSION = 1;
 const SAVE_DELAY_MS = 800;
 
 let pendingSave = null;
+let pendingRoot = null;
 let restored = false;
 let disabled = false;
 
@@ -150,10 +151,25 @@ function saveNow(rootNode) {
 function scheduleAutosave(rootNode) {
 	if (disabled || !restored) return;
 	if (pendingSave) clearTimeout(pendingSave);
+	pendingRoot = rootNode;
 	pendingSave = setTimeout(function() {
 		pendingSave = null;
 		saveNow(rootNode);
 	}, SAVE_DELAY_MS);
+}
+
+/*
+Writes now whatever is waiting on the timer, for anything about to copy this
+session out of storage -- Save as and Duplicate -- which would otherwise copy
+the document as it was up to a second ago.
+
+(comment by Claude)
+*/
+function flushAutosave() {
+	if (!pendingSave) return;
+	clearTimeout(pendingSave);
+	pendingSave = null;
+	saveNow(pendingRoot);
 }
 
 /**
@@ -227,6 +243,8 @@ function installUnloadFlush(rootNode) {
 		// zoom doesn't go through the action system, so this is the only place
 		// it reliably gets written
 		// (comment by Claude)
+		// a deleted session stays deleted, editor state and all
+		if (disabled) return;
 		saveEditorState();
 		if (!pendingSave) return;
 		clearTimeout(pendingSave);
@@ -301,4 +319,4 @@ function clearAutosave() {
 	}
 }
 
-export { scheduleAutosave, restoreAutosave, enableAutosave, clearAutosave, stopAutosave, pruneStoredAudio, saveNow, installUnloadFlush, hasPendingSave }
+export { scheduleAutosave, restoreAutosave, enableAutosave, clearAutosave, stopAutosave, pruneStoredAudio, saveNow, installUnloadFlush, hasPendingSave, flushAutosave }

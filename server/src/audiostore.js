@@ -382,6 +382,61 @@ a person can notice.
 (comment by Claude)
 */
 
+/*
+Every record a session stored, as [key, buffer] pairs, for the Sessions tab:
+copying a session's audio under another name, and counting how much of the
+origin's quota it is using. Not this session's `loaded`, because the session
+asked about is usually some other one.
+
+(comment by Claude)
+*/
+function recordsForSession(sessionId) {
+	if (unavailable) return Promise.resolve([]);
+	return openDb().then(function(db) {
+		if (!db) return [];
+		return new Promise(function(resolve) {
+			try {
+				let prefix = sessionId + '/';
+				let range = IDBKeyRange.bound(prefix, prefix + '\uffff');
+				let r = [];
+				let req = db.transaction(STORE, 'readonly').objectStore(STORE).openCursor(range);
+				req.onsuccess = function() {
+					let cursor = req.result;
+					if (!cursor) {
+						resolve(r);
+						return;
+					}
+					r.push([('' + cursor.key).substring(prefix.length), cursor.value]);
+					cursor.continue();
+				};
+				req.onerror = function() { resolve(r); };
+			} catch (e) {
+				resolve([]);
+			}
+		});
+	}).catch(function() { return []; });
+}
+
+function bytesOf(buffer) {
+	return (buffer && buffer.byteLength) ? buffer.byteLength : 0;
+}
+
+function sizeForSession(sessionId) {
+	return recordsForSession(sessionId).then(function(records) {
+		let total = 0;
+		for (let i = 0; i < records.length; i++) total += bytesOf(records[i][1]);
+		return total;
+	});
+}
+
+function copyAllForSession(fromSessionId, toSessionId) {
+	return recordsForSession(fromSessionId).then(function(records) {
+		return Promise.all(records.map(function(rec) {
+			return putForSession(toSessionId, rec[0], rec[1]);
+		}));
+	});
+}
+
 function isUnavailable() {
 	return unavailable;
 }
@@ -394,6 +449,8 @@ export {
 	entries,
 	putForSession,
 	removeAllForSession,
+	sizeForSession,
+	copyAllForSession,
 	pruneToReferenced,
 	remove,
 	isUnavailable

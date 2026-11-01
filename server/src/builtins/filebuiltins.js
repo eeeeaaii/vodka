@@ -30,7 +30,7 @@ import { Org, constructOrg } from '../nex/org.js'
 import { ESymbol } from '../nex/esymbol.js'
 import { ERROR_TYPE_INFO } from '../nex/eerror.js'
 import { evaluateNexSafely } from '../evaluator.js'
-import { BINDINGS } from '../environment.js'
+import { BINDINGS, UNBOUND } from '../environment.js'
 import { experiments } from '../globalappflags.js'
 import {
 	GenericActivationFunctionGenerator
@@ -44,6 +44,7 @@ import {
 	saveShortcut,
 	saveNex,
 	loadNex,
+	loadNexFromSession,
 	importNex,
 	loadRaw,
 	saveRaw,
@@ -94,25 +95,27 @@ function createFileBuiltins() {
 
 	Builtin.createBuiltin(
 		'list-files',
-		[ ],
+		[ '_session?' ],
 		function $listFiles(env, executionEnvironment) {
+			let sessionArg = env.lb('session');
+			let session = (sessionArg == UNBOUND) ? null : fileName(sessionArg);
 			let deferredValue = constructDeferredValue();
 			deferredValue.set(new GenericActivationFunctionGenerator(
 				'list-files', 
 				function(callback, deferredValue) {
-					listFiles(function(files) {
+					listFiles(session, function(files) {
 						// turn files into an org or whatever
 						callback(files);
 					})
 				}
 			));
-			let loadingMessage = constructEError(`listing files`);
+			let loadingMessage = constructEError(session ? `listing files in ${session}` : `listing files`);
 			loadingMessage.setErrorType(ERROR_TYPE_INFO);
 			deferredValue.appendChild(loadingMessage)
 			deferredValue.activate();
 			return deferredValue;
 		},
-		'The files in this session.'
+		'The files in this session, or in the session |session (packages and samples are sessions too).'
 	);	
 
 	/*
@@ -326,29 +329,40 @@ function createFileBuiltins() {
 
 	Builtin.createBuiltin(
 		'load',
-		[ '_name' ],
+		[ '_name', '_name2?' ],
 		function $load(env, executionEnvironment) {
-			let name = env.lb('name');
-			let nametype = name.getTypeName();
-			// need to look for illegal filename characters if it's a string?
-			let nm = nametype == '-symbol-' ? name.getTypedValue() : name.getFullTypedValue();
+			/*
+			One argument is a file in this session. Two is a session and then a
+			file in it: read from there, and still saved here, so it is how you
+			borrow from your other sessions without copying anything by hand.
+
+			(comment by Claude)
+			*/
+			let second = env.lb('name2');
+			let session = (second == UNBOUND) ? null : fileName(env.lb('name'));
+			let nm = (second == UNBOUND) ? fileName(env.lb('name')) : fileName(second);
 
 			let def = constructDeferredValue();
 			def.set(new GenericActivationFunctionGenerator(
 				'load', 
 				function(callback, def) {
-					loadNex(nm, function(loadResult) {
+					let done = function(loadResult) {
 						callback(loadResult);
-					})
+					};
+					if (session) {
+						loadNexFromSession(session, nm, done);
+					} else {
+						loadNex(nm, done);
+					}
 				}
 			));
-			let loadingMessage = constructEError(`load file ${nm}`);
+			let loadingMessage = constructEError(session ? `load file ${nm} from ${session}` : `load file ${nm}`);
 			loadingMessage.setErrorType(ERROR_TYPE_INFO);
 			def.appendChild(loadingMessage);
 			def.activate();
 			return def;
 		},
-		'Loads and parses the file |name.'
+		'Loads and parses the file |name. Given two arguments, the first is a session to load the second from.'
 	);
 	
 	Builtin.createBuiltin(

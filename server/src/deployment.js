@@ -31,6 +31,7 @@ given only the bundle, which is the safe reading: no saving.
 let config = {
 	canSave: false,
 	liveIndex: false,
+	defaultSession: 'default',
 };
 
 function loadDeploymentConfig() {
@@ -51,4 +52,11 @@ function hasLiveIndex() {
 	return !!config.liveIndex;
 }
 
-export { loadDeploymentConfig, canSave, hasLiveIndex }
+// where a page with no session in the url goes: default-local on a server you
+// run yourself, default anywhere else
+// (comment by Claude)
+function defaultSessionId() {
+	return config.defaultSession ? config.defaultSession : 'default';
+}
+
+export { loadDeploymentConfig, canSave, hasLiveIndex, defaultSessionId }
