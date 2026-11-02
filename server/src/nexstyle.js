@@ -38,29 +38,33 @@ browser ignores it rather than throwing the rest of the declaration away.
 const STYLE_MARK = '/*new*/';
 
 /*
-The dividing line is this: a property may change how a thing looks inside the
-box it already has, and may change how big that box is. It may not change where
-the box is. So no position, no float, no transform, no display, no overflow, no
-z-index -- those are the ones that make a drawing stop being something the
-editor can reason about, because after them what you see is no longer where the
-nex is.
+What a style may say. It used to stop at the edge of the box: no position, no
+transform, no display, no overflow, on the grounds that after those what you
+see is no longer where the nex is. But a restricted style is only ever drawn in
+normal mode -- exploded mode, where you edit, never sees it -- so moving,
+turning, clipping and hiding the finished thing cannot get in the way of the
+code that made it. What is still out is anything that reaches outside vodka:
+`background` and a raw `clip-path` can both carry a url.
 
-Everything here passes that test. Colour, border, the font, the size of the
-box, the space in and around it, and the few cosmetics (opacity, cursor) that
-say what a thing is for. `margin` is the one to watch: a negative margin does
-pull a thing over its neighbour. It is in because spacing things apart is the
-whole job and the alternative is nothing.
+A few of the css properties are reached through vodka's own names instead of
+their css ones (see PSEUDO below), because the css way of saying them is
+either a trap (`display`, which is different for every kind of nex) or a hole
+(`clip-path`, which takes a url).
 
 The shorthands are here too -- `border` and the four sides of it, and `font`.
 A shorthand only ever sets the longhands it is made of, so it cannot say
 anything the list above does not already allow; what it saves you is writing
-three declarations to draw one line. `background` is the shorthand that is NOT
-here: it can carry a background-image, and an image is a url, which is a hole
-out of vodka to somewhere else.
+three declarations to draw one line.
+
+The transforms are the three separate css properties translate, rotate and
+scale, not `transform`. Each one is its own property, so it merges like any
+other: turning a thing does not throw away where you moved it. The browser
+applies them in that order, whatever order they are written in.
 
 (comment by Claude)
 */
 const ALLOWED = [
+	'align-items',
 	'background-color',
 	'border',
 	'border-bottom',
@@ -79,19 +83,94 @@ const ALLOWED = [
 	'font-style',
 	'font-weight',
 	'height',
+	'justify-content',
+	'left',
 	'letter-spacing',
 	'line-height',
 	'margin',
+	'margin-bottom',
+	'margin-left',
+	'margin-right',
+	'margin-top',
 	'max-height',
 	'max-width',
 	'min-height',
 	'min-width',
 	'opacity',
+	'overflow',
 	'padding',
+	'padding-bottom',
+	'padding-left',
+	'padding-right',
+	'padding-top',
+	'rotate',
+	'scale',
 	'text-align',
 	'text-decoration',
+	'top',
+	'transform-origin',
+	'translate',
 	'width',
 ];
+
+/*
+Vodka's own names for a few css properties. Each one is turned into real css
+before it is stored, so what a nex carries (and what get-style of hands back)
+is always plain css. `set` takes the value and says what to set and what to
+take off, or what is wrong with it; `remove` is what `name:;` takes off.
+
+	visibility: hide      ->  visibility: hidden   (and no display of its own)
+	visibility: show      ->  visibility: visible  (and no display of its own)
+	visibility: vanish    ->  display: none
+	relative-position: true  ->  position: relative   (false takes it off)
+	case: upper           ->  text-transform: uppercase
+	inset: 10% 0 0 5%     ->  clip-path: inset(10% 0 0 5%)
+
+hide and show take the display off rather than setting one, because the
+normal display is a different thing for a doc than for a letter and the
+stylesheet already knows which.
+
+(comment by Claude)
+*/
+const PSEUDO = {
+	'visibility': {
+		set: function(v) {
+			switch (v.toLowerCase()) {
+				case 'hide': return { set: [['visibility', 'hidden']], remove: ['display'] };
+				case 'show': return { set: [['visibility', 'visible']], remove: ['display'] };
+				case 'vanish': return { set: [['display', 'none']], remove: [] };
+			}
+			return { problem: 'visibility can be hide, show or vanish' };
+		},
+		remove: ['visibility', 'display'],
+	},
+	'relative-position': {
+		set: function(v) {
+			switch (v.toLowerCase()) {
+				case 'true': case 'yes': return { set: [['position', 'relative']], remove: [] };
+				case 'false': case 'no': return { set: [], remove: ['position'] };
+			}
+			return { problem: 'relative-position can be true or false' };
+		},
+		remove: ['position'],
+	},
+	'case': {
+		set: function(v) {
+			switch (v.toLowerCase()) {
+				case 'upper': return { set: [['text-transform', 'uppercase']], remove: [] };
+				case 'lower': return { set: [['text-transform', 'lowercase']], remove: [] };
+			}
+			return { problem: 'case can be upper or lower' };
+		},
+		remove: ['text-transform'],
+	},
+	'inset': {
+		set: function(v) {
+			return { set: [['clip-path', `inset(${v})`]], remove: [] };
+		},
+		remove: ['clip-path'],
+	},
+};
 
 // what you may have meant, for the error message
 // (comment by Claude)
@@ -108,15 +187,20 @@ const SPELLINGS = {
 	'border-top-style': 'border-top or border-style',
 	'outline': 'border',
 	'corner-radius': 'border-radius',
-	'padding-left': 'padding',
-	'padding-right': 'padding',
-	'padding-top': 'padding',
-	'padding-bottom': 'padding',
-	'margin-left': 'margin',
-	'margin-right': 'margin',
-	'margin-top': 'margin',
-	'margin-bottom': 'margin',
+	'transform': 'translate, rotate or scale',
+	'clip-path': 'inset',
+	'clip': 'inset',
+	'display': 'visibility: vanish',
+	'position': 'relative-position: true',
+	'text-transform': 'case',
+	'opacity-level': 'opacity',
+	'x': 'left',
+	'y': 'top',
 };
+
+// everything a person can name, for the error message and the reference
+// (comment by Claude)
+const SETTABLE = ALLOWED.concat(Object.keys(PSEUDO)).sort();
 
 const BORDER_SHORTHANDS = [
 	'border',
@@ -238,14 +322,31 @@ function checkStyle(s, existingStyle) {
 			return { problem: `"${d.bad}" is not a css declaration -- it wants`
 					+ ' a property, a colon, and a value' };
 		}
+		let pseudo = PSEUDO[d.property];
 		if (!d.value) {
-			kept = removeProperty(kept, d.property);
+			let gone = pseudo ? pseudo.remove : [d.property];
+			for (let j = 0; j < gone.length; j++) {
+				kept = removeProperty(kept, gone[j]);
+			}
+			continue;
+		}
+		if (pseudo) {
+			let r = pseudo.set(d.value);
+			if (r.problem) {
+				return { problem: `${r.problem}, not ${d.value}` };
+			}
+			for (let j = 0; j < r.remove.length; j++) {
+				kept = removeProperty(kept, r.remove[j]);
+			}
+			for (let j = 0; j < r.set.length; j++) {
+				kept = setProperty(kept, r.set[j][0], r.set[j][1]);
+			}
 			continue;
 		}
 		if (ALLOWED.indexOf(d.property) < 0) {
 			let instead = SPELLINGS[d.property]
 					? `. Did you mean ${SPELLINGS[d.property]}?`
-					: `. You can set: ${ALLOWED.join(', ')}`;
+					: `. You can set: ${SETTABLE.join(', ')}`;
 			return { problem: `${d.property} is not a style you can set${instead}` };
 		}
 		let value = d.value;
@@ -325,6 +426,7 @@ function styleAttributeFor(s, isExploded) {
 
 export {
 	ALLOWED,
+	SETTABLE,
 	STYLE_MARK,
 	checkStyle,
 	isRestrictedStyle,

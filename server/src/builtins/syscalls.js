@@ -169,7 +169,7 @@ function createSyscalls() {
 			n.setCurrentStyle(markRestrictedStyle(checked.css));
 			return n;
 		},
-		'Adds the style |style to |nex, replacing any property it names. |style is a css string like `font-size: 20px`, or an org whose children are tagged with the property, like an org holding 20 tagged `font-size` (a bare number gets px, except for opacity, font-weight and line-height). A property given no value, as in `border:;` or an empty string, is removed. Colour, border, font, size and spacing only, on a doc, line, word, letter or separator, and it shows in normal mode only.'
+		'Adds the style |style to |nex, replacing any property it names. |style is a css string like `font-size: 20px`, or an org whose children are tagged with the property, like an org holding 20 tagged `font-size` (a bare number gets px, deg for rotate, and nothing for opacity, font-weight, line-height and scale). translate, scale and transform-origin can be an org of x and y, and inset an org of top, right, bottom and left. Vodka names: `visibility` is hide, show or vanish; `relative-position` is true or false; `case` is upper or lower; `inset` clips like css inset(). A property given no value, as in `border:;` or an empty string, is removed. On a doc, line, word, letter or separator, and it shows in normal mode only.'
 	);
 
 	/*
@@ -177,9 +177,37 @@ function createSyscalls() {
 	property, the child is the value. It just becomes the css string, so
 	everything after this is shared with the string form.
 
+	A bare number gets the property's unit: px for most, deg for rotate, none
+	for the ones css counts without a unit. A boolean is true or false, which
+	is what relative-position wants. Some properties are made of parts, and for
+	those the value can be an org whose children are tagged with the parts:
+
+		translate, scale, transform-origin   x and y
+		inset                                top, right, bottom and left
+
+	A part left out is 0, or 1 for scale, so an org holding only -1 tagged x
+	is a horizontal flip.
+
 	(comment by Claude)
 	*/
-	const UNITLESS = [ 'opacity', 'font-weight', 'line-height' ];
+	const UNITS = {
+		'opacity': '',
+		'font-weight': '',
+		'line-height': '',
+		'scale': '',
+		'rotate': 'deg',
+	};
+
+	const PARTS = {
+		'translate': [ 'x', 'y' ],
+		'scale': [ 'x', 'y' ],
+		'transform-origin': [ 'x', 'y' ],
+		'inset': [ 'top', 'right', 'bottom', 'left' ],
+	};
+
+	function unitFor(property) {
+		return (property in UNITS) ? UNITS[property] : 'px';
+	}
 
 	function styleToCss(style) {
 		if (Utils.isEString(style)) {
@@ -197,21 +225,52 @@ function createSyscalls() {
 						+ ' the property name, like `font-size`' };
 			}
 			let property = c.getTag(0).getTagString().trim().toLowerCase();
-			let value;
-			if (Utils.isInteger(c) || Utils.isFloat(c)) {
-				value = '' + c.getTypedValue();
-				if (UNITLESS.indexOf(property) < 0) {
-					value += 'px';
-				}
-			} else if (Utils.isEString(c)) {
-				value = c.getFullTypedValue();
-			} else {
-				return { problem: property + ' should be a number or a string,'
-						+ ' not a ' + c.getTypeName() };
+			let value = Utils.isOrg(c) ? partsToCss(property, c) : valueToCss(property, c);
+			if (value.problem) {
+				return value;
 			}
-			parts.push(property + ': ' + value);
+			parts.push(property + ': ' + value.css);
 		}
 		return { css: parts.join('; ') };
+	}
+
+	function valueToCss(property, c) {
+		if (Utils.isInteger(c) || Utils.isFloat(c)) {
+			return { css: '' + c.getTypedValue() + unitFor(property) };
+		}
+		if (Utils.isEString(c)) {
+			return { css: c.getFullTypedValue() };
+		}
+		if (Utils.isBool(c)) {
+			return { css: c.getTypedValue() ? 'true' : 'false' };
+		}
+		return { problem: property + ' should be a number, a string or a boolean,'
+				+ ' not a ' + c.getTypeName() };
+	}
+
+	function partsToCss(property, org) {
+		let names = PARTS[property];
+		if (!names) {
+			return { problem: property + ' is not made of parts, so it cannot be an org' };
+		}
+		let missing = (property == 'scale') ? '1' : '0';
+		let values = names.map(() => missing);
+		for (let i = 0; i < org.numChildren(); i++) {
+			let c = org.getChildAt(i);
+			let at = c.numTags() == 1
+					? names.indexOf(c.getTag(0).getTagString().trim().toLowerCase())
+					: -1;
+			if (at < 0) {
+				return { problem: 'each thing in the ' + property + ' org needs one'
+						+ ' tag, one of ' + names.join(', ') };
+			}
+			let value = valueToCss(property, c);
+			if (value.problem) {
+				return value;
+			}
+			values[at] = value.css;
+		}
+		return { css: values.join(' ') };
 	}
 
 	/*
