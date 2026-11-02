@@ -19,7 +19,7 @@ import * as Utils from '../utils.js'
 
 import { Builtin } from '../nex/builtin.js'
 import { constructNil } from '../nex/nil.js'
-import { EError } from '../nex/eerror.js'
+import { EError, constructFatalError } from '../nex/eerror.js'
 import { constructBool } from '../nex/bool.js'
 import { evaluateNexSafely, wrapError } from '../evaluator.js'
 import { UNBOUND } from '../environment.js'
@@ -31,15 +31,36 @@ function createLogicBuiltins() {
 	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
 
 
-	Builtin.createBuiltin(
-		'and',
-		[ 'val1!', 'val2!' ],
-		function $and(env, executionEnvironment) {
-			return constructBool(env.lb('val1').getTypedValue() && env.lb('val2').getTypedValue());		
-		},
-		'True if |val1 and |val2 are both true.',
-		true /* infix */
-	)
+	// and/or take any number of args and stop at the first one that settles
+	// the answer, so later args are not evaluated (like first-non-nil).
+	// With no args you get the identity: true for and, false for or.
+	function shortCircuit(name, stopOn, docstring) {
+		Builtin.createBuiltin(
+			name,
+			[ '_vals...' ],
+			function(env, executionEnvironment) {
+				let vals = env.lb('vals');
+				for (let i = 0; i < vals.numChildren(); i++) {
+					let result = sAttach(evaluateNexSafely(vals.getChildAt(i), executionEnvironment));
+					if (Utils.isFatalError(result)) {
+						return wrapError('&szlig;', `${name}: error in argument ${i + 1}`, result);
+					}
+					if (!Utils.isBool(result)) {
+						return constructFatalError(`${name}: argument ${i + 1} is not a bool`);
+					}
+					if (result.getTypedValue() == stopOn) {
+						return constructBool(stopOn);
+					}
+				}
+				return constructBool(!stopOn);
+			},
+			docstring,
+			true /* infix */
+		)
+	}
+
+	shortCircuit('and', false,
+		'True if all of |vals are true. Stops at the first false one, and the rest are not evaluated. With no args, true.');
 
 	// - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - -  - - - 
 
@@ -104,15 +125,8 @@ function createLogicBuiltins() {
 	)
 
 
-	Builtin.createBuiltin(
-		'or',
-		[ 'val1!', 'val2!' ],
-		function $or(env, executionEnvironment) {
-			return constructBool(env.lb('val1').getTypedValue() || env.lb('val2').getTypedValue());
-		},
-		'True if |val1 or |val2 is true, or both.',
-		true /* infix */
-	)
+	shortCircuit('or', true,
+		'True if any of |vals is true. Stops at the first true one, and the rest are not evaluated. With no args, false.');
 
 
 }
