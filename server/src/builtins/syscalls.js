@@ -149,10 +149,14 @@ function createSyscalls() {
 
 	Builtin.createBuiltin(
 		'set-style of',
-		[ 'style$', 'nex' ],
+		[ 'style', 'nex' ],
 		function $setStyleOf(env, executionEnvironment) {
-			let s = env.lb('style').getFullTypedValue();
 			let n = env.lb('nex');
+			let s = styleToCss(env.lb('style'));
+			if (s.problem) {
+				return constructFatalError('set-style of: ' + s.problem + '. Sorry!');
+			}
+			s = s.css;
 			if (!Utils.isDocElement(n)) {
 				return constructFatalError('set-style of: you can only style a doc,'
 						+ ' a line, a word, a letter or a separator, not a '
@@ -165,8 +169,50 @@ function createSyscalls() {
 			n.setCurrentStyle(markRestrictedStyle(checked.css));
 			return n;
 		},
-		'Adds the style |style to |nex, replacing any property it names. A property given no value, as in `border:;`, is removed. Colour, border, font, size and spacing only, on a doc, line, word, letter or separator, and it shows in normal mode only.'
+		'Adds the style |style to |nex, replacing any property it names. |style is a css string like `font-size: 20px`, or an org whose children are tagged with the property, like an org holding 20 tagged `font-size` (a bare number gets px, except for opacity, font-weight and line-height). A property given no value, as in `border:;` or an empty string, is removed. Colour, border, font, size and spacing only, on a doc, line, word, letter or separator, and it shows in normal mode only.'
 	);
+
+	/*
+	The org form is the same css said as a nex: each child's tag is the
+	property, the child is the value. It just becomes the css string, so
+	everything after this is shared with the string form.
+
+	(comment by Claude)
+	*/
+	const UNITLESS = [ 'opacity', 'font-weight', 'line-height' ];
+
+	function styleToCss(style) {
+		if (Utils.isEString(style)) {
+			return { css: style.getFullTypedValue() };
+		}
+		if (!Utils.isOrg(style)) {
+			return { problem: 'the style should be a string or an org, not a '
+					+ style.getTypeName() };
+		}
+		let parts = [];
+		for (let i = 0; i < style.numChildren(); i++) {
+			let c = style.getChildAt(i);
+			if (c.numTags() != 1) {
+				return { problem: 'each thing in the style org needs one tag,'
+						+ ' the property name, like `font-size`' };
+			}
+			let property = c.getTag(0).getTagString().trim().toLowerCase();
+			let value;
+			if (Utils.isInteger(c) || Utils.isFloat(c)) {
+				value = '' + c.getTypedValue();
+				if (UNITLESS.indexOf(property) < 0) {
+					value += 'px';
+				}
+			} else if (Utils.isEString(c)) {
+				value = c.getFullTypedValue();
+			} else {
+				return { problem: property + ' should be a number or a string,'
+						+ ' not a ' + c.getTypeName() };
+			}
+			parts.push(property + ': ' + value);
+		}
+		return { css: parts.join('; ') };
+	}
 
 	/*
 	Only what set-style of put there. A style from the old css builtins is a
