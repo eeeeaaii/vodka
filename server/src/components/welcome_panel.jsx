@@ -1,9 +1,9 @@
 import { systemState } from '../systemstate.js';
 import { buildURL } from '../help';
 import { canSave } from '../deployment.js';
+import SessionsPanel from './sessions_panel';
 
-// sessions have a tab of their own now -- see sessions_panel.jsx
-// (comment by Claude)
+// the session list is at the bottom -- see sessions_panel.jsx
 const WelcomePanel = () => {
     const sessionId = systemState.getSessionId();
     const oppositeTheme = (window.CSS_THEME == 'dark' ? 'light' : 'dark');
@@ -21,7 +21,7 @@ const WelcomePanel = () => {
             <p className="infoline">There are also help pages and a tutorial/walkthrough accessible by the links above.</p>
             <p className="infospacer"></p>
             <p className="infoline">You are in the session <span id="sessionid">{sessionId}</span>. To open, make, rename or
-                delete sessions, use the Sessions tab above.</p>
+                delete sessions, use the list below.</p>
             {!canSave() && <p className="infoline">Saving and loading files is disabled
                 on the web. If you clone the vodka repo and run a local server, you can save files
                 within your session.</p>}
@@ -36,6 +36,7 @@ const WelcomePanel = () => {
             <p className="infoline">Changes to the Vodka framework itself are protected by <a href="https://www.gnu.org/licenses/">the GPL</a>.</p>
             <p className="infoline">If you have questions or want to report a problem, feel free to file an issue on github and assign it to me.</p>
             <p className="infospacer"></p>
+            <SessionsPanel/>
         </div>
     );
 };

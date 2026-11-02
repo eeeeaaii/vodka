@@ -1,4 +1,6 @@
 import { frequencyForNoteNum } from '../wavetablefunctions.js';
+import { ALLOWED } from '../nexstyle.js';
+import { ALLOWED_PAINT as SURFACE_PAINT } from '../nex/surface.js';
 
 /*
 One number, one pitch. The nn timebase and midi agree: A440 is 69 in both, and
@@ -45,7 +47,7 @@ const Row = ({ midi }) => {
     );
 };
 
-const NoteReferencePanel = () => {
+const ReferencePanel = () => {
     let rows = [];
     for (let midi = 0; midi <= 127; midi++) {
         rows.push(<Row key={midi} midi={midi} />);
@@ -159,7 +161,104 @@ const NoteReferencePanel = () => {
             </p>
             <p className="infospacer"></p>
 
-            <p className="infosubheader">Note numbers</p>
+            <p className="infotitle">Styles</p>
+            <p className="infolinemargin">
+                <span className="infohotkey">set-style of</span>takes a string
+                of css and a nex, and adds that style to the nex. Only a doc, a
+                line, a word, a letter or a separator can have one. The style
+                shows only in normal mode, so a style meant for a finished
+                interface never rearranges the code that built it.
+                <span className="infohotkey">get-style of</span>reads it back.
+            </p>
+            <p className="infolinemargin">
+                Adding, not replacing: a property you name again takes its new
+                value and keeps its place, and everything else stays. To take a
+                property off, give it no value at all --
+                <span className="infohotkey">border:;</span>-- which is not
+                valid css and so cannot mean anything else. Removing takes the
+                whole family, so that also removes
+                <span className="infohotkey">border-width</span>and the rest of
+                them; <span className="infohotkey">border-radius:;</span>removes
+                only the radius, and <span className="infohotkey">all:;</span>removes
+                everything.
+            </p>
+            <p className="infospacer"></p>
+            <p className="infolinemargin">
+                Only the properties below are allowed, and anything else is an
+                error that says so. A property may change how a thing looks
+                inside the box it has, and how big that box is, but not where
+                the box is -- so there is no position, float, transform,
+                display or z-index. <span className="infohotkey">background</span>is
+                left out too, because it can carry an image, and an image is a
+                url; use <span className="infohotkey">background-color</span>.
+            </p>
+            <p className="infoline infoindent">
+                {ALLOWED.join(', ')}
+            </p>
+            <p className="infospacer"></p>
+            <p className="infolinemargin">
+                A border shorthand with no style in it gets
+                <span className="infohotkey">solid</span>added, and so does a
+                border given only a width or a colour, because css defaults a
+                border to none. The <span className="infohotkey">font</span>shorthand
+                needs both a size and a family or the browser throws the whole
+                declaration away without saying anything, so
+                <span className="infohotkey">font-weight</span>and friends are
+                the safer way to say it. Values are not checked: a value the
+                browser does not understand is simply ignored.
+            </p>
+            <p className="infolinemargin">
+                There is an older builtin, <span className="infohotkey">apply-css-style to</span>,
+                which takes any css at all, replaces whatever style the nex
+                had, and applies it in both modes. It still works and is on its
+                way out.
+            </p>
+            <p className="infospacer"></p>
+
+            <p className="infotitle">Surfaces</p>
+            <p className="infolinemargin">
+                A surface is a picture made of lines.
+                <span className="infohotkey">make-surface</span>takes a width
+                and a height in pixels and gives back an empty one. A surface
+                is a list of paths, and a path is a list of points, each point
+                a list of two numbers, x and y, measured from the top left:
+            </p>
+            <p className="infoline infoindent"><span className="infohotkey">((3 4) (238 43) (84 23))</span>a line from point to point</p>
+            <p className="infoline infoindent"><span className="infohotkey">(("m" 3 4) ("d" 9 2))</span>a point can start with "m" to move there without drawing, or "d" to draw to it</p>
+            <p className="infoline infoindent"><span className="infohotkey">("fill: #c33" (0 0) (10 0) (5 8))</span>a string at the front of a path says how to paint it</p>
+            <p className="infospacer"></p>
+            <p className="infolinemargin">
+                There are no drawing builtins, because the list builtins
+                already do it: drawing is putting a path in the surface
+                (<span className="infohotkey">cram</span>), and erasing is
+                taking one out (<span className="infohotkey">chop</span>). A
+                path is drawn in the order its points are given, and the first
+                point of a path is always a move.
+            </p>
+            <p className="infolinemargin">
+                A mutable surface is shown as its paths, labelled with its
+                size, so the numbers can be edited. An immutable one is shown
+                as the picture. <span className="infohotkey">make-surface</span>gives
+                back a mutable one, and evaluating it at the top level makes it
+                immutable; <span className="infohotkey">mutable</span>and
+                <span className="infohotkey">immutable</span>switch it by hand.
+                A path or point that cannot be read is skipped rather than
+                being an error, so a typo does not break the picture.
+            </p>
+            <p className="infolinemargin">
+                The paint string is written like css. A path with no paint is a
+                thin line in the text colour. These are what it can set:
+            </p>
+            <p className="infoline infoindent">
+                {SURFACE_PAINT.join(', ')}
+            </p>
+            <p className="infolinemargin">
+                Any value mentioning <span className="infohotkey">url</span>is
+                ignored, so a surface can't load anything from outside vodka.
+            </p>
+            <p className="infospacer"></p>
+
+            <p className="infotitle">Note numbers</p>
             <p className="infolinemargin">
                 A note number names a pitch: A440 is 69, middle C is 60, each
                 step is an equal-tempered semitone.
@@ -184,4 +283,4 @@ const NoteReferencePanel = () => {
     );
 };
 
-export default NoteReferencePanel;
+export default ReferencePanel;
