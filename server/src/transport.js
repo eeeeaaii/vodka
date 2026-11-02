@@ -16,6 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { heap } from './heap.js'
+import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import {
 	ctx,
 	outputs,
@@ -583,7 +584,11 @@ function forgetTrack(track) {
 		let clip = track.clip;
 		track.clip = null;
 		if (clip.setTrack) clip.setTrack(null);
-		heap.removeReference(clip);
+		// Not here: this can be the cycle timer, which is not an event, and
+		// reference counts only change inside one. The clip has already
+		// stopped sounding; being let go of can wait a moment.
+		// (comment by Claude)
+		eventQueueDispatcher.enqueueReleaseReference(clip);
 	}
 }
 

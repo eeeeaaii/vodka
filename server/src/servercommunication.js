@@ -26,6 +26,7 @@ import { AudioCollector, encode as encodeContainer, decode as decodeContainer } 
 import { hasLiveIndex, canSave } from './deployment.js';
 import { SerializationContext, SERIALIZE_FILE } from './serializationcontext.js'
 import { systemState } from './systemstate.js'
+import { heap } from './heap.js'
 
 // polled by the test harness, which can't drive a request, only wait for it
 // (comment by Claude)
@@ -35,7 +36,28 @@ function getOutstandingRequestCount() {
 	return outstandingRequests;
 }
 
+/*
+A reply from the server, or a file fetched from a static host, arrives on its
+own callback rather than as an event queue item -- and what is done with it can
+be a lot: an import evaluates a whole package right here. Reference counts only
+change inside a piece of heap work, so a reply is one. See heap.beginWork.
+
+(comment by Claude)
+*/
+function asHeapWork(f) {
+	return function() {
+		heap.beginWork();
+		try {
+			return f.apply(this, arguments);
+		} finally {
+			heap.endWork();
+		}
+	};
+}
+
 function sendToServer(payload, cb, errcb) {
+	cb = asHeapWork(cb);
+	errcb = asHeapWork(errcb);
 	let xhr = new XMLHttpRequest();
 	outstandingRequests++;
 	// onload and onerror can both land; only the first one counts
@@ -463,7 +485,10 @@ function parseFileContents(data) {
 	}
 }
 
-function parseReturnPayload(data, callback) {
+// a piece of heap work for the fetch() paths, which do not come through
+// sendToServer; nesting inside one that did is harmless
+// (comment by Claude)
+const parseReturnPayload = asHeapWork(function parseReturnPayload(data, callback) {
 	let result = null;
 	try {
 		result = parseFileContents(data);
@@ -475,7 +500,7 @@ function parseReturnPayload(data, callback) {
 	// ran, anything waiting on a deferred value -- like the import builtin --
 	// would just spin forever with no indication of what went wrong.
 	callback(result);
-}
+});
 
 // Turns whatever came out of parse() into a nex we can hand back.
 //

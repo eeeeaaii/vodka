@@ -186,11 +186,11 @@ function refuseIfContextFull(action) {
 
 function enqueueAndPerformAction(action) {
 	/*
-	All of it inside one heap action, because between taking a nex out of the
-	document and undo taking hold of it there is a gap where nothing holds it at
-	all. See heap.beginAction: inside, letting go of the last reference stops a
-	nex without freeing it, so what undo is about to ask for is still there when
-	it asks.
+	All of it inside one piece of heap work, because between taking a nex out of
+	the document and undo taking hold of it there is a gap where nothing holds it
+	at all. See heap.beginWork: nothing at zero is stopped or freed until the
+	work is over, so what undo is about to ask for is still there when it asks.
+	Usually this is already inside an event queue item; a paste is not.
 
 	The slot is claimed after doAction rather than before, so that an action
 	which did nothing never takes one. That also means a doAction that throws
@@ -198,7 +198,7 @@ function enqueueAndPerformAction(action) {
 
 	(comment by Claude)
 	*/
-	heap.beginAction();
+	heap.beginWork();
 	try {
 		action.doAction();
 		if (!action.didSomething()) {
@@ -212,7 +212,7 @@ function enqueueAndPerformAction(action) {
 		// (comment by Claude)
 		retainActionNexes(action);
 	} finally {
-		heap.endAction();
+		heap.endWork();
 	}
 	scheduleAutosave(systemState.getRoot());
 }
@@ -244,11 +244,11 @@ function redo() {
 	}
 	// the same gap as in enqueueAndPerformAction: a redo deletes again
 	// (comment by Claude)
-	heap.beginAction();
+	heap.beginWork();
 	try {
 		top.entries[top.cursor].doAction();
 	} finally {
-		heap.endAction();
+		heap.endWork();
 	}
 	top.cursor++;
 	scheduleAutosave(systemState.getRoot());
@@ -267,11 +267,11 @@ function undo() {
 		return false;
 	}
 	top.cursor--;
-	heap.beginAction();
+	heap.beginWork();
 	try {
 		action.undoAction();
 	} finally {
-		heap.endAction();
+		heap.endWork();
 	}
 	scheduleAutosave(systemState.getRoot());
 	return true;

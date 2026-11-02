@@ -48,6 +48,7 @@ import { eventQueueDispatcher } from './eventqueuedispatcher.js'
 import { experiments } from './globalappflags.js'
 import { unwrapFinishedDeferredInDocument } from './evaluatorinterface.js'
 import { recordPerformedAction, EditorErrorAction } from './actions.js'
+import { heap } from './heap.js'
 
 const EVENT_DEBUG = false;
 
@@ -75,6 +76,7 @@ class EventQueue {
 		eventQueueDispatcher.createDelegate('enqueueEditorErrorAction', this);
 		eventQueueDispatcher.createDelegate('enqueueTopLevelRender', this);
 		eventQueueDispatcher.createDelegate('enqueueGC', this);
+		eventQueueDispatcher.createDelegate('enqueueReleaseReference', this);
 	}
 
 	/**
@@ -331,6 +333,29 @@ class EventQueue {
 		this.setTimeoutForProcessingNextItem(item);
 	}
 
+	/*
+	Lets go of a reference from somewhere that is not itself an event -- the
+	transport's cycle timer, which has to run on the audio clock and not wait
+	its turn here. Reference counts only change inside events, so the letting go
+	is put into one.
+
+	(comment by Claude)
+	*/
+	enqueueReleaseReference(nex) {
+		EVENT_DEBUG ? console.log('enqueueing: ReleaseReference'):null;
+		let item = {
+			action: "releaseReference",
+			nex: nex,
+			shouldDedupe: false,
+			equals: null,
+			do: function doReleaseReference() {
+				heap.removeReference(this.nex);
+			}
+		};
+		this.queueSet[USER_EVENT_PRIORITY].push(item);
+		this.setTimeoutForProcessingNextItem(item);
+	}
+
 	enqueueGC() {
 		EVENT_DEBUG ? console.log('enqueueing: GC'):null;
 		let item = {
@@ -405,7 +430,16 @@ class EventQueue {
 		if (!item) {
 			return;
 		}
-		item.do();
+		// Each item is one piece of heap work: a reference count that passes
+		// through zero while it runs is only decided on once it has finished.
+		// See heap.beginWork.
+		// (comment by Claude)
+		heap.beginWork();
+		try {
+			item.do();
+		} finally {
+			heap.endWork();
+		}
 		this.setTimeoutForProcessingNextItem();
 	}
 }

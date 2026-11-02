@@ -58,10 +58,9 @@ class Heap {
     this.usedSpace = 0;
     // 2 gigs max mem
     this.debug = false;
-    // see beginAction
-    // (comment by Claude)
-    this.actionDepth = 0;
-    this.pendingFree = [];
+    // see beginWork
+    this.workDepth = 0;
+    this.zeroSet = new Set();
   }
 
   availableMemory() {
@@ -137,7 +136,7 @@ class Heap {
     }
     obj.undoReferences--;
     if (obj.undoReferences == 0 && obj.references == 0) {
-      this.free(obj);
+      this.noteZero(obj);
     }
   }
 
@@ -167,41 +166,78 @@ class Heap {
       obj.stoppedFunctioning = false;
     }
     obj.references++;
+    // picked up again before the end of the work, so it was only passing
+    // through zero
+    // (comment by Claude)
+    this.zeroSet.delete(obj);
   }
 
   /*
-  An action is one moment, not the several that carrying it out takes. In the
-  middle of a delete there is a gap where the nex has been taken out of the
-  document and the undo buffer has not yet taken hold of it -- an action only
-  says what it is holding once it has run -- and in that gap nothing holds it
-  at all. Freeing it there throws away what undo was about to ask for: a
-  wavetable that comes back from an undo with no samples in it.
+  A reference count passes through zero all the time without anything being
+  let go of. A value handed back out of a function call is the usual case:
+  the call's argument slot and scope both let go of it before the caller has
+  put it anywhere, so for a moment nothing holds it. A delete is another: the
+  nex is out of the document before the undo buffer takes hold of it.
 
-  So while an action is running, letting go of the last reference stops the nex
-  but does not free it. Whatever is still at zero when the action finishes is
-  freed then, by which time undo has taken what it wants.
+  So reaching zero decides nothing by itself. The nex goes into zeroSet, and
+  getting a reference back takes it out again. When the outermost piece of
+  work is finished -- one event queue item, or one action -- sweep() looks at
+  whatever is still at zero. Those really have nowhere to be: they stop, and
+  if undo is not holding them either, they are freed.
 
-  Counted rather than a flag, because actions nest.
+  Counted rather than a flag, because actions run inside event queue items.
 
   (comment by Claude)
   */
-  beginAction() {
-    this.actionDepth++;
+  beginWork() {
+    this.workDepth++;
   }
 
-  endAction() {
-    if (--this.actionDepth > 0) {
+  endWork() {
+    if (--this.workDepth > 0) {
       return;
     }
-    let pending = this.pendingFree;
-    this.pendingFree = [];
-    for (let i = 0; i < pending.length; i++) {
-      let obj = pending[i];
-      // anything undo took hold of during the action is no longer at zero
+    this.sweep();
+  }
+
+  noteZero(obj) {
+    this.zeroSet.add(obj);
+    if (this.workDepth == 0) {
+      // Reference counts are only supposed to change inside an event queue
+      // item or an action. Something did it outside, so there is no end of
+      // work coming to sweep it: do it now, which is what used to happen
+      // everywhere.
       // (comment by Claude)
-      if (obj.references == 0 && obj.undoReferences == 0) {
-        this.free(obj);
+      console.log('vodka: a reference count reached zero outside of any '
+          + 'event or action; sweeping immediately\n' + new Error().stack);
+      this.sweep();
+    }
+  }
+
+  sweep() {
+    // Stopping and freeing can let go of more things -- freeing a closure
+    // releases its environment, which releases what is bound in it -- so the
+    // sweep is itself a piece of work, and it goes round until nothing new
+    // reached zero.
+    // (comment by Claude)
+    this.workDepth++;
+    try {
+      while (this.zeroSet.size > 0) {
+        let zeroed = Array.from(this.zeroSet);
+        this.zeroSet.clear();
+        for (let i = 0; i < zeroed.length; i++) {
+          let obj = zeroed[i];
+          if (obj.references != 0) {
+            continue;
+          }
+          this.stopFunctioning(obj);
+          if (obj.undoReferences == 0) {
+            this.free(obj);
+          }
+        }
       }
+    } finally {
+      this.workDepth--;
     }
   }
 
@@ -262,21 +298,9 @@ class Heap {
     if (obj.references != 0) {
       return;
     }
-    // out of the document, so it stops -- whoever ends up holding it
+    // decided at the end of the work, not now -- see beginWork
     // (comment by Claude)
-    this.stopFunctioning(obj);
-    if (obj.undoReferences > 0) {
-      // undo is holding it, so it keeps everything it would need to come back
-      // (comment by Claude)
-      return;
-    }
-    if (this.actionDepth > 0) {
-      // undo may be about to take hold: decide once the action has finished
-      // (comment by Claude)
-      this.pendingFree.push(obj);
-      return;
-    }
-    this.free(obj);
+    this.noteZero(obj);
   }
 
   stats() {
