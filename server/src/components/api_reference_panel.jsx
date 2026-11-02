@@ -87,22 +87,47 @@ const DocItem = ({item}) => {
 };
 
 /*
-Making sound and writing code are different jobs, and there are enough builtins
-for each that one list means scrolling past all of one to reach the other.
+Three references: sound, graphics, and the base language, which is everything
+else. A category nobody has placed is base, so one added later shows up there
+rather than in none of them.
 */
 const SOUND_CATEGORIES = [
     'Wavetable Builtins',
     'Midi Builtins',
 ];
 
-function isSound(category) {
-    return SOUND_CATEGORIES.indexOf(category) != -1;
+const GRAPHICS_CATEGORIES = [
+    'Surface Builtins',
+];
+
+/*
+The builtins that change how things look are documented as syscalls, along
+with the ones that really are syscalls. In the graphics reference they get a
+heading of their own, and the base reference leaves them out.
+*/
+const SYSCALLS = 'Syscalls';
+const STYLE = 'Style Builtins';
+const STYLE_BUILTINS = [
+    'set-style of',
+    'get-style of',
+    'apply-css-style to',
+    'get-css-style-from',
+    'apply-pfont to',
+    'load-web-font',
+    'force-draw',
+    'get-pixel-height',
+    'get-pixel-width',
+];
+
+function isStyleBuiltin(item) {
+    return STYLE_BUILTINS.indexOf(item.name) != -1;
 }
 
 /*
-Arithmetic belongs in both references. + is a base builtin and always was; it
-also takes a wave, and somebody reading the sound reference to find out what
-they can do to a wave should not have to already know that.
+Arithmetic belongs in both the base and the sound reference. + is a base
+builtin and always was; it also takes a wave, and somebody reading the sound
+reference to find out what they can do to a wave should not have to already
+know that.
 
 So the sound reference carries the arithmetic that accepts a wave -- the same
 entries, not a copy of them, filtered to the ones marked as taking one.
@@ -110,7 +135,7 @@ entries, not a copy of them, filtered to the ones marked as taking one.
 const MATH = 'Math Builtins';
 
 function soundGroups(all) {
-    let groups = all.filter((group) => isSound(group.category));
+    let groups = all.filter((group) => SOUND_CATEGORIES.indexOf(group.category) != -1);
     let math = all.find((group) => group.category == MATH);
     if (math) {
         let onWaves = math.items.filter((item) => item.worksOnWaves);
@@ -121,13 +146,35 @@ function soundGroups(all) {
     return groups;
 }
 
-const ApiReferencePanel = ({sound}) => {
-    // an unrecognised category is not sound, so one added later shows up in
-    // the base api rather than in neither
+function graphicsGroups(all) {
+    let groups = all.filter((group) => GRAPHICS_CATEGORIES.indexOf(group.category) != -1);
+    let sys = all.find((group) => group.category == SYSCALLS);
+    if (sys) {
+        let style = sys.items.filter(isStyleBuiltin);
+        if (style.length > 0) {
+            groups = [{ category: STYLE, items: style }].concat(groups);
+        }
+    }
+    return groups;
+}
+
+function baseGroups(all) {
+    return all
+        .filter((group) => SOUND_CATEGORIES.indexOf(group.category) == -1
+                && GRAPHICS_CATEGORIES.indexOf(group.category) == -1)
+        .map((group) => group.category == SYSCALLS
+                ? { category: SYSCALLS, items: group.items.filter((item) => !isStyleBuiltin(item)) }
+                : group);
+}
+
+// kind is 'base', 'sound' or 'graphics'
+const ApiReferencePanel = ({kind}) => {
     const all = docs();
-    const groups = sound ? soundGroups(all) : all.filter((group) => !isSound(group.category));
+    const groups = kind == 'sound' ? soundGroups(all)
+            : kind == 'graphics' ? graphicsGroups(all)
+            : baseGroups(all);
     return (
-        <div className="infopanel" id={sound ? 'soundapireference' : 'baseapireference'}>
+        <div className="infopanel" id={kind + 'apireference'}>
             <SectionNav groups={groups} />
             {groups.map((group) => (
                 <div key={group.category}>

@@ -221,8 +221,10 @@ const SessionsPanel = () => {
         <a href="#" className={'sessionaction' + (className ? ' ' + className : '')} onClick={onClick}>{label}</a>
     );
 
+    // part of the welcome tab, so it sits inside that panel rather than
+    // being one of its own
     return (
-        <div className="infopanel">
+        <div className="sessionsection">
             <p className="infoheading">Sessions</p>
             <p className="infospacer"></p>
             <p className="infoline">

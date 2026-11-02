@@ -1,5 +1,3 @@
-import { ALLOWED } from '../nexstyle.js';
-
 const AbstractDataTypesPanel = () => {
   return (
     <div className="infopanel">
@@ -97,31 +95,8 @@ const AbstractDataTypesPanel = () => {
         finished interface never rearranges the code that built it.
       </p>
       <p className="infolinemargin">
-        Adding, not replacing: a property you name again takes its new value and keeps its place, and
-        everything else stays. To take a property off, give it no value at all --
-        <span className="infohotkey">border:;</span>-- which is not valid css and so cannot mean
-        anything else. Removing takes the whole family, so that also removes
-        <span className="infohotkey">border-width</span>and the rest of them;
-        <span className="infohotkey">border-radius:;</span>removes only the radius, and
-        <span className="infohotkey">all:;</span>removes everything.
-      </p>
-      <p className="infolinemargin">
-        Only the properties below are allowed, and anything else is an error that says so. The rule
-        is that a property may change how a thing looks inside the box it has, and how big that box
-        is, but not where the box is -- so there is no position, float, transform, display or
-        z-index. After one of those, what you see is no longer where the nex is.
-      </p>
-      <p className="infoline infoindent">
-        {ALLOWED.join(', ')}
-      </p>
-      <p className="infospacer"></p>
-      <p className="infolinemargin">
-        Two notes. A border shorthand with no style in it gets
-        <span className="infohotkey">solid</span>added, because css defaults a border to none and a
-        border you asked for is a border you should see. And the
-        <span className="infohotkey">font</span>shorthand needs both a size and a family or the
-        browser throws the whole declaration away without saying anything, so
-        <span className="infohotkey">font-weight</span>and friends are the safer way to say it.
+        Which properties you can set, and how to take one off again, are in the API Reference tab,
+        under Styles.
       </p>
       <p className="infolinemargin">
         But if the style only shows in normal mode, how do I look at one while I am writing the code?
@@ -133,10 +108,6 @@ const AbstractDataTypesPanel = () => {
         <span className="infohotkey">set-style of</span>and look at the result without building a
         template around it. The same thing then behaves like a drawing: it is selected as one unit,
         with an outline, and nothing goes inside it. Paste a copy to get an editable one back.
-      </p>
-      <p className="infolinemargin">
-        There is an older builtin, <span className="infohotkey">apply-css-style to</span>, which takes
-        any css at all and applies it in both modes. It still works and is on its way out.
       </p>
       <p className="infospacer"></p>
       <p className="infospacer"></p>

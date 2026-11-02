@@ -298,4 +298,4 @@ stats: ${heap.stats()}`)
 }
 
 
-export { Surface, constructSurface }
+export { Surface, constructSurface, ALLOWED_PAINT }

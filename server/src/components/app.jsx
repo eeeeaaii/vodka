@@ -5,11 +5,10 @@ import BasicUsagePanel from './basic_usage_panel';
 import ApiReferencePanel from './api_reference_panel';
 import AbstractDataTypesPanel from './abstract_data_types_panel';
 import WelcomePanel from './welcome_panel';
-import SessionsPanel from './sessions_panel';
 import AccessButton from './access_button';
 import StatusNav from './status_nav';
 import Tutorial from './tutorial';
-import NoteReferencePanel from './note_reference_panel';
+import ReferencePanel from './reference_panel';
 import { takeJustCreated } from '../sessionmanager.js';
 
 import { systemState } from '../systemstate.js';
@@ -19,7 +18,7 @@ import {
 } from '../help';
 
 
-import { WELCOME, SESSIONS, QUICK_REFERENCE, ABSTRACT_DATA_TYPES, BASE_API, SOUND_API, NOTE_REFERENCE, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
+import { WELCOME, QUICK_REFERENCE, ABSTRACT_DATA_TYPES, BASE_API, SOUND_API, GRAPHICS_API, API_REFERENCE, START_TUTORIAL, CLOSE_HELP } from './menu_constants.js';
 
 const MINIMIZED = 0;
 const SHOWING_PANELS = 1;
@@ -27,14 +26,6 @@ const SHOWING_TUTORIAL = 2;
 // No panel and no button at all. This is what the test harness gets (via the
 // NO_SPLASH experiment) and what users who opted out of the button get.
 const HIDDEN = 3;
-
-const WELCOME_PANEL = 0;
-const BASIC_USAGE_PANEL = 1;
-const BASE_API_PANEL = 2;
-const SOUND_API_PANEL = 6;
-const ABSTRACT_DATA_TYPES_PANEL = 3;
-const NOTE_REFERENCE_PANEL = 4;
-const SESSIONS_PANEL = 5;
 
 function initialUiState() {
     switch (getInitialHelpState()) {
@@ -46,8 +37,8 @@ function initialUiState() {
 
 const App = () => {
     let [ uiState, setUiState ] = useState(initialUiState);
-    // opens on the quick reference, since welcome is no longer a tab
-    let [ panel, setPanel ] = useState(WELCOME_PANEL);
+    // which tab is showing -- one of the menu constants
+    let [ panel, setPanel ] = useState(WELCOME);
 
     // While the help panel is up, keystrokes belong to the panel, not to the
     // editor underneath it -- otherwise typing scrolls/inserts nexes behind
@@ -62,33 +53,12 @@ const App = () => {
     }, []);
 
     // the session this page was opened to show, if it was made a moment ago
-    // in the sessions tab -- see markJustCreated
+    // in the session list on the welcome tab -- see markJustCreated
     // (comment by Claude)
     let [ justCreated, setJustCreated ] = useState(takeJustCreated);
 
     const handleMenuChange = (menuChoice) => {
         switch(menuChoice) {
-            case WELCOME:
-                setPanel(WELCOME_PANEL);
-                break;
-            case SESSIONS:
-                setPanel(SESSIONS_PANEL);
-                break;
-            case QUICK_REFERENCE:
-                setPanel(BASIC_USAGE_PANEL);
-                break;
-            case ABSTRACT_DATA_TYPES:
-                setPanel(ABSTRACT_DATA_TYPES_PANEL);
-                break;
-            case BASE_API:
-                setPanel(BASE_API_PANEL);
-                break;
-            case SOUND_API:
-                setPanel(SOUND_API_PANEL);
-                break;
-            case NOTE_REFERENCE:
-                setPanel(NOTE_REFERENCE_PANEL);
-                break;
             case START_TUTORIAL:
                 setUiState(SHOWING_TUTORIAL);
                 break;
@@ -96,43 +66,27 @@ const App = () => {
                 setUiState(MINIMIZED);
                 break;
             default:
-        }
-    }
-
-    // Which tab the top menu should show as selected. The panel constants and
-    // the menu constants are separate enumerations, so map explicitly rather
-    // than relying on them happening to line up.
-    // (comment by Claude)
-    const selectedMenuChoice = () => {
-        switch(panel) {
-            case BASE_API_PANEL:            return BASE_API;
-            case SOUND_API_PANEL:           return SOUND_API;
-            case ABSTRACT_DATA_TYPES_PANEL: return ABSTRACT_DATA_TYPES;
-            case NOTE_REFERENCE_PANEL:      return NOTE_REFERENCE;
-            case WELCOME_PANEL:             return WELCOME;
-            case SESSIONS_PANEL:            return SESSIONS;
-            case BASIC_USAGE_PANEL:
-            default:                        return QUICK_REFERENCE;
+                setPanel(menuChoice);
         }
     }
 
     const displayPanel = () => {
         switch(panel) {
-            case BASE_API_PANEL:
-                return <ApiReferencePanel/>;
-            case SOUND_API_PANEL:
-                return <ApiReferencePanel sound={true}/>;
-            case ABSTRACT_DATA_TYPES_PANEL:
-                return <AbstractDataTypesPanel/>;
-            case NOTE_REFERENCE_PANEL:
-                return <NoteReferencePanel/>;
-            case WELCOME_PANEL:
-                return <WelcomePanel/>;
-            case SESSIONS_PANEL:
-                return <SessionsPanel/>;
-            case BASIC_USAGE_PANEL:
-            default:
+            case QUICK_REFERENCE:
                 return <BasicUsagePanel/>;
+            case BASE_API:
+                return <ApiReferencePanel kind="base"/>;
+            case SOUND_API:
+                return <ApiReferencePanel kind="sound"/>;
+            case GRAPHICS_API:
+                return <ApiReferencePanel kind="graphics"/>;
+            case API_REFERENCE:
+                return <ReferencePanel/>;
+            case ABSTRACT_DATA_TYPES:
+                return <AbstractDataTypesPanel/>;
+            case WELCOME:
+            default:
+                return <WelcomePanel/>;
         }
     }
 
@@ -175,7 +129,7 @@ const App = () => {
                             return (
                                 <>
                                 <TopMenu
-                                    selectedMenuChoice={selectedMenuChoice()}
+                                    selectedMenuChoice={panel}
                                     onMenuChange={handleMenuChange}/>
                                 {displayPanel()}
                                 </>
