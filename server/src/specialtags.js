@@ -108,7 +108,7 @@ const VOWELS = ['a', 'e', 'i', 'o', 'u'];
 function isSpecialTagString(t) {
 	if (!t) return false;
 	/*
-	Machinery. A tag starting with a colon -- `:docs`, `:init`,
+	Machinery. A tag starting with a colon -- `:doc`, `:init`,
 	`::drawfunction` -- is vodka's rather than yours.
 
 	(comment by Claude)

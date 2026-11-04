@@ -138,10 +138,10 @@ class TemplateStore  {
 
 	/*
 	What `^name` shows while you are typing it: the glyph, the template's
-	`:docs` if it has any, and -- the point of it -- the arguments its `:init`
+	`:doc` if it has any, and -- the point of it -- the arguments its `:init`
 	takes, written the way you would write the call.
 
-	The arguments used to be shown only when a `:docs` member existed, because
+	The arguments used to be shown only when a `:doc` member existed, because
 	a missing description returned early and never reached the initializer. The
 	arguments are the thing you actually need at the moment you are typing a
 	call, so they are never skipped now and the description is the optional
@@ -161,7 +161,7 @@ class TemplateStore  {
 			return '-not a template-';
 		}
 		let r = this._makeLine(0, '&#x25F0');
-		let docs = binding.getChildTagged(newTagOrThrowOOM(':docs', 'creating template - doc tag'));
+		let docs = binding.getChildTagged(newTagOrThrowOOM(':doc', 'creating template - doc tag'));
 		if (docs) {
 			r += this._makeLine(1, Utils.isDoc(docs)
 					? binding.escape(docs.getValueAsString().trim(), true)

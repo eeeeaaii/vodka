@@ -63,11 +63,19 @@ class Lambda extends NexContainer {
     }
   }
 
+  /*
+  Only a first child tagged :doc is a doc string. Without the tag there is no
+  telling a doc string from a lambda that returns a doc (or a line, word or
+  estring), and the tooltip that shows the doc string choked on a returned doc
+  with code in it.
+  (comment by Claude)
+  */
   hasDocStringInFirstPosition() {
+    if (this.numChildren() == 0) return false;
+    let c = this.getChildAt(0);
     return (
-      this.numChildren() > 0 &&
-      (Utils.isDocContainerType(this.getChildAt(0)) ||
-        Utils.isEString(this.getChildAt(0)))
+      (Utils.isDocContainerType(c) || Utils.isEString(c)) &&
+      c.hasTagWithString(':doc')
     );
   }
 

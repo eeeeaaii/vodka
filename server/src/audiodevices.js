@@ -285,21 +285,12 @@ machine was pointed at.
 
 Separate from the id because the two answers are not the same question.
 Choosing the entry the browser calls 'default' sets the id to the same empty
-key an unchosen output has, and choosing is choosing: the point of this flag is
-to know whether anybody has, and playing or recording without having chosen is
-what it is for.
+key an unchosen output has, and choosing is choosing: list-audio-devices marks
+a chosen output and marks nothing before one is chosen.
 
 (comment by Claude)
 */
 let outputDeviceChosen = false;
-
-function anOutputDeviceWasChosen() {
-	return outputDeviceChosen;
-}
-
-function anInputDeviceWasChosen() {
-	return inputDeviceId !== null;
-}
 
 function getAudioInputDevice() {
 	return inputDeviceId;
@@ -319,19 +310,20 @@ Whether this is the one vodka would use: the output a new clip is made with, or
 the input recording opens. Absent rather than false on the others, so the one
 that matters is the one you can see.
 
-An output that has not been chosen means the device vodka opened on, which is
-the system default, which chrome lists as the device with the id 'default' --
-so that is the entry that gets the mark. A machine whose output list has no such
-entry gets no mark at all, which is honest: nothing here knows which piece of
-hardware the system default is.
+Until one is chosen, nothing gets the mark. Sound still goes to the system
+default, but nothing here knows which piece of hardware that is -- chrome's
+'default' entry is an alias, not a device -- so rather than guess, vodka says
+there is no default. Once set-default-audio-output (or -input) names one, that
+one is marked.
 
 (comment by Claude)
 */
 function isVodkaDefaultDevice(d) {
 	if (d.kind == 'audiooutput') {
+		if (!outputDeviceChosen) return false;
 		return outputKeyFor(d.deviceId) == outputKeyFor(defaultOutputDeviceId);
 	}
-	if (!inputDeviceId) return d.deviceId == 'default';
+	if (!inputDeviceId) return false;
 	return d.deviceId == inputDeviceId;
 }
 
@@ -783,8 +775,6 @@ export {
 	openOutput,
 	openOutputFor,
 	outputTimeFor,
-	anOutputDeviceWasChosen,
-	anInputDeviceWasChosen,
 	listAudioDevices,
 	getDeviceChannelCount,
 	getInputDeviceChannelCount,

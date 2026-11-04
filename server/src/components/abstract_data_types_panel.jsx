@@ -79,7 +79,7 @@ const AbstractDataTypesPanel = () => {
         want the face rebuilt, say so by mutating the org -- keep a count of the clicks and
         <span className="infohotkey">set</span>it in the handler. A drawing that never needs rebuilding
         is an equally good thing to write, and this way you are not charged for one.
-        If the model has a doc child tagged <span className="infohotkey">:docs</span>, those docs appear in the tooltip when you type the model name
+        If the model has a doc child tagged <span className="infohotkey">:doc</span>, those docs appear in the tooltip when you type the model name
         into the instantiator.
       </p>
       <p className="infospacer"></p>

@@ -80,7 +80,7 @@ import {
   stretchInto,
   decayTailSamples,
 } from "../wavetablefunctions.js";
-import { getDeviceChannelCount, getInputDeviceChannelCount, getDefaultOutputDevice, getDefaultOutputName, anOutputDeviceWasChosen, anInputDeviceWasChosen, setAudioLatency, getAudioLatency } from "../webaudio.js";
+import { getDeviceChannelCount, getInputDeviceChannelCount, getDefaultOutputDevice, getDefaultOutputName, setAudioLatency, getAudioLatency } from "../webaudio.js";
 import { trackFor, queueAudio, queueBreak, atNextCycleStart } from "../transport.js";
 import { constructClip, constructUnassignedClip, channelsDescription } from "../nex/clip.js";
 import { Tag } from "../tag.js";
@@ -217,29 +217,6 @@ function createWavetableBuiltins() {
     return [arg.getTypedValue()];
   }
 
-  /*
-  Nobody has said where this goes.
-
-  A clip that names no device follows the default, and until somebody chooses
-  one the default is whatever device the machine happened to be pointed at --
-  which the browser resolves when the sound is made, not when vodka starts, so
-  it is not something vodka can show you beforehand or be held to afterwards.
-  A take that went to the wrong input is how this gets found out, an hour later.
-
-  So it is an error rather than a guess. Name the device, on the clip or as the
-  default, and what happens is what you asked for.
-
-  (comment by Claude)
-  */
-  function noDeviceChosenError(name, kind) {
-    let setter = (kind == "input")
-        ? "set-default-audio-input"
-        : "set-default-audio-output";
-    return constructFatalError(name + ": no " + kind
-        + " device has been chosen, and this clip does not name one. Say "
-        + setter + ", or make-clip with a device. Sorry!");
-  }
-
   function startPlaying(wt, arg, name) {
     let buffer = wt.getCachedBuffer();
     // whether the wave goes past full scale, asked of the wave, which already
@@ -292,9 +269,6 @@ function createWavetableBuiltins() {
     if (clip && clip.getDeviceKind() == "input") {
       return { error: constructFatalError(
           name + ": that clip records, it does not play. Sorry!") };
-    }
-    if (!(clip && clip.getOutputDevice()) && !anOutputDeviceWasChosen()) {
-      return { error: noDeviceChosenError(name, "output") };
     }
     let deviceId = clip && clip.getOutputDevice()
         ? clip.getOutputDevice()
@@ -416,7 +390,7 @@ function createWavetableBuiltins() {
       return constructUnassignedClip("audio loop", readChannelNumbers(channelsArg),
           null, deviceId, deviceName, deviceKind);
     },
-    "An empty clip on |channels, or channels 1 and 2. Given |device it plays there; given none it plays on the default, which must have been chosen by then. Hand it to play and play fills it in instead of starting a second loop, so the expression can be evaluated again in place."
+    "An empty clip on |channels, or channels 1 and 2. Given |device it plays there; given none it plays on the default output, the system's own until you choose one with set-default-audio-output. Hand it to play and play fills it in instead of starting a second loop, so the expression can be evaluated again in place."
   );
 
   /*
@@ -462,9 +436,6 @@ function createWavetableBuiltins() {
       */
       // no clip to name a device, so a break is always on the default one
       // (comment by Claude)
-      if (!anOutputDeviceWasChosen()) {
-        return noDeviceChosenError("break", "output");
-      }
       queueBreak(wt.getCachedBuffer(), toChannelIndexes([1, 2]),
           loopStartSecondsOf(wt), undefined, eligiblePointsOf(wt));
       return constructNil();
@@ -614,7 +585,7 @@ function createWavetableBuiltins() {
       dv.activate();
       return dv;
     },
-    "The audio devices on this machine, inputs and outputs. The one vodka is using is tagged vodka-default. The first time, the browser asks for the microphone, because it withholds device names until you allow it once."
+    "The audio devices on this machine, inputs and outputs. Once you choose one with set-default-audio-output or set-default-audio-input, it is tagged vodka-default; until then none is. The first time, the browser asks for the microphone, because it withholds device names until you allow it once."
   );
 
   /*
@@ -696,9 +667,6 @@ function createWavetableBuiltins() {
       if (clip.getDeviceKind() == "output") {
         return constructFatalError(
             "start-recording: that clip plays, it does not record. Sorry!");
-      }
-      if (!clip.getOutputDevice() && !anInputDeviceWasChosen()) {
-        return noDeviceChosenError("start-recording", "input");
       }
       let channels = toChannelIndexes(clip.getChannels());
       if (channels.length == 0) channels = [0];

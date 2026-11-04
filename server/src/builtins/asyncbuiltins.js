@@ -272,8 +272,17 @@ function createAsyncBuiltins() {
 
 			let id = nextLoopId++;
 			let seq = 0;
+			// the iteration number is only passed to a function that has a
+			// parameter to put it in, so a zero-arg function works too
+			// (comment by Claude)
+			let lambda = f.getLambda();
+			let params = (lambda && lambda.getParams) ? lambda.getParams() : null;
+			let takesSeq = !!params && params.length >= 1;
 			let afg = new EveryActivationFunctionGenerator(ms, function() {
-				let cmd = systemState.getSCF().makeCommandWithClosureOneArg(f, constructInteger(seq));
+				let scf = systemState.getSCF();
+				let cmd = takesSeq
+					? scf.makeCommandWithClosureOneArg(f, constructInteger(seq))
+					: scf.makeCommandWithClosureZeroArgs(f);
 				let r = systemState.getSCF().sEval2(cmd, BINDINGS, 'do every');
 				seq++;
 				if (Utils.isFatalError(r)) {
@@ -292,7 +301,7 @@ function createAsyncBuiltins() {
 			runningLoops[id] = afg;
 			return dv;
 		},
-		'A deferred value that settles every |interval milliseconds with the result of |f. |f is given the iteration number.'
+		'A deferred value that settles every |interval milliseconds with the result of |f. If |f takes a parameter, it is given the iteration number.'
 	);
 
 	Builtin.createBuiltin(
