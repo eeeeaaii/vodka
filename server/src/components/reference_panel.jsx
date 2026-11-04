@@ -1,5 +1,5 @@
 import { frequencyForNoteNum } from '../wavetablefunctions.js';
-import { ALLOWED } from '../nexstyle.js';
+import { SETTABLE } from '../nexstyle.js';
 import { ALLOWED_PAINT as SURFACE_PAINT } from '../nex/surface.js';
 
 /*
@@ -185,15 +185,27 @@ const ReferencePanel = () => {
             <p className="infospacer"></p>
             <p className="infolinemargin">
                 Only the properties below are allowed, and anything else is an
-                error that says so. A property may change how a thing looks
-                inside the box it has, and how big that box is, but not where
-                the box is -- so there is no position, float, transform,
-                display or z-index. <span className="infohotkey">background</span>is
-                left out too, because it can carry an image, and an image is a
+                error that says so. <span className="infohotkey">background</span>is
+                left out, because it can carry an image, and an image is a
                 url; use <span className="infohotkey">background-color</span>.
+                Moving and turning are <span className="infohotkey">translate</span>,
+                <span className="infohotkey">rotate</span>and
+                <span className="infohotkey">scale</span>, each its own property.
+            </p>
+            <p className="infolinemargin">
+                A few are vodka's own names:
+                <span className="infohotkey">visibility</span>is hide, show or
+                vanish (vanish takes up no space);
+                <span className="infohotkey">relative-position</span>is true or
+                false, and lets left and top move a thing;
+                <span className="infohotkey">case</span>is upper or lower; and
+                <span className="infohotkey">inset</span>clips a thing to a box
+                inside it, the way css inset() does. In the org form,
+                translate, scale and transform-origin can be an org of x and y,
+                and inset an org of top, right, bottom and left.
             </p>
             <p className="infoline infoindent">
-                {ALLOWED.join(', ')}
+                {SETTABLE.join(', ')}
             </p>
             <p className="infospacer"></p>
             <p className="infolinemargin">
