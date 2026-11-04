@@ -207,9 +207,14 @@ is_vk() {
 TEST_SESSION_ID="vodka-tests"
 TEST_SESSION_DIR="../server/namedsessions/${TEST_SESSION_ID}"
 
+# the vodka files the tests load (the standard library unit tests, a corrupted
+# file) live in vodkafiles/, out of the shipped packages, so users cannot load
+# them; each run copies them into the test session
+# (comment by Claude)
 prepare_test_session() {
 	rm -rf "${TEST_SESSION_DIR}"
 	mkdir -p "${TEST_SESSION_DIR}"
+	cp ./vodkafiles/* "${TEST_SESSION_DIR}/"
 }
 
 run() {
