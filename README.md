@@ -72,20 +72,19 @@ on disk, set `VODKA_SESSIONS_DIR` to that folder before running `./run.sh`.
 ### Samples and the standard library
 
 Two read-only sessions ship with Vodka: `samples` (in `server/samples/`) and
-`packages`, the standard library (in `server/packages/`). Sample names end in
-`-sample` and library names end in `-functions`. When you load a name that isn't
-in your session, Vodka looks for it in samples if it ends in `-sample` and in the
-standard library otherwise. So you can load a sample or a library file from any
-session, change it, and save it, and from then on your session uses your copy.
-Saving a `-sample` or `-functions` name shows a warning so you know you're
-hiding the shipped file.
+`packages`, the standard library (in `server/packages/`). Library names end in
+`-functions`. When you load a name that isn't in your session, Vodka looks for it
+in the standard library and then in samples. So you can load a sample or a
+library file from any session, change it, and save it, and from then on your
+session uses your copy. Saving a `-functions` name shows a warning so you know
+you're hiding the shipped file.
 
 `load` and `list-files` can also read from another session:
 
 ```
 ~(_list-files_)                      the files in this session
 ~(_list-files @samples_)             the files in another session
-~(_load @poems-sample_)              from your session, or from samples
+~(_load @poems_)                     from your session, or from samples
 ~(_load @my-other-session @riff_)    from another session; saving still goes here
 ```
 

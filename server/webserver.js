@@ -69,14 +69,13 @@ const DEFAULT_LOCAL_SESSION = 'default-local';
 const DEFAULT_REMOTE_SESSION = 'default';
 
 /*
-A name that is not in your session is looked for in what ships with vodka, and
-the suffix says where: -sample in samples/, anything else in packages/. So a
+A name that is not in your session is looked for in what ships with vodka:
+packages/ first, then samples/ -- no two files in them share a name. So a
 sample or a library file can be loaded from any session, edited, and saved, and
 the copy in your session is what you get from then on.
 
 (comment by Claude)
 */
-const SAMPLE_SUFFIX = '-sample';
 
 function defaultSessionId() {
 	return webenv_vars.isLocal ? DEFAULT_LOCAL_SESSION : DEFAULT_REMOTE_SESSION;
@@ -690,10 +689,12 @@ async function serviceApiLoadRequestUserSession(nm, sessionId, fallback) {
 	try {
 		return await fsPromises.readFile(path);
 	} catch (err) {
-		if (fallback && nm.endsWith(SAMPLE_SUFFIX)) {
-			return await serviceApiLoadRequestShipped('samples', nm);
-		} else if (fallback) {
-			return await serviceApiLoadRequestPackages(nm);
+		if (fallback) {
+			try {
+				return await fsPromises.readFile(`${getSessionDirectory('packages')}/${nm}`);
+			} catch (err) {
+				return await serviceApiLoadRequestShipped('samples', nm);
+			}
 		} else {
 			return `v2:?"file not found in session: '${nm}'. Sorry!"`;
 		}
@@ -747,15 +748,6 @@ async function serviceApiListOtherSessionRequest(otherSession) {
 		return 'v2:' + s;
 	} else {
 		return `v2:?"could not get directory listing. Sorry!"`;
-	}
-}
-
-async function serviceApiLoadRequestPackages(nm) {
-	let path = `${getSessionDirectory('packages')}/${nm}`;
-	try {
-		return await fsPromises.readFile(path);
-	} catch (err) {
-		return `v2:?"file not found in packages: '${nm}'. Sorry!"`;
 	}
 }
 

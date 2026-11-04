@@ -77,7 +77,11 @@ need the api, and only the vodka server allows those.
 (comment by Claude)
 */
 function fetchShippedFile(name, dir) {
-	if (!dir) dir = shippedDirFor(name);
+	if (!dir) {
+		return fetchShippedFile(name, 'packages').catch(function () {
+			return fetchShippedFile(name, 'samples');
+		});
+	}
 	return fetch(dir + '/' + encodeURIComponent(name)).then(function (r) {
 		if (!r.ok) throw new Error('not found');
 		return r.text();
@@ -85,19 +89,14 @@ function fetchShippedFile(name, dir) {
 }
 
 /*
-What ships with vodka is two read-only sessions, and the suffix says which one a
-name is looked for in when it is not in yours. Kept in step with load in
-webserver.js.
+What ships with vodka is two read-only sessions. A name that is not in yours is
+looked for in packages, then samples -- no two files in them share a name. Kept
+in step with load in webserver.js.
 
 (comment by Claude)
 */
-const SAMPLE_SUFFIX = '-sample';
 const LIBRARY_SUFFIX = '-functions';
 const SHIPPED_SESSIONS = ['packages', 'samples'];
-
-function shippedDirFor(name) {
-	return name.endsWith(SAMPLE_SUFFIX) ? 'samples' : 'packages';
-}
 
 /*
 Saving one of these names in your session is allowed, and is how you make your
@@ -108,11 +107,10 @@ moment it happens, which is the only moment there is anyone to tell.
 (comment by Claude)
 */
 function warnIfShippedName(name) {
-	if (!name.endsWith(SAMPLE_SUFFIX) && !name.endsWith(LIBRARY_SUFFIX)) return;
+	if (!name.endsWith(LIBRARY_SUFFIX)) return;
 	if (SHIPPED_SESSIONS.indexOf(systemState.getSessionId()) != -1) return;
-	let suffix = name.endsWith(SAMPLE_SUFFIX) ? SAMPLE_SUFFIX : LIBRARY_SUFFIX;
 	showNoticeToast(constructWarning(
-			`saved ${name} in this session. Names ending in ${suffix} are for files`
+			`saved ${name} in this session. Names ending in ${LIBRARY_SUFFIX} are for files`
 			+ ` that ship with vodka, so in this session your ${name} hides any shipped one.`));
 }
 
