@@ -48,6 +48,28 @@ class SerializationContext {
 	constructor(mode, audioCollector) {
 		this.mode = mode;
 		this.audioCollector = audioCollector ? audioCollector : null;
+		this.parentPfstring = '';
+	}
+
+	/*
+	The pfont string of the container whose children are being written, so a
+	child writes its own only where it differs (see pfonts/pfontnex.js). A
+	context carrying a different one is a copy; the usual case, no pfonts
+	anywhere, never makes one.
+
+	(comment by Claude)
+	*/
+	getParentPfstring() {
+		return this.parentPfstring;
+	}
+
+	withParentPfstring(pfstring) {
+		if (pfstring == this.parentPfstring) {
+			return this;
+		}
+		let r = new SerializationContext(this.mode, this.audioCollector);
+		r.parentPfstring = pfstring;
+		return r;
 	}
 
 	isFile() {

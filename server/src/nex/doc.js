@@ -24,6 +24,9 @@ import { experiments } from '../globalappflags.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED, CONSOLE_DEBUG } from '../globalconstants.js'
 import { heap, HeapString } from '../heap.js'
+import { setContainerPfont, applyResolvedPfontToContainer, giveNewChildContainerPfont,
+		serializeContainerPrivateData, deserializeContainerPrivateData,
+		fillContainerPfontFromParent, copyContainerPfontTo } from '../pfonts/pfontnex.js'
 
 /**
  * Represents a document with text in it.
@@ -32,6 +35,7 @@ class Doc extends NexContainer {
 	constructor() {
 		super();
 		this.pfstring = new HeapString();
+		this.pfont = null;
 		this.setVertical();
 	}
 
@@ -55,25 +59,37 @@ class Doc extends NexContainer {
 		return this.standardListPrettyPrint(lvl, '[doc]', hdir);
 	}
 
-	setPfont(pfstring) {
-		this.pfstring.set(pfstring);
-		this.doForEachChild(function(c) {
-			c.setPfont(pfstring);
-		})
-	}
-
 	serializePrivateData(ctx) {
-		return `${this.getCurrentStyle()}`;
+		return serializeContainerPrivateData(this, ctx);
 	}
 
 	deserializePrivateData(data) {
-		this.setCurrentStyle(data);
+		deserializeContainerPrivateData(this, data);
+	}
+
+	setPfont(pfstring) {
+		setContainerPfont(this, pfstring);
+	}
+
+	getPfstring() {
+		return this.pfstring.get();
+	}
+
+	applyResolvedPfont(pfstring, font) {
+		applyResolvedPfontToContainer(this, pfstring, font);
+	}
+
+	fillPfontFromParent(pfstring, font) {
+		fillContainerPfontFromParent(this, pfstring, font);
+	}
+
+	copyFieldsTo(nex) {
+		super.copyFieldsTo(nex);
+		copyContainerPfontTo(this, nex);
 	}
 
 	insertChildAt(c, i) {
-		if (this.pfstring.get()) {
-			c.setPfont(this.pfstring.get());
-		}
+		giveNewChildContainerPfont(this, c);
 		super.insertChildAt(c, i);
 	}
 
@@ -127,6 +143,7 @@ class Doc extends NexContainer {
 		domNode.classList.add('doc');
 		domNode.classList.add('data');
 		domNode.classList.add('newdoc');
+
 	}
 	
 	/*

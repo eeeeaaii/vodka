@@ -50,7 +50,7 @@ class Separator extends Letter {
 	}
 
 	toStringV2(ctx) {
-		return `[${this.toStringV2Literal()}separator]${this.toStringV2PrivateDataSection(this.getText())}${this.toStringV2TagList()}`
+		return `[${this.toStringV2Literal()}separator]${this.toStringV2PrivateDataSection(ctx)}${this.toStringV2TagList()}`
 	}
 
 	getKeyFunnel() {

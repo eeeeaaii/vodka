@@ -17,7 +17,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 
 // useful tool: https://www.metaflop.com/modulator
 
-import { Pen } from "./pen.js"
+import { Glyph } from "./glyph.js"
 
 import { MoveOp, OP_MOVE,
 		 BezierOp, OP_BEZIER,
@@ -48,15 +48,31 @@ import { MoveOp, OP_MOVE,
 
 const FONT_DEBUG = false;
 
+/*
+A Font is a set of params, resolved once, plus what has been worked out from
+them. It belongs to nothing in particular: one string applied to a whole doc
+makes one Font that every letter in the doc points at, so nothing in here may
+know which letter it is drawing. Params never change after construction --
+different params are a different Font -- which is what makes it safe to
+remember things about them.
+
+What it remembers is each character's geometry: evaluating a glyph's
+instructions turns into a Path2D the first time that character is asked for,
+and every later 'e' in this Font reuses it. Params are continuous, so this is
+not a table of shapes worked out in advance; it is only that within one set of
+params an 'e' is the same 'e' wherever it appears.
+
+Coordinates in a path are pixels, with the origin at the top left of the
+nominal glyph box: x grows to the right from the glyph's left edge, y grows
+down from the top of the font size, and the baseline is at
+baseline_from_top * fontsize.
+
+(comment by Claude)
+*/
 class Font {
 	constructor(pxparams, inparams) {
+		this.memo = {};
 		this.setParams(pxparams, inparams);
-		this.flowElement = null;
-		this.previousSlop = -1;
-		this.previousFontSize = -1;
-		this.letter = null;
-		this.glyph = null;
-		this.needsRedraw = false;
 	}
 
 	setParams(inpxparams, inparams) {
@@ -79,10 +95,9 @@ class Font {
 		this.overrideParams(params, inparams);
 		this.setDerivedParams(params, inparams);
 		this.params = params;
-		if (this.glyph) {
-			this.setParamsDerivedFromGlyph();
-		}
-		this.needsRedraw = true;
+
+		this.memo = {};
+		this.layoutKey = this.computeLayoutKey();
 	}
 
 	getDefaultPxparams() {
@@ -101,9 +116,12 @@ class Font {
 		return r;
 	}
 
+	// Only names the font already has, so a misspelled param does not end up
+	// in the params; checked by key, so a 0 is a value like any other.
+	// (comment by Claude)
 	overrideParams(params, inparams) {
 		for (let p in inparams) {
-			if (params[p]) {
+			if (p in params && !isNaN(inparams[p])) {
 				params[p] = inparams[p];
 			}
 		}
@@ -119,227 +137,212 @@ class Font {
 		// no op, should override
 	}
 
-	setupCanvas(
-			flowelement,
-			lineheight_px,
-			fontsize_px, // aka nominal height
-			baselineFromTop_px, // aka "nominal" ascender
-			glyphwidth_px,
-			kerningleft_px,
-			kerningright_px,
-			tracking_px,
-			slop_px) {
+	getFontName() {
+		return '';
+	}
 
-		// see http://www.vodka.church/fonts/ for more info on
-		// how I derived these formulas.
+	getGlyphs() {
+		return {};
+	}
 
-		// height
+	// fonts never change, so a copy is the same font
+	// (comment by Claude)
+	copy() {
+		return this;
+	}
+
+	/*
+	Everything that changes where a letter goes rather than what it looks like.
+	Two fonts with the same key lay text out identically, so going from one to
+	the other only needs a repaint.
+
+	(comment by Claude)
+	*/
+	computeLayoutKey() {
+		let px = this.pxparams;
+		let p = this.params;
+		return `${px.fontsize}/${px.left_kerning}/${px.right_kerning}/${px.slop}/${p.nominalwidth}/${p.tracking}/${p.leading}/${p.baseline_from_top}`;
+	}
+
+	// a box the width of a typical glyph, so a character the font has no
+	// glyph for shows up as missing rather than as some other letter
+	// (comment by Claude)
+	getFallbackGlyph() {
+		return FALLBACK_GLYPH;
+	}
+
+	// what this font knows about one character, worked out the first time
+	// (comment by Claude)
+	glyphInfo(ch) {
+		let info = this.memo[ch];
+		if (info) {
+			return info;
+		}
+		// a space separator can be stored either way
+		let glyph = this.getGlyphs()[(ch == '&nbsp;' || ch == '\xa0') ? ' ' : ch];
+		if (!glyph) {
+			glyph = this.getFallbackGlyph();
+		}
+		let fontsize = this.pxparams.fontsize;
+		let width = glyph.getWidth() * this.params.nominalwidth;
+		let tracking_px = fontsize * this.params.tracking;
+		let leftSpacing_px = (tracking_px + this.pxparams.left_kerning) / 2;
+		let rightSpacing_px = (tracking_px + this.pxparams.right_kerning) / 2;
+		info = {
+			glyph: glyph,
+			width: width,
+			glyphwidth_px: width * fontsize,
+			leftSpacing_px: leftSpacing_px,
+			advance_px: width * fontsize + leftSpacing_px + rightSpacing_px,
+			path: null,
+		};
+		this.memo[ch] = info;
+		return info;
+	}
+
+	// how far the pen moves for this character; no drawing
+	// (comment by Claude)
+	advance(ch) {
+		return this.glyphInfo(ch).advance_px;
+	}
+
+	getFontSize() {
+		return this.pxparams.fontsize;
+	}
+
+	getLineHeight() {
+		return this.pxparams.fontsize * (1 + this.params.leading);
+	}
+
+	// from the top of a line to its baseline
+	// (comment by Claude)
+	getAscent() {
+		let fontsize = this.pxparams.fontsize;
+		return (fontsize * this.params.leading / 2) + (fontsize * this.params.baseline_from_top);
+	}
+
+	getLineWidth() {
+		return this.params.linethickness * this.pxparams.fontsize;
+	}
+
+	// The params a glyph's instructions see: the font's, plus the ones that
+	// depend on how wide this glyph is.
+	// (comment by Claude)
+	paramsForGlyph(info) {
+		let p = this.copyParams(this.params);
+		p.width = info.width;
+		p.right = info.width;
+		p.mid = info.width / 2;
+		return p;
+	}
+
+	glyphPath(ch) {
+		let info = this.glyphInfo(ch);
+		if (!info.path) {
+			info.path = this.buildPath(info);
+		}
+		return info.path;
+	}
+
+	buildPath(info) {
+		let fontsize = this.pxparams.fontsize;
+		let baseline_from_top = this.params.baseline_from_top;
+		let xToPx = (val) => fontsize * val;
+		let yToPx = (val) => fontsize * (baseline_from_top - val);
+		let p = this.paramsForGlyph(info);
+		let path = new Path2D();
+		let instructions = info.glyph.getInstructions();
+		for (let i = 0; i < instructions.length; i++) {
+			let oprecord = instructions[i];
+			let opobj = this.createOp(oprecord.op);
+			let params = [];
+			for (let j = 0; j < oprecord.d.length; j++) {
+				let d = oprecord.d[j];
+				params[j] = {};
+				if (d.x) params[j].x = xToPx(d.x(p));
+				if (d.y) params[j].y = yToPx(d.y(p));
+				if (d.val) params[j].val = d.val(p);
+			}
+			opobj.setParams(params);
+			opobj.draw(path);
+		}
+		return path;
+	}
+
+	/*
+	How much room a glyph's own canvas needs past its nominal box, so strokes
+	that leave the box (a descender, a wide pen, a corpus pushed past 1) are
+	not cut off. slop:N in the font string sets it in pixels; 0, the default,
+	means work it out. Worked out, it moves in steps of 20 pixels, so animating
+	a param does not resize the canvas on every frame.
+
+	(comment by Claude)
+	*/
+	getSlop() {
+		let requestedSlop = this.pxparams.slop;
+		if (requestedSlop != 0) {
+			return requestedSlop;
+		}
+		let pt_px = this.pxparams.fontsize;
+		let totalheight = this.params.asc + (- this.params.desc);
+		let extraheight = totalheight - 1.0;
+		let requiredSlop = (extraheight > 0) ? (pt_px * extraheight * 1.1) : (pt_px * .2);
+		requiredSlop += this.params.linethickness * pt_px;
+		return Math.ceil(requiredSlop / 20) * 20;
+	}
+
+	/*
+	Draws one character's own canvas inside a flow element and returns the flow
+	element.
+
+	see http://www.vodka.church/fonts/ for more info on how I derived the
+	sizes and positions here.
+
+	(comment by Claude)
+	*/
+	drawIntoDomNode(ch) {
+		let info = this.glyphInfo(ch);
+		let fontsize_px = this.pxparams.fontsize;
+		let leading_px = fontsize_px * this.params.leading;
+		let slop_px = this.getSlop();
+
 		let canvasheight_px = fontsize_px + slop_px;
-		let leading_px = lineheight_px - fontsize_px;
-		let flowelementheight_px = fontsize_px + leading_px;
 		let canvastop_px = (leading_px / 2) - (slop_px / 2);
+		let canvaswidth_px = info.glyphwidth_px + slop_px;
+		let canvasleft_px = info.leftSpacing_px - (slop_px / 2);
 
-		// width
-		let canvaswidth_px = glyphwidth_px + slop_px;
-		let leftSpacing_px = (tracking_px + kerningleft_px) / 2;
-		let canvasleft_px = leftSpacing_px - (slop_px / 2);
-		let rightSpacing_px = (tracking_px + kerningright_px) / 2;
-		let flowElementWidth_px = glyphwidth_px + leftSpacing_px + rightSpacing_px;
-
+		let flowElement = document.createElement('div');
 		let canvas = document.createElement('canvas');
-		canvas.setAttribute('height', `${canvasheight_px}px;`);
-		canvas.setAttribute('width', `${canvaswidth_px}px;`);
+		let dpr = window.devicePixelRatio || 1;
+		canvas.width = Math.ceil(canvaswidth_px * dpr);
+		canvas.height = Math.ceil(canvasheight_px * dpr);
 		let canvasStyle = 'position:absolute;';
 		canvasStyle += `top:${canvastop_px}px;`;
 		canvasStyle += `left:${canvasleft_px}px;`;
+		canvasStyle += `width:${canvaswidth_px}px;`;
+		canvasStyle += `height:${canvasheight_px}px;`;
+		canvas.setAttribute('style', canvasStyle);
+		flowElement.appendChild(canvas);
 
-		flowelement.appendChild(canvas);
 		let flowElementStyle = 'position:relative;'
-		flowElementStyle += `width:${flowElementWidth_px}px;`;
-		flowElementStyle += `height:${fontsize_px}px;`;
-
+		flowElementStyle += `width:${info.advance_px}px;`;
+		flowElementStyle += `height:${fontsize_px + leading_px}px;`;
 		if (FONT_DEBUG) {
 			let r1 = Math.round(Math.random() * 7);
 			let r2 = Math.round(Math.random() * 7);
 			let r3 = Math.round(Math.random() * 7);
 			flowElementStyle += `background-color:#${r1}0b${r2}${r3}0;`
 		}
+		flowElement.setAttribute('style', flowElementStyle);
 
-		canvas.setAttribute('style', canvasStyle);
-		flowelement.setAttribute('style', flowElementStyle);
-		return canvas;
-	}
-
-	getFontName() {
-		return '';
-	}
-
-	calculateSlop(asc, desc, pt_px) {
-		let requestedSlop = this.pxparams.slop;
-		// hard-coded slop, ignore required slop and previous slop.
-		if (requestedSlop != 0) {
-			return requestedSlop;
-		}
-		// ok we will calculate slop.
-
-		let requiredSlop = 0;
-		let totalheight = asc + (- desc);
-		let extraheight = totalheight - 1.0;
-		if (extraheight > 0) {
-			requiredSlop = pt_px * extraheight * 1.1;
-		} else {
-			requiredSlop = pt_px * .2; // idk
-		}
-
-		// now that we have required slop, we look to see
-		// whether we've already exceeded that slop.
-		if (this.previousSlop >= requiredSlop) {
-			return this.previousSlop;
-		} else {
-			// don't change previous slop yet.
-			return requiredSlop + 20; // change in increments of 20
-		}
-	}
-
-	rebuildCanvas(pt_px,
-				  baseline_from_top,
-				  slop_px,
-				  lineheight_px,
-				  left_kerning_px,
-				  right_kerning_px,
-				  tracking_px) {
-
-		this.pen = new Pen(pt_px, baseline_from_top, slop_px);
-
-		this.flowElement = document.createElement('div');
-
-		this.canvas = this.setupCanvas(
-			this.flowElement,
-			lineheight_px,
-			pt_px,           /* fontsize_px */
-			baseline_from_top * pt_px,  /* baselineFromTop_px */
-			this.params.width * pt_px,    /* glyphwidth_px */
-			left_kerning_px,
-			right_kerning_px,
-			tracking_px,
-			slop_px);		
-	}
-
-	maybeEval(x) {
-		let cap = this.params.cap; // capital letter (like M)
-		let asc = this.params.asc; // ascender (lowercase l)
-		let desc = this.params.desc; // desc (bottom of y)
-		let corpus = this.params.corpus; // aka x-height
-		let bar = this.params.bar; // middle bar in lowercase e
-		let curve = this.params.curve; // used for control points
-		let aperture = this.params.aperture; // opening in c, e
-
-		let left = this.params.left;
-		let right = this.params.right;
-		let baseline = this.params.baseline;
-		let mid = this.params.mid;
-
-		let width = this.params.width;
-
-		if (typeof x == 'string') {
-			return eval(x);
-		} else {
-			return x(this.params);
-		}
-	}
-
-	// this will at some point be expanded to also set the context,
-	// i.e. letter before or after
-	setLetter(letter) {
-		if (this.letter == letter) {
-			return;
-		}
-		this.needsRedraw = true;
-		this.letter = letter;
-		this.glyph = this.getGlyphs()[letter];
-		if (!this.glyph) {
-			this.glyph = this.getGlyphs()['a'];
-		}
-		this.setParamsDerivedFromGlyph();
-	}
-
-	setParamsDerivedFromGlyph() {
-		this.params.width = this.glyph.getWidth() * this.params.nominalwidth;
-		this.params.right = this.params.width;
-		this.params.mid = this.params.width / 2;
-	}
-
-	drawIntoDomNode() {
-		let pt_px = this.pxparams.fontsize; // font height in pixels
-		let left_kerning_px = this.pxparams.left_kerning;
-		let right_kerning_px = this.pxparams.right_kerning;
-		let lineheight_px = pt_px + pt_px * this.params.leading;
-		let tracking_px = pt_px * this.params.tracking;
-		let linethickness = this.params.linethickness;
-		let baseline_from_top = this.params.baseline_from_top;
-		let cap = this.params.cap;
-		let asc = this.params.asc;
-		let desc = this.params.desc;
-		let corpus = this.params.corpus;
-		let bar = this.params.bar;
-		let curve = this.params.curve;
-		let aperture = this.params.aperture;
-
-		let slop_px = this.calculateSlop(asc, desc, pt_px);
-
-		let shouldRebuildCanvas = false;
-
-		if (this.flowElement == null) {
-			shouldRebuildCanvas = true;
-		}
-
-		if (slop_px != this.previousSlop) {
-			shouldRebuildCanvas = true;
-			this.previousSlop = slop_px;
-		}
-
-		if (pt_px != this.previousFontSize) {
-			shouldRebuildCanvas = true;
-			this.previousFontSize = pt_px;
-		}
-
-		if (shouldRebuildCanvas) {
-			this.needsRedraw = true;
-			this.rebuildCanvas(pt_px,
-							   baseline_from_top,
-							   slop_px,
-							   lineheight_px,
-							   left_kerning_px,
-							   right_kerning_px,
-							   tracking_px);
-
-		}
-
-		if (this.needsRedraw) {
-			let ctx = this.canvas.getContext("2d");
-			ctx.lineWidth = linethickness * pt_px;
-			ctx.beginPath();
-			ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-			let instructions = this.glyph.getInstructions();
-
-			for (let i = 0; i < instructions.length; i++) {
-				let oprecord = instructions[i];
-				let opobj = this.createOp(oprecord.op);
-				let params = [];
-				for (let i = 0; i < oprecord.d.length; i++) {
-					let p = oprecord.d[i];
-					params[i] = {};
-					if (p.x) params[i].x = this.pen.xToPx(this.maybeEval(p.x));
-					if (p.y) params[i].y = this.pen.yToPx(this.maybeEval(p.y));
-					if (p.val) params[i].val = this.maybeEval(p.val);
-				}
-				opobj.setParams(params);
-				opobj.draw(ctx);
-			}
-			ctx.stroke();
-			this.needsRedraw = false;
-		}
-		return this.flowElement;
+		let ctx = canvas.getContext('2d');
+		ctx.setTransform(dpr, 0, 0, dpr, dpr * slop_px / 2, dpr * slop_px / 2);
+		// the colour of the text this letter is in, theme and styles included
+		// (comment by Claude)
+		ctx.strokeStyle = 'currentcolor';
+		ctx.lineWidth = this.getLineWidth();
+		ctx.stroke(this.glyphPath(ch));
+		return flowElement;
 	}
 
 	createOp(opstr) {
@@ -356,5 +359,22 @@ class Font {
 	}
 }
 
-export { Font }
+const FALLBACK_GLYPH = new Glyph(1.0, [
+	{ op: OP_MOVE, d:[
+		{ x:p => (p.left), y:p => (p.baseline) },
+	]},
+	{ op: OP_LINE, d:[
+		{ x:p => (p.right), y:p => (p.baseline) },
+	]},
+	{ op: OP_LINE, d:[
+		{ x:p => (p.right), y:p => (p.cap) },
+	]},
+	{ op: OP_LINE, d:[
+		{ x:p => (p.left), y:p => (p.cap) },
+	]},
+	{ op: OP_LINE, d:[
+		{ x:p => (p.left), y:p => (p.baseline) },
+	]},
+]);
 
+export { Font }

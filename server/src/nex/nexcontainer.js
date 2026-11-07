@@ -19,6 +19,7 @@ import { Nex, addCallback, removeCallback, doCallbacks } from './nex.js';
 import { ContextType } from '../contexttype.js'
 import { experiments } from '../globalappflags.js'
 import { heap } from '../heap.js'
+import { DISPLAY_CONTEXT } from '../serializationcontext.js'
 
 const V_DIR = 0;
 const H_DIR = 1;
@@ -221,6 +222,8 @@ class NexContainer extends Nex {
 
 	childrenToStringV2(ctx) {
 		let r = '';
+		if (!ctx || !ctx.withParentPfstring) ctx = DISPLAY_CONTEXT;
+		ctx = ctx.withParentPfstring(this.getPfstring());
 		for (let p = this.firstChildNex; p != null; p = p.next) {
 			if (r != '') {
 				r += ' ';

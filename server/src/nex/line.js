@@ -24,6 +24,9 @@ import { experiments } from '../globalappflags.js'
 import { RENDER_FLAG_SHALLOW, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { heap, HeapString } from '../heap.js'
+import { setContainerPfont, applyResolvedPfontToContainer, giveNewChildContainerPfont,
+		serializeContainerPrivateData, deserializeContainerPrivateData,
+		fillContainerPfontFromParent, copyContainerPfontTo } from '../pfonts/pfontnex.js'
 import {
 	RENDER_FLAG_INSERT_AFTER,
 	RENDER_FLAG_INSERT_BEFORE,
@@ -44,6 +47,7 @@ class Line extends NexContainer {
 	constructor() {
 		super();
 		this.pfstring = new HeapString();
+		this.pfont = null;
 		this.setHorizontal();
 	}
 
@@ -84,11 +88,37 @@ class Line extends NexContainer {
 	}
 	
 	serializePrivateData(ctx) {
-		return `${this.getCurrentStyle()}`;
+		return serializeContainerPrivateData(this, ctx);
 	}
 
 	deserializePrivateData(data) {
-		this.setCurrentStyle(data);
+		deserializeContainerPrivateData(this, data);
+	}
+
+	setPfont(pfstring) {
+		setContainerPfont(this, pfstring);
+	}
+
+	getPfstring() {
+		return this.pfstring.get();
+	}
+
+	applyResolvedPfont(pfstring, font) {
+		applyResolvedPfontToContainer(this, pfstring, font);
+	}
+
+	fillPfontFromParent(pfstring, font) {
+		fillContainerPfontFromParent(this, pfstring, font);
+	}
+
+	copyFieldsTo(nex) {
+		super.copyFieldsTo(nex);
+		copyContainerPfontTo(this, nex);
+	}
+
+	insertChildAt(c, i) {
+		giveNewChildContainerPfont(this, c);
+		super.insertChildAt(c, i);
 	}
 
 	setMutable(val) {
@@ -124,20 +154,6 @@ class Line extends NexContainer {
 			return new LineKeyFunnel(this);
 		}
 		return null;
-	}
-
-	setPfont(pfstring) {
-		this.pfstring.set(pfstring);
-		this.doForEachChild(function(c) {
-			c.setPfont(pfstring);
-		})
-	}
-
-	insertChildAt(c, i) {
-		if (this.pfstring.get()) {
-			c.setPfont(this.pfstring.get());
-		}
-		super.insertChildAt(c, i);
 	}
 
 	// nothing is inserted inside a finished one: it is drawn as the thing it
@@ -189,6 +205,7 @@ class Line extends NexContainer {
 			domNode.classList.remove('emptyline');
 		}
 		domNode.classList.add('newversionofline');
+
 	}
 
 	/*

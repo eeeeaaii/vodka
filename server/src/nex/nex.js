@@ -708,6 +708,24 @@ class Nex {
 		// no op unless letter?
 	}
 
+	/*
+	The pfont plumbing every nex answers, so a container can hand a font down
+	without asking what its children are. Only docs, lines, words, letters and
+	separators take one; for everything else these do nothing, and a pfont
+	applied around something else stops there. See pfonts/pfontnex.js.
+
+	(comment by Claude)
+	*/
+	getPfstring() {
+		return '';
+	}
+
+	applyResolvedPfont(pfstring, font) {
+	}
+
+	fillPfontFromParent(pfstring, font) {
+	}
+
 	setCurrentStyle(s) {
 		if (s != this.currentStyle) {
 			this.setDirtyForRendering(true);
