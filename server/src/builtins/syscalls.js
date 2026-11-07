@@ -31,6 +31,7 @@ import { checkStyle, isRestrictedStyle, markRestrictedStyle, STYLE_MARK } from '
 import { experiments, getExperimentsAsString, getSettings, setSettingValue, hasSettingName } from '../globalappflags.js'
 import { UNBOUND } from '../environment.js'
 import { webFontManager } from '../webfonts.js'
+import { parametricFontManager } from '../pfonts/pfontmanager.js'
 import {
 	RENDER_MODE_NORM,
 	RENDER_MODE_EXPLO
@@ -243,10 +244,19 @@ function createSyscalls() {
 		function $applyPfontTo(env, executionEnvironment) {
 			let pf = env.lb('pfont').getFullTypedValue();
 			let n = env.lb('nex');
+			if (!Utils.isDocElement(n)) {
+				return constructFatalError('apply-pfont to: you can only give a pfont to a doc,'
+						+ ' a line, a word, a letter or a separator, not a '
+						+ n.getTypeName() + '. Sorry!');
+			}
+			let problem = parametricFontManager.findProblemWithFontString(pf);
+			if (problem) {
+				return constructFatalError('apply-pfont to: ' + problem + '. Sorry!');
+			}
 			n.setPfont(pf);
 			return n;
 		},
-		'Gives |nex the parametric font |pfont.'
+		'Draws |nex, a doc, line, word, letter or separator, in a parametric font, a font whose letters are drawn from numbers you can change and animate. |pfont is a string fontname#pixelparams#relativeparams, like `basic##` or `basic#fontsize:40#corpus:0.5,curve:0`, where each params section is name:number pairs separated by commas, and either section can be left out. The font is basic (an unknown name means basic). Pixel params: fontsize (in pixels, default 90), left_kerning and right_kerning (pixels), slop (extra room in pixels for strokes that leave the letter, 0 means work it out). Relative params, as fractions of the font size: cap (capital height), asc (ascender), desc (descender, negative), corpus (x-height), bar (crossbar), curve (roundness, 0 is square), aperture (how far round c and e close, 0 to 1), linethickness, leading (space between lines), tracking (space between letters), nominalwidth (letter width). A param name the font does not have, or one in the wrong section, is an error. The last pfont applied wins: applying one sets it on |nex and on everything inside it, replacing what was there. The empty string removes the pfont. It shows in normal mode only; exploded, the text is plain.'
 	);
 
 	
