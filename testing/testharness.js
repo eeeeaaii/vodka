@@ -283,7 +283,10 @@ function runTestImpl(testinput, method, legacy, flags) {
 		if (headful) console.log("Running in headful mode, starting paused.");
 		if (headful) console.log("Press enter to step through.");
 		if (headful) console.log("Press 1, 2, or 3 then enter to run at slow, medium, or fast speed.");
-		await page.goto('http://localhost:3000' + params, {waitUntil: 'networkidle2'});
+		// VODKA_PORT lets the suite run against a second server while another
+		// one is using 3000
+		// (comment by Claude)
+		await page.goto('http://localhost:' + (process.env.VODKA_PORT || 3000) + params, {waitUntil: 'networkidle2'});
 		// I recorded a bunch of tests that used shift-enter to mean "execute and replace"
 		// before I changed the meaning of shift-enter to "execute and leave"
 		if (legacy) {
