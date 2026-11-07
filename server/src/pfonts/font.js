@@ -293,7 +293,8 @@ class Font {
 
 	/*
 	Draws one character's own canvas inside a flow element and returns the flow
-	element.
+	element. This is the per-letter way of drawing, used when a letter is not
+	painted as part of a whole block of text (see pfontblock.js).
 
 	see http://www.vodka.church/fonts/ for more info on how I derived the
 	sizes and positions here.

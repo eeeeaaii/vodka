@@ -27,6 +27,7 @@ import { heap, HeapString } from '../heap.js'
 import { setContainerPfont, applyResolvedPfontToContainer, giveNewChildContainerPfont,
 		serializeContainerPrivateData, deserializeContainerPrivateData,
 		fillContainerPfontFromParent, copyContainerPfontTo } from '../pfonts/pfontnex.js'
+import { renderPfontBlock } from '../pfonts/pfontblock.js'
 import {
 	RENDER_FLAG_INSERT_AFTER,
 	RENDER_FLAG_INSERT_BEFORE,
@@ -206,6 +207,7 @@ class Line extends NexContainer {
 		}
 		domNode.classList.add('newversionofline');
 
+		renderPfontBlock(this, renderNode, renderFlags);
 	}
 
 	/*

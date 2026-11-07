@@ -26,6 +26,7 @@ import { heap, HeapString } from '../heap.js'
 import { setContainerPfont, applyResolvedPfontToContainer, giveNewChildContainerPfont,
 		serializeContainerPrivateData, deserializeContainerPrivateData,
 		fillContainerPfontFromParent, copyContainerPfontTo } from '../pfonts/pfontnex.js'
+import { renderPfontBlock } from '../pfonts/pfontblock.js'
 
 import {
 	RENDER_FLAG_INSERT_AFTER,
@@ -177,6 +178,7 @@ class Word extends NexContainer {
 		}
 		domNode.classList.add('newword');
 
+		renderPfontBlock(this, renderNode, renderFlags);
 	}
 
 	/*

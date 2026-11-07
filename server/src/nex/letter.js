@@ -70,10 +70,27 @@ class Letter extends Nex {
 		return this.pfstring;
 	}
 
+	/*
+	A letter painted as part of a block of pfont text tells the block, which
+	repaints, and lays out again only if the new font puts letters somewhere
+	else. Anything else is drawn by its own render node, so it is marked dirty
+	the usual way.
+
+	(comment by Claude)
+	*/
 	applyResolvedPfont(pfstring, font) {
+		let old = this.pfont;
 		this.pfstring = pfstring;
 		this.pfont = font;
-		this.setDirtyForRendering(true);
+		let owners = this.pfontOwners ? this.getPfontOwners() : null;
+		if (owners) {
+			let layoutChanged = (!old || !font || old.layoutKey != font.layoutKey);
+			for (let i = 0; i < owners.length; i++) {
+				owners[i].fontChanged(layoutChanged);
+			}
+		} else {
+			this.setDirtyForRendering(true);
+		}
 	}
 
 	fillPfontFromParent(pfstring, font) {

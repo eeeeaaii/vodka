@@ -52,9 +52,14 @@ function setContainerPfont(container, pfstring) {
 function applyResolvedPfontToContainer(container, pfstring, font) {
 	container.pfstring.set(pfstring);
 	container.pfont = font;
+	container.pfontRunCache = null;
 	container.doForEachChild(function(c) {
 		c.applyResolvedPfont(pfstring, font);
 	});
+	let block = container.getActivePfontBlock();
+	if (block) {
+		block.fontChanged(false);
+	}
 }
 
 function giveNewChildContainerPfont(container, c) {

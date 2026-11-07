@@ -27,6 +27,7 @@ import { heap, HeapString } from '../heap.js'
 import { setContainerPfont, applyResolvedPfontToContainer, giveNewChildContainerPfont,
 		serializeContainerPrivateData, deserializeContainerPrivateData,
 		fillContainerPfontFromParent, copyContainerPfontTo } from '../pfonts/pfontnex.js'
+import { renderPfontBlock } from '../pfonts/pfontblock.js'
 
 /**
  * Represents a document with text in it.
@@ -144,6 +145,7 @@ class Doc extends NexContainer {
 		domNode.classList.add('data');
 		domNode.classList.add('newdoc');
 
+		renderPfontBlock(this, renderNode, renderFlags);
 	}
 	
 	/*

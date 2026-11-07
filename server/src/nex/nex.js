@@ -430,6 +430,22 @@ class Nex {
 
 	setDirtyForRendering(val) {
 		this.dirtyForRendering = val;
+		/*
+		Something inside a block of pfont text has no render node of its own to
+		be rendered again: the block paints it. So the block is told instead,
+		and lays itself out again. This is the one place every change to a nex
+		comes through, which is why it is here.
+
+		(comment by Claude)
+		*/
+		if (val && this.pfontOwners) {
+			let owners = this.getPfontOwners();
+			if (owners) {
+				for (let i = 0; i < owners.length; i++) {
+					owners[i].descendantChanged(this);
+				}
+			}
+		}
 	}
 
 	getDirtyForRendering() {
@@ -724,6 +740,32 @@ class Nex {
 	}
 
 	fillPfontFromParent(pfstring, font) {
+	}
+
+	// the block of pfont text this nex is drawing as a whole, if it is
+	// (comment by Claude)
+	getActivePfontBlock() {
+		let block = this.pfontBlock;
+		return (block && block.isActive()) ? block : null;
+	}
+
+	// the blocks of pfont text this nex is currently painted as part of
+	// (comment by Claude)
+	getPfontOwners() {
+		let owners = this.pfontOwners;
+		if (!owners) {
+			return null;
+		}
+		for (let i = owners.length - 1; i >= 0; i--) {
+			if (!owners[i].owns(this)) {
+				owners.splice(i, 1);
+			}
+		}
+		if (owners.length == 0) {
+			this.pfontOwners = null;
+			return null;
+		}
+		return owners;
 	}
 
 	setCurrentStyle(s) {
