@@ -23,6 +23,10 @@ import { ContextType } from '../contexttype.js'
 import { experiments } from '../globalappflags.js'
 import { evaluateNexSafely } from '../evaluator.js'
 import { heap, HeapString } from '../heap.js'
+import { setContainerPfont, applyResolvedPfontToContainer, giveNewChildContainerPfont,
+		serializeContainerPrivateData, deserializeContainerPrivateData,
+		fillContainerPfontFromParent, copyContainerPfontTo } from '../pfonts/pfontnex.js'
+import { renderPfontBlock } from '../pfonts/pfontblock.js'
 
 import {
 	RENDER_FLAG_INSERT_AFTER,
@@ -39,6 +43,7 @@ class Word extends NexContainer {
 	constructor() {
 		super();
 		this.pfstring = new HeapString();
+		this.pfont = null;
 		this.setHorizontal();
 	}
 
@@ -119,11 +124,37 @@ class Word extends NexContainer {
 	}
 
 	serializePrivateData(ctx) {
-		return `${this.getCurrentStyle()}`;
+		return serializeContainerPrivateData(this, ctx);
 	}
 
 	deserializePrivateData(data) {
-		this.setCurrentStyle(data);
+		deserializeContainerPrivateData(this, data);
+	}
+
+	setPfont(pfstring) {
+		setContainerPfont(this, pfstring);
+	}
+
+	getPfstring() {
+		return this.pfstring.get();
+	}
+
+	applyResolvedPfont(pfstring, font) {
+		applyResolvedPfontToContainer(this, pfstring, font);
+	}
+
+	fillPfontFromParent(pfstring, font) {
+		fillContainerPfontFromParent(this, pfstring, font);
+	}
+
+	copyFieldsTo(nex) {
+		super.copyFieldsTo(nex);
+		copyContainerPfontTo(this, nex);
+	}
+
+	insertChildAt(c, i) {
+		giveNewChildContainerPfont(this, c);
+		super.insertChildAt(c, i);
 	}
 
 
@@ -146,20 +177,8 @@ class Word extends NexContainer {
 			domNode.classList.add('bottominsert');			
 		}
 		domNode.classList.add('newword');
-	}
 
-	setPfont(pfstring) {
-		this.pfstring.set(pfstring);
-		this.doForEachChild(function(c) {
-			c.setPfont(pfstring);
-		})
-	}
-
-	insertChildAt(c, i) {
-		if (this.pfstring.get()) {
-			c.setPfont(this.pfstring.get());
-		}
-		super.insertChildAt(c, i);
+		renderPfontBlock(this, renderNode, renderFlags);
 	}
 
 	/*

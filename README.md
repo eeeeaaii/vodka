@@ -26,7 +26,7 @@ Creative coding features:
 - rich text support
 - animations and transition support
 - fonts, styles, and formatting
-- animatable parametric fonts
+- animatable parametric fonts (see [PFONTS.md](PFONTS.md))
 
 
 For updates, you can subscribe to [the vodka-announce email group](https://groups.google.com/g/vodka-announce). If you have questions or want to chat with other people using vodka, you can join [the user group](https://groups.google.com/g/vodka-users).

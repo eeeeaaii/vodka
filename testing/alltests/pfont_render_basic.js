@@ -1,3 +1,4 @@
+//startgnumessage//
 /*
 This file is part of Vodka.
 
@@ -14,24 +15,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
-
-/**
- * This class converts relative values (floats) to actual pixel values.
- */
-class Pen {
-	constructor(fontSizeInPixels, defaultBaselineFloat, slopInPixels) {
-		this.fontSizeInPixels = fontSizeInPixels;
-		this.defaultBaselineFloat = defaultBaselineFloat;
-		this.slopInPixels = slopInPixels;
-	}
-
-	xToPx(val) {
-		return this.fontSizeInPixels * val + (this.slopInPixels / 2);
-	}
-
-	yToPx(val) {
-		return this.fontSizeInPixels * ((-val) + this.defaultBaselineFloat) + (this.slopInPixels / 2); 
-	}
-}
-
-export { Pen }
+//endgnumessage//
+//testname// pfont_render_basic
+//startdescription//
+/*
+renders a doc in the basic pfont as one canvas
+*/
+//enddescription//
+//starttest//
+var harness = require('../testharness');
+harness.runUnitTest(function() {
+	return runTest('pfont_render_basic');
+});
+//endtest//

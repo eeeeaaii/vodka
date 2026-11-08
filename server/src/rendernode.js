@@ -848,6 +848,9 @@ class RenderNode {
 			useFlags |= RENDER_FLAG_COLLAPSED;
 		}
 
+		// a block of pfont text says so in renderInto, see pfontblock.js
+		// (comment by Claude)
+		this.paintsChildren = false;
 		this.nex.renderInto(this, useFlags, this.getCurrentEditor());
 		/*
 		The outermost thing in normal mode wears a class saying so, because the
@@ -895,6 +898,16 @@ class RenderNode {
 		// if we are in normal mode we ignore collapse bit and render normally.
 		if (this.getCollapsed() && (useFlags & RENDER_FLAG_EXPLODED)) {
 			this.drawCollapsed();
+		} else if (this.paintsChildren) {
+			/*
+			A block of pfont text in normal mode draws everything inside it into
+			one canvas, so its children get no render nodes and no dom. Normal
+			mode is sealed: nothing selects or clicks inside it, so nothing needs
+			them. They are made again from scratch when it is next exploded.
+
+			(comment by Claude)
+			*/
+			this.childnodes = [];
 		} else if (this.getNex().isNexContainer() && !(useFlags & RENDER_FLAG_SHALLOW)) {
 			if ((useFlags & RENDER_FLAG_EXPLODED) && this.insertionMode == INSERT_INSIDE) {
 				this.doInsertionPip(this);

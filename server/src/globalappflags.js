@@ -114,6 +114,11 @@ let experiments = {
 // but they should not represent features that are gradually being
 // phased in.
 const otherflags = {
+	// Draws every letter that has no pfont of its own in the default basic
+	// pfont. Pfonts only show in normal mode, so this changes results and
+	// :draw faces; text you type, in exploded mode, stays plain. It is a way
+	// of looking, not data: nothing about it is saved.
+	// (comment by Claude)
 	'DEFAULT_TO_PARAMETRIC_FONTS': false,
 	'DEBUG_EXPECTATIONS': false,
 	'FILE': '', // load and run this file at startup

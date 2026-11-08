@@ -18,8 +18,9 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { ContextType, ContextMapBuilder } from '../contexttype.js'
 import { Nex } from './nex.js'
 import { otherflags } from '../globalappflags.js'
-import { RENDER_FLAG_INSERT_AFTER } from '../globalconstants.js'
+import { RENDER_FLAG_INSERT_AFTER, RENDER_FLAG_EXPLODED } from '../globalconstants.js'
 import { parametricFontManager } from '../pfonts/pfontmanager.js'
+import { restorePfontFromFile } from '../pfonts/pfontnex.js'
 import { experiments } from '../globalappflags.js'
 import { heap } from '../heap.js'
 import { constructFatalError } from './eerror.js'
@@ -28,12 +29,14 @@ class Letter extends Nex {
 	constructor(letter) {
 		super();
 		this.letterValue = letter;
-		if (otherflags.DEFAULT_TO_PARAMETRIC_FONTS) {
-			this.pfont = parametricFontManager.getFont('Basic', {}, {});	
-			this.pfont.setLetter(this.letterValue);		
-		} else {
-			this.pfont = null;
-		}
+		// The string, so it can be saved, and the Font it resolved to, which
+		// is shared with everything else the same string was applied to.
+		// A plain string rather than a HeapString like a word's: there are a
+		// lot of letters, and this is nearly always the same string object as
+		// their word's.
+		// (comment by Claude)
+		this.pfstring = '';
+		this.pfont = null;
 		if (letter == '') {
 			throw new Error('cannot have an empty letter');
 		}
@@ -55,19 +58,57 @@ class Letter extends Nex {
 
 	copyFieldsTo(nex) {
 		super.copyFieldsTo(nex);
-		if (this.pfont) {
-			nex.pfont = this.pfont.copy();
-		}
+		nex.pfstring = this.pfstring;
+		nex.pfont = this.pfont;
 	}
 
 	setPfont(pfstring) {
-		if (this.pfont && parametricFontManager.isSameFont(this.pfont, pfstring)) {
-			parametricFontManager.redrawFontStringInFont(this.pfont, pfstring);
+		this.applyResolvedPfont(pfstring, parametricFontManager.getFontForString(pfstring));
+	}
+
+	getPfstring() {
+		return this.pfstring;
+	}
+
+	/*
+	A letter painted as part of a block of pfont text tells the block, which
+	repaints, and lays out again only if the new font puts letters somewhere
+	else. Anything else is drawn by its own render node, so it is marked dirty
+	the usual way.
+
+	(comment by Claude)
+	*/
+	applyResolvedPfont(pfstring, font) {
+		let old = this.pfont;
+		this.pfstring = pfstring;
+		this.pfont = font;
+		let owners = this.pfontOwners ? this.getPfontOwners() : null;
+		if (owners) {
+			let layoutChanged = (!old || !font || old.layoutKey != font.layoutKey);
+			for (let i = 0; i < owners.length; i++) {
+				owners[i].fontChanged(layoutChanged);
+			}
 		} else {
-			this.pfont = parametricFontManager.getFontForString(pfstring);
-			this.pfont.setLetter(this.letterValue);		
+			this.setDirtyForRendering(true);
 		}
-		this.setDirtyForRendering(true);
+	}
+
+	fillPfontFromParent(pfstring, font) {
+		this.pfstring = pfstring;
+		this.pfont = font;
+	}
+
+	// The font this letter is drawn in, in normal mode: its own, or the
+	// default if DEFAULT_TO_PARAMETRIC_FONTS is on.
+	// (comment by Claude)
+	getEffectivePfont() {
+		if (this.pfont) {
+			return this.pfont;
+		}
+		if (otherflags.DEFAULT_TO_PARAMETRIC_FONTS) {
+			return parametricFontManager.getDefaultFont();
+		}
+		return null;
 	}
 
 	toString(version, ctx) {
@@ -81,8 +122,14 @@ class Letter extends Nex {
 		return `[${this.toStringV2Literal()}letter]${this.toStringV2PrivateDataSection(ctx)}${this.toStringV2TagList()}`
 	}
 
+	// letter|style, or letter|style|pfstring when it has a pfont its parent
+	// does not; see pfonts/pfontnex.js
+	// (comment by Claude)
 	serializePrivateData(ctx) {
 		let style = this.getCurrentStyle();
+		if (ctx && ctx.getParentPfstring && this.pfstring != ctx.getParentPfstring()) {
+			return `${this.letterValue}|${style ? style : ''}|${this.pfstring}`;
+		}
 		if (style) {
 			return `${this.letterValue}|${this.getCurrentStyle()}`;
 		} else {
@@ -90,11 +137,37 @@ class Letter extends Nex {
 		}
 	}
 
+	/*
+	The letter is everything before the first |, except that the letter can
+	itself be a |, and then it is the first character and the | after it
+	starts the rest. Splitting on every | used to load a | as an empty letter,
+	which throws, so a document with one in it could not be opened.
+
+	(comment by Claude)
+	*/
 	deserializePrivateData(data) {
-		let a = data.split('|');
-		this.letterValue = a[0];
+		let rest = null;
+		if (data.charAt(0) == '|') {
+			this.letterValue = '|';
+			if (data.length > 1) {
+				rest = data.substring(2);
+			}
+		} else {
+			let i = data.indexOf('|');
+			if (i < 0) {
+				this.letterValue = data;
+			} else {
+				this.letterValue = data.substring(0, i);
+				rest = data.substring(i + 1);
+			}
+		}
+		if (rest === null) {
+			return;
+		}
+		let a = rest.split('|');
+		this.setCurrentStyle(a[0]);
 		if (a.length > 1) {
-			this.setCurrentStyle(a[1]);
+			restorePfontFromFile(this, a[1]);
 		}
 	}
 
@@ -108,8 +181,12 @@ class Letter extends Nex {
 		} else {
 			domNode.classList.add('leftinsert');			
 		}
-		if (this.pfont) {
-			domNode.appendChild(this.pfont.drawIntoDomNode(this.letterValue));
+		// a pfont is part of how the finished thing looks, so it is drawn in
+		// normal mode only; exploded, a letter is plain text like any other
+		// (comment by Claude)
+		let pfont = (renderFlags & RENDER_FLAG_EXPLODED) ? null : this.getEffectivePfont();
+		if (pfont) {
+			domNode.appendChild(pfont.drawIntoDomNode(this.letterValue));
 		} else {
 			let contents = (this.letterValue == " " || this.letterValue == "&nbsp;") ? "\xa0" : this.letterValue;
 			domNode.appendChild(document.createTextNode(contents));
