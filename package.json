@@ -29,7 +29,7 @@
   "homepage": "https://github.com/eeeeaarr/vodka#readme",
   "devDependencies": {
     "esbuild": "^0.28.2",
-    "handlebars": "^4.7.9",
+    "handlebars": "^4.7.10",
     "puppeteer": "^25.9.0"
   }
 }
