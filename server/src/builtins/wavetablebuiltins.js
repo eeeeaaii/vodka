@@ -3227,6 +3227,18 @@ function createWavetableBuiltins() {
     return /^[a-z][0-9]*$/.test(name);
   }
 
+  /*
+  A split point's name with anything you cannot see taken out: control
+  characters, zero-width and other format characters, and spaces at either end.
+  Names are matched exactly -- loop-start is found by name -- so one with an
+  invisible character pasted into it looks right on screen and is never found.
+
+  (comment by Claude)
+  */
+  function visibleSplitPointName(name) {
+    return ('' + name).replace(/[\p{Cc}\p{Cf}]/gu, '').trim();
+  }
+
   Builtin.createBuiltin(
     "set-split-points",
     ["wt_", "points#%()", "name$?"],
@@ -3244,7 +3256,10 @@ function createWavetableBuiltins() {
 
       let name = null;
       if (namenex != UNBOUND) {
-        name = namenex.getFullTypedValue();
+        name = visibleSplitPointName(namenex.getFullTypedValue());
+        if (name == "") {
+          return constructFatalError("set-split-points: that name has nothing visible in it. Sorry!");
+        }
         if (each.length != 1) {
           return constructFatalError("set-split-points: one name names one point. Sorry!");
         }
@@ -3292,7 +3307,7 @@ function createWavetableBuiltins() {
       r.cacheSections();
       return r;
     },
-    "A copy of |wt with split points at |points, one number or a list; n points give n+1 slices. Tag them with a timebase, or with of-total for a fraction of the wave. A tag on the list applies to every point. A single point may be given a |name, which moves the point if the name is already in use."
+    "A copy of |wt with split points at |points, one number or a list; n points give n+1 slices. Tag them with a timebase, or with of-total for a fraction of the wave. A tag on the list applies to every point. A single point may be given a |name, which moves the point if the name is already in use. Invisible characters are taken out of a name."
   );
 
   Builtin.createBuiltin(
