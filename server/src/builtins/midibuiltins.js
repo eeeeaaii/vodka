@@ -486,7 +486,7 @@ function createMidiBuiltins() {
 			method for a long time, so asking for a midi event threw before it
 			could ever wait for one. What it was asking for is what settling
 			already does: a deferred that settles stays live and can settle
-			again, which is how wait-for-click and do every repeat, and neither
+			again, which is how do-every-click and do-every-interval repeat, and neither
 			of them says anything special to arrange it.
 			*/
 			let afg = new MidiActivationFunctionGenerator(id.getFullTypedValue());

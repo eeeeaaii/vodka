@@ -40,7 +40,7 @@ Two tabs on the *same* session share one slot and the last writer wins.
 */
 
 import { systemState } from './systemstate.js'
-import { parse } from './nexparser2.js'
+import { parseWithRecovery } from './parserecovery.js'
 import { SerializationContext, SERIALIZE_BROWSER_STORAGE } from './serializationcontext.js'
 import * as audioStore from './audiostore.js'
 import { saveEditorState } from './editorstate.js'
@@ -199,7 +199,7 @@ function restoreAutosave(rootNode) {
 	let appended = 0;
 	for (let i = 0; i < stored.docs.length; i++) {
 		try {
-			rootNode.appendChild(parse(stored.docs[i]));
+			rootNode.appendChild(parseWithRecovery(stored.docs[i]));
 			appended++;
 		} catch (e) {
 			// One unparseable child shouldn't cost you the rest of the document.

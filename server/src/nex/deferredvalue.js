@@ -131,7 +131,7 @@ class DeferredValue extends NexContainer {
 
 	(comment by Claude)
 	*/
-	// Deleted means it has stopped waiting. A wait-for-click that is out of the
+	// Deleted means it has stopped waiting. A do-every-click that is out of the
 	// document but still listening would fire into nothing.
 	// (comment by Claude)
 	// Detach rather than stop: the source may have other deferred values

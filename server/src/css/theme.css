@@ -53,13 +53,13 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
   --string-border: #dddddd;
   --string-submit-focus-text: #000000;
 
-  --tag-background: #6e6e6e;
+  --tag-background: #03042c;
   /* a tag vodka reads is the ordinary tag inverted: see tags.css */
   --tag-special-background: #dddddd;
   --tag-special-text: #414141;
   /* a collapsed nex is a box of this with a backslash in it */
-  --collapsed-background: #ffa500;
-  --collapsed-text: #ffffff;
+  --collapsed-background: #ddd6d3;
+  --collapsed-text: var(--page-text);
   --tag-editor-background: #dddddd;
   --tag-editor-text: #414141;
 
@@ -163,7 +163,7 @@ waveform is teal so signal is never confused with structure.
   --tag-background: #d0f2f1;
   --tag-special-background: #1a1a1a;
   --tag-special-text: #f2f4f8;
-  --collapsed-background: #ffa500;
+  --collapsed-background: #291212;
   --collapsed-text: #ffffff;
   --tag-editor-background: #1a1a1a;
   --tag-editor-text: #f2f4f8;

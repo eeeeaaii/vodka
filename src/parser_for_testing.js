@@ -196,7 +196,8 @@ var peg$c41 = "\"";
 var peg$c42 = "{";
 var peg$c43 = "}";
 var peg$c44 = "|}";
-var peg$c45 = "||";
+var peg$c45 = "|{";
+var peg$c46 = "||";
 
 var peg$r0 = /^[+=*\/<>]/;
 var peg$r1 = /^[a-zA-Z0-9:.\-]/;
@@ -260,8 +261,9 @@ var peg$e45 = peg$classExpectation(["`"], true, false);
   var peg$e49 = peg$literalExpectation("}", false);
   var peg$e50 = peg$classExpectation(["|", "}"], true, false);
   var peg$e51 = peg$literalExpectation("|}", false);
-  var peg$e52 = peg$literalExpectation("||", false);
-  var peg$e53 = peg$classExpectation([" ", "\r", "\n", "\t"], false, false);
+  var peg$e52 = peg$literalExpectation("|{", false);
+  var peg$e53 = peg$literalExpectation("||", false);
+  var peg$e54 = peg$classExpectation([" ", "\r", "\n", "\t"], false, false);
 
   var peg$f0 = function(NEX) { return NEX; };
   var peg$f1 = function(INST_NAME, PRIVATE, TAGLIST, CHILDREN) { return PF.makeInstanceList(INST_NAME, CHILDREN, PRIVATE, TAGLIST, 'h', true /* nonmutable */); };
@@ -339,7 +341,8 @@ var peg$e45 = peg$classExpectation(["`"], true, false);
   var peg$f73 = function() { return null; };
   var peg$f74 = function(CHAR) { return CHAR; };
   var peg$f75 = function() { return RIGHT_BRACE; };
-  var peg$f76 = function() { return '|'; };
+  var peg$f76 = function() { return LEFT_BRACE; };
+  var peg$f77 = function() { return '|'; };
 
   var peg$currPos = 0;
   var peg$savedPos = 0;
@@ -5472,6 +5475,21 @@ var peg$e45 = peg$classExpectation(["`"], true, false);
           s1 = peg$f76();
         }
         s0 = s1;
+        if (s0 === peg$FAILED) {
+          s0 = peg$currPos;
+          rule$expects(peg$e53);
+          if (input.substr(peg$currPos, 2) === peg$c46) {
+            s1 = peg$c46;
+            peg$currPos += 2;
+          } else {
+            s1 = peg$FAILED;
+          }
+          if (s1 !== peg$FAILED) {
+            peg$savedPos = s0;
+            s1 = peg$f77();
+          }
+          s0 = s1;
+        }
       }
     }
 
@@ -5502,7 +5520,7 @@ var peg$e45 = peg$classExpectation(["`"], true, false);
       if (peg$silentFails === 0) peg$expect(expected);
     }
 
-    rule$expects(peg$e53);
+    rule$expects(peg$e54);
     if (peg$r8.test(input.charAt(peg$currPos))) {
       s0 = input.charAt(peg$currPos);
       peg$currPos++;
@@ -5515,6 +5533,7 @@ var peg$e45 = peg$classExpectation(["`"], true, false);
 
 
     const RIGHT_BRACE = String.fromCharCode(125);
+    const LEFT_BRACE = String.fromCharCode(123);
     const BACKTICK = String.fromCharCode(96);
 
 

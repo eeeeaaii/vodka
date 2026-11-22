@@ -35,7 +35,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border-radius: 6px;	
 }
 
-.org.exploded > .nex.exploded {
+.org.exploded > .nex:is(.exploded, .sealedboundary) {
 	margin: 2px 2px 2px 2px;
 }
 

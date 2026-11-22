@@ -20,7 +20,6 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 import { addMidiListener, removeMidiListener } from './midifunctions.js'
 import { convertJSMapToOrg } from './nex/org.js'
 import { VODKA_SCHEDULER } from './testutils/virtualclock.js'
-import { heap } from './heap.js'
 
 /*
 One of these is one source of events, and any number of deferred values can be
@@ -242,6 +241,7 @@ class DelayActivationFunctionGenerator extends ActivationFunctionGenerator {
 	}
 }
 
+
 class OnNextRenderActivationFunctionGenerator extends ContentsActivationFunctionGenerator {
 	makeForNex(nex) {
 		return new OnNextRenderActivationFunctionGenerator(nex);
@@ -261,6 +261,42 @@ class OnNextRenderActivationFunctionGenerator extends ContentsActivationFunction
 
 	getAFGName() {
 		return 'delay';
+	}
+}
+
+/*
+Settles every time the nex is drawn: do-every-render.
+
+Render callbacks are one shot, so it registers again each time. Quietly: asking
+for a render as it registers, the way waiting for the next one does, would draw
+it again straight away and this would never stop.
+
+(comment by Claude)
+*/
+class OnEveryRenderActivationFunctionGenerator extends ContentsActivationFunctionGenerator {
+	makeForNex(nex) {
+		return new OnEveryRenderActivationFunctionGenerator(nex);
+	}
+
+	start(dv) {
+		this.installed = () => {
+			this.settleAll(null);
+			if (this.installed) {
+				this.nex.addOnNextRenderCallback(this.installed, true /* quietly */);
+			}
+		};
+		this.nex.addOnNextRenderCallback(this.installed);
+	}
+
+	stop() {
+		if (this.installed) {
+			this.nex.removeOnNextRenderCallback(this.installed);
+			this.installed = null;
+		}
+	}
+
+	getAFGName() {
+		return 'every-render';
 	}
 }
 
@@ -330,22 +366,12 @@ class MidiActivationFunctionGenerator extends ActivationFunctionGenerator {
 }
 
 class EveryActivationFunctionGenerator extends ActivationFunctionGenerator {
-	/*
-	held is whatever onTick is going to call -- the lambda `do every` was given.
-	It is referenced from here and nowhere the document knows about, so without
-	saying so it can be deleted while the loop is still running: freed, its
-	lexical environment released, and then called every interval regardless.
-
-	(comment by Claude)
-	*/
-	constructor(intervalMs, onTick, held) {
+	// onTick makes the value each tick settles with
+	// (comment by Claude)
+	constructor(intervalMs, onTick) {
 		super();
 		this.intervalMs = intervalMs;
 		this.onTick = onTick;
-		this.held = held ? held : null;
-		if (this.held) {
-			heap.addReference(this.held);
-		}
 		this.timer = null;
 	}
 
@@ -374,18 +400,33 @@ class EveryActivationFunctionGenerator extends ActivationFunctionGenerator {
 			window.clearTimeout(this.timer);
 			this.timer = null;
 		}
-		// stop can be reached more than once -- an error in the lambda, the stop
-		// button, the deferred being deleted -- and the reference is given up
-		// once
-		// (comment by Claude)
-		if (this.held) {
-			heap.removeReference(this.held);
-			this.held = null;
-		}
 	}
 
 	getAFGName() {
 		return 'every';
+	}
+}
+
+/*
+The first click finishes it, with the same x and y the repeating one settles
+with. wait-for-click; do-every-click is the one above.
+(comment by Claude)
+*/
+class ClickOnceActivationFunctionGenerator extends ClickActivationFunctionGenerator {
+	makeForNex(nex) {
+		return new ClickOnceActivationFunctionGenerator(nex);
+	}
+
+	start(dv) {
+		this.installed = (x, y) => {
+			let org = convertJSMapToOrg({'x':x, 'y':y});
+			this.finishAll(org);
+		};
+		this.nex.addClickHandler(this.installed);
+	}
+
+	getAFGName() {
+		return 'click-once';
 	}
 }
 
@@ -411,6 +452,23 @@ class OnContentsChangedActivationFunctionGenerator extends ContentsActivationFun
 	}
 }
 
+// the first change finishes it: wait-for-contents-change
+// (comment by Claude)
+class OnContentsChangedOnceActivationFunctionGenerator extends OnContentsChangedActivationFunctionGenerator {
+	makeForNex(nex) {
+		return new OnContentsChangedOnceActivationFunctionGenerator(nex);
+	}
+
+	start(dv) {
+		this.installed = () => this.finishAll();
+		this.nex.addOnContentsChangedCallback(this.installed);
+	}
+
+	getAFGName() {
+		return 'on-contents-changed-once';
+	}
+}
+
 
 export {
 	ActivationFunctionGenerator,
@@ -419,10 +477,13 @@ export {
 	DelayActivationFunctionGenerator,
 	EveryActivationFunctionGenerator,
 	ClickActivationFunctionGenerator,
+	ClickOnceActivationFunctionGenerator,
 	GenericActivationFunctionGenerator,
 	MidiActivationFunctionGenerator,
 	DeferredCommandActivationFunctionGenerator,
 	OnContentsChangedActivationFunctionGenerator,
+	OnContentsChangedOnceActivationFunctionGenerator,
+	OnEveryRenderActivationFunctionGenerator,
 	CallbackActivationFunctionGenerator,
 	OnNextRenderActivationFunctionGenerator
 }

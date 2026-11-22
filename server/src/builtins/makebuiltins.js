@@ -16,6 +16,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Builtin } from '../nex/builtin.js'
+import { documentSeeAlso } from '../documentation.js'
 import { constructWord } from '../nex/word.js'
 import { constructNil } from '../nex/nil.js'
 import { constructEError } from '../nex/eerror.js'
@@ -97,13 +98,17 @@ function createMakeBuiltins() {
 			let args = env.lb('args');
 			let r = constructDeferredCommand();
 			for (let i = 0 ; i < args.numChildren(); i++) {
-				let c = children.getChildAt(i);
+				let c = args.getChildAt(i);
 				r.appendChild(c);
 			}
 			return r;
 		},
 		'A new deferred command with |args as its children.'
 	);
+
+	// not a builtin, but this is where you would look for one
+	// (comment by Claude)
+	documentSeeAlso('make-deferred-value', 'wait');
 
 	Builtin.createBuiltin(
 		'make-lambda',

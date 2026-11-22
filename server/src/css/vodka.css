@@ -151,7 +151,7 @@ name is the smallest thing that settles it.
 
 (comment by Claude)
 */
-div.nex.collapsed.exploded {
+div.nex.collapsed {
 	background-color: var(--collapsed-background);
 }
 
@@ -206,7 +206,7 @@ no state in which this should be hidden.
 It used to be `.exploded > .objecttag`, which meant normal mode silently
 dropped the warning. That is backwards. Normal mode is where it matters most:
 a template that hands the same immutable doc to eight instances gives all eight
-the same face, and since wait-for-click writes its handler into a single slot
+the same face, and since do-every-click writes its handler into a single slot
 on the nex (asyncfunctions.js:154), only the last one of them answers a click.
 Nothing about that is visible in a finished interface. The ghost id is the one
 thing that says so.

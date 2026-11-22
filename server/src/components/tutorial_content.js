@@ -148,8 +148,8 @@ export const tutorialContent = {
 			`If a deferred command is just passed normal arguments, it evaluates those arguments and returns the results, like a regular command. However if it is passed deferred values, it will wait for all those deferred values to finish computing their values before it will resolve itself.`,
 		],
 		toTry: [
-			`Run the "wait-for-delay" command, passing it a number of milliseconds that you want to wait (for example, 1000).`,
-			`Create a deferred command that adds together its arguments, and pass it two "wait-for-delay's"`,
+			`Run the "wait-for-interval" command, passing it a number of milliseconds that you want to wait (for example, 1000).`,
+			`Create a deferred command that adds together its arguments, and pass it two "wait-for-interval's"`,
 		],
 	},
 	'make-org': {

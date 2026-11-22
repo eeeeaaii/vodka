@@ -1,0 +1,19 @@
+Vodka colour palette
+
+The first five are in theme.css. Accent isn't used by the code yet.
+
+LIGHT MODE:
+bg: ffffff
+selected: ff7777
+border: aaaaaa
+tag: 03042c
+collapsed: ddd6d3
+accent: 1254c5
+
+DARK MODE:
+bg: 000000
+selected: cc3d3d
+border: 54565e
+tag: d0f2f1
+collapsed: 291212
+accent: 95a2ac

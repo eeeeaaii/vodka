@@ -21,7 +21,7 @@ import { BINDINGS } from './environment.js'
 import { constructFatalError, constructWarning } from './nex/eerror.js'
 import { showNoticeToast } from './toast.js'
 import { evaluateNexSafely } from './evaluator.js'
-import { parse } from './nexparser2.js';
+import { parseWithRecovery } from './parserecovery.js';
 import { AudioCollector, encode as encodeContainer, decode as decodeContainer } from './audiocontainer.js';
 import { hasLiveIndex, canSave } from './deployment.js';
 import { SerializationContext, SERIALIZE_FILE } from './serializationcontext.js'
@@ -449,13 +449,13 @@ returns null for anything that isn't one, so the replies are untouched.
 function parseFileContents(data) {
 	let container = decodeContainer(data);
 	if (!container) {
-		return parse(data);
+		return parseWithRecovery(data);
 	}
 	systemState.setAudioSampleResolver(function(id) {
 		return container.samples[id];
 	});
 	try {
-		return parse(container.docText);
+		return parseWithRecovery(container.docText);
 	} finally {
 		systemState.setAudioSampleResolver(null);
 	}

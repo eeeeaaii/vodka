@@ -59,10 +59,34 @@ const InfoLine = ({pieces}) => {
     );
 };
 
-const DocItem = ({item}) => {
+// so a see-also entry can jump to the one it names
+// (comment by Claude)
+function itemId(name) {
+    return 'apiitem-' + name.replace(/[^a-zA-Z0-9]+/g, '-');
+}
+
+const SeeAlsoItem = ({item}) => {
     return (
         <>
             <p className="infoline">
+                <span className="infohotkey infohotkeylarge">{item.name}</span>
+                &nbsp;(see&nbsp;
+                <span className="infohotkey apiseealso"
+                        onClick={() => jumpToId(itemId(item.seeAlso))}>{item.seeAlso}</span>)
+            </p>
+            <p className="infospacer"></p>
+            <p className="infospacer"></p>
+        </>
+    );
+};
+
+const DocItem = ({item}) => {
+    if (item.seeAlso) {
+        return <SeeAlsoItem item={item} />;
+    }
+    return (
+        <>
+            <p className="infoline" id={itemId(item.name)}>
                 <span className="infohotkey infohotkeylarge">{item.name}</span>
             </p>
             {item.params.length > 0

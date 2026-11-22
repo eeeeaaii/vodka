@@ -192,9 +192,13 @@ class Environment {
 
 	bind(name, val, packageName) {
 		if (this.symbols[name]) {
-			heap.removeReference(this.symbols[name].val);
-			this.symbols[name].val = val;
+			// add before remove, so rebinding a name to the value it already
+			// holds doesn't drop it to zero (and free it) in between
+			// (comment by Claude)
+			let old = this.symbols[name].val;
 			heap.addReference(val);
+			this.symbols[name].val = val;
+			heap.removeReference(old);
 			this.symbols[name].packageName = packageName; // I guess it's totally unnecessary because you could parse the name.
 		} else {
 			heap.addReference(val);
@@ -373,7 +377,13 @@ class Environment {
 			// if we got here, we tried to reference a nonexistant property.
 			throw constructFatalError(`unknown reference ${derefSetRecord.tag.getTagString()}. Sorry!`);
 		} else {
+			// counted the same way bind counts, or the old value is released
+			// by whoever rebinds it next with a count it never got
+			// (comment by Claude)
+			let old = binding.val;
+			heap.addReference(val);
 			binding.val = val;
+			heap.removeReference(old);
 		}
 	}
 }

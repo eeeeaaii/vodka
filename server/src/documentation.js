@@ -69,6 +69,21 @@ function documentBuiltin(name, params, info) {
 	})
 }
 
+/*
+An entry for a name that is not a builtin but is where somebody would look for
+one, pointing them at the builtin that does it. It goes in the category being
+declared, in order, like any other entry. Nothing is bound: typing the name
+still does nothing.
+
+(comment by Claude)
+*/
+function documentSeeAlso(name, target) {
+	docs[apiDocCategory].push({
+		name: name,
+		seeAlso: target
+	});
+}
+
 function documentAlias(aliasName, boundName) {
 	if (!aliases[boundName]) {
 		aliases[boundName] = [];
@@ -110,6 +125,9 @@ function getDocs() {
 		return {
 			category: category,
 			items: docs[category].map(function(item) {
+				if (item.seeAlso) {
+					return { name: item.name, seeAlso: item.seeAlso };
+				}
 				return {
 					name: item.name,
 					params: item.params,
@@ -122,4 +140,4 @@ function getDocs() {
 	});
 }
 
-export { setAPIDocCategory, documentBuiltin, documentAlias, markWorksOnWaves, getDocs }
+export { setAPIDocCategory, documentBuiltin, documentAlias, documentSeeAlso, markWorksOnWaves, getDocs }

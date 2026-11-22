@@ -80,14 +80,23 @@ const ALLOWED = [
 	'font-weight',
 	'height',
 	'letter-spacing',
+	'linear-gradient',
 	'line-height',
 	'margin',
+	'margin-bottom',
+	'margin-left',
+	'margin-right',
+	'margin-top',
 	'max-height',
 	'max-width',
 	'min-height',
 	'min-width',
 	'opacity',
 	'padding',
+	'padding-bottom',
+	'padding-left',
+	'padding-right',
+	'padding-top',
 	'text-align',
 	'text-decoration',
 	'width',
@@ -97,6 +106,7 @@ const ALLOWED = [
 // (comment by Claude)
 const SPELLINGS = {
 	'background': 'background-color',
+	'background-image': 'linear-gradient',
 	'bg-color': 'background-color',
 	'text-color': 'color',
 	'foreground': 'color',
@@ -108,14 +118,6 @@ const SPELLINGS = {
 	'border-top-style': 'border-top or border-style',
 	'outline': 'border',
 	'corner-radius': 'border-radius',
-	'padding-left': 'padding',
-	'padding-right': 'padding',
-	'padding-top': 'padding',
-	'padding-bottom': 'padding',
-	'margin-left': 'margin',
-	'margin-right': 'margin',
-	'margin-top': 'margin',
-	'margin-bottom': 'margin',
 };
 
 const BORDER_SHORTHANDS = [
@@ -227,11 +229,8 @@ replaced instead.
 
 (comment by Claude)
 */
-function checkStyle(s, existingStyle) {
+function applyDeclarations(kept, s) {
 	let declarations = parseDeclarations(s);
-	let kept = isRestrictedStyle(existingStyle)
-			? parseDeclarations(existingStyle.substring(STYLE_MARK.length))
-			: [];
 	for (let i = 0; i < declarations.length; i++) {
 		let d = declarations[i];
 		if (d.bad) {
@@ -249,6 +248,11 @@ function checkStyle(s, existingStyle) {
 			return { problem: `${d.property} is not a style you can set${instead}` };
 		}
 		let value = d.value;
+		// a url would be a way out of vodka; see PSEUDO_PROPERTIES
+		// (comment by Claude)
+		if (d.property == 'linear-gradient' && /url/i.test(value)) {
+			return { problem: 'linear-gradient cannot mention a url' };
+		}
 		if (BORDER_SHORTHANDS.indexOf(d.property) >= 0) {
 			value = withVisibleBorderStyle(value);
 		}
@@ -269,7 +273,100 @@ function checkStyle(s, existingStyle) {
 			&& !has('border-style') && !hasShorthand) {
 		kept.push({ property: 'border-style', value: 'solid' });
 	}
-	return { css: kept.map(d => `${d.property}: ${d.value}`).join('; ') };
+	return { declarations: kept };
+}
+
+/*
+A style can be different in dark mode and light mode:
+
+	dark { color: white; padding: 10px }
+	light { color: black }
+
+Css with no blocks is a shortcut for putting it in both. Once there are blocks,
+everything has to be in one -- a property outside them would be a third thing
+with no mode, and there are only two. One level only, and only these two.
+
+Kept as two lists, one per mode. Stored flat when they are the same, so a style
+that never mentions a mode reads back exactly as it was written, and as blocks
+otherwise. Setting adds to the block it names and leaves the other alone;
+`dark { all:; }` empties the dark one.
+
+(comment by Claude)
+*/
+const MODES = ['dark', 'light'];
+
+function parseStyleText(s) {
+	if (s.indexOf('{') < 0 && s.indexOf('}') < 0) {
+		return { flat: s };
+	}
+	let blocks = {};
+	let rest = s;
+	let re = /^\s*([A-Za-z-]+)\s*\{([^{}]*)\}/;
+	while (rest.trim()) {
+		let m = re.exec(rest);
+		if (!m) {
+			return { problem: 'once a style has a dark or light block, every'
+					+ ' property has to be inside one -- leave out the blocks to'
+					+ ' set both modes at once' };
+		}
+		let name = m[1].toLowerCase();
+		if (MODES.indexOf(name) < 0) {
+			return { problem: `${m[1]} is not a block you can use -- there are`
+					+ ' only dark and light' };
+		}
+		blocks[name] = (blocks[name] ? blocks[name] + ';' : '') + m[2];
+		rest = rest.substring(m[0].length);
+	}
+	return { blocks: blocks };
+}
+
+function declarationsToCss(declarations) {
+	return declarations.map(d => `${d.property}: ${d.value}`).join('; ');
+}
+
+function modeStylesOf(existingStyle) {
+	let r = { dark: [], light: [] };
+	if (!isRestrictedStyle(existingStyle)) {
+		return r;
+	}
+	let st = parseStyleText(existingStyle.substring(STYLE_MARK.length));
+	if (st.problem) {
+		return r;
+	}
+	for (let i = 0; i < MODES.length; i++) {
+		let text = (st.flat !== undefined) ? st.flat : (st.blocks[MODES[i]] || '');
+		r[MODES[i]] = parseDeclarations(text);
+	}
+	return r;
+}
+
+function checkStyle(s, existingStyle) {
+	let input = parseStyleText(s);
+	if (input.problem) {
+		return input;
+	}
+	let current = modeStylesOf(existingStyle);
+	for (let i = 0; i < MODES.length; i++) {
+		let mode = MODES[i];
+		let text = (input.flat !== undefined) ? input.flat : input.blocks[mode];
+		if (text === undefined) {
+			continue;
+		}
+		let r = applyDeclarations(current[mode], text);
+		if (r.problem) {
+			return r;
+		}
+		current[mode] = r.declarations;
+	}
+	let dark = declarationsToCss(current.dark);
+	let light = declarationsToCss(current.light);
+	if (dark == light) {
+		return { css: dark };
+	}
+	let parts = [];
+	if (dark) parts.push(`dark { ${dark} }`);
+	if (light) parts.push(`light { ${light} }`);
+	return { css: parts.join(' ') };
 }
 
 // in place if it is already there, keeping the order the style was written in,
@@ -316,11 +413,48 @@ finished thing, so it is left off while you are looking at the parts.
 
 (comment by Claude)
 */
+/*
+Properties that are not css but turn into it when drawn. linear-gradient is its
+own property, `linear-gradient: to right, red, blue`, rather than css's
+`background-image: linear-gradient(to right, red, blue)` -- shorter to say, and
+it leaves background-image out, which could otherwise be a url.
+
+(comment by Claude)
+*/
+const PSEUDO_PROPERTIES = {
+	'linear-gradient': (v) => `background-image: linear-gradient(${v})`,
+};
+
+function toRealCss(text) {
+	let out = [];
+	let declarations = parseDeclarations(text);
+	for (let i = 0; i < declarations.length; i++) {
+		let d = declarations[i];
+		if (d.bad || !d.value) continue;
+		let pseudo = PSEUDO_PROPERTIES[d.property];
+		out.push(pseudo ? pseudo(d.value) : `${d.property}: ${d.value}`);
+	}
+	return out.join('; ');
+}
+
 function styleAttributeFor(s, isExploded) {
 	if (!isRestrictedStyle(s)) {
 		return s;
 	}
-	return isExploded ? '' : s.substring(STYLE_MARK.length);
+	if (isExploded) {
+		return '';
+	}
+	let st = parseStyleText(s.substring(STYLE_MARK.length));
+	if (st.problem) {
+		return '';
+	}
+	if (st.flat !== undefined) {
+		return toRealCss(st.flat);
+	}
+	// the theme is chosen when the page loads, and switching it reloads
+	// (comment by Claude)
+	let mode = (typeof window != 'undefined' && window.CSS_THEME == 'dark') ? 'dark' : 'light';
+	return toRealCss(st.blocks[mode] || '');
 }
 
 export {

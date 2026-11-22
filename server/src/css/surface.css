@@ -47,7 +47,7 @@ picture taken apart.
 	padding: 2px;
 }
 
-.surface.exploded > .nex.exploded {
+.surface.exploded > .nex:is(.exploded, .sealedboundary) {
 	margin: 2px;
 }
 

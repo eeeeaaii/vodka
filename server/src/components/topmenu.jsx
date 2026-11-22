@@ -5,10 +5,10 @@ import { WELCOME, QUICK_REFERENCE, BASE_API, SOUND_API, GRAPHICS_API, API_REFERE
 const TABS = [
     [WELCOME, 'Welcome'],
     [QUICK_REFERENCE, 'Quick Reference'],
-    [BASE_API, 'Base API'],
-    [SOUND_API, 'Sound API'],
-    [GRAPHICS_API, 'Graphics API'],
-    [API_REFERENCE, 'API Reference'],
+    [BASE_API, 'Base Functions'],
+    [SOUND_API, 'Sound'],
+    [GRAPHICS_API, 'Graphics'],
+    [API_REFERENCE, 'Additional Reference'],
     [ABSTRACT_DATA_TYPES, 'Abstract Data Types'],
 ];
 

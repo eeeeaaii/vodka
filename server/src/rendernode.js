@@ -892,9 +892,14 @@ class RenderNode {
 
 		(comment by Claude)
 		*/
-		// if we are in normal mode we ignore collapse bit and render normally.
-		if (this.getCollapsed() && (useFlags & RENDER_FLAG_EXPLODED)) {
-			this.drawCollapsed();
+		/*
+		Collapsed in normal mode too. It used to render normally there, so a
+		collapsed argument looked like any other while the call quietly left it
+		out.
+		(comment by Claude)
+		*/
+		if (this.getCollapsed()) {
+			this.drawCollapsed(useFlags);
 		} else if (this.getNex().isNexContainer() && !(useFlags & RENDER_FLAG_SHALLOW)) {
 			if ((useFlags & RENDER_FLAG_EXPLODED) && this.insertionMode == INSERT_INSIDE) {
 				this.doInsertionPip(this);
@@ -985,6 +990,7 @@ class RenderNode {
 		if (this.nex.hasTags()) {
 			let tagHolder = this.nex.getTagHolder(this.domNode);
 			this.nex.renderTags(tagHolder, useFlags, this.getCurrentEditor());
+			this.fitSealedTags();
 		}
 		this.setRenderNodeDirtyForRendering(false);
 	}
@@ -1013,8 +1019,9 @@ class RenderNode {
 
 	(comment by Claude)
 	*/
-	drawCollapsed() {
+	drawCollapsed(useFlags) {
 		this.domNode.classList.add('collapsed');
+		let exploded = !!(useFlags & RENDER_FLAG_EXPLODED);
 		/*
 		A container keeps the front of itself -- the dot and the tilde -- because
 		that is what says which kind of container it is, and it is still that
@@ -1025,7 +1032,15 @@ class RenderNode {
 
 		(comment by Claude)
 		*/
-		if (!this.nex.isNexContainer()) {
+		/*
+		In normal mode a container's front is hidden anyway, and its own style
+		would paint the box, so there it is just the box as well.
+		(comment by Claude)
+		*/
+		if (!exploded) {
+			this.domNode.removeAttribute('style');
+		}
+		if (!this.nex.isNexContainer() || !exploded) {
 			// fast removal, not innerHTML
 			while (this.domNode.firstChild) {
 				this.domNode.removeChild(this.domNode.lastChild);
@@ -1271,7 +1286,34 @@ class RenderNode {
 	applySelectionClass() {
 		if (this.domNode) {
 			this.domNode.classList.toggle('newselected', this.selected);
+			this.fitSealedTags();
 		}
+	}
+
+	/*
+	A selected sealed thing shows its tags in a strip above it (see
+	sealed.css), and the strip is hung outside the element so the drawing is
+	left alone. Which means the element does not grow to fit it, and a tag
+	wider than the drawing would stick out past the selection. So the width the
+	tags need is measured here and handed to the stylesheet as a minimum: the
+	element widens to fit its tags while it is selected and goes back after.
+
+	Measured because nothing else knows: the tags' width depends on their text,
+	and how much of the element is padding depends on the style it was given.
+
+	(comment by Claude)
+	*/
+	fitSealedTags() {
+		let d = this.domNode;
+		if (!this.selected || !d.classList.contains('sealedboundary')) return;
+		let holder = d.querySelector(':scope > .tagholder');
+		if (!holder || !holder.querySelector('.tag')) return;
+		let cs = window.getComputedStyle(d);
+		let padding = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+		let border = parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
+		let needed = holder.scrollWidth;
+		let min = (cs.boxSizing == 'border-box') ? needed + border : needed - padding;
+		d.style.setProperty('--sealed-tag-width', Math.max(0, Math.ceil(min)) + 'px');
 	}
 
 	setUnselected() {

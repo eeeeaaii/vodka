@@ -173,12 +173,15 @@ class EError extends NexContainer {
 
 
 	deserializePrivateData(data) {
-		let a = data.split('|');
-		if (a.length == 2) {
-			this.setErrorType(Number(a[0]))
-			this.setFullValue(a[1]);
+		// Only the first | separates the type from the message. Splitting on all
+		// of them dropped everything after a | in the message itself.
+		// (comment by Claude)
+		let bar = data.indexOf('|');
+		if (bar > 0 && /^[0-9]+$/.test(data.substring(0, bar))) {
+			this.setErrorType(Number(data.substring(0, bar)))
+			this.setFullValue(data.substring(bar + 1));
 		} else {
-			this.setFullValue(a[0]);
+			this.setFullValue(data);
 		}
 	}
 

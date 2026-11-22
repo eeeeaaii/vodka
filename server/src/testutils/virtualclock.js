@@ -20,7 +20,7 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
  * waiting for them. Until install() is called it just delegates, so this is
  * inert outside tests.
  *
- * Only wait-for-delay schedules through it, which is every animation in the
+ * Only wait-for-interval schedules through it, which is every animation in the
  * standard library. The event queue's own setTimeout(0) is a yield to the
  * browser rather than a duration and is not routed here.
  *

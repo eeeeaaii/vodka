@@ -30,7 +30,6 @@ import { constructDeferredValue } from '../nex/deferredvalue.js'
 import { incFFGen } from '../gc.js'
 import { constructInteger } from '../nex/integer.js'
 import { constructFatalError } from '../nex/eerror.js'
-import { BINDINGS } from '../environment.js'
 import { constructBool } from '../nex/bool.js'; 
 import { systemState } from '../systemstate.js'
 import { evaluateNexSafely, wrapError } from '../evaluator.js'
@@ -41,14 +40,17 @@ import {
 	DelayActivationFunctionGenerator,
 	EveryActivationFunctionGenerator,
 	ClickActivationFunctionGenerator,
+	ClickOnceActivationFunctionGenerator,
 	OnContentsChangedActivationFunctionGenerator,
+	OnContentsChangedOnceActivationFunctionGenerator,
 	CallbackActivationFunctionGenerator,
-	OnNextRenderActivationFunctionGenerator
+	OnNextRenderActivationFunctionGenerator,
+	OnEveryRenderActivationFunctionGenerator
 } from '../asyncfunctions.js'
 
 
 
-// running `do every` loops, so the stop button can end them
+// running `do-every-interval` loops, so the stop button can end them
 // (comment by Claude)
 const runningLoops = {};
 let nextLoopId = 1;
@@ -243,10 +245,31 @@ function createAsyncBuiltins() {
 
 
 
+	/*
+	Each event comes two ways. wait-for-X finishes the first time X happens;
+	do-every-X settles every time it happens and never finishes. X is click,
+	contents-change, render or interval.
+	(comment by Claude)
+	*/
 	Builtin.createBuiltin(
 		'wait-for-click',
 		[ 'nex'],
-		function $setClick(env, executionEnvironment) {
+		function $waitForClick(env, executionEnvironment) {
+			let nex = env.lb('nex');
+			let dv = constructDeferredValue();
+			let afg = new ClickOnceActivationFunctionGenerator(nex);
+			dv.appendChild(nex);
+			dv.set(afg);
+			dv.activate();
+			return dv;
+		},
+		'A deferred value that finishes the first time |nex is clicked, with the x and y of the click.'
+	);
+
+	Builtin.createBuiltin(
+		'do-every-click',
+		[ 'nex'],
+		function $doEveryClick(env, executionEnvironment) {
 			let nex = env.lb('nex');
 			let dv = constructDeferredValue();
 			let afg = new ClickActivationFunctionGenerator(nex);
@@ -255,42 +278,31 @@ function createAsyncBuiltins() {
 			dv.activate();
 			return dv;
 		},
-		'A deferred value that settles each time |nex is clicked.'
+		'A deferred value that settles each time |nex is clicked, with the x and y of the click.'
 	);
 
 
+	/*
+	Like the other do-every-X, it takes no function: it settles with the tick
+	count, 0 first, and a deferred command around it is what runs something on
+	every tick. It used to take a function and settle with its result.
+	(comment by Claude)
+	*/
 	Builtin.createBuiltin(
-		'do every',
-		[ 'f&', 'interval#' ],
-		function $doEvery(env, executionEnvironment) {
-			let f = env.lb('f');
+		'do-every-interval',
+		[ 'interval#' ],
+		function $doEveryInterval(env, executionEnvironment) {
 			let intervalnex = env.lb('interval');
 			let ms = intervalnex.getTypedValue();
 			if (!(ms > 0)) {
-				return constructFatalError('do every: interval must be more than zero. Sorry!');
+				return constructFatalError('do-every-interval: interval must be more than zero. Sorry!');
 			}
 
 			let id = nextLoopId++;
 			let seq = 0;
-			// the iteration number is only passed to a function that has a
-			// parameter to put it in, so a zero-arg function works too
-			// (comment by Claude)
-			let lambda = f.getLambda();
-			let params = (lambda && lambda.getParams) ? lambda.getParams() : null;
-			let takesSeq = !!params && params.length >= 1;
 			let afg = new EveryActivationFunctionGenerator(ms, function() {
-				let scf = systemState.getSCF();
-				let cmd = takesSeq
-					? scf.makeCommandWithClosureOneArg(f, constructInteger(seq))
-					: scf.makeCommandWithClosureZeroArgs(f);
-				let r = systemState.getSCF().sEval2(cmd, BINDINGS, 'do every');
-				seq++;
-				if (Utils.isFatalError(r)) {
-					afg.stop();
-					delete runningLoops[id];
-				}
-				return r;
-			}, f);
+				return constructInteger(seq++);
+			});
 
 			let dv = constructDeferredValue();
 			// a deferred renders and serializes through its first child
@@ -301,13 +313,13 @@ function createAsyncBuiltins() {
 			runningLoops[id] = afg;
 			return dv;
 		},
-		'A deferred value that settles every |interval milliseconds with the result of |f. If |f takes a parameter, it is given the iteration number.'
+		'A deferred value that settles every |interval milliseconds with the tick count, starting at 0.'
 	);
 
 	Builtin.createBuiltin(
-		'wait-for-delay',
+		'wait-for-interval',
 		[ 'time#' ],
-		function $waitForDelay(env, executionEnvironment) {
+		function $waitForInterval(env, executionEnvironment) {
 			let timenex = env.lb('time');
 			let time = timenex.getTypedValue();
 			let dv = constructDeferredValue();
@@ -319,11 +331,27 @@ function createAsyncBuiltins() {
 		},
 		'A deferred value that finishes after |time milliseconds.'
 	);
+	Builtin.aliasBuiltin('wait-for-delay', 'wait-for-interval');
 
 	Builtin.createBuiltin(
-		'wait-for-contents-changed',
+		'wait-for-contents-change',
 		[ 'nex()' ],
-		function $waitForContentsChanged(env, executionEnvironment) {
+		function $waitForContentsChange(env, executionEnvironment) {
+			let nex = env.lb('nex');
+			let dv = constructDeferredValue();
+			dv.appendChild(nex);
+			let afg = new OnContentsChangedOnceActivationFunctionGenerator(nex);
+			dv.set(afg);
+			dv.activate();
+			return dv;
+		},
+		'A deferred value that finishes the first time the contents of |nex change.'
+	);
+
+	Builtin.createBuiltin(
+		'do-every-contents-change',
+		[ 'nex()' ],
+		function $doEveryContentsChange(env, executionEnvironment) {
 			let nex = env.lb('nex');
 			let dv = constructDeferredValue();
 			dv.appendChild(nex);
@@ -336,9 +364,9 @@ function createAsyncBuiltins() {
 	);
 
 	Builtin.createBuiltin(
-		'wait-for-next-render',
+		'wait-for-render',
 		[ 'nex' ],
-		function $waitForNextRender(env, executionEnvironment) {
+		function $waitForRender(env, executionEnvironment) {
 			let nex = env.lb('nex');
 			let dv = constructDeferredValue();
 			dv.appendChild(nex);
@@ -348,6 +376,22 @@ function createAsyncBuiltins() {
 			return dv;
 		},
 		'A deferred value that finishes the next time |nex is drawn.'
+	);
+	Builtin.aliasBuiltin('wait-for-next-render', 'wait-for-render');
+
+	Builtin.createBuiltin(
+		'do-every-render',
+		[ 'nex' ],
+		function $doEveryRender(env, executionEnvironment) {
+			let nex = env.lb('nex');
+			let dv = constructDeferredValue();
+			dv.appendChild(nex);
+			let afg = new OnEveryRenderActivationFunctionGenerator(nex);
+			dv.set(afg);
+			dv.activate();
+			return dv;
+		},
+		'A deferred value that settles every time |nex is drawn.'
 	);
 }
 

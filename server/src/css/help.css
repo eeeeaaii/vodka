@@ -65,7 +65,19 @@ panel rather than making the whole page taller.
 	pointer-events: auto;
 }
 
+/*
+The wheel stops at the help: over a panel it scrolls the panel and nothing else,
+even at the end of it or when it is too short to scroll, and over the row of
+tabs it does nothing. Without this the scroll ran on into the document behind.
+
+overscroll-behavior only works on something that scrolls, which is what the
+overflow on the tabs is for -- they never actually scroll.
+
+(comment by Claude)
+*/
 .helpmenupanel {
+	overflow: hidden;
+	overscroll-behavior: contain;
 	display: flex;
 	flex-direction: row;
 	font-family: Courier;
@@ -105,6 +117,7 @@ panel rather than making the whole page taller.
 	(comment by Claude)
 	*/
 	overflow-y: auto;
+	overscroll-behavior: contain;
 	max-height: calc(100vh - 110px - var(--top-panel-h));
 }
 
@@ -293,6 +306,13 @@ position: fixed;
 .infopanel .apibacktotop:hover {
 	background-color: var(--help-accent);
 	color: var(--help-background);
+}
+
+/* a see-also entry's target, which jumps to it */
+/* (comment by Claude) */
+.infopanel .apiseealso {
+	cursor: pointer;
+	text-decoration: underline;
 }
 
 .infopanel a {
@@ -523,4 +543,30 @@ and ragged numbers make that impossible.
 	opacity: 0.75;
 	font-weight: normal;
 	padding-left: 2px;
+}
+
+/* the tables in the reference tab, ruled like the note numbers table */
+/* (comment by Claude) */
+.infopanel table.reftable {
+	border-collapse: collapse;
+	font-family: monospace;
+	font-size: 12px;
+	margin-top: 4px;
+}
+
+.infopanel table.reftable th {
+	text-align: left;
+	font-weight: normal;
+	opacity: 0.6;
+	padding: 2px 14px 4px 0;
+}
+
+.infopanel table.reftable td {
+	padding: 2px 14px 2px 0;
+	vertical-align: top;
+	border-top: 1px solid var(--unselected-border);
+}
+
+.infopanel table.reftable td:first-child {
+	white-space: nowrap;
 }

@@ -38,3 +38,67 @@ appears in older rules elsewhere and nothing adds it any more.
 	outline-offset: 2px;
 	border-radius: 2px;
 }
+
+/*
+A sealed thing draws no tags, so a tag on the outermost one could not be seen
+at all. When it is selected, and only then, its tags show in a strip above it,
+inside the selection outline but outside the element -- the strip is taken out
+of the flow and hung above the box, so the drawing itself is not touched by a
+pixel. The room for it is made with a margin above, which is all that moves.
+
+Only when selected, so a sealed thing inside a tagged list does not look as
+though it carries the list's tags.
+
+The selection outline is drawn around both, as one box, by a pseudo-element
+instead of the element's own outline, which can only follow the element. Its
+height is fixed, because the margin that makes room for it has to know it: a
+19px tag, 3px either side of it.
+
+(comment by Claude)
+*/
+.sealedboundary.newselected:has(> .tagholder > .tag) {
+	position: relative;
+	margin-top: 25px;
+	outline: none;
+	/* set by RenderNode.fitSealedTags, so the tags fit inside */
+	/* (comment by Claude) */
+	min-width: var(--sealed-tag-width, auto);
+}
+
+.sealedboundary.newselected:has(> .tagholder > .tag)::after {
+	content: '';
+	position: absolute;
+	top: -25px;
+	left: -3px;
+	right: -3px;
+	bottom: -3px;
+	border: 1px solid var(--selected-border);
+	border-radius: 2px;
+	pointer-events: none;
+}
+
+.sealedboundary.newselected > .tagholder {
+	position: absolute;
+	top: -22px;
+	left: 0;
+	height: 19px;
+	flex-wrap: nowrap;
+}
+
+.sealedboundary.newselected > .tagholder > .tag {
+	display: flex;
+	background-color: var(--tag-background);
+	color: var(--tag-editor-background);
+	padding: 4px 8px;
+	margin: 0 3px 0 0;
+	font-family: Courier;
+	font-size: 9px;
+	line-height: 11px;
+	height: 19px;
+	box-sizing: border-box;
+}
+
+.sealedboundary.newselected > .tagholder > .tag-special {
+	background-color: var(--tag-special-background);
+	color: var(--tag-special-text);
+}

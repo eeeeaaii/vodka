@@ -42,7 +42,14 @@ That's why the weird "3.2px"
 	border-color: var(--selected-border);
 }
 
-.codelist.exploded > .nex.exploded {
+/*
+A child in normal mode inside an exploded parent is not .exploded, but it still
+sits in the parent's layout, so it gets the same margins as its siblings.
+.sealedboundary is the outermost normal-mode thing, which is exactly such a
+child. Same in deferredcommand, deferredcommandvalue, org and surface.
+(comment by Claude)
+*/
+.codelist.exploded > .nex:is(.exploded, .sealedboundary) {
 	margin: 0px 0px 0px 2px;
 }
 
@@ -53,7 +60,7 @@ That's why the weird "3.2px"
 	padding: 0px 5px 2px 5px;
 }
 
-.codelist.exploded.vdir > .nex.exploded {
+.codelist.exploded.vdir > .nex:is(.exploded, .sealedboundary) {
 	margin: 2px 21px 2px 21px;
 }
 

@@ -169,7 +169,7 @@ function createSyscalls() {
 			n.setCurrentStyle(markRestrictedStyle(checked.css));
 			return n;
 		},
-		'Adds the style |style to |nex, replacing any property it names. |style is a css string like `font-size: 20px`, or an org whose children are tagged with the property, like an org holding 20 tagged `font-size` (a bare number gets px, except for opacity, font-weight and line-height). A property given no value, as in `border:;` or an empty string, is removed. Colour, border, font, size and spacing only, on a doc, line, word, letter or separator, and it shows in normal mode only.'
+		'Adds the style |style to |nex, replacing any property it names. |style is a css string like `font-size: 20px`, or an org whose children are tagged with the property, like an org holding 20 tagged `font-size` (a bare number gets px, except for opacity, font-weight and line-height). A property given no value, as in `border:;` or an empty string, is removed. To style dark and light mode differently, put the properties in `dark { ... }` and `light { ... }` blocks, or in orgs tagged dark and light; without blocks a style is for both. Colour, border, font, size, spacing and background gradients (`linear-gradient: to right, red, blue`) only, on a doc, line, word, letter or separator, and it shows in normal mode only.'
 	);
 
 	/*
@@ -189,29 +189,68 @@ function createSyscalls() {
 			return { problem: 'the style should be a string or an org, not a '
 					+ style.getTypeName() };
 		}
+		/*
+		An org tagged dark or light inside it is that mode's block, the same as
+		`dark { ... }` in the string form; the string form's rules about them
+		are checked once it is a string.
+
+		(comment by Claude)
+		*/
 		let parts = [];
+		let blocks = [];
 		for (let i = 0; i < style.numChildren(); i++) {
 			let c = style.getChildAt(i);
-			if (c.numTags() != 1) {
-				return { problem: 'each thing in the style org needs one tag,'
-						+ ' the property name, like `font-size`' };
-			}
-			let property = c.getTag(0).getTagString().trim().toLowerCase();
-			let value;
-			if (Utils.isInteger(c) || Utils.isFloat(c)) {
-				value = '' + c.getTypedValue();
-				if (UNITLESS.indexOf(property) < 0) {
-					value += 'px';
+			if (Utils.isOrg(c)) {
+				if (c.numTags() != 1) {
+					return { problem: 'an org inside the style is a block, and needs'
+							+ ' one tag, dark or light' };
 				}
-			} else if (Utils.isEString(c)) {
-				value = c.getFullTypedValue();
-			} else {
-				return { problem: property + ' should be a number or a string,'
-						+ ' not a ' + c.getTypeName() };
+				let mode = c.getTag(0).getTagString().trim().toLowerCase();
+				let inner = orgPropertiesToCss(c);
+				if (inner.problem) return inner;
+				blocks.push(mode + ' { ' + inner.css + ' }');
+				continue;
 			}
-			parts.push(property + ': ' + value);
+			let one = orgPropertyToCss(c);
+			if (one.problem) return one;
+			parts.push(one.css);
+		}
+		if (parts.length > 0 && blocks.length > 0) {
+			return { problem: 'once a style has a dark or light block, every'
+					+ ' property has to be inside one' };
+		}
+		return { css: blocks.length > 0 ? blocks.join(' ') : parts.join('; ') };
+	}
+
+	function orgPropertiesToCss(org) {
+		let parts = [];
+		for (let i = 0; i < org.numChildren(); i++) {
+			let one = orgPropertyToCss(org.getChildAt(i));
+			if (one.problem) return one;
+			parts.push(one.css);
 		}
 		return { css: parts.join('; ') };
+	}
+
+	function orgPropertyToCss(c) {
+		if (c.numTags() != 1) {
+			return { problem: 'each thing in the style org needs one tag,'
+					+ ' the property name, like `font-size`' };
+		}
+		let property = c.getTag(0).getTagString().trim().toLowerCase();
+		let value;
+		if (Utils.isInteger(c) || Utils.isFloat(c)) {
+			value = '' + c.getTypedValue();
+			if (UNITLESS.indexOf(property) < 0) {
+				value += 'px';
+			}
+		} else if (Utils.isEString(c)) {
+			value = c.getFullTypedValue();
+		} else {
+			return { problem: property + ' should be a number or a string,'
+					+ ' not a ' + c.getTypeName() };
+		}
+		return { css: property + ': ' + value };
 	}
 
 	/*

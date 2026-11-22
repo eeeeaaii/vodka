@@ -109,12 +109,12 @@ The value computed so far is the first child, and it goes across the direction
 the call runs in: its own row above a call that runs horizontally, its own
 column to the left of one that runs down.
 */
-.deferredcommandvalue.exploded > .nex.exploded {
+.deferredcommandvalue.exploded > .nex:is(.exploded, .sealedboundary) {
 	grid-row: 2;
 	margin: 2px 2px 2px 2px;
 }
 
-.deferredcommandvalue.exploded > .dcvglyph + .nex.exploded {
+.deferredcommandvalue.exploded > .dcvglyph + .nex:is(.exploded, .sealedboundary) {
 	grid-column: 2;
 	grid-row: 1;
 }
@@ -142,12 +142,12 @@ across the direction the call runs in.
 	margin: 0px 0px 3px 0px;
 }
 
-.deferredcommandvalue.exploded.vdir > .dcvglyph + .nex.exploded {
+.deferredcommandvalue.exploded.vdir > .dcvglyph + .nex:is(.exploded, .sealedboundary) {
 	grid-column: 1;
 	grid-row: 2;
 }
 
-.deferredcommandvalue.exploded.vdir > .nex.exploded {
+.deferredcommandvalue.exploded.vdir > .nex:is(.exploded, .sealedboundary) {
 	grid-column: 2;
 	grid-row: auto;
 }

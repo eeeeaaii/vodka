@@ -22,7 +22,7 @@ Lists of callbacks, kept the same way in the three places a nex can be waited
 on: clicks, contents changing, the next render.
 
 Each used to be a single field, so a second waiter overwrote the first and
-waited forever. Two `wait-for-click` on one button is enough to see it, and it
+waited forever. Two `do-every-click` on one button is enough to see it, and it
 is not only something a person can write by hand -- copying a deferred command
 makes a second waiter on whatever the first one was watching.
 
@@ -289,11 +289,14 @@ class Nex {
 		return false;
 	}
 
-	addOnNextRenderCallback(callback) {
+	addOnNextRenderCallback(callback, quietly) {
 		this.onNextRenderCallbacks = addCallback(this.onNextRenderCallbacks, callback);
-		// the callback fires from this nex's next render, so there has to be one
+		// the callback fires from this nex's next render, so there has to be one,
+		// unless the caller is happy to wait for whenever that is
 		// (comment by Claude)
-		this.renderOnlyThisNex();
+		if (!quietly) {
+			this.renderOnlyThisNex();
+		}
 	}
 
 	removeOnNextRenderCallback(callback) {

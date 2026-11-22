@@ -16,6 +16,7 @@
 
 {
   const RIGHT_BRACE = String.fromCharCode(125);
+  const LEFT_BRACE = String.fromCharCode(123);
   const BACKTICK = String.fromCharCode(96);
 }
 
@@ -236,6 +237,7 @@ escaped_private_data
 private_data_item
   = CHAR:[^|}] { return CHAR; }
   / '|}' { return RIGHT_BRACE; }
+  / '|{' { return LEFT_BRACE; }
   / '||' { return '|'; }
   ;
 

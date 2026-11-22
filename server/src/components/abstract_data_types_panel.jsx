@@ -74,7 +74,7 @@ const AbstractDataTypesPanel = () => {
       <p className="infolinemargin">
         What counts is a change to the org itself -- a member being set. A change deeper inside the
         drawing does not count and will not redraw it, which matters when the drawing holds something
-        that acts: a <span className="infohotkey">wait-for-click</span> puts what it settled with in
+        that acts: a <span className="infohotkey">do-every-click</span> puts what it settled with in
         place of what it was waiting on, so a button that is clicked is replaced by the click. If you
         want the face rebuilt, say so by mutating the org -- keep a count of the clicks and
         <span className="infohotkey">set</span>it in the handler. A drawing that never needs rebuilding
@@ -95,7 +95,7 @@ const AbstractDataTypesPanel = () => {
         finished interface never rearranges the code that built it.
       </p>
       <p className="infolinemargin">
-        Which properties you can set, and how to take one off again, are in the API Reference tab,
+        Which properties you can set, and how to take one off again, are in the Additional Reference tab,
         under Styles.
       </p>
       <p className="infolinemargin">

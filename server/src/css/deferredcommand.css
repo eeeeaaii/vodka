@@ -42,11 +42,11 @@ along with Vodka.  If not, see <https://www.gnu.org/licenses/>.
 	border-width: 3px;	
 }
 
-.deferredcommand.exploded > .nex.exploded {
+.deferredcommand.exploded > .nex:is(.exploded, .sealedboundary) {
 	margin: 0px 0px 0px 2px;
 }
 
-.deferredcommand.exploded.vdir > .nex.exploded {
+.deferredcommand.exploded.vdir > .nex:is(.exploded, .sealedboundary) {
 	margin: 2px 21px 2px 21px;
 }
 
